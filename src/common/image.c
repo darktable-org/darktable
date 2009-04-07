@@ -433,7 +433,7 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
       return 0;
     }
   }
-  fprintf(stderr, "[image_alloc] all cache slots seem to be in use! alloc of %d bytes for img id %d mip %d failed!\n", size, img->id, mip);
+  fprintf(stderr, "[image_alloc] all cache slots seem to be in use! alloc of %d bytes for img id %d mip %d failed!\n", (int)size, img->id, mip);
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   return 1;
 }
