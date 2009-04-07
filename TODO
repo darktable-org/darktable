@@ -1,0 +1,95 @@
+new bugs:
+ - exif tag in libraw not really handled well (aperture+time missing)
+ - JPEG loading needs shrink + orientation
+ - dev switch resolution AFTER setting gui stuff.
+   control->width is updated in expose, and configure
+   is called in dev_enter. (just before) :(
+ - image_load_job should take img id and get it from cache himself!
+   (this is a serious problem if not all images fit into cache)
+
+broken since sqlite backend:
+ - remove last film in favour of film table with timestamp.
+
+feature requests:
+ - GMM for color model using EM in opencv!
+ - img table + date inserted/modified
+ - faster (unsafe) sql option: PRAGMA synchronous=OFF
+ - cache auf platte, echte bilder irgendwo auf dvd/platte extern/kamera chip etc
+   - moeglicherweise ECHTE bilder (dias im schrank)
+ - bilder sortieren, evtl manuell (mehrere kameras in einen film usw)
+ - zoom in in 3 steps?
+ - hide gui triangles andere form und switch in/out
+ - inotify dir watching
+ - execute iop: pass global image window!
+ - zoom in dev mode via mouse wheel.
+ - dt_film_sort with global settings
+ - tags and some tag search facility
+ - brightness/exposure highlight histogram stuff
+
+bugs:
+ - strange G_OBJECT cast errors when loading pfm/exr/pdf?
+ - control add history item > 10 (in gui representation. core can do)!
+ - import folder file chooser sometimes not sized appropriately
+ - histogram updates in fixed pipeline come too early/uselessly?
+ - export muss erst dev mode haben, sonst kaputt.
+
+priority list:
+ - selection behaviour (ctl shift etc)
+ - magick + exif (read)!
+ - clean up dev events: add history-> cache up -> fixed pipeline up
+ - modular one-file plugin support:
+   src/imageio/saturation.{c,h}:
+   - dr_gui_XX_reset -> reset op to neutral/default params
+     dr_gui_XX_init  -> init gui elements and callbacks
+     dr_iop_XX       -> transform buffers
+   - add expander to right vbox,
+     init gui with expander->child
+     expose: if op !=, gui_reset
+     reserve imageop, need string hash?
+ - image properties when zoomed in a lot
+ - clean up namings/modules.
+   - move expose to ctl or gui?
+   - split ctl and sched?
+ - control panel with buttons for lib->dev->lib
+
+image ops:
+ - white balance
+ - exposure
+ - luma/chroma denoising
+ - crop
+
+usability:
+ - aoe, keys to change +-= table_cols/1 resp.
+ - write out image_t at quit (exif, filenames, selected flags)
+ - navigation: buttons for zoom levels
+ - closeup in 3:1 5:1 or 2:1 ?
+ - disable dev controls/make invisible in lib?
+ - make directory loading interruptible
+ - adjust navigation preview in dev on the fly?
+ - image loading: load thumbnails first, if any.
+ - navigation widget for lib?
+ - curve widget presets
+   - x-axis adjusters
+ - active live histogram (exposure etc)
+ - all functions mouse-accessible
+ - library graph with keyword edges.
+ - expander with exif data (+filename of saved image)
+
+look:
+ - dev img border
+ - border between center and outer panels?
+ - adjust .gtkrc to have consistently cool look even in filechooser
+ - end markers :)
+ - dev full res image possibly smaller as lo-res (paint border with bg)
+
+cleanup:
+ - QWERTZ/dvorak keyboard shortcuts run-time switching
+
+cache:
+ - user profile guided prefetching for full raw load!
+ - load cache from disk only if md5sum matches
+
+build/packaging:
+ - consistent prefix naming: dev, lib, ctl, gui
+ - doxygen documentation
+

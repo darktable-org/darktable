@@ -1,0 +1,19 @@
+style "default"{
+
+#fonts
+fg[NORMAL] = "#F0F0F0"
+fg[PRELIGHT] = "#000000"
+fg[SELECTED] = "#000000"
+
+#selected areas
+base[SELECTED] = "#8a8aa0"
+base[ACTIVE] = "#e3e3e3"
+base[PRELIGHT] = "#E5E5F7"
+base[INSENSITIVE]= "#ced0d7"
+bg[SELECTED]= "#828aa4"
+
+#app backgrouds
+bg[NORMAL] = "#333333"
+# bg_pixmap[NORMAL] = "lines_background.png"
+# bg_pixmap[PRELIGHT] = "lines_background_blue.png"
+}class "GtkWidget" style "default"

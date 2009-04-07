@@ -1,0 +1,1 @@
+AM_CFLAGS=$(MAGICK_CPPFLAGS) $(CAIRO_CFLAGS) $(GLADE_CFLAGS) $(GTK_CFLAGS) $(GTHREAD_CFLAGS) $(SQLITE_CFLAGS) -Wall -std=c99 -g -march=native -mfpmath=sse -ffast-math -msse2 -I$(srcdir)/LibRaw -fopenmp -fPIC -fno-strict-aliasing
