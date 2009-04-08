@@ -1,4 +1,7 @@
 new bugs:
+ - mac port : window size < 0 (ctl init)
+ - mac port : magiccore-config?
+ - configure.ac: magic-config fail => png dreggn
  - exif tag in libraw not really handled well (aperture+time missing)
  - JPEG loading needs shrink + orientation
  - dev switch resolution AFTER setting gui stuff.
