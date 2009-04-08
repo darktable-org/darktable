@@ -1,4 +1,5 @@
 new bugs:
+ - configure.ac: openmp detection
  - mac port : window size < 0 (ctl init)
  - mac port : magiccore-config?
  - configure.ac: magic-config fail => png dreggn
