@@ -10,7 +10,7 @@ PKG_CHECK_MODULES(GLADE, [libglade-2.0])
 PKG_CHECK_MODULES(SQLITE, [sqlite3])
  
 dnl *** check for MagickCore ***
-AC_CHECK_PROGS(MAGICKCONFIG, [Magick-config GraphicsMagick-config])
+AC_CHECK_PROGS(MAGICKCONFIG, [MagickCore-config])
 usemagick=0
 if test -n "$MAGICKCONFIG"; then
    ac_save_CPPFLAGS="$CPPFLAGS"
@@ -19,21 +19,14 @@ if test -n "$MAGICKCONFIG"; then
    MAGICK_LIBS="`$MAGICKCONFIG --ldflags` `$MAGICKCONFIG --libs`"
    CPPFLAGS="$CPPFLAGS $MAGICK_CPPFLAGS"
    LIBS="$MAGICK_LIBS $LIBS"
-   AC_CHECK_FUNC(ExportImagePixels, usemagick=1, AC_MSG_NOTICE([ImageMagick/GraphicsMagick does not support the function
-        ExportImagePixels. Please upgrade to ImageMagick 5.5.7 or newer (or
-        the corresponding GraphicsMagick version)]))
+   AC_CHECK_FUNC(ExportImagePixels, usemagick=1, AC_MSG_NOTICE([ImageMagick does not support the function
+        ExportImagePixels. Please upgrade to ImageMagick 6.4 or newer]))
    CPPFLAGS="$ac_save_CPPFLAGS"
    LIBS="$ac_save_LIBS"
 fi
  
-if test "$usemagick" != 1; then
-   AC_CHECK_LIB(z, zlibVersion, test, AC_MSG_ERROR([You must have libz(-devel) installed]))
- 
-   AC_CHECK_LIB(png, png_sig_cmp, test, AC_MSG_ERROR([You must have libpng(-devel) installed]), -lz -lm)
-   MAGICK_CPPFLAGS=
-   MAGICK_LIBS="-lpng -lz -lm"
-else
-   AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick or GraphicsMagick libraries are available])
+if test "$usemagick" == 1; then
+   AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick library is available])
 fi
 AC_SUBST(MAGICK_CPPFLAGS)
 AC_SUBST(MAGICK_LIBS)
