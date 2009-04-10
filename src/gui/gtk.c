@@ -267,10 +267,33 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gdk_threads_enter();
   gtk_init (&argc, &argv);
 
-  gtk_rc_parse ("darktable.gtkrc");
+  char path[1024];
+  snprintf(path, 1023, "darktable.gtkrc");
+  if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
+  else
+  {
+    snprintf(path, 1023, "%s/darktable.gtkrc", DATADIR);
+    if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
+    else
+    {
+      fprintf(stderr, "[gtk_init] could not find darktable.gtkrc in . or %s!\n", DATADIR);
+      exit(1);
+    }
+  }
 
   /* load the interface */
-  darktable.gui->main_window = glade_xml_new ("darktable.glade", NULL, NULL);
+  snprintf(path, 1023, "darktable.glade");
+  if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
+  else
+  {
+    snprintf(path, 1023, "%s/darktable.glade", DATADIR);
+    if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
+    else
+    {
+      fprintf(stderr, "[gtk_init] could not find darktable.glade in . or %s!\n", DATADIR);
+      exit(1);
+    }
+  }
 
   /* connect the signals in the interface */
 
