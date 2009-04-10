@@ -1,8 +1,5 @@
 new bugs:
- - configure.ac: openmp detection
  - mac port : window size < 0 (ctl init)
- - mac port : magiccore-config?
- - configure.ac: magic-config fail => png dreggn
  - exif tag in libraw not really handled well (aperture+time missing)
  - JPEG loading needs shrink + orientation
  - dev switch resolution AFTER setting gui stuff.
@@ -15,6 +12,7 @@ broken since sqlite backend:
  - remove last film in favour of film table with timestamp.
 
 feature requests:
+ - remove dead links in library automatically?
  - GMM for color model using EM in opencv!
  - img table + date inserted/modified
  - faster (unsafe) sql option: PRAGMA synchronous=OFF

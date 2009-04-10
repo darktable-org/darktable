@@ -180,8 +180,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
             // if(last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= MIN(last_seli,seli) && row >= MIN(last_selj,selj) &&
             //         col <= MAX(last_seli,seli) && row <= MAX(last_selj,selj)) && (col != last_seli || row != last_selj)) ||
             if((lib->modifiers & GDK_SHIFT_MASK) && image->id == lib->last_selected_id) { last_seli = col; last_selj = row; }
-            if(last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                    col <= seli && row <= selj) && (col != last_seli || row != last_selj)) ||
+            if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
+                    col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
                (seli == col && selj == row))
             { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
               dt_library_toggle_selection(image->id);

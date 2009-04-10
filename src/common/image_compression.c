@@ -5,11 +5,18 @@
 #include <math.h>
 #include <string.h>
 
+typedef union
+{
+  float f;
+  uint32_t i;
+}
+dt_image_float_int_t;
+
 void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, const int32_t height)
 {
-  float L[16], chrom[4][3];
+  dt_image_float_int_t L[16];
+  float chrom[4][3];
   const float fac[3] = {4., 2., 4.};
-  uint32_t *L32 = (uint32_t*)L;
   uint16_t L16[16];
   int32_t n_zeroes, Lbias;
   uint8_t r[4], b[4];
@@ -30,8 +37,8 @@ void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, con
       }
       for(int k=0;k<16;k++)
       {
-        L32[k]  = (((int)(L16[k]) >> 10)-(15-127)) << (23);
-        L32[k] |= (L16[k] & 0x3ff)<<13;
+        L[k].i  = (((int)(L16[k]) >> 10)-(15-127)) << (23);
+        L[k].i |= (L16[k] & 0x3ff)<<13;
       }
       // chroma
       r[0] =                              block[ 9] >> 1;
@@ -51,7 +58,7 @@ void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, con
       }
       for(int k=0;k<16;k++)
         for(int c=0;c<3;c++)
-          out[3*(i + (k & 3) + width*(j + (k>>2))) + c] = L[k]*fac[c]*chrom[((k>>3)<<1)|((k&3)>>1)][c];
+          out[3*(i + (k & 3) + width*(j + (k>>2))) + c] = L[k].f*fac[c]*chrom[((k>>3)<<1)|((k&3)>>1)][c];
       block += 16*sizeof(uint8_t);
     }
   }
@@ -59,9 +66,8 @@ void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, con
 
 void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const int32_t height)
 {
-  float L[16];
+  dt_image_float_int_t L[16];
   int16_t Lmin, Lmax, n_zeroes, L16[16];
-  int32_t L32;
   uint8_t *block = out, r[4], b[4];
   for(int j=0;j<height;j+=4)
   {
@@ -78,11 +84,10 @@ void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const
             const int io = (pi+((q&1)<<1)), jo = (pj+(q&2));
             const int ii = i + io, jj = j + jo;
 
-            L[io+4*jo] = (in[3*(ii+width*jj) + 0] + 2*in[3*(ii+width*jj) +1] + in[3*(ii+width*jj) +2])*.25;
-            for(int k=0;k<3;k++) chrom[k] += L[io+4*jo]*in[3*(ii+width*jj) + k];
-            L32 = *(uint32_t *)(L + io + 4*jo);
-            L16[io+4*jo]  =  (L32>>13)&0x3ff;
-            int e = ((L32 >> (23))-(127-15));
+            L[io+4*jo].f = (in[3*(ii+width*jj) + 0] + 2*in[3*(ii+width*jj) +1] + in[3*(ii+width*jj) +2])*.25;
+            for(int k=0;k<3;k++) chrom[k] += L[io+4*jo].f*in[3*(ii+width*jj) + k];
+            L16[io+4*jo]  =  (L[io+4*jo].i>>13)&0x3ff;
+            int e = ((L[io+4*jo].i >> (23))-(127-15));
             e = e > 0 ? e : 0;
             e = e > 30 ? 30 : e;
             L16[io+4*jo] |= e<<10;

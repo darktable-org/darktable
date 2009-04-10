@@ -3,6 +3,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
+AC_OPENMP
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14)
 PKG_CHECK_MODULES(CAIRO, [cairo])
 PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
@@ -11,7 +12,6 @@ PKG_CHECK_MODULES(SQLITE, [sqlite3])
  
 dnl *** check for MagickCore ***
 AC_CHECK_PROGS(MAGICKCONFIG, [MagickCore-config])
-usemagick=0
 if test -n "$MAGICKCONFIG"; then
    ac_save_CPPFLAGS="$CPPFLAGS"
    ac_save_LIBS="$LIBS"
@@ -19,15 +19,14 @@ if test -n "$MAGICKCONFIG"; then
    MAGICK_LIBS="`$MAGICKCONFIG --ldflags` `$MAGICKCONFIG --libs`"
    CPPFLAGS="$CPPFLAGS $MAGICK_CPPFLAGS"
    LIBS="$MAGICK_LIBS $LIBS"
-   AC_CHECK_FUNC(ExportImagePixels, usemagick=1, AC_MSG_NOTICE([ImageMagick does not support the function
+   AC_CHECK_FUNC(ExportImagePixels,
+        AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick library is available]),
+        AC_MSG_NOTICE([ImageMagick does not support the function
         ExportImagePixels. Please upgrade to ImageMagick 6.4 or newer]))
    CPPFLAGS="$ac_save_CPPFLAGS"
    LIBS="$ac_save_LIBS"
 fi
  
-if test "$usemagick" == 1; then
-   AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick library is available])
-fi
 AC_SUBST(MAGICK_CPPFLAGS)
 AC_SUBST(MAGICK_LIBS)
 
