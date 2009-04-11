@@ -1,6 +1,11 @@
 AC_INIT([darktable], [0.1-svn], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PROG_CC
+dnl AC_PROG_CC_C99
+dnl if test "$ac_cv_prog_cc_c99" = no; then
+dnl   AC_MSG_FAILURE([Your c compiler does not support c99!])
+dnl fi
+AX_CC_MAXOPT
 AC_PROG_CXX
 AC_PROG_RANLIB
 AC_OPENMP
