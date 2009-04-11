@@ -50,6 +50,10 @@ void dt_ctl_settings_init(dt_control_t *s)
   // expand everything
   // except top/bottm, retract everything but the lib button in lib mode
   // retract lib button in dev mode
+  s->global_settings.gui_x = 0;
+  s->global_settings.gui_y = 0;
+  s->global_settings.gui_w = 640;
+  s->global_settings.gui_h = 480;
   s->global_settings.gui_top = s->global_settings.gui_bottom = 0;
   s->global_settings.gui_left = s->global_settings.gui_right = -1;
   s->global_settings.gui_export = 
@@ -98,6 +102,8 @@ int dt_control_load_config(dt_control_t *c)
 {
   int rc;
   sqlite3_stmt *stmt;
+  // unsafe, fast write:
+  rc = sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
   rc = sqlite3_prepare_v2(darktable.db, "select settings from settings", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -119,21 +125,14 @@ int dt_control_load_config(dt_control_t *c)
       rc = sqlite3_prepare_v2(darktable.db, "drop table images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table selected_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table history", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      dt_control_load_config(c);
+      return dt_control_load_config(c);
     }
     else
     {
       pthread_mutex_unlock(&(darktable.control->global_mutex));
-      DT_CTL_SET_GLOBAL(gui, DT_LIBRARY);
-      dt_control_restore_gui_settings(DT_LIBRARY);
       // TODO: get last from sql query!
       // dt_film_roll_open(darktable.library->film, film_id);
       // weg: dt_film_roll_import(darktable.library->film, darktable.control->global_settings.lib_last_film);
-      int width, height;
-      DT_CTL_GET_GLOBAL(width, gui_w);
-      DT_CTL_GET_GLOBAL(height, gui_h);
-      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-      gtk_window_resize(GTK_WINDOW(widget), width, height);
     }
   }
   else
@@ -162,11 +161,14 @@ int dt_control_load_config(dt_control_t *c)
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
-    DT_CTL_SET_GLOBAL(gui, DT_LIBRARY);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-    gtk_window_resize(GTK_WINDOW(widget), 640, 480);
-    dt_control_restore_gui_settings(DT_LIBRARY);
   }
+  DT_CTL_SET_GLOBAL(gui, DT_LIBRARY);
+  int width, height;
+  DT_CTL_GET_GLOBAL(width, gui_w);
+  DT_CTL_GET_GLOBAL(height, gui_h);
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  gtk_window_resize(GTK_WINDOW(widget), width, height);
+  dt_control_restore_gui_settings(DT_LIBRARY);
   return 0;
 }
 

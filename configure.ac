@@ -1,14 +1,24 @@
 AC_INIT([darktable], [0.1-svn], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
+AC_PREREQ(2.63)
 AC_PROG_CC
 dnl AC_PROG_CC_C99
 dnl if test "$ac_cv_prog_cc_c99" = no; then
 dnl   AC_MSG_FAILURE([Your c compiler does not support c99!])
 dnl fi
-AX_CC_MAXOPT
 AC_PROG_CXX
-AC_PROG_RANLIB
+AX_CC_MAXOPT
+AC_MSG_CHECKING([whether to enable debugging])
+AC_ARG_ENABLE(debug,
+	      AC_HELP_STRING([--enable-debug], [build debug executable]))
+if test "$enable_debug" = "yes"; then
+   CFLAGS="-Wall -O0 -g -D_DEBUG"
+   AC_MSG_RESULT([yes])
+else
+   AC_MSG_RESULT([no])
+fi
 AC_OPENMP
+AC_PROG_RANLIB
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14)
 PKG_CHECK_MODULES(CAIRO, [cairo])
 PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
@@ -46,17 +56,6 @@ AC_ARG_ENABLE(qwerty, [  --enable-qwerty            Enable QWERTY key accels], [
     AC_DEFINE(HAVE_QWERTY, 1, [Use to switch from default dvorak key accels to qwerty])
   fi 
   ])
-
-AC_MSG_CHECKING([whether to enable debugging])
-AC_ARG_ENABLE(debug,
-	      AC_HELP_STRING([--enable-debug], [build debug executable]))
-if test "$enable_debug" = "yes"; then
-   CFLAGS="$CFLAGS -Wall -O0 -g -D_DEBUG"
-   AC_MSG_RESULT([yes])
-else
-   CFLAGS="$CFLAGS -Wall -O4"
-   AC_MSG_RESULT([no])
-fi
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([

@@ -13,13 +13,16 @@ bugs:
  - histogram updates in fixed pipeline come too early/uselessly?
 
 broken since sqlite backend:
- - remove last film in favour of film table with timestamp.
+ - recently used film list in library expander:
+   expose event with: select * from film_rolls limit
+   make all buttons invisible, go through list and set label
+   - same for history buttons.
 
 feature requests:
  - remove dead links in library automatically?
  - GMM for color model using EM in opencv!
  - img table + date inserted/modified
- - faster (unsafe) sql option: PRAGMA synchronous=OFF
+ - faster (unsafe) sql option in ctl load config optional?
  - cache auf platte, echte bilder irgendwo auf dvd/platte extern/kamera chip etc
    - moeglicherweise ECHTE bilder (dias im schrank)
  - bilder sortieren, evtl manuell (mehrere kameras in einen film usw)

@@ -88,12 +88,19 @@ int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
   rc = sqlite3_finalize(stmt);
   if(film->id <= 0)
   {
-    // TODO: insert timestamp
-    // gsize gret = g_date_strftime(gchar *s, gsize slen, "%Y:%m:%d %H:%M:%S", const GDate *date);
+    // insert timestamp
+    GDate *date = g_date_new();
+    GTimeVal timeval;
+    g_get_current_time(&timeval);
+    g_date_set_time_val(date, &timeval);
+    gchar datetime[20];
+    gsize gret = g_date_strftime(datetime, 20, "%Y:%m:%d %H:%M:%S", date);
+    g_date_free(date);
 
-    rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, folder) values (null, ?1)", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, ?2)", -1, &stmt, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_bind_text(stmt, 1, dirname, strlen(dirname), SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 2, dirname, strlen(dirname), SQLITE_STATIC);
     HANDLE_SQLITE_ERR(rc);
     pthread_mutex_lock(&(darktable.db_insert));
     rc = sqlite3_step(stmt);
