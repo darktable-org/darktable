@@ -46,6 +46,7 @@ int dt_init(int argc, char *argv[])
   if(f)
   {
     c = fgets(filename, 512, f);
+    if(c) for(;c<filename+MIN(512,strlen(filename));c++) if(*c == '\n') *c = '\0';
     fclose(f);
   }
   if(!c) snprintf(filename, 512, "%s/.darktabledb", homedir);
@@ -77,6 +78,7 @@ int dt_init(int argc, char *argv[])
   dt_gui_gtk_init(darktable.gui, argc, argv);
 
   dt_control_load_config(darktable.control);
+  strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
   return 0;
 }

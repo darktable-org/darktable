@@ -38,6 +38,7 @@ void dt_control_queue_draw();
 void dt_control_get_tonecurve(uint16_t *tonecurve, dt_ctl_image_settings_t *settings);
 void dt_control_add_history_item(int32_t num, const char *label);
 void dt_control_clear_history_items(int32_t num);
+void dt_control_update_recent_films();
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);

@@ -212,13 +212,6 @@ gamma (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, "gamma");
 }
 
-
-static void
-realize (GtkWidget *widget,
-         gpointer   data)
-{
-}
-
 static gboolean
 key_pressed (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
@@ -312,8 +305,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_show_all(widget);
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
  
-  g_signal_connect_after (G_OBJECT (widget), "realize",
-                          G_CALLBACK (realize), NULL);
 	g_signal_connect (G_OBJECT (widget), "configure-event",
                     G_CALLBACK (configure), NULL);
 	g_signal_connect (G_OBJECT (widget), "expose-event",
@@ -355,6 +346,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
   dt_gui_histogram_init(&gui->histogram, widget);
 
+  // image op history
   for(long int k=0;k<10;k++)
   {
     char wdname[20];

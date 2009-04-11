@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sat Apr 11 12:01:57 2009 -->
+<!--Generated with glade3 3.4.5 on Sat Apr 11 12:32:44 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="main_window">
     <property name="default_width">640</property>
@@ -324,13 +324,14 @@ high contrast</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkExpander" id="exif_expander">
+                      <widget class="GtkExpander" id="metadata_expander">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="spacing">10</property>
                         <child>
-                          <widget class="GtkTable" id="exif_table">
+                          <widget class="GtkTable" id="metadata_expander_body">
                             <property name="visible">True</property>
+                            <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="n_rows">7</property>
                             <property name="n_columns">2</property>
                             <child>
@@ -727,8 +728,9 @@ filename</property>
                 <property name="expanded">True</property>
                 <property name="spacing">5</property>
                 <child>
-                  <widget class="GtkVBox" id="vbox2">
+                  <widget class="GtkVBox" id="library_expander_body">
                     <property name="visible">True</property>
+                    <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                     <child>
                       <widget class="GtkButton" id="button_import">
                         <property name="visible">True</property>
@@ -853,8 +855,9 @@ filename</property>
                 <property name="can_focus">True</property>
                 <property name="expanded">True</property>
                 <child>
-                  <widget class="GtkVBox" id="vbox5">
+                  <widget class="GtkVBox" id="history_expander_body">
                     <property name="visible">True</property>
+                    <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                     <child>
                       <widget class="GtkButton" id="history_09">
                         <property name="receives_default">True</property>

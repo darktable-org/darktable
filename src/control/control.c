@@ -40,8 +40,8 @@ void dt_ctl_settings_init(dt_control_t *s)
   pthread_mutex_init(&(s->global_mutex), NULL);
   pthread_mutex_init(&(s->image_mutex), NULL);
 
-  char *homedir = getenv("HOME");
-  snprintf(s->global_settings.dbname, 512, "%s/.darktabledb", homedir);
+  // char *homedir = getenv("HOME");
+  // snprintf(s->global_settings.dbname, 512, "%s/.darktabledb", homedir);
 
   s->global_settings.version = DT_VERSION;
 
@@ -169,6 +169,7 @@ int dt_control_load_config(dt_control_t *c)
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   dt_control_restore_gui_settings(DT_LIBRARY);
+  dt_control_update_recent_films();
   return 0;
 }
 
@@ -953,5 +954,37 @@ void dt_control_clear_history_items(int32_t num)
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_hide(widget);
   }
+}
+
+void dt_control_update_recent_films()
+{
+  char wdname[20];
+  for(int k=1;k<5;k++)
+  {
+    snprintf(wdname, 20, "recent_film_%d", k);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    gtk_widget_hide(widget);
+  }
+  sqlite3_stmt *stmt;
+  int rc, num = 1;
+  const char *filename, *cnt;
+  char label[20];
+  // rc = sqlite3_prepare_v2(darktable.db, "select * from (select folder from film_rolls order by datetime_accessed) as dreggn limit 0, 4", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls order by datetime_accessed limit 0,4", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    filename = (char *)sqlite3_column_text(stmt, 0);
+    cnt = filename + MIN(512,strlen(filename));
+    int i;
+    for(i=0;i<19;i++) if(cnt > filename) cnt--;
+    if(i == 19) snprintf(label, 20, "...%s", cnt+3);
+    else snprintf(label, 20, "%s", cnt);
+    snprintf(wdname, 20, "recent_film_%d", num);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    gtk_button_set_label(GTK_BUTTON(widget), label);
+    gtk_widget_show(widget);
+    num++;
+  }
+  sqlite3_finalize(stmt);
 }
 

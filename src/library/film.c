@@ -73,6 +73,7 @@ int dt_film_roll_open(dt_film_roll_t *film, const int32_t id)
   // and prefetch to cache using image_open
   // TODO: update last used film date stamp
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  dt_control_update_recent_films();
   return 1;
 }
 int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
@@ -123,7 +124,7 @@ int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
     dt_film_import1_init(&j, film);
     dt_control_add_job(darktable.control, &j);
   }
-  // TODO: update last used film date stamp
+  dt_control_update_recent_films();
   return 0;
 }
 
