@@ -113,14 +113,13 @@ int dt_control_load_config(dt_control_t *c)
       fprintf(stderr, "[load_config] wrong version %d (should be %d), substituting defaults.\n", darktable.control->global_settings.version, DT_VERSION);
       memcpy(&(darktable.control->global_settings), &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t));
       pthread_mutex_unlock(&(darktable.control->global_mutex));
-      // revert to matching version:
-      rc = sqlite3_prepare_v2(darktable.db, "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
-      HANDLE_SQLITE_ERR(rc);
-      rc = sqlite3_bind_blob(stmt, 1, &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
-      rc = sqlite3_step(stmt);
-      rc = sqlite3_finalize(stmt);
-      DT_CTL_SET_GLOBAL(gui, DT_LIBRARY);
-      dt_control_restore_gui_settings(DT_LIBRARY);
+      // drop all, restart. TODO: freeze this version or have update facility!
+      rc = sqlite3_prepare_v2(darktable.db, "drop table settings", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table film_rolls", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table selected_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table history", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      dt_control_load_config(c);
     }
     else
     {
@@ -164,6 +163,8 @@ int dt_control_load_config(dt_control_t *c)
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
     DT_CTL_SET_GLOBAL(gui, DT_LIBRARY);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    gtk_window_resize(GTK_WINDOW(widget), 640, 480);
     dt_control_restore_gui_settings(DT_LIBRARY);
   }
   return 0;
