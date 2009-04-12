@@ -1,4 +1,4 @@
-AC_INIT([darktable], [0.1-svn], [hanatos@gmail.com])
+AC_INIT([darktable], [0.1-alpha], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_PROG_CC

@@ -232,7 +232,7 @@ restart_small_cache:
   }
   if(dev->small_backbuf_hash != dev->history[dev->history_top-1].num)
   {
-// #pragma omp parallel for schedule(static) shared(dev)
+#pragma omp parallel for schedule(static) shared(dev)
     for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
       dev->small_backbuf[4*i+2-k] = dev->gamma[dev->tonecurve[(int)CLAMP(0xffff*dev->small_raw_cached[3*i+k], 0, 0xffff)]];
   }
@@ -340,11 +340,6 @@ void dt_dev_cache_load(dt_develop_t *dev, int32_t stackpos, dt_dev_zoom_t zoom)
   if(stackpos == dev->history_top - 1)
   {
     dt_control_queue_draw();
-//     uint16_t *buf = dt_dev_get_cached_buf(dev, img, zoom, 'w');
-// #pragma omp parallel for schedule(static) shared(dev,buf)
-//     for(int i=0;i<cwd*cht;i++) for(int k=0;k<3;k++)
-//       dev->backbuf[4*i+2-k] = dev->gamma[dev->tonecurve[buf[3*i+k]]]>>8;
-//     dt_dev_release_cached_buf(dev, img, zoom);
   }
 }
 

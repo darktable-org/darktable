@@ -215,7 +215,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.use_camera_wb = img->wb_cam;
   raw->params.use_auto_wb = img->wb_auto;
   raw->params.output_bps = 16;
-  raw->params.user_qual = 3;
+  raw->params.user_qual = 0;//3; // 0: linear, 3: AHD
   // img->raw->params.output_color = 1;
   raw->params.use_camera_matrix = 1;
   // TODO: let this unclipped for develop, clip for preview.
@@ -262,6 +262,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
   // img->pixels = (float *)malloc(sizeof(float)*3*img->width*img->height);
   const float m = 1./0xffff;
+#pragma omp parallel for schedule(static) shared(img, image)
   for(int k=0;k<3*(img->width>>img->shrink)*(img->height>>img->shrink);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
   // TODO: wrap all exif data here:
   // img->dreggn = 

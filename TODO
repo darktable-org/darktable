@@ -72,7 +72,6 @@ usability:
 look:
  - dev img border
  - shadow border between center and outer panels
- - adjust .gtkrc to have consistently cool look even in filechooser
  - end markers :)
  - dev full res image possibly smaller as lo-res (paint border with bg)
 

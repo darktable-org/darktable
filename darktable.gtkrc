@@ -1,19 +1,169 @@
-style "default"{
+# Sneaking through the code are we.? ;)
+# from art.gnome.org: marble-look, adjusted
+style "clearlooks-default"
+{
+	GtkMenuItem::selected_shadow_type = out
+	GtkWidget::interior_focus = 1
+	GtkButton::default_border = { 0, 0, 0, 0 }
+	GtkButton::default_outside_border = { 0, 0, 0, 0 }
+	GtkRange::trough_border = 0
+	GtkWidget::focus_padding = 1
+	GtkPaned::handle_size = 6
+	GtkRange::slider_width = 15
+	GtkRange::stepper_size = 15
+	GtkScrollbar::min_slider_length = 30
+	GtkCheckButton::indicator_size = 12
+	GtkMenuBar::internal-padding = 0
+	#GtkOptionMenu::indicator_size = { 11, 6 }
+	#GtkOptionMenu::indicator_spacing = { 4, 5, 2, 2 }
+	GtkTreeView::expander_size = 14
+	GtkExpander::expander_size = 16
+	xthickness = 1
+	ythickness = 1
+	fg[NORMAL]        = "#CACAC6"
+	fg[ACTIVE]        = "#CACAC6"
+	fg[INSENSITIVE]   = "#000000"
+	fg[PRELIGHT]      = "#E2E2E2"
+	fg[SELECTED]      = "#E2E2E2"
 
-#fonts
-fg[NORMAL] = "#F0F0F0"
-fg[PRELIGHT] = "#000000"
-fg[SELECTED] = "#000000"
+	bg[ACTIVE]        = "#484949"
+	bg[NORMAL]        = "#333333" # "#5A5C5F"
+	bg[INSENSITIVE]   = "#505050"
+	bg[PRELIGHT]      = "#6A6C6F"
+	bg[SELECTED]      = "#424446"
 
-#selected areas
-base[SELECTED] = "#8a8aa0"
-base[ACTIVE] = "#e3e3e3"
-base[PRELIGHT] = "#E5E5F7"
-base[INSENSITIVE]= "#ced0d7"
-bg[SELECTED]= "#828aa4"
+	base[NORMAL]      = "#919499"
+	base[ACTIVE]      = "#5A5C5F"
+	base[INSENSITIVE] = "#5A5C5F"
+	base[PRELIGHT]    = "#646668"
+	base[SELECTED]    = "#5A5C5F"
 
-#app backgrouds
-bg[NORMAL] = "#333333"
-# bg_pixmap[NORMAL] = "lines_background.png"
-# bg_pixmap[PRELIGHT] = "lines_background_blue.png"
-}class "GtkWidget" style "default"
+	text[NORMAL]      = "#000000"
+	text[ACTIVE]      = "#000000"
+	text[PRELIGHT]    = "#000000"
+	text[SELECTED]    = "#E0D6AD"
+	text[INSENSITIVE] = "#777777"
+
+  engine "clearlooks"
+  {
+    contrast = 1.0
+# sunkenmenubar = 1
+  }
+}
+
+style "clearlooks-wide" = "clearlooks-default"
+{
+  xthickness = 2
+  ythickness = 2
+}
+
+style "clearlooks-notebook" = "clearlooks-wide"
+{
+  bg[NORMAL] = "#5a5c5f"
+}
+style "clearlooks-tasklist" = "clearlooks-default"
+{
+  xthickness = 5
+  ythickness = 3
+}
+
+style "clearlooks-menu" = "clearlooks-default"
+{
+  xthickness = 2
+  ythickness = 1
+}
+
+style "clearlooks-menu-item" = "clearlooks-default"
+{
+  xthickness = 2
+  ythickness = 3
+}
+
+style "clearlooks-menu-itembar" = "clearlooks-default"
+{
+  xthickness = 3
+  ythickness = 3
+}
+style "clearlooks-tree" = "clearlooks-default"
+{
+  xthickness = 2
+  ythickness = 2
+}
+
+style "clearlooks-frame-title" = "clearlooks-default"
+{
+  fg[NORMAL] = "#FFFFFF"
+}
+
+style "clearlooks-panel" = "clearlooks-default"
+{
+  xthickness = 3
+  ythickness = 3
+}
+
+style "clearlooks-tooltips" = "clearlooks-default"
+{
+  xthickness = 4
+  ythickness = 4
+  bg[NORMAL] = "#404040"
+}
+style "clearlooks-progressbar"          = "clearlooks-default"
+{
+  xthickness = 0
+  ythickness = 0
+  fg[PRELIGHT]  = "#000000"
+}
+
+style "clearlooks-combo" = "clearlooks-default"
+{
+  xthickness = 1
+  ythickness = 2
+}
+
+style "metacity-frame"
+{
+  # Normal base color
+  #bg[NORMAL]  = "#bbbbbb"
+
+  # Unfocused title background color
+  #bg[INSENSITIVE]  = { 0.8, 0.8, 0.8 }
+
+  # Unfocused title text color
+  #fg[INSENSITIVE]  = { 1.55, 1.55, 1.55 }
+
+  # Focused icon color
+  #fg[NORMAL]  = { 0.2, 0.2, 0.2 }
+
+  # Focused title background color
+  #bg[SELECTED]  = { 0.5, 0.8, 0.5 }
+
+  # Focused title text color
+  #fg[SELECTED]  = "black"
+}
+class "GtkWidget" style "clearlooks-default"
+class "GtkButton" style "clearlooks-wide"
+class "GtkRange" style "clearlooks-wide"
+class "GtkFrame" style "clearlooks-wide"
+class "GtkStatusbar" style "clearlooks-wide"
+class "GtkMenu" style "clearlooks-menu"
+class "GtkMenuItem" style "clearlooks-menu-item"
+widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"
+widget_class "*.GtkAccelMenuItem.*" style "clearlooks-menu-item"
+widget_class "*.GtkRadioMenuItem.*" style "clearlooks-menu-item"
+widget_class "*.GtkCheckMenuItem.*" style "clearlooks-menu-item"
+widget_class "*.GtkImageMenuItem.*" style "clearlooks-menu-item"
+widget_class "*.GtkSeparatorMenuItem.*" style "clearlooks-menu-item"
+class "GtkEntry" style "clearlooks-wide"
+widget_class "*.tooltips.*.GtkToggleButton" style "clearlooks-tasklist"
+widget_class "*.GtkTreeView.GtkButton" style "clearlooks-tree"
+widget_class "*.GtkCTree.GtkButton" style "clearlooks-tree"
+widget_class "*.GtkList.GtkButton" style "clearlooks-tree"
+widget_class "*.GtkCList.GtkButton" style "clearlooks-tree"
+widget_class "*.GtkFrame.GtkLabel" style "clearlooks-frame-title"
+widget_class "BasePWidget.GtkEventBox.GtkTable.GtkFrame" style "clearlooks-panel"
+widget "gtk-tooltips" style "clearlooks-tooltips"
+class "GtkNotebook" style "clearlooks-notebook"
+class "GtkProgressBar" style "clearlooks-progressbar"
+widget_class "*.GtkComboBox.GtkButton" style "clearlooks-combo"
+widget_class "*.GtkCombo.GtkButton" style "clearlooks-combo"
+class "MetaFrames" style "metacity-frame"

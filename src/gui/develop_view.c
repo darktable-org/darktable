@@ -27,7 +27,7 @@ void dt_dev_image_expose(dt_develop_t *dev, dt_dev_image_t *image, cairo_t *cr, 
   {
     int32_t wd = dev->cache_width, ht = dev->cache_height;
     // TODO: if(dev->backbuf_hash != dev->history[dev->history_top-1].num)
-// #pragma omp parallel for schedule(static) shared(dev,buf)
+#pragma omp parallel for schedule(static) shared(dev,buf)
     for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
       dev->backbuf[4*i+2-k] = dev->gamma[dev->tonecurve[(int)CLAMP(buf[3*i+k]*0xffff, 0, 0xffff)]];
     int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
