@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sat Apr 11 12:32:44 2009 -->
+<!--Generated with glade3 3.4.5 on Sun Apr 12 10:30:44 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="main_window">
     <property name="default_width">640</property>
@@ -726,7 +726,7 @@ filename</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="expanded">True</property>
-                <property name="spacing">5</property>
+                <property name="spacing">10</property>
                 <child>
                   <widget class="GtkVBox" id="library_expander_body">
                     <property name="visible">True</property>
@@ -736,7 +736,7 @@ filename</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="label" translatable="yes">import folder</property>
+                        <property name="label" translatable="yes">import film roll</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -754,20 +754,18 @@ filename</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkButton" id="recent_film_1">
-                        <property name="receives_default">True</property>
-                        <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
-                        <property name="response_id">0</property>
+                      <widget class="GtkHSeparator" id="hseparator1">
+                        <property name="visible">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="padding">3</property>
                         <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkButton" id="recent_film_2">
+                      <widget class="GtkButton" id="recent_film_1">
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
@@ -780,7 +778,7 @@ filename</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkButton" id="recent_film_3">
+                      <widget class="GtkButton" id="recent_film_2">
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
@@ -793,7 +791,7 @@ filename</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkButton" id="recent_film_4">
+                      <widget class="GtkButton" id="recent_film_3">
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
@@ -803,6 +801,19 @@ filename</property>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkButton" id="recent_film_4">
+                        <property name="receives_default">True</property>
+                        <property name="no_show_all">True</property>
+                        <property name="label" translatable="yes">button</property>
+                        <property name="response_id">0</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">6</property>
                       </packing>
                     </child>
                   </widget>
@@ -827,6 +838,7 @@ filename</property>
               <widget class="GtkExpander" id="snapshot_expander">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="spacing">10</property>
                 <child>
                   <widget class="GtkLabel" id="label15">
                     <property name="visible">True</property>
@@ -854,6 +866,7 @@ filename</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="expanded">True</property>
+                <property name="spacing">10</property>
                 <child>
                   <widget class="GtkVBox" id="history_expander_body">
                     <property name="visible">True</property>
@@ -863,6 +876,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -875,6 +889,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -888,6 +903,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -901,6 +917,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -914,6 +931,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -927,6 +945,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -940,6 +959,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -953,6 +973,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -966,6 +987,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">button</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>
@@ -979,6 +1001,7 @@ filename</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
                         <property name="label" translatable="yes">original</property>
+                        <property name="xalign">0.05000000074505806</property>
                         <property name="response_id">0</property>
                       </widget>
                       <packing>

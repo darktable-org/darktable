@@ -75,6 +75,7 @@ typedef struct dt_control_t
   pthread_t gui_thread;
   int button_down;
   double button_x, button_y;
+  int history_start;
   
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;

@@ -220,6 +220,7 @@ void dt_control_init(dt_control_t *s)
     s->new_res[k] = 0;
   }
   s->button_down = 0;
+  s->history_start = 1;
 }
 
 void dt_control_cleanup(dt_control_t *s)
@@ -935,24 +936,46 @@ void dt_control_get_tonecurve(uint16_t *tonecurve, dt_ctl_image_settings_t *sett
 
 void dt_control_add_history_item(int32_t num, const char *label)
 {
-  // TODO: add new widget if this happens:
-  assert(num < 10);
-  char wdname[20];
-  snprintf(wdname, 20, "history_%02d", num);
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+  char wdname[20], numlabel[50];
+  const gchar *lbl = NULL;
+  GtkWidget *widget = NULL;
+  snprintf(numlabel, 50, "%d - %s", num, label);
+  if(num >= 10) for(int i=1;i<9;i++)
+  {
+    darktable.control->history_start = num - 8;
+    snprintf(wdname, 20, "history_%02d", i+1);
+    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    lbl = gtk_button_get_label(GTK_BUTTON(widget));
+    snprintf(wdname, 20, "history_%02d", i);
+    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    gtk_button_set_label(GTK_BUTTON(widget), lbl);
+    snprintf(wdname, 20, "history_%02d", 9);
+  }
+  else snprintf(wdname, 20, "history_%02d", num);
+  widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
   gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), label);
+  gtk_button_set_label(GTK_BUTTON(widget), numlabel);
 }
 
 void dt_control_clear_history_items(int32_t num)
 {
-  assert(num >= 0 && num <= 10);
-  char wdname[20];
-  for(int k=num+1;k<10;k++)
+  darktable.control->history_start = MAX(1, num - 8);
+  char wdname[20], numlabel[50];
+  for(int k=1;k<10;k++)
   {
     snprintf(wdname, 20, "history_%02d", k);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_hide(widget);
+  }
+  for(int k=0;k<9;k++)
+  {
+    int curr = darktable.control->history_start + k;
+    if(curr > num) break;
+    snprintf(wdname, 20, "history_%02d", k+1);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    gtk_widget_show(widget);
+    snprintf(numlabel, 50, "%d - %s", curr, darktable.develop->history[curr].operation);
+    gtk_button_set_label(GTK_BUTTON(widget), numlabel);
   }
 }
 
@@ -968,7 +991,8 @@ void dt_control_update_recent_films()
   sqlite3_stmt *stmt;
   int rc, num = 1;
   const char *filename, *cnt;
-  char label[20];
+  const int label_cnt = 26;
+  char label[label_cnt];
   // rc = sqlite3_prepare_v2(darktable.db, "select * from (select folder from film_rolls order by datetime_accessed) as dreggn limit 0, 4", -1, &stmt, NULL);
   rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls order by datetime_accessed limit 0,4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -976,9 +1000,9 @@ void dt_control_update_recent_films()
     filename = (char *)sqlite3_column_text(stmt, 0);
     cnt = filename + MIN(512,strlen(filename));
     int i;
-    for(i=0;i<19;i++) if(cnt > filename) cnt--;
-    if(i == 19) snprintf(label, 20, "...%s", cnt+3);
-    else snprintf(label, 20, "%s", cnt);
+    for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
+    if(i == label_cnt-1) snprintf(label, label_cnt, "...%s", cnt+3);
+    else snprintf(label, label_cnt, "%s", cnt);
     snprintf(wdname, 20, "recent_film_%d", num);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_button_set_label(GTK_BUTTON(widget), label);

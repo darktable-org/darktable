@@ -17,9 +17,9 @@ dt_iop_gui_reset_hsb ()
   DT_CTL_GET_GLOBAL(hue, dev_op_params.f[0]);
   DT_CTL_GET_GLOBAL(sat, dev_op_params.f[1]);
   DT_CTL_GET_GLOBAL(bri, dev_op_params.f[2]);
-  if(strncmp(op, "hsb", 20))
+  if(darktable.gui->reset)
   {
-    hue = sat = bri = 1.0;
+    if(strncmp(op, "hsb", 20)) hue = sat = bri = 1.0;
     widget = glade_xml_get_widget (darktable.gui->main_window, "hsb_hue");
     gtk_range_set_value(GTK_RANGE(widget), hue);
     widget = glade_xml_get_widget (darktable.gui->main_window, "hsb_saturation");

@@ -1,4 +1,5 @@
 bugs:
+ - dev cache misbehaving: hash non unique? params not resetting?
  - mac port : window size < 0 (ctl init)
  - exif tag in libraw not really handled well (aperture+time missing)
  - JPEG loading needs shrink + orientation
@@ -12,13 +13,10 @@ bugs:
  - import folder file chooser sometimes not sized appropriately
  - histogram updates in fixed pipeline come too early/uselessly?
 
-broken since sqlite backend:
- - recently used film list in library expander:
-   expose event with: select * from film_rolls limit
-   make all buttons invisible, go through list and set label
-   - same for history buttons.
 
 feature requests:
+ - history buttons > 10
+ - clean up db for mem optimizations: keep only image+history, re-import mips.
  - remove dead links in library automatically?
  - GMM for color model using EM in opencv!
  - img table + date inserted/modified

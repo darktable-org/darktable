@@ -31,7 +31,8 @@ int32_t dt_dev_update_fixed_pipeline(dt_develop_t *dev, dt_dev_operation_t op, i
   else
   { // plugin op on buffer
     dt_dev_set_histogram_pre(dev);
-    hash += (dev->last_hash++) * (1<<11);
+    // hash += (dev->last_hash++) * (1<<11);
+    hash = dev->last_hash++;
   }
   dt_dev_set_histogram(dev);
   return hash;
@@ -136,7 +137,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->cache_width = dev->cache_height = -1;
   
   dev->history_top = 0;
-  dev->history_max = 10;
+  dev->history_max = 100;
   dev->history = (dt_dev_image_t *)malloc(sizeof(dt_dev_image_t)*dev->history_max);
   for(int k=0;k<3;k++) dev->history[0].cacheline[k] = 0;
 
@@ -402,10 +403,13 @@ restart:
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
-  // printf("[dt_dev_load_image]\n");
-  // int selected;
-  dev->last_hash = 1;
-  // DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over);
+  sqlite3_stmt *stmt;
+  int rc;
+  rc = sqlite3_prepare_v2(darktable.db, "select hash from history where imgid = ?1 order by num desc limit 1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, image->id);
+  if(sqlite3_step(stmt) != SQLITE_ROW) dev->last_hash = 1;
+  else dev->last_hash = sqlite3_column_int(stmt, 0);
+  rc = sqlite3_finalize(stmt);
   if(dev->image != image)
   {
     dev->image = image;
@@ -417,8 +421,6 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   }
   dt_dev_read_history(dev);
 
-  // DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-  // DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
   pthread_mutex_lock(&dev->cache_mutex);
   dev->small_raw_loading = 0;
   pthread_mutex_unlock(&dev->cache_mutex);
@@ -642,10 +644,10 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 
   if(strncmp(img->operation, op, 20) != 0)
   {
-    if(dev->gui_attached) dt_control_add_history_item(dev->history_top, op);
+    dev->history_top++;
+    if(dev->gui_attached) dt_control_add_history_item(dev->history_top-1, op);
     for(int k=0;k<3;k++) img[1].cacheline[k] = img[0].cacheline[k];
     img ++;
-    dev->history_top++;
     if(dev->history_top >= dev->history_max)
     {
       dev->history_max *= 2;
@@ -692,19 +694,14 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
 void dt_dev_write_history(dt_develop_t *dev)
 {
+  int rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, dev->image->id);
+  sqlite3_step(stmt);
+  rc = sqlite3_finalize (stmt);
   for(int k=0;k<dev->history_top;k++)
     (void)dt_dev_write_history_item(dev, dev->history+k, k);
-#if 0
-  char filename[512];
-  snprintf(filename, 512, "%s/.darktable_cache/%s.hist", darktable.library->film->dirname, dev->image->filename);
-  FILE *f = fopen(filename, "wb");
-  if(!f) return; // TODO: write to common stream, error handling
-  // write stack
-  (void)fwrite(&(dev->history_top), 1, sizeof(int32_t), f);
-  for(int k=0;k<dev->history_top;k++)
-    (void)fwrite(dev->history + k, 1, sizeof(dt_dev_image_t), f);
-  fclose(f);
-#endif
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
@@ -743,7 +740,7 @@ void dt_dev_read_history(dt_develop_t *dev)
   {
     rc = sqlite3_finalize (stmt);
     dev->history_top = 1;
-    dev->history[0].num = dev->image->id << 6;
+    dev->history[0].num = 1;//dev->image->id << 6;
     for(int k=0;k<3;k++) dev->history[0].cacheline[k] = 0;
     dev->history[0].settings = darktable.control->image_defaults;
     strncpy(dev->history[0].operation, "original", 20);
@@ -751,30 +748,6 @@ void dt_dev_read_history(dt_develop_t *dev)
     dt_dev_write_history_item(dev, dev->history, 0);
   }
 
-#if 0
-  char filename[512];
-  snprintf(filename, 512, "%s/.darktable_cache/%s.hist", darktable.library->film->dirname, dev->image->filename);
-  FILE *f = fopen(filename, "rb");
-  if(!f)
-  {
-    dev->history_top = 1;
-    dev->history[0].num = dev->image->id << 6;
-    for(int k=0;k<3;k++) dev->history[0].cacheline[k] = 0;
-    dev->history[0].settings = darktable.control->image_defaults;
-    strncpy(dev->history[0].operation, "original", 20);
-    if(dev->gui_attached) dt_control_add_history_item(0, "original");
-  }
-  else
-  {
-    (void)fread(&(dev->history_top), 1, sizeof(int32_t), f);
-    for(int k=0;k<dev->history_top;k++)
-    {
-      (void)fread(dev->history + k, 1, sizeof(dt_dev_image_t), f);
-      if(dev->gui_attached) dt_control_add_history_item(k, dev->history[k].operation);
-    }
-    fclose(f);
-  }
-#endif
   if(dev->gui_attached)
   {
     DT_CTL_SET_GLOBAL_STR(dev_op, dev->history[dev->history_top-1].operation, 20);

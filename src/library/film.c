@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE 500 // for localtime_r
 #include "library/library.h"
 #include "common/imageio.h"
 #include "control/control.h"
@@ -14,6 +15,7 @@
 #include <strings.h>
 #include <errno.h>
 #include <assert.h>
+#include <time.h>
 
 void dt_film_roll_init(dt_film_roll_t *film)
 {
@@ -66,16 +68,76 @@ void dt_film_roll_cleanup(dt_film_roll_t *film)
   pthread_mutex_destroy(&film->images_mutex);
 }
 
+void dt_film_gettime(char *datetime)
+{
+  time_t t;
+  struct tm tt;
+  t = time(NULL);
+  (void)localtime_r(&t, &tt);
+  strftime(datetime, 20, "%Y:%m:%d %H:%M:%S", &tt);
+}
+
 int dt_film_roll_open(dt_film_roll_t *film, const int32_t id)
 {
-  // TODO:
-  // select id from images where film_id = id
-  // and prefetch to cache using image_open
-  // TODO: update last used film date stamp
+  int rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select id from film_rolls where id = ?1", -1, &stmt, NULL);
+  HANDLE_SQLITE_ERR(rc);
+  rc = sqlite3_bind_int(stmt, 1, id);
+  HANDLE_SQLITE_ERR(rc);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    film->id = sqlite3_column_int(stmt, 0);
+    rc = sqlite3_finalize(stmt);
+    char datetime[20];
+    dt_film_gettime(datetime);
+
+    rc = sqlite3_prepare_v2(darktable.db, "update film_rolls set datetime_accessed = ?1 where id = ?2", -1, &stmt, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
+    rc = sqlite3_bind_int (stmt, 2, id);
+    HANDLE_SQLITE_ERR(rc);
+    sqlite3_step(stmt);
+  }
+  rc = sqlite3_finalize(stmt);
+  // TODO: prefetch to cache using image_open
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  DT_CTL_SET_GLOBAL(lib_center, 1);
+  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
   dt_control_update_recent_films();
-  return 1;
+  return 0;
 }
+
+int dt_film_roll_open_recent(dt_film_roll_t *film, const int num)
+{
+  int32_t rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select id from film_rolls order by datetime_accessed limit ?1,1", -1, &stmt, NULL);
+  HANDLE_SQLITE_ERR(rc);
+  rc = sqlite3_bind_int (stmt, 1, num);
+  HANDLE_SQLITE_ERR(rc);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    if(dt_film_roll_open(film, id)) return 1;
+    char datetime[20];
+    dt_film_gettime(datetime);
+    rc = sqlite3_prepare_v2(darktable.db, "update film_rolls set datetime_accessed = ?1 where id = ?2", -1, &stmt, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
+    rc = sqlite3_bind_int (stmt, 2, id);
+    HANDLE_SQLITE_ERR(rc);
+    sqlite3_step(stmt);
+  }
+  rc = sqlite3_finalize(stmt);
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  DT_CTL_SET_GLOBAL(lib_center, 1);
+  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
+  dt_control_update_recent_films();
+  return 0;
+}
+
 int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
 {
   film->id = -1;
@@ -90,14 +152,8 @@ int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
   if(film->id <= 0)
   {
     // insert timestamp
-    GDate *date = g_date_new();
-    GTimeVal timeval;
-    g_get_current_time(&timeval);
-    g_date_set_time_val(date, &timeval);
-    gchar datetime[20];
-    gsize gret = g_date_strftime(datetime, 20, "%Y:%m:%d %H:%M:%S", date);
-    g_date_free(date);
-
+    char datetime[20];
+    dt_film_gettime(datetime);
     rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, ?2)", -1, &stmt, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
@@ -113,6 +169,8 @@ int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
   if(film->id <= 0) return 1;
 
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  DT_CTL_SET_GLOBAL(lib_center, 1);
+  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
 
   film->last_loaded = 0;
   strncpy(film->dirname, dirname, 512);

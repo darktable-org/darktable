@@ -93,10 +93,18 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 void
+film_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  long int num = (long int)user_data;
+  (void)dt_film_roll_open_recent(darktable.library->film, num);
+}
+
+void
 history_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   // revert to given history item.
   long int num = (long int)user_data;
+  if(num != 0) num += darktable.control->history_start - 1;
   dt_dev_pop_history_items(darktable.develop, num);
 }
 
@@ -345,6 +353,17 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
   dt_gui_histogram_init(&gui->histogram, widget);
+
+  // film history
+  for(long int k=1;k<5;k++)
+  {
+    char wdname[20];
+    snprintf(wdname, 20, "recent_film_%ld", k);
+    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    g_signal_connect (G_OBJECT (widget), "clicked",
+                      G_CALLBACK (film_button_clicked),
+                      (gpointer)(k-1));
+  }
 
   // image op history
   for(long int k=0;k<10;k++)

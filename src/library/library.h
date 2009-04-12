@@ -30,9 +30,13 @@ dt_film_roll_t;
 struct dt_library_t;
 void dt_film_roll_init(dt_film_roll_t *film);
 void dt_film_roll_cleanup(dt_film_roll_t *film);
+/** open film with given id. */
 int dt_film_roll_open(dt_film_roll_t *film, const int32_t id);
+/** open num-th most recently used film. */
+int dt_film_roll_open_recent(dt_film_roll_t *film, const int num);
+/** import new film and all images in this directory (non-recursive, existing films/images are respected). */
 int dt_film_roll_import(dt_film_roll_t *film, const char *dirname);
-
+/** helper for import threads. */
 void dt_film_import1(dt_film_roll_t *film);
 
 /**
