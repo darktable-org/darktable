@@ -21,8 +21,6 @@
 #define KEY_DOWN    GDK_o
 #define KEY_FIT     GDK_apostrophe
 #define KEY_SWITCH  GDK_period
-#define KEY_TOGGLE_FULLSCREEN GDK_f
-#define KEY_LEAVE_FULLSCREEN GDK_Escape
 #else
 #define KEY_LEFT    GDK_a
 #define KEY_RIGHT   GDK_d
@@ -30,9 +28,9 @@
 #define KEY_DOWN    GDK_s
 #define KEY_FIT     GDK_q
 #define KEY_SWITCH  GDK_e
-#define KEY_TOGGLE_FULLSCREEN GDK_f
-#define KEY_LEAVE_FULLSCREEN GDK_Escape
 #endif
+#define KEY_TOGGLE_FULLSCREEN GDK_F11
+#define KEY_LEAVE_FULLSCREEN GDK_Escape
 
 void dt_ctl_settings_init(dt_control_t *s)
 {

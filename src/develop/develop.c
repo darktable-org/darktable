@@ -232,7 +232,7 @@ restart_small_cache:
   }
   if(dev->small_backbuf_hash != dev->history[dev->history_top-1].num)
   {
-#pragma omp parallel for schedule(static) shared(dev)
+// #pragma omp parallel for schedule(static) shared(dev)
     for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
       dev->small_backbuf[4*i+2-k] = dev->gamma[dev->tonecurve[(int)CLAMP(0xffff*dev->small_raw_cached[3*i+k], 0, 0xffff)]];
   }

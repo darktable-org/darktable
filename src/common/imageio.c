@@ -262,7 +262,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
   // img->pixels = (float *)malloc(sizeof(float)*3*img->width*img->height);
   const float m = 1./0xffff;
-#pragma omp parallel for schedule(static) shared(img, image)
+// #pragma omp parallel for schedule(static) shared(img, image)
   for(int k=0;k<3*(img->width>>img->shrink)*(img->height>>img->shrink);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
   // TODO: wrap all exif data here:
   // img->dreggn = 
