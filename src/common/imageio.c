@@ -21,6 +21,7 @@
 #include <exif-tag.h>
 #include <exif-content.h>
 #include <exif-data.h>
+#include <exif-log.h>
 #include <string.h>
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
@@ -583,6 +584,15 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
     *num = in**den;
   }
 }
+static void
+log_func (ExifLog *log, ExifLogCode code, const char *domain,
+	  const char *format, va_list args, void *data)
+{
+
+		vfprintf (stderr, format, args);
+		fprintf (stderr, "\n");
+}
+
 
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
@@ -621,6 +631,11 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   }
 
 #if 0
+  	ExifLog *log = NULL;
+
+  	log = exif_log_new ();
+	exif_log_set_func (log, log_func, NULL);
+
   // FIXME: this is not working at all :(
   // set image properties!
   ExifRational rat;
@@ -630,45 +645,57 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   exif_data_set_byte_order(exif_data, EXIF_BYTE_ORDER_INTEL);
   ExifContent *exif_content = exif_content_new();
   exif_data->ifd[EXIF_IFD_EXIF] = exif_content;
+  exif_data_log(exif_data, log);
   ExifEntry *entry;
 
-  entry = exif_entry_new();
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
+
+#if 0
+  entry = exif_entry_new(); entry->tag = EXIF_TAG_MAKE;
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_MAKE);
   // entry->format = EXIF_FORMAT_ASCII;
+  // FIXME: exif_realloc!!
   entry->data = (uint8_t *)img->exif_maker;
   entry->components = strnlen(img->exif_maker, 20) + 1;
   entry->size = sizeof(uint8_t)*entry->components;
   // strncpy((char *)(entry->data), img->exif_maker, entry->size);
-  printf("size: %d %s\n", entry->size, entry->data);
+  printf("size: %d %d\n", entry->size, entry->components);
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
 
-  entry = exif_entry_new();
+  entry = exif_entry_new(); entry->tag = EXIF_TAG_MODEL;
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_MODEL);
+  // FIXME: exif_realloc!!
+  entry->data = (uint8_t *)img->exif_model;
   entry->components = strnlen(img->exif_model, 20) + 1;
   entry->size = sizeof(uint8_t)*entry->components;
-  entry->data = (uint8_t *)img->exif_model;
   // strncpy((char *)(entry->data), img->exif_model, entry->size);
-  printf("size: %d %s\n", entry->size, entry->data);
+  printf("size: %d %d\n", entry->size, entry->components);
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
+#endif
 
-  entry = exif_entry_new();
+  entry = exif_entry_new(); entry->tag = EXIF_TAG_DATE_TIME_ORIGINAL;
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_DATE_TIME_ORIGINAL);
-  entry->data = (uint8_t *)img->exif_datetime_taken;
-  entry->components = strnlen(img->exif_datetime_taken, 20) + 1;
+  // strncpy((char *)entry->data, img->exif_datetime_taken, 20);
+  entry->data = img->exif_datetime_taken;
+  entry->components = 20;
   entry->size = sizeof(uint8_t)*entry->components;
   // strncpy((char *)(entry->data), img->exif_datetime_taken, entry->size);
-  printf("size: %d %s\n", entry->size, entry->data);
+  printf("size: %d %d\n", entry->size, entry->components);
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
 
-  entry = exif_entry_new();
+  entry = exif_entry_new(); entry->tag = EXIF_TAG_ISO_SPEED_RATINGS;
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_ISO_SPEED_RATINGS);
   exif_set_short(entry->data, EXIF_BYTE_ORDER_INTEL, (int16_t)(img->exif_iso));
   entry->size = 2;
   entry->components = 1;
   printf("size: %d\n", entry->size);
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
 
-  entry = exif_entry_new();
+  entry = exif_entry_new(); entry->tag = EXIF_TAG_FNUMBER;
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_FNUMBER);
   dt_imageio_to_fractional(img->exif_aperture, &rat.numerator, &rat.denominator);
@@ -677,8 +704,12 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   entry->components = 1;
   printf("size: %d %d\n", entry->size, entry->components);
 
-  entry = exif_entry_new();
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
+
+  entry = exif_entry_new(); entry->tag = EXIF_TAG_EXPOSURE_TIME;
+  printf("prereq: %d %d %d %d %d\n", exif_content , exif_content->priv, entry, entry->parent, exif_content->entries);
   exif_content_add_entry(exif_content, entry);
+  printf("prereq: %d %d %d %d %d\n", exif_content , exif_content->priv, entry, entry->parent, exif_content->entries);
   exif_entry_initialize(entry, EXIF_TAG_EXPOSURE_TIME);
   dt_imageio_to_fractional(img->exif_exposure, &rat.numerator, &rat.denominator);
   exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
@@ -686,7 +717,9 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   entry->components = 1;
   printf("size: %d %d\n", entry->size, entry->components);
 
-  entry = exif_entry_new();
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
+
+  entry = exif_entry_new(); entry->tag = EXIF_TAG_FOCAL_LENGTH;
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_FOCAL_LENGTH);
   dt_imageio_to_fractional(img->exif_focal_length, &rat.numerator, &rat.denominator);
@@ -695,7 +728,9 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   entry->components = 1;
   printf("size: %d %d\n", entry->size, entry->components);
 
-  exif_data_fix(exif_data);
+  printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
+
+  // exif_data_fix(exif_data);
   exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
   printf("exif header size %u\n", length);
   // TODO: try to free al the alloc from above!
