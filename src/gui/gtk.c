@@ -13,6 +13,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "gui/metadata.h"
 #include "control/control.h"
 #include "control/jobs.h"
 
@@ -36,6 +37,9 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve");
   gtk_widget_queue_draw(widget);
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
+  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
 
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)

@@ -992,7 +992,7 @@ void dt_control_update_recent_films()
   const int label_cnt = 26;
   char label[label_cnt];
   // rc = sqlite3_prepare_v2(darktable.db, "select * from (select folder from film_rolls order by datetime_accessed) as dreggn limit 0, 4", -1, &stmt, NULL);
-  rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls order by datetime_accessed limit 0,4", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls order by datetime_accessed desc limit 0,4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     filename = (char *)sqlite3_column_text(stmt, 0);

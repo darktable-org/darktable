@@ -13,6 +13,10 @@ bugs:
 
 
 feature requests:
+ - blackpoint
+ - gamma: no linear part for some camera.
+ - interpolation as user parameter?
+ - set default parameters for all controls in dev mode while in lib mode?
  - clean up db for mem optimizations: keep only image+history, re-import mips.
  - remove dead links in library automatically?
  - GMM for color model using EM in opencv!

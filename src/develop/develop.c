@@ -788,7 +788,7 @@ void dt_dev_export(dt_job_t *job)
   while(1)
   {
     // TODO: progress bar in ctl?
-    char filename[512];
+    char filename[1024];
     dt_image_t *img = NULL;
     pthread_mutex_lock(&(darktable.library->film->images_mutex));
     int32_t rc, start = darktable.library->film->last_exported++;
@@ -808,14 +808,14 @@ void dt_dev_export(dt_job_t *job)
       return;
     }
 
-    snprintf(filename, 512, "%s/darktable_exported", darktable.library->film->dirname);
+    snprintf(filename, 1024, "%s/darktable_exported", darktable.library->film->dirname);
     if(g_mkdir_with_parents(filename, 0755))
     {
       dt_image_cache_release(img, 'r');
       fprintf(stderr, "[dev_export] could not create directory %s!\n", filename);
       return;
     }
-    snprintf(filename, 512-4, "%s/darktable_exported/%s", darktable.library->film->dirname, img->filename);
+    snprintf(filename, 1024-4, "%s/darktable_exported/%s", darktable.library->film->dirname, img->filename);
     char *c = filename + strlen(filename);
     for(;c>filename && *c != '.';c--);
     if(c <= filename) c = filename + strlen(filename);
@@ -845,5 +845,6 @@ void dt_dev_export(dt_job_t *job)
         break;
     }
     dt_image_cache_release(img, 'r');
+    printf("[dev_export] exported to `%s'\n", filename);
   }
 }

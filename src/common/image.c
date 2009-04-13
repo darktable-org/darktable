@@ -282,7 +282,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
   int rc, ret = 1;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, exposure, aperture, iso, focal_length from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, exposure, aperture, iso, focal_length, datetime_taken from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -298,6 +298,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->exif_aperture = sqlite3_column_double(stmt, 8);
     img->exif_iso = sqlite3_column_double(stmt, 9);
     img->exif_focal_length = sqlite3_column_double(stmt, 10);
+    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 11), 20);
     
     ret = 0;
   }

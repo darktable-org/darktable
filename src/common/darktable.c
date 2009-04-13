@@ -131,3 +131,16 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
     va_end(ap);
   }
 }
+
+void dt_gettime_t(char *datetime, time_t t)
+{
+  struct tm tt;
+  (void)localtime_r(&t, &tt);
+  strftime(datetime, 20, "%Y:%m:%d %H:%M:%S", &tt);
+}
+
+void dt_gettime(char *datetime)
+{
+  dt_gettime_t(datetime, time(NULL));
+}
+

@@ -215,7 +215,9 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.use_camera_wb = img->wb_cam;
   raw->params.use_auto_wb = img->wb_auto;
   raw->params.output_bps = 16;
-  raw->params.user_qual = 0;//3; // 0: linear, 3: AHD
+  // TODO: make this user choosable.
+  if(img->shrink) raw->params.user_qual = 0; // linear
+  else            raw->params.user_qual = 3; // AHD
   // img->raw->params.output_color = 1;
   raw->params.use_camera_matrix = 1;
   // TODO: let this unclipped for develop, clip for preview.
@@ -245,10 +247,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->exif_focal_length = raw->other.focal_len;
   strncpy(img->exif_maker, raw->idata.make, 20);
   strncpy(img->exif_model, raw->idata.model, 20);
-  GDate *gd = g_date_new();
-  g_date_set_time_t(gd, raw->other.timestamp);
-  (void) g_date_strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", gd);
-  g_date_free(gd);
+  dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
   
   img->width <<= img->shrink;
   img->height <<= img->shrink;
@@ -562,6 +561,22 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   return status;
 }
 
+void dt_imageio_to_fractional(float in, int *num, int *den)
+{
+  if(!(in >= 0))
+  {
+    *num = *den = 0;
+    return;
+  }
+  *den = 1;
+  *num = (int)(in**den);
+  while(fabsf(*num/(float)*den - in) > 0.001f)
+  {
+    *den *= 10;
+    *num = in**den;
+  }
+}
+
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
 #ifdef HAVE_MAGICK
@@ -597,10 +612,43 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
     free(buf8);
     return 1;
   }
-  // TODO: MagickCore set image properties!
-  // MagickBooleanType DefineImageProperty(Image *image, const char *property)
-  // MagickBooleanType SetImageProperty(Image *image,const char *property, const char *value)
+  // set image properties!
+  char value[100];
+  uint8_t exif_profile[512];
+  int num, den;
+  // printf("properties: %d\n", image->properties);
+  /*
+  // (void)CloneImageProperties(image, NULL);
+  StringInfo *profile = AcquireStringInfo(512);
+  SetStringInfoDatum(profile,exif_profile);
+  (void) SetImageProfile(image,"exif",profile);
+  DestroyStringInfo(profile);
+  */
 
+  // FIXME: this refuses to work :(
+  (void)DefineImageProperty(image, "exif:DateTimeOriginal");
+  (void)SetImageProperty   (image, "exif:DateTimeOriginal", img->exif_datetime_taken);
+  (void)DefineImageProperty(image, "exif:Make");
+  (void)SetImageProperty   (image, "exif:Make", img->exif_maker);
+  (void)DefineImageProperty(image, "exif:Model");
+  (void)SetImageProperty   (image, "exif:Model", img->exif_model);
+  snprintf(value, 100, "%.0f", img->exif_iso);
+  (void)DefineImageProperty(image, "exif:ISOSpeedRatings");
+  (void)SetImageProperty   (image, "exif:ISOSpeedRatings", value);
+  dt_imageio_to_fractional(img->exif_exposure, &num, &den);
+  snprintf(value, 100, "%d/%d", num, den);
+  (void)DefineImageProperty(image, "exif:ExposureTime");
+  (void)SetImageProperty   (image, "exif:ExposureTime", value);
+  dt_imageio_to_fractional(img->exif_aperture, &num, &den);
+  snprintf(value, 100, "%d/%d", num, den);
+  (void)DefineImageProperty(image, "exif:FNumber");
+  (void)SetImageProperty   (image, "exif:FNumber", value);
+  dt_imageio_to_fractional(img->exif_exposure, &num, &den);
+  snprintf(value, 100, "%d/%d", num, den);
+  (void)DefineImageProperty(image, "exif:FocalLength");
+  (void)SetImageProperty   (image, "exif:FocalLength", value);
+
+  // printf("properties: %d\n", image->properties);
   image_info->quality = 97;
   (void) strcpy(image->filename, filename);
   WriteImage(image_info, image);

@@ -1,6 +1,8 @@
 #ifndef DARKROOM_H
 #define DARKROOM_H
 
+#define _XOPEN_SOURCE 500 // for localtime_r
+#include <time.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 #include <pthread.h>
@@ -13,7 +15,6 @@
     fprintf(stderr, "sqlite3 error: %s\n", sqlite3_errmsg(darktable.db)); \
     return 1; \
   } \
-
 
 struct dt_library_t;
 struct dt_gui_gtk_t;
@@ -49,5 +50,7 @@ extern darktable_t darktable;
 int dt_init(int argc, char *argv[]);
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...);
+void dt_gettime_t(char *datetime, time_t t);
+void dt_gettime(char *datetime);
 
 #endif
