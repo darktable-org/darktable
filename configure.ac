@@ -24,6 +24,7 @@ PKG_CHECK_MODULES(CAIRO, [cairo])
 PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
 PKG_CHECK_MODULES(GLADE, [libglade-2.0])
 PKG_CHECK_MODULES(SQLITE, [sqlite3])
+PKG_CHECK_MODULES(LIBEXIF, [libexif])
  
 dnl *** check for MagickCore ***
 AC_CHECK_PROGS(MAGICKCONFIG, [MagickCore-config])

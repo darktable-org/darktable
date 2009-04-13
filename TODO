@@ -1,6 +1,8 @@
 bugs:
+ - magick write exif not functional in imageio_export_8
+ - configure.ac: MAXOPT does not appear to work as expected on newer procs.
+   => use march=native, fuck the older gcc on macs.
  - mac port : window size < 0 (ctl init)
- - exif tag in libraw not really handled well (aperture+time missing)
  - JPEG loading needs shrink + orientation
  - dev switch resolution AFTER setting gui stuff.
    control->width is updated in expose, and configure
@@ -14,7 +16,7 @@ bugs:
 
 feature requests:
  - blackpoint
- - gamma: no linear part for some camera.
+ - gamma: no linear part for some cameras.
  - interpolation as user parameter?
  - set default parameters for all controls in dev mode while in lib mode?
  - clean up db for mem optimizations: keep only image+history, re-import mips.

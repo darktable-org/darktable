@@ -18,6 +18,9 @@
 #ifdef HAVE_MAGICK
   #include <magick/MagickCore.h>
 #endif
+#include <exif-tag.h>
+#include <exif-content.h>
+#include <exif-data.h>
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
 {
@@ -440,8 +443,7 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   value = GetImageProperty(image, "exif:ExposureTime");
   if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_exposure = num/den; }
   value = GetImageProperty(image, "exif:FNumber");
-  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_aperture = num/den;
-  printf("aperture for image %s is %f/%f = %f\n", img->filename, num, den, num/den);}
+  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_aperture = num/den; }
   value = GetImageProperty(image, "exif:FocalLength");
   if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_focal_length = num/den; }
   value = GetImageProperty(image, "exif:ISOSpeedRatings");
@@ -456,7 +458,11 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   value = GetImageProperty(image, "exif:Orientation");
   if (value != (const char *) NULL) img->orientation = atol(value);
   
+
 #if 0
+  const StringInfo *str = GetImageProfile(image, "exif");
+  for(int k=0;k<str->length;k++) putchar(str->path[k]);
+
   (void) GetImageProperty(image,"exif:*");
   ResetImagePropertyIterator(image);
   char *property=GetNextImageProperty(image);
@@ -561,7 +567,7 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   return status;
 }
 
-void dt_imageio_to_fractional(float in, int *num, int *den)
+void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 {
   if(!(in >= 0))
   {
@@ -612,43 +618,122 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
     free(buf8);
     return 1;
   }
-  // set image properties!
-  char value[100];
-  uint8_t exif_profile[512];
-  int num, den;
-  // printf("properties: %d\n", image->properties);
-  /*
-  // (void)CloneImageProperties(image, NULL);
-  StringInfo *profile = AcquireStringInfo(512);
-  SetStringInfoDatum(profile,exif_profile);
-  (void) SetImageProfile(image,"exif",profile);
-  DestroyStringInfo(profile);
-  */
 
+#if 1
+  // FIXME: this is not working at all :(
+  // set image properties!
+  ExifRational rat;
+  int length;
+  uint8_t *exif_profile;
+  ExifData *exif_data = exif_data_new();
+  exif_data_set_byte_order(exif_data, EXIF_BYTE_ORDER_INTEL);
+  ExifContent *exif_content = exif_content_new();
+  exif_data->ifd[EXIF_IFD_EXIF] = exif_content;
+  ExifEntry *entry;
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_MAKE);
+  // entry->format = EXIF_FORMAT_ASCII;
+  entry->data = img->exif_maker;
+  entry->components = strnlen(img->exif_maker, 20) + 1;
+  entry->size = sizeof(uint8_t)*entry->components;
+  // strncpy((char *)(entry->data), img->exif_maker, entry->size);
+  printf("size: %d %s\n", entry->size, entry->data);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_MODEL);
+  entry->components = strnlen(img->exif_model, 20) + 1;
+  entry->size = sizeof(uint8_t)*entry->components;
+  entry->data = img->exif_model;
+  // strncpy((char *)(entry->data), img->exif_model, entry->size);
+  printf("size: %d %s\n", entry->size, entry->data);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_DATE_TIME_ORIGINAL);
+  entry->data = img->exif_datetime_taken;
+  entry->components = strnlen(img->exif_datetime_taken, 20) + 1;
+  entry->size = sizeof(uint8_t)*entry->components;
+  // strncpy((char *)(entry->data), img->exif_datetime_taken, entry->size);
+  printf("size: %d %s\n", entry->size, entry->data);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_ISO_SPEED_RATINGS);
+  exif_set_short(entry->data, EXIF_BYTE_ORDER_INTEL, (int16_t)(img->exif_iso));
+  entry->size = 2;
+  entry->components = 1;
+  printf("size: %d\n", entry->size);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_FNUMBER);
+  dt_imageio_to_fractional(img->exif_aperture, &rat.numerator, &rat.denominator);
+  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
+  entry->size = 8;
+  entry->components = 1;
+  printf("size: %d %d\n", entry->size, entry->components);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_EXPOSURE_TIME);
+  dt_imageio_to_fractional(img->exif_exposure, &rat.numerator, &rat.denominator);
+  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
+  entry->size = 8;
+  entry->components = 1;
+  printf("size: %d %d\n", entry->size, entry->components);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_FOCAL_LENGTH);
+  dt_imageio_to_fractional(img->exif_focal_length, &rat.numerator, &rat.denominator);
+  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
+  entry->size = 8;
+  entry->components = 1;
+  printf("size: %d %d\n", entry->size, entry->components);
+
+  exif_data_fix(exif_data);
+  exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
+  printf("exif header size %d\n", length);
+  // TODO: try to free al the alloc from above!
+  // exif_content_free(exif_content);
+  exif_data_free(exif_data);
+  StringInfo *profile = AcquireStringInfo(length);
+  SetStringInfoDatum(profile, exif_profile);
+  (void)SetImageProfile(image, "exif", profile);
+  DestroyStringInfo(profile);
+  free(exif_profile);
+#endif
+
+#if 0
+  char value[100];
   // FIXME: this refuses to work :(
-  (void)DefineImageProperty(image, "exif:DateTimeOriginal");
+  //(void)DefineImageProperty(image, "exif:DateTimeOriginal");
   (void)SetImageProperty   (image, "exif:DateTimeOriginal", img->exif_datetime_taken);
-  (void)DefineImageProperty(image, "exif:Make");
+  //(void)DefineImageProperty(image, "exif:Make");
   (void)SetImageProperty   (image, "exif:Make", img->exif_maker);
-  (void)DefineImageProperty(image, "exif:Model");
+  //(void)DefineImageProperty(image, "exif:Model");
   (void)SetImageProperty   (image, "exif:Model", img->exif_model);
   snprintf(value, 100, "%.0f", img->exif_iso);
-  (void)DefineImageProperty(image, "exif:ISOSpeedRatings");
+  //(void)DefineImageProperty(image, "exif:ISOSpeedRatings");
   (void)SetImageProperty   (image, "exif:ISOSpeedRatings", value);
   dt_imageio_to_fractional(img->exif_exposure, &num, &den);
   snprintf(value, 100, "%d/%d", num, den);
-  (void)DefineImageProperty(image, "exif:ExposureTime");
+  //(void)DefineImageProperty(image, "exif:ExposureTime");
   (void)SetImageProperty   (image, "exif:ExposureTime", value);
   dt_imageio_to_fractional(img->exif_aperture, &num, &den);
   snprintf(value, 100, "%d/%d", num, den);
-  (void)DefineImageProperty(image, "exif:FNumber");
+  //(void)DefineImageProperty(image, "exif:FNumber");
   (void)SetImageProperty   (image, "exif:FNumber", value);
   dt_imageio_to_fractional(img->exif_exposure, &num, &den);
   snprintf(value, 100, "%d/%d", num, den);
-  (void)DefineImageProperty(image, "exif:FocalLength");
+  //(void)DefineImageProperty(image, "exif:FocalLength");
   (void)SetImageProperty   (image, "exif:FocalLength", value);
-
   // printf("properties: %d\n", image->properties);
+#endif
+
   image_info->quality = 97;
   (void) strcpy(image->filename, filename);
   WriteImage(image_info, image);
