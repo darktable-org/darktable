@@ -21,6 +21,7 @@
 #include <exif-tag.h>
 #include <exif-content.h>
 #include <exif-data.h>
+#include <string.h>
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
 {
@@ -619,7 +620,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
     return 1;
   }
 
-#if 1
+#if 0
   // FIXME: this is not working at all :(
   // set image properties!
   ExifRational rat;
@@ -635,7 +636,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_MAKE);
   // entry->format = EXIF_FORMAT_ASCII;
-  entry->data = img->exif_maker;
+  entry->data = (uint8_t *)img->exif_maker;
   entry->components = strnlen(img->exif_maker, 20) + 1;
   entry->size = sizeof(uint8_t)*entry->components;
   // strncpy((char *)(entry->data), img->exif_maker, entry->size);
@@ -646,14 +647,14 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   exif_entry_initialize(entry, EXIF_TAG_MODEL);
   entry->components = strnlen(img->exif_model, 20) + 1;
   entry->size = sizeof(uint8_t)*entry->components;
-  entry->data = img->exif_model;
+  entry->data = (uint8_t *)img->exif_model;
   // strncpy((char *)(entry->data), img->exif_model, entry->size);
   printf("size: %d %s\n", entry->size, entry->data);
 
   entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_DATE_TIME_ORIGINAL);
-  entry->data = img->exif_datetime_taken;
+  entry->data = (uint8_t *)img->exif_datetime_taken;
   entry->components = strnlen(img->exif_datetime_taken, 20) + 1;
   entry->size = sizeof(uint8_t)*entry->components;
   // strncpy((char *)(entry->data), img->exif_datetime_taken, entry->size);
@@ -696,7 +697,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   exif_data_fix(exif_data);
   exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
-  printf("exif header size %d\n", length);
+  printf("exif header size %u\n", length);
   // TODO: try to free al the alloc from above!
   // exif_content_free(exif_content);
   exif_data_free(exif_data);
