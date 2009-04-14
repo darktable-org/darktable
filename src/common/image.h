@@ -55,7 +55,7 @@ typedef struct dt_image_t
   // libexif data
   // ExifContent *exif;
   // minimal exif data here:
-  char exif_maker[20], exif_model[20], exif_datetime_taken[20];
+  char exif_maker[30], exif_model[30], exif_datetime_taken[20];
   float exif_exposure;
   float exif_aperture;
   float exif_iso;

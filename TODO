@@ -15,6 +15,7 @@ bugs:
 
 
 feature requests:
+ - images of expensive cameras for webpage.
  - blackpoint
  - gamma: no linear part for some cameras.
  - interpolation as user parameter?
@@ -30,7 +31,8 @@ feature requests:
  - inotify dir watching
  - execute iop: pass global image window!
  - zoom in dev mode via mouse wheel/click
- - brightness/exposure highlight histogram stuff
+ - brightness/exposure highlight histogram stuff (fill blacks)
+ - LensFun
 
 priority list:
  - aoe, keys to change +-= table_cols/1 resp.
