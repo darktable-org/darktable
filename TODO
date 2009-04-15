@@ -17,6 +17,11 @@ bugs:
 feature requests:
  - use GEGL to replace dev cache and operation interface!
    (still need gui interface for plug-ins)
+   - replace operation string by gegl:dreggn
+   - sort all operations in one fixed pipeline (on/off)
+   - dev display is gegl:pixbuf node
+   - also lo-res float buffer version
+   - remove clip and zoom by gegl:crop and gegl:scale (in this order)
  - flags: deleted, cool, uncool..
  - user orient rotation
  - tonemapping for hdr?
@@ -63,7 +68,7 @@ priority list:
    - split ctl and sched?
  - bottom control panel with buttons for lib->dev->lib
 
-image ops:
+image ops (GEGL):
  - white balance
  - exposure
  - luma/chroma denoising
