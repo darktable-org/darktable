@@ -15,8 +15,13 @@ bugs:
 
 
 feature requests:
+ - use GEGL to replace dev cache and operation interface!
+   (still need gui interface for plug-ins)
+ - flags: deleted, cool, uncool..
+ - user orient rotation
+ - tonemapping for hdr?
  - linear/gamma from database for camera models.
- - spot removal brush (GEGL?)
+ - spot removal brush
  - ufraw style highlight reconstruction
  - images of expensive cameras for webpage.
  - blackpoint
