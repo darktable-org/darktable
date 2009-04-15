@@ -18,9 +18,9 @@
 #ifdef HAVE_MAGICK
   #include <magick/MagickCore.h>
 #endif
-#include <exif-tag.h>
-#include <exif-content.h>
-#include <exif-data.h>
+#include <libexif/exif-tag.h>
+#include <libexif/exif-content.h>
+#include <libexif/exif-data.h>
 // #include <exif-log.h>
 #include <string.h>
 

@@ -15,6 +15,8 @@ bugs:
 
 
 feature requests:
+ - linear/gamma from database for camera models.
+ - spot removal brush (GEGL?)
  - ufraw style highlight reconstruction
  - images of expensive cameras for webpage.
  - blackpoint
