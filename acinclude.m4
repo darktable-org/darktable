@@ -236,41 +236,41 @@ case $host_cpu in
      case $ax_cv_gcc_x86_cpuid_0 in
        *:756e6547:*:*) # Intel
           case $ax_cv_gcc_x86_cpuid_1 in
-	    *5[[48]]?:*:*:*) ax_gcc_arch="pentium-mmx pentium" ;;
-	    *5??:*:*:*) ax_gcc_arch=pentium ;;
-	    *6[[3456]]?:*:*:*) ax_gcc_arch="pentium2 pentiumpro" ;;
-	    *6a?:*[[01]]:*:*) ax_gcc_arch="pentium2 pentiumpro" ;;
-	    *6a?:*[[234]]:*:*) ax_gcc_arch="pentium3 pentiumpro" ;;
-	    *6[[9d]]?:*:*:*) ax_gcc_arch="pentium-m pentium3 pentiumpro" ;;
-	    *6[[78b]]?:*:*:*) ax_gcc_arch="pentium3 pentiumpro" ;;
-	    *6??:*:*:*) ax_gcc_arch="core2 nocona pentiumpro" ;;
+	    *5[[48]]?:*:*:*) ax_gcc_arch="native pentium-mmx pentium" ;;
+	    *5??:*:*:*) ax_gcc_arch="native pentium" ;;
+	    *6[[3456]]?:*:*:*) ax_gcc_arch="native pentium2 pentiumpro" ;;
+	    *6a?:*[[01]]:*:*) ax_gcc_arch="native pentium2 pentiumpro" ;;
+	    *6a?:*[[234]]:*:*) ax_gcc_arch="native pentium3 pentiumpro" ;;
+	    *6[[9d]]?:*:*:*) ax_gcc_arch="native pentium-m pentium3 pentiumpro" ;;
+	    *6[[78b]]?:*:*:*) ax_gcc_arch="native pentium3 pentiumpro" ;;
+	    *6??:*:*:*) ax_gcc_arch="native core2 nocona pentiumpro" ;;
             *f3[[347]]:*:*:*|*f4[1347]:*:*:*)
 		case $host_cpu in
-                  x86_64*) ax_gcc_arch="core2 nocona pentium4 pentiumpro" ;;
-                  *) ax_gcc_arch="prescott pentium4 pentiumpro" ;;
+                  x86_64*) ax_gcc_arch="native core2 nocona pentium4 pentiumpro" ;;
+                  *) ax_gcc_arch="native prescott pentium4 pentiumpro" ;;
                 esac ;;
-            *f??:*:*:*) ax_gcc_arch="pentium4 pentiumpro";;
+            *f??:*:*:*) ax_gcc_arch="native pentium4 pentiumpro";;
           esac ;;
        *:68747541:*:*) # AMD
           case $ax_cv_gcc_x86_cpuid_1 in
-	    *5[[67]]?:*:*:*) ax_gcc_arch=k6 ;;
-	    *5[[8d]]?:*:*:*) ax_gcc_arch="k6-2 k6" ;;
-	    *5[[9]]?:*:*:*) ax_gcc_arch="k6-3 k6" ;;
-	    *60?:*:*:*) ax_gcc_arch=k7 ;;
-	    *6[[12]]?:*:*:*) ax_gcc_arch="athlon k7" ;;
-	    *6[[34]]?:*:*:*) ax_gcc_arch="athlon-tbird k7" ;;
-	    *67?:*:*:*) ax_gcc_arch="athlon-4 athlon k7" ;;
+	    *5[[67]]?:*:*:*) ax_gcc_arch="native k6" ;;
+	    *5[[8d]]?:*:*:*) ax_gcc_arch="native k6-2 k6" ;;
+	    *5[[9]]?:*:*:*) ax_gcc_arch="native k6-3 k6" ;;
+	    *60?:*:*:*) ax_gcc_arch="native k7" ;;
+	    *6[[12]]?:*:*:*) ax_gcc_arch="native athlon k7" ;;
+	    *6[[34]]?:*:*:*) ax_gcc_arch="native athlon-tbird k7" ;;
+	    *67?:*:*:*) ax_gcc_arch="native athlon-4 athlon k7" ;;
 	    *6[[68a]]?:*:*:*)
 	       AX_GCC_X86_CPUID(0x80000006) # L2 cache size
 	       case $ax_cv_gcc_x86_cpuid_0x80000006 in
                  *:*:*[[1-9a-f]]??????:*) # (L2 = ecx >> 16) >= 256
-			ax_gcc_arch="athlon-xp athlon-4 athlon k7" ;;
-                 *) ax_gcc_arch="athlon-4 athlon k7" ;;
+			ax_gcc_arch="native athlon-xp athlon-4 athlon k7" ;;
+                 *) ax_gcc_arch="native athlon-4 athlon k7" ;;
 	       esac ;;
-	    *f[[4cef8b]]?:*:*:*) ax_gcc_arch="athlon64 k8" ;;
-	    *f5?:*:*:*) ax_gcc_arch="opteron k8" ;;
-	    *f7?:*:*:*) ax_gcc_arch="athlon-fx opteron k8" ;;
-	    *f??:*:*:*) ax_gcc_arch="k8" ;;
+	    *f[[4cef8b]]?:*:*:*) ax_gcc_arch="native athlon64 k8" ;;
+	    *f5?:*:*:*) ax_gcc_arch="native opteron k8" ;;
+	    *f7?:*:*:*) ax_gcc_arch="native athlon-fx opteron k8" ;;
+	    *f??:*:*:*) ax_gcc_arch="native k8" ;;
           esac ;;
 	*:746e6543:*:*) # IDT
 	   case $ax_cv_gcc_x86_cpuid_1 in
@@ -282,8 +282,8 @@ case $host_cpu in
      esac
      if test x"$ax_gcc_arch" = x; then # fallback
 	case $host_cpu in
-	  i586*) ax_gcc_arch=pentium ;;
-	  i686*) ax_gcc_arch=pentiumpro ;;
+	  i586*) ax_gcc_arch="native pentium" ;;
+	  i686*) ax_gcc_arch="native pentiumpro" ;;
         esac
      fi
      ;;
