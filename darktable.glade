@@ -476,7 +476,7 @@ filename</property>
                 <property name="visible">True</property>
                 <property name="resize_mode">GTK_RESIZE_QUEUE</property>
                 <child>
-                  <widget class="GtkVBox" id="vbox1">
+                  <widget class="GtkVBox" id="right_vbox">
                     <property name="visible">True</property>
                     <property name="spacing">10</property>
                     <child>

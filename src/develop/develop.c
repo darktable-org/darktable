@@ -110,6 +110,7 @@ void dt_dev_set_gamma(dt_develop_t *dev)
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   // TODO: init iop stack!
+  // TODO: get operations from default, fixed pipeline
   dev->gui_attached = gui_attached;
   dev->image = NULL;
   dev->image_loading = 0;

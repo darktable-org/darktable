@@ -22,9 +22,11 @@ typedef struct dt_iop_module_t
   dt_iop_gui_data_t *gui_data;
   /** string identifying this operation. */
   dt_dev_operation_t op;
+  /** child widget which is added to the GtkExpander. */
+  GtkWidget *widget;
   /** callback methods for gui. */
   void (*gui_reset)   (dt_iop_module_t *self, darktable_t *dt);
-  void (*gui_init)    (dt_iop_module_t *self, darktable_t *dt, GtkContainer *parent);
+  void (*gui_init)    (dt_iop_module_t *self, darktable_t *dt);
   void (*gui_cleanup) (dt_iop_module_t *self, darktable_t *dt);
   // TODO: add more for mouse interaction dreggn.
 #ifdef DT_USE_GEGL

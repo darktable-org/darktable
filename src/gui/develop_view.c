@@ -130,10 +130,24 @@ void dt_dev_enter()
 
   dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
   dt_dev_configure(darktable.develop, darktable.control->width - 2*darktable.control->tabborder, darktable.control->height - 2*darktable.control->tabborder);
+#ifdef DT_USE_GEGL
+  // TODO: restructure gui: top: histogram, metadata | scrollable area right_vbox: gamma, tonecurve, .. .. hdr import, export.
+  // TODO: clear module list (all except gamma, tonecurve, and export)
+  // TODO: load module list in dev
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "right_vbox"));
+  // TODO: for each module:
+  module->gui_init(module, &darktable);
+  GtkExpander *expander = gtk_expander_new((const gchar *)(module->op));
+  gtk_box_pack_end(box, expander, FALSE, FALSE, 0);
+#endif
 }
 
 void dt_dev_leave()
 {
+#ifdef DT_USE_GEGL
+  // TODO: clear gui!
+  module->gui_cleanup(module, &darktable);
+#endif
   if(darktable.develop->image->pixels)
     dt_image_release(darktable.develop->image, DT_IMAGE_FULL, 'r');
 
