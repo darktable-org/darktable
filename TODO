@@ -1,5 +1,4 @@
 bugs:
- - magick write exif not functional in imageio_export_8
  - configure.ac: MAXOPT does not appear to work as expected on newer procs.
    => use march=native, fuck the older gcc on macs.
  - mac port : window size < 0 (ctl init)
@@ -17,11 +16,32 @@ bugs:
 feature requests:
  - use GEGL to replace dev cache and operation interface!
    (still need gui interface for plug-ins)
-   - replace operation string by gegl:dreggn
-   - sort all operations in one fixed pipeline (on/off)
+   - library of (plug-in-able) image ops.
+   - pull iop to left panel (=>add expander, call gui_init on module)
+     - 0.2_alpha hack: fixed pipeline of selected ops already there:
+       init in develop_init
    - dev display is gegl:pixbuf node
-   - also lo-res float buffer version
-   - remove clip and zoom by gegl:crop and gegl:scale (in this order)
+   - disable nodes: connect pass-through edge
+   - remove clip and zoom by gegl:scale
+   - custom nodes at bottom/top:
+     - gegl:load-buffer/ gegl_buffer_set (from float arrays)
+     - gamma (last node before scale+pixbuf)
+   - move tonecurve widget to gegl-curve struct and iop interface!
+   - graph:
+        [gegl:save-pixbuf]
+                    \
+                [multiplexed connection]
+               /       \          |   |
+        [scale]         [fit]  [fill] |
+           |                \     |   |
+        [posthist]           [gegl:contrast-curve]
+   [gegl:contrast-curve]          |
+        [prehist]                 |
+        [iops..]           [same iops, 2nd pipe]
+           |                      |
+     [gegl:load-buffer]     [gegl:load-buffer]
+      from small cache       from full pixels
+
  - flags: deleted, cool, uncool..
  - user orient rotation
  - tonemapping for hdr?
@@ -53,19 +73,7 @@ priority list:
  - exif tab: exif_table expose event: fill mouse_over_id exif data!
  - tags and some tag search facility (expander in lighttable mode)
  - clean up dev events: add history-> cache up -> fixed pipeline up
- - modular one-file plugin support:
-   src/imageio/saturation.{c,h}:
-   - dr_gui_XX_reset -> reset op to neutral/default params
-     dr_gui_XX_init  -> init gui elements and callbacks
-     dr_iop_XX       -> transform buffers
-   - add expander to right vbox,
-     init gui with expander->child
-     expose: if op !=, gui_reset
-     reserve imageop, need string hash?
  - image properties when zoomed in a lot
- - clean up namings/modules.
-   - move expose to ctl or gui?
-   - split ctl and sched?
  - bottom control panel with buttons for lib->dev->lib
 
 image ops (GEGL):
@@ -75,6 +83,7 @@ image ops (GEGL):
  - crop
 
 usability:
+ - post-expose on expanders? (zoom buttons, enable switches..)
  - write out image_t at quit (exif, filenames, selected flags)
  - navigation: buttons for zoom levels
  - closeup in 3:1 5:1 or 2:1 ?

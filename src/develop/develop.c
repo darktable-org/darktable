@@ -109,13 +109,15 @@ void dt_dev_set_gamma(dt_develop_t *dev)
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  // TODO: init iop stack!
   dev->gui_attached = gui_attached;
-  dev->small_backbuf = dev->backbuf = NULL;
-  dev->backbuf_hash = dev->small_backbuf_hash = -1;
   dev->image = NULL;
   dev->image_loading = 0;
-  dev->small_raw_cached = NULL;
   dev->small_raw_loading = 0;
+#ifndef DT_USE_GEGL
+  dev->small_backbuf = dev->backbuf = NULL;
+  dev->backbuf_hash = dev->small_backbuf_hash = -1;
+  dev->small_raw_cached = NULL;
   dev->small_raw_hash = -1;
   dev->small_raw_height = dev->small_raw_width = -1;
   pthread_mutex_init(&dev->cache_mutex, NULL);
@@ -135,6 +137,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->cache_sorted[k] = k;
   }
   dev->cache_width = dev->cache_height = -1;
+#endif
   
   dev->history_top = 0;
   dev->history_max = 100;
