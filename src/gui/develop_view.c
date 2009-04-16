@@ -135,18 +135,34 @@ void dt_dev_enter()
   // TODO: clear module list (all except gamma, tonecurve, and export)
   // TODO: load module list in dev
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "right_vbox"));
-  // TODO: for each module:
-  module->gui_init(module, &darktable);
-  GtkExpander *expander = gtk_expander_new((const gchar *)(module->op));
-  gtk_box_pack_end(box, expander, FALSE, FALSE, 0);
+  for(int m=0;m<darktable.develop->num_iops;m++)
+  {
+    dt_iop_module_t *module = darktable.develop->iop[m];
+    module->gui_init(module, &darktable);
+    GtkExpander *expander = gtk_expander_new((const gchar *)(module->op));
+    gtk_expander_set_expanded(expander, TRUE);
+    gtk_box_pack_end(box, expander, FALSE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(expander), module->widget);
+  }
 #endif
+}
+
+void dt_dev_remove_child(GtkWidget *widget, gpointer data)
+{
+  gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
 void dt_dev_leave()
 {
 #ifdef DT_USE_GEGL
   // TODO: clear gui!
-  module->gui_cleanup(module, &darktable);
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "right_vbox"));
+  for(int m=0;m<darktable.develop->num_iops;m++)
+  {
+    dt_iop_module_t *module = darktable.develop->iop[m];
+    module->gui_cleanup(module, &darktable);
+  }
+  gtk_container_foreach(box, (GtkCallback)dt_dev_remove_child, (gpointer)box);
 #endif
   if(darktable.develop->image->pixels)
     dt_image_release(darktable.develop->image, DT_IMAGE_FULL, 'r');

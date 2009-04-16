@@ -75,6 +75,7 @@ priority list:
  - clean up dev events: add history-> cache up -> fixed pipeline up
  - image properties when zoomed in a lot
  - bottom control panel with buttons for lib->dev->lib
+ - libglade => gtkbuilder.
 
 image ops (GEGL):
  - white balance
@@ -83,7 +84,7 @@ image ops (GEGL):
  - crop
 
 usability:
- - post-expose on expanders? (zoom buttons, enable switches..)
+ - label_widgets on expanders? (zoom buttons, enable switches..)
  - write out image_t at quit (exif, filenames, selected flags)
  - navigation: buttons for zoom levels
  - closeup in 3:1 5:1 or 2:1 ?
@@ -97,16 +98,12 @@ usability:
  - active live histogram (exposure etc)
  - all functions mouse-accessible
  - library graph with keyword edges.
- - expander with exif data (+filename of saved image)
 
 look:
  - dev img border
  - shadow border between center and outer panels
  - end markers :)
  - dev full res image possibly smaller as lo-res (paint border with bg)
-
-cleanup:
- - QWERTZ/dvorak keyboard shortcuts run-time switching
 
 cache:
  - user profile guided prefetching for full raw load!
