@@ -53,12 +53,6 @@ AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
     LCMS_LIBS="-llcms"])
 AC_SUBST(LCMS_LIBS)
 
-dnl *** check for lamer keyboard *** 
-AC_ARG_ENABLE(qwerty, [  --enable-qwerty            Enable QWERTY key accels], [if test "$enableval" = yes; then 
-    AC_DEFINE(HAVE_QWERTY, 1, [Use to switch from default dvorak key accels to qwerty])
-  fi 
-  ])
-
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
     Makefile

@@ -227,7 +227,7 @@ gamma (GtkRange *range, gpointer user_data)
 static gboolean
 key_pressed (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  return dt_control_key_pressed(event->keyval);
+  return dt_control_key_pressed(event->hardware_keycode);
 }
 
 static gboolean

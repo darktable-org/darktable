@@ -18,7 +18,7 @@ other used packages (supplied in the source tree):
 then, type:
 
  $ autoreconf --install
- $ ./configure [--enable-qwerty] [--enable-debug]
+ $ ./configure [--enable-debug]
  $ make
  $ src/darkroom
 

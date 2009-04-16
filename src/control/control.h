@@ -29,7 +29,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
 void dt_control_mouse_leave();
-int  dt_control_key_pressed(uint32_t which);
+int  dt_control_key_pressed(uint16_t which);
 void dt_control_configure(int32_t width, int32_t height);
 void dt_control_gui_queue_draw();
 

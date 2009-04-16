@@ -4,7 +4,6 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
-#include <gdk/gdkkeysyms.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <assert.h>
@@ -14,23 +13,23 @@
 #  include "config.h"
 #endif
 
-#ifndef HAVE_QWERTY
-#define KEY_LEFT    GDK_a
-#define KEY_RIGHT   GDK_e
-#define KEY_UP      GDK_comma
-#define KEY_DOWN    GDK_o
-#define KEY_FIT     GDK_apostrophe
-#define KEY_SWITCH  GDK_period
-#else
-#define KEY_LEFT    GDK_a
-#define KEY_RIGHT   GDK_d
-#define KEY_UP      GDK_w
-#define KEY_DOWN    GDK_s
-#define KEY_FIT     GDK_q
-#define KEY_SWITCH  GDK_e
-#endif
-#define KEY_TOGGLE_FULLSCREEN GDK_F11
-#define KEY_LEAVE_FULLSCREEN GDK_Escape
+// keycodes mapped to dvorak keyboard layout for easier usage
+#define KEYCODE_a           38
+#define KEYCODE_o           39
+#define KEYCODE_e           40
+#define KEYCODE_apostrophe  24
+#define KEYCODE_comma       25
+#define KEYCODE_period      26
+#define KEYCODE_1           10
+#define KEYCODE_2           11
+#define KEYCODE_3           12
+#define KEYCODE_Escape       9
+#define KEYCODE_F11         95
+#define KEYCODE_Up         111
+#define KEYCODE_Down       116
+#define KEYCODE_Left       113
+#define KEYCODE_Right      114
+#define KEYCODE_Tab         23
 
 void dt_ctl_settings_init(dt_control_t *s)
 {
@@ -814,7 +813,7 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   DT_CTL_SET_GLOBAL(gui_export, bit);
 }
 
-int dt_control_key_pressed(uint32_t which)
+int dt_control_key_pressed(uint16_t which)
 {
   int fullscreen, zoom, closeup, visible;
   GtkWidget *widget;
@@ -822,10 +821,10 @@ int dt_control_key_pressed(uint32_t which)
   DT_CTL_GET_GLOBAL(gui, gui);
   switch (which)
   {
-    case KEY_SWITCH:
+    case KEYCODE_period:
       dt_ctl_switch_mode();
       break;
-    case KEY_TOGGLE_FULLSCREEN:
+    case KEYCODE_F11:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       DT_CTL_GET_GLOBAL(fullscreen, gui_fullscreen);
       if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
@@ -833,13 +832,13 @@ int dt_control_key_pressed(uint32_t which)
       fullscreen ^= 1;
       DT_CTL_SET_GLOBAL(gui_fullscreen, fullscreen);
       break;
-    case KEY_LEAVE_FULLSCREEN:
+    case KEYCODE_Escape:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
       DT_CTL_SET_GLOBAL(gui_fullscreen, fullscreen);
       break;
-    case GDK_Tab:
+    case KEYCODE_Tab:
       widget = glade_xml_get_widget (darktable.gui->main_window, "left");
       visible = GTK_WIDGET_VISIBLE(widget);
       if(visible) gtk_widget_hide(widget);
@@ -863,35 +862,35 @@ int dt_control_key_pressed(uint32_t which)
   if(gui == DT_LIBRARY) switch (which)
   {
 #if 0
-    case GDK_Left: case KEY_LEFT:
+    case KEYCODE_Left: case KEYCODE_a:
       DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_i);
       if(selected > 0) selected --;
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_i, selected);
       DT_CTL_SET_GLOBAL(lib_track, 1);
       break;
-    case GDK_Right: case KEY_RIGHT:
+    case KEYCODE_Right: case KEYCODE_e:
       DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_i);
       if(selected < DT_LIBRARY_MAX_ZOOM-1) selected ++;
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_i, selected);
       DT_CTL_SET_GLOBAL(lib_track, 1);
       break;
-    case GDK_Up: case KEY_UP:
+    case KEYCODE_Up: case KEYCODE_comma:
       DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_j);
       if(selected > 0) selected --;
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_j, selected);
       DT_CTL_SET_GLOBAL(lib_track, 1);
       break;
-    case GDK_Down: case KEY_DOWN:
+    case KEYCODE_Down: case KEYCODE_o:
       DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_j);
       selected ++;
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_j, selected);
       DT_CTL_SET_GLOBAL(lib_track, 1);
       break;
 #endif
-    case GDK_1:
+    case KEYCODE_1:
       DT_CTL_SET_GLOBAL(lib_zoom, 1);
       break;
-    case KEY_FIT:
+    case KEYCODE_apostrophe:
       DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
       DT_CTL_SET_GLOBAL(lib_center, 1);
       break;
@@ -900,20 +899,20 @@ int dt_control_key_pressed(uint32_t which)
   }
   else if(gui == DT_DEVELOP) switch (which)
   {
-    case GDK_1:
+    case KEYCODE_1:
       DT_CTL_GET_GLOBAL(zoom, dev_zoom);
       DT_CTL_GET_GLOBAL(closeup, dev_closeup);
       if(zoom == DT_ZOOM_1) closeup ^= 1;
       DT_CTL_SET_GLOBAL(dev_closeup, closeup);
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
       break;
-    case GDK_2:
+    case KEYCODE_2:
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
       DT_CTL_SET_GLOBAL(dev_zoom_x, 0.0);
       DT_CTL_SET_GLOBAL(dev_zoom_y, 0.0);
       DT_CTL_SET_GLOBAL(dev_closeup, 0);
       break;
-    case GDK_3:
+    case KEYCODE_3:
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
       DT_CTL_SET_GLOBAL(dev_closeup, 0);
       break;
