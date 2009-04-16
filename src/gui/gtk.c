@@ -287,11 +287,19 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
 
   /* load the interface */
+#ifdef DT_USE_GEGL
+  snprintf(path, 1023, "darktable_gegl.glade");
+#else
   snprintf(path, 1023, "darktable.glade");
+#endif
   if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
   else
   {
+#ifdef DT_USE_GEGL
+    snprintf(path, 1023, "%s/darktable_gegl.glade", DATADIR);
+#else
     snprintf(path, 1023, "%s/darktable.glade", DATADIR);
+#endif
     if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
     else
     {

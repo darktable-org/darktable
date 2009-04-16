@@ -11,28 +11,33 @@
 
 typedef void* dt_iop_params_t;
 typedef void* dt_iop_gui_data_t;
+typedef void* dt_iop_data_t;
 
 struct dt_iop_module_t;
 typedef struct dt_iop_module_t
 {
+  /** reference for dlopened libs. */
+  darktable_t *dt;
   /** non zero if this node should be processed. */
   int32_t enabled;
   /** parameters for the operation. will be replaced by history revert. */
   dt_iop_params_t *params;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
+  /** other stuff that may be needed by the module (as GeglNode*), not only in gui mode. */
+  dt_iop_data_t *data;
   /** string identifying this operation. */
   dt_dev_operation_t op;
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** callback methods for gui. */
-  void (*gui_reset)   (struct dt_iop_module_t *self, darktable_t *dt);
-  void (*gui_init)    (struct dt_iop_module_t *self, darktable_t *dt);
-  void (*gui_cleanup) (struct dt_iop_module_t *self, darktable_t *dt);
+  void (*gui_reset)   (struct dt_iop_module_t *self);
+  void (*gui_init)    (struct dt_iop_module_t *self);
+  void (*gui_cleanup) (struct dt_iop_module_t *self);
   // TODO: add more for mouse interaction dreggn.
 #ifdef DT_USE_GEGL
-  void get_output_pad(GeglNode **node, const gchar **pad);
-  void get_input_pad (GeglNode **node, const gchar **pad);
+  void (*get_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+  void (*get_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
 #else
   void (*execute) (float *dst, const float *src, const int32_t wd, const int32_t ht, const int32_t bufwd, const int32_t bufht,
                  dt_dev_operation_t operation, dt_dev_operation_params_t *params);
