@@ -5,9 +5,11 @@
 #include "develop/iop_hsb.h"
 #include <gegl.h>
 
-#define dt_red 2
-#define dt_green 1
-#define dt_blue 0
+#ifndef DT_USE_GEGL
+  #define dt_red 2
+  #define dt_green 1
+  #define dt_blue 0
+#endif
 
 typedef void* dt_iop_params_t;
 typedef void* dt_iop_gui_data_t;
@@ -18,6 +20,8 @@ typedef struct dt_iop_module_t
 {
   /** reference for dlopened libs. */
   darktable_t *dt;
+  /** parent gegl node for this module stack. */
+  GeglNode *gegl;
   /** non zero if this node should be processed. */
   int32_t enabled;
   /** parameters for the operation. will be replaced by history revert. */

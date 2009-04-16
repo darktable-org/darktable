@@ -33,6 +33,7 @@ dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
 {
+  GeglCurve *curve;
   GeglNode *node;
   const gchar *const input_pad  = "input";
   const gchar *const output_pad = "output";
