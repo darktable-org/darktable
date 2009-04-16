@@ -12,6 +12,7 @@
 typedef void* dt_iop_params_t;
 typedef void* dt_iop_gui_data_t;
 
+struct dt_iop_module_t;
 typedef struct dt_iop_module_t
 {
   /** non zero if this node should be processed. */
@@ -25,9 +26,9 @@ typedef struct dt_iop_module_t
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** callback methods for gui. */
-  void (*gui_reset)   (dt_iop_module_t *self, darktable_t *dt);
-  void (*gui_init)    (dt_iop_module_t *self, darktable_t *dt);
-  void (*gui_cleanup) (dt_iop_module_t *self, darktable_t *dt);
+  void (*gui_reset)   (struct dt_iop_module_t *self, darktable_t *dt);
+  void (*gui_init)    (struct dt_iop_module_t *self, darktable_t *dt);
+  void (*gui_cleanup) (struct dt_iop_module_t *self, darktable_t *dt);
   // TODO: add more for mouse interaction dreggn.
 #ifdef DT_USE_GEGL
   void get_output_pad(GeglNode **node, const gchar **pad);
