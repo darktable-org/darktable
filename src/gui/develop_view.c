@@ -155,7 +155,7 @@ void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 void dt_dev_leave()
 {
 #ifdef DT_USE_GEGL
-  // TODO: clear gui!
+  // clear gui.
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "right_vbox"));
   for(int m=0;m<darktable.develop->num_iops;m++)
   {
