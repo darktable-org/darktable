@@ -1,4 +1,5 @@
 bugs:
+ - ppm export crashing sometimes?
  - JPEG loading needs shrink + orientation
  - dev switch resolution AFTER setting gui stuff.
    control->width is updated in expose, and configure
@@ -99,7 +100,6 @@ usability:
  - library graph with keyword edges.
 
 look:
- - library rounded corners (dia)
  - dev img border
  - shadow border between center and outer panels
  - end markers :)
