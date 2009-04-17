@@ -30,18 +30,31 @@ void dt_iop_tonecurve_init(dt_iop_module_t *module)
   (void)gegl_curve_add_point(d->curve, 1.0,  1.0);
 
   d->node = gegl_node_new_child(module->gegl, "operation", "gegl:contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
+  d->node_preview = gegl_node_new_child(module->gegl, "operation", "gegl:contrast-curve", "sampling-points", 512, "curve", d->curve, NULL);
+
+  module->cleanup = &dt_iop_tonecurve_cleanup;
+  module->gui_init = &dt_iop_tonucurve_gui_init;
+  module->gui_reset = &dt_iop_tonucurve_gui_reset;
+  module->gui_cleanup = &dt_iop_tonucurve_gui_cleanup;
 }
 
 void dt_iop_tonecurve_cleanup(dt_iop_module_t *module)
 {
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
+  gegl_node_remove_child(module->dev->gegl, d->node);
+  gegl_node_remove_child(module->dev->gegl, d->node_preview);
+  g_free(d->curve);
   free(module->data);
+  module->data = NULL;
   free(module->gui_data);
+  module->gui_data = NULL;
   free(module->params);
+  module->params = NULL;
 }
 
-void dt_iop_tonecurve_gui_reset(struct dt_iop_module_t *self, darktable_t *dt)
+void dt_iop_tonecurve_gui_reset(struct dt_iop_module_t *self)
 {
-  // TODO: revert self->params to default
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
   gegl_curve_set_point(d->curve, 0, 0.0,  0.0);
   gegl_curve_set_point(d->curve, 1, 0.08, 0.08);
   gegl_curve_set_point(d->curve, 2, 0.4,  0.4);
@@ -50,7 +63,7 @@ void dt_iop_tonecurve_gui_reset(struct dt_iop_module_t *self, darktable_t *dt)
   gegl_curve_set_point(d->curve, 5, 1.0,  1.0);
 }
 
-void dt_iop_tonecurve_gui_init(struct dt_iop_module_t *self, darktable_t *dt)
+void dt_iop_tonecurve_gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_tonecurve_params_t));
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -69,12 +82,27 @@ void dt_iop_tonecurve_gui_init(struct dt_iop_module_t *self, darktable_t *dt)
                     G_CALLBACK (dt_iop_tonecurve_motion_notify), c);
   g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (dt_iop_tonecurve_leave_notify), c);
-  // TODO: init gtk stuff
+  // init gtk stuff
+  module->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  gtk_drawing_area_size(c->area, 200, 200);
+  gtk_pack_start(GTK_BOX(module->widget), c->area, TRUE, TRUE, 0);
+  c->hbox = gtk_hbox_new(FALSE, 0);
+  gtk_pack_start(GTK_BOX(module->widget), c->box, FALSE, FALSE, 0);
+  c->label = gtk_label_new("presets");
+  gtk_pack_start(c->hbox, c->label, FALSE, FALSE, 5);
+  c->presets = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBOBOX(c->presets), "linear");
+  gtk_combo_box_append_text(GTK_COMBOBOX(c->presets), "med contrast");
+  gtk_combo_box_append_text(GTK_COMBOBOX(c->presets), "high contrast");
+  gtk_pack_end(c->hbox, c->presets, FALSE, FALSE, 5);
 }
 
-void dt_iop_tonecurve_gui_cleanup (struct dt_iop_module_t *self, darktable_t *dt)
+void dt_iop_tonecurve_gui_cleanup(struct dt_iop_module_t *self)
 {
-  // TODO destroy gtk stuff.
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  // destroy gtk stuff.
+  gtk_widget_destroy(self->widget);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -90,6 +118,20 @@ void dt_iop_tonecurve_get_input_pad (struct dt_iop_module_t *self, GeglNode **no
 {
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
   *node = d->node;
+  *pad = d->input_pad;
+}
+
+void dt_iop_tonecurve_get_preview_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad)
+{
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
+  *node = d->node_preview;
+  *pad = d->output_pad;
+}
+
+void dt_iop_tonecurve_get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+{
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
+  *node = d->node_preview;
   *pad = d->input_pad;
 }
 

@@ -156,20 +156,24 @@ void dt_dev_leave()
 {
 #ifdef DT_USE_GEGL
   // clear gui.
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "right_vbox"));
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
   for(int m=0;m<darktable.develop->num_iops;m++)
   {
     dt_iop_module_t *module = darktable.develop->iop[m];
     module->gui_cleanup(module, &darktable);
+    module->cleanup(module);
   }
   gtk_container_foreach(box, (GtkCallback)dt_dev_remove_child, (gpointer)box);
 #endif
+  // release full buffer
   if(darktable.develop->image->pixels)
     dt_image_release(darktable.develop->image, DT_IMAGE_FULL, 'r');
 
+  // commit image ops to db
   dt_dev_write_history(darktable.develop);
   DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
+  // commit updated mipmaps to db
   int wd = darktable.develop->small_raw_width, ht = darktable.develop->small_raw_height;
   if(!dt_dev_small_cache_load(darktable.develop))
   {
@@ -183,6 +187,7 @@ void dt_dev_leave()
     dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
     dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
   }
+  // release image struct with metadata as well.
   dt_image_cache_release(darktable.develop->image, 'r');
 }
 

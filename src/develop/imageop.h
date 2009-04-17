@@ -20,8 +20,8 @@ typedef struct dt_iop_module_t
 {
   /** reference for dlopened libs. */
   darktable_t *dt;
-  /** parent gegl node for this module stack. */
-  GeglNode *gegl;
+  /** the module is used in this develop module. */
+  dt_develop_t *dev;
   /** non zero if this node should be processed. */
   int32_t enabled;
   /** parameters for the operation. will be replaced by history revert. */
@@ -39,9 +39,13 @@ typedef struct dt_iop_module_t
   void (*gui_init)    (struct dt_iop_module_t *self);
   void (*gui_cleanup) (struct dt_iop_module_t *self);
   // TODO: add more for mouse interaction dreggn.
+  /** destroy all. */
+  void (*cleanup) (struct dt_iop_module_t *self);
 #ifdef DT_USE_GEGL
   void (*get_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
   void (*get_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+  void (*get_preview_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+  void (*get_preview_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
 #else
   void (*execute) (float *dst, const float *src, const int32_t wd, const int32_t ht, const int32_t bufwd, const int32_t bufht,
                  dt_dev_operation_t operation, dt_dev_operation_params_t *params);

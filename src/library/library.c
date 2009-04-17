@@ -72,7 +72,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   DT_CTL_GET_GLOBAL(track, lib_track);
   DT_CTL_GET_GLOBAL(center, lib_center);
 
-  cairo_set_source_rgb (cr, .2, .2, .2);
+  if(zoom == 1) cairo_set_source_rgb (cr, .8, .8, .8);
+  else cairo_set_source_rgb (cr, .9, .9, .9);
   cairo_paint(cr);
 
   const float wd = width/zoom;
@@ -242,7 +243,7 @@ void dt_library_mouse_moved(dt_library_t *lib, double xx, double yy, int which)
 
 void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom)
 {
-  float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1;
+  float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
@@ -254,9 +255,10 @@ void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width,
   sqlite3_finalize(stmt);
   if(selected == 1)
   {
+    outlinecol = 0.4;
     bgcol = 0.6; fontcol = 0.5;
   }
-  if(imgsel == img->id) { bgcol = 0.8; fontcol = 0.7; } // selected = 1;
+  if(imgsel == img->id) { bgcol = 0.8; fontcol = 0.7; outlinecol = 0.6; } // mouse over
   float imgwd = 0.8f;
   if(zoom == 1)
   {
@@ -267,19 +269,32 @@ void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width,
   else
   {
     char num[10];
-    cairo_rectangle(cr, 0.01f*width, 0.01f*height, 0.99f*width, 0.99f*height);
+    double x0 = 0.007*width, y0 = 0.007*height, rect_width = 0.986*width, rect_height = 0.986*height, radius = 0.08*width;
+    // double x0 = 0.*width, y0 = 0.*height, rect_width = 1.*width, rect_height = 1.*height, radius = 0.08*width;
+    double x1, y1, off, off1;
+
+    x1=x0+rect_width;
+    y1=y0+rect_height;
+    off=radius*0.666;
+    off1 = radius-off;
+    cairo_move_to  (cr, x0, y0 + radius);
+    cairo_curve_to (cr, x0, y0+off1, x0+off1 , y0, x0 + radius, y0);
+    cairo_line_to (cr, x1 - radius, y0);
+    cairo_curve_to (cr, x1-off1, y0, x1, y0+off1, x1, y0 + radius);
+    cairo_line_to (cr, x1 , y1 - radius);
+    cairo_curve_to (cr, x1, y1-off1, x1-off1, y1, x1 - radius, y1);
+    cairo_line_to (cr, x0 + radius, y1);
+    cairo_curve_to (cr, x0+off1, y1, x0, y1-off1, x0, y1- radius);
+    cairo_close_path (cr);
     cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
-    cairo_fill(cr);
-    // cairo_rectangle(cr, 0, 0, width, height);
-    // cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
-    // cairo_fill_preserve(cr);
-    // cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-    // cairo_set_line_width(cr, 1);
-    // cairo_stroke(cr);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 0.005*width);
+    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+    cairo_stroke(cr);
 
     cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, .3*width);
+    cairo_set_font_size (cr, .25*width);
 
     cairo_move_to (cr, .0*width, .24*height);
     snprintf(num, 10, "%d", index);

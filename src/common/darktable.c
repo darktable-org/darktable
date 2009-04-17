@@ -17,6 +17,7 @@
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
+#include <gegl.h>
 
 darktable_t darktable;
 
@@ -38,6 +39,9 @@ int dt_init(int argc, char *argv[])
 
 #ifdef HAVE_MAGICK
   MagickCoreGenesis(*argv, MagickTrue);
+#endif
+#ifdef DT_USE_GEGL
+  gegl_init(&argc, &argv);
 #endif
   char *homedir = getenv("HOME");
   char filename[512], *c = NULL;
@@ -118,6 +122,9 @@ void dt_cleanup()
 
 #ifdef HAVE_MAGICK
   MagickCoreTerminus();
+#endif
+#ifdef DT_USE_GEGL
+  gegl_exit();
 #endif
 }
 

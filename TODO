@@ -1,7 +1,4 @@
 bugs:
- - configure.ac: MAXOPT does not appear to work as expected on newer procs.
-   => use march=native, fuck the older gcc on macs.
- - mac port : window size < 0 (ctl init)
  - JPEG loading needs shrink + orientation
  - dev switch resolution AFTER setting gui stuff.
    control->width is updated in expose, and configure
@@ -27,13 +24,14 @@ feature requests:
      - gegl:load-buffer/ gegl_buffer_set (from float arrays)
      - gamma (last node before scale+pixbuf)
    - move tonecurve widget to gegl-curve struct and iop interface!
+   - replace dev_image by history item and update db entries.
    - graph:
-        [gegl:save-pixbuf]
-                    \
+        [gegl:save-pixbuf]   [gegl:write-buffer for export]
+                    \          |
                 [multiplexed connection]
-               /       \          |   |
-        [scale]         [fit]  [fill] |
-           |                \     |   |
+               /          \   
+	 [scale]         [fit, fill, 1:1, 2:1]
+           |                      |   
         [posthist]           [gegl:contrast-curve]
    [gegl:contrast-curve]          |
         [prehist]                 |
@@ -43,6 +41,7 @@ feature requests:
       from small cache       from full pixels
 
  - flags: deleted, cool, uncool..
+ - clustered image view by similar tag/flag
  - user orient rotation
  - tonemapping for hdr?
  - linear/gamma from database for camera models.
@@ -100,6 +99,7 @@ usability:
  - library graph with keyword edges.
 
 look:
+ - library rounded corners (dia)
  - dev img border
  - shadow border between center and outer panels
  - end markers :)

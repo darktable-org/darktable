@@ -22,7 +22,8 @@ extern float dt_dev_de_gamma[0x100];
 
 typedef struct dt_dev_history_item_t
 {
-  dt_iop_module_t *iop;
+  dt_dev_operation_t op;
+  int32_t iop;
   dt_iop_params_t *params;
 }
 dt_dev_history_item_t;
