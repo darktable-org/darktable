@@ -94,7 +94,7 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
 {
   if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1;
   if(img->mip[mip])
-  {
+  { // already loaded?
     dt_image_buffer_t mip2 = dt_image_get(img, mip, 'r');
     if(mip2 != mip) dt_image_release(img, mip2, 'r');
     else return 0;
@@ -115,8 +115,17 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
   }
   if(!blob) 
   {
-    fprintf(stderr, "[preview_read] could not get mipmap from database: %s\n", sqlite3_errmsg(darktable.db));
-    return 1;
+    fprintf(stderr, "[preview_read] could not get mipmap from database: %s, trying recovery.\n", sqlite3_errmsg(darktable.db));
+    rc = sqlite3_finalize(stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, img->id);
+    (void)sqlite3_step(stmt);
+    char filename[512];
+    strncpy(filename, img->filename, 512);
+    int film_id = img->film_id;
+    dt_image_cache_release(img, 'r');
+    // TODO: need to preserve img id!
+    return dt_image_import(film_id, filename);
   }
   if(dt_image_alloc(img, mip))
   {
@@ -505,6 +514,7 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   // go through stack, exec stuff (like dt_dev_load_small_cache, only operate on full buf this time)
   const int wd = dev.image->width;
   const int ht = dev.image->height;
+  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
   for(int k=1;k<dev.history_top;k++)
   {
     dt_dev_image_t *hist = dev.history + k;
@@ -512,7 +522,6 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
     dt_iop_execute(dev.image->pixels, dev.image->pixels, wd, ht, wd, ht, hist->operation, &(hist->op_params));
   }
 
-  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
   int status = 1;
   FILE *f = fopen(filename, "wb");
   if(f)
@@ -521,7 +530,7 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
     float tmp[3];
     for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
     {
-      tmp[3*i+k] = dev.tonecurve[(int)CLAMP(0xffff*dev.image->pixels[3*i+k], 0, 0xffff)]/(float)0x10000;
+      tmp[k] = dev.tonecurve[(int)CLAMP(0xffff*dev.image->pixels[3*i+k], 0, 0xffff)]/(float)0x10000;
       (void)fwrite(tmp, sizeof(float)*3, 1, f);
     }
     fclose(f);
