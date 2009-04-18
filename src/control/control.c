@@ -213,8 +213,8 @@ void dt_control_init(dt_control_t *s)
     pthread_create(s->thread + k, NULL, dt_control_work, s);
   for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
   {
-    pthread_create(s->thread_res + k, NULL, dt_control_work_res, s);
     s->new_res[k] = 0;
+    pthread_create(s->thread_res + k, NULL, dt_control_work_res, s);
   }
   s->button_down = 0;
   s->history_start = 1;

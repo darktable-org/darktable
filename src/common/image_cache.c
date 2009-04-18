@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
 {
@@ -114,13 +115,21 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
     ret = &(cache->line[res].image);
   }
   // update least recently used/most recently used linked list:
-  cache->line[cache->mru].mru = res;
-  if(cache->line[res].lru >= 0)                cache->line[cache->line[res].lru].mru = cache->line[res].mru;
-  if(cache->line[res].mru < cache->num_lines)  cache->line[cache->line[res].mru].lru = cache->line[res].lru;
-  if(cache->lru == res) cache->lru = cache->line[res].mru;
-  cache->line[res].mru = cache->num_lines+1;
-  cache->line[res].lru = cache->mru;
-  cache->mru = res;
+  // new top:
+  if(cache->mru != res)
+  {
+    assert(cache->line[res].mru != cache->num_lines);
+    // fill gap:
+    if(cache->line[res].lru >= 0)
+      cache->line[cache->line[res].lru].mru = cache->line[res].mru;
+    cache->line[cache->line[res].mru].lru = cache->line[res].lru;
+    
+    if(cache->lru == res) cache->lru = cache->line[res].mru;
+    cache->line[cache->mru].mru = res;
+    cache->line[res].mru = cache->num_lines;
+    cache->line[res].lru = cache->mru;
+    cache->mru = res;
+  }
   pthread_mutex_unlock(&(cache->mutex));
   return ret;
 }
@@ -132,5 +141,55 @@ void dt_image_cache_release(dt_image_t *img, const char mode)
   cache->line[img->cacheline].lock.users--;
   if(mode == 'w') cache->line[img->cacheline].lock.write = 0;
   pthread_mutex_unlock(&(cache->mutex));
+}
+
+void dt_image_cache_print(dt_image_cache_t *cache)
+{
+  int users = 0, write = 0, entries = 0;
+  for(int k=0;k<cache->num_lines;k++)
+  {
+    if(cache->line[k].image.id == -1) continue;
+    entries++;
+    users += cache->line[k].lock.users;
+    write += cache->line[k].lock.write;
+  }
+  printf("image cache: fill: %d/%d, users: %d, writers: %d\n", entries, cache->num_lines, users, write);
+#if 0
+  int16_t k = cache->lru;
+  int32_t cnt = 0;
+  int16_t history[500], next[500];
+  printf("checking lru list consistency:  ");
+  for(int i=0;i<=cache->num_lines;i++)
+  {
+    assert(k <= cache->num_lines);
+    for(int j=0;j<cnt;j++) if(history[j] == k)
+    {
+      printf("detected loop !\n");
+      for(int l=j;l<cnt;l++) printf("%d->%d", history[l], next[l]);
+      printf("\n\n");
+      break;
+    }
+    history[cnt] = k;
+    next[cnt] = cache->line[k].mru;
+    cnt++;
+    int next_k = cache->line[k].mru;
+    if(next_k < cache->num_lines) if(cache->line[next_k].lru != k)
+    {
+      printf("%d->%d but %d<-%d !!\n", k, next_k, cache->line[next_k].lru, next_k);
+      assert(0);
+    }
+    k = cache->line[k].mru;
+    if(k == cache->num_lines)
+    {
+      printf("reached %d entries.\n", cnt);
+      assert(cnt == cache->num_lines);
+      return;
+    }
+  }
+  printf("ERROR: bailed out at %d-th entry!!\n", k);
+  for(int l=0;l<cnt;l++) printf("%d->%d ", history[l], next[l]);
+  printf("\n\n");
+  assert(666 == 0);
+#endif
 }
 

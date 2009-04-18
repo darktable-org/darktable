@@ -97,6 +97,8 @@ dt_mipmap_cache_t;
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache, int32_t entries);
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
+/** print some cache statistics. */
+void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 
 /** if in debug mode, asserts image buffer size for mip is alloc'ed this large. */
 void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t size);

@@ -35,6 +35,8 @@ dt_image_cache_t;
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries);
 void dt_image_cache_cleanup(dt_image_cache_t *cache);
+/** print some debug info. */
+void dt_image_cache_print(dt_image_cache_t *cache);
 
 /** returns alloc'ed image (newly or from cache) or NULL on failure.
  * lru is freed instead. there is no explicit interface for free.

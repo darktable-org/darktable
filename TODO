@@ -1,4 +1,8 @@
 bugs:
+ - failed/aborted import: could not get mipmap=>re-import!
+ - mipmap cache somehow fishy:
+   - film import: mip0 is cached out! (=>mip cache not working??)
+   - free of still used images?
  - ppm export crashing sometimes?
  - JPEG loading needs shrink + orientation
  - dev switch resolution AFTER setting gui stuff.

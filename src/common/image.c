@@ -261,9 +261,9 @@ void dt_image_init(dt_image_t *img)
   img->flags = 0;
   img->id = -1;
   img->cacheline = -1;
-  strncpy(img->exif_model, "unknown", 20);
-  strncpy(img->exif_maker, "unknown", 20);
-  strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00", 20);
+  strncpy(img->exif_model, "unknown\0", 20);
+  strncpy(img->exif_maker, "unknown\0", 20);
+  strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
 #ifdef _DEBUG
   for(int k=0;(int)k<(int)DT_IMAGE_NONE;k++) img->mip_buf_size[k] = 0;
@@ -368,6 +368,24 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
   // TODO: free all img bufs?
   for(int k=0;k<(int)DT_IMAGE_NONE;k++) free(cache->mip_lru[k]);
   pthread_mutex_destroy(&(cache->mutex));
+}
+
+void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
+{
+  for(int k=0;k<(int)DT_IMAGE_NONE;k++)
+  {
+    int users = 0, write = 0, entries = 0;
+    for(int i=0;i<cache->num_entries[k];i++)
+    {
+      if(cache->mip_lru[k][i])
+      {
+        entries++;
+        users += cache->mip_lru[k][i]->lock[k].users;
+        write += cache->mip_lru[k][i]->lock[k].write;
+      }
+    }
+    printf("mip %d: fill: %d/%d, users: %d, writers: %d\n", k, entries, cache->num_entries[k], users, write);
+  }
 }
 
 void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t size)

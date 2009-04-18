@@ -133,7 +133,7 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   int seli = (int)((pointerx + zoom_x)/wd) - MAX(offset_i, 0);
   int selj = (int)((pointery + zoom_y)/ht) - offset_j;
 
-  sqlite3_stmt *stmt, *stmt2;
+  sqlite3_stmt *stmt = NULL, *stmt2 = NULL;
   int rc, rc2, id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
   if(clicked1 &&
@@ -209,6 +209,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   DT_CTL_SET_GLOBAL(lib_zoom_y, zoom_y);
   DT_CTL_SET_GLOBAL(lib_track, track);
   DT_CTL_SET_GLOBAL(lib_center, center);
+  // dt_mipmap_cache_print(darktable.mipmap_cache);
+  // dt_image_cache_print(darktable.image_cache);
 }
 
 void dt_library_button_released(dt_library_t *lib, double x, double y, int which, uint32_t state)
