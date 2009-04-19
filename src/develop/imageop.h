@@ -18,6 +18,10 @@ typedef void* dt_iop_data_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_t
 {
+  /** opened module. */
+  GModule *module;
+  /** used to identify this module in the history stack. */
+  int32_t instance;
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */
@@ -36,22 +40,27 @@ typedef struct dt_iop_module_t
   GtkWidget *widget;
   /** callback methods for gui. */
   void (*gui_reset)   (struct dt_iop_module_t *self);
+  void (*gui_update)  (struct dt_iop_module_t *self);
   void (*gui_init)    (struct dt_iop_module_t *self);
   void (*gui_cleanup) (struct dt_iop_module_t *self);
   // TODO: add more for mouse interaction dreggn.
-  /** destroy all. */
+  void (*init) (struct dt_iop_module_t *self);
   void (*cleanup) (struct dt_iop_module_t *self);
-#ifdef DT_USE_GEGL
   void (*get_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
   void (*get_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
   void (*get_preview_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
   void (*get_preview_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-#else
+#ifndef DT_USE_GEGL
   void (*execute) (float *dst, const float *src, const int32_t wd, const int32_t ht, const int32_t bufwd, const int32_t bufht,
                  dt_dev_operation_t operation, dt_dev_operation_params_t *params);
 #endif
 }
 dt_iop_module_t;
+
+/** loads and inits the (already alloc'ed) module. */
+int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *op);
+/** calls module->cleanup and closes the dl connection. */
+void dt_iop_unload_module(dt_iop_module_t *module);
 
 // TODO: replace all this shit with gegl nodes:
 //  - histogram counting in small preview buf before

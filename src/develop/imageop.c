@@ -5,6 +5,50 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gmodule.h>
+
+#ifdef DT_USE_GEGL
+
+int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *op)
+{
+  module->instance = dev->iop_instance++;
+  module->dt = &darktable;
+  module->dev = dev;
+  module->enabled = 1;
+  strncpy(module->op, op, 20);
+  // load module from disk
+  gchar *libname = g_module_build_path(DATADIR, (const gchar *)op);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  g_free(libname);
+  if(!module->module) goto error;
+  if(g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
+  if(g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
+  if(g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_init)))               goto error;
+  if(g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+  if(g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
+  if(g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
+  if(g_module_symbol(module->module, "get_output_pad",         (gpointer)&(module->get_output_pad)))         goto error;
+  if(g_module_symbol(module->module, "get_input_pad",          (gpointer)&(module->get_input_pad)))          goto error;
+  if(g_module_symbol(module->module, "get_preview_output_pad", (gpointer)&(module->get_preview_output_pad))) goto error;
+  if(g_module_symbol(module->module, "get_preview_input_pad",  (gpointer)&(module->get_preview_input_pad)))  goto error;
+  module->init(module);
+  return 0;
+error:
+  const gchar *err = g_module_error();
+  fprintf(stderr, "[iop_load_module] failed to open operation `%s': %s\n", op, err);
+  g_free(err);
+  if(module->module) g_module_close(module->module);
+  return 1;
+}
+
+void dt_iop_unload_module(dt_iop_module_t *module)
+{
+  module->cleanup(module);
+  if(module->module) g_module_close(module->module);
+}
+#else
+
+//=============== ..?
 
 void dt_iop_init(dt_iop_t *iop)
 {
@@ -140,4 +184,6 @@ uint32_t dt_iop_create_histogram_8(const uint8_t *pixels, int32_t width, int32_t
   for(int k=19;k<4*256;k+=4) max = max > hist[k] ? max : hist[k];
   return max;
 }
+
+#endif
 

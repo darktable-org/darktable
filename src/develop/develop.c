@@ -11,99 +11,65 @@
 
 #ifdef DT_USE_GEGL
 
-uint8_t dt_dev_default_gamma[0x10000];
-float dt_dev_de_gamma[0x100];
-
-void dt_dev_update_cache(dt_develop_t *dev, dt_dev_image_t *img, dt_dev_zoom_t zoom)
-{
-  pthread_mutex_lock(&dev->cache_mutex);
-  if(!dev->image || !dev->gui_attached || dev->image_loading)
-  {
-    pthread_mutex_unlock(&dev->cache_mutex);
-    return; // refuse silly cache op.
-  }
-  pthread_mutex_unlock(&dev->cache_mutex);
-  dt_job_t job;
-  dt_dev_cache_load_job_init(&job, dev, dev->history_top - 1, zoom);
-  int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_2 + zoom);
-  if(err) fprintf(stderr, "[dev_update_cache] job queue exceeded!\n");
-}
-
-void dt_dev_update_small_cache(dt_develop_t *dev)
-{
-  if(!dev->gui_attached) return;
-  dt_job_t job;
-  dt_dev_small_cache_load_init(&job, dev);
-  int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_5);
-  if(err) fprintf(stderr, "[dev_update_small_cache] job queue exceeded!\n");
-}
-
-void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float gamma, uint8_t *arr)
-{
-  double a, b, c, g;
-  if(linear<1.0)
-  {
-    g = gamma*(1.0-linear)/(1.0-gamma*linear);
-    a = 1.0/(1.0+linear*(g-1));
-    b = linear*(g-1)*a;
-    c = pow(a*linear+b, g)/linear;
-  }
-  else
-  {
-    a = b = g = 0.0;
-    c = 1.0;
-  }
-
-  for(int k=0;k<0x10000;k++)
-  {
-    int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
-	  if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
-	  else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
-    arr[k] = tmp>>8;
-  }
-}
-
-void dt_dev_set_gamma(dt_develop_t *dev)
-{
-  dt_dev_image_t *img = dev->history + dev->history_top - 1;
-  dt_dev_set_gamma_array(dev, img->settings.dev_gamma_linear, img->settings.dev_gamma_gamma, dev->gamma);
-}
-
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
-  // TODO: this is a tmp hack for default, fixed pipeline
-  dev->num_iops = 1;
-  dev->iop = (dt_iop_module_t **)malloc(sizeof(dt_iop_module_t *)*dev->num_iops);
-  for(int k=0;k<dev->num_iops;k++) dev->iop[k] = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  dev->iop_instance = 0;
+  dev->iop = NULL;
+  dt_iop_module_t *module;
+  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  dt_iop_load_module(module, dev, "gamma");
+  dev->iop = g_list_append(dev->iop, module);
+  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  dt_iop_load_module(module, dev, "tonecurve");
+  dev->iop = g_list_append(dev->iop, module);
+  // TODO:
+  // dt_iop_load_module(module, dev, "saturation");
+  // or better: one module for: blackpoint, whitepoint, exposure, fill darks, saturation.
+
+  dev->history_end = 0;
+  dev->history = NULL; // empty list
+
   dev->gui_attached = gui_attached;
+  dev->width = -1;
+  dev->height = -1;
+  dev->pixmap = NULL;
+
   dev->image = NULL;
-  dev->image_loading = 0;
-  dev->small_raw_loading = 0;
-  
-  dev->history_top = 0;
-  dev->history_max = 100;
-  dev->history = (dt_dev_image_t *)malloc(sizeof(dt_dev_history_item_t)*dev->history_max);
+  dev->image_loading = dev->image_processing = dev->preview_loading = dev->preview_processing = 0;
 
-  float lin, gam;
-  DT_CTL_GET_GLOBAL(lin, dev_gamma_linear);
-  DT_CTL_GET_GLOBAL(gam, dev_gamma_gamma);
-  dt_dev_set_gamma_array(dev, lin, gam, dt_dev_default_gamma);
-  dt_dev_set_gamma_array(dev, lin, gam, dev->gamma);
-  int last = 0; // invert 0.1 0.45 fn
-  for(int i=0;i<0x100;i++) for(int k=last;k<0x10000;k++)
-    if(dt_dev_default_gamma[k] >= i) { last = k; dt_dev_de_gamma[i] = k/(float)0x10000; break; }
+  dev->histogram = dev->histogram_pre = NULL;
+  dev->gegl = gegl_node_new();
+  if(dev->gui_attached)
+  {
+    dev->histogram = (uint32_t *)malloc(sizeof(int32_t)*256*4);
+    bzero(dev->histogram, sizeof(int32_t)*256*4);
+    dev->histogram_max = -1;
+    dev->histogram_pre = (uint32_t *)malloc(sizeof(int32_t)*256*4);
+    bzero(dev->histogram_pre, sizeof(int32_t)*256*4);
+    dev->histogram_pre_max = -1;
 
-  dev->histogram = (uint32_t *)malloc(sizeof(int32_t)*256*4);
-  bzero(dev->histogram, sizeof(int32_t)*256*4);
-  dev->histogram_max = -1;
-  dev->histogram_pre = (uint32_t *)malloc(sizeof(int32_t)*256*4);
-  bzero(dev->histogram_pre, sizeof(int32_t)*256*4);
-  dev->histogram_pre_max = -1;
+    // TODO: init gegl nodes:
+    // pixbuf
+    // |
+    // crop
+    // |
+    // scale
+    // |
+    // translate
+    // |
+    // TODO: more efficient to crop befor img ops?
+    dev->gegl_crop  = gegl_node_new_child(dev->gegl, "operation", "gegl:crop", "x", 0.0, "y", 0.0, "width", 0.0, "height", 0.0, NULL);
+    dev->gegl_scale = gegl_node_new_child(dev->gegl, "operation", "gegl:scale", "origin-x", 0.0, "origin-y", 0.0, "filter", "nearest", "hard-edges", FALSE, "x", 1.0, "y", 1.0, NULL);
+    dev->gegl_translate = gegl_node_new_child(dev->gegl, "operation", "gegl:translate", "origin-x", 0.0, "origin-y", 0.0, "filter", "nearest", "hard-edges", FALSE, "x", .0, "y", .0, NULL);
+    // TODO: prepend buffer loading and std processing nodes!
+    gegl_node_link_many(dev->gegl_translate, dev->gegl_scale, dev->gegl_crop, dev->gegl_pixbuf, NULL);
+  }
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
 {
-  // TODO: check if image_cache has to be released as well?
+  // image_cache does not have to be unref'd, this is done outside develop module.
+  // unref used mipmap buffers:
   if(dev->image)
   {
     dt_image_release(dev->image, DT_IMAGE_FULL, 'w');
@@ -111,228 +77,99 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
   }
   g_object_unref (dev->gegl);
-  free(dev->history);
+  while(dev->history)
+  {
+    free(((dt_dev_history_item_t *)dev->history->data)->params);
+    free( (dt_dev_history_item_t *)dev->history->data);
+    dev->history = g_list_delete_link(dev->history, dev->history);
+  }
+  while(dev->iop)
+  {
+    dt_iop_unload_module((dt_iop_module_t *)dev->iop->data);
+    dev->iop = g_list_delete_link(dev->iop, dev->iop);
+  }
+  if(dev->pixmap) g_object_unref(dev->pixmap); 
   free(dev->histogram);
   free(dev->histogram_pre);
 }
 
-int dt_dev_small_cache_load(dt_develop_t *dev)
+void dt_dev_process_image(dt_develop_t *dev)
 {
-  // TODO: only call gegl_process on small pixbuf!
-  // and schedule a redraw.
-  dt_print(DT_DEBUG_DEV, "[small_cache_load] hash %d -> %d\n", dev->small_raw_hash, dev->history[dev->history_top-1].num);
-  if(!dev->image) return 1;
-  dt_image_buffer_t mip = dt_image_get(dev->image, DT_IMAGE_MIPF, 'r');
-  if(mip != DT_IMAGE_MIPF)
-  { // fail. :(
-    pthread_mutex_lock(&dev->cache_mutex);
-    dev->small_raw_loading = 0;
-    pthread_mutex_unlock(&dev->cache_mutex);
-    return 1;
-  }
-  int wd, ht;
-  dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &wd, &ht);
-  dev->small_raw_width  = wd;
-  dev->small_raw_height = ht;
-restart_small_cache:
-  dt_image_check_buffer(dev->image, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
-  // need 16-bit buf update?
-  pthread_mutex_lock(&dev->cache_mutex);
-  int hash_in = dev->history[dev->history_top-1].num;
-  int test = dev->small_raw_hash != dev->history[dev->history_top-1].num;
-  pthread_mutex_unlock(&dev->cache_mutex);
-  if(test)
-  {
-    float *tmp = dev->image->mipf;
-    // memcpy(dev->small_raw_cached, dev->small_raw, wd*ht*3*sizeof(uint16_t));
-    // perform all image operations on stack
-    const int num_in = dev->history[0].num;
-    for(int k=1;k<dev->history_top;k++)
-    {
-      dt_dev_image_t *img = dev->history + k;
-      dt_iop_execute(dev->small_raw_buf, tmp, wd, ht, wd, ht, img->operation, &(img->op_params));
-      if(img->num != num_in) tmp = dev->small_raw_buf;
-    }
-    dev->small_raw_cached = tmp; // set to orig or buf.
-    if(dev->history[dev->history_top-1].num != hash_in) goto restart_small_cache; // obsoleted
-  }
-  if(dev->small_backbuf_hash != dev->history[dev->history_top-1].num)
-  {
-// #pragma omp parallel for schedule(static) shared(dev)
-    for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
-      dev->small_backbuf[4*i+2-k] = dev->gamma[dev->tonecurve[(int)CLAMP(0xffff*dev->small_raw_cached[3*i+k], 0, 0xffff)]];
-  }
-
-  dt_image_release(dev->image, mip, 'r');
-  pthread_mutex_lock(&dev->cache_mutex);
-  dev->small_backbuf_hash = 
-    dev->small_raw_hash = dev->history[dev->history_top-1].num;
-  dev->small_raw_loading = 0;
-  pthread_mutex_unlock(&dev->cache_mutex);
-  (void)dt_dev_update_fixed_pipeline(dev, dev->history[dev->history_top-1].operation, 0);
-  dt_control_queue_draw();
-  return 0;
+  if(!dev->image || dev->image_loading || !dev->gui_attached) return;
+  dt_job_t job;
+  dt_dev_process_image_job_init(&job, dev);
+  int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_2);
+  if(err) fprintf(stderr, "[dev_process_image] job queue exceeded!\n");
 }
 
-void dt_dev_cache_load(dt_develop_t *dev, int32_t stackpos, dt_dev_zoom_t zoom)
+void dt_dev_process_preview(dt_develop_t *dev)
 {
-  // TODO: full pipe node process!
-  pthread_mutex_lock(&dev->cache_mutex);
-  if(!dev->image || dev->image_loading || !dev->image->pixels || dev->cache_width < 0 || dev->image->shrink)
-  {
-    pthread_mutex_unlock(&dev->cache_mutex);
-    return; // refuse silly cache op.
-  }
-  pthread_mutex_unlock(&dev->cache_mutex);
+  if(!dev->image || dev->preview_loading || !dev->gui_attached) return;
+  dt_job_t job;
+  dt_dev_process_preview_job_init(&job, dev);
+  int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_3);
+  if(err) fprintf(stderr, "[dev_process_preview] job queue exceeded!\n");
+}
 
-  dt_dev_image_t *img = dev->history + stackpos;
-  float zoom_x, zoom_y;
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  const int cwd = dev->cache_width, cht = dev->cache_height;
-  const int iwd = dev->image->width, iht = dev->image->height;
-  // already there, just recently written by this worker thread?
-  if(dt_dev_test_cached_buf(dev, img, zoom) && dev->cache_zoom_x[img->cacheline[zoom]] == zoom_x && dev->cache_zoom_y[img->cacheline[zoom]] == zoom_y)
-    return;
-    // goto finalize;
-  // printf("[dev_cache_load] img %d zoom %d to cacheline %d for stackpos %d\n", img->num, zoom, img->cacheline[zoom], stackpos);
+void dt_dev_process_preview_job(dt_develop_t *dev)
+{
+  dev->preview_processing = 1;
+  GeglProcessor *processor;
+  GeglRectangle  roi;
 
-  if(stackpos == 0)
-  { // clip and zoom from original raw image
-    dt_dev_reserve_new_cached_buf(dev, img, zoom);
-    dev->cache_zoom_x[img->cacheline[zoom]] = zoom_x;
-    dev->cache_zoom_y[img->cacheline[zoom]] = zoom_y;
-    dt_image_check_buffer(dev->image, DT_IMAGE_FULL, 3*iwd*iht*sizeof(float));
-    float *pixels = dev->image->pixels;
-    // resample original image
-    if(zoom == DT_ZOOM_1)
-    {
-      int x = MAX(0, (int)((zoom_x + .5f)*iwd - cwd/2)), y = MAX(0, (int)((zoom_y + .5f)*iht - cht/2));
-      const int cht2 = MIN(cht, iht - y);
-      const int cwd2 = MIN(cwd, iwd - x);
-      int idx = 0;
-      for(int j=0;j<cht2;j++)
-      {
-        for(int i=0;i<cwd2;i++)
-        {
-          for(int k=0;k<3;k++) dev->cache[img->cacheline[zoom]][3*idx + k] = pixels[3*(iwd*y + x) + k];
-          x++; idx++;
-        }
-        y++; x = MAX(0, (int)((zoom_x + .5f)*iwd - cwd/2));
-        idx = cwd*j;
-      }
-    }
-    else if(zoom == DT_ZOOM_FILL)
-    {
-      float boxw = cwd/(iwd*fmaxf(cwd/(float)iwd, cht/(float)iht)), boxh = cht/(iht*fmaxf(cwd/(float)iwd, cht/(float)iht));
-      dt_iop_clip_and_zoom(pixels, (zoom_x + .5f)*iwd - boxw*iwd/2, (zoom_y + .5f)*iht - boxh*iht/2, boxw*iwd, boxh*iht, iwd, iht,
-                           dev->cache[img->cacheline[zoom]], 0, 0, cwd, cht, cwd, cht);
-    }
-    else
-    {
-      float scale = fminf(cwd/(float)iwd, cht/(float)iht);
-      dt_iop_clip_and_zoom(pixels, 0, 0, iwd, iht, iwd, iht,
-                           dev->cache[img->cacheline[zoom]], 0, 0, scale*iwd, scale*iht, cwd, cht);
-    }
-    dt_dev_release_cached_buf(dev, img, zoom);
-  }
-  else
-  {
-    // get image from last operation (stack - 1):
-    float *buf = NULL, *dst = NULL;
-    // recursively acquire buffers of previous operations, let cache_load decide whether loading is necessary.
-    dt_dev_cache_load(dev, stackpos-1, zoom);
-    buf = dt_dev_get_cached_buf(dev, img-1, zoom, 'r');
-    if(buf)
-    {
-      dst = dt_dev_get_cached_buf(dev, img, zoom, 'w'); // maybe parent buffer is ours?
-      if(!dst) dt_dev_reserve_new_cached_buf(dev, img, zoom);
-      dev->cache_zoom_x[img->cacheline[zoom]] = zoom_x;
-      dev->cache_zoom_y[img->cacheline[zoom]] = zoom_y;
-      if(buf != dev->cache[img->cacheline[zoom]])
-      { // only perform op if buffer is there and op affected it
-        // get operation and params, apply to buffer.
-        const float sx = iwd*fminf(cwd/(float)iwd, cht/(float)iht);
-        const float sy = iht*fminf(cwd/(float)iwd, cht/(float)iht);
-        const int cwd2 = zoom == DT_ZOOM_FIT ? sx : cwd;
-        const int cht2 = zoom == DT_ZOOM_FIT ? sy : cht; 
-        dt_iop_execute(dev->cache[img->cacheline[zoom]], buf, cwd2, cht2, cwd, cht, img->operation, &(img->op_params));
-        dt_dev_release_cached_buf(dev, img-1, zoom);
-      }
-      dt_dev_release_cached_buf(dev, img, zoom);
-    }
-  }
-  (void)dt_dev_update_fixed_pipeline(dev, img->operation, 0);
-// finalize:
-  if(stackpos == dev->history_top - 1)
-  {
-    dt_control_queue_draw();
-  }
+  roi = (GeglRectangle){0, 0, dev->width, dev->height};
+
+  processor = gegl_node_new_processor (dev->gegl_preview_pixbuf, &roi);
+  while (gegl_processor_work (processor, NULL)) ;
+
+  g_object_unref (processor);
+  dev->preview_processing = 0;
+  dt_control_queue_draw();
+}
+
+void dt_dev_process_image_job(dt_develop_t *dev)
+{
+  dev->image_processing = 1;
+  GeglProcessor *processor;
+  GeglRectangle  roi;
+
+  roi = (GeglRectangle){0, 0, dev->width, dev->height};
+
+  processor = gegl_node_new_processor (dev->gegl_pixbuf, &roi);
+  while (gegl_processor_work (processor, NULL)) ;
+
+  g_object_unref (processor);
+  dev->image_processing = 0;
+  dt_control_queue_draw();
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
-  int err;
-  pthread_mutex_lock(&dev->cache_mutex);
   // only load if not already there.
-  if(!dev->image->pixels || dev->image->shrink)
-  {
-    // TODO:
-    if(dev->image_loading)
-    {
-      // kill still running job
-      fprintf(stderr, "[dev_raw_load] still old image loading! TODO: kill job!\n");
-      pthread_mutex_unlock(&dev->cache_mutex);
-      return;
-    }
-    
+  if(dev->image->pixels && !dev->image->shrink) return;
 restart:
-    dev->image_loading = 1;
-    dev->image->shrink = 0;
-    pthread_mutex_unlock(&dev->cache_mutex);
-    err = dt_image_load(img, DT_IMAGE_FULL);
-    if(err)
-    {
-      fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
-    }
+  dev->image_loading = 1;
+  dev->image_processing = 1;
+  dev->image->shrink = 0;
+  pthread_mutex_unlock(&dev->cache_mutex);
+  int err = dt_image_load(img, DT_IMAGE_FULL);
+  if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
 
-    // obsoleted by another job?
-    if(dev->image != img)
-    {
-      printf("[dev_raw_load] recovering from obsoleted read!\n");
-      img = dev->image;
-      pthread_mutex_lock(&dev->cache_mutex);
-      goto restart;
-    }
-
-    pthread_mutex_lock(&dev->cache_mutex);
-    dev->image_loading = 0;
-    pthread_mutex_unlock(&dev->cache_mutex);
-
-    // flush cashe
-    dev->backbuf_hash = -1;
-    dev->histogram_max = -1;
-    dev->histogram_pre_max = -1;
-    for(int k=0;k<dev->num_cachelines;k++) dev->cache_hash[k] = -1;
-
-    // printf("[dev_raw_load] starting cache jobs %s\n", img->filename);
-    // create cached arrays in threads.
-    for(int k=0;k<3;k++)
-      dt_dev_update_cache(dev, dev->history + dev->history_top - 1, k);
+  // obsoleted by another job?
+  if(dev->image != img)
+  {
+    printf("[dev_raw_load] recovering from obsoleted read!\n");
+    img = dev->image;
+    goto restart;
   }
-  else pthread_mutex_unlock(&dev->cache_mutex);
+  dev->image_loading = 0;
+  // trigger processing pipeline:
+  dt_dev_process_image(dev);
 }
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
-  // TODO: load modules needed for this history stack
-  // temp fix for now: load fixed pipeline of modules:
-  dev->iop[0]->dt = &darktable;
-  dev->iop[0]->dev = dev;
-  dev->iop[0]->enabled = 1;
-  dt_iop_tonecurve_init(dev->iop[0]);
   dt_dev_read_history(dev);
-
   if(dev->gui_attached)
   {
     if(!dev->image->pixels || dev->image->shrink)
@@ -343,52 +180,27 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
       if(err) fprintf(stderr, "[dev_load_image] job queue exceeded!\n");
     }
   }
-  else dt_dev_raw_load(dev, dev->image);
+  else dt_dev_raw_load(dev, dev->image); // in this thread.
 }
 
-void dt_dev_configure(dt_develop_t *dev, int32_t width, int32_t height)
+static gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  // TODO: remove this entirely and replace by resize event?
-  // re-alloc cache on resize, flushes all entries :(
-  if(dev->cache_width != width || dev->cache_height != height)
+  dt_develop_t *dev = darktable.develop;
+  // TODO:resize event: update ROI and scale factors!
+  if(dev->width != event->width || dev->height != event->height)
   {
-    pthread_mutex_lock(&dev->cache_mutex);
-    // jobs still working will schedule a redraw when finished.
-    for(int k=0;k<dev->num_cachelines;k++)
+    GdkPixmap *tmppixmap = gdk_pixmap_new(da->window, event->width,  event->height, -1);
+    if(dev->pixmap)
     {
-      if(dev->cache_used[k])
-      {
-        pthread_mutex_unlock(&dev->cache_mutex);
-        return;
-      }
+      int minw = dev->width, minh = dev->height;
+      if(event->width  < minw) minw = event->width;
+      if(event->height < minh) minh = event->height;
+      gdk_draw_drawable(tmppixmap, da->style->fg_gc[GTK_WIDGET_STATE(da)], dev->pixmap, 0, 0, 0, 0, minw, minh);
+      g_object_unref(dev->pixmap); 
     }
-    dev->cache_width = width;
-    dev->cache_height = height;
-    for(int k=0;k<dev->num_cachelines;k++)
-    {
-      dev->cache_hash[k] = -1;
-      dev->cache_used[k] = 0;
-      free(dev->cache[k]);
-      dev->cache[k] = (float *)malloc(3*sizeof(float)*dev->cache_width*dev->cache_height);
-      bzero(dev->cache[k], 3*sizeof(float)*dev->cache_width*dev->cache_height);
-      dev->cache_sorted[k] = k;
-    }
-    free(dev->backbuf);
-    free(dev->small_backbuf);
-    free(dev->small_raw_buf);
-    int wd, ht;
-    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &wd, &ht);
-    // printf("cache configure! size %d\n", size);
-    dev->backbuf = (uint8_t *)malloc(4*sizeof(uint8_t)*dev->cache_width*dev->cache_height);
-    dev->small_raw_buf = (float *)malloc(3*sizeof(float)*wd*ht);
-    bzero(dev->small_raw_buf, 3*sizeof(float)*wd*ht);
-    dev->small_backbuf = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
-    pthread_mutex_unlock(&dev->cache_mutex);
-    // update caches
-    dt_job_t job;
-    dt_dev_raw_load_job_init(&job, dev, dev->image);
-    int32_t err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_1);
-    if(err) fprintf(stderr, "[dev_expose] job queue exceeded!\n");
+    dev->pixmap = tmppixmap;
+    dev->width = event->width;
+    dev->height = event->height;
   }
 }
 
@@ -433,7 +245,7 @@ void dt_dev_set_histogram(dt_develop_t *dev)
 }
 
 // helper used to synch a single history item with db
-int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_image_t *h, int32_t num)
+int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32_t num)
 {
   if(!dev->image) return 1;
   sqlite3_stmt *stmt;
@@ -450,11 +262,11 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_image_t *h, int32_t num)
     rc = sqlite3_step (stmt);
   }
   rc = sqlite3_finalize (stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, settings = ?3, hash = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
-  rc = sqlite3_bind_text(stmt, 1, h->operation, strlen(h->operation), SQLITE_STATIC);
+  rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+  rc = sqlite3_bind_text(stmt, 1, h->op, strlen(h->op), SQLITE_STATIC);
   rc = sqlite3_bind_blob(stmt, 2, &(h->op_params), sizeof(dt_dev_operation_params_t), SQLITE_STATIC);
-  rc = sqlite3_bind_blob(stmt, 3, &(h->settings), sizeof(dt_ctl_image_settings_t), SQLITE_STATIC);
-  rc = sqlite3_bind_int (stmt, 4, h->num);
+  rc = sqlite3_bind_int (stmt, 3, h->iop);
+  rc = sqlite3_bind_int (stmt, 4, h->enabled);
   rc = sqlite3_bind_int (stmt, 5, dev->image->id);
   rc = sqlite3_bind_int (stmt, 6, num);
   rc = sqlite3_step (stmt);
@@ -462,6 +274,7 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_image_t *h, int32_t num)
   return 0;
 }
 
+// TODO: port to gegl and glist
 void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 {
   dt_dev_image_t *img = dev->history + dev->history_top - 1;
@@ -506,6 +319,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
   dt_dev_update_small_cache(dev);
 }
 
+// TODO: only adjust history_end and gegl links!
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
   // this is called exclusively from the gtk thread, so no lock is necessary.
@@ -525,6 +339,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dt_dev_update_small_cache(dev);
 }
 
+// TODO: port to glist!
 void dt_dev_write_history(dt_develop_t *dev)
 {
   int rc;

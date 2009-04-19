@@ -50,6 +50,7 @@ void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *imag
   dt_control_job_init(job, "develop load raw image %s", image->filename);
 }
 
+#ifndef DT_USE_GEGL
 void dt_dev_cache_load_job_run(dt_job_t *job)
 {
   dt_dev_cache_load_t *t = (dt_dev_cache_load_t *)job->param;
@@ -79,6 +80,35 @@ void dt_dev_small_cache_load_init(dt_job_t *job, dt_develop_t *dev)
   t->dev = dev;
   dt_control_job_init(job, "develop load small cache");
 }
+#else
+void dt_dev_process_preview_job_run(dt_job_t *job)
+{
+  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
+  dt_dev_process_preview_job(t->dev);
+}
+
+void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev)
+{
+  job->execute = &dt_dev_process_preview_job_run;
+  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
+  t->dev = dev;
+  dt_control_job_init(job, "develop process preview");
+}
+
+void dt_dev_process_image_job_run(dt_job_t *job)
+{
+  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
+  dt_dev_process_image_job(t->dev);
+}
+
+void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev)
+{
+  job->execute = &dt_dev_process_image_job_run;
+  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
+  t->dev = dev;
+  dt_control_job_init(job, "develop image preview");
+}
+#endif
 
 void dt_dev_export_init(dt_job_t *job)
 {

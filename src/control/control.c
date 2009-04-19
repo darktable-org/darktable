@@ -145,7 +145,11 @@ int dt_control_load_config(dt_control_t *c)
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
+#ifdef DT_USE_GEGL
+    rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
+#else
     rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, hash integer, operation char(20), op_params blob, settings blob, foreign key(imgid) references images(id))", NULL, NULL, NULL);
+#endif
     HANDLE_SQLITE_ERR(rc);
 
     // TODO: - table tags "tag str" "key#"

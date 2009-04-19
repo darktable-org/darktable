@@ -1,6 +1,7 @@
 #ifdef HAVE_CONFIG_H
   #include "../config.h"
 #endif
+#include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"

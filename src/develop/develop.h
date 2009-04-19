@@ -9,21 +9,12 @@
 #include <pthread.h>
 #ifdef DT_USE_GEGL
 #include <gegl.h>
-// TODO: 
-//  - history stack in gegl: operation = "gegl:crop" etc
-//  - use gegl:pixbuf in develop_view
-//  - delete dev cache (use gegl cache)
-//  - introduce gegl:gammatone operation with lin/gamma/tonecurve
-//  - highlight reconstruction gegl:node
-//  - gegl_buffer_set from floating point images
-
-extern uint8_t dt_dev_default_gamma[0x10000];
-extern float dt_dev_de_gamma[0x100];
 
 typedef struct dt_dev_history_item_t
 {
   dt_dev_operation_t op;
   int32_t iop;
+  int32_t enabled;
   dt_iop_params_t *params;
 }
 dt_dev_history_item_t;
@@ -31,33 +22,31 @@ dt_dev_history_item_t;
 typedef struct dt_develop_t
 {
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
-  int32_t image_loading;
+  int32_t image_loading, image_processing;
+  int32_t preview_loading, preview_processing;
+
+  int32_t width, height;
+  GdkPixmap *pixmap;
+  GdkPixmap *preview_pixmap;
 
   // graph for gegl
   GeglNode *gegl;
-  GeglNode *gegl_pixbuf;
-
-  // small cached version while loading
-  int32_t small_raw_loading;
-  int32_t small_raw_width, small_raw_height;
+  GeglNode *gegl_pixbuf, *gegl_crop, *gegl_scale, *gegl_translate;
+  GeglNode *gegl_preview_pixbuf;
 
   // image under consideration.
   dt_image_t *image;
 
   // history stack
-  int32_t history_top, history_max;
-  dt_dev_history_item_t *history;
+  int32_t history_end;
+  gList *history;
   // operations pipeline
-  int32_t num_iops;
-  dt_iop_module_t **iop;
+  int32_t iop_instance;
+  gList *iop;
 
-  // image specific stuff
+  // histogram for display.
   uint32_t *histogram, *histogram_pre;
   uint32_t histogram_max, histogram_pre_max;
-
-  // gamma table
-  uint8_t gamma[0x10000];
-  uint16_t tonecurve[0x10000];
 }
 dt_develop_t;
 

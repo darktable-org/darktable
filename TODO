@@ -1,10 +1,7 @@
 bugs:
- - failed/aborted import: could not get mipmap=>re-import!
- - mipmap cache somehow fishy:
-   - film import: mip0 is cached out! (=>mip cache not working??)
-   - free of still used images?
+ - check mipmap decisions (seem very lo-res)
  - ppm export crashing sometimes?
- - JPEG loading needs shrink + orientation
+ - JPEG loading needs shrink + orientation (steal jhead source?)
  - dev switch resolution AFTER setting gui stuff.
    control->width is updated in expose, and configure
    is called in dev_enter. (just before) :(
