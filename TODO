@@ -1,4 +1,6 @@
 bugs:
+ - MAC: qwerty keycodes completely garbled!
+ - MAC: libraw does not load anything here??
  - check mipmap decisions (seem very lo-res)
  - ppm export crashing sometimes?
  - JPEG loading needs shrink + orientation (steal jhead source?)
