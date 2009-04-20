@@ -14,22 +14,41 @@
 #endif
 
 // keycodes mapped to dvorak keyboard layout for easier usage
+#if defined(__APPLE__) || defined(__MACH__)
+#define KEYCODE_a            8   // mac keycodes :(
+#define KEYCODE_o            9
+#define KEYCODE_e           10
+#define KEYCODE_apostrophe  20
+#define KEYCODE_comma       21
+#define KEYCODE_period      22
+#define KEYCODE_1           26
+#define KEYCODE_2           27
+#define KEYCODE_3           28
+#define KEYCODE_Escape      61
+#define KEYCODE_F11        111
+#define KEYCODE_Up         134
+#define KEYCODE_Down       133
+#define KEYCODE_Left        78
+#define KEYCODE_Right       74
+#define KEYCODE_Tab         56
+#else
 #define KEYCODE_a           38
-#define KEYCODE_o           39
-#define KEYCODE_e           40
-#define KEYCODE_apostrophe  24
-#define KEYCODE_comma       25
-#define KEYCODE_period      26
-#define KEYCODE_1           10
-#define KEYCODE_2           11
-#define KEYCODE_3           12
-#define KEYCODE_Escape       9
-#define KEYCODE_F11         95
-#define KEYCODE_Up         111
-#define KEYCODE_Down       116
-#define KEYCODE_Left       113
-#define KEYCODE_Right      114
-#define KEYCODE_Tab         23
+#define KEYCODE_o           39  
+#define KEYCODE_e           40  
+#define KEYCODE_apostrophe  24  
+#define KEYCODE_comma       25  
+#define KEYCODE_period      26  
+#define KEYCODE_1           10  
+#define KEYCODE_2           11  
+#define KEYCODE_3           12  
+#define KEYCODE_Escape       9  
+#define KEYCODE_F11         95  
+#define KEYCODE_Up         111  
+#define KEYCODE_Down       116  
+#define KEYCODE_Left       113  
+#define KEYCODE_Right      114  
+#define KEYCODE_Tab         23  
+#endif
 
 void dt_ctl_settings_init(dt_control_t *s)
 {
