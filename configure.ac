@@ -30,21 +30,21 @@ PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
 dnl *** check for MagickCore ***
 AC_CHECK_PROGS(MAGICKCONFIG, [MagickCore-config])
 if test -n "$MAGICKCONFIG"; then
-   ac_save_CPPFLAGS="$CPPFLAGS"
+   ac_save_CFLAGS="$CFLAGS"
    ac_save_LIBS="$LIBS"
-   MAGICK_CPPFLAGS="`$MAGICKCONFIG --cppflags`"
-   MAGICK_LIBS="`$MAGICKCONFIG --ldflags` `$MAGICKCONFIG --libs`"
-   CPPFLAGS="$CPPFLAGS $MAGICK_CPPFLAGS"
+   MAGICK_CFLAGS="`$MAGICKCONFIG --cflags`"
+   MAGICK_LIBS="`$MAGICKCONFIG --libs`"
+   CFLAGS="$CFLAGS $MAGICK_CFLAGS"
    LIBS="$MAGICK_LIBS $LIBS"
    AC_CHECK_FUNC(ExportImagePixels,
         AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick library is available]),
         AC_MSG_NOTICE([ImageMagick does not support the function
         ExportImagePixels. Please upgrade to ImageMagick 6.4 or newer]))
-   CPPFLAGS="$ac_save_CPPFLAGS"
+   CFLAGS="$ac_save_CFLAGS"
    LIBS="$ac_save_LIBS"
 fi
  
-AC_SUBST(MAGICK_CPPFLAGS)
+AC_SUBST(MAGICK_CFLAGS)
 AC_SUBST(MAGICK_LIBS)
 
 dnl *** Check for LittleCMS ***
