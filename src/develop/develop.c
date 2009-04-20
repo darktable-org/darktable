@@ -174,7 +174,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   GeglRectangle rect;
   rect = (GeglRectangle){0, 0, image->width, image->height};
-  gegl_buffer_set_extent(dev->gegl_buffer, &rect);
+  if(gegl_buffer_set_extent(dev->gegl_buffer, &rect)) return;
   gegl_node_set(dev->gegl_scale, "x", 1.0, "y", 1.0, NULL);
   // TODO: update scale factors
 
