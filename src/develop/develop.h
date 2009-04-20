@@ -31,6 +31,8 @@ typedef struct dt_develop_t
 
   // graph for gegl
   GeglNode *gegl;
+  GeglBuffer *gegl_buffer, *gegl_preview_buffer;
+  GeglNode *gegl_load_buffer, *gegl_load_preview_buffer;
   GeglNode *gegl_pixbuf, *gegl_crop, *gegl_scale, *gegl_translate;
   GeglNode *gegl_preview_pixbuf;
 

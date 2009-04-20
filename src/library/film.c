@@ -95,6 +95,7 @@ int dt_film_roll_open(dt_film_roll_t *film, const int32_t id)
   DT_CTL_SET_GLOBAL(lib_center, 1);
   DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
   dt_control_update_recent_films();
+  dt_control_queue_draw();
   return 0;
 }
 

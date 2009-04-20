@@ -58,11 +58,14 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // translate
     // |
     // TODO: more efficient to crop befor img ops?
+    dev->gegl_buffer = gegl_buffer_new(NULL, babl_format("RGB float"));
+    dev->gegl_load_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", "buffer", dev->gegl_buffer, NULL);
     dev->gegl_crop  = gegl_node_new_child(dev->gegl, "operation", "gegl:crop", "x", 0.0, "y", 0.0, "width", 0.0, "height", 0.0, NULL);
-    dev->gegl_scale = gegl_node_new_child(dev->gegl, "operation", "gegl:scale", "origin-x", 0.0, "origin-y", 0.0, "filter", "nearest", "hard-edges", FALSE, "x", 1.0, "y", 1.0, NULL);
-    dev->gegl_translate = gegl_node_new_child(dev->gegl, "operation", "gegl:translate", "origin-x", 0.0, "origin-y", 0.0, "filter", "nearest", "hard-edges", FALSE, "x", .0, "y", .0, NULL);
+    dev->gegl_scale = gegl_node_new_child(dev->gegl, "operation", "gegl:scale", "origin-x", 0.0, "origin-y", 0.0, "x", 1.0, "y", 1.0, NULL);
+    dev->gegl_translate = gegl_node_new_child(dev->gegl, "operation", "gegl:translate", "origin-x", 0.0, "origin-y", 0.0, "x", .0, "y", .0, NULL);
+    // TODO: init gegl_pixbuf node!
     // TODO: prepend buffer loading and std processing nodes!
-    gegl_node_link_many(dev->gegl_translate, dev->gegl_scale, dev->gegl_crop, dev->gegl_pixbuf, NULL);
+    gegl_node_link_many(dev->gegl_load_buffer, dev->gegl_translate, dev->gegl_scale, dev->gegl_crop, dev->gegl_pixbuf, NULL);
   }
 }
 
@@ -169,6 +172,12 @@ restart:
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
+  GeglRectangle rect;
+  rect = (GeglRectangle){0, 0, image->width, image->height};
+  gegl_buffer_set_extent(dev->gegl_buffer, &rect);
+  gegl_node_set(dev->gegl_scale, "x", 1.0, "y", 1.0, NULL);
+  // TODO: update scale factors
+
   dt_dev_read_history(dev);
   if(dev->gui_attached)
   {
