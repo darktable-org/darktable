@@ -26,26 +26,27 @@ PKG_CHECK_MODULES(GLADE, [libglade-2.0])
 PKG_CHECK_MODULES(SQLITE, [sqlite3])
 PKG_CHECK_MODULES(LIBEXIF, [libexif])
 PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
+PKG_CHECK_MODULES(MAGICK, MagickCore >= 6.4)
  
 dnl *** check for MagickCore ***
-AC_CHECK_PROGS(MAGICKCONFIG, [MagickCore-config])
-if test -n "$MAGICKCONFIG"; then
-   ac_save_CFLAGS="$CFLAGS"
-   ac_save_LIBS="$LIBS"
-   MAGICK_CFLAGS="`$MAGICKCONFIG --cflags`"
-   MAGICK_LIBS="`$MAGICKCONFIG --libs`"
-   CFLAGS="$CFLAGS $MAGICK_CFLAGS"
-   LIBS="$MAGICK_LIBS $LIBS"
-   AC_CHECK_FUNC(ExportImagePixels,
-        AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick library is available]),
-        AC_MSG_NOTICE([ImageMagick does not support the function
-        ExportImagePixels. Please upgrade to ImageMagick 6.4 or newer]))
-   CFLAGS="$ac_save_CFLAGS"
-   LIBS="$ac_save_LIBS"
-fi
- 
-AC_SUBST(MAGICK_CFLAGS)
-AC_SUBST(MAGICK_LIBS)
+dnl ** AC_CHECK_PROGS(MAGICKCONFIG, [MagickCore-config])
+dnl ** if test -n "$MAGICKCONFIG"; then
+dnl **    ac_save_CFLAGS="$CFLAGS"
+dnl **    ac_save_LIBS="$LIBS"
+dnl **    MAGICK_CFLAGS="`$MAGICKCONFIG --cflags`"
+dnl **    MAGICK_LIBS="`$MAGICKCONFIG --libs`"
+dnl **    CFLAGS="$CFLAGS $MAGICK_CFLAGS"
+dnl **    LIBS="$MAGICK_LIBS $LIBS"
+dnl **    AC_CHECK_FUNC(ExportImagePixels,
+dnl **         AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick library is available]),
+dnl **         AC_MSG_NOTICE([ImageMagick does not support the function
+dnl **         ExportImagePixels. Please upgrade to ImageMagick 6.4 or newer]))
+dnl **    CFLAGS="$ac_save_CFLAGS"
+dnl **    LIBS="$ac_save_LIBS"
+dnl ** fi
+dnl **  
+dnl ** AC_SUBST(MAGICK_CFLAGS)
+dnl ** AC_SUBST(MAGICK_LIBS)
 
 dnl *** Check for LittleCMS ***
 AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
