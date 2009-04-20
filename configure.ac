@@ -27,7 +27,7 @@ PKG_CHECK_MODULES(SQLITE, [sqlite3])
 PKG_CHECK_MODULES(LIBEXIF, [libexif])
 PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
 PKG_CHECK_MODULES(MAGICK, MagickCore >= 6.4)
-AC_DEFINE(HAVE_MAGICK, 1, [Whether the ImageMagick library is available]),
+AC_DEFINE(HAVE_MAGICK, 1, [whether the ImageMagick library is available]),
  
 dnl *** check for MagickCore ***
 dnl ** AC_CHECK_PROGS(MAGICKCONFIG, [MagickCore-config])
@@ -51,7 +51,7 @@ dnl ** AC_SUBST(MAGICK_LIBS)
 
 dnl *** Check for LittleCMS ***
 AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
-   [AC_DEFINE(HAVE_LCMS, 1, [Define if you have the LittleCMS development environment])
+   [AC_DEFINE(HAVE_LCMS, 1, [whether the LittleCMS development environment is available])
     LCMS_LIBS="-llcms"])
 AC_SUBST(LCMS_LIBS)
 
