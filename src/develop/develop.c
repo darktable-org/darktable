@@ -49,15 +49,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre_max = -1;
 
     // TODO: init gegl nodes:
-    // pixbuf
-    // |
-    // crop
-    // |
-    // scale
-    // |
-    // translate
-    // |
-    // TODO: more efficient to crop befor img ops?
     dev->gegl_buffer = gegl_buffer_new(NULL, babl_format("RGB float"));
     dev->gegl_load_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", "buffer", dev->gegl_buffer, NULL);
     dev->gegl_crop  = gegl_node_new_child(dev->gegl, "operation", "gegl:crop", "x", 0.0, "y", 0.0, "width", 0.0, "height", 0.0, NULL);
@@ -137,6 +128,9 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   GeglRectangle  roi;
 
   roi = (GeglRectangle){0, 0, dev->width, dev->height};
+
+  // TODO: replace by
+  // void gegl_node_blit (GeglNode * node, gdouble scale, const GeglRectangle * roi, const Babl * format, gpointer destination_buf, gint rowstride, GeglBlitFlags flags)
 
   processor = gegl_node_new_processor (dev->gegl_pixbuf, &roi);
   while (gegl_processor_work (processor, NULL)) ;
@@ -450,6 +444,7 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 // TODO: switch to gegl:write-buffer and GeglBuffer to pixels!
 void dt_dev_export(dt_job_t *job)
 {
+  // TODO: use gegl output nodes and gegl_node_process!
   while(1)
   {
     // TODO: progress bar in ctl?

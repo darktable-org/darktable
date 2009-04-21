@@ -193,11 +193,25 @@ void dt_dev_leave()
 
 void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height)
 {
+#ifndef DT_USE_GEGL
   // if(dev->cache_width != width || dev->cache_height != height) return;
  
   // dt_dev_configure(dev, width, height);
   // draw top history item.
   if(dev->history_top > 0)
     dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
+#else
+  /*
+  int wd = dev->
+  int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+  cairo_rectangle(cr, 0, 0, wd, ht);
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+  cairo_fill(cr);
+  cairo_surface_destroy (surface);
+  */
+  // TODO: execute module callback hook!
+#endif
 }
 

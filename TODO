@@ -1,5 +1,4 @@
 bugs:
- - MAC: qwerty keycodes completely garbled!
  - MAC: libraw does not load anything here??
  - check mipmap decisions (seem very lo-res)
  - ppm export crashing sometimes?
@@ -26,24 +25,13 @@ feature requests:
    - remove clip and zoom by gegl:scale
    - custom nodes at bottom/top:
      - gegl:load-buffer/ gegl_buffer_set (from float arrays)
-     - gamma (last node before scale+pixbuf)
    - move tonecurve widget to gegl-curve struct and iop interface!
    - replace dev_image by history item and update db entries.
-   - graph:
-        [gegl:save-pixbuf]   [gegl:write-buffer for export]
-                    \          |
-                [multiplexed connection]
-               /          \   
-	 [scale]         [fit, fill, 1:1, 2:1]
-           |                      |   
-        [posthist]           [gegl:contrast-curve]
-   [gegl:contrast-curve]          |
-        [prehist]                 |
-        [iops..]           [same iops, 2nd pipe]
-           |                      |
-     [gegl:load-buffer]     [gegl:load-buffer]
-      from small cache       from full pixels
-
+   - two pipelines: preview, real
+   - two outputs: gegl_node_process for export
+     - gegl_node_blit for display
+   - apply linear/gamma conversion curve after that.
+   - draw buffer using cairo (enable cool decorations of plugins)
  - flags: deleted, cool, uncool..
  - clustered image view by similar tag/flag
  - user orient rotation

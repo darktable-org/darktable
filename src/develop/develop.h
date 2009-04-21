@@ -26,15 +26,12 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing;
 
   int32_t width, height;
-  GdkPixmap *pixmap;
-  GdkPixmap *preview_pixmap;
 
   // graph for gegl
   GeglNode *gegl;
   GeglBuffer *gegl_buffer, *gegl_preview_buffer;
   GeglNode *gegl_load_buffer, *gegl_load_preview_buffer;
-  GeglNode *gegl_pixbuf, *gegl_crop, *gegl_scale, *gegl_translate;
-  GeglNode *gegl_preview_pixbuf;
+  GeglNode *gegl_save_buffer, *gegl_save_preview_buffer;
 
   // image under consideration.
   dt_image_t *image;
