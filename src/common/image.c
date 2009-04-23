@@ -238,7 +238,7 @@ int dt_image_update_mipmaps(dt_image_t *img)
     else memcpy(img->mip[l], img->mip[l+1], 4*sizeof(uint8_t)*p_ht*p_wd);
 
     if(dt_imageio_preview_write(img, l))
-      fprintf(stderr, "[update_mipmaps] could write mip level %d of image %s to database!\n", l, img->filename);
+      fprintf(stderr, "[update_mipmaps] could not write mip level %d of image %s to database!\n", l, img->filename);
     dt_image_release(img, l, 'w');
     dt_image_release(img, l+1, 'r');
   }

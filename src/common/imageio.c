@@ -60,6 +60,7 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   {
     image_info = DestroyImageInfo(image_info);
     exception = DestroyExceptionInfo(exception);
+    fprintf(stderr, "[preview_write] could not constitute magick image!\n");
     return 1;
   }
   (void)strncpy(image_info->magick, "jpeg", 4);
