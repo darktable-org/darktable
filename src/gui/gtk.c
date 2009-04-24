@@ -38,35 +38,38 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve");
   gtk_widget_queue_draw(widget);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
-
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
   {
     dt_cleanup();
     gtk_main_quit();
   }
+  else
+  {
+    // TODO: reset modules (iop) !
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
+    if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
 
-  // reset operations, update expanders
-  dt_dev_operation_t op;
-  DT_CTL_GET_GLOBAL_STR(op, dev_op, 20);
-  darktable.gui->reset = 1;
-  float gamma, linear, zoom;
-  DT_CTL_GET_IMAGE(gamma, dev_gamma_gamma);
-  DT_CTL_GET_IMAGE(linear, dev_gamma_linear);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_linear");
-  gtk_range_set_value(GTK_RANGE(widget), linear);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_gamma");
-  gtk_range_set_value(GTK_RANGE(widget), gamma);
+    // reset operations, update expanders
+    dt_dev_operation_t op;
+    DT_CTL_GET_GLOBAL_STR(op, dev_op, 20);
+    darktable.gui->reset = 1;
+    float gamma, linear, zoom;
+    DT_CTL_GET_IMAGE(gamma, dev_gamma_gamma);
+    DT_CTL_GET_IMAGE(linear, dev_gamma_linear);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_linear");
+    gtk_range_set_value(GTK_RANGE(widget), linear);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_gamma");
+    gtk_range_set_value(GTK_RANGE(widget), gamma);
 
-  // reset non-fixed pipeline:
-  dt_iop_gui_reset();
+    // reset non-fixed pipeline:
+    dt_iop_gui_reset();
 
-  DT_CTL_GET_GLOBAL(zoom, lib_zoom);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
-  gtk_range_set_value(GTK_RANGE(widget), zoom);
-  darktable.gui->reset = 0;
+    DT_CTL_GET_GLOBAL(zoom, lib_zoom);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
+    gtk_range_set_value(GTK_RANGE(widget), zoom);
+    darktable.gui->reset = 0;
+  }
 
 	return TRUE;
 }

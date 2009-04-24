@@ -117,7 +117,7 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
   }
   if(!blob) 
   {
-    fprintf(stderr, "[preview_read] could not get mipmap from database: %s, trying recovery.\n", sqlite3_errmsg(darktable.db));
+    fprintf(stderr, "[preview_read] could not get mipmap from database: %s, removing image %s.\n", sqlite3_errmsg(darktable.db), img->filename);
     rc = sqlite3_finalize(stmt);
     rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
     rc = sqlite3_bind_int (stmt, 1, img->id);
@@ -127,7 +127,7 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     int film_id = img->film_id;
     dt_image_cache_release(img, 'r');
     // TODO: need to preserve img id!
-    return dt_image_import(film_id, filename);
+    return 1;//dt_image_import(film_id, filename);
   }
   if(dt_image_alloc(img, mip))
   {

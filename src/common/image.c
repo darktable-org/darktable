@@ -170,7 +170,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
     rc = sqlite3_bind_int(stmt, 1, id);
     rc = sqlite3_bind_int(stmt, 2, mip);
     rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE) fprintf(stderr, "[image_import] could not insert mipmap: %s\n", sqlite3_errmsg(darktable.db));
+    if (rc != SQLITE_DONE) fprintf(stderr, "[image_import] could not insert mipmap %d for image %d: %s\n", mip, id, sqlite3_errmsg(darktable.db));
     rc = sqlite3_finalize(stmt);
   }
 
