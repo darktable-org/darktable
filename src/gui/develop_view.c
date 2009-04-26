@@ -129,21 +129,21 @@ void dt_dev_enter()
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
 
   dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
-  dt_dev_configure(darktable.develop, darktable.control->width - 2*darktable.control->tabborder, darktable.control->height - 2*darktable.control->tabborder);
 #ifdef DT_USE_GEGL
-  // TODO: restructure gui: top: histogram, metadata | scrollable area right_vbox: gamma, tonecurve, .. .. hdr import, export.
-  // TODO: clear module list (all except gamma, tonecurve, and export)
-  // TODO: load module list in dev
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "right_vbox"));
-  for(int m=0;m<darktable.develop->num_iops;m++)
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+  gList *modules = darktable.develop->iop;
+  while(modules)
   {
-    dt_iop_module_t *module = darktable.develop->iop[m];
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     module->gui_init(module, &darktable);
     GtkExpander *expander = gtk_expander_new((const gchar *)(module->op));
     gtk_expander_set_expanded(expander, TRUE);
     gtk_box_pack_end(box, expander, FALSE, FALSE, 0);
     gtk_container_add(GTK_CONTAINER(expander), module->widget);
+    modules = g_list_next(modules);
   }
+#else
+  dt_dev_configure(darktable.develop, darktable.control->width - 2*darktable.control->tabborder, darktable.control->height - 2*darktable.control->tabborder);
 #endif
 }
 
@@ -157,11 +157,13 @@ void dt_dev_leave()
 #ifdef DT_USE_GEGL
   // clear gui.
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
-  for(int m=0;m<darktable.develop->num_iops;m++)
+  gList *modules = darktable.develop->iop;
+  while(modules)
   {
-    dt_iop_module_t *module = darktable.develop->iop[m];
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     module->gui_cleanup(module, &darktable);
     module->cleanup(module);
+    modules = g_list_next(modules);
   }
   gtk_container_foreach(box, (GtkCallback)dt_dev_remove_child, (gpointer)box);
 #endif
@@ -181,7 +183,7 @@ void dt_dev_leave()
     dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
     memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->small_backbuf, sizeof(uint8_t)*4*wd*ht);
     if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
-      fprintf(stderr, "[dev_leave] could write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
+      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
     dt_image_update_mipmaps(darktable.develop->image);
     dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
     dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
@@ -201,8 +203,8 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->history_top > 0)
     dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
 #else
-  /*
-  int wd = dev->
+  // TODO: center dev output image!
+  int wd = dev->width, ht = dev->height;
   int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
   cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
   cairo_rectangle(cr, 0, 0, wd, ht);
@@ -210,7 +212,6 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
   cairo_fill(cr);
   cairo_surface_destroy (surface);
-  */
   // TODO: execute module callback hook!
 #endif
 }

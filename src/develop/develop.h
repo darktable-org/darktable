@@ -4,11 +4,13 @@
 #include "common/imageio.h"
 #include "library/library.h"
 #include "control/settings.h"
+#include "develop/imageop.h"
 
 #include <cairo.h>
 #include <pthread.h>
 #ifdef DT_USE_GEGL
 #include <gegl.h>
+#include <glib.h>
 
 typedef struct dt_dev_history_item_t
 {
@@ -26,22 +28,23 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing;
 
   int32_t width, height;
+  uint8_t *backbuf, *backbuf_preview;
 
   // graph for gegl
   GeglNode *gegl;
   GeglBuffer *gegl_buffer, *gegl_preview_buffer;
+  GeglNode *gegl_top, *gegl_preview_top;
   GeglNode *gegl_load_buffer, *gegl_load_preview_buffer;
-  GeglNode *gegl_save_buffer, *gegl_save_preview_buffer;
 
   // image under consideration.
   dt_image_t *image;
 
   // history stack
   int32_t history_end;
-  gList *history;
+  GList *history;
   // operations pipeline
   int32_t iop_instance;
-  gList *iop;
+  GList *iop;
 
   // histogram for display.
   uint32_t *histogram, *histogram_pre;
@@ -54,8 +57,8 @@ void dt_dev_cleanup(dt_develop_t *dev);
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img);
 // TODO: replace these by setting `loading' flag and trigering gegl_process 
-void dt_dev_cache_load(dt_develop_t *dev, int32_t stackpos, dt_dev_zoom_t zoom);
-int  dt_dev_small_cache_load(dt_develop_t *dev);
+void dt_dev_process_image_job(dt_develop_t *dev);
+void dt_dev_process_preview_image_job(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
 
@@ -69,14 +72,9 @@ void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 
 // TODO: remove cache init from here:
-void dt_dev_configure(dt_develop_t *dev, int32_t width, int32_t height);
+static gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxw, float *boxh);
-
-// TODO: adjust to gegl (few interface things)
-/** these start the image processing in background. */
-void dt_dev_update_cache(dt_develop_t *dev, dt_dev_image_t *img, dt_dev_zoom_t zoom);
-void dt_dev_update_small_cache(dt_develop_t *dev);
 
 struct dt_job_t;
 void dt_dev_export(struct dt_job_t *job);
@@ -91,7 +89,6 @@ void dt_dev_export(struct dt_job_t *job);
 void dt_dev_leave();
 void dt_dev_enter();
 
-void dt_dev_image_expose(struct dt_develop_t *dev, dt_dev_image_t *image, cairo_t *cr, int32_t width, int32_t height);
 void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height);
 
 #else

@@ -62,6 +62,7 @@ typedef struct dt_dev_process_t
 {
   dt_develop_t *dev;
 }
+dt_dev_process_t;
 void dt_dev_process_preview_job_run(dt_job_t *job);
 void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev);
 void dt_dev_process_image_job_run(dt_job_t *job);

@@ -62,8 +62,12 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_gamma");
     gtk_range_set_value(GTK_RANGE(widget), gamma);
 
+#ifndef DT_USE_GEGL
     // reset non-fixed pipeline:
     dt_iop_gui_reset();
+#else
+    // TODO: reset all modules..?
+#endif
 
     DT_CTL_GET_GLOBAL(zoom, lib_zoom);
     widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
@@ -194,9 +198,7 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
   oldw = event->width;
   oldh = event->height;
 
-  dt_control_configure(event->width, event->height);
-
-  return TRUE;
+  return dt_control_configure(da, event, user_data);
 }
 
 static void
@@ -402,7 +404,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
 
   darktable.gui->reset = 0;
+#ifndef DT_USE_GEGL
   dt_iop_gui_init();
+#else
+  // TODO: need anything here? modules are inited anyways when they are needed.
+#endif
   return 0;
 }
 

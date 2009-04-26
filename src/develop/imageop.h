@@ -1,14 +1,16 @@
 #ifndef DT_DEVELOP_IMAGEOP_H
 #define DT_DEVELOP_IMAGEOP_H
 
-#include "develop/develop.h"
-#include "develop/iop_hsb.h"
 #include <gegl.h>
 
 #ifndef DT_USE_GEGL
+  #include "develop/develop.h"
+  #include "develop/iop_hsb.h"
   #define dt_red 2
   #define dt_green 1
   #define dt_blue 0
+#else
+struct dt_develop_t;
 #endif
 
 typedef void* dt_iop_params_t;
@@ -25,7 +27,7 @@ typedef struct dt_iop_module_t
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */
-  dt_develop_t *dev;
+  struct dt_develop_t *dev;
   /** non zero if this node should be processed. */
   int32_t enabled;
   /** parameters for the operation. will be replaced by history revert. */
@@ -58,7 +60,7 @@ typedef struct dt_iop_module_t
 dt_iop_module_t;
 
 /** loads and inits the (already alloc'ed) module. */
-int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *op);
+int dt_iop_load_module(dt_iop_module_t *module, struct dt_develop_t *dev, const char *op);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_unload_module(dt_iop_module_t *module);
 

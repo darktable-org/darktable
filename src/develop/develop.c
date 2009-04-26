@@ -17,9 +17,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->iop = NULL;
   dt_iop_module_t *module;
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  dt_iop_load_module(module, dev, "gamma");
-  dev->iop = g_list_append(dev->iop, module);
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   dt_iop_load_module(module, dev, "tonecurve");
   dev->iop = g_list_append(dev->iop, module);
   // TODO:
@@ -32,7 +29,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->gui_attached = gui_attached;
   dev->width = -1;
   dev->height = -1;
-  dev->pixmap = NULL;
+  dev->backbuf = dev->backbuf_preview = NULL;
 
   dev->image = NULL;
   dev->image_loading = dev->image_processing = dev->preview_loading = dev->preview_processing = 0;
@@ -48,15 +45,12 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     bzero(dev->histogram_pre, sizeof(int32_t)*256*4);
     dev->histogram_pre_max = -1;
 
-    // TODO: init gegl nodes:
     dev->gegl_buffer = gegl_buffer_new(NULL, babl_format("RGB float"));
     dev->gegl_load_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", "buffer", dev->gegl_buffer, NULL);
-    dev->gegl_crop  = gegl_node_new_child(dev->gegl, "operation", "gegl:crop", "x", 0.0, "y", 0.0, "width", 0.0, "height", 0.0, NULL);
-    dev->gegl_scale = gegl_node_new_child(dev->gegl, "operation", "gegl:scale", "origin-x", 0.0, "origin-y", 0.0, "x", 1.0, "y", 1.0, NULL);
-    dev->gegl_translate = gegl_node_new_child(dev->gegl, "operation", "gegl:translate", "origin-x", 0.0, "origin-y", 0.0, "x", .0, "y", .0, NULL);
-    // TODO: init gegl_pixbuf node!
-    // TODO: prepend buffer loading and std processing nodes!
-    gegl_node_link_many(dev->gegl_load_buffer, dev->gegl_translate, dev->gegl_scale, dev->gegl_crop, dev->gegl_pixbuf, NULL);
+    dev->gegl_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
+    dev->gegl_preview_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
+    gegl_node_link_many(dev->gegl_load_buffer, dev->gegl_top, NULL);
+    gegl_node_link_many(dev->gegl_load_preview_buffer, dev->gegl_preview_top, NULL);
   }
 }
 
@@ -82,7 +76,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_iop_unload_module((dt_iop_module_t *)dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
-  if(dev->pixmap) g_object_unref(dev->pixmap); 
+  free(dev->backbuf);
+  free(dev->backbuf_preview);
   free(dev->histogram);
   free(dev->histogram_pre);
 }
@@ -108,15 +103,11 @@ void dt_dev_process_preview(dt_develop_t *dev)
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
   dev->preview_processing = 1;
-  GeglProcessor *processor;
   GeglRectangle  roi;
 
   roi = (GeglRectangle){0, 0, dev->width, dev->height};
+  // TODO: 2ndary pipeline for preview!
 
-  processor = gegl_node_new_processor (dev->gegl_preview_pixbuf, &roi);
-  while (gegl_processor_work (processor, NULL)) ;
-
-  g_object_unref (processor);
   dev->preview_processing = 0;
   dt_control_queue_draw();
 }
@@ -124,18 +115,18 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   dev->image_processing = 1;
-  GeglProcessor *processor;
   GeglRectangle  roi;
 
   roi = (GeglRectangle){0, 0, dev->width, dev->height};
 
-  // TODO: replace by
-  // void gegl_node_blit (GeglNode * node, gdouble scale, const GeglRectangle * roi, const Babl * format, gpointer destination_buf, gint rowstride, GeglBlitFlags flags)
+  // TODO: first scale and then roi on dest
+  // GEGL_BLIT_DEFAULT, GEGL_BLIT_CACHE and GEGL_BLIT_DIRTY
+  // TODO:
+  const float scale = 1.0;
+  gegl_node_blit (dev->gegl_top, scale, &roi, babl_format("RGBA u8"), dev->backbuf, 4*dev->width, GEGL_BLIT_CACHE);
+  // for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
+    // dev->backbuf[4*i+k] = dev->gamma[dev->backbup[4*i+k]];
 
-  processor = gegl_node_new_processor (dev->gegl_pixbuf, &roi);
-  while (gegl_processor_work (processor, NULL)) ;
-
-  g_object_unref (processor);
   dev->image_processing = 0;
   dt_control_queue_draw();
 }
@@ -148,7 +139,6 @@ restart:
   dev->image_loading = 1;
   dev->image_processing = 1;
   dev->image->shrink = 0;
-  pthread_mutex_unlock(&dev->cache_mutex);
   int err = dt_image_load(img, DT_IMAGE_FULL);
   if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
 
@@ -169,8 +159,8 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   GeglRectangle rect;
   rect = (GeglRectangle){0, 0, image->width, image->height};
   if(gegl_buffer_set_extent(dev->gegl_buffer, &rect)) return;
-  gegl_node_set(dev->gegl_scale, "x", 1.0, "y", 1.0, NULL);
-  // TODO: update scale factors
+
+  // TODO: reset view to fit.
 
   dt_dev_read_history(dev);
   if(dev->gui_attached)
@@ -189,19 +179,12 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 static gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
   dt_develop_t *dev = darktable.develop;
+  float tb = darktable.control->tabborder;
   // TODO:resize event: update ROI and scale factors!
   if(dev->width != event->width || dev->height != event->height)
   {
-    GdkPixmap *tmppixmap = gdk_pixmap_new(da->window, event->width,  event->height, -1);
-    if(dev->pixmap)
-    {
-      int minw = dev->width, minh = dev->height;
-      if(event->width  < minw) minw = event->width;
-      if(event->height < minh) minh = event->height;
-      gdk_draw_drawable(tmppixmap, da->style->fg_gc[GTK_WIDGET_STATE(da)], dev->pixmap, 0, 0, 0, 0, minw, minh);
-      g_object_unref(dev->pixmap); 
-    }
-    dev->pixmap = tmppixmap;
+    dev->backbuf = (uint8_t *)realloc(dev->backbuf, event->width*event->height*4*sizeof(uint8_t));
+    dev->backbuf_preview = (uint8_t *)realloc(dev->backbuf, event->width*event->height*4*sizeof(uint8_t));
     dev->width = event->width;
     dev->height = event->height;
   }
@@ -209,6 +192,7 @@ static gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpoin
 
 void dt_dev_set_histogram_pre(dt_develop_t *dev)
 {
+#if 0
   // TODO: replace by gegl histogram node
   if(!dev->image) return;
   dt_dev_image_t *img = dev->history + dev->history_top - 1;
@@ -225,10 +209,12 @@ void dt_dev_set_histogram_pre(dt_develop_t *dev)
     dev->histogram_pre_max = dt_iop_create_histogram_f(dev->small_raw_cached, dev->small_raw_width, dev->small_raw_height, dev->small_raw_width, dev->histogram_pre);
     dt_dev_update_cache(dev, img, DT_ZOOM_FIT);
   }
+#endif
 }
 
 void dt_dev_set_histogram(dt_develop_t *dev)
 {
+#if 0
   // TODO: count bins in pixmap
   if(!dev->image) return;
   dt_dev_image_t *img = dev->history + dev->history_top - 1;
@@ -245,11 +231,13 @@ void dt_dev_set_histogram(dt_develop_t *dev)
     dev->histogram_max = dt_iop_create_histogram_final_f(dev->small_raw_cached, dev->small_raw_width, dev->small_raw_height, dev->small_raw_width, dev->histogram, dev->gamma, dev->tonecurve);
     dt_dev_update_cache(dev, img, DT_ZOOM_FIT);
   }
+#endif
 }
 
 // helper used to synch a single history item with db
 int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32_t num)
 {
+#if 0
   if(!dev->image) return 1;
   sqlite3_stmt *stmt;
   int rc;
@@ -275,11 +263,15 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
   rc = sqlite3_step (stmt);
   rc = sqlite3_finalize (stmt);
   return 0;
+#else
+  return 0;
+#endif
 }
 
 // TODO: port to gegl and glist
 void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 {
+#if 0
   dt_dev_image_t *img = dev->history + dev->history_top - 1;
   if(dev->gui_attached)
   {
@@ -320,11 +312,14 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 
   dev->small_backbuf_hash = -1;
   dt_dev_update_small_cache(dev);
+#endif
 }
 
 // TODO: only adjust history_end and gegl links!
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
+  dev->history_end = cnt;
+#if 0
   // this is called exclusively from the gtk thread, so no lock is necessary.
   if(cnt == dev->history_top-1) return;
   dev->history_top = cnt + 1;
@@ -340,11 +335,13 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
   dev->small_backbuf_hash = -1;
   dt_dev_update_small_cache(dev);
+#endif
 }
 
 // TODO: port to glist!
 void dt_dev_write_history(dt_develop_t *dev)
 {
+#if 0
   int rc;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
@@ -353,12 +350,14 @@ void dt_dev_write_history(dt_develop_t *dev)
   rc = sqlite3_finalize (stmt);
   for(int k=0;k<dev->history_top;k++)
     (void)dt_dev_write_history_item(dev, dev->history+k, k);
+#endif
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
   // TODO: port to new history items and database format.
   // TODO: on demand loading of modules!
+#if 0
   if(dev->gui_attached) dt_control_clear_history_items(0);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
@@ -410,6 +409,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     pthread_mutex_unlock(&(darktable.control->image_mutex));
   }
   (void)dt_dev_update_fixed_pipeline(dev, "original", 0);
+#endif
 }
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxww, float *boxhh)
@@ -419,16 +419,16 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
   {
     const float imgw = (closeup ? 2 : 1)*dev->image->width;
     const float imgh = (closeup ? 2 : 1)*dev->image->height;
-    const float devw = MIN(imgw, dev->cache_width);
-    const float devh = MIN(imgh, dev->cache_height);
+    const float devw = MIN(imgw, dev->width);
+    const float devh = MIN(imgh, dev->height);
     boxw = fminf(1.0, devw/imgw); boxh = fminf(1.0, devh/imgh);
   }
   else if(zoom == DT_ZOOM_FILL)
   {
     const float imgw = dev->image->width;
     const float imgh = dev->image->height;
-    const float devw = dev->cache_width;
-    const float devh = dev->cache_height;
+    const float devw = dev->width;
+    const float devh = dev->height;
     boxw = devw/(imgw*fmaxf(devw/imgw, devh/imgh)); boxh = devh/(imgh*fmaxf(devw/imgw, devh/imgh));
   }
   
@@ -444,6 +444,7 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 // TODO: switch to gegl:write-buffer and GeglBuffer to pixels!
 void dt_dev_export(dt_job_t *job)
 {
+#if 0
   // TODO: use gegl output nodes and gegl_node_process!
   while(1)
   {
@@ -507,6 +508,7 @@ void dt_dev_export(dt_job_t *job)
     dt_image_cache_release(img, 'r');
     printf("[dev_export] exported to `%s'\n", filename);
   }
+#endif
 }
 
 #else // old non-gegl version:
@@ -1325,7 +1327,7 @@ void dt_dev_export(dt_job_t *job)
     }
 
     snprintf(filename, 1024, "%s/darktable_exported", darktable.library->film->dirname);
-    if(g_mkdir_with_parents(filename, 0755))
+    if(g_file_test(filename, G_FILE_TEST_EXISTS) && g_mkdir_with_parents(filename, 0755))
     {
       dt_image_cache_release(img, 'r');
       fprintf(stderr, "[dev_export] could not create directory %s!\n", filename);

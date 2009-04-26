@@ -122,9 +122,9 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
     rc = sqlite3_bind_int (stmt, 1, img->id);
     (void)sqlite3_step(stmt);
-    char filename[512];
-    strncpy(filename, img->filename, 512);
-    int film_id = img->film_id;
+    // char filename[512];
+    // strncpy(filename, img->filename, 512);
+    // int film_id = img->film_id;
     dt_image_cache_release(img, 'r');
     // TODO: need to preserve img id!
     return 1;//dt_image_import(film_id, filename);
@@ -241,7 +241,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   // img->raw->params.user_flip = img->raw->sizes.flip;
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
-  if(raw->idata.dng_version || (raw->sizes.iwidth <= 1200 && raw->sizes.iheight <= 800))
+  if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
   { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
     raw->params.user_qual = 0;
     raw->params.half_size = img->shrink = 0;
@@ -255,8 +255,8 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
 
   img->shrink = raw->params.half_size;
   img->orientation = raw->sizes.flip;
-  img->width  = (img->orientation & 4) ? raw->sizes.iheight : raw->sizes.iwidth;
-  img->height = (img->orientation & 4) ? raw->sizes.iwidth  : raw->sizes.iheight;
+  img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
+  img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;

@@ -17,7 +17,8 @@ if test "$enable_debug" = "yes"; then
 else
    AC_MSG_RESULT([no])
 fi
-AC_OPENMP
+dnl ***  disabled because of strange libgomp.so crashes: :(
+dnl AC_OPENMP
 AC_PROG_RANLIB
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14)
 PKG_CHECK_MODULES(CAIRO, [cairo])

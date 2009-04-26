@@ -424,12 +424,16 @@ void *dt_control_work(void *ptr)
 //  gui functions:
 // ================================================================================
 
-void dt_control_configure(int32_t width, int32_t height)
+gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  darktable.control->tabborder = fmaxf(10, width/100.0);
+  darktable.control->tabborder = fmaxf(10, event->width/100.0);
   // float tb = darktable.control->tabborder;
   // re-configure all components:
   // dt_dev_configure(darktable.develop, width - 2*tb, height - 2*tb);
+#ifdef DT_USE_GEGL
+  dt_dev_configure(da, event, user_data);
+#endif
+  return TRUE;
 }
 
 void *dt_control_expose(void *voidptr)
