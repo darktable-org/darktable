@@ -72,7 +72,7 @@ void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 
 // TODO: remove cache init from here:
-static gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
+gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxw, float *boxh);
 

@@ -431,9 +431,10 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
   // re-configure all components:
   // dt_dev_configure(darktable.develop, width - 2*tb, height - 2*tb);
 #ifdef DT_USE_GEGL
-  dt_dev_configure(da, event, user_data);
-#endif
+  return dt_dev_configure(da, event, user_data);
+#else
   return TRUE;
+#endif
 }
 
 void *dt_control_expose(void *voidptr)

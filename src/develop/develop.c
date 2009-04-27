@@ -176,7 +176,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   else dt_dev_raw_load(dev, dev->image); // in this thread.
 }
 
-static gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
+gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
   dt_develop_t *dev = darktable.develop;
   float tb = darktable.control->tabborder;
@@ -188,6 +188,7 @@ static gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpoin
     dev->width = event->width;
     dev->height = event->height;
   }
+  return TRUE;
 }
 
 void dt_dev_set_histogram_pre(dt_develop_t *dev)

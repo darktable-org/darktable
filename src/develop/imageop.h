@@ -1,6 +1,7 @@
 #ifndef DT_DEVELOP_IMAGEOP_H
 #define DT_DEVELOP_IMAGEOP_H
 
+#include "common/darktable.h"
 #include <gegl.h>
 
 #ifndef DT_USE_GEGL
