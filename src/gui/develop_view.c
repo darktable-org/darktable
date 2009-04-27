@@ -3,11 +3,14 @@
 #include "develop/imageop.h"
 #include "common/image_cache.h"
 #include "control/control.h"
+#include "gui/gtk.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <glade/glade.h>
 
+#ifndef DT_USE_GEGL
 void dt_dev_image_expose(dt_develop_t *dev, dt_dev_image_t *image, cairo_t *cr, int32_t width, int32_t height)
 {
   // float bordercol = 1.0f;
@@ -119,6 +122,7 @@ void dt_dev_image_expose(dt_develop_t *dev, dt_dev_image_t *image, cairo_t *cr, 
   DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
   DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
 }
+#endif
 
 void dt_dev_enter()
 {
@@ -131,14 +135,14 @@ void dt_dev_enter()
   dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
 #ifdef DT_USE_GEGL
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
-  gList *modules = darktable.develop->iop;
+  GList *modules = darktable.develop->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    module->gui_init(module, &darktable);
-    GtkExpander *expander = gtk_expander_new((const gchar *)(module->op));
+    module->gui_init(module);
+    GtkExpander *expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
     gtk_expander_set_expanded(expander, TRUE);
-    gtk_box_pack_end(box, expander, FALSE, FALSE, 0);
+    gtk_box_pack_end(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
     gtk_container_add(GTK_CONTAINER(expander), module->widget);
     modules = g_list_next(modules);
   }
@@ -157,15 +161,15 @@ void dt_dev_leave()
 #ifdef DT_USE_GEGL
   // clear gui.
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
-  gList *modules = darktable.develop->iop;
+  GList *modules = darktable.develop->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    module->gui_cleanup(module, &darktable);
+    module->gui_cleanup(module);
     module->cleanup(module);
     modules = g_list_next(modules);
   }
-  gtk_container_foreach(box, (GtkCallback)dt_dev_remove_child, (gpointer)box);
+  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);
 #endif
   // release full buffer
   if(darktable.develop->image->pixels)
@@ -176,6 +180,24 @@ void dt_dev_leave()
   DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
   // commit updated mipmaps to db
+#ifdef DT_USE_GEGL
+  int wd, ht;
+  dt_image_get_mip_size(darktable.develop->image, DT_IMAGE_MIPF, &wd, &ht);
+  dt_dev_process_preview_job(darktable.develop);
+  if(dt_image_alloc(darktable.develop->image, DT_IMAGE_MIP4))
+  {
+    fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
+    return;
+  }
+  dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
+  memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->backbuf_preview, sizeof(uint8_t)*4*wd*ht);
+  if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
+    fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
+  dt_image_update_mipmaps(darktable.develop->image);
+  dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
+  dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
+  dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
+#else
   int wd = darktable.develop->small_raw_width, ht = darktable.develop->small_raw_height;
   if(!dt_dev_small_cache_load(darktable.develop))
   {
@@ -189,6 +211,7 @@ void dt_dev_leave()
     dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
     dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
   }
+#endif
   // release image struct with metadata as well.
   dt_image_cache_release(darktable.develop->image, 'r');
 }

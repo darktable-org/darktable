@@ -12,6 +12,9 @@
 #include <gegl.h>
 #include <glib.h>
 
+static uint8_t dt_dev_default_gamma[0x10000];
+static float dt_dev_de_gamma[0x100];
+
 typedef struct dt_dev_history_item_t
 {
   dt_dev_operation_t op;

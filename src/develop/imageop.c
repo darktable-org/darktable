@@ -1,5 +1,6 @@
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/develop.h"
 #include <strings.h>
 #include <assert.h>
 #include <math.h>
@@ -11,6 +12,7 @@
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *op)
 {
+  const gchar *err;
   module->instance = dev->iop_instance++;
   module->dt = &darktable;
   module->dev = dev;
@@ -34,9 +36,8 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   module->init(module);
   return 0;
 error:
-  const gchar *err = g_module_error();
+  err = g_module_error();
   fprintf(stderr, "[iop_load_module] failed to open operation `%s': %s\n", op, err);
-  g_free(err);
   if(module->module) g_module_close(module->module);
   return 1;
 }

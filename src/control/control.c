@@ -577,7 +577,11 @@ void dt_control_mouse_moved(double x, double y, int which)
       if(darktable.control->button_down)
       { // depending on dev_zoom, adjust dev_zoom_x/y.
         dt_develop_t *dev = darktable.develop;
+#ifndef DT_USE_GEGL
         const int cwd = dev->cache_width, cht = dev->cache_height;
+#else
+        const int cwd = dev->width, cht = dev->height;
+#endif
         const int iwd = dev->image->width, iht = dev->image->height;
         float scale = 1.0f;
         dt_dev_zoom_t zoom;
@@ -999,7 +1003,11 @@ void dt_control_clear_history_items(int32_t num)
     snprintf(wdname, 20, "history_%02d", k+1);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
+#ifdef DT_USE_GEGL
+    snprintf(numlabel, 50, "%d - %s", curr, ((dt_dev_history_item_t *)(darktable.develop->history[curr].data))->op);
+#else
     snprintf(numlabel, 50, "%d - %s", curr, darktable.develop->history[curr].operation);
+#endif
     gtk_button_set_label(GTK_BUTTON(widget), numlabel);
   }
 }

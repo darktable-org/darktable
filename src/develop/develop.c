@@ -11,6 +11,34 @@
 
 #ifdef DT_USE_GEGL
 
+static uint8_t dt_dev_default_gamma[0x10000];
+static float dt_dev_de_gamma[0x100];
+
+void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float gamma, uint8_t *arr)
+{
+  double a, b, c, g;
+  if(linear<1.0)
+  {
+    g = gamma*(1.0-linear)/(1.0-gamma*linear);
+    a = 1.0/(1.0+linear*(g-1));
+    b = linear*(g-1)*a;
+    c = pow(a*linear+b, g)/linear;
+  }
+  else
+  {
+    a = b = g = 0.0;
+    c = 1.0;
+  }
+
+  for(int k=0;k<0x10000;k++)
+  {
+    int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
+	  if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
+	  else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
+    arr[k] = tmp>>8;
+  }
+}
+
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   dev->iop_instance = 0;
@@ -51,6 +79,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->gegl_preview_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
     gegl_node_link_many(dev->gegl_load_buffer, dev->gegl_top, NULL);
     gegl_node_link_many(dev->gegl_load_preview_buffer, dev->gegl_preview_top, NULL);
+
+    dt_dev_set_gamma_array(dev, 0.1, 0.45, dt_dev_default_gamma);
+    int last = 0; // invert 0.1 0.45 fn
+    for(int i=0;i<0x100;i++) for(int k=last;k<0x10000;k++)
+      if(dt_dev_default_gamma[k] >= i) { last = k; dt_dev_de_gamma[i] = k/(float)0x10000; break; }
   }
 }
 
@@ -179,14 +212,14 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
   dt_develop_t *dev = darktable.develop;
-  float tb = darktable.control->tabborder;
+  int tb = darktable.control->tabborder;
   // TODO:resize event: update ROI and scale factors!
-  if(dev->width != event->width || dev->height != event->height)
+  if(dev->width - 2*tb != event->width || dev->height - 2*tb != event->height)
   {
     dev->backbuf = (uint8_t *)realloc(dev->backbuf, event->width*event->height*4*sizeof(uint8_t));
     dev->backbuf_preview = (uint8_t *)realloc(dev->backbuf, event->width*event->height*4*sizeof(uint8_t));
-    dev->width = event->width;
-    dev->height = event->height;
+    dev->width = event->width - 2*tb;
+    dev->height = event->height - 2*tb;
   }
   return TRUE;
 }

@@ -507,6 +507,7 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 #endif
 }
 
+#ifndef DT_USE_GEGL
 // batch-processing enabled write method: history stack, raw image, custom copy of gamma/tonecurves
 int dt_imageio_export_f(dt_image_t *img, const char *filename)
 {
@@ -596,17 +597,6 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-#if 0
-static void
-log_func (ExifLog *log, ExifLogCode code, const char *domain,
-	  const char *format, va_list args, void *data)
-{
-
-		vfprintf (stderr, format, args);
-		fprintf (stderr, "\n");
-}
-#endif
-
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
 #ifdef HAVE_MAGICK
@@ -621,7 +611,6 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   for(int k=1;k<dev.history_top;k++)
   {
     dt_dev_image_t *hist = dev.history + k;
-    // TODO: need to change iop_execute signature: full window info (param struct?)
     dt_iop_execute(dev.image->pixels, dev.image->pixels, wd, ht, wd, ht, hist->operation, &(hist->op_params));
   }
   for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
@@ -643,13 +632,6 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
     return 1;
   }
 
-#if 1
-  	// ExifLog *log = NULL;
-
-  	// log = exif_log_new ();
-	// exif_log_set_func (log, log_func, NULL);
-
-  // FIXME: this is not working at all :(
   // set image properties!
   ExifRational rat;
   int length;
@@ -657,23 +639,16 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   ExifData *exif_data = exif_data_new();
   exif_data_set_byte_order(exif_data, EXIF_BYTE_ORDER_INTEL);
   ExifContent *exif_content = exif_data->ifd[0];
-  // exif_data_log(exif_data, log);
   ExifEntry *entry;
 
-  // printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
-
-#if 1
   entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_MAKE);
   entry->components = strlen (img->exif_maker) + 1;
   entry->format = EXIF_FORMAT_ASCII;
   entry->size = exif_format_get_size (entry->format) * entry->components;
-  // entry->data = exif_mem_realloc (entry, entry->data, entry->size);
   entry->data = realloc(entry->data, entry->size);
   strncpy((char *)entry->data, img->exif_maker, entry->components);
-  // exif_mem_free((ExifEntryPrivate*)(entry->priv)->mem, entry->data);
-  // entry->data = img->exif_maker;
 
   entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
@@ -681,110 +656,57 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   entry->components = strlen (img->exif_model) + 1;
   entry->format = EXIF_FORMAT_ASCII;
   entry->size = exif_format_get_size (entry->format) * entry->components;
-  // exif_mem_free((ExifEntryPrivate*)(entry->priv)->mem, entry->data);
-  // entry->data = img->exif_model;
-  // entry->data = exif_mem_realloc (entry, entry->data, entry->size);
   entry->data = realloc(entry->data, entry->size);
   strncpy((char *)entry->data, img->exif_model, entry->components);
-#endif
 
   entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_DATE_TIME_ORIGINAL);
-  // strncpy((char *)entry->data, img->exif_datetime_taken, 20);
-  // entry->data = img->exif_datetime_taken;
   entry->components = 20;
   entry->format = EXIF_FORMAT_ASCII;
   entry->size = exif_format_get_size (entry->format) * entry->components;
   entry->data = realloc(entry->data, entry->size);
   strncpy((char *)(entry->data), img->exif_datetime_taken, entry->components);
-  // printf("size: %d %d\n", entry->size, entry->components);
-  // printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_0]->count, exif_content->count);
 
-  entry = exif_entry_new();// entry->tag = EXIF_TAG_ISO_SPEED_RATINGS;
+  entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_ISO_SPEED_RATINGS);
   exif_set_short(entry->data, EXIF_BYTE_ORDER_INTEL, (int16_t)(img->exif_iso));
   entry->size = 2;
   entry->components = 1;
-  // printf("size: %d\n", entry->size);
-  // printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
 
-  entry = exif_entry_new(); //entry->tag = EXIF_TAG_FNUMBER;
+  entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_FNUMBER);
   dt_imageio_to_fractional(img->exif_aperture, &rat.numerator, &rat.denominator);
   exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
   entry->size = 8;
   entry->components = 1;
-  // printf("size: %d %d\n", entry->size, entry->components);
 
-  // printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
-
-  entry = exif_entry_new(); //entry->tag = EXIF_TAG_EXPOSURE_TIME;
-  // printf("prereq: %d %d %d %d %d\n", exif_content , exif_content->priv, entry, entry->parent, exif_content->entries);
+  entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
-  // printf("prereq: %d %d %d %d %d\n", exif_content , exif_content->priv, entry, entry->parent, exif_content->entries);
   exif_entry_initialize(entry, EXIF_TAG_EXPOSURE_TIME);
   dt_imageio_to_fractional(img->exif_exposure, &rat.numerator, &rat.denominator);
   exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
   entry->size = 8;
   entry->components = 1;
-  // printf("size: %d %d\n", entry->size, entry->components);
 
-  // printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
-
-  entry = exif_entry_new(); //entry->tag = EXIF_TAG_FOCAL_LENGTH;
+  entry = exif_entry_new();
   exif_content_add_entry(exif_content, entry);
   exif_entry_initialize(entry, EXIF_TAG_FOCAL_LENGTH);
   dt_imageio_to_fractional(img->exif_focal_length, &rat.numerator, &rat.denominator);
   exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
   entry->size = 8;
   entry->components = 1;
-  // printf("size: %d %d\n", entry->size, entry->components);
 
-  // printf("count : %d %d\n", exif_data->ifd[EXIF_IFD_EXIF]->count, exif_content->count);
-
-  // exif_data_fix(exif_data);
   exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
-  // printf("exif header size %u\n", length);
-  // TODO: try to free al the alloc from above!
-  // exif_content_free(exif_content);
+
   exif_data_free(exif_data);
   StringInfo *profile = AcquireStringInfo(length);
   SetStringInfoDatum(profile, exif_profile);
   (void)SetImageProfile(image, "exif", profile);
   profile = DestroyStringInfo(profile);
   free(exif_profile);
-#endif
-
-#if 0
-  char value[100];
-  uint32_t num, den;
-  // FIXME: this refuses to work :(
-  //(void)DefineImageProperty(image, "exif:DateTimeOriginal");
-  (void)SetImageProperty   (image, "exif:DateTimeOriginal", img->exif_datetime_taken);
-  //(void)DefineImageProperty(image, "exif:Make");
-  (void)SetImageProperty   (image, "exif:Make", img->exif_maker);
-  //(void)DefineImageProperty(image, "exif:Model");
-  (void)SetImageProperty   (image, "exif:Model", img->exif_model);
-  snprintf(value, 100, "%.0f", img->exif_iso);
-  //(void)DefineImageProperty(image, "exif:ISOSpeedRatings");
-  (void)SetImageProperty   (image, "exif:ISOSpeedRatings", value);
-  dt_imageio_to_fractional(img->exif_exposure, &num, &den);
-  snprintf(value, 100, "%d/%d", num, den);
-  //(void)DefineImageProperty(image, "exif:ExposureTime");
-  (void)SetImageProperty   (image, "exif:ExposureTime", value);
-  dt_imageio_to_fractional(img->exif_aperture, &num, &den);
-  snprintf(value, 100, "%d/%d", num, den);
-  //(void)DefineImageProperty(image, "exif:FNumber");
-  (void)SetImageProperty   (image, "exif:FNumber", value);
-  dt_imageio_to_fractional(img->exif_exposure, &num, &den);
-  snprintf(value, 100, "%d/%d", num, den);
-  //(void)DefineImageProperty(image, "exif:FocalLength");
-  (void)SetImageProperty   (image, "exif:FocalLength", value);
-  // printf("properties: %d\n", image->properties);
-#endif
 
   image_info->quality = 97;
   (void) strcpy(image->filename, filename);
@@ -801,6 +723,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   return 1;
 #endif
 }
+#endif
 
 // =================================================
 //   combined reading

@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <string.h>
+#ifndef DT_USE_GEGL
 
 void
 dt_iop_gui_reset_hsb ()
@@ -191,3 +192,4 @@ dt_iop_execute_hsb(float *dst, const float *src, const int32_t wd, const int32_t
   }
 }
 
+#endif

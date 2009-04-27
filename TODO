@@ -1,4 +1,5 @@
 bugs:
+ - import while still importing crashes.
  - export mono-core?
  - openmp crashes dt (in magick or elsewhere) :(
  - small images mip maps garbled.
@@ -16,24 +17,18 @@ bugs:
 
 
 feature requests:
+ - import: interrupt, continue, watch dir (all more robust)
  - export:
    - jpg quality
    - load list from sql to dev->GList (be able to alter selection after)
    - progress bar
  - completely free zoom in dev mode (not just 1:1, fit, fill)
  - use GEGL to replace dev cache and operation interface!
-   - pull iop to right panel (=>add expander, call gui_init on module)
-     - 0.2_alpha hack: fixed pipeline of selected ops already there:
-       init in develop_init
    - disable nodes: connect pass-through edge
-   - custom nodes at bottom/top:
-     - gegl:load-buffer/ gegl_buffer_set (from float arrays)
    - move tonecurve widget to gegl-curve struct and iop interface!
      - first try: gegl:nop
    - database load/save of new history items!
-   - gegl_node_blit for display/output to pre-gamma export
-   - apply linear/gamma conversion curve after that.
-   - draw buffer using cairo (enable cool decorations of plugins)
+   - apply linear/gamma conversion curve (still fixed widget)
  - flags: deleted, cool, uncool..
  - clustered image view by similar tag/flag
  - user orient rotation

@@ -35,8 +35,10 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
   gtk_widget_queue_draw(widget);
 
+#ifndef DT_USE_GEGL
   widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve");
   gtk_widget_queue_draw(widget);
+#endif
 
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
