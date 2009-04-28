@@ -17,6 +17,7 @@ bugs:
 
 
 feature requests:
+ - pizza button.
  - some accel key => center and align images at left/right borders for
    given zoom rate
  - import: interrupt, continue, watch dir (all more robust)
