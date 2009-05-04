@@ -1,6 +1,7 @@
 #ifndef DARKTABLE_IOP_CURVE_EDITOR_H
 #define DARKTABLE_IOP_CURVE_EDITOR_H
 
+#include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <gegl.h>
@@ -23,7 +24,9 @@ typedef struct dt_iop_tonecurve_gui_data_t
   double mouse_x, mouse_y;
   int selected, dragging;
   double selected_offset, selected_y, selected_min, selected_max;
-  gdouble xs[DT_IOP_TONECURVE_RES], ys[DT_IOP_TONECURVE_RES];
+  gdouble draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
+  gdouble draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
+  gdouble draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
 }
 dt_iop_tonecurve_gui_data_t;
 
@@ -31,22 +34,23 @@ typedef struct dt_iop_tonecurve_data_t
 {
   GeglCurve *curve;
   GeglNode *node, *node_preview;
-  const gchar *const input_pad  = "input";
-  const gchar *const output_pad = "output";
+  gchar input_pad[20];
+  gchar output_pad[20];
 }
 dt_iop_tonecurve_data_t;
 
-void dt_iop_tonecurve_init(dt_iop_module_t *module);
-void dt_iop_tonecurve_cleanup(dt_iop_module_t *module);
+void init(dt_iop_module_t *module);
+void cleanup(dt_iop_module_t *module);
 
-void dt_iop_tonecurve_gui_reset   (struct dt_iop_module_t *self);
-void dt_iop_tonecurve_gui_init    (struct dt_iop_module_t *self);
-void dt_iop_tonecurve_gui_cleanup (struct dt_iop_module_t *self);
+void gui_reset   (struct dt_iop_module_t *self);
+void gui_update  (struct dt_iop_module_t *self);
+void gui_init    (struct dt_iop_module_t *self);
+void gui_cleanup (struct dt_iop_module_t *self);
 
-void dt_iop_tonecurve_get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-void dt_iop_tonecurve_get_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-void dt_iop_tonecurve_get_preview_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-void dt_iop_tonecurve_get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+void get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+void get_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+void get_preview_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+void get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
 
 gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);

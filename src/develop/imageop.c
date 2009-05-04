@@ -19,20 +19,20 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   module->enabled = 1;
   strncpy(module->op, op, 20);
   // load module from disk
-  gchar *libname = g_module_build_path(DATADIR, (const gchar *)op);
+  gchar *libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   g_free(libname);
   if(!module->module) goto error;
-  if(g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
-  if(g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
-  if(g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_init)))               goto error;
-  if(g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
-  if(g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
-  if(g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
-  if(g_module_symbol(module->module, "get_output_pad",         (gpointer)&(module->get_output_pad)))         goto error;
-  if(g_module_symbol(module->module, "get_input_pad",          (gpointer)&(module->get_input_pad)))          goto error;
-  if(g_module_symbol(module->module, "get_preview_output_pad", (gpointer)&(module->get_preview_output_pad))) goto error;
-  if(g_module_symbol(module->module, "get_preview_input_pad",  (gpointer)&(module->get_preview_input_pad)))  goto error;
+  if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
+  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
+  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
+  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+  if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
+  if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
+  if(!g_module_symbol(module->module, "get_output_pad",         (gpointer)&(module->get_output_pad)))         goto error;
+  if(!g_module_symbol(module->module, "get_input_pad",          (gpointer)&(module->get_input_pad)))          goto error;
+  if(!g_module_symbol(module->module, "get_preview_output_pad", (gpointer)&(module->get_preview_output_pad))) goto error;
+  if(!g_module_symbol(module->module, "get_preview_input_pad",  (gpointer)&(module->get_preview_input_pad)))  goto error;
   module->init(module);
   return 0;
 error:

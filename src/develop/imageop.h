@@ -2,7 +2,10 @@
 #define DT_DEVELOP_IMAGEOP_H
 
 #include "common/darktable.h"
+#include "control/settings.h"
 #include <gegl.h>
+#include <gmodule.h>
+#include <gtk/gtk.h>
 
 #ifndef DT_USE_GEGL
   #include "develop/develop.h"

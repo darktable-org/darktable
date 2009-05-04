@@ -12,8 +12,8 @@
 #include <gegl.h>
 #include <glib.h>
 
-static uint8_t dt_dev_default_gamma[0x10000];
-static float dt_dev_de_gamma[0x100];
+extern uint8_t dt_dev_default_gamma[0x10000];
+extern float dt_dev_de_gamma[0x100];
 
 typedef struct dt_dev_history_item_t
 {
@@ -61,7 +61,7 @@ void dt_dev_cleanup(dt_develop_t *dev);
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img);
 // TODO: replace these by setting `loading' flag and trigering gegl_process 
 void dt_dev_process_image_job(dt_develop_t *dev);
-void dt_dev_process_preview_image_job(dt_develop_t *dev);
+void dt_dev_process_preview_job(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
 

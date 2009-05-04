@@ -11,8 +11,8 @@
 
 #ifdef DT_USE_GEGL
 
-static uint8_t dt_dev_default_gamma[0x10000];
-static float dt_dev_de_gamma[0x100];
+uint8_t dt_dev_default_gamma[0x10000];
+float dt_dev_de_gamma[0x100];
 
 void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float gamma, uint8_t *arr)
 {
@@ -45,7 +45,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->iop = NULL;
   dt_iop_module_t *module;
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  dt_iop_load_module(module, dev, "tonecurve");
+  if(dt_iop_load_module(module, dev, "tonecurve")) exit(1);
   dev->iop = g_list_append(dev->iop, module);
   // TODO:
   // dt_iop_load_module(module, dev, "saturation");

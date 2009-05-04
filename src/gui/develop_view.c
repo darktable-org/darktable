@@ -139,11 +139,12 @@ void dt_dev_enter()
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    module->gui_init(module);
     GtkExpander *expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
     gtk_expander_set_expanded(expander, TRUE);
     gtk_box_pack_end(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
     gtk_container_add(GTK_CONTAINER(expander), module->widget);
+    module->widget = GTK_WIDGET(expander);
+    module->gui_init(module);
     modules = g_list_next(modules);
   }
 #else

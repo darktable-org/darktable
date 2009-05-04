@@ -75,11 +75,11 @@ int dt_init(int argc, char *argv[])
   darktable.library = (dt_library_t *)malloc(sizeof(dt_library_t));
   dt_library_init(darktable.library);
 
-  darktable.develop = (dt_develop_t *)malloc(sizeof(dt_develop_t));
-  dt_dev_init(darktable.develop, 1);
-
   darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
   dt_gui_gtk_init(darktable.gui, argc, argv);
+
+  darktable.develop = (dt_develop_t *)malloc(sizeof(dt_develop_t)); // after gui, this will init default modules
+  dt_dev_init(darktable.develop, 1);
 
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
