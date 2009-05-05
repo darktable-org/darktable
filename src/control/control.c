@@ -750,16 +750,18 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
+#ifndef DT_USE_GEGL
   DT_CTL_GET_GLOBAL(bit, gui_tonecurve);
   widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  DT_CTL_GET_GLOBAL(bit, gui_gamma);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
   DT_CTL_GET_GLOBAL(bit, gui_hsb);
   widget = glade_xml_get_widget (darktable.gui->main_window, "hsb_expander");
+  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
+#endif
+
+  DT_CTL_GET_GLOBAL(bit, gui_gamma);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   DT_CTL_GET_GLOBAL(bit, gui_export);
@@ -820,23 +822,25 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   else bit &= ~(1<<mode);
   DT_CTL_SET_GLOBAL(gui_histogram, bit);
 
+#ifndef DT_USE_GEGL
   DT_CTL_GET_GLOBAL(bit, gui_tonecurve);
   widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   DT_CTL_SET_GLOBAL(gui_tonecurve, bit);
 
-  DT_CTL_GET_GLOBAL(bit, gui_gamma);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  DT_CTL_SET_GLOBAL(gui_gamma, bit);
-
   DT_CTL_GET_GLOBAL(bit, gui_hsb);
   widget = glade_xml_get_widget (darktable.gui->main_window, "hsb_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   DT_CTL_SET_GLOBAL(gui_hsb, bit);
+#endif
+
+  DT_CTL_GET_GLOBAL(bit, gui_gamma);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
+  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  DT_CTL_SET_GLOBAL(gui_gamma, bit);
 
   DT_CTL_GET_GLOBAL(bit, gui_export);
   widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
@@ -958,10 +962,12 @@ int dt_control_key_pressed(uint16_t which)
   return 1;
 }
 
+#ifndef DT_USE_GEGL
 void dt_control_get_tonecurve(uint16_t *tonecurve, dt_ctl_image_settings_t *settings)
 {
   dt_gui_curve_editor_get_curve(&(darktable.gui->tonecurve), tonecurve, settings);
 }
+#endif
 
 void dt_control_add_history_item(int32_t num, const char *label)
 {

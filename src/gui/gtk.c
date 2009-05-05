@@ -363,9 +363,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 	g_signal_connect (G_OBJECT (widget), "value-changed",
                     G_CALLBACK (gamma), (gpointer)1);
 
+#ifndef DT_USE_GEGL
   // tone curve
   widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve");
   dt_gui_curve_editor_init(&gui->tonecurve, widget);
+#endif
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   dt_gui_navigation_init(&gui->navigation, widget);
@@ -416,7 +418,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
+#ifndef DT_USE_GEGL
   dt_gui_curve_editor_cleanup(&gui->tonecurve);
+#endif
   dt_gui_navigation_cleanup(&gui->navigation);
   dt_gui_histogram_cleanup(&gui->histogram);
 }

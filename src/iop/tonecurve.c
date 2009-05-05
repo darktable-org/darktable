@@ -41,7 +41,10 @@ void cleanup(dt_iop_module_t *module)
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
   gegl_node_remove_child(module->dev->gegl, d->node);
   gegl_node_remove_child(module->dev->gegl, d->node_preview);
-  g_free(d->curve);
+  //..FIXME: ?? is this done by gegl?
+  // free(d->curve);
+  // gegl_curve_destroy(d->curve);
+  // g_unref(d->curve);
   free(module->data);
   module->data = NULL;
   free(module->gui_data);
@@ -68,28 +71,28 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_tonecurve_params_t));
+  self->gui_data = malloc(sizeof(dt_iop_tonecurve_gui_data_t));
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1; c->selected_offset = 0.0;
   c->dragging = 0;
-
-  g_signal_connect (G_OBJECT (self->widget), "expose-event",
-                    G_CALLBACK (dt_iop_tonecurve_expose), c);
-  g_signal_connect (G_OBJECT (self->widget), "button-press-event",
-                    G_CALLBACK (dt_iop_tonecurve_button_press), c);
-  g_signal_connect (G_OBJECT (self->widget), "button-release-event",
-                    G_CALLBACK (dt_iop_tonecurve_button_release), c);
-  g_signal_connect (G_OBJECT (self->widget), "motion-notify-event",
-                    G_CALLBACK (dt_iop_tonecurve_motion_notify), c);
-  g_signal_connect (G_OBJECT (self->widget), "leave-notify-event",
-                    G_CALLBACK (dt_iop_tonecurve_leave_notify), c);
-  // init gtk stuff
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_drawing_area_size(c->area, 200, 200);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_drawing_area_size(c->area, 200, 200);
+
+  g_signal_connect (G_OBJECT (c->area), "expose-event",
+                    G_CALLBACK (dt_iop_tonecurve_expose), self);
+  g_signal_connect (G_OBJECT (c->area), "button-press-event",
+                    G_CALLBACK (dt_iop_tonecurve_button_press), self);
+  g_signal_connect (G_OBJECT (c->area), "button-release-event",
+                    G_CALLBACK (dt_iop_tonecurve_button_release), self);
+  g_signal_connect (G_OBJECT (c->area), "motion-notify-event",
+                    G_CALLBACK (dt_iop_tonecurve_motion_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
+                    G_CALLBACK (dt_iop_tonecurve_leave_notify), self);
+  // init gtk stuff
   c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
   c->label = GTK_LABEL(gtk_label_new("presets"));
@@ -105,7 +108,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   // dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   // destroy gtk stuff.
-  gtk_widget_destroy(self->widget);
+  // gtk_widget_destroy(self->widget);
   free(self->gui_data);
   self->gui_data = NULL;
 }

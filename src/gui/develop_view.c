@@ -134,6 +134,7 @@ void dt_dev_enter()
 
   dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
 #ifdef DT_USE_GEGL
+  // get top level vbox containing all expanders, iop_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
   GList *modules = darktable.develop->iop;
   while(modules)
@@ -141,12 +142,14 @@ void dt_dev_enter()
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     GtkExpander *expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
     gtk_expander_set_expanded(expander, TRUE);
-    gtk_box_pack_end(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(expander), module->widget);
-    module->widget = GTK_WIDGET(expander);
+    gtk_box_pack_start(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
+    // module->widget = GTK_WIDGET(expander);
     module->gui_init(module);
+    // add the widget created by gui_init to the expander.
+    gtk_container_add(GTK_CONTAINER(expander), module->widget);
     modules = g_list_next(modules);
   }
+  gtk_widget_show_all(box);
 #else
   dt_dev_configure(darktable.develop, darktable.control->width - 2*darktable.control->tabborder, darktable.control->height - 2*darktable.control->tabborder);
 #endif
@@ -227,6 +230,7 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->history_top > 0)
     dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
 #else
+  printf("filling dreggn %d %d %d\n", dev->backbuf[100], dev->backbuf[300], dev->backbuf[500]);
   // TODO: center dev output image!
   int wd = dev->width, ht = dev->height;
   int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);

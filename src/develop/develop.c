@@ -75,10 +75,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
     dev->gegl_buffer = gegl_buffer_new(NULL, babl_format("RGB float"));
     dev->gegl_load_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", "buffer", dev->gegl_buffer, NULL);
+    //     	gegl:convert-format ??
     dev->gegl_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
     dev->gegl_preview_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
-    gegl_node_link_many(dev->gegl_load_buffer, dev->gegl_top, NULL);
-    gegl_node_link_many(dev->gegl_load_preview_buffer, dev->gegl_preview_top, NULL);
+    gegl_node_link(dev->gegl_load_buffer, dev->gegl_top);
+    // gegl_node_link_many(dev->gegl_load_preview_buffer, dev->gegl_preview_top, NULL);
 
     dt_dev_set_gamma_array(dev, 0.1, 0.45, dt_dev_default_gamma);
     int last = 0; // invert 0.1 0.45 fn
@@ -150,15 +151,17 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dev->image_processing = 1;
   GeglRectangle  roi;
 
+  printf("processing image: %f %f %f\n", dev->image->pixels[100], dev->image->pixels[300], dev->image->pixels[400]);
   roi = (GeglRectangle){0, 0, dev->width, dev->height};
 
   // TODO: first scale and then roi on dest
   // GEGL_BLIT_DEFAULT, GEGL_BLIT_CACHE and GEGL_BLIT_DIRTY
   // TODO:
   const float scale = 1.0;
-  gegl_node_blit (dev->gegl_top, scale, &roi, babl_format("RGBA u8"), dev->backbuf, 4*dev->width, GEGL_BLIT_CACHE);
+  // gegl_node_blit (dev->gegl_top, scale, &roi, babl_format("RGBA u8"), dev->backbuf, 4*dev->width, GEGL_BLIT_CACHE);
+  gegl_node_blit (dev->gegl_load_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
   // for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
-    // dev->backbuf[4*i+k] = dev->gamma[dev->backbup[4*i+k]];
+    // dev->backbuf[4*i+k] = dev->gamma[dev->backbuf[4*i+k]];
 
   dev->image_processing = 0;
   dt_control_queue_draw();
@@ -184,14 +187,17 @@ restart:
   }
   dev->image_loading = 0;
   // trigger processing pipeline:
+  GeglRectangle rect = (GeglRectangle){0, 0, dev->image->width, dev->image->height};
+  gegl_buffer_set(dev->gegl_buffer, &rect, babl_format("RGB float"), dev->image->pixels, GEGL_AUTO_ROWSTRIDE);
   dt_dev_process_image(dev);
 }
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
-  GeglRectangle rect;
-  rect = (GeglRectangle){0, 0, image->width, image->height};
-  if(gegl_buffer_set_extent(dev->gegl_buffer, &rect)) return;
+  dev->image = image;
+  // GeglRectangle rect;
+  // rect = (GeglRectangle){0, 0, image->width, image->height};
+  // if(gegl_buffer_set_extent(dev->gegl_buffer, &rect)) return;
 
   // TODO: reset view to fit.
 
