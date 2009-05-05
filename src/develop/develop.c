@@ -60,10 +60,13 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->backbuf = dev->backbuf_preview = NULL;
 
   dev->image = NULL;
+  dev->image_dirty = dev->preview_dirty = 
   dev->image_loading = dev->image_processing = dev->preview_loading = dev->preview_processing = 0;
 
   dev->histogram = dev->histogram_pre = NULL;
   dev->gegl = gegl_node_new();
+  dev->gegl_buffer = NULL;
+  dev->gegl_preview_buffer = NULL;
   if(dev->gui_attached)
   {
     dev->histogram = (uint32_t *)malloc(sizeof(int32_t)*256*4);
@@ -73,13 +76,12 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     bzero(dev->histogram_pre, sizeof(int32_t)*256*4);
     dev->histogram_pre_max = -1;
 
-    dev->gegl_buffer = gegl_buffer_new(NULL, babl_format("RGB float"));
-    dev->gegl_load_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", "buffer", dev->gegl_buffer, NULL);
-    //     	gegl:convert-format ??
+    dev->gegl_load_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", NULL);
+    dev->gegl_load_preview_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", NULL);
     dev->gegl_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
     dev->gegl_preview_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
     gegl_node_link(dev->gegl_load_buffer, dev->gegl_top);
-    // gegl_node_link_many(dev->gegl_load_preview_buffer, dev->gegl_preview_top, NULL);
+    gegl_node_link(dev->gegl_load_preview_buffer, dev->gegl_preview_top);
 
     dt_dev_set_gamma_array(dev, 0.1, 0.45, dt_dev_default_gamma);
     int last = 0; // invert 0.1 0.45 fn
@@ -99,6 +101,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
   }
   g_object_unref (dev->gegl);
+  if(dev->gegl_buffer) gegl_buffer_destroy(dev->gegl_buffer);
+  if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
   while(dev->history)
   {
     free(((dt_dev_history_item_t *)dev->history->data)->params);
@@ -127,7 +131,7 @@ void dt_dev_process_image(dt_develop_t *dev)
 
 void dt_dev_process_preview(dt_develop_t *dev)
 {
-  if(!dev->image || dev->preview_loading || !dev->gui_attached) return;
+  if(!dev->image || !dev->image->mipf || !dev->gui_attached) return;
   dt_job_t job;
   dt_dev_process_preview_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_3);
@@ -136,11 +140,25 @@ void dt_dev_process_preview(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
+  if(dev->preview_loading)
+  {
+    int wd, ht;
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &wd, &ht);
+    GeglRectangle rect = (GeglRectangle){0, 0, wd, ht};
+    if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
+    dev->gegl_preview_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
+    gegl_buffer_set(dev->gegl_preview_buffer, NULL, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
+    gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
+    dev->preview_loading = 0;
+  }
+
   dev->preview_processing = 1;
-  GeglRectangle  roi;
+  GeglRectangle roi = (GeglRectangle){0, 0, dev->width, dev->height};
 
   roi = (GeglRectangle){0, 0, dev->width, dev->height};
   // TODO: 2ndary pipeline for preview!
+  const float scale = 1.0;
+  gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf_preview, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
 
   dev->preview_processing = 0;
   dt_control_queue_draw();
@@ -149,10 +167,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   dev->image_processing = 1;
-  GeglRectangle  roi;
-
-  printf("processing image: %f %f %f\n", dev->image->pixels[100], dev->image->pixels[300], dev->image->pixels[400]);
-  roi = (GeglRectangle){0, 0, dev->width, dev->height};
+  GeglRectangle roi = (GeglRectangle){0, 0, dev->width, dev->height};
 
   // TODO: first scale and then roi on dest
   // GEGL_BLIT_DEFAULT, GEGL_BLIT_CACHE and GEGL_BLIT_DIRTY
@@ -188,16 +203,20 @@ restart:
   dev->image_loading = 0;
   // trigger processing pipeline:
   GeglRectangle rect = (GeglRectangle){0, 0, dev->image->width, dev->image->height};
-  gegl_buffer_set(dev->gegl_buffer, &rect, babl_format("RGB float"), dev->image->pixels, GEGL_AUTO_ROWSTRIDE);
+  if(dev->gegl_buffer) gegl_buffer_destroy(dev->gegl_buffer);
+  dev->gegl_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
+  gegl_buffer_set(dev->gegl_buffer, NULL, babl_format("RGB float"), dev->image->pixels, GEGL_AUTO_ROWSTRIDE);
+  gegl_node_set(dev->gegl_load_buffer, "buffer", dev->gegl_buffer, NULL);
+
   dt_dev_process_image(dev);
 }
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   dev->image = image;
-  // GeglRectangle rect;
-  // rect = (GeglRectangle){0, 0, image->width, image->height};
-  // if(gegl_buffer_set_extent(dev->gegl_buffer, &rect)) return;
+  dev->preview_loading = 1;
+  (void)dt_image_get(dev->image, DT_IMAGE_MIPF, 'r'); // prefetch
+  dev->image_dirty = dev->preview_dirty = 1;
 
   // TODO: reset view to fit.
 
@@ -226,6 +245,8 @@ gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer use
     dev->backbuf_preview = (uint8_t *)realloc(dev->backbuf, event->width*event->height*4*sizeof(uint8_t));
     dev->width = event->width - 2*tb;
     dev->height = event->height - 2*tb;
+    dt_dev_process_image(dev);
+    dt_dev_process_preview(dev);
   }
   return TRUE;
 }

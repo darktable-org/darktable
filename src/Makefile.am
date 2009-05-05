@@ -1,4 +1,4 @@
-SUBDIRS=LibRaw # iop
+SUBDIRS=LibRaw #iop
 include shared.am
 noinst_LIBRARIES=libdarktable.a
 libdarktable_a_SOURCES=control/jobs.c library/film.c library/library.c gui/gtk.c gui/navigation.c gui/histogram.c gui/curveeditor.c develop/develop.c develop/imageop.c common/imageio.c common/darktable.c common/nikon_curve.c control/control.c develop/iop_hsb.c gui/develop_view.c common/image.c common/image_cache.c common/image_compression.c gui/metadata.c

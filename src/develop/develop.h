@@ -27,8 +27,8 @@ dt_dev_history_item_t;
 typedef struct dt_develop_t
 {
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
-  int32_t image_loading, image_processing;
-  int32_t preview_loading, preview_processing;
+  int32_t image_loading, image_processing, image_dirty;
+  int32_t preview_loading, preview_processing, preview_dirty;
 
   int32_t width, height;
   uint8_t *backbuf, *backbuf_preview;

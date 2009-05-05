@@ -193,11 +193,14 @@ void dt_dev_leave()
     fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
     return;
   }
+  // TODO: set up GEGL export/resize pipeline (on preview image?)
+#if 0
   dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
   memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->backbuf_preview, sizeof(uint8_t)*4*wd*ht);
   if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
     fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
   dt_image_update_mipmaps(darktable.develop->image);
+#endif
   dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
   dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
   dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
@@ -230,11 +233,14 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->history_top > 0)
     dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
 #else
-  printf("filling dreggn %d %d %d\n", dev->backbuf[100], dev->backbuf[300], dev->backbuf[500]);
+  if(dev->image_dirty) dt_dev_process_image(dev);
+  if(dev->preview_dirty) dt_dev_process_preview(dev);
   // TODO: center dev output image!
   int wd = dev->width, ht = dev->height;
   int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-  cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+  cairo_surface_t *surface = NULL;
+  if(dev->image_processing) surface = cairo_image_surface_create_for_data (dev->backbuf_preview, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+  else                      surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
   cairo_rectangle(cr, 0, 0, wd, ht);
   cairo_set_source_surface (cr, surface, 0, 0);
   cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
