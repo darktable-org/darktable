@@ -15,7 +15,8 @@
 
 // keycodes mapped to dvorak keyboard layout for easier usage
 #if defined(__APPLE__) || defined(__MACH__)
-#define KEYCODE_a            8   // mac keycodes :(
+#if 0
+#define KEYCODE_a            8   // mac keycodes X11 :(
 #define KEYCODE_o            9
 #define KEYCODE_e           10
 #define KEYCODE_apostrophe  20
@@ -31,6 +32,25 @@
 #define KEYCODE_Left        78
 #define KEYCODE_Right       74
 #define KEYCODE_Tab         56
+#else
+#define KEYCODE_a           0   // mac keycodes carbon :)
+#define KEYCODE_o           31
+#define KEYCODE_e           14
+#define KEYCODE_apostrophe  12
+#define KEYCODE_comma       43
+#define KEYCODE_period      47
+#define KEYCODE_1           18
+#define KEYCODE_2           19
+#define KEYCODE_3           20
+#define KEYCODE_Escape      53
+#define KEYCODE_F11        103
+#define KEYCODE_Up         126
+#define KEYCODE_Down       125
+#define KEYCODE_Left       123
+#define KEYCODE_Right      124
+#define KEYCODE_Tab         48
+#define KEYCODE_space       49
+#endif
 #else
 #define KEYCODE_a           38
 #define KEYCODE_o           39  
