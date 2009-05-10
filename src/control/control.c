@@ -160,6 +160,7 @@ int dt_control_load_config(dt_control_t *c)
       rc = sqlite3_prepare_v2(darktable.db, "drop table film_rolls", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table selected_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table mipmaps", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table history", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       return dt_control_load_config(c);
     }
@@ -621,6 +622,9 @@ void dt_control_mouse_moved(double x, double y, int which)
         DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
         darktable.control->button_x = x;
         darktable.control->button_y = y;
+#ifdef DT_USE_GEGL
+        dt_dev_invalidate(darktable.develop);
+#endif
         dt_control_queue_draw();
       }
     }

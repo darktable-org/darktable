@@ -41,16 +41,6 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
-  dev->iop_instance = 0;
-  dev->iop = NULL;
-  dt_iop_module_t *module;
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "tonecurve")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-  // TODO:
-  // dt_iop_load_module(module, dev, "saturation");
-  // or better: one module for: blackpoint, whitepoint, exposure, fill darks, saturation.
-
   dev->history_end = 0;
   dev->history = NULL; // empty list
 
@@ -58,7 +48,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->width = -1;
   dev->height = -1;
   pthread_mutex_init(&dev->backbuf_mutex, NULL);
-  dev->backbuf_size = 0;
+  dev->backbuf_size = dev->backbuf_preview_size = 0;
   dev->backbuf = dev->backbuf_preview = NULL;
 
   dev->image = NULL;
@@ -85,11 +75,18 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     gegl_node_link(dev->gegl_load_buffer, dev->gegl_top);
     gegl_node_link(dev->gegl_load_preview_buffer, dev->gegl_preview_top);
 
-    dt_dev_set_gamma_array(dev, 0.1, 0.45, dt_dev_default_gamma);
-    int last = 0; // invert 0.1 0.45 fn
+    float lin, gam;
+    DT_CTL_GET_GLOBAL(lin, dev_gamma_linear);
+    DT_CTL_GET_GLOBAL(gam, dev_gamma_gamma);
+    dt_dev_set_gamma_array(dev, lin, gam, dt_dev_default_gamma);
+    int last = 0; // invert
     for(int i=0;i<0x100;i++) for(int k=last;k<0x10000;k++)
       if(dt_dev_default_gamma[k] >= i) { last = k; dt_dev_de_gamma[i] = k/(float)0x10000; break; }
   }
+  for(int i=0;i<0x100;i++) dev->gamma[i] = dt_dev_default_gamma[i<<8];
+
+  dev->iop_instance = 0;
+  dev->iop = NULL;
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
@@ -141,13 +138,17 @@ void dt_dev_process_preview(dt_develop_t *dev)
   if(err) fprintf(stderr, "[dev_process_preview] job queue exceeded!\n");
 }
 
+void dt_dev_invalidate(dt_develop_t *dev)
+{
+  dev->preview_dirty = dev->image_dirty = 1;
+}
+
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
   if(dev->preview_loading)
   {
-    int wd, ht;
-    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &wd, &ht);
-    GeglRectangle rect = (GeglRectangle){0, 0, wd, ht};
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
+    GeglRectangle rect = (GeglRectangle){0, 0, dev->mipf_width, dev->mipf_height};
     if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
     dev->gegl_preview_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
     gegl_buffer_set(dev->gegl_preview_buffer, NULL, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
@@ -158,18 +159,26 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_processing = 1;
   GeglRectangle roi = (GeglRectangle){0, 0, dev->width, dev->height};
 
-  roi = (GeglRectangle){0, 0, dev->width, dev->height};
-  // TODO: 2ndary pipeline for preview!
-  const float scale = 1.0;
-  if(dev->backbuf_size != dev->width*dev->height*4*sizeof(uint8_t))
+  float scale = 1.0;
+  dt_dev_zoom_t zoom;
+  float zoom_x, zoom_y;
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  roi = (GeglRectangle){zoom_x, zoom_y, dev->width, dev->height};
+  if     (zoom == DT_ZOOM_FIT)  scale = fminf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
+  else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
+  if(dev->backbuf_preview_size != dev->width*dev->height*4*sizeof(uint8_t))
   {
     pthread_mutex_lock(&dev->backbuf_mutex);
-    dev->backbuf_size = dev->width*dev->height*4*sizeof(uint8_t);
+    dev->backbuf_preview_size = dev->width*dev->height*4*sizeof(uint8_t);
     free(dev->backbuf_preview);
-    dev->backbuf_preview = (uint8_t *)dt_alloc_align(16, dev->backbuf_size);
+    dev->backbuf_preview = (uint8_t *)dt_alloc_align(16, dev->backbuf_preview_size);
     pthread_mutex_unlock(&dev->backbuf_mutex);
   }
   gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf_preview, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
+  for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
+    dev->backbuf_preview[4*i+k] = dev->gamma[dev->backbuf_preview[4*i+k]];
 
   dev->preview_dirty = 0;
   dev->preview_processing = 0;
@@ -195,8 +204,8 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   }
   // gegl_node_blit (dev->gegl_top, scale, &roi, babl_format("RGBA u8"), dev->backbuf, 4*dev->width, GEGL_BLIT_CACHE);
   gegl_node_blit (dev->gegl_load_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
-  // for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
-    // dev->backbuf[4*i+k] = dev->gamma[dev->backbuf[4*i+k]];
+  for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
+    dev->backbuf[4*i+k] = dev->gamma[dev->backbuf[4*i+k]];
 
   dev->image_dirty = 0;
   dev->image_processing = 0;
@@ -240,6 +249,15 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   dev->image_dirty = dev->preview_dirty = 1;
 
   // TODO: reset view to fit.
+
+  // TODO: load modules for this image in read history!
+  dt_iop_module_t *module;
+  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  if(dt_iop_load_module(module, dev, "tonecurve")) exit(1);
+  dev->iop = g_list_append(dev->iop, module);
+  // TODO:
+  // dt_iop_load_module(module, dev, "saturation");
+  // or better: one module for: blackpoint, whitepoint, exposure, fill darks, saturation.
 
   dt_dev_read_history(dev);
   if(dev->gui_attached)

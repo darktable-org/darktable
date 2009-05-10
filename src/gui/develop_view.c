@@ -164,14 +164,14 @@ void dt_dev_leave()
 {
 #ifdef DT_USE_GEGL
   // clear gui.
+  dt_develop_t *dev = darktable.develop;
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
-  GList *modules = darktable.develop->iop;
-  while(modules)
+  while(dev->iop)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     module->gui_cleanup(module);
     module->cleanup(module);
-    modules = g_list_next(modules);
+    dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);
 #endif
@@ -234,7 +234,7 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
     dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
 #else
   pthread_mutex_lock(&dev->backbuf_mutex);
-  // if(dev->image_dirty) dt_dev_process_image(dev); // FIXME! this line crashes with sse-fixups.
+  // if(dev->image_dirty) dt_dev_process_image(dev); // FIXME: each process => 4 buffer leaks?
   if(dev->preview_dirty) dt_dev_process_preview(dev);
   else
   {

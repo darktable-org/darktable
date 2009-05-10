@@ -31,7 +31,7 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing, preview_dirty;
 
   pthread_mutex_t backbuf_mutex;
-  int32_t width, height, backbuf_size;
+  int32_t width, height, backbuf_size, backbuf_preview_size;
   uint8_t *backbuf, *backbuf_preview;
 
   // graph for gegl
@@ -42,6 +42,7 @@ typedef struct dt_develop_t
 
   // image under consideration.
   dt_image_t *image;
+  int32_t mipf_width, mipf_height;
 
   // history stack
   int32_t history_end;
@@ -53,6 +54,7 @@ typedef struct dt_develop_t
   // histogram for display.
   uint32_t *histogram, *histogram_pre;
   uint32_t histogram_max, histogram_pre_max;
+  uint8_t gamma[0x100];
 }
 dt_develop_t;
 
