@@ -57,6 +57,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->gui_attached = gui_attached;
   dev->width = -1;
   dev->height = -1;
+  pthread_mutex_init(&dev->backbuf_mutex, NULL);
+  dev->backbuf_size = 0;
   dev->backbuf = dev->backbuf_preview = NULL;
 
   dev->image = NULL;
@@ -114,6 +116,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_iop_unload_module((dt_iop_module_t *)dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
+  pthread_mutex_destroy(&dev->backbuf_mutex);
   free(dev->backbuf);
   free(dev->backbuf_preview);
   free(dev->histogram);
@@ -158,8 +161,17 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   roi = (GeglRectangle){0, 0, dev->width, dev->height};
   // TODO: 2ndary pipeline for preview!
   const float scale = 1.0;
+  if(dev->backbuf_size != dev->width*dev->height*4*sizeof(uint8_t))
+  {
+    pthread_mutex_lock(&dev->backbuf_mutex);
+    dev->backbuf_size = dev->width*dev->height*4*sizeof(uint8_t);
+    free(dev->backbuf_preview);
+    dev->backbuf_preview = (uint8_t *)dt_alloc_align(16, dev->backbuf_size);
+    pthread_mutex_unlock(&dev->backbuf_mutex);
+  }
   gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf_preview, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
 
+  dev->preview_dirty = 0;
   dev->preview_processing = 0;
   dt_control_queue_draw();
 }
@@ -173,11 +185,20 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   // GEGL_BLIT_DEFAULT, GEGL_BLIT_CACHE and GEGL_BLIT_DIRTY
   // TODO:
   const float scale = 1.0;
+  if(dev->backbuf_size != dev->width*dev->height*4*sizeof(uint8_t))
+  {
+    pthread_mutex_lock(&dev->backbuf_mutex);
+    dev->backbuf_size = dev->width*dev->height*4*sizeof(uint8_t);
+    free(dev->backbuf);
+    dev->backbuf = (uint8_t *)dt_alloc_align(16, dev->backbuf_size);
+    pthread_mutex_unlock(&dev->backbuf_mutex);
+  }
   // gegl_node_blit (dev->gegl_top, scale, &roi, babl_format("RGBA u8"), dev->backbuf, 4*dev->width, GEGL_BLIT_CACHE);
   gegl_node_blit (dev->gegl_load_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
   // for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
     // dev->backbuf[4*i+k] = dev->gamma[dev->backbuf[4*i+k]];
 
+  dev->image_dirty = 0;
   dev->image_processing = 0;
   dt_control_queue_draw();
 }
@@ -241,12 +262,9 @@ gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer use
   // TODO:resize event: update ROI and scale factors!
   if(dev->width - 2*tb != event->width || dev->height - 2*tb != event->height)
   {
-    dev->backbuf = (uint8_t *)realloc(dev->backbuf, event->width*event->height*4*sizeof(uint8_t));
-    dev->backbuf_preview = (uint8_t *)realloc(dev->backbuf, event->width*event->height*4*sizeof(uint8_t));
     dev->width = event->width - 2*tb;
     dev->height = event->height - 2*tb;
-    dt_dev_process_image(dev);
-    dt_dev_process_preview(dev);
+    dev->image_dirty = dev->preview_dirty = 1;
   }
   return TRUE;
 }

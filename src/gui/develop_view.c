@@ -149,7 +149,7 @@ void dt_dev_enter()
     gtk_container_add(GTK_CONTAINER(expander), module->widget);
     modules = g_list_next(modules);
   }
-  gtk_widget_show_all(box);
+  gtk_widget_show_all(GTK_WIDGET(box));
 #else
   dt_dev_configure(darktable.develop, darktable.control->width - 2*darktable.control->tabborder, darktable.control->height - 2*darktable.control->tabborder);
 #endif
@@ -233,19 +233,28 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->history_top > 0)
     dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
 #else
-  if(dev->image_dirty) dt_dev_process_image(dev);
+  pthread_mutex_lock(&dev->backbuf_mutex);
+  // if(dev->image_dirty) dt_dev_process_image(dev); // FIXME! this line crashes with sse-fixups.
   if(dev->preview_dirty) dt_dev_process_preview(dev);
-  // TODO: center dev output image!
-  int wd = dev->width, ht = dev->height;
-  int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-  cairo_surface_t *surface = NULL;
-  if(dev->image_processing) surface = cairo_image_surface_create_for_data (dev->backbuf_preview, CAIRO_FORMAT_RGB24, wd, ht, stride); 
-  else                      surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
-  cairo_rectangle(cr, 0, 0, wd, ht);
-  cairo_set_source_surface (cr, surface, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-  cairo_fill(cr);
-  cairo_surface_destroy (surface);
+  else
+  {
+    // TODO: center dev output image!
+    int wd = dev->width, ht = dev->height;
+    int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    cairo_surface_t *surface = NULL;
+    // if(dev->image_processing && !dev->preview_processing)
+      surface = cairo_image_surface_create_for_data (dev->backbuf_preview, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    // else if(!dev->image_processing) surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    if(surface)
+    {
+      cairo_rectangle(cr, 0, 0, wd, ht);
+      cairo_set_source_surface (cr, surface, 0, 0);
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+      cairo_fill(cr);
+      cairo_surface_destroy (surface);
+    }
+  }
+  pthread_mutex_unlock(&dev->backbuf_mutex);
   // TODO: execute module callback hook!
 #endif
 }

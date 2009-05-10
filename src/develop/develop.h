@@ -30,7 +30,8 @@ typedef struct dt_develop_t
   int32_t image_loading, image_processing, image_dirty;
   int32_t preview_loading, preview_processing, preview_dirty;
 
-  int32_t width, height;
+  pthread_mutex_t backbuf_mutex;
+  int32_t width, height, backbuf_size;
   uint8_t *backbuf, *backbuf_preview;
 
   // graph for gegl
@@ -62,6 +63,9 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img);
 // TODO: replace these by setting `loading' flag and trigering gegl_process 
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
+// launch jobs above
+void dt_dev_process_image(dt_develop_t *dev);
+void dt_dev_process_preview(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
 

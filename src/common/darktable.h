@@ -1,7 +1,7 @@
 #ifndef DARKROOM_H
 #define DARKROOM_H
 
-#define _XOPEN_SOURCE 500 // for localtime_r
+#define _XOPEN_SOURCE 600 // for localtime_r
 #include <time.h>
 #include <inttypes.h>
 #include <sqlite3.h>
@@ -56,5 +56,6 @@ void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, time_t t);
 void dt_gettime(char *datetime);
+void *dt_alloc_align(size_t alignment, size_t size);
 
 #endif

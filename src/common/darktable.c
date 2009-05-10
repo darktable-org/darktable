@@ -151,3 +151,10 @@ void dt_gettime(char *datetime)
   dt_gettime_t(datetime, time(NULL));
 }
 
+void *dt_alloc_align(size_t alignment, size_t size)
+{
+  void *ptr = NULL;
+  if(posix_memalign(&ptr, alignment, size)) return NULL;
+  return ptr;
+}
+
