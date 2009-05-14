@@ -1,0 +1,15 @@
+
+===============================================================================
+  work in progress:
+
+  darktable is being ported to gegl as backend. with all these operations
+  and caching at hand, development should proceed very quickly.
+
+  image operations will be designed as plugins in the next release.
+  the right panel will be a stack of applied operations, the left will
+  contain the history timeline.
+
+
+===============================================================================
+  initial release: 0.1
+

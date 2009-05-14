@@ -9,6 +9,7 @@ to build it, you need:
  - libgthread-2.0
  - cairo
  - MagickCore
+ - gegl
 
 other used packages (supplied in the source tree):
 
@@ -18,9 +19,9 @@ other used packages (supplied in the source tree):
 then, type:
 
  $ autoreconf --install
- $ ./configure [--enable-debug]
- $ make
- $ src/darkroom
+ $ ./configure [--enable-debug] --prefix=$(pwd)/install
+ $ make install
+ $ ./install/bin/darktable
 
 (the first step is only necessary when building from svn for the first time)
 and enjoy!
