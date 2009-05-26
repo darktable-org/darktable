@@ -1,6 +1,9 @@
+- how is gui and imageop synched? when are params committed to
+  stack?
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
+- gamma with gegl operations +-/gamma?
 
 bugs:
  - import while still importing crashes.
