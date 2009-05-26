@@ -1,3 +1,7 @@
+- replace dev zoom/closeup weirdness by general scale factor.
+- re-think mipmap database layout (even smaller float preview
+  to replace other mips?)
+
 bugs:
  - import while still importing crashes.
  - export mono-core?

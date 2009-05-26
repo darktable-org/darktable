@@ -31,7 +31,9 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing, preview_dirty;
 
   pthread_mutex_t backbuf_mutex;
-  int32_t width, height, backbuf_size, backbuf_preview_size;
+  // width, height: dimensions of window
+  // capwidth, capheight: actual dimensions of scaled image inside window.
+  int32_t width, height, backbuf_size, backbuf_preview_size, capwidth, capheight, capwidth_preview, capheight_preview;
   uint8_t *backbuf, *backbuf_preview;
 
   // graph for gegl
@@ -43,6 +45,7 @@ typedef struct dt_develop_t
   // image under consideration.
   dt_image_t *image;
   int32_t mipf_width, mipf_height;
+  float   mipf_exact_width, mipf_exact_height;
 
   // history stack
   int32_t history_end;

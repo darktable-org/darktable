@@ -239,12 +239,22 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   else
   {
     // TODO: center dev output image!
-    int wd = dev->width, ht = dev->height;
-    int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    int wd, ht, stride;
     cairo_surface_t *surface = NULL;
-    // if(dev->image_processing && !dev->preview_processing)
+    if(/*dev->image_processing &&*/ !dev->preview_processing)
+    {
+      wd = dev->capwidth_preview;
+      ht = dev->capheight_preview;
+      stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
       surface = cairo_image_surface_create_for_data (dev->backbuf_preview, CAIRO_FORMAT_RGB24, wd, ht, stride); 
-    // else if(!dev->image_processing) surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    }
+    // else if(!dev->image_processing)
+    //{
+    // wd = dev->capwidth_preview;
+    // ht = dev->height_preview;
+    // stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    //  surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    //}
     if(surface)
     {
       cairo_rectangle(cr, 0, 0, wd, ht);

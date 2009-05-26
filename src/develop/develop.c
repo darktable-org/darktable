@@ -99,9 +99,9 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
   }
-  g_object_unref (dev->gegl);
   if(dev->gegl_buffer) gegl_buffer_destroy(dev->gegl_buffer);
   if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
+  g_object_unref (dev->gegl);
   while(dev->history)
   {
     free(((dt_dev_history_item_t *)dev->history->data)->params);
@@ -145,29 +145,47 @@ void dt_dev_invalidate(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
+  dev->preview_processing = 1;
   if(dev->preview_loading)
   {
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
+    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
     GeglRectangle rect = (GeglRectangle){0, 0, dev->mipf_width, dev->mipf_height};
-    if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
-    dev->gegl_preview_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
+    // printf("creating buf with %d %d %d %d \n", rect.x, rect.y, rect.width, rect.height);
+    // if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
+    if(!dev->gegl_preview_buffer)
+    {
+      dev->gegl_preview_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
+      gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
+    }
+    // else gegl_buffer_set_extent(dev->gegl_preview_buffer, &rect);
+    // gegl_buffer_set(dev->gegl_preview_buffer, &rect, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
     gegl_buffer_set(dev->gegl_preview_buffer, NULL, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
-    gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
+    // gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
     dev->preview_loading = 0;
   }
 
-  dev->preview_processing = 1;
-  GeglRectangle roi = (GeglRectangle){0, 0, dev->width, dev->height};
-
-  float scale = 1.0;
   dt_dev_zoom_t zoom;
   float zoom_x, zoom_y;
+  int closeup;
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-  roi = (GeglRectangle){zoom_x, zoom_y, dev->width, dev->height};
+
+  // FIXME: mipf precise width and actual mip width differ!
+  float scale = (closeup?2:1)*dev->image->width/(float)dev->mipf_width;//1:1;
+  // roi after scale has been applied:
   if     (zoom == DT_ZOOM_FIT)  scale = fminf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
   else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
+  dev->capwidth_preview  = MIN(dev->width,  dev->mipf_width *scale);
+  dev->capheight_preview = MIN(dev->height, dev->mipf_height*scale);
+  GeglRectangle roi = (GeglRectangle){scale*dev->mipf_width*(.5+zoom_x)-dev->capwidth_preview/2, scale*dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/2, dev->capwidth_preview, dev->capheight_preview};
+  roi.x      = MAX(0, roi.x);
+  roi.y      = MAX(0, roi.y);
+  roi.width  = MIN(dev->width, roi.width);
+  roi.height = MIN(dev->height, roi.height);
+  // printf("drawing %d %d %d %d (zoom: %f %f)\n", roi.x, roi.y, roi.width, roi.height, zoom_x, zoom_y);
   if(dev->backbuf_preview_size != dev->width*dev->height*4*sizeof(uint8_t))
   {
     pthread_mutex_lock(&dev->backbuf_mutex);
@@ -176,9 +194,39 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dev->backbuf_preview = (uint8_t *)dt_alloc_align(16, dev->backbuf_preview_size);
     pthread_mutex_unlock(&dev->backbuf_mutex);
   }
+  // uint8_t *dreggn = malloc(4*dev->capwidth_preview*dev->capheight_preview);
+  // gegl_node_process(dev->gegl_load_preview_buffer);
+
+#if 1
+  GeglRectangle roio = (GeglRectangle){dev->mipf_width*(.5+zoom_x)-dev->capwidth_preview/(scale*2), dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/(scale*2), dev->capwidth_preview/scale, dev->capheight_preview/scale};
+  roio.x      = MAX(0, roio.x);
+  roio.y      = MAX(0, roio.y);
+  roio.width  = MIN(dev->mipf_width -roio.x-1, roio.width);
+  roio.height = MIN(dev->mipf_height-roio.y-1, roio.height);
+  GeglProcessor *processor = gegl_node_new_processor (dev->gegl_load_preview_buffer, &roio);
+  double         progress;
+
+  while (gegl_processor_work (processor, &progress));
+    // g_warning ("%f%% complete", progress);
+  gegl_processor_destroy (processor);
+#else
+  gegl_node_process(dev->gegl_load_preview_buffer);
+#endif
+
   gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf_preview, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
-  for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
-    dev->backbuf_preview[4*i+k] = dev->gamma[dev->backbuf_preview[4*i+k]];
+
+  // gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGB u8"), dreggn, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
+  // gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf_preview, 4*dev->capwidth_preview, GEGL_BLIT_CACHE);
+  // TODO: update histograms here with this data?
+  // TODO: implement lin/gamma gegl node and directly draw to gtk pixbuf!
+  for(int i=0;i<dev->capwidth_preview*dev->capheight_preview;i++)
+  {
+    uint8_t tmp[3] = {dev->backbuf_preview[4*i+2], dev->backbuf_preview[4*i+1], dev->backbuf_preview[4*i]};
+    // uint8_t tmp[3] = {dreggn[3*i+2], dreggn[3*i+1], dreggn[3*i]};
+    // uint8_t tmp[3] = {(uint8_t)((i/dev->width) /(float)dev->capheight_preview * 256), (uint8_t)((i%dev->width) /(float)dev->capwidth_preview * 256), 0};
+    for(int k=0;k<3;k++) dev->backbuf_preview[4*i+k] = dev->gamma[tmp[k]];
+  }
+  // free(dreggn);
 
   dev->preview_dirty = 0;
   dev->preview_processing = 0;
@@ -187,6 +235,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
+#if 0
   dev->image_processing = 1;
   GeglRectangle roi = (GeglRectangle){0, 0, dev->width, dev->height};
 
@@ -210,6 +259,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dev->image_dirty = 0;
   dev->image_processing = 0;
   dt_control_queue_draw();
+#endif
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
