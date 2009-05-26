@@ -111,9 +111,11 @@ typedef struct dt_ctl_image_settings_t
   // gamma correction
   float dev_gamma_linear, dev_gamma_gamma;
 
+#ifndef DT_USE_GEGL
   // tone curve
   float tonecurve_x[6], tonecurve_y[6];
   int tonecurve_preset;
+#endif
 }
 dt_ctl_image_settings_t;
 

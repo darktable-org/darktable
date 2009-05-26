@@ -36,6 +36,10 @@ typedef struct dt_iop_module_t
   int32_t enabled;
   /** parameters for the operation. will be replaced by history revert. */
   dt_iop_params_t *params;
+  /** exclusive access to params is needed, as gui and gegl processing is async. */
+  pthread_mutex_t params_mutex;
+  /** size of individual params struct. */
+  int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
   /** other stuff that may be needed by the module (as GeglNode*), not only in gui mode. */
@@ -45,13 +49,13 @@ typedef struct dt_iop_module_t
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** callback methods for gui. */
-  void (*gui_reset)   (struct dt_iop_module_t *self);
-  void (*gui_update)  (struct dt_iop_module_t *self);
-  void (*gui_init)    (struct dt_iop_module_t *self);
-  void (*gui_cleanup) (struct dt_iop_module_t *self);
+  void (*gui_reset)     (struct dt_iop_module_t *self);
+  void (*gui_init)      (struct dt_iop_module_t *self);
+  void (*gui_cleanup)   (struct dt_iop_module_t *self);
   // TODO: add more for mouse interaction dreggn.
-  void (*init) (struct dt_iop_module_t *self);
+  void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup) (struct dt_iop_module_t *self);
+  void (*commit_params) (struct dt_iop_module_t *self);
   void (*get_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
   void (*get_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
   void (*get_preview_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
@@ -67,6 +71,10 @@ dt_iop_module_t;
 int dt_iop_load_module(dt_iop_module_t *module, struct dt_develop_t *dev, const char *op);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_unload_module(dt_iop_module_t *module);
+
+/** synchronized access to parameters. */
+void dt_iop_get_params(dt_iop_module_t *module, void *params);
+void dt_iop_set_params(dt_iop_module_t *module, void *params);
 
 // TODO: replace all this shit with gegl nodes:
 //  - histogram counting in small preview buf before

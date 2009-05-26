@@ -153,8 +153,12 @@ void dt_gettime(char *datetime)
 
 void *dt_alloc_align(size_t alignment, size_t size)
 {
+#if defined(__MACH__) || defined(__APPLE__)
+  return malloc(size);
+#else
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, size)) return NULL;
   return ptr;
+#endif
 }
 

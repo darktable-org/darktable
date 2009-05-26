@@ -7,12 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gmodule.h>
+#include <pthread.h>
 
 #ifdef DT_USE_GEGL
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *op)
 {
   const gchar *err;
+  pthread_mutex_init(&module->params_mutex, NULL);
   module->instance = dev->iop_instance++;
   module->dt = &darktable;
   module->dev = dev;
@@ -25,10 +27,10 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   if(!module->module) goto error;
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
-  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
   if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
+  if(!g_module_symbol(module->module, "commit_params",          (gpointer)&(module->commit_params)))          goto error;
   if(!g_module_symbol(module->module, "get_output_pad",         (gpointer)&(module->get_output_pad)))         goto error;
   if(!g_module_symbol(module->module, "get_input_pad",          (gpointer)&(module->get_input_pad)))          goto error;
   if(!g_module_symbol(module->module, "get_preview_output_pad", (gpointer)&(module->get_preview_output_pad))) goto error;
@@ -45,7 +47,22 @@ error:
 void dt_iop_unload_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
+  pthread_mutex_destroy(&module->params_mutex);
   if(module->module) g_module_close(module->module);
+}
+
+void dt_iop_get_params(dt_iop_module_t *module, void *params)
+{
+  pthread_mutex_lock(&module->params_mutex);
+  memcpy(params, module->params, module->params_size);
+  pthread_mutex_unlock(&module->params_mutex);
+}
+
+void dt_iop_set_params(dt_iop_module_t *module, void *params)
+{
+  pthread_mutex_lock(&module->params_mutex);
+  memcpy(module->params, params, module->params_size);
+  pthread_mutex_unlock(&module->params_mutex);
 }
 #else
 

@@ -1,4 +1,5 @@
 
+#ifndef DT_USE_GEGL
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -287,4 +288,4 @@ void dt_gui_curve_editor_get_curve(dt_gui_curve_editor_t *c, uint16_t *curve_dat
   CurveDataSample(&c->curve, &c->convert);*/
 }
 
-
+#endif

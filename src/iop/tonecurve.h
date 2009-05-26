@@ -17,6 +17,7 @@ dt_iop_tonecurve_params_t;
 
 typedef struct dt_iop_tonecurve_gui_data_t
 {
+  GeglCurve *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkLabel *label;
@@ -32,8 +33,8 @@ dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
 {
-  GeglCurve *curve;
-  GeglNode *node, *node_preview;
+  GeglCurve *curve;               // curve for gegl nodes and pixel processing
+  GeglNode *node, *node_preview;  // dual pixel pipeline
   gchar input_pad[20];
   gchar output_pad[20];
 }
@@ -42,10 +43,10 @@ dt_iop_tonecurve_data_t;
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
 
-void gui_reset   (struct dt_iop_module_t *self);
-void gui_update  (struct dt_iop_module_t *self);
-void gui_init    (struct dt_iop_module_t *self);
-void gui_cleanup (struct dt_iop_module_t *self);
+void gui_reset    (struct dt_iop_module_t *self);
+void commit_params(struct dt_iop_module_t *self);
+void gui_init     (struct dt_iop_module_t *self);
+void gui_cleanup  (struct dt_iop_module_t *self);
 
 void get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
 void get_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);

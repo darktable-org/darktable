@@ -17,10 +17,10 @@ extern float dt_dev_de_gamma[0x100];
 
 typedef struct dt_dev_history_item_t
 {
-  dt_dev_operation_t op;
-  int32_t iop;
-  int32_t enabled;
-  dt_iop_params_t *params;
+  dt_dev_operation_t op;    // which operation
+  int32_t iop;              // which instance of the operation module in the list
+  int32_t enabled;          // switched on/off
+  dt_iop_params_t *params;  // parameters for this operation
 }
 dt_dev_history_item_t;
 

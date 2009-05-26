@@ -72,6 +72,8 @@
 
 void dt_ctl_settings_init(dt_control_t *s)
 {
+  // same thread as init
+  s->gui_thread = pthread_self();
   // init global defaults.
   pthread_mutex_init(&(s->global_mutex), NULL);
   pthread_mutex_init(&(s->image_mutex), NULL);
@@ -122,6 +124,7 @@ void dt_ctl_settings_init(dt_control_t *s)
   s->image_settings.dev_gamma_linear = 0.1;
   s->image_settings.dev_gamma_gamma = 0.45;
 
+#ifndef DT_USE_GEGL
   s->image_settings.tonecurve_preset = 0;
   s->image_settings.tonecurve_x[0] = s->image_settings.tonecurve_y[0] = 0.0;
   s->image_settings.tonecurve_x[1] = s->image_settings.tonecurve_y[1] = 0.08;
@@ -129,6 +132,7 @@ void dt_ctl_settings_init(dt_control_t *s)
   s->image_settings.tonecurve_x[3] = s->image_settings.tonecurve_y[3] = 0.6;//0.7;
   s->image_settings.tonecurve_x[4] = s->image_settings.tonecurve_y[4] = 0.92;
   s->image_settings.tonecurve_x[5] = s->image_settings.tonecurve_y[5] = 1.0;
+#endif
 
   memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
   memcpy(&(s->image_defaults), &(s->image_settings), sizeof(dt_ctl_image_settings_t));
@@ -460,7 +464,7 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 
 void *dt_control_expose(void *voidptr)
 {
-  darktable.control->gui_thread = pthread_self();
+  // darktable.control->gui_thread = pthread_self();
   while(1)
   {
     int width, height, pointerx, pointery;

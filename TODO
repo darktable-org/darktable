@@ -1,3 +1,5 @@
+- remove dt_ctl_image_settings by iop/gamma
+- save gui settings (expanded etc?) in operation stacks
 - how is gui and imageop synched? when are params committed to
   stack?
 - replace dev zoom/closeup weirdness by general scale factor.

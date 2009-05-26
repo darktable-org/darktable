@@ -152,8 +152,8 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
     GeglRectangle rect = (GeglRectangle){0, 0, dev->mipf_width, dev->mipf_height};
     // printf("creating buf with %d %d %d %d \n", rect.x, rect.y, rect.width, rect.height);
-    // if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
-    if(!dev->gegl_preview_buffer)
+    if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
+    // if(!dev->gegl_preview_buffer)
     {
       dev->gegl_preview_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
       gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
@@ -416,8 +416,19 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 }
 
 // TODO: port to gegl and glist
+// TODO: params: dt_iop_module_t module, dt_iop_params_t instead of op!
 void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 {
+  // TODO: if gui_attached pop all operations down to dev->history_end
+  // TODO: if op == gamma, reload gamma table
+  // TODO: update histogram (launch job)?
+  // TODO: if not the same op as already on top of stack (avoid history congestion):
+  // if(module->instance != history->iop)
+  //          history_end++
+  //          if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, op);
+  //          insert new history item to GList (module->params)
+  // TODO: copy gamma image settings (temp hack. and remove it in favor of a true iop later)
+  // TODO: invalidate buffers and force redraw of darkroom
 #if 0
   dt_dev_image_t *img = dev->history + dev->history_top - 1;
   if(dev->gui_attached)
@@ -465,6 +476,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 // TODO: only adjust history_end and gegl links!
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
+  // TODO: attach nop-output node to correct output pad of module
+  // TODO: go through module list from original and change module->params accordingly
   dev->history_end = cnt;
 #if 0
   // this is called exclusively from the gtk thread, so no lock is necessary.
