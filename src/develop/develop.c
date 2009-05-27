@@ -206,8 +206,15 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   GeglProcessor *processor = gegl_node_new_processor (dev->gegl_load_preview_buffer, &roio);
   double         progress;
 
-  while (gegl_processor_work (processor, &progress));
+  // TODO: lock gegl preview pipe mutex!
+  while (gegl_processor_work (processor, &progress))
+  {
+    // TODO: unlock mutex and check history changed flag.
+    // if changed, abort processing!
     // g_warning ("%f%% complete", progress);
+    // TODO: lock again
+  }
+  // TODO: unlock
   gegl_processor_destroy (processor);
 #else
   gegl_node_process(dev->gegl_load_preview_buffer);
@@ -419,8 +426,53 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 // TODO: params: dt_iop_module_t module, dt_iop_params_t instead of op!
 void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 {
-  // TODO: if gui_attached pop all operations down to dev->history_end
-  // TODO: if op == gamma, reload gamma table
+  // TODO: set history changed flag
+  // TODO: lock both gegl pipeline mutices!
+  if(dev->gui_attached)
+  {
+    // if gui_attached pop all operations down to dev->history_end
+    dt_control_clear_history_items(dev->history_end-1);
+    // remove unused history items:
+    GList *history = g_list_nth(dev->history, dev->history_end);
+    while(history)
+    {
+      GList *next = g_list_next(history);
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+      free(hist->params);
+      g_list_delete_link(dev->history, history);
+      history = next;
+    }
+#if 0 // disabled while there is only tonecurve
+    // remove all modules which are not in history anymore:
+    GList *modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      history = dev->history;
+      while(history)
+      {
+        // for all modules in list: go through remaining history. if found, keep it.
+        dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+        if(hist->iop == module->instance)
+        {
+          modules = g_list_next(modules);
+          break;
+        }
+        history = g_list_next(history);
+      }
+      GList *next = g_list_next(modules);
+      module->gui_cleanup(module);
+      module->cleanup(module);
+      dev->iop = g_list_delete_link(dev->iop, modules);
+      modules = *next;
+    }
+#endif
+  }
+  // TODO: unset history changed flags
+  // TODO: unlock mutices
+
+
+  // TODO: if op == gamma, reload gamma table?
   // TODO: update histogram (launch job)?
   // TODO: if not the same op as already on top of stack (avoid history congestion):
   // if(module->instance != history->iop)
