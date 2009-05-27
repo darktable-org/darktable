@@ -31,12 +31,16 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing, preview_dirty;
 
   pthread_mutex_t backbuf_mutex;
+  // TODO: only one gegl pipe!
+  pthread_mutex_t pixel_pipe_mutex, pixel_pipe_preview_mutex;
+  int32_t history_changed;
   // width, height: dimensions of window
   // capwidth, capheight: actual dimensions of scaled image inside window.
   int32_t width, height, backbuf_size, backbuf_preview_size, capwidth, capheight, capwidth_preview, capheight_preview;
   uint8_t *backbuf, *backbuf_preview;
 
   // graph for gegl
+  // TODO: only one gegl pipe!
   GeglNode *gegl;
   GeglBuffer *gegl_buffer, *gegl_preview_buffer;
   GeglNode *gegl_top, *gegl_preview_top;
@@ -79,6 +83,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history(dt_develop_t *dev);
 
+void dt_dev_invalidate(dt_develop_t *dev);
 void dt_dev_set_gamma(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);

@@ -346,10 +346,9 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p.tonecurve_y[c->selected+1]);
     if(c->selected == 1) c->selected_max *= 0.7;
     if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
+    gtk_widget_queue_draw(widget);
   }
 
-  // FIXME: this is only needed if not add_history item
-  gtk_widget_queue_draw(widget);
   gint x, y;
   gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;

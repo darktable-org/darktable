@@ -1,3 +1,13 @@
+- dev image process: redraw->launch job.
+  - only launch preview OR full image, depending on loaded.
+  - process job: update modules to gegl if changed (use atomic commit in module)
+  - changed flag set by add_histoy_item
+    (which returns immediately and is called by module gui
+    to update dt gui: history items and module stack?)
+    - module stack: disable module in gui without removing it
+      (this should be done in image process thread, to retain gegl nodes!)
+  - dev->pixel_pipe_mutex: if image is loaded, remove
+    load preview->scale nodes from gegl graph 
 - remove dt_ctl_image_settings by iop/gamma
 - save gui settings (expanded etc?) in operation stacks
 - how is gui and imageop synched? when are params committed to

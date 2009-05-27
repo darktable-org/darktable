@@ -43,11 +43,14 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   dev->history_end = 0;
   dev->history = NULL; // empty list
+  dev->history_changed = 0;
 
   dev->gui_attached = gui_attached;
   dev->width = -1;
   dev->height = -1;
   pthread_mutex_init(&dev->backbuf_mutex, NULL);
+  pthread_mutex_init(&dev->pixel_pipe_mutex, NULL);
+  pthread_mutex_init(&dev->pixel_pipe_preview_mutex, NULL);
   dev->backbuf_size = dev->backbuf_preview_size = 0;
   dev->backbuf = dev->backbuf_preview = NULL;
 
@@ -114,6 +117,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   pthread_mutex_destroy(&dev->backbuf_mutex);
+  pthread_mutex_destroy(&dev->pixel_pipe_mutex);
+  pthread_mutex_destroy(&dev->pixel_pipe_preview_mutex);
   free(dev->backbuf);
   free(dev->backbuf_preview);
   free(dev->histogram);
@@ -206,15 +211,21 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   GeglProcessor *processor = gegl_node_new_processor (dev->gegl_load_preview_buffer, &roio);
   double         progress;
 
-  // TODO: lock gegl preview pipe mutex!
+  // lock gegl preview pipe mutex
+  pthread_mutex_lock(&dev->pixel_pipe_preview_mutex);
   while (gegl_processor_work (processor, &progress))
   {
-    // TODO: unlock mutex and check history changed flag.
-    // if changed, abort processing!
-    // g_warning ("%f%% complete", progress);
-    // TODO: lock again
+    pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
+    // if history changed, abort processing!
+    pthread_mutex_lock(&dev->pixel_pipe_preview_mutex);
+    if(dev->history_changed)
+    {
+      pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
+      dev->preview_processing = 0;
+      return;
+    }
   }
-  // TODO: unlock
+  pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
   gegl_processor_destroy (processor);
 #else
   gegl_node_process(dev->gegl_load_preview_buffer);
@@ -426,6 +437,9 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 // TODO: params: dt_iop_module_t module, dt_iop_params_t instead of op!
 void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 {
+  dev->history_changed = 1;
+  pthread_mutex_lock(&dev->pixel_pipe_preview_mutex);
+  pthread_mutex_lock(&dev->pixel_pipe_mutex);
   // TODO: set history changed flag
   // TODO: lock both gegl pipeline mutices!
   if(dev->gui_attached)
@@ -468,8 +482,13 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
     }
 #endif
   }
-  // TODO: unset history changed flags
-  // TODO: unlock mutices
+  // unset history changed flags, unlock mutices
+  // FIXME: already good to reset this flag?
+  dev->history_changed = 0;
+  pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
+  pthread_mutex_unlock(&dev->pixel_pipe_mutex);
+
+  dt_control_queue_draw();
 
 
   // TODO: if op == gamma, reload gamma table?
