@@ -1,3 +1,6 @@
+- print GPLv3 notice on top of all files
+- faster loading by reversing of thumbnail jpegs :)
+- dt_dev_pixelpipe_t
 - dev image process: redraw->launch job.
   - only launch preview OR full image, depending on loaded.
   - process job: update modules to gegl if changed (use atomic commit in module)
