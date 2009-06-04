@@ -32,7 +32,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
   for(int k=0;k<0x10000;k++)
   {
-    int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
+    // int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
 	  if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
 	  else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
     arr[k] = tmp>>8;
@@ -153,6 +153,13 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_processing = 1;
   if(dev->preview_loading)
   {
+    // TODO: init pixel pipeline for preview?
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
+    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
+    dt_dev_pixelpipe_init(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height);
+
+#if 0
+    // TODO: (when will mipf be loaded?)
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
     GeglRectangle rect = (GeglRectangle){0, 0, dev->mipf_width, dev->mipf_height};
@@ -167,6 +174,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     // gegl_buffer_set(dev->gegl_preview_buffer, &rect, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
     gegl_buffer_set(dev->gegl_preview_buffer, NULL, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
     // gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
+#endif
     dev->preview_loading = 0;
   }
 
@@ -199,52 +207,12 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dev->backbuf_preview = (uint8_t *)dt_alloc_align(16, dev->backbuf_preview_size);
     pthread_mutex_unlock(&dev->backbuf_mutex);
   }
-  // uint8_t *dreggn = malloc(4*dev->capwidth_preview*dev->capheight_preview);
-  // gegl_node_process(dev->gegl_load_preview_buffer);
 
-#if 1
-  GeglRectangle roio = (GeglRectangle){dev->mipf_width*(.5+zoom_x)-dev->capwidth_preview/(scale*2), dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/(scale*2), dev->capwidth_preview/scale, dev->capheight_preview/scale};
-  roio.x      = MAX(0, roio.x);
-  roio.y      = MAX(0, roio.y);
-  roio.width  = MIN(dev->mipf_width -roio.x-1, roio.width);
-  roio.height = MIN(dev->mipf_height-roio.y-1, roio.height);
-  GeglProcessor *processor = gegl_node_new_processor (dev->gegl_load_preview_buffer, &roio);
-  double         progress;
+  // TODO: decide upon history event which one to choose:
+  dt_dev_pixelpipe_synch_all(dev->preview_pipe, dev);
+  // dt_dev_pixelpipe_synch_top(dev->preview_pipe, dev);
 
-  // lock gegl preview pipe mutex
-  pthread_mutex_lock(&dev->pixel_pipe_preview_mutex);
-  while (gegl_processor_work (processor, &progress))
-  {
-    pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
-    // if history changed, abort processing!
-    pthread_mutex_lock(&dev->pixel_pipe_preview_mutex);
-    if(dev->history_changed)
-    {
-      pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
-      dev->preview_processing = 0;
-      return;
-    }
-  }
-  pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
-  gegl_processor_destroy (processor);
-#else
-  gegl_node_process(dev->gegl_load_preview_buffer);
-#endif
-
-  gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf_preview, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
-
-  // gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGB u8"), dreggn, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
-  // gegl_node_blit (dev->gegl_load_preview_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf_preview, 4*dev->capwidth_preview, GEGL_BLIT_CACHE);
-  // TODO: update histograms here with this data?
-  // TODO: implement lin/gamma gegl node and directly draw to gtk pixbuf!
-  for(int i=0;i<dev->capwidth_preview*dev->capheight_preview;i++)
-  {
-    uint8_t tmp[3] = {dev->backbuf_preview[4*i+2], dev->backbuf_preview[4*i+1], dev->backbuf_preview[4*i]};
-    // uint8_t tmp[3] = {dreggn[3*i+2], dreggn[3*i+1], dreggn[3*i]};
-    // uint8_t tmp[3] = {(uint8_t)((i/dev->width) /(float)dev->capheight_preview * 256), (uint8_t)((i%dev->width) /(float)dev->capwidth_preview * 256), 0};
-    for(int k=0;k<3;k++) dev->backbuf_preview[4*i+k] = dev->gamma[tmp[k]];
-  }
-  // free(dreggn);
+  dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->preview_backbuf, roi, scale);
 
   dev->preview_dirty = 0;
   dev->preview_processing = 0;
@@ -345,12 +313,11 @@ gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer use
 {
   dt_develop_t *dev = darktable.develop;
   int tb = darktable.control->tabborder;
-  // TODO:resize event: update ROI and scale factors!
   if(dev->width - 2*tb != event->width || dev->height - 2*tb != event->height)
   {
     dev->width = event->width - 2*tb;
     dev->height = event->height - 2*tb;
-    dev->image_dirty = dev->preview_dirty = 1;
+    dt_dev_invalidate(dev);
   }
   return TRUE;
 }
@@ -456,6 +423,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
       g_list_delete_link(dev->history, history);
       history = next;
     }
+    // FIXME: this has to be moved to inside a shielded block (mutex) for modules.
+    // it will have to be locked when calling pixelpipe create.
 #if 0 // disabled while there is only tonecurve
     // remove all modules which are not in history anymore:
     GList *modules = dev->iop;

@@ -18,7 +18,7 @@ extern float dt_dev_de_gamma[0x100];
 typedef struct dt_dev_history_item_t
 {
   dt_dev_operation_t op;    // which operation
-  int32_t iop;              // which instance of the operation module in the list
+  dt_iop_module_t *iop;     // pointer to image operation module
   int32_t enabled;          // switched on/off
   dt_iop_params_t *params;  // parameters for this operation
 }
@@ -31,7 +31,6 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing, preview_dirty;
 
   pthread_mutex_t backbuf_mutex;
-  // TODO: only one gegl pipe!
   pthread_mutex_t pixel_pipe_mutex, pixel_pipe_preview_mutex;
   int32_t history_changed;
   // width, height: dimensions of window
@@ -40,11 +39,7 @@ typedef struct dt_develop_t
   uint8_t *backbuf, *backbuf_preview;
 
   // graph for gegl
-  // TODO: only one gegl pipe!
-  GeglNode *gegl;
-  GeglBuffer *gegl_buffer, *gegl_preview_buffer;
-  GeglNode *gegl_top, *gegl_preview_top;
-  GeglNode *gegl_load_buffer, *gegl_load_preview_buffer;
+  dt_dev_pixelpipe *pipe, *preview_pipe;
 
   // image under consideration.
   dt_image_t *image;

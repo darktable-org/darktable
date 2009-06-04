@@ -34,24 +34,27 @@ dt_iop_tonecurve_gui_data_t;
 typedef struct dt_iop_tonecurve_data_t
 {
   GeglCurve *curve;               // curve for gegl nodes and pixel processing
-  GeglNode *node, *node_preview;  // dual pixel pipeline
-  gchar input_pad[20];
-  gchar output_pad[20];
+  // GeglNode *node, *node_preview;  // dual pixel pipeline
+  // gchar input_pad[20];
+  // gchar output_pad[20];
 }
 dt_iop_tonecurve_data_t;
 
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
 
-void gui_reset    (struct dt_iop_module_t *self);
-void commit_params(struct dt_iop_module_t *self);
+void gui_reset     (struct dt_iop_module_t *self);
+void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
+void init_pipe     (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
+void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
+
 void gui_init     (struct dt_iop_module_t *self);
 void gui_cleanup  (struct dt_iop_module_t *self);
 
-void get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-void get_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-void get_preview_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-void get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+// void get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+// void get_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+// void get_preview_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+// void get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
 
 gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);

@@ -17,56 +17,70 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
-void commit_params(struct dt_iop_module_t *self)
+void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
-  dt_iop_tonecurve_params_t p;
-  dt_iop_get_params(self, &p);
-  for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p.tonecurve_x[k], p.tonecurve_y[k]);
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(pipe->data);
+  for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+}
+
+void init_pipe (struct dt_iop_module_t *self, dt_iop_params_t *p, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  // create part of the gegl pipeline
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
+  piece->data = (void *)d;
+  d->curve = gegl_curve_new(0.0, 1.0);
+  for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, p->tonecurve_x[k], p->tonecurve_y[k]);
+  d->input = d->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
+}
+
+void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  // clean up everything again.
+  (void)gegl_node_remove_child(pipe_gegl, d->input);
+  free(pipe->data);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  // nothing to do, gui curve is read directly from params during expose event.
+  // TODO: reset combobox on preset changed event ?
 }
 
 void init(dt_iop_module_t *module)
 {
-  module->data = malloc(sizeof(dt_iop_tonecurve_data_t));
+  // module->data = malloc(sizeof(dt_iop_tonecurve_data_t));
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
+  // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)module->params;
-  d->curve = gegl_curve_new(0.0, 1.0);
+  // d->curve = gegl_curve_new(0.0, 1.0);
   p->tonecurve_x[0] = p->tonecurve_y[0] = 0.0;
   p->tonecurve_x[1] = p->tonecurve_y[1] = 0.08;
   p->tonecurve_x[2] = p->tonecurve_y[2] = 0.4;
   p->tonecurve_x[3] = p->tonecurve_y[3] = 0.6;
   p->tonecurve_x[4] = p->tonecurve_y[4] = 0.92;
   p->tonecurve_x[5] = p->tonecurve_y[5] = 1.0;
-  for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, p->tonecurve_x[k], p->tonecurve_y[k]);
-  strncpy(d->input_pad, "input", 20);
-  strncpy(d->output_pad, "output", 20);
+  // for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, p->tonecurve_x[k], p->tonecurve_y[k]);
+  // strncpy(d->input_pad, "input", 20);
+  // strncpy(d->output_pad, "output", 20);
 
-  d->node = gegl_node_new_child(module->dev->gegl, "operation", "gegl:contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
-  d->node_preview = gegl_node_new_child(module->dev->gegl, "operation", "gegl:contrast-curve", "sampling-points", 512, "curve", d->curve, NULL);
+  // d->node = gegl_node_new_child(module->dev->gegl, "operation", "gegl:contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
+  // d->node_preview = gegl_node_new_child(module->dev->gegl, "operation", "gegl:contrast-curve", "sampling-points", 512, "curve", d->curve, NULL);
 }
 
 void cleanup(dt_iop_module_t *module)
 {
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
-  gegl_node_remove_child(module->dev->gegl, d->node);
-  gegl_node_remove_child(module->dev->gegl, d->node_preview);
+  // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
+  // gegl_node_remove_child(module->dev->gegl, d->node);
+  // gegl_node_remove_child(module->dev->gegl, d->node_preview);
   //..FIXME: ?? is this done by gegl?
   // free(d->curve);
   // gegl_curve_destroy(d->curve);
   // g_unref(d->curve);
-  free(module->data);
-  module->data = NULL;
+  // free(module->data);
+  // module->data = NULL;
   free(module->gui_data);
   module->gui_data = NULL;
   free(module->params);
@@ -121,6 +135,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+#if 0
 void get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad)
 {
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
@@ -148,6 +163,7 @@ void get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const
   *node = d->node_preview;
   *pad = d->input_pad;
 }
+#endif
 
 gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
@@ -292,8 +308,8 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
-  dt_iop_tonecurve_params_t p;
-  dt_iop_get_params(self, (void*)&p);
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  // dt_iop_get_params(self, (void*)&p);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width);
@@ -315,15 +331,15 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     if(c->selected == 2) gegl_curve_set_point(d->curve, 1, oldx2, oldy2);
     if(c->selected == 3) gegl_curve_set_point(d->curve, 4, oldx2, oldy2);
     gegl_curve_set_point(d->curve, c->selected, oldx1, f);*/
-    if(c->selected == 2) p.tonecurve_y[1] = fminf(f, fmaxf(0.0, p.tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p.tonecurve_y[2])));
-    if(c->selected == 3) p.tonecurve_y[4] = fmaxf(f, fminf(1.0, p.tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p.tonecurve_y[3])));
+    if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
+    if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
     // DT_CTL_SET_IMAGE(tonecurve_y[c->selected], f);
     // if(c->selected == 2) DT_CTL_SET_IMAGE(tonecurve_y[1], oldy2);
     // if(c->selected == 3) DT_CTL_SET_IMAGE(tonecurve_y[4], oldy2);
-    p.tonecurve_y[c->selected] = f;
+    p->tonecurve_y[c->selected] = f;
     // if(c->selected == 2) p->tonecurve_y[1] = oldy2;
     // if(c->selected == 3) p->tonecurve_y[4] = oldy2;
-    dt_iop_set_params(self, (void*)&p);
+    // dt_iop_set_params(self, (void*)&p);
     dt_dev_add_history_item(darktable.develop, "tonecurve");
   }
   else
@@ -333,17 +349,17 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     int nearest = 0;
     for(int k=1;k<5;k++)
     {
-      float dist = (pos - p.tonecurve_x[k]); dist *= dist;
+      float dist = (pos - p->tonecurve_x[k]); dist *= dist;
       if(dist < min) { min = dist; nearest = k; }
     }
     c->selected = nearest;
-    c->selected_y = p.tonecurve_y[c->selected];
+    c->selected_y = p->tonecurve_y[c->selected];
     c->selected_offset = c->mouse_y;
     // c->selected_min = .5f*(c->selected_y + c->curve.m_anchors[c->selected-1].y);
     // c->selected_max = .5f*(c->selected_y + c->curve.m_anchors[c->selected+1].y);
     const float f = 0.8f;
-    c->selected_min = fmaxf(c->selected_y - 0.2f, (1.-f)*c->selected_y + f*p.tonecurve_y[c->selected-1]);
-    c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p.tonecurve_y[c->selected+1]);
+    c->selected_min = fmaxf(c->selected_y - 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected-1]);
+    c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected+1]);
     if(c->selected == 1) c->selected_max *= 0.7;
     if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
     gtk_widget_queue_draw(widget);

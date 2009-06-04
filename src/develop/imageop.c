@@ -31,10 +31,12 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
   if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
   if(!g_module_symbol(module->module, "commit_params",          (gpointer)&(module->commit_params)))          goto error;
-  if(!g_module_symbol(module->module, "get_output_pad",         (gpointer)&(module->get_output_pad)))         goto error;
-  if(!g_module_symbol(module->module, "get_input_pad",          (gpointer)&(module->get_input_pad)))          goto error;
-  if(!g_module_symbol(module->module, "get_preview_output_pad", (gpointer)&(module->get_preview_output_pad))) goto error;
-  if(!g_module_symbol(module->module, "get_preview_input_pad",  (gpointer)&(module->get_preview_input_pad)))  goto error;
+  if(!g_module_symbol(module->module, "init_pipe",              (gpointer)&(module->init_pipe)))              goto error;
+  if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
+  //if(!g_module_symbol(module->module, "get_output_pad",         (gpointer)&(module->get_output_pad)))         goto error;
+  //if(!g_module_symbol(module->module, "get_input_pad",          (gpointer)&(module->get_input_pad)))          goto error;
+  //if(!g_module_symbol(module->module, "get_preview_output_pad", (gpointer)&(module->get_preview_output_pad))) goto error;
+  //if(!g_module_symbol(module->module, "get_preview_input_pad",  (gpointer)&(module->get_preview_input_pad)))  goto error;
   module->init(module);
   return 0;
 error:
@@ -51,6 +53,7 @@ void dt_iop_unload_module(dt_iop_module_t *module)
   if(module->module) g_module_close(module->module);
 }
 
+/*
 void dt_iop_get_params(dt_iop_module_t *module, void *params)
 {
   pthread_mutex_lock(&module->params_mutex);
@@ -64,6 +67,7 @@ void dt_iop_set_params(dt_iop_module_t *module, void *params)
   memcpy(module->params, params, module->params_size);
   pthread_mutex_unlock(&module->params_mutex);
 }
+*/
 #else
 
 //=============== ..?

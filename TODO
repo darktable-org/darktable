@@ -1,6 +1,12 @@
+- develop history items need to be locked while pixel pipe is updated
+- develop process image commit_params needs to be synchronized between
+  gui and gegl (revert params get/set lock?)
+- develop histograms!
+- develop init pixel pipes (after loading modules)
+- develop add history item => set event flags to be cleared by pipelines
+- quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
 - faster loading by reversing of thumbnail jpegs :)
-- dt_dev_pixelpipe_t
 - dev image process: redraw->launch job.
   - only launch preview OR full image, depending on loaded.
   - process job: update modules to gegl if changed (use atomic commit in module)
@@ -13,8 +19,6 @@
     load preview->scale nodes from gegl graph 
 - remove dt_ctl_image_settings by iop/gamma
 - save gui settings (expanded etc?) in operation stacks
-- how is gui and imageop synched? when are params committed to
-  stack?
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
