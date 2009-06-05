@@ -51,6 +51,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   {
     // TODO: if enabled.
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    printf("connecting %s\n", module->op);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
     piece->module = module;
     piece->data = NULL;

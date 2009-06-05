@@ -786,11 +786,11 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   DT_CTL_GET_GLOBAL(bit, gui_hsb);
   widget = glade_xml_get_widget (darktable.gui->main_window, "hsb_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-#endif
 
   DT_CTL_GET_GLOBAL(bit, gui_gamma);
   widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
+#endif
 
   DT_CTL_GET_GLOBAL(bit, gui_export);
   widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
@@ -862,13 +862,13 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   DT_CTL_SET_GLOBAL(gui_hsb, bit);
-#endif
 
   DT_CTL_GET_GLOBAL(bit, gui_gamma);
   widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   DT_CTL_SET_GLOBAL(gui_gamma, bit);
+#endif
 
   DT_CTL_GET_GLOBAL(bit, gui_export);
   widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
@@ -1030,6 +1030,7 @@ void dt_control_clear_history_items(int32_t num)
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_hide(widget);
   }
+  GList *history = darktable.develop->history;
   for(int k=0;k<9;k++)
   {
     int curr = darktable.control->history_start + k;
@@ -1038,7 +1039,9 @@ void dt_control_clear_history_items(int32_t num)
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
 #ifdef DT_USE_GEGL
-    snprintf(numlabel, 50, "%d - %s", curr, ((dt_dev_history_item_t *)(darktable.develop->history[curr].data))->module->op);
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
+    snprintf(numlabel, 50, "%d - %s", curr, hist->module->op);
+    history = g_list_next(history);
 #else
     snprintf(numlabel, 50, "%d - %s", curr, darktable.develop->history[curr].operation);
 #endif

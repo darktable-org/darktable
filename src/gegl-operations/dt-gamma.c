@@ -108,6 +108,6 @@ gegl_chant_class_init (GeglChantClass *klass)
   operation_class->name        = "gegl:dt-gamma";
   operation_class->categories  = "compositors:math";
   operation_class->description =
-       _("Linear/Gamma conversion curve");
+       _("Linear/Gamma conversion curve.");
 }
 #endif

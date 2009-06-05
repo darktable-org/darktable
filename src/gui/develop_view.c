@@ -142,7 +142,8 @@ void dt_dev_enter()
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     GtkExpander *expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
     gtk_expander_set_expanded(expander, TRUE);
-    gtk_box_pack_start(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
+    gtk_expander_set_spacing(expander, 10);
+    gtk_box_pack_end(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
     // module->widget = GTK_WIDGET(expander);
     module->gui_init(module);
     // add the widget created by gui_init to the expander.

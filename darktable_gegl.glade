@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Thu Apr 16 20:10:46 2009 -->
+<?xml version="1.0"?>
 <glade-interface>
+  <!-- interface-requires gtk+ 2.16 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="main_window">
     <property name="default_width">640</property>
     <property name="default_height">480</property>
@@ -14,12 +14,12 @@
             <property name="width_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
-            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+            <property name="hscrollbar_policy">never</property>
+            <property name="vscrollbar_policy">automatic</property>
             <child>
               <widget class="GtkViewport" id="viewport2">
                 <property name="visible">True</property>
-                <property name="resize_mode">GTK_RESIZE_QUEUE</property>
+                <property name="resize_mode">queue</property>
                 <child>
                   <widget class="GtkVBox" id="right_vbox">
                     <property name="visible">True</property>
@@ -50,6 +50,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
@@ -276,110 +277,27 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkExpander" id="gamma_expander">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="spacing">10</property>
-                        <child>
-                          <widget class="GtkHBox" id="hbox1">
-                            <property name="visible">True</property>
-                            <child>
-                              <widget class="GtkVBox" id="vbox4">
-                                <property name="visible">True</property>
-                                <child>
-                                  <widget class="GtkLabel" id="label5">
-                                    <property name="visible">True</property>
-                                    <property name="xalign">0</property>
-                                    <property name="label" translatable="yes">linear</property>
-                                    <property name="single_line_mode">True</property>
-                                  </widget>
-                                </child>
-                                <child>
-                                  <widget class="GtkLabel" id="label7">
-                                    <property name="visible">True</property>
-                                    <property name="xalign">0</property>
-                                    <property name="label" translatable="yes">gamma</property>
-                                    <property name="single_line_mode">True</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="padding">5</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkVBox" id="vbox3">
-                                <property name="visible">True</property>
-                                <child>
-                                  <widget class="GtkHScale" id="gamma_linear">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="adjustment">0.10000000000000001 0 1 0.01 0.10000000000000001 0</property>
-                                    <property name="digits">2</property>
-                                    <property name="value_pos">GTK_POS_LEFT</property>
-                                  </widget>
-                                </child>
-                                <child>
-                                  <widget class="GtkHScale" id="gamma_gamma">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="adjustment">0.45000000000000001 0 1 0.01 0.10000000000000001 0</property>
-                                    <property name="digits">2</property>
-                                    <property name="value_pos">GTK_POS_LEFT</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="padding">5</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </widget>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="label4">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">gamma correction</property>
-                          </widget>
-                          <packing>
-                            <property name="type">label_item</property>
-                          </packing>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
                       <widget class="GtkScrolledWindow" id="scrolledwindow1">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                        <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                        <property name="hscrollbar_policy">automatic</property>
+                        <property name="vscrollbar_policy">automatic</property>
                         <child>
                           <widget class="GtkViewport" id="viewport1">
                             <property name="visible">True</property>
-                            <property name="resize_mode">GTK_RESIZE_QUEUE</property>
+                            <property name="resize_mode">queue</property>
                             <child>
                               <widget class="GtkVBox" id="iop_vbox">
                                 <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">10</property>
                               </widget>
                             </child>
                           </widget>
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -400,15 +318,15 @@
                               </widget>
                               <packing>
                                 <property name="padding">5</property>
+                                <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
                               <widget class="GtkButton" id="export_button">
+                                <property name="label" translatable="yes">export</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
-                                <property name="label" translatable="yes">export</property>
-                                <property name="response_id">0</property>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -432,7 +350,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">4</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </widget>
@@ -454,7 +372,7 @@
               <widget class="GtkAspectFrame" id="top">
                 <property name="visible">True</property>
                 <property name="label_xalign">0</property>
-                <property name="shadow_type">GTK_SHADOW_NONE</property>
+                <property name="shadow_type">none</property>
                 <child>
                   <widget class="GtkHBox" id="tophbox">
                     <property name="visible">True</property>
@@ -467,6 +385,7 @@
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="padding">7</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
@@ -513,6 +432,7 @@ filename</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -536,10 +456,10 @@ filename</property>
                     <property name="can_focus">True</property>
                     <property name="adjustment">13 1 13 1 1 0</property>
                     <property name="digits">0</property>
-                    <property name="value_pos">GTK_POS_RIGHT</property>
+                    <property name="value_pos">right</property>
                   </widget>
                   <packing>
-                    <property name="pack_type">GTK_PACK_END</property>
+                    <property name="pack_type">end</property>
                     <property name="position">-1</property>
                   </packing>
                 </child>
@@ -587,6 +507,7 @@ filename</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -601,15 +522,15 @@ filename</property>
                     <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                     <child>
                       <widget class="GtkButton" id="button_import">
+                        <property name="label" translatable="yes">import film roll</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="label" translatable="yes">import film roll</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
@@ -634,10 +555,10 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="recent_film_1">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -647,10 +568,10 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="recent_film_2">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -660,10 +581,10 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="recent_film_3">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -673,10 +594,10 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="recent_film_4">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -741,24 +662,25 @@ filename</property>
                     <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                     <child>
                       <widget class="GtkButton" id="history_09">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_08">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -768,11 +690,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_07">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -782,11 +704,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_06">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -796,11 +718,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_05">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -810,11 +732,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_04">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -824,11 +746,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_03">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -838,11 +760,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_02">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -852,11 +774,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_01">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">button</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -866,11 +788,11 @@ filename</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="history_00">
+                        <property name="label" translatable="yes">original</property>
+                        <property name="can_focus">False</property>
                         <property name="receives_default">True</property>
                         <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">original</property>
                         <property name="xalign">0.05000000074505806</property>
-                        <property name="response_id">0</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>

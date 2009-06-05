@@ -147,35 +147,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-#if 0
-void get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad)
-{
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
-  *node = d->node;
-  *pad = d->output_pad;
-}
-
-void get_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad)
-{
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
-  *node = d->node;
-  *pad = d->input_pad;
-}
-
-void get_preview_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad)
-{
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
-  *node = d->node_preview;
-  *pad = d->output_pad;
-}
-
-void get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad)
-{
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
-  *node = d->node_preview;
-  *pad = d->input_pad;
-}
-#endif
 
 gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
@@ -373,8 +344,8 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected+1]);
     if(c->selected == 1) c->selected_max *= 0.7;
     if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
-    gtk_widget_queue_draw(widget);
   }
+  gtk_widget_queue_draw(widget);
 
   gint x, y;
   gdk_window_get_pointer(event->window, &x, &y, NULL);

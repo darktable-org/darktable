@@ -53,21 +53,6 @@ void dt_iop_unload_module(dt_iop_module_t *module)
   if(module->module) g_module_close(module->module);
 }
 
-/*
-void dt_iop_get_params(dt_iop_module_t *module, void *params)
-{
-  pthread_mutex_lock(&module->params_mutex);
-  memcpy(params, module->params, module->params_size);
-  pthread_mutex_unlock(&module->params_mutex);
-}
-
-void dt_iop_set_params(dt_iop_module_t *module, void *params)
-{
-  pthread_mutex_lock(&module->params_mutex);
-  memcpy(module->params, params, module->params_size);
-  pthread_mutex_unlock(&module->params_mutex);
-}
-*/
 #else
 
 //=============== ..?

@@ -1,3 +1,7 @@
+- ctl history items will not synch correctly.
+- dt-gamma has some problem :(
+- gui reset iop in gtk.c expose
+- original button
 - develop histograms!
 - develop add history item => set event flags to be cleared by pipelines
 - develop export: use dev->pipe with full roi
@@ -5,21 +9,15 @@
 - print GPLv3 notice on top of all files
 - faster loading by reversing of thumbnail jpegs :)
 - dev image process: redraw->launch job.
-  - only launch preview OR full image, depending on loaded.
-  - process job: update modules to gegl if changed (use atomic commit in module)
   - changed flag set by add_histoy_item
     (which returns immediately and is called by module gui
     to update dt gui: history items and module stack?)
     - module stack: disable module in gui without removing it
       (this should be done in image process thread, to retain gegl nodes!)
-  - dev->pixel_pipe_mutex: if image is loaded, remove
-    load preview->scale nodes from gegl graph 
-- remove dt_ctl_image_settings by iop/gamma
 - save gui settings (expanded etc?) in operation stacks
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
-- code gegl:lin_gamma operation (minor adjustments to gegl:gamma should do)
 - code review, cleanup module categories (develop_view, iop?)
 - release 0.2 :)
 

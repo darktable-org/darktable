@@ -284,9 +284,15 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 
   // TODO: load modules for this image in read history!
   dt_iop_module_t *module;
+
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, dev, "tonecurve")) exit(1);
   dev->iop = g_list_append(dev->iop, module);
+
+  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  if(dt_iop_load_module(module, dev, "gamma")) exit(1);
+  dev->iop = g_list_append(dev->iop, module);
+
   // TODO:
   // dt_iop_load_module(module, dev, "saturation");
   // or better: one module for: blackpoint, whitepoint, exposure, fill darks, saturation.

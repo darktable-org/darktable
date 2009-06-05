@@ -56,14 +56,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     dt_dev_operation_t op;
     DT_CTL_GET_GLOBAL_STR(op, dev_op, 20);
     darktable.gui->reset = 1;
-    float gamma, linear, zoom;
-    DT_CTL_GET_IMAGE(gamma, dev_gamma_gamma);
-    DT_CTL_GET_IMAGE(linear, dev_gamma_linear);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_linear");
-    gtk_range_set_value(GTK_RANGE(widget), linear);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_gamma");
-    gtk_range_set_value(GTK_RANGE(widget), gamma);
-
 #ifndef DT_USE_GEGL
     // reset non-fixed pipeline:
     dt_iop_gui_reset();
@@ -71,9 +63,9 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     // TODO: reset all modules..?
 #endif
 
-    DT_CTL_GET_GLOBAL(zoom, lib_zoom);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
-    gtk_range_set_value(GTK_RANGE(widget), zoom);
+    // DT_CTL_GET_GLOBAL(zoom, lib_zoom);
+    // widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
+    // gtk_range_set_value(GTK_RANGE(widget), zoom);
     darktable.gui->reset = 0;
   }
 
@@ -214,23 +206,6 @@ zoom (GtkRange *range, gpointer user_data)
   gtk_widget_queue_draw(widget);
 }
 
-static void
-gamma (GtkRange *range, gpointer user_data)
-{
-  if(darktable.gui->reset) return;
-  if(user_data == (gpointer)0)
-  {
-    float linear = gtk_range_get_value(range);
-    DT_CTL_SET_IMAGE(dev_gamma_linear, linear);
-  }
-  else
-  {
-    float gamma = gtk_range_get_value(range);
-    DT_CTL_SET_IMAGE(dev_gamma_gamma, gamma);
-  }
-  dt_dev_add_history_item(darktable.develop, "gamma");
-}
-
 static gboolean
 key_pressed (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
@@ -354,6 +329,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 	g_signal_connect (G_OBJECT (widget), "value-changed",
                     G_CALLBACK (zoom), NULL);
 
+#ifndef DT_USE_GEGL
   // gamma correction expander
   widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_linear");
 	g_signal_connect (G_OBJECT (widget), "value-changed",
@@ -363,7 +339,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 	g_signal_connect (G_OBJECT (widget), "value-changed",
                     G_CALLBACK (gamma), (gpointer)1);
 
-#ifndef DT_USE_GEGL
   // tone curve
   widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve");
   dt_gui_curve_editor_init(&gui->tonecurve, widget);
