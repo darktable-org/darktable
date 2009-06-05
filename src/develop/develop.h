@@ -19,7 +19,7 @@ struct dt_iop_module_t;
 struct dt_iop_params_t;
 typedef struct dt_dev_history_item_t
 {
-  dt_dev_operation_t op;          // which operation
+  // dt_dev_operation_t op;          // which operation
   struct dt_iop_module_t *module; // pointer to image operation module
   int32_t enabled;                // switched on/off
   struct dt_iop_params_t *params; // parameters for this operation
@@ -76,7 +76,7 @@ void dt_dev_process_preview(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
 
-void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op);
+void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history(dt_develop_t *dev);

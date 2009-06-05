@@ -58,6 +58,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     piece->module->init_pipe(piece->module, piece->module->params, pipe, piece);
     gegl_node_link(input, piece->input);
     input = piece->output;
+    pipe->nodes = g_list_append(pipe->nodes, piece);
     modules = g_list_next(modules);
   }
   gegl_node_link(input, pipe->output);
@@ -72,13 +73,11 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   dt_dev_pixelpipe_iop_t *piece = NULL;
   while(nodes)
   {
+    // TODO: have to store params in pixelpipe_iop as hash to avoid update?
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-    if(piece->module == hist->module) break;
+    if(piece->module == hist->module) hist->module->commit_params(hist->module, hist->params, pipe, piece);
     nodes = g_list_next(nodes);
   }
-  // TODO: have to store params in pixelpipe_iop as hash to avoid update?
-  if(piece->module == hist->module) hist->module->commit_params(hist->module, hist->params, piece, pipe);
-  else fprintf(stderr, "[dev_pixelpipe_synch_all] no such module (%d)!\n", hist->module->instance);
 }
 
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
@@ -98,7 +97,7 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   pthread_mutex_lock(&dev->history_mutex);
   GList *history = g_list_nth(dev->history, dev->history_end - 1);
-  dt_dev_pixelpipe_synch(pipe, dev, history);
+  if(history) dt_dev_pixelpipe_synch(pipe, dev, history);
   pthread_mutex_unlock(&dev->history_mutex);
 }
 

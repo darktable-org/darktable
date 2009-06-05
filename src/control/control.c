@@ -1038,7 +1038,7 @@ void dt_control_clear_history_items(int32_t num)
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
 #ifdef DT_USE_GEGL
-    snprintf(numlabel, 50, "%d - %s", curr, ((dt_dev_history_item_t *)(darktable.develop->history[curr].data))->op);
+    snprintf(numlabel, 50, "%d - %s", curr, ((dt_dev_history_item_t *)(darktable.develop->history[curr].data))->module->op);
 #else
     snprintf(numlabel, 50, "%d - %s", curr, darktable.develop->history[curr].operation);
 #endif

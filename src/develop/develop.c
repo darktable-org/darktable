@@ -398,7 +398,7 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 
 // TODO: port to gegl and glist
 // TODO: params: dt_iop_module_t module, dt_iop_params_t instead of op!
-void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
+void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 {
   dev->history_changed = 1;
   pthread_mutex_lock(&dev->history_mutex);
@@ -445,9 +445,35 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
       modules = *next;
     }
 #endif
+    /*
+    GList *modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      printf("module instance = %d, op = %s\n", module->instance, module->op);
+      modules = g_list_next(modules);
+    }*/
+    history = g_list_nth(dev->history, dev->history_end-1);
+    if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance)
+    { // new operation, push new item
+      dev->history_end++;
+      if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, module->op);
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+      hist->enabled = 1;
+      hist->module = module;
+      hist->params = malloc(module->params_size);
+      memcpy(hist->params, module->params, module->params_size);
+      dev->history = g_list_append(history, hist);
+    }
+    else
+    { // same operation, change params
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
+      memcpy(hist->params, module->params, module->params_size);
+    }
   }
   pthread_mutex_unlock(&dev->history_mutex);
 
+  dt_dev_invalidate(dev);
   dt_control_queue_draw();
 
 

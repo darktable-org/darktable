@@ -27,11 +27,14 @@ AM_CPPFLAGS = \
 AM_LDFLAGS = -avoid-version -export-dynamic -module $(no_undefined)
 # TODO: find right directory how?
 # ext_dir = $(DESTDIR)$(libdir)/gegl-@GEGL_API_VERSION@
-ext_dir = $(libdir)/gegl-0.0.22
+# ext_dir = $(libdir)/gegl-0.0
+# ext_dir = /usr/lib/gegl-0.0
+ext_dir = $(datadir)/darktable/gegl
 
 # LDADD           = $(op_libs)
 LDADD           = @GEGL_LIBS@
 
+SHREXT          = ".so"
 CFILES          = $(wildcard $(srcdir)/*.c)
 plugins           = $(subst $(srcdir)/,,$(CFILES:.c=.la))
 INSTALLED_ITEMS = $(subst $(srcdir)/,$(ext_dir)/,$(CFILES:.c=$(SHREXT)))

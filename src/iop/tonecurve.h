@@ -34,7 +34,7 @@ dt_iop_tonecurve_gui_data_t;
 typedef struct dt_iop_tonecurve_data_t
 {
   GeglCurve *curve;               // curve for gegl nodes and pixel processing
-  GeglNode *node;
+  // GeglNode *node;
   // GeglNode *node, *node_preview;  // dual pixel pipeline
   // gchar input_pad[20];
   // gchar output_pad[20];

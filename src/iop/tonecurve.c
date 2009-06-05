@@ -23,6 +23,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
   for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  gegl_node_set(piece->input, "curve", d->curve, NULL);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -45,10 +46,10 @@ void init_pipe (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelp
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  (void)gegl_node_remove_child(pipe->gegl, d->node);
-  (void)gegl_node_remove_child(pipe->gegl, piece->output);
+  // (void)gegl_node_remove_child(pipe->gegl, d->node);
+  // (void)gegl_node_remove_child(pipe->gegl, piece->output);
   free(piece->data);
 }
 
@@ -350,7 +351,7 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     // if(c->selected == 2) p->tonecurve_y[1] = oldy2;
     // if(c->selected == 3) p->tonecurve_y[4] = oldy2;
     // dt_iop_set_params(self, (void*)&p);
-    dt_dev_add_history_item(darktable.develop, "tonecurve");
+    dt_dev_add_history_item(darktable.develop, self);
   }
   else
   {

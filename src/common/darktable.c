@@ -41,6 +41,7 @@ int dt_init(int argc, char *argv[])
   MagickCoreGenesis(*argv, MagickTrue);
 #endif
 #ifdef DT_USE_GEGL
+  (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
   char *homedir = getenv("HOME");
