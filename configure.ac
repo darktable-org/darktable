@@ -38,5 +38,6 @@ AC_CONFIG_FILES([
     src/Makefile
     src/LibRaw/Makefile
     src/iop/Makefile
+    src/gegl-operations/Makefile
     ])
 AC_OUTPUT
