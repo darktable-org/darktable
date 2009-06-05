@@ -1,9 +1,6 @@
-- develop history items need to be locked while pixel pipe is updated
-- develop process image commit_params needs to be synchronized between
-  gui and gegl (revert params get/set lock?)
 - develop histograms!
-- develop init pixel pipes (after loading modules)
 - develop add history item => set event flags to be cleared by pipelines
+- develop export: use dev->pipe with full roi
 - quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
 - faster loading by reversing of thumbnail jpegs :)
@@ -22,7 +19,23 @@
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
-- gamma with gegl operations +-/gamma?
+- code gegl:lin_gamma operation (minor adjustments to gegl:gamma should do)
+- code review, cleanup module categories (develop_view, iop?)
+- release 0.2 :)
+
+0.3 roadmap:
+- try gegl raw-load and openraw-load nodes
+- reduce db size by kicking out float/mip thumbnail images
+- check libraw speed
+- insert more gegl:operations and modules
+- harden db format
+- xml file per image export/import to db
+  (dump dt module/hist stack and gegl ops)
+
+1.0 roadmap:
+- remove libraw in favour of native gegl loading
+- remove imagemagick in favour of native gegl writing
+- ubuntu package
 
 bugs:
  - import while still importing crashes.

@@ -33,6 +33,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
   for(int k=0;k<0x10000;k++)
   {
     // int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
+    int32_t tmp;
 	  if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
 	  else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
     arr[k] = tmp>>8;
@@ -41,6 +42,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
   dev->history_changed = 0;
@@ -49,8 +51,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->width = -1;
   dev->height = -1;
   pthread_mutex_init(&dev->backbuf_mutex, NULL);
-  pthread_mutex_init(&dev->pixel_pipe_mutex, NULL);
-  pthread_mutex_init(&dev->pixel_pipe_preview_mutex, NULL);
   dev->backbuf_size = dev->backbuf_preview_size = 0;
   dev->backbuf = dev->backbuf_preview = NULL;
 
@@ -58,10 +58,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->image_dirty = dev->preview_dirty = 
   dev->image_loading = dev->image_processing = dev->preview_loading = dev->preview_processing = 0;
 
+  dev->pipe = NULL;
+  dev->preview_pipe = NULL;
+
   dev->histogram = dev->histogram_pre = NULL;
-  dev->gegl = gegl_node_new();
-  dev->gegl_buffer = NULL;
-  dev->gegl_preview_buffer = NULL;
   if(dev->gui_attached)
   {
     dev->histogram = (uint32_t *)malloc(sizeof(int32_t)*256*4);
@@ -70,13 +70,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre = (uint32_t *)malloc(sizeof(int32_t)*256*4);
     bzero(dev->histogram_pre, sizeof(int32_t)*256*4);
     dev->histogram_pre_max = -1;
-
-    dev->gegl_load_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", NULL);
-    dev->gegl_load_preview_buffer = gegl_node_new_child(dev->gegl, "operation", "gegl:load-buffer", NULL);
-    dev->gegl_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
-    dev->gegl_preview_top = gegl_node_new_child(dev->gegl, "operation", "gegl:nop", NULL);
-    gegl_node_link(dev->gegl_load_buffer, dev->gegl_top);
-    gegl_node_link(dev->gegl_load_preview_buffer, dev->gegl_preview_top);
 
     float lin, gam;
     DT_CTL_GET_GLOBAL(lin, dev_gamma_linear);
@@ -102,9 +95,16 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
   }
-  if(dev->gegl_buffer) gegl_buffer_destroy(dev->gegl_buffer);
-  if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
-  g_object_unref (dev->gegl);
+  if(dev->pipe)
+  {
+    dt_dev_pixelpipe_cleanup(dev->pipe);
+    free(dev->pipe);
+  }
+  if(dev->preview_pipe)
+  {
+    dt_dev_pixelpipe_cleanup(dev->preview_pipe);
+    free(dev->preview_pipe);
+  }
   while(dev->history)
   {
     free(((dt_dev_history_item_t *)dev->history->data)->params);
@@ -117,8 +117,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   pthread_mutex_destroy(&dev->backbuf_mutex);
-  pthread_mutex_destroy(&dev->pixel_pipe_mutex);
-  pthread_mutex_destroy(&dev->pixel_pipe_preview_mutex);
+  pthread_mutex_destroy(&dev->history_mutex);
   free(dev->backbuf);
   free(dev->backbuf_preview);
   free(dev->histogram);
@@ -153,10 +152,12 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_processing = 1;
   if(dev->preview_loading)
   {
-    // TODO: init pixel pipeline for preview?
+    // init pixel pipeline for preview.
+    if(!dev->preview_pipe) dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
     dt_dev_pixelpipe_init(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height);
+    dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
 
 #if 0
     // TODO: (when will mipf be loaded?)
@@ -212,7 +213,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dt_dev_pixelpipe_synch_all(dev->preview_pipe, dev);
   // dt_dev_pixelpipe_synch_top(dev->preview_pipe, dev);
 
-  dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->preview_backbuf, roi, scale);
+  dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, &roi, scale);
 
   dev->preview_dirty = 0;
   dev->preview_processing = 0;
@@ -268,12 +269,7 @@ restart:
   }
   dev->image_loading = 0;
   // trigger processing pipeline:
-  GeglRectangle rect = (GeglRectangle){0, 0, dev->image->width, dev->image->height};
-  if(dev->gegl_buffer) gegl_buffer_destroy(dev->gegl_buffer);
-  dev->gegl_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
-  gegl_buffer_set(dev->gegl_buffer, NULL, babl_format("RGB float"), dev->image->pixels, GEGL_AUTO_ROWSTRIDE);
-  gegl_node_set(dev->gegl_load_buffer, "buffer", dev->gegl_buffer, NULL);
-
+  // TODO: init dev->pipe with pixels!!
   dt_dev_process_image(dev);
 }
 
@@ -405,8 +401,7 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
 {
   dev->history_changed = 1;
-  pthread_mutex_lock(&dev->pixel_pipe_preview_mutex);
-  pthread_mutex_lock(&dev->pixel_pipe_mutex);
+  pthread_mutex_lock(&dev->history_mutex);
   // TODO: set history changed flag
   // TODO: lock both gegl pipeline mutices!
   if(dev->gui_attached)
@@ -420,7 +415,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
       GList *next = g_list_next(history);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
       free(hist->params);
-      g_list_delete_link(dev->history, history);
+      dev->history = g_list_delete_link(dev->history, history);
       history = next;
     }
     // FIXME: this has to be moved to inside a shielded block (mutex) for modules.
@@ -451,11 +446,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_dev_operation_t op)
     }
 #endif
   }
-  // unset history changed flags, unlock mutices
-  // FIXME: already good to reset this flag?
-  dev->history_changed = 0;
-  pthread_mutex_unlock(&dev->pixel_pipe_preview_mutex);
-  pthread_mutex_unlock(&dev->pixel_pipe_mutex);
+  pthread_mutex_unlock(&dev->history_mutex);
 
   dt_control_queue_draw();
 

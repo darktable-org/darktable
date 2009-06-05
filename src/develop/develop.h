@@ -15,15 +15,18 @@
 extern uint8_t dt_dev_default_gamma[0x10000];
 extern float dt_dev_de_gamma[0x100];
 
+struct dt_iop_module_t;
+struct dt_iop_params_t;
 typedef struct dt_dev_history_item_t
 {
-  dt_dev_operation_t op;    // which operation
-  dt_iop_module_t *iop;     // pointer to image operation module
-  int32_t enabled;          // switched on/off
-  dt_iop_params_t *params;  // parameters for this operation
+  dt_dev_operation_t op;          // which operation
+  struct dt_iop_module_t *module; // pointer to image operation module
+  int32_t enabled;                // switched on/off
+  struct dt_iop_params_t *params; // parameters for this operation
 }
 dt_dev_history_item_t;
 
+struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
@@ -31,7 +34,6 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing, preview_dirty;
 
   pthread_mutex_t backbuf_mutex;
-  pthread_mutex_t pixel_pipe_mutex, pixel_pipe_preview_mutex;
   int32_t history_changed;
   // width, height: dimensions of window
   // capwidth, capheight: actual dimensions of scaled image inside window.
@@ -39,7 +41,7 @@ typedef struct dt_develop_t
   uint8_t *backbuf, *backbuf_preview;
 
   // graph for gegl
-  dt_dev_pixelpipe *pipe, *preview_pipe;
+  struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
 
   // image under consideration.
   dt_image_t *image;
@@ -47,6 +49,7 @@ typedef struct dt_develop_t
   float   mipf_exact_width, mipf_exact_height;
 
   // history stack
+  pthread_mutex_t history_mutex;
   int32_t history_end;
   GList *history;
   // operations pipeline

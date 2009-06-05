@@ -1,4 +1,5 @@
 #include "develop/pixelpipe.h"
+#include <assert.h>
 
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
 {
@@ -8,6 +9,7 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *i
   pipe->gegl = gegl_node_new();
   GeglRectangle rect = (GeglRectangle){0, 0, width, height};
   pipe->input_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
+  gegl_buffer_set(pipe->input_buffer, NULL, babl_format("RGB float"), input, GEGL_AUTO_ROWSTRIDE);
   pipe->input = gegl_node_new_child(pipe->gegl, "operation", "gegl:load-buffer", "buffer", pipe->input_buffer, NULL);
   // TODO: replace by custom gegl:lin_gamma
   pipe->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:nop", NULL);
@@ -41,6 +43,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
 
 void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
+  gegl_node_disconnect(pipe->output, "input");
   // for all modules in dev:
   GList *modules = dev->iop;
   GeglNode *input = pipe->input;
@@ -51,7 +54,8 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
     piece->module = module;
     piece->data = NULL;
-    piece->module->init_pipe(piece->module, pipe, piece);
+    // FIXME: is this a race condition gui/gegl on piece->module->params?
+    piece->module->init_pipe(piece->module, piece->module->params, pipe, piece);
     gegl_node_link(input, piece->input);
     input = piece->output;
     modules = g_list_next(modules);
@@ -73,12 +77,13 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
     nodes = g_list_next(nodes);
   }
   // TODO: have to store params in pixelpipe_iop as hash to avoid update?
-  if(piece->module == hist->module) hist->iop->commit_params(hist->iop, hist->params, piece, pipe);
+  if(piece->module == hist->module) hist->module->commit_params(hist->module, hist->params, piece, pipe);
   else fprintf(stderr, "[dev_pixelpipe_synch_all] no such module (%d)!\n", hist->module->instance);
 }
 
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
+  pthread_mutex_lock(&dev->history_mutex);
   // go through all history items and adjust params
   GList *history = dev->history;
   for(int k=0;k<dev->history_end;k++)
@@ -86,12 +91,15 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
   }
+  pthread_mutex_unlock(&dev->history_mutex);
 }
 
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
+  pthread_mutex_lock(&dev->history_mutex);
   GList *history = g_list_nth(dev->history, dev->history_end - 1);
   dt_dev_pixelpipe_synch(pipe, dev, history);
+  pthread_mutex_unlock(&dev->history_mutex);
 }
 
 // TODO:
@@ -121,7 +129,7 @@ void dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8
   }
   gegl_processor_destroy (processor);
 
-  gegl_node_blit (pipe->output, scale, &roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
+  gegl_node_blit (pipe->output, scale, roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
 
   // TODO: update histograms here with this data?
   // TODO: implement lin/gamma gegl node and directly draw to gtk pixbuf!

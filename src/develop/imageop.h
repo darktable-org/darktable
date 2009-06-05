@@ -3,6 +3,7 @@
 
 #include "common/darktable.h"
 #include "control/settings.h"
+#include "develop/pixelpipe.h"
 #include <gegl.h>
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -15,6 +16,8 @@
   #define dt_blue 0
 #else
 struct dt_develop_t;
+struct dt_dev_pixelpipe_t;
+struct dt_dev_pixelpipe_iop_t;
 #endif
 
 typedef void* dt_iop_params_t;
@@ -55,9 +58,9 @@ typedef struct dt_iop_module_t
   // TODO: add more for mouse interaction dreggn.
   void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup) (struct dt_iop_module_t *self);
-  void (*commit_params) (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
-  void (*init_pipe)   (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
-  void (*cleanup_pipe)   (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params) (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*init_pipe)   (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*cleanup_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /*
   void (*get_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
   void (*get_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
