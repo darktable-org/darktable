@@ -10,8 +10,11 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
   pipe->gegl = gegl_node_new();
   pipe->input_buffer = NULL;
   pipe->input = gegl_node_new_child(pipe->gegl, "operation", "gegl:load-buffer", NULL);
+  // pipe->scale = gegl_node_new_child(pipe->gegl, "operation", "gegl:scale", "filter", "nearest", NULL);
   pipe->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:nop", NULL);
   gegl_node_link(pipe->input, pipe->output);
+  // gegl_node_link(pipe->input, pipe->scale);
+  // gegl_node_link(pipe->scale, pipe->output);
 }
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
@@ -29,7 +32,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cleanup_nodes(pipe);
-  gegl_buffer_destroy(pipe->input_buffer); // TODO: necessary?
+  // gegl_buffer_destroy(pipe->input_buffer); // TODO: necessary?
   g_object_unref(pipe->gegl); // should destroy all gegl related stuff.
   pipe->gegl = NULL;
   pipe->input = NULL;
@@ -49,14 +52,18 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     nodes = g_list_next(nodes);
   }
   gegl_node_link(pipe->input, pipe->output);
+  // gegl_node_link(pipe->input, pipe->scale);
+  // gegl_node_link(pipe->scale, pipe->output);
 }
 
 void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   gegl_node_disconnect(pipe->output, "input");
+  // gegl_node_disconnect(pipe->scale, "input");
   // for all modules in dev:
   GList *modules = dev->iop;
   GeglNode *input = pipe->input;
+  // GeglNode *input = pipe->scale;
   while(modules)
   {
     // TODO: if enabled.
@@ -71,6 +78,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     pipe->nodes = g_list_append(pipe->nodes, piece);
     modules = g_list_next(modules);
   }
+  // gegl_node_link(input, pipe->scale);
   gegl_node_link(input, pipe->output);
 }
 
@@ -149,25 +157,34 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 {
 }
 
-void dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_t *output, GeglRectangle *roi, float scale)
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_t *output, GeglRectangle *roi, float scale)
 {
+  printf("pixelpipe process start\n");
+  
+  // FIXME: this seems to be a bug in gegl. need to manually adjust updated roi here.
   GeglRectangle roio = (GeglRectangle){roi->x/scale, roi->y/scale, roi->width/scale, roi->height/scale};
   roio.x      = MAX(0, roio.x);
   roio.y      = MAX(0, roio.y);
   roio.width  = MIN(pipe->iwidth -roio.x-1, roio.width);
   roio.height = MIN(pipe->iheight-roio.y-1, roio.height);
   GeglProcessor *processor = gegl_node_new_processor (pipe->output, &roio);
+  // gegl_node_set(pipe->scale, "x", scale, "y", scale, NULL);
+  // GeglProcessor *processor = gegl_node_new_processor (pipe->output, roi);
   double         progress;
 
   while (gegl_processor_work (processor, &progress))
   {
     // if history changed, abort processing?
-    // if(pipe->changed != DT_DEV_PIPE_UNCHANGED) return;
+    if(pipe->changed != DT_DEV_PIPE_UNCHANGED) return 1;
   }
   gegl_processor_destroy (processor);
 
+  // gegl scale node turned out to be even slower :(
   gegl_node_blit (pipe->output, scale, roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
+  // gegl_node_blit (pipe->output, 1.0, roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
 
   // TODO: update histograms here with this data?
+  printf("pixelpipe process end\n");
+  return 0;
 }
 

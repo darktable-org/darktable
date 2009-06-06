@@ -186,25 +186,28 @@ void dt_dev_leave()
 
   // commit updated mipmaps to db
 #ifdef DT_USE_GEGL
-  int wd, ht;
-  dt_image_get_mip_size(darktable.develop->image, DT_IMAGE_MIPF, &wd, &ht);
-  dt_dev_process_preview_job(darktable.develop);
-  if(dt_image_alloc(darktable.develop->image, DT_IMAGE_MIP4))
+  if(darktable.develop->mipf)
   {
-    fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
-    return;
-  }
-  // TODO: set up GEGL export/resize pipeline (on preview image?)
+    int wd, ht;
+    dt_image_get_mip_size(darktable.develop->image, DT_IMAGE_MIPF, &wd, &ht);
+    dt_dev_process_preview_job(darktable.develop);
+    if(dt_image_alloc(darktable.develop->image, DT_IMAGE_MIP4))
+    {
+      fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
+      return;
+    }
+    // TODO: set up GEGL export/resize pipeline (on preview image?)
 #if 0
-  dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
-  memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->backbuf_preview, sizeof(uint8_t)*4*wd*ht);
-  if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
-    fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
-  dt_image_update_mipmaps(darktable.develop->image);
+    dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
+    memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->backbuf_preview, sizeof(uint8_t)*4*wd*ht);
+    if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
+      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
+    dt_image_update_mipmaps(darktable.develop->image);
 #endif
-  dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
-  dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
-  dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
+    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
+    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
+    dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
+  }
 #else
   int wd = darktable.develop->small_raw_width, ht = darktable.develop->small_raw_height;
   if(!dt_dev_small_cache_load(darktable.develop))

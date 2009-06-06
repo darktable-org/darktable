@@ -45,6 +45,7 @@ typedef struct dt_dev_pixelpipe_t
   GeglNode *output;
   // gegl input node (gegl:load-buffer)
   GeglNode *input;
+  // GeglNode *scale;
   GeglBuffer *input_buffer;
   // width and height of input buffer
   int iwidth, iheight;
@@ -76,8 +77,8 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 // adjust gegl:nop output node according to history stack (history pop event)
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 
-// process region of interest of pixels
-void dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, uint8_t *output, GeglRectangle *roi, float scale);
+// process region of interest of pixels. returns 1 if pipe was altered during processing.
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, uint8_t *output, GeglRectangle *roi, float scale);
 
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
 // TODO: add n-th module in dev list to gegl pipeline

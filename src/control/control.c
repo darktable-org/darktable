@@ -895,12 +895,14 @@ int dt_control_key_pressed(uint16_t which)
       else           gtk_window_fullscreen  (GTK_WINDOW(widget));
       fullscreen ^= 1;
       DT_CTL_SET_GLOBAL(gui_fullscreen, fullscreen);
+      dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Escape:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
       DT_CTL_SET_GLOBAL(gui_fullscreen, fullscreen);
+      dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
       widget = glade_xml_get_widget (darktable.gui->main_window, "left");
@@ -919,6 +921,7 @@ int dt_control_key_pressed(uint16_t which)
       widget = glade_xml_get_widget (darktable.gui->main_window, "top");
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);
+      dt_dev_invalidate(darktable.develop);
       break;
     default:
       break;
@@ -969,16 +972,21 @@ int dt_control_key_pressed(uint16_t which)
       if(zoom == DT_ZOOM_1) closeup ^= 1;
       DT_CTL_SET_GLOBAL(dev_closeup, closeup);
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
+      dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_2:
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
       DT_CTL_SET_GLOBAL(dev_zoom_x, 0.0);
       DT_CTL_SET_GLOBAL(dev_zoom_y, 0.0);
       DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_3:
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, 0.0);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, 0.0);
       DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_invalidate(darktable.develop);
       break;
     default:
       break;

@@ -45,7 +45,7 @@ typedef struct dt_develop_t
   // image under consideration.
   dt_image_t *image;
   int32_t mipf_width, mipf_height;
-  float   mipf_exact_width, mipf_exact_height;
+  float   *mipf, mipf_exact_width, mipf_exact_height;
 
   // history stack
   pthread_mutex_t history_mutex;

@@ -136,6 +136,7 @@ void dt_gui_navigation_set_position(dt_gui_navigation_t *n, double x, double y, 
     DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
 
+    dt_dev_invalidate(darktable.develop);
     dt_control_gui_queue_draw();
   }
 }

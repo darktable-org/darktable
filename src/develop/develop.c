@@ -53,6 +53,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   pthread_mutex_init(&dev->backbuf_mutex, NULL);
   dev->backbuf_size = dev->backbuf_preview_size = 0;
   dev->backbuf = dev->backbuf_preview = NULL;
+  dev->mipf = NULL;
 
   dev->image = NULL;
   dev->image_dirty = dev->preview_dirty = 
@@ -95,7 +96,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   {
     dt_image_release(dev->image, DT_IMAGE_FULL, 'w');
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
-    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+    if(dev->mipf) dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
   }
   if(dev->pipe)
   {
@@ -154,11 +155,13 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_processing = 1;
   if(dev->preview_loading)
   {
+    if(!dev->image->mipf) return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
+    dev->mipf = dev->image->mipf;
     // FIXME: something here is terribly slow. debug this and preconstruct in dev_init!
     // init pixel pipeline for preview.
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
-    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->mipf, dev->mipf_width, dev->mipf_height);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
 
 #if 0
@@ -213,9 +216,9 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
 
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
+restart:
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-
-  dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, &roi, scale);
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, &roi, scale)) goto restart;
 
   dev->preview_dirty = 0;
   dev->preview_processing = 0;
@@ -279,7 +282,8 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   dev->image = image;
   dev->preview_loading = 1;
-  (void)dt_image_get(dev->image, DT_IMAGE_MIPF, 'r'); // prefetch
+  if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
+  else dev->mipf = NULL;
   dev->image_dirty = dev->preview_dirty = 1;
 
   // TODO: reset view to fit.
