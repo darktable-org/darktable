@@ -58,15 +58,16 @@ typedef struct dt_iop_module_t
   // TODO: add more for mouse interaction dreggn.
   void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup) (struct dt_iop_module_t *self);
+  /** this inits the piece of the pipe, allocing piece->data as necessary. */
+  void (*init_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** this resets the params to factory defaults. used at the beginning of each history synch. */
+  // FIXME: should this really be named ''reset_pipe'' ??
+  void (*reset_params)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
   void (*commit_params) (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  void (*init_pipe)   (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
   void (*cleanup_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  /*
-  void (*get_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-  void (*get_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-  void (*get_preview_output_pad)(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-  void (*get_preview_input_pad) (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-  */
+
 #ifndef DT_USE_GEGL
   void (*execute) (float *dst, const float *src, const int32_t wd, const int32_t ht, const int32_t bufwd, const int32_t bufht,
                  dt_dev_operation_t operation, dt_dev_operation_params_t *params);

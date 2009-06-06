@@ -1,4 +1,5 @@
 - ctl history items will not synch correctly.
+- race condition on image->mipf during load!
 - dt-gamma has some problem :(
 - gui reset iop in gtk.c expose
 - original button

@@ -17,6 +17,8 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
+static dt_iop_tonecurve_params_t default_params;
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
@@ -26,21 +28,21 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   gegl_node_set(piece->input, "curve", d->curve, NULL);
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the gegl pipeline
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
   piece->data = (void *)d;
   d->curve = gegl_curve_new(0.0, 1.0);
-  for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, default_params.tonecurve_x[k], default_params.tonecurve_y[k]);
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
-  // d->node = gegl_node_new_child(pipe->gegl, "operation", "gegl:contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
-  // piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:convert-format", "format", "RGB float", NULL);
-  // gegl_node_link(piece->input, d->node);
-  // gegl_node_link(piece->input, piece->output);
-  // gegl_node_link(d->node, piece->output);
-  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", 2.2, NULL);
+}
+
+void reset_params (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
+  for(int k=0;k<6;k++) (void)gegl_curve_set_point(d->curve, k, default_params.tonecurve_x[k], default_params.tonecurve_y[k]);
+  gegl_node_set(piece->input, "curve", d->curve, NULL);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -61,25 +63,14 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_tonecurve_data_t));
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
-  // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)module->params;
-  // d->curve = gegl_curve_new(0.0, 1.0);
-  p->tonecurve_x[0] = p->tonecurve_y[0] = 0.0;
-  p->tonecurve_x[1] = p->tonecurve_y[1] = 0.08;
-  p->tonecurve_x[2] = p->tonecurve_y[2] = 0.4;
-  p->tonecurve_x[3] = p->tonecurve_y[3] = 0.6;
-  p->tonecurve_x[4] = p->tonecurve_y[4] = 0.92;
-  p->tonecurve_x[5] = p->tonecurve_y[5] = 1.0;
-  // for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, p->tonecurve_x[k], p->tonecurve_y[k]);
-  // strncpy(d->input_pad, "input", 20);
-  // strncpy(d->output_pad, "output", 20);
-
-  // d->node = gegl_node_new_child(module->dev->gegl, "operation", "gegl:contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
-  // d->node_preview = gegl_node_new_child(module->dev->gegl, "operation", "gegl:contrast-curve", "sampling-points", 512, "curve", d->curve, NULL);
+  default_params = (dt_iop_tonecurve_params_t) {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
+                                                {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
+                                                 0};
+  *p = default_params;
 }
 
 void cleanup(dt_iop_module_t *module)

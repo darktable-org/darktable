@@ -22,6 +22,14 @@ typedef struct dt_dev_pixelpipe_iop_t
 }
 dt_dev_pixelpipe_iop_t;
 
+typedef enum dt_dev_pixelpipe_change_t
+{
+  DT_DEV_PIPE_UNCHANGED   = 0,  // no event
+  DT_DEV_PIPE_TOP_CHANGED = 1,  // only params of top element changed
+  DT_DEV_PIPE_REMOVE      = 2,  // possibly emlements of the pipe have to be removed
+  DT_DEV_PIPE_SYNCH       = 3   // all nodes up to end need to be synched, but no removal of module pieces is necessary
+}
+dt_dev_pixelpipe_change_t;
 
 /**
  * this encapsulates the gegl pixel pipeline.
@@ -42,17 +50,23 @@ typedef struct dt_dev_pixelpipe_t
   int iwidth, iheight;
   // gegl instances of pixel pipeline, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
+  // event flag
+  dt_dev_pixelpipe_change_t changed;
 }
 dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
 
-// inits the pixelpipe with plain passthrough input/output from given buffer input and its dimensions width, height.
-void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height);
+// inits the pixelpipe with plain passthrough input/output and empty input
+void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
+// constructs a new input gegl_buffer from given RGB float array
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height);
 
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
 
+// wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to take on. also locks dev->history_mutex.
+void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 // cleanup all gegl nodes except clean input/output
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe);
 // sync with develop_t history stack from scratch (new node added, have to pop old ones)
@@ -61,6 +75,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, struct dt_develop_t
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 // adjust gegl:nop output node according to history stack (history pop event)
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
+
 // process region of interest of pixels
 void dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, uint8_t *output, GeglRectangle *roi, float scale);
 

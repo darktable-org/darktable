@@ -45,7 +45,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
-  dev->history_changed = 0;
 
   dev->gui_attached = gui_attached;
   dev->width = -1;
@@ -58,8 +57,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->image_dirty = dev->preview_dirty = 
   dev->image_loading = dev->image_processing = dev->preview_loading = dev->preview_processing = 0;
 
-  dev->pipe = NULL;
-  dev->preview_pipe = NULL;
+  dev->pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+  dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+  dt_dev_pixelpipe_init(dev->pipe);
+  dt_dev_pixelpipe_init(dev->preview_pipe);
 
   dev->histogram = dev->histogram_pre = NULL;
   if(dev->gui_attached)
@@ -152,11 +153,11 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_processing = 1;
   if(dev->preview_loading)
   {
+    // FIXME: something here is terribly slow. debug this and preconstruct in dev_init!
     // init pixel pipeline for preview.
-    if(!dev->preview_pipe) dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
-    dt_dev_pixelpipe_init(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
 
 #if 0
@@ -209,9 +210,9 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     pthread_mutex_unlock(&dev->backbuf_mutex);
   }
 
-  // TODO: decide upon history event which one to choose:
-  dt_dev_pixelpipe_synch_all(dev->preview_pipe, dev);
-  // dt_dev_pixelpipe_synch_top(dev->preview_pipe, dev);
+  // adjust pipeline according to changed flag set by {add,pop}_history_item.
+  // this locks dev->history_mutex.
+  dt_dev_pixelpipe_change(dev->preview_pipe, dev);
 
   dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, &roi, scale);
 
@@ -402,14 +403,10 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 #endif
 }
 
-// TODO: port to gegl and glist
-// TODO: params: dt_iop_module_t module, dt_iop_params_t instead of op!
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 {
-  dev->history_changed = 1;
+  printf("add history item:\n");
   pthread_mutex_lock(&dev->history_mutex);
-  // TODO: set history changed flag
-  // TODO: lock both gegl pipeline mutices!
   if(dev->gui_attached)
   {
     // if gui_attached pop all operations down to dev->history_end
@@ -420,12 +417,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
     {
       GList *next = g_list_next(history);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+      printf("removing obsoleted history item: %s\n", hist->module->op);
       free(hist->params);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
     }
-    // FIXME: this has to be moved to inside a shielded block (mutex) for modules.
-    // it will have to be locked when calling pixelpipe create.
+    // TODO: modules should be add/removable!
 #if 0 // disabled while there is only tonecurve
     // remove all modules which are not in history anymore:
     GList *modules = dev->iop;
@@ -462,6 +459,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
     history = g_list_nth(dev->history, dev->history_end-1);
     if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance)
     { // new operation, push new item
+      printf("adding new history item %d - %s\n", dev->history_end, module->op);
+      if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1, ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
       if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
@@ -469,29 +468,40 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       hist->module = module;
       hist->params = malloc(module->params_size);
       memcpy(hist->params, module->params, module->params_size);
-      dev->history = g_list_append(history, hist);
+      dev->history = g_list_append(dev->history, hist);
+      dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
     }
     else
     { // same operation, change params
+      printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
+      dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_TOP_CHANGED;
     }
   }
+#if 1
+  {
+  // debug:
+  printf("remaining %d history items:\n", dev->history_end);
+  GList *history = dev->history;
+  int i = 0;
+  while(history)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    printf("%d %s\n", i, hist->module->op);
+    history = g_list_next(history);
+    i++;
+  }
+  }
+#endif
+
   pthread_mutex_unlock(&dev->history_mutex);
 
+  // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate(dev);
   dt_control_queue_draw();
 
-
-  // TODO: if op == gamma, reload gamma table?
   // TODO: update histogram (launch job)?
-  // TODO: if not the same op as already on top of stack (avoid history congestion):
-  // if(module->instance != history->iop)
-  //          history_end++
-  //          if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, op);
-  //          insert new history item to GList (module->params)
-  // TODO: copy gamma image settings (temp hack. and remove it in favor of a true iop later)
-  // TODO: invalidate buffers and force redraw of darkroom
 #if 0
   dt_dev_image_t *img = dev->history + dev->history_top - 1;
   if(dev->gui_attached)
@@ -539,9 +549,11 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 // TODO: only adjust history_end and gegl links!
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
-  // TODO: attach nop-output node to correct output pad of module
-  // TODO: go through module list from original and change module->params accordingly
+  printf("dev popping all history items >= %d\n", cnt);
+  pthread_mutex_lock(&dev->history_mutex);
   dev->history_end = cnt;
+  dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+  pthread_mutex_unlock(&dev->history_mutex);
 #if 0
   // this is called exclusively from the gtk thread, so no lock is necessary.
   if(cnt == dev->history_top-1) return;

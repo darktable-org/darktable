@@ -34,7 +34,6 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_processing, preview_dirty;
 
   pthread_mutex_t backbuf_mutex;
-  int32_t history_changed;
   // width, height: dimensions of window
   // capwidth, capheight: actual dimensions of scaled image inside window.
   int32_t width, height, backbuf_size, backbuf_preview_size, capwidth, capheight, capwidth_preview, capheight_preview;

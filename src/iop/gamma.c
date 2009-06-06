@@ -9,6 +9,8 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
+static dt_iop_gamma_params_t default_params;
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
@@ -17,14 +19,19 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   gegl_node_set(piece->input, "value", p->gamma, NULL);
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   printf("creating gamma\n");
   // create part of the gegl pipeline
-  dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)p1;
   piece->data = NULL;
-  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear", p->linear, "gamma", p->gamma, NULL);
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", p->gamma, NULL);
+  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear", default_params.linear, "gamma", default_params.gamma, NULL);
+  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", default_params.gamma, NULL);
+}
+
+void reset_params (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  gegl_node_set(piece->input, "value", default_params.gamma, NULL);
+  // gegl_node_set(piece->input, "linear", default_params.linear, "gamma", default_params.gamma, NULL);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -51,8 +58,8 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_gamma_params_t);
   module->gui_data = NULL;
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)module->params;
-  p->linear = 0.1;
-  p->gamma = 0.45;
+  default_params = (dt_iop_gamma_params_t){0.45, 0.1};
+  *p = default_params;
 }
 
 void cleanup(dt_iop_module_t *module)
