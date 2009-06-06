@@ -55,10 +55,11 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     // reset operations, update expanders
     dt_dev_operation_t op;
     DT_CTL_GET_GLOBAL_STR(op, dev_op, 20);
-    darktable.gui->reset = 1;
 #ifndef DT_USE_GEGL
+    darktable.gui->reset = 1;
     // reset non-fixed pipeline:
     dt_iop_gui_reset();
+    darktable.gui->reset = 0;
 #else
     // TODO: reset all modules..?
 #endif
@@ -66,7 +67,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     // DT_CTL_GET_GLOBAL(zoom, lib_zoom);
     // widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
     // gtk_range_set_value(GTK_RANGE(widget), zoom);
-    darktable.gui->reset = 0;
   }
 
 	return TRUE;
@@ -109,7 +109,7 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   // revert to given history item.
   long int num = (long int)user_data;
-  if(num != 0) num += darktable.control->history_start - 1;
+  if(num != 0) num += darktable.control->history_start;
   dt_dev_pop_history_items(darktable.develop, num);
 }
 

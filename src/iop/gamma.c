@@ -9,8 +9,6 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
-static dt_iop_gamma_params_t default_params;
-
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
@@ -21,17 +19,18 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  printf("creating gamma\n");
   // create part of the gegl pipeline
   piece->data = NULL;
-  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear", default_params.linear, "gamma", default_params.gamma, NULL);
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", default_params.gamma, NULL);
+  dt_iop_gamma_params_t *default_params = (dt_iop_gamma_params_t *)self->default_params;
+  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear", default_params->linear, "gamma", default_params->gamma, NULL);
+  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", default_params->gamma, NULL);
 }
 
 void reset_params (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  gegl_node_set(piece->input, "value", default_params.gamma, NULL);
-  // gegl_node_set(piece->input, "linear", default_params.linear, "gamma", default_params.gamma, NULL);
+  dt_iop_gamma_params_t *default_params = (dt_iop_gamma_params_t *)self->default_params;
+  gegl_node_set(piece->input, "value", default_params->gamma, NULL);
+  // gegl_node_set(piece->input, "linear", default_params->linear, "gamma", default_params->gamma, NULL);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -42,7 +41,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // free(piece->data);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_gamma_gui_data_t *g = (dt_iop_gamma_gui_data_t *)self->gui_data;
@@ -55,11 +54,12 @@ void init(dt_iop_module_t *module)
 {
   // module->data = malloc(sizeof(dt_iop_gamma_data_t));
   module->params = malloc(sizeof(dt_iop_gamma_params_t));
+  module->default_params = malloc(sizeof(dt_iop_gamma_params_t));
   module->params_size = sizeof(dt_iop_gamma_params_t);
   module->gui_data = NULL;
-  dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)module->params;
-  default_params = (dt_iop_gamma_params_t){0.45, 0.1};
-  *p = default_params;
+  dt_iop_gamma_params_t tmp = (dt_iop_gamma_params_t){0.45, 0.1};
+  memcpy(module->params, &tmp, sizeof(dt_iop_gamma_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_gamma_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -112,7 +112,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 void gamma_callback (GtkRange *range, gpointer user_data)
 {
-  printf("gamma\n");
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)self->params;
@@ -122,7 +121,6 @@ void gamma_callback (GtkRange *range, gpointer user_data)
 
 void linear_callback (GtkRange *range, gpointer user_data)
 {
-  printf("linear\n");
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)self->params;

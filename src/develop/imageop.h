@@ -20,7 +20,11 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 #endif
 
-typedef void* dt_iop_params_t;
+typedef struct dt_iop_params_t
+{
+  int keep;
+}
+dt_iop_params_t;
 typedef void* dt_iop_gui_data_t;
 typedef void* dt_iop_data_t;
 
@@ -38,7 +42,7 @@ typedef struct dt_iop_module_t
   /** non zero if this node should be processed. */
   int32_t enabled;
   /** parameters for the operation. will be replaced by history revert. */
-  dt_iop_params_t *params;
+  dt_iop_params_t *params, *default_params;
   /** exclusive access to params is needed, as gui and gegl processing is async. */
   pthread_mutex_t params_mutex;
   /** size of individual params struct. */
@@ -52,10 +56,15 @@ typedef struct dt_iop_module_t
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** callback methods for gui. */
-  void (*gui_reset)     (struct dt_iop_module_t *self);
+  /** synch gtk interface with gui params, if necessary. */
+  void (*gui_update)    (struct dt_iop_module_t *self);
+  /** construct widget. */
   void (*gui_init)      (struct dt_iop_module_t *self);
+  /** destroy widget. */
   void (*gui_cleanup)   (struct dt_iop_module_t *self);
+
   // TODO: add more for mouse interaction dreggn.
+  
   void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup) (struct dt_iop_module_t *self);
   /** this inits the piece of the pipe, allocing piece->data as necessary. */
@@ -64,7 +73,7 @@ typedef struct dt_iop_module_t
   // FIXME: should this really be named ''reset_pipe'' ??
   void (*reset_params)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
-  void (*commit_params) (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params) (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
   void (*cleanup_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 

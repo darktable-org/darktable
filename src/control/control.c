@@ -1012,12 +1012,10 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
     lbl = gtk_button_get_label(GTK_BUTTON(widget));
     snprintf(wdname, 20, "history_%02d", i);
     widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-  printf("ctl add history: setting widget %s to %s\n", wdname, lbl);
     gtk_button_set_label(GTK_BUTTON(widget), lbl);
     snprintf(wdname, 20, "history_%02d", 9);
   }
   else snprintf(wdname, 20, "history_%02d", num);
-  printf("ctl add history: setting widget %s to %s\n", wdname, numlabel);
   widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
   gtk_widget_show(widget);
   gtk_button_set_label(GTK_BUTTON(widget), numlabel);
@@ -1026,7 +1024,6 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
 void dt_control_clear_history_items(int32_t num)
 {
   // clear history items down to num (leave num-th on stack)
-  printf("ctl clear history num = %d\n");
   darktable.control->history_start = MAX(0, num - 8);
   char wdname[20], numlabel[50];
   // hide all but original
@@ -1044,14 +1041,12 @@ void dt_control_clear_history_items(int32_t num)
   for(int k=1;k<9;k++)
   { // k is button number: history_0k
     int curr = darktable.control->history_start + k; // curr: curr-th history item in list in dev
-    printf("ctl clear history: processing %d = %d + %d\n", curr, darktable.control->history_start, k);
     if(curr > num+1 || !history) break;                // curr > num+1: history item stays hidden (+original).
     snprintf(wdname, 20, "history_%02d", k);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
     snprintf(numlabel, 50, "%d - %s", curr, hist->module->op);
-    printf("ctl clear history: setting widget %s to %s\n", wdname, numlabel);
     gtk_button_set_label(GTK_BUTTON(widget), numlabel);
     history = g_list_next(history);
   }

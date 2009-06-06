@@ -3,6 +3,7 @@
 #include "control/jobs.h"
 #include "control/control.h"
 #include "common/image_cache.h"
+#include "gui/gtk.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -405,7 +406,6 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 {
-  printf("add history item:\n");
   pthread_mutex_lock(&dev->history_mutex);
   if(dev->gui_attached)
   {
@@ -479,7 +479,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_TOP_CHANGED;
     }
   }
-#if 1
+#if 0
   {
   // debug:
   printf("remaining %d history items:\n", dev->history_end);
@@ -502,75 +502,43 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   dt_control_queue_draw();
 
   // TODO: update histogram (launch job)?
-#if 0
-  dt_dev_image_t *img = dev->history + dev->history_top - 1;
-  if(dev->gui_attached)
-  {
-    dt_ctl_gui_mode_t gui;
-    DT_CTL_GET_GLOBAL(gui, gui);
-    if(gui != DT_DEVELOP) return;
-    dt_control_clear_history_items(dev->history_top-1);
-  }
-  // this is called exclusively from the gtk thread, so no lock is necessary.
-  int32_t num = dt_dev_update_fixed_pipeline(dev, op, img->num);
-
-  if(strncmp(img->operation, op, 20) != 0)
-  {
-    dev->history_top++;
-    if(dev->gui_attached) dt_control_add_history_item(dev->history_top-1, op);
-    for(int k=0;k<3;k++) img[1].cacheline[k] = img[0].cacheline[k];
-    img ++;
-    if(dev->history_top >= dev->history_max)
-    {
-      dev->history_max *= 2;
-      dt_dev_image_t *tmp = (dt_dev_image_t *)malloc(sizeof(dt_dev_image_t)*dev->history_max);
-      memcpy(tmp, dev->history, dev->history_max/2 * sizeof(dt_dev_image_t));
-      free(dev->history);
-      dev->history = tmp;
-    }
-  }
-  if(dev->gui_attached)
-  {
-    pthread_mutex_lock(&(darktable.control->image_mutex));
-    img->settings = darktable.control->image_settings;
-    pthread_mutex_unlock(&(darktable.control->image_mutex));
-  }
-  DT_CTL_SET_GLOBAL_STR(dev_op, img->operation, 20);
-  DT_CTL_GET_GLOBAL(img->op_params, dev_op_params);
-  img->num = num;
-  strncpy(img->operation, op, 20);
-  dt_print(DT_DEBUG_DEV, "pushing history %d item with hash %d, operation %d and cachelines %d %d %d\n", dev->history_top-1, num, op, img->cacheline[0], img->cacheline[1], img->cacheline[2]);
-
-  dev->small_backbuf_hash = -1;
-  dt_dev_update_small_cache(dev);
-#endif
 }
 
-// TODO: only adjust history_end and gegl links!
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
   printf("dev popping all history items >= %d\n", cnt);
   pthread_mutex_lock(&dev->history_mutex);
+  darktable.gui->reset = 1;
   dev->history_end = cnt;
   dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
-  pthread_mutex_unlock(&dev->history_mutex);
-#if 0
-  // this is called exclusively from the gtk thread, so no lock is necessary.
-  if(cnt == dev->history_top-1) return;
-  dev->history_top = cnt + 1;
-  if(dev->gui_attached)
+  // reset gui params for all modules
+  GList *modules = dev->iop;
+  while(modules)
   {
-    pthread_mutex_lock(&(darktable.control->image_mutex));
-    darktable.control->image_settings = dev->history[dev->history_top-1].settings;
-    pthread_mutex_unlock(&(darktable.control->image_mutex));
-    DT_CTL_SET_GLOBAL_STR(dev_op, dev->history[dev->history_top-1].operation, 20);
-    DT_CTL_SET_GLOBAL(dev_op_params, dev->history[dev->history_top-1].op_params);
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    memcpy(module->params, module->default_params, module->params_size);
+    modules = g_list_next(modules);
   }
-  (void)dt_dev_update_fixed_pipeline(dev, "original", 0);
-
-  dev->small_backbuf_hash = -1;
-  dt_dev_update_small_cache(dev);
-#endif
+  // go through history and set gui params
+  GList *history = dev->history;
+  for(int i=0;i<cnt && history; i++)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    memcpy(hist->module->params, hist->params, hist->module->params_size);
+    history = g_list_next(history);
+  }
+  // update all gui modules
+  modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    module->gui_update(module);
+    modules = g_list_next(modules);
+  }
+  darktable.gui->reset = 0;
+  pthread_mutex_unlock(&dev->history_mutex);
+  dt_dev_invalidate(dev);
+  dt_control_queue_draw();
 }
 
 // TODO: port to glist!

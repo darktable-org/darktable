@@ -17,8 +17,6 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
-static dt_iop_tonecurve_params_t default_params;
-
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
@@ -32,16 +30,18 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 {
   // create part of the gegl pipeline
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
+  dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
   d->curve = gegl_curve_new(0.0, 1.0);
-  for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, default_params.tonecurve_x[k], default_params.tonecurve_y[k]);
+  for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
 }
 
 void reset_params (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
-  for(int k=0;k<6;k++) (void)gegl_curve_set_point(d->curve, k, default_params.tonecurve_x[k], default_params.tonecurve_y[k]);
+  dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
+  for(int k=0;k<6;k++) (void)gegl_curve_set_point(d->curve, k, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
   gegl_node_set(piece->input, "curve", d->curve, NULL);
 }
 
@@ -55,22 +55,24 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   free(piece->data);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_update(struct dt_iop_module_t *self)
 {
   // nothing to do, gui curve is read directly from params during expose event.
   // TODO: reset combobox on preset changed event ?
+  gtk_widget_queue_draw(self->widget);
 }
 
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
+  module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)module->params;
-  default_params = (dt_iop_tonecurve_params_t) {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
+  dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t) {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                 {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                  0};
-  *p = default_params;
+  memcpy(module->params, &tmp, sizeof(dt_iop_tonecurve_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_tonecurve_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
