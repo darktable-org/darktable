@@ -13,8 +13,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 {
   // pull in new params to gegl
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)p1;
-  // gegl_node_set(piece->input, "linear", p->linear, "gamma", p->gamma, NULL);
-  gegl_node_set(piece->input, "value", p->gamma, NULL);
+  gegl_node_set(piece->input, "linear_value", p->linear, "gamma_value", p->gamma, NULL);
+  // gegl_node_set(piece->input, "value", p->gamma, NULL);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -22,15 +22,15 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
   dt_iop_gamma_params_t *default_params = (dt_iop_gamma_params_t *)self->default_params;
-  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear", default_params->linear, "gamma", default_params->gamma, NULL);
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", default_params->gamma, NULL);
+  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear_value", default_params->linear, "gamma_value", default_params->gamma, NULL);
+  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", default_params->gamma, NULL);
 }
 
 void reset_params (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_gamma_params_t *default_params = (dt_iop_gamma_params_t *)self->default_params;
-  gegl_node_set(piece->input, "value", default_params->gamma, NULL);
-  // gegl_node_set(piece->input, "linear", default_params->linear, "gamma", default_params->gamma, NULL);
+  // gegl_node_set(piece->input, "value", default_params->gamma, NULL);
+  gegl_node_set(piece->input, "linear_value", default_params->linear, "gamma_value", default_params->gamma, NULL);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

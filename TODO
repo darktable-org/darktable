@@ -1,20 +1,10 @@
-- ctl history items will not synch correctly.
 - race condition on image->mipf during load!
 - dt-gamma has some problem :(
-- gui reset iop in gtk.c expose
-- original button
 - develop histograms!
-- develop add history item => set event flags to be cleared by pipelines
 - develop export: use dev->pipe with full roi
 - quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
 - faster loading by reversing of thumbnail jpegs :)
-- dev image process: redraw->launch job.
-  - changed flag set by add_histoy_item
-    (which returns immediately and is called by module gui
-    to update dt gui: history items and module stack?)
-    - module stack: disable module in gui without removing it
-      (this should be done in image process thread, to retain gegl nodes!)
 - save gui settings (expanded etc?) in operation stacks
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
@@ -23,6 +13,7 @@
 - release 0.2 :)
 
 0.3 roadmap:
+- add/removable modules in module stack (replace fixed stack)
 - try gegl raw-load and openraw-load nodes
 - reduce db size by kicking out float/mip thumbnail images
 - check libraw speed
