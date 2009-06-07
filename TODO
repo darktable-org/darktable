@@ -1,4 +1,4 @@
-- develop leave write back buffers fails.
+- dev->history read/write add/remove results in corrupt memory :(
 - gegl on full view is _slow_ !
   - counter measure: additional pixelpipe with really lo-res image.
 - develop histograms!

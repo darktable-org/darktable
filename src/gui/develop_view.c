@@ -132,8 +132,9 @@ void dt_dev_enter()
   DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
 
-  dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
 #ifdef DT_USE_GEGL
+  dev->gui_leaving = 0;
+  dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
   // get top level vbox containing all expanders, iop_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
   GList *modules = darktable.develop->iop;
@@ -151,7 +152,12 @@ void dt_dev_enter()
     modules = g_list_next(modules);
   }
   gtk_widget_show_all(GTK_WIDGET(box));
+  // synch gui and flag gegl pipe as dirty
+  // FIXME: this assumes static pipeline as well
+  // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
+  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
 #else
+  dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
   dt_dev_configure(darktable.develop, darktable.control->width - 2*darktable.control->tabborder, darktable.control->height - 2*darktable.control->tabborder);
 #endif
 }
@@ -163,10 +169,22 @@ void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void dt_dev_leave()
 {
+  // commit image ops to db
+  dt_dev_write_history(darktable.develop);
 #ifdef DT_USE_GEGL
   // clear gui.
   dt_develop_t *dev = darktable.develop;
+  dev->gui_leaving = 1;
+  pthread_mutex_lock(&dev->history_mutex);
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+  GList *history = dev->history;
+  while(dev->history)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    printf("removing history item %d - %s, data %f %f\n", hist->module->instance, hist->module->op, *(float *)hist->params, *((float *)hist->params+1));
+    free(hist->params);
+    dev->history = g_list_delete_link(dev->history, dev->history);
+  }
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
@@ -175,13 +193,12 @@ void dt_dev_leave()
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);
+  pthread_mutex_unlock(&dev->history_mutex);
 #endif
   // release full buffer
   if(darktable.develop->image->pixels)
     dt_image_release(darktable.develop->image, DT_IMAGE_FULL, 'r');
 
-  // commit image ops to db
-  dt_dev_write_history(darktable.develop);
   DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
   // commit updated mipmaps to db

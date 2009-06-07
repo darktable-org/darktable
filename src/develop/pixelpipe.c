@@ -175,7 +175,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_
   while (gegl_processor_work (processor, &progress))
   {
     // if history changed, abort processing?
-    if(pipe->changed != DT_DEV_PIPE_UNCHANGED) return 1;
+    if(pipe->changed != DT_DEV_PIPE_UNCHANGED || dev->gui_leaving) return 1;
   }
   gegl_processor_destroy (processor);
 

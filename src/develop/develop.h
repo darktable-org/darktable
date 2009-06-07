@@ -19,9 +19,8 @@ struct dt_iop_module_t;
 struct dt_iop_params_t;
 typedef struct dt_dev_history_item_t
 {
-  // dt_dev_operation_t op;          // which operation
   struct dt_iop_module_t *module; // pointer to image operation module
-  int32_t enabled;                // switched on/off
+  int32_t enabled;                // switched respective module on/off
   struct dt_iop_params_t *params; // parameters for this operation
 }
 dt_dev_history_item_t;
@@ -30,6 +29,7 @@ struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
+  int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t image_loading, image_processing, image_dirty;
   int32_t preview_loading, preview_processing, preview_dirty;
 

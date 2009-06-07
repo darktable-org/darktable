@@ -9,6 +9,7 @@
 #include <math.h>
 #include <string.h>
 #include <strings.h>
+#include <assert.h>
 
 #ifdef DT_USE_GEGL
 
@@ -43,6 +44,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  dev->gui_leaving = 0;
   pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
@@ -164,23 +166,6 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->mipf, dev->mipf_width, dev->mipf_height);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
 
-#if 0
-    // TODO: (when will mipf be loaded?)
-    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
-    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
-    GeglRectangle rect = (GeglRectangle){0, 0, dev->mipf_width, dev->mipf_height};
-    // printf("creating buf with %d %d %d %d \n", rect.x, rect.y, rect.width, rect.height);
-    if(dev->gegl_preview_buffer) gegl_buffer_destroy(dev->gegl_preview_buffer);
-    // if(!dev->gegl_preview_buffer)
-    {
-      dev->gegl_preview_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
-      gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
-    }
-    // else gegl_buffer_set_extent(dev->gegl_preview_buffer, &rect);
-    // gegl_buffer_set(dev->gegl_preview_buffer, &rect, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
-    gegl_buffer_set(dev->gegl_preview_buffer, NULL, babl_format("RGB float"), dev->image->mipf, GEGL_AUTO_ROWSTRIDE);
-    // gegl_node_set(dev->gegl_load_preview_buffer, "buffer", dev->gegl_preview_buffer, NULL);
-#endif
     dev->preview_loading = 0;
   }
 
@@ -217,6 +202,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
 restart:
+  if(dev->gui_leaving) return;
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, &roi, scale)) goto restart;
 
@@ -227,31 +213,7 @@ restart:
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
-#if 0
-  dev->image_processing = 1;
-  GeglRectangle roi = (GeglRectangle){0, 0, dev->width, dev->height};
-
-  // TODO: first scale and then roi on dest
-  // GEGL_BLIT_DEFAULT, GEGL_BLIT_CACHE and GEGL_BLIT_DIRTY
-  // TODO:
-  const float scale = 1.0;
-  if(dev->backbuf_size != dev->width*dev->height*4*sizeof(uint8_t))
-  {
-    pthread_mutex_lock(&dev->backbuf_mutex);
-    dev->backbuf_size = dev->width*dev->height*4*sizeof(uint8_t);
-    free(dev->backbuf);
-    dev->backbuf = (uint8_t *)dt_alloc_align(16, dev->backbuf_size);
-    pthread_mutex_unlock(&dev->backbuf_mutex);
-  }
-  // gegl_node_blit (dev->gegl_top, scale, &roi, babl_format("RGBA u8"), dev->backbuf, 4*dev->width, GEGL_BLIT_CACHE);
-  gegl_node_blit (dev->gegl_load_buffer, scale, &roi, babl_format("RGBA u8"), dev->backbuf, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
-  for(int i=0;i<dev->width*dev->height;i++) for(int k=0;k<3;k++)
-    dev->backbuf[4*i+k] = dev->gamma[dev->backbuf[4*i+k]];
-
-  dev->image_dirty = 0;
-  dev->image_processing = 0;
-  dt_control_queue_draw();
-#endif
+  // TODO: almost same as preview
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
@@ -299,10 +261,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   if(dt_iop_load_module(module, dev, "gamma")) exit(1);
   dev->iop = g_list_append(dev->iop, module);
 
-  // TODO:
-  // dt_iop_load_module(module, dev, "saturation");
-  // or better: one module for: blackpoint, whitepoint, exposure, fill darks, saturation.
-
+  // TODO: this should read modules on demand!
   dt_dev_read_history(dev);
   if(dev->gui_attached)
   {
@@ -377,7 +336,6 @@ void dt_dev_set_histogram(dt_develop_t *dev)
 // helper used to synch a single history item with db
 int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32_t num)
 {
-#if 0
   if(!dev->image) return 1;
   sqlite3_stmt *stmt;
   int rc;
@@ -394,18 +352,15 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
   }
   rc = sqlite3_finalize (stmt);
   rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
-  rc = sqlite3_bind_text(stmt, 1, h->op, strlen(h->op), SQLITE_STATIC);
-  rc = sqlite3_bind_blob(stmt, 2, &(h->op_params), sizeof(dt_dev_operation_params_t), SQLITE_STATIC);
-  rc = sqlite3_bind_int (stmt, 3, h->iop);
+  rc = sqlite3_bind_text(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
+  rc = sqlite3_bind_blob(stmt, 2, &(h->params), h->module->params_size, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_int (stmt, 3, h->module->instance);
   rc = sqlite3_bind_int (stmt, 4, h->enabled);
   rc = sqlite3_bind_int (stmt, 5, dev->image->id);
   rc = sqlite3_bind_int (stmt, 6, num);
   rc = sqlite3_step (stmt);
   rc = sqlite3_finalize (stmt);
   return 0;
-#else
-  return 0;
-#endif
 }
 
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
@@ -545,78 +500,55 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dt_control_queue_draw();
 }
 
-// TODO: port to glist!
 void dt_dev_write_history(dt_develop_t *dev)
 {
-#if 0
   int rc;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, dev->image->id);
   sqlite3_step(stmt);
   rc = sqlite3_finalize (stmt);
-  for(int k=0;k<dev->history_top;k++)
-    (void)dt_dev_write_history_item(dev, dev->history+k, k);
-#endif
+  GList *history = dev->history;
+  for(int i=0;i<dev->history_end && history; i++)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    (void)dt_dev_write_history_item(dev, hist, i);
+    history = g_list_next(history);
+  }
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  // TODO: port to new history items and database format.
   // TODO: on demand loading of modules!
-#if 0
   if(dev->gui_attached) dt_control_clear_history_items(0);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
   int rc;
   rc = sqlite3_prepare_v2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, dev->image->id);
-  dev->history_top = 0;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  dev->history_end = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    do
-    {
-      dt_dev_image_t *h = dev->history + dev->history_top;
-      h->num = sqlite3_column_int(stmt, 2);
-      strncpy(h->operation, (char *)sqlite3_column_text(stmt, 3), 20);
-      memcpy(&(h->op_params), sqlite3_column_blob(stmt, 4), sizeof(dt_dev_operation_params_t));
-      memcpy(&(h->settings), sqlite3_column_blob(stmt, 5), sizeof(dt_ctl_image_settings_t));
-      dev->history_top++;
-      if(dev->history_top >= dev->history_max)
-      {
-        dev->history_max *= 2;
-        dt_dev_image_t *tmp = (dt_dev_image_t *)malloc(sizeof(dt_dev_image_t)*dev->history_max);
-        memcpy(tmp, dev->history, dev->history_max/2 * sizeof(dt_dev_image_t));
-        free(dev->history);
-        dev->history = tmp;
-      }
-      if(dev->gui_attached) dt_control_add_history_item(dev->history_top-1, dev->history[dev->history_top-1].operation);
-    }
-    while(sqlite3_step(stmt) == SQLITE_ROW);
-    rc = sqlite3_finalize (stmt);
-  }
-  else
-  {
-    rc = sqlite3_finalize (stmt);
-    dev->history_top = 1;
-    dev->history[0].num = 1;//dev->image->id << 6;
-    for(int k=0;k<3;k++) dev->history[0].cacheline[k] = 0;
-    dev->history[0].settings = darktable.control->image_defaults;
-    strncpy(dev->history[0].operation, "original", 20);
-    if(dev->gui_attached) dt_control_add_history_item(0, "original");
-    dt_dev_write_history_item(dev, dev->history, 0);
-  }
+    // db record:
+    // 0-img, 1-num, 2-module_instance, 3-operation char, 4-params blob, 5-enabled
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+    hist->enabled = sqlite3_column_int(stmt, 5);
+    int instance = sqlite3_column_int(stmt, 2);
+    // FIXME: this is static pipeline: TODO: load module "operation" and insert in glist, get instance and set here!
+    GList *modules = g_list_nth(dev->iop, instance);
+    assert(modules);
+    hist->module = (dt_iop_module_t *)modules->data;
+    printf("loading history img %d number %d for operation %d - %s\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, (char *)sqlite3_column_text(stmt, 3));
+    assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
+    assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));
+    hist->params = malloc(hist->module->params_size);
+    memcpy(&(hist->params), sqlite3_column_blob(stmt, 4), hist->module->params_size);
+    dev->history = g_list_append(dev->history, hist);
+    dev->history_end ++;
 
-  if(dev->gui_attached)
-  {
-    DT_CTL_SET_GLOBAL_STR(dev_op, dev->history[dev->history_top-1].operation, 20);
-    DT_CTL_SET_GLOBAL(dev_op_params, dev->history[dev->history_top-1].op_params);
-    pthread_mutex_lock(&(darktable.control->image_mutex));
-    darktable.control->image_settings = dev->history[dev->history_top - 1].settings;
-    pthread_mutex_unlock(&(darktable.control->image_mutex));
+    if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, hist->module->op);
   }
-  (void)dt_dev_update_fixed_pipeline(dev, "original", 0);
-#endif
+  rc = sqlite3_finalize (stmt);
 }
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxww, float *boxhh)
@@ -717,6 +649,18 @@ void dt_dev_export(dt_job_t *job)
   }
 #endif
 }
+
+
+
+
+
+
+
+// old crap:
+// (that is, old version without gegl, which used to be faster ... )
+
+
+
 
 #else // old non-gegl version:
 

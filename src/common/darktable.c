@@ -105,8 +105,8 @@ void dt_cleanup()
   else fprintf(stderr, "[cleanup] could not write to %s!\n", filename);
   dt_control_write_config(darktable.control);
 
-  dt_control_cleanup(darktable.control);
-  free(darktable.control);
+  darktable.control->running = 0;
+
   dt_dev_cleanup(darktable.develop);
   free(darktable.develop);
   dt_library_cleanup(darktable.library);
@@ -117,6 +117,8 @@ void dt_cleanup()
   free(darktable.image_cache);
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
   free(darktable.mipmap_cache);
+  dt_control_cleanup(darktable.control);
+  free(darktable.control);
 
   sqlite3_close(darktable.db);
   pthread_mutex_destroy(&(darktable.db_insert));

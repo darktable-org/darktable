@@ -1048,8 +1048,8 @@ void dt_control_clear_history_items(int32_t num)
   GList *history = g_list_nth(darktable.develop->history, darktable.control->history_start);
   for(int k=1;k<9;k++)
   { // k is button number: history_0k
-    int curr = darktable.control->history_start + k; // curr: curr-th history item in list in dev
-    if(curr > num+1 || !history) break;                // curr > num+1: history item stays hidden (+original).
+    int curr = darktable.control->history_start + k;   // curr: curr-th history item in list in dev
+    if(curr > num+1 || !history) break;                  // curr > num+1: history item stays hidden
     snprintf(wdname, 20, "history_%02d", k);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
