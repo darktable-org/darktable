@@ -59,6 +59,8 @@ process (GeglOperation       *op,
   num_sampling_points = o->sampling_points;
   curve = o->curve;
 
+  printf("processing %d samples!\n", samples);
+
   if (num_sampling_points > 0)
   {
     xs = g_new(gdouble, num_sampling_points);

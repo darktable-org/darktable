@@ -1,7 +1,8 @@
+- mip0 broken for very lo-res images.
 - develop leave write through mip not done
 - develop enter update gegl pipe not working
 - imageio_open_raw may get image de-alloced when leaving develop mode!
-  (dt exit)
+  (dt exit: 1) ctl shutdown: kill threads 2) other 3) cleanup ctl)
 - gegl on full view is _slow_ !
   - counter measure: additional pixelpipe with really lo-res image.
   - fork after gegl:load-buffer
@@ -14,11 +15,9 @@
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
-- add full pipeline
-- db read/write history items
-- clear/load history items upon develop_enter/leave
+- add full pixels pipeline (better to replace input on preview pipe?)
 - code review, cleanup module categories (develop_view, iop?)
-- clean up database on exit completely (or at least mip blobs?)
+- tmp robustness: clean up database on exit completely (or at least mip blobs?)
 - release 0.2 :)
 
 0.3 roadmap:
@@ -53,8 +52,6 @@ bugs:
    (this is a serious problem if not all images fit into cache)
  - strange G_OBJECT cast errors when loading pfm/exr/pdf?
  - import folder file chooser sometimes not sized appropriately
- - histogram updates in fixed pipeline come too early/uselessly?
-
 
 feature requests:
  - pizza button.
@@ -66,12 +63,6 @@ feature requests:
    - load list from sql to dev->GList (be able to alter selection after)
    - progress bar
  - completely free zoom in dev mode (not just 1:1, fit, fill)
- - use GEGL to replace dev cache and operation interface!
-   - disable nodes: connect pass-through edge
-   - move tonecurve widget to gegl-curve struct and iop interface!
-     - first try: gegl:nop
-   - database load/save of new history items!
-   - apply linear/gamma conversion curve (still fixed widget)
  - flags: deleted, cool, uncool..
  - clustered image view by similar tag/flag
  - user orient rotation
@@ -81,8 +72,7 @@ feature requests:
  - ufraw style highlight reconstruction
  - images of expensive cameras for webpage.
  - blackpoint
- - gamma: no linear part for some cameras.
- - interpolation as user parameter?
+ - ahd interpolation as user parameter?
  - set default parameters for all controls in dev mode while in lib mode?
  - clean up db for mem optimizations: keep only image+history, re-import mips.
  - remove dead links in library automatically?
@@ -90,20 +80,16 @@ feature requests:
  - cache auf platte, echte bilder irgendwo auf dvd/platte extern/kamera chip etc
    - moeglicherweise ECHTE bilder (dias im schrank)
  - bilder sortieren, evtl manuell (mehrere kameras in einen film usw)
- - zoom in in 3 steps?
+ - animated zoom-in in 3 steps?
  - hide gui triangles andere form und switch in/out
  - inotify dir watching
- - execute iop: pass global image window!
  - zoom in dev mode via mouse wheel/click
  - brightness/exposure highlight histogram stuff (fill blacks)
  - LensFun
 
 priority list:
  - aoe, keys to change +-= table_cols/1 resp.
- - top gui with sql statements for lighttable mode ? for dev mode
- - exif tab: exif_table expose event: fill mouse_over_id exif data!
  - tags and some tag search facility (expander in lighttable mode)
- - clean up dev events: add history-> cache up -> fixed pipeline up
  - image properties when zoomed in a lot
  - bottom control panel with buttons for lib->dev->lib
  - libglade => gtkbuilder.
@@ -131,10 +117,8 @@ usability:
  - library graph with keyword edges.
 
 look:
- - dev img border
  - shadow border between center and outer panels
  - end markers :)
- - dev full res image possibly smaller as lo-res (paint border with bg)
 
 cache:
  - user profile guided prefetching for full raw load!
@@ -142,4 +126,5 @@ cache:
 
 build/packaging:
  - doxygen documentation
+ - debian/ubuntu package
 

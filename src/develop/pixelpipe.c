@@ -172,6 +172,9 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_
   // GeglProcessor *processor = gegl_node_new_processor (pipe->output, roi);
   double         progress;
 
+  // TODO: insert constant scale node at beginning, maintain lo-res branch of pipeline (shadowed).
+  // TODO: decide on scale param, which one to use.
+
   while (gegl_processor_work (processor, &progress))
   {
     // if history changed, abort processing?
