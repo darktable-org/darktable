@@ -133,7 +133,7 @@ void dt_dev_enter()
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
 
 #ifdef DT_USE_GEGL
-  dev->gui_leaving = 0;
+  darktable.develop->gui_leaving = 0;
   dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
   // get top level vbox containing all expanders, iop_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
