@@ -157,7 +157,10 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_processing = 1;
   if(dev->preview_loading)
   {
+    if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
     if(!dev->image->mipf) return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
+    // drop reference again, we were just testing. dev holds one already.
+    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
     dev->mipf = dev->image->mipf;
     // FIXME: something here is terribly slow. debug this and preconstruct in dev_init!
     // init pixel pipeline for preview.
@@ -252,6 +255,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 
   // TODO: load modules for this image in read history!
   dt_iop_module_t *module;
+  dev->iop_instance = 0;
 
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, dev, "tonecurve")) exit(1);
@@ -350,10 +354,11 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
     rc = sqlite3_bind_int (stmt, 2, num);
     rc = sqlite3_step (stmt);
   }
+  printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
   rc = sqlite3_finalize (stmt);
   rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   rc = sqlite3_bind_text(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
-  rc = sqlite3_bind_blob(stmt, 2, &(h->params), h->module->params_size, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_blob(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   rc = sqlite3_bind_int (stmt, 3, h->module->instance);
   rc = sqlite3_bind_int (stmt, 4, h->enabled);
   rc = sqlite3_bind_int (stmt, 5, dev->image->id);
@@ -538,11 +543,11 @@ void dt_dev_read_history(dt_develop_t *dev)
     GList *modules = g_list_nth(dev->iop, instance);
     assert(modules);
     hist->module = (dt_iop_module_t *)modules->data;
-    printf("loading history img %d number %d for operation %d - %s\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, (char *)sqlite3_column_text(stmt, 3));
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
-    assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));
     hist->params = malloc(hist->module->params_size);
-    memcpy(&(hist->params), sqlite3_column_blob(stmt, 4), hist->module->params_size);
+    memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
+    assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));
+    printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
     dev->history = g_list_append(dev->history, hist);
     dev->history_end ++;
 

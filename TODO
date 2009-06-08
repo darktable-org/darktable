@@ -1,12 +1,15 @@
-- dev->history read/write add/remove results in corrupt memory :(
+- develop leave write through mip not done
+- develop enter update gegl pipe not working
+- imageio_open_raw may get image de-alloced when leaving develop mode!
+  (dt exit)
 - gegl on full view is _slow_ !
   - counter measure: additional pixelpipe with really lo-res image.
+  - fork after gegl:load-buffer
 - develop histograms!
 - develop export
 - quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
 - faster loading by reversing of thumbnail jpegs :)
-  - and faster processing in gegl preview pipe by small float previews.
 - save gui settings (expanded etc?) in operation stacks
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
@@ -15,6 +18,7 @@
 - db read/write history items
 - clear/load history items upon develop_enter/leave
 - code review, cleanup module categories (develop_view, iop?)
+- clean up database on exit completely (or at least mip blobs?)
 - release 0.2 :)
 
 0.3 roadmap:

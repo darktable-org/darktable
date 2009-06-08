@@ -177,17 +177,17 @@ void dt_dev_leave()
   dev->gui_leaving = 1;
   pthread_mutex_lock(&dev->history_mutex);
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
-  GList *history = dev->history;
   while(dev->history)
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
     printf("removing history item %d - %s, data %f %f\n", hist->module->instance, hist->module->op, *(float *)hist->params, *((float *)hist->params+1));
-    free(hist->params);
+    free(hist->params); hist->params = NULL;
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
+    printf("removing module %d - %s\n", module->instance, module->op);
     module->gui_cleanup(module);
     module->cleanup(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);

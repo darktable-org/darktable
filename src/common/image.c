@@ -229,6 +229,7 @@ int dt_image_update_mipmaps(dt_image_t *img)
     dt_image_get_mip_size(img, l, &p_wd, &p_ht);
     if(dt_image_alloc(img, l)) return 1;
 
+    dt_image_check_buffer(img, l, p_wd*p_ht*4*sizeof(uint8_t));
     // printf("creating mipmap %d for img %s: %d x %d\n", l, img->filename, p_wd, p_ht);
     // downscale 8-bit mip
     if(oldwd != p_wd)
