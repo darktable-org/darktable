@@ -1,3 +1,7 @@
+GEGL_DEBUG_TIME:
+- gegl:dt-gamma eats performance
+- gegl itself is very slow (=> tmp homebrew version?)
+- mipf still sometimes not loaded on dev->enter
 - mip0 broken for very lo-res images.
 - develop leave write through mip not done
 - develop enter update gegl pipe not working

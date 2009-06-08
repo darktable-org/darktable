@@ -45,7 +45,7 @@ typedef struct dt_dev_pixelpipe_t
   GeglNode *output;
   // gegl input node (gegl:load-buffer)
   GeglNode *input;
-  // GeglNode *scale;
+  GeglNode *scale;
   GeglBuffer *input_buffer;
   // width and height of input buffer
   int iwidth, iheight;

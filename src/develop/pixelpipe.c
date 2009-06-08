@@ -10,9 +10,10 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
   pipe->gegl = gegl_node_new();
   pipe->input_buffer = NULL;
   pipe->input = gegl_node_new_child(pipe->gegl, "operation", "gegl:load-buffer", NULL);
-  // pipe->scale = gegl_node_new_child(pipe->gegl, "operation", "gegl:scale", "filter", "nearest", NULL);
-  pipe->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:nop", NULL);
-  gegl_node_link(pipe->input, pipe->output);
+  // pipe->scale = gegl_node_new_child(pipe->gegl, "operation", "gegl:scale", "filter", "nearest", "x", .5, "y", .5, NULL);
+  // pipe->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:nop", NULL);
+  pipe->output = pipe->input;
+  // gegl_node_link(pipe->input, pipe->output);
   // gegl_node_link(pipe->input, pipe->scale);
   // gegl_node_link(pipe->scale, pipe->output);
 }
@@ -51,14 +52,14 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     piece->module->cleanup_pipe(piece->module, pipe, piece);
     nodes = g_list_next(nodes);
   }
-  gegl_node_link(pipe->input, pipe->output);
+  // gegl_node_link(pipe->input, pipe->output);
   // gegl_node_link(pipe->input, pipe->scale);
   // gegl_node_link(pipe->scale, pipe->output);
 }
 
 void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
-  gegl_node_disconnect(pipe->output, "input");
+  // gegl_node_disconnect(pipe->output, "input");
   // gegl_node_disconnect(pipe->scale, "input");
   // for all modules in dev:
   GList *modules = dev->iop;
@@ -78,8 +79,9 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     pipe->nodes = g_list_append(pipe->nodes, piece);
     modules = g_list_next(modules);
   }
+  pipe->output = input;
   // gegl_node_link(input, pipe->scale);
-  gegl_node_link(input, pipe->output);
+  // gegl_node_link(input, pipe->output);
 }
 
 // helper
@@ -161,6 +163,8 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_
 {
   printf("pixelpipe process start\n");
   
+  // scale node (is slow):
+  // scale *= 2;
   // FIXME: this seems to be a bug in gegl. need to manually adjust updated roi here.
   GeglRectangle roio = (GeglRectangle){roi->x/scale, roi->y/scale, roi->width/scale, roi->height/scale};
   roio.x      = MAX(0, roio.x);
