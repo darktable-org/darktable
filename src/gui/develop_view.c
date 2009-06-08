@@ -259,7 +259,7 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->preview_dirty) dt_dev_process_preview(dev);
   else
   {
-    // TODO: center dev output image!
+    // TODO: adjust to real mipf width/heiht?
     int wd, ht, stride;
     cairo_surface_t *surface = NULL;
     if(/*dev->image_processing &&*/ !dev->preview_processing)
@@ -278,10 +278,16 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
     //}
     if(surface)
     {
+      cairo_set_source_rgb (cr, .2, .2, .2);
+      cairo_paint(cr);
+      cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
       cairo_rectangle(cr, 0, 0, wd, ht);
       cairo_set_source_surface (cr, surface, 0, 0);
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-      cairo_fill(cr);
+      cairo_fill_preserve(cr);
+      cairo_set_line_width(cr, 1.0);
+      cairo_set_source_rgb (cr, .3, .3, .3);
+      cairo_stroke(cr);
       cairo_surface_destroy (surface);
     }
   }
