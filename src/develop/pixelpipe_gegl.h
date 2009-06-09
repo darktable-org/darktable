@@ -53,6 +53,12 @@ typedef struct dt_dev_pixelpipe_t
   GList *nodes;
   // event flag
   dt_dev_pixelpipe_change_t changed;
+  // backbuffer
+  uint8_t *backbuf;
+  pthread_mutex_t backbuf_mutex;
+  int backbuf_size;
+  // working?
+  int processing;
 }
 dt_dev_pixelpipe_t;
 
@@ -78,7 +84,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 
 // process region of interest of pixels. returns 1 if pipe was altered during processing.
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, uint8_t *output, int x, int y, int width, int height, float scale);
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width, int height, float scale);
 
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
 // TODO: add n-th module in dev list to gegl pipeline

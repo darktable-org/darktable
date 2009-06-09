@@ -254,20 +254,22 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->history_top > 0)
     dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
 #else
-  pthread_mutex_lock(&dev->backbuf_mutex);
   // if(dev->image_dirty) dt_dev_process_image(dev); // FIXME: each process => 4 buffer leaks?
   if(dev->preview_dirty) dt_dev_process_preview(dev);
   else
   {
+    pthread_mutex_t *mutex = NULL;
     // TODO: adjust to real mipf width/heiht?
     int wd, ht, stride;
     cairo_surface_t *surface = NULL;
-    if(/*dev->image_processing &&*/ !dev->preview_processing)
+    if(/*dev->pipe->processing &&*/ !dev->preview_pipe->processing)
     {
+      mutex = &dev->preview_pipe->backbuf_mutex;
+      pthread_mutex_lock(mutex);
       wd = dev->capwidth_preview;
       ht = dev->capheight_preview;
       stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-      surface = cairo_image_surface_create_for_data (dev->backbuf_preview, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+      surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
     }
     // else if(!dev->image_processing)
     //{
@@ -289,9 +291,9 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
       cairo_set_source_rgb (cr, .3, .3, .3);
       cairo_stroke(cr);
       cairo_surface_destroy (surface);
+      pthread_mutex_unlock(mutex);
     }
   }
-  pthread_mutex_unlock(&dev->backbuf_mutex);
   // TODO: execute module callback hook!
 #endif
 }

@@ -52,14 +52,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->gui_attached = gui_attached;
   dev->width = -1;
   dev->height = -1;
-  pthread_mutex_init(&dev->backbuf_mutex, NULL);
-  dev->backbuf_size = dev->backbuf_preview_size = 0;
-  dev->backbuf = dev->backbuf_preview = NULL;
   dev->mipf = NULL;
 
   dev->image = NULL;
   dev->image_dirty = dev->preview_dirty = 
-  dev->image_loading = dev->image_processing = dev->preview_loading = dev->preview_processing = 0;
+  dev->image_loading = dev->preview_loading = 0;
 
   dev->pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
   dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
@@ -121,10 +118,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dt_iop_unload_module((dt_iop_module_t *)dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
-  pthread_mutex_destroy(&dev->backbuf_mutex);
   pthread_mutex_destroy(&dev->history_mutex);
-  free(dev->backbuf);
-  free(dev->backbuf_preview);
   free(dev->histogram);
   free(dev->histogram_pre);
 }
@@ -154,21 +148,17 @@ void dt_dev_invalidate(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
-  dev->preview_processing = 1;
   if(dev->preview_loading)
-  {
-    if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
-    if(!dev->image->mipf) return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
+  { 
+    // prefetch and lock
+    if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF) return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
     // drop reference again, we were just testing. dev holds one already.
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
-    dev->mipf = dev->image->mipf;
-    // FIXME: something here is terribly slow. debug this and preconstruct in dev_init!
     // init pixel pipeline for preview.
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
-    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->mipf, dev->mipf_width, dev->mipf_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-
     dev->preview_loading = 0;
   }
 
@@ -197,24 +187,15 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   width  = MIN(dev->width,  width);
   height = MIN(dev->height, height);
   // printf("drawing %d %d %d %d (zoom: %f %f)\n", roi.x, roi.y, roi.width, roi.height, zoom_x, zoom_y);
-  if(dev->backbuf_preview_size != dev->width*dev->height*4*sizeof(uint8_t))
-  {
-    pthread_mutex_lock(&dev->backbuf_mutex);
-    dev->backbuf_preview_size = dev->width*dev->height*4*sizeof(uint8_t);
-    free(dev->backbuf_preview);
-    dev->backbuf_preview = (uint8_t *)dt_alloc_align(16, dev->backbuf_preview_size);
-    pthread_mutex_unlock(&dev->backbuf_mutex);
-  }
-
+ 
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
 restart:
   if(dev->gui_leaving) return;
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, x, y, width, height, scale)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, x, y, width, height, scale)) goto restart;
 
   dev->preview_dirty = 0;
-  dev->preview_processing = 0;
   dt_control_queue_draw();
 }
 
@@ -229,7 +210,6 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
   if(dev->image->pixels && !dev->image->shrink) return;
 restart:
   dev->image_loading = 1;
-  dev->image_processing = 1;
   dev->image->shrink = 0;
   int err = dt_image_load(img, DT_IMAGE_FULL);
   if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);

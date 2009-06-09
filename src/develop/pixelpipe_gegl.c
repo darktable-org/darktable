@@ -16,6 +16,10 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
   // gegl_node_link(pipe->input, pipe->output);
   // gegl_node_link(pipe->input, pipe->scale);
   // gegl_node_link(pipe->scale, pipe->output);
+  pipe->backbuf = NULL;
+  pipe->backbuf_size = 0;
+  pipe->processing = 0;
+  pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
 }
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
@@ -32,6 +36,10 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 {
+  free(pipe->backbuf);
+  pipe->backbuf = NULL;
+  pipe->backbuf_size = 0;
+  pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   // gegl_buffer_destroy(pipe->input_buffer); // TODO: necessary?
   g_object_unref(pipe->gegl); // should destroy all gegl related stuff.
@@ -159,10 +167,21 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 {
 }
 
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_t *output, int x, int y, int width, int height, float scale)
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
+  pipe->processing = 1;
   printf("pixelpipe process start\n");
   
+  // have backbuf in right size:
+  if(pipe->backbuf_size < width*height*4*sizeof(uint8_t))
+  {
+    pthread_mutex_lock(&pipe->backbuf_mutex);
+    pipe->backbuf_size = width*height*4*sizeof(uint8_t);
+    free(pipe->backbuf);
+    pipe->backbuf = (uint8_t *)dt_alloc_align(16, pipe->backbuf_size);
+    pthread_mutex_unlock(&pipe->backbuf_mutex);
+  }
+
   // scale node (is slow):
   // scale *= 2;
   // FIXME: this seems to be a bug in gegl. need to manually adjust updated roi here.
@@ -188,11 +207,12 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_
   gegl_processor_destroy (processor);
 
   // gegl scale node turned out to be even slower :(
-  gegl_node_blit (pipe->output, scale, &roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
+  gegl_node_blit (pipe->output, scale, &roi, babl_format("RGBA u8"), pipe->backbuf, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
   // gegl_node_blit (pipe->output, 1.0, roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
 
   // TODO: update histograms here with this data?
   printf("pixelpipe process end\n");
+  pipe->processing = 0;
   return 0;
 }
 

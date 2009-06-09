@@ -1,4 +1,3 @@
-- put backbuf in pixelpipe, not develop_t
 - port linear/gamma => hb
 - port tonecurve => hb
 - pixelpipe_hb.c: process_rec: module->process

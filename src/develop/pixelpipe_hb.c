@@ -11,6 +11,10 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
   pipe->iheight = 0;
   pipe->nodes = NULL;
   dt_dev_pixelpipe_cache_init(&(pipe.cache));
+  pipe->backbuf = NULL;
+  pipe->backbuf_size = 0;
+  pipe->processing = 0;
+  pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
 }
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
@@ -23,6 +27,10 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 {
+  free(pipe->backbuf);
+  pipe->backbuf = NULL;
+  pipe->backbuf_size = 0;
+  pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   pipe->nodes = NULL;
   dt_dev_pixelpipe_cache_cleanup(&(pipe.cache));
@@ -184,20 +192,30 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   }
 }
 
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, uint8_t *output, int x, int y, int width, int height, float scale)
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
+  pipe->processing = 1;
   printf("pixelpipe homebrew process start\n");
+
+  // have backbuf in right size:
+  if(pipe->backbuf_size < width*height*4*sizeof(uint8_t))
+  {
+    pthread_mutex_lock(&pipe->backbuf_mutex);
+    pipe->backbuf_size = width*height*4*sizeof(uint8_t);
+    free(pipe->backbuf);
+    pipe->backbuf = (uint8_t *)dt_alloc_align(16, pipe->backbuf_size);
+    pthread_mutex_unlock(&pipe->backbuf_mutex);
+  }
 
   //  go through list of modules from the end:
   int pos = g_list_length(dev->iop);
   GList *modules = g_list_last(dev->iop);
   void *input = NULL;
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, &input, x, y, width, height, scale, modules, pos);
-  // FIXME! this could profit from some api change to develop_t!
-  memcpy(output, input, 4*sizeof(uint8_t)*width*height);
 
   // TODO: update histograms here with this data?
   printf("pixelpipe homebrew process end\n");
+  pipe->processing = 0;
   return 0;
 }
 
