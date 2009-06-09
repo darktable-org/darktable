@@ -46,10 +46,10 @@ typedef struct dt_dev_pixelpipe_t
   GList *nodes;
   // event flag
   dt_dev_pixelpipe_change_t changed;
-  // backbuffer
+  // backbuffer (output)
   uint8_t *backbuf;
-  pthread_mutex_t backbuf_mutex;
   int backbuf_size;
+  pthread_mutex_t backbuf_mutex;
   // working?
   int processing;
 }
