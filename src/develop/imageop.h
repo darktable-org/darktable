@@ -89,14 +89,11 @@ int dt_iop_load_module(dt_iop_module_t *module, struct dt_develop_t *dev, const 
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_unload_module(dt_iop_module_t *module);
 
-/** synchronized access to parameters. */
-// void dt_iop_get_params(dt_iop_module_t *module, void *params);
-// void dt_iop_set_params(dt_iop_module_t *module, void *params);
+/** for homebrew pixel pipe: zoom pixel array. */
+void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
+                                float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
 
-// TODO: replace all this shit with gegl nodes:
-//  - histogram counting in small preview buf before
-//  - tonecurve/gamma node
-//  - ..and right at the end.
+
 #ifndef DT_USE_GEGL
 typedef struct dt_iop_t
 {

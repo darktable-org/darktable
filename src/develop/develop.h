@@ -9,7 +9,6 @@
 #include <cairo.h>
 #include <pthread.h>
 #ifdef DT_USE_GEGL
-#include <gegl.h>
 #include <glib.h>
 
 extern uint8_t dt_dev_default_gamma[0x10000];

@@ -187,11 +187,15 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
   dev->capwidth_preview  = MIN(dev->width,  dev->mipf_width *scale);
   dev->capheight_preview = MIN(dev->height, dev->mipf_height*scale);
-  GeglRectangle roi = (GeglRectangle){scale*dev->mipf_width*(.5+zoom_x)-dev->capwidth_preview/2, scale*dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/2, dev->capwidth_preview, dev->capheight_preview};
-  roi.x      = MAX(0, roi.x);
-  roi.y      = MAX(0, roi.y);
-  roi.width  = MIN(dev->width, roi.width);
-  roi.height = MIN(dev->height, roi.height);
+  int x, y, width, height;
+  x = scale*dev->mipf_width*(.5+zoom_x)-dev->capwidth_preview/2;
+  y = scale*dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/2;
+  width = dev->capwidth_preview;
+  height = dev->capheight_preview;
+  x      = MAX(0, x);
+  y      = MAX(0, y);
+  width  = MIN(dev->width,  width);
+  height = MIN(dev->height, height);
   // printf("drawing %d %d %d %d (zoom: %f %f)\n", roi.x, roi.y, roi.width, roi.height, zoom_x, zoom_y);
   if(dev->backbuf_preview_size != dev->width*dev->height*4*sizeof(uint8_t))
   {
@@ -207,7 +211,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
 restart:
   if(dev->gui_leaving) return;
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, &roi, scale)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, dev->backbuf_preview, x, y, width, height, scale)) goto restart;
 
   dev->preview_dirty = 0;
   dev->preview_processing = 0;
@@ -293,10 +297,10 @@ gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer use
   return TRUE;
 }
 
+// TODO: get from pixelpipe
 void dt_dev_set_histogram_pre(dt_develop_t *dev)
 {
 #if 0
-  // TODO: replace by gegl histogram node
   if(!dev->image) return;
   dt_dev_image_t *img = dev->history + dev->history_top - 1;
   float *buf = dt_dev_get_cached_buf(dev, img, DT_ZOOM_FIT, 'r');
@@ -585,11 +589,10 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
   if(boxhh) *boxhh = boxh;
 }
 
-// TODO: switch to gegl:write-buffer and GeglBuffer to pixels!
+// TODO: use full pixelpipe 
 void dt_dev_export(dt_job_t *job)
 {
 #if 0
-  // TODO: use gegl output nodes and gegl_node_process!
   while(1)
   {
     // TODO: progress bar in ctl?

@@ -1,4 +1,21 @@
+- put backbuf in pixelpipe, not develop_t
+- port linear/gamma => hb
+- port tonecurve => hb
+- pixelpipe_hb.c: process_rec: module->process
+- tmp replacement for gegl in pixelpipe?
+  - affects all iop plugins (need separate prepare/process methods)
+  - parallel processing?
+  - dt_dev_pixelpipe_homebrew_t:
+    - fixed size cache, capped at largest mipf size, 3(2?) zoom levels
+    - two modes: full buf for preview (image->mipf)
+      full view for image->pixels
+    - hash made up of data in history item (params, op, instance, histpos)
+      and, for full view: zoom,zoom_x,zoom_y
+    - expose:
+      position full mipf in cairo
+      pixels are same (just possibly cropped to max)
 GEGL_DEBUG_TIME:
+- compile switch: --enable-gegl
 - gegl:dt-gamma eats performance
 - gegl itself is very slow (=> tmp homebrew version?)
 - mipf still sometimes not loaded on dev->enter

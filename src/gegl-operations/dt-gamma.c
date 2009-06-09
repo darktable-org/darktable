@@ -94,7 +94,7 @@ process (GeglOperation        *op,
     out+= 3;
   }
 #else // table:
-  printf("gamma processing %d samples\n", n_pixels);
+  // printf("gamma processing %d samples\n", n_pixels);
   guint16 *in = in_buf;
   guint8 *out = out_buf;
   gint    i;

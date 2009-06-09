@@ -59,7 +59,7 @@ process (GeglOperation       *op,
   num_sampling_points = o->sampling_points;
   curve = o->curve;
 
-  printf("processing %d samples!\n", samples);
+  // printf("processing %d samples!\n", samples);
 
   if (num_sampling_points > 0)
   {
