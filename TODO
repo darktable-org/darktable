@@ -1,35 +1,31 @@
-- remove gegl dependency in tonecurve.c completely
-- replace reset_parms by commit_params(default_parms);:
-- port linear/gamma => hb
-- port tonecurve => hb
+0.2 essentials:
+- develop histograms (based on preview pipe switch: fill in pipe_process)!
+- develop export
+- develop leave write through mip not done
+- develop enter update gegl pipe not working?
+- add full pixels pipeline (better to replace input on preview pipe?)
+
+0.2 performance:
+- faster loading by reversing of thumbnail jpegs :)
 - parallel iop->processing?
 - dev_expose:
-      position full mipf in cairo
-      pixels are same (just possibly cropped to max)
-GEGL_DEBUG_TIME:
-- gegl:dt-gamma eats performance
-- gegl itself is very slow (=> tmp homebrew version?)
-- mipf still sometimes not loaded on dev->enter
+    position full mipf in cairo
+    pixels are same (just possibly cropped to max)
+
+0.2 cleanup:
+- remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
-- develop leave write through mip not done
-- develop enter update gegl pipe not working
 - imageio_open_raw may get image de-alloced when leaving develop mode!
   (dt exit: 1) ctl shutdown: kill threads 2) other 3) cleanup ctl)
-- gegl on full view is _slow_ !
-  - counter measure: additional pixelpipe with really lo-res image.
-  - fork after gegl:load-buffer
-- develop histograms!
-- develop export
 - quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
-- faster loading by reversing of thumbnail jpegs :)
 - save gui settings (expanded etc?) in operation stacks
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
-- add full pixels pipeline (better to replace input on preview pipe?)
 - code review, cleanup module categories (develop_view, iop?)
 - tmp robustness: clean up database on exit completely (or at least mip blobs?)
+
 - release 0.2 :)
 
 0.3 roadmap:
