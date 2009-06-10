@@ -23,7 +23,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   float *in = (float *)i;
   uint16_t *out = (uint16_t *)o;
-  // TODO: adjust curve!
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  for(int k=0;k<width*height;k++)
+  {
+    float col[3] = {in[0]+1.0, in[1]+1.0, in[2]+1.0};
+    for(int c=0;c<3;c++) col[c] = fminf(2.0-0.0001f, fmaxf(1.0, col[c]));
+    uint32_t *ini = (uint32_t *)&col;
+    for(int c=0;c<3;c++) out[c] = d->table[(ini[c] & 0x7fffff)>>7];
+    in += 3; out += 3;
+  }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

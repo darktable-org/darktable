@@ -152,14 +152,14 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     module = (dt_iop_module_t *)modules->data;
     // skip this module?
     if(!module->enabled)
-      return dt_dev_pixelpipe_process_rec(pipe, dev, &output, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1);
+      return dt_dev_pixelpipe_process_rec(pipe, dev, output, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1);
   }
 
   // if available, return data
   uint64_t hash = dt_dev_pixelpipe_cache_hash(scale, x, y, dev, pos);
-  if(dt_dev_pixelpipe_cache_available(&(pipe.cache), hash))
+  if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
-    (void) dt_dev_pixelpipe_cache_get(&(pipe.cache), hash, output);
+    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     return 0;
   }
 
@@ -169,14 +169,16 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   // input -> output
   if(!modules)
   { // import input array with given scale and roi
+    printf("[process] loading source image buffer\n");
     // optimized branch (for mipf-preview):
     if(scale == 1.0 && x == 0 && y == 0 && pipe->iwidth == width && pipe->iheight == height) *output = pipe->input;
     else
     {
+      printf("[process] scale/pan\n");
       // reserve new cache line: output
-      (void) dt_dev_pixelpipe_cache_get(&(pipe.cache), hash, output);
+      (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
       dt_iop_clip_and_zoom(pipe->input, x/scale, y/scale, width/scale, height/scale, pipe->iwidth, pipe->iheight,
-                           *output, x, y, width, height, width, height);
+                           *output, 0, 0, width, height, width, height);
     }
   }
   else
@@ -185,11 +187,12 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output
-    (void) dt_dev_pixelpipe_cache_get(&(pipe.cache), hash, output);
+    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     // actual pixel processing done by module
+    printf("[process] op: %d - %s\n", pos, module->op);
     module->process(module, piece, input, *output, x, y, scale, width, height);
-    return 0;
   }
+  return 0;
 }
 
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
@@ -206,7 +209,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
   void *buf = NULL;
-  int ret = dt_dev_pixelpipe_process_rec(pipe, dev, &buf, x, y, width, height, scale, modules, pieces, pos);
+  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, x, y, width, height, scale, modules, pieces, pos)) return 1;
   pthread_mutex_lock(&pipe->backbuf_mutex);
   pipe->backbuf = buf;
   pthread_mutex_unlock(&pipe->backbuf_mutex);
