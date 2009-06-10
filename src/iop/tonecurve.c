@@ -17,13 +17,26 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+{
+  float *in = (float *)i;
+  uint16_t *out = (uint16_t *)o;
+  // TODO: adjust curve!
+}
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
+#ifdef HAVE_GEGL
   for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   gegl_node_set(piece->input, "curve", d->curve, NULL);
+#else
+  for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0;k<0x10000;k++)
+    d->table[k] = (uint16_t)(0xffff*gegl_curve_calc_value(d->curve, (1.0/0x10000)*k));
+#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -34,24 +47,22 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = (void *)d;
   d->curve = gegl_curve_new(0.0, 1.0);
   for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
+#ifdef HAVE_GEGL
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
-}
-
-void reset_params (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
-  dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
-  for(int k=0;k<6;k++) (void)gegl_curve_set_point(d->curve, k, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
-  gegl_node_set(piece->input, "curve", d->curve, NULL);
+#else
+  for(int k=0;k<0x10000;k++) d->table[k] = k; // identity
+#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
+#ifdef HAVE_GEGL
   // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   (void)gegl_node_remove_child(pipe->gegl, piece->input);
   // (void)gegl_node_remove_child(pipe->gegl, d->node);
   // (void)gegl_node_remove_child(pipe->gegl, piece->output);
+#endif
   free(piece->data);
 }
 

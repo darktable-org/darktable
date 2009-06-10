@@ -12,9 +12,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// how large would the average screen be (largest mip map size) ?
-#define DT_IMAGE_WINDOW_SIZE 1200
-
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
   const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->width), DT_IMAGE_WINDOW_SIZE/(float)(img->height));

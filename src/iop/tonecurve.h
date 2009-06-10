@@ -34,6 +34,7 @@ dt_iop_tonecurve_gui_data_t;
 typedef struct dt_iop_tonecurve_data_t
 {
   GeglCurve *curve;               // curve for gegl nodes and pixel processing
+  uint16_t table[0x10000];        // precomputed look-up table for tone curve
 }
 dt_iop_tonecurve_data_t;
 
@@ -49,10 +50,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 void gui_init     (struct dt_iop_module_t *self);
 void gui_cleanup  (struct dt_iop_module_t *self);
 
-// void get_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-// void get_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-// void get_preview_output_pad(struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
-// void get_preview_input_pad (struct dt_iop_module_t *self, GeglNode **node, const gchar **pad);
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height);
 
 gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);

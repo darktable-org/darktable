@@ -4,6 +4,9 @@
 #include <inttypes.h>
 #include <pthread.h>
 
+// how large would the average screen be (largest mip map size) ?
+#define DT_IMAGE_WINDOW_SIZE 1200
+
 typedef enum
 {
   DT_IMAGE_PORTRAIT = 1,

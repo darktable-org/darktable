@@ -3,42 +3,82 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include <gegl.h>
+#ifdef HAVE_GEGL
+  #include <gegl.h>
+#endif
 #include "iop/gamma.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+{
+  dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
+  uint16_t *in = (uint16_t *)i;
+  uint8_t *out = (uint8_t *)o;
+  for(int k=0;k<width*height;k++)
+  {
+    for(int c=0;c<3;c++) out[2-c] = d->table[in[c]];
+    out += 4; in += 3;
+  }
+}
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // pull in new params to gegl
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)p1;
+#ifdef HAVE_GEGL
+  // pull in new params to gegl
   gegl_node_set(piece->input, "linear_value", p->linear, "gamma_value", p->gamma, NULL);
   // gegl_node_set(piece->input, "value", p->gamma, NULL);
+#else
+  // build gamma table in pipeline piece from committed params:
+  dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
+  float a, b, c, g;
+  if(p->linear<1.0)
+  {
+    g = p->gamma*(1.0-p->linear)/(1.0-p->gamma*p->linear);
+    a = 1.0/(1.0+p->linear*(g-1));
+    b = p->linear*(g-1)*a;
+    c = powf(a*p->linear+b, g)/p->linear;
+  }
+  else
+  {
+    a = b = g = 0.0;
+    c = 1.0;
+  }
+  for(int k=0;k<0x10000;k++)
+  {
+    int32_t tmp;
+    if (k<0x10000*p->linear) tmp = MIN(c*k, 0xFFFF);
+    else tmp = MIN(powf(a*k/0x10000+b, g)*0x10000, 0xFFFF);
+    d->table[k] = tmp>>8;
+  }
+#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+#ifdef HAVE_GEGL
   // create part of the gegl pipeline
   piece->data = NULL;
   dt_iop_gamma_params_t *default_params = (dt_iop_gamma_params_t *)self->default_params;
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear_value", default_params->linear, "gamma_value", default_params->gamma, NULL);
   // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:gamma", "value", default_params->gamma, NULL);
-}
-
-void reset_params (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_gamma_params_t *default_params = (dt_iop_gamma_params_t *)self->default_params;
-  // gegl_node_set(piece->input, "value", default_params->gamma, NULL);
-  gegl_node_set(piece->input, "linear_value", default_params->linear, "gamma_value", default_params->gamma, NULL);
+#else
+  piece->data = malloc(sizeof(dt_iop_gamma_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+#ifdef HAVE_GEGL
   // clean up everything again.
   (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // not necessary, no data is alloc'ed
-  // free(piece->data);
+  // no free necessary, no data is alloc'ed
+#else
+  free(piece->data);
+#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)

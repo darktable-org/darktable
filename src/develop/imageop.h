@@ -70,12 +70,16 @@ typedef struct dt_iop_module_t
   /** this inits the piece of the pipe, allocing piece->data as necessary. */
   void (*init_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
-  // FIXME: should this really be named ''reset_pipe'' ??
-  void (*reset_params)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
   void (*commit_params) (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
   void (*cleanup_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+
+  /** this is the temp homebrew callback to operations, as long as gegl is so slow.
+    * x,y, and scale are just given for orientation in the framebuffer. i and o are
+    * scaled to the same size width*height and contain a max of 3 floats. other color
+    * formats may be filled by this callback, if the pipeline can handle it. */
+  void (*process) (struct dt_iop_module_t *self, void *i, void *o, int x, int y, float scale, int width, int height);
 
 #ifndef DT_USE_GEGL
   void (*execute) (float *dst, const float *src, const int32_t wd, const int32_t ht, const int32_t bufwd, const int32_t bufht,

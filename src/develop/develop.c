@@ -202,6 +202,9 @@ restart:
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   // TODO: almost same as preview
+  // TODO: assert these (only necessary for full pixels pipeline and !HAVE_GEGL)
+  // assert(width  <= DT_IMAGE_WINDOW_SIZE);
+  // assert(height <= DT_IMAGE_WINDOW_SIZE);
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)

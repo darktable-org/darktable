@@ -2,7 +2,7 @@
 #include <assert.h>
 
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
-#include "develp/pixelpipe_cache.c"
+#include "develop/pixelpipe_cache.c"
 
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
@@ -10,8 +10,9 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
   pipe->iwidth = 0;
   pipe->iheight = 0;
   pipe->nodes = NULL;
-  pipe->backbuf_size = 3*sizeof(float)*
-  dt_dev_pixelpipe_cache_init(&(pipe.cache), 5, );
+  // TODO: this is definitely a waste of memory (165 MB for the screen cache for both pipes) :)
+  pipe->backbuf_size = 3*sizeof(float)*DT_IMAGE_WINDOW_SIZE*DT_IMAGE_WINDOW_SIZE;
+  dt_dev_pixelpipe_cache_init(&(pipe->cache), 5, pipe->backbuf_size);
   pipe->backbuf = NULL;
   pipe->processing = 0;
   pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
@@ -31,7 +32,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   pipe->nodes = NULL;
-  dt_dev_pixelpipe_cache_cleanup(&(pipe.cache));
+  dt_dev_pixelpipe_cache_cleanup(&(pipe->cache));
 }
 
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
@@ -75,7 +76,6 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   dt_dev_pixelpipe_iop_t *piece = NULL;
   while(nodes)
   {
-    // TODO: have to store params in pixelpipe_iop as hash to avoid update?
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     if(piece->module == hist->module) hist->module->commit_params(hist->module, hist->params, pipe, piece);
     nodes = g_list_next(nodes);
@@ -89,7 +89,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   while(nodes)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-    piece->module->reset_params(piece->module, pipe, piece);
+    piece->module->commit_params(piece->module, piece->module->default_params, pipe, piece);
     nodes = g_list_next(nodes);
   }
   // go through all history items and adjust params
@@ -143,7 +143,7 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 
 // recursive helper for process:
 int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, int x, int y,
-    int width, int height, float scale, GList *modules, int pos)
+    int width, int height, float scale, GList *modules, GList *pieces, int pos)
 {
   void *input = NULL;
   dt_iop_module_t *module = NULL;
@@ -152,7 +152,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     module = (dt_iop_module_t *)modules->data;
     // skip this module?
     if(!module->enabled)
-      return dt_dev_pixelpipe_process_rec(pipe, dev, &output, x, y, width, height, scale, g_list_previous(modules), pos-1);
+      return dt_dev_pixelpipe_process_rec(pipe, dev, &output, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1);
   }
 
   // if available, return data
@@ -182,10 +182,12 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   else
   {
     // recurse and obtain output array in &input
-    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, x, y, width, height, scale, g_list_previous(modules), pos-1)) return 1;
+    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output
     (void) dt_dev_pixelpipe_cache_get(&(pipe.cache), hash, output);
-    // TODO: pixel processing using module->process!
+    // actual pixel processing done by module
+    module->process(module, piece, input, *output, x, y, scale, width, height);
     return 0;
   }
 }
@@ -195,11 +197,16 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->processing = 1;
   printf("pixelpipe homebrew process start\n");
 
+  // TODO: assert these in develop (only necessary for full pixels pipeline)
+  assert(width  <= DT_IMAGE_WINDOW_SIZE);
+  assert(height <= DT_IMAGE_WINDOW_SIZE);
+
   //  go through list of modules from the end:
   int pos = g_list_length(dev->iop);
   GList *modules = g_list_last(dev->iop);
+  GList *pieces = g_list_last(pipe->nodes);
   void *buf = NULL;
-  int ret = dt_dev_pixelpipe_process_rec(pipe, dev, &buf, x, y, width, height, scale, modules, pos);
+  int ret = dt_dev_pixelpipe_process_rec(pipe, dev, &buf, x, y, width, height, scale, modules, pieces, pos);
   pthread_mutex_lock(&pipe->backbuf_mutex);
   pipe->backbuf = buf;
   pthread_mutex_unlock(&pipe->backbuf_mutex);

@@ -18,8 +18,8 @@ other used packages (supplied in the source tree):
 
 then, type:
 
- $ autoreconf --install
- $ ./configure [--enable-debug] --prefix=$(pwd)/install
+ $ autoreconf --install --force
+ $ ./configure [--enable-debug] [--enable-gegl] --prefix=$(pwd)/install
  $ make install
  $ ./install/bin/darktable
 

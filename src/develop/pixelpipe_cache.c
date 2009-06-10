@@ -17,13 +17,13 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 {
-  for(int k=0;k<entries;k++) free(cache->data[k]);
+  for(int k=0;k<cache->entries;k++) free(cache->data[k]);
   free(cache->data);
   free(cache->hash);
   free(cache->used);
 }
 
-uint64_t dt_dev_pixelpipe_cache_hash(float scale, int x, int y, dt_develop_t *dev, int module);
+uint64_t dt_dev_pixelpipe_cache_hash(float scale, int x, int y, dt_develop_t *dev, int module)
 {
   // bernstein hash (djb2)
   uint64_t hash = 5381;
@@ -36,8 +36,8 @@ uint64_t dt_dev_pixelpipe_cache_hash(float scale, int x, int y, dt_develop_t *de
     {
       uint64_t c;
       const char *str = module->op;
-      while (c = *str++) hash = ((hash << 5) + hash) ^ c; /* hash * 33 + c */
-      str = module->params;
+      while ((c = *str++)) hash = ((hash << 5) + hash) ^ c; /* hash * 33 + c */
+      str = (const char *)module->params;
       for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
     }
     modules = g_list_next(modules);

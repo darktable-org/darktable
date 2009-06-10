@@ -22,7 +22,7 @@ dt_iop_gamma_gui_data_t;
 
 typedef struct dt_iop_gamma_data_t
 {
-  // not needed.
+  uint8_t table[0x10000];
 }
 dt_iop_gamma_data_t;
 
@@ -37,6 +37,8 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void gui_init     (struct dt_iop_module_t *self);
 void gui_cleanup  (struct dt_iop_module_t *self);
+
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height);
 
 void gamma_callback  (GtkRange *range, gpointer user_data);
 void linear_callback (GtkRange *range, gpointer user_data);

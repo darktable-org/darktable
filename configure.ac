@@ -13,6 +13,15 @@ if test "$enable_debug" = "yes"; then
 else
    AC_MSG_RESULT([no])
 fi
+AC_MSG_CHECKING([whether to use gegl for rendering])
+AC_ARG_ENABLE(gegl,
+	      AC_HELP_STRING([--enable-gegl], [use gegl for rendering]))
+if test "$enable_gegl" = "yes"; then
+   AC_DEFINE(HAVE_GEGL, 1, [whether to use gegl for rendering])
+   AC_MSG_RESULT([yes])
+else
+   AC_MSG_RESULT([no])
+fi
 dnl ***  disabled because of strange libgomp.so crashes: :(
 dnl AC_OPENMP
 AC_PROG_LIBTOOL
