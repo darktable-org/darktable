@@ -66,14 +66,13 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   }
   
   dt_develop_t *dev = darktable.develop;
-  uint32_t *hist, hist_max;
-  hist = dev->histogram;
-  hist_max = dev->histogram_max;
+  float *hist = dev->histogram;
+  float hist_max = dev->histogram_max;
   if(hist_max > 0)
   {
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
     cairo_translate(cr, 0, height);
-    cairo_scale(cr, 256.0/width, -height/(float)hist_max);
+    cairo_scale(cr, width/256.0, -(height-10)/hist_max);
     cairo_set_line_width(cr, 1.);
     cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
     dt_gui_histogram_draw_8(cr, hist, 0);
@@ -110,7 +109,7 @@ gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *even
   return TRUE;
 }
 
-void dt_gui_histogram_draw_8(cairo_t *cr, uint32_t *hist, int32_t channel)
+void dt_gui_histogram_draw_8(cairo_t *cr, float *hist, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k=0;k<256;k++)

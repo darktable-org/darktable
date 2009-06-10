@@ -53,8 +53,8 @@ typedef struct dt_develop_t
   GList *iop;
 
   // histogram for display.
-  uint32_t *histogram, *histogram_pre;
-  uint32_t histogram_max, histogram_pre_max;
+  float *histogram, *histogram_pre;
+  float histogram_max, histogram_pre_max;
   uint8_t gamma[0x100];
 }
 dt_develop_t;

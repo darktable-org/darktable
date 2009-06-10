@@ -1,5 +1,7 @@
 #include "develop/pixelpipe.h"
 #include <assert.h>
+#include <string.h>
+#include <strings.h>
 
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
@@ -56,7 +58,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     if(module->enabled)
     {
-      printf("connecting %s\n", module->op);
+      // printf("connecting %s\n", module->op);
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
       piece->module = module;
       piece->data = NULL;
@@ -169,12 +171,12 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   // input -> output
   if(!modules)
   { // import input array with given scale and roi
-    printf("[process] loading source image buffer\n");
+    // printf("[process] loading source image buffer\n");
     // optimized branch (for mipf-preview):
     if(scale == 1.0 && x == 0 && y == 0 && pipe->iwidth == width && pipe->iheight == height) *output = pipe->input;
     else
     {
-      printf("[process] scale/pan\n");
+      // printf("[process] scale/pan\n");
       // reserve new cache line: output
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
       dt_iop_clip_and_zoom(pipe->input, x/scale, y/scale, width/scale, height/scale, pipe->iwidth, pipe->iheight,
@@ -188,9 +190,54 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output
     (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+    
+    // tonecurve histogram:
+    if(pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
+    {
+      float *pixel = (float *)input;
+      dev->histogram_pre_max = 0;
+      bzero(dev->histogram_pre, sizeof(float)*4*0x100);
+      for(int j=0;j<height;j+=3) for(int i=0;i<width;i+=3)
+      {
+        uint8_t rgb[3];
+        for(int k=0;k<3;k++)
+          rgb[k] = CLAMP(0xff*pixel[3*j*width+3*i+k], 0, 0xff);
+
+        for(int k=0;k<3;k++)
+          dev->histogram_pre[4*rgb[k]+k] ++;
+        uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+        dev->histogram_pre[4*lum+3] ++;
+      }
+      // don't count <= 0 pixels
+      for(int k=0;k<4*256;k++) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
+      for(int k=19;k<4*256;k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
+    }
+
     // actual pixel processing done by module
-    printf("[process] op: %d - %s\n", pos, module->op);
+    // printf("[process] op: %d - %s\n", pos, module->op);
     module->process(module, piece, input, *output, x, y, scale, width, height);
+
+    // final histogram:
+    if(pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
+    {
+      uint8_t *pixel = (uint8_t *)*output;
+      dev->histogram_max = 0;
+      bzero(dev->histogram, sizeof(float)*4*0x100);
+      for(int j=0;j<height;j+=4) for(int i=0;i<width;i+=4)
+      {
+        uint8_t rgb[3];
+        for(int k=0;k<3;k++)
+          rgb[k] = pixel[4*j*width+4*i+2-k];
+
+        for(int k=0;k<3;k++)
+          dev->histogram[4*rgb[k]+k] ++;
+        uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+        dev->histogram[4*lum+3] ++;
+      }
+      for(int k=0;k<4*256;k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
+      // don't count <= 0 pixels
+      for(int k=19;k<4*256;k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
+    }
   }
   return 0;
 }
@@ -198,7 +245,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
   pipe->processing = 1;
-  printf("pixelpipe homebrew process start\n");
+  // printf("pixelpipe homebrew process start\n");
 
   // TODO: assert these in develop (only necessary for full pixels pipeline)
   assert(width  <= DT_IMAGE_WINDOW_SIZE);
@@ -214,8 +261,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->backbuf = buf;
   pthread_mutex_unlock(&pipe->backbuf_mutex);
 
-  // TODO: update histograms here with this data?
-  printf("pixelpipe homebrew process end\n");
+  // printf("pixelpipe homebrew process end\n");
   pipe->processing = 0;
   return 0;
 }

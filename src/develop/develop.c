@@ -66,11 +66,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram = dev->histogram_pre = NULL;
   if(dev->gui_attached)
   {
-    dev->histogram = (uint32_t *)malloc(sizeof(int32_t)*256*4);
-    bzero(dev->histogram, sizeof(int32_t)*256*4);
+    dev->histogram = (float *)malloc(sizeof(float)*4*256);
+    dev->histogram_pre = (float *)malloc(sizeof(float)*4*256);
+    bzero(dev->histogram, sizeof(float)*256*4);
+    bzero(dev->histogram_pre, sizeof(float)*256*4);
     dev->histogram_max = -1;
-    dev->histogram_pre = (uint32_t *)malloc(sizeof(int32_t)*256*4);
-    bzero(dev->histogram_pre, sizeof(int32_t)*256*4);
     dev->histogram_pre_max = -1;
 
     float lin, gam;
@@ -341,7 +341,7 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
     rc = sqlite3_bind_int (stmt, 2, num);
     rc = sqlite3_step (stmt);
   }
-  printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
+  // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
   rc = sqlite3_finalize (stmt);
   rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   rc = sqlite3_bind_text(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
@@ -368,7 +368,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
     {
       GList *next = g_list_next(history);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-      printf("removing obsoleted history item: %s\n", hist->module->op);
+      // printf("removing obsoleted history item: %s\n", hist->module->op);
       free(hist->params);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
@@ -410,8 +410,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
     history = g_list_nth(dev->history, dev->history_end-1);
     if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance)
     { // new operation, push new item
-      printf("adding new history item %d - %s\n", dev->history_end, module->op);
-      if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1, ((dt_dev_history_item_t *)history->data)->module->op);
+      // printf("adding new history item %d - %s\n", dev->history_end, module->op);
+      // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1, ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
       if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
@@ -424,7 +424,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
     }
     else
     { // same operation, change params
-      printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
+      // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
       dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_TOP_CHANGED;
@@ -457,7 +457,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
-  printf("dev popping all history items >= %d\n", cnt);
+  // printf("dev popping all history items >= %d\n", cnt);
   pthread_mutex_lock(&dev->history_mutex);
   darktable.gui->reset = 1;
   dev->history_end = cnt;
@@ -534,7 +534,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     hist->params = malloc(hist->module->params_size);
     memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));
-    printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
+    // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
     dev->history = g_list_append(dev->history, hist);
     dev->history_end ++;
 
