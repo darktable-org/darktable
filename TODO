@@ -1,8 +1,6 @@
 0.2 essentials:
 - develop export
 - develop leave write through mip not done
-- develop enter update gegl pipe not working?
-- add full pixels pipeline (better to replace input on preview pipe?)
 
 0.2 performance:
 - faster loading by reversing of thumbnail jpegs :)
@@ -12,6 +10,7 @@
     pixels are same (just possibly cropped to max)
 
 0.2 cleanup:
+- mipf_real in cairo expose
 - remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
 - imageio_open_raw may get image de-alloced when leaving develop mode!

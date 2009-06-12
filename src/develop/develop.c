@@ -177,23 +177,18 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
   dev->capwidth_preview  = MIN(dev->width,  dev->mipf_width *scale);
   dev->capheight_preview = MIN(dev->height, dev->mipf_height*scale);
-  int x, y, width, height;
-  x = scale*dev->mipf_width*(.5+zoom_x)-dev->capwidth_preview/2;
+  int x, y;
+  x = scale*dev->mipf_width *(.5+zoom_x)-dev->capwidth_preview/2;
   y = scale*dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/2;
-  width = dev->capwidth_preview;
-  height = dev->capheight_preview;
   x      = MAX(0, x);
   y      = MAX(0, y);
-  width  = MIN(dev->width,  width);
-  height = MIN(dev->height, height);
-  // printf("drawing %d %d %d %d (zoom: %f %f)\n", roi.x, roi.y, roi.width, roi.height, zoom_x, zoom_y);
  
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
 restart:
   if(dev->gui_leaving) return;
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, x, y, width, height, scale)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, x, y, dev->capwidth_preview, dev->capheight_preview, scale)) goto restart;
 
   dev->preview_dirty = 0;
   dt_control_queue_draw();
@@ -201,10 +196,34 @@ restart:
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
-  // TODO: almost same as preview
-  // TODO: assert these (only necessary for full pixels pipeline and !HAVE_GEGL)
-  // assert(width  <= DT_IMAGE_WINDOW_SIZE);
-  // assert(height <= DT_IMAGE_WINDOW_SIZE);
+  dt_dev_zoom_t zoom;
+  float zoom_x, zoom_y;
+  int closeup;
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+
+  float scale = (closeup?2:1);//1:1;
+  // roi after scale has been applied:
+  if     (zoom == DT_ZOOM_FIT)  scale = fminf(dev->width/(float)dev->image->width, dev->height/(float)dev->image->height);
+  else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->image->width, dev->height/(float)dev->image->height);
+  dev->capwidth  = MIN(MIN(dev->width,  dev->image->width *scale), DT_IMAGE_WINDOW_SIZE);
+  dev->capheight = MIN(MIN(dev->height, dev->image->height*scale), DT_IMAGE_WINDOW_SIZE);
+  int x, y;
+  x = MAX(0, scale*dev->image->width *(.5+zoom_x)-dev->capwidth/2);
+  y = MAX(0, scale*dev->image->height*(.5+zoom_y)-dev->capheight/2);
+ 
+  printf("process: %d %d -> %d %d scale %f\n", x, y, dev->capwidth, dev->capheight, scale);
+  // adjust pipeline according to changed flag set by {add,pop}_history_item.
+  // this locks dev->history_mutex.
+restart:
+  if(dev->gui_leaving) return;
+  dt_dev_pixelpipe_change(dev->pipe, dev);
+  if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale)) goto restart;
+
+  dev->image_dirty = 0;
+  dt_control_queue_draw();
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
@@ -214,8 +233,11 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 restart:
   dev->image_loading = 1;
   dev->image->shrink = 0;
-  int err = dt_image_load(img, DT_IMAGE_FULL);
-  if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
+  if(dt_image_get(dev->image, DT_IMAGE_FULL, 'r') != DT_IMAGE_FULL) // test and lock
+  {
+    int err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
+    if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
+  }
 
   // obsoleted by another job?
   if(dev->image != img)
@@ -224,16 +246,19 @@ restart:
     img = dev->image;
     goto restart;
   }
+  // init pixel pipeline for preview.
+  dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height);
+  dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dev->image_loading = 0;
-  // trigger processing pipeline:
-  // TODO: init dev->pipe with pixels!!
+  dev->image_dirty = 1;
+
   dt_dev_process_image(dev);
 }
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   dev->image = image;
-  dev->preview_loading = 1;
+  dev->image_loading = dev->preview_loading = 1;
   if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
   else dev->mipf = NULL;
   dev->image_dirty = dev->preview_dirty = 1;
@@ -278,50 +303,6 @@ gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer use
     dt_dev_invalidate(dev);
   }
   return TRUE;
-}
-
-// TODO: get from pixelpipe
-void dt_dev_set_histogram_pre(dt_develop_t *dev)
-{
-#if 0
-  if(!dev->image) return;
-  dt_dev_image_t *img = dev->history + dev->history_top - 1;
-  float *buf = dt_dev_get_cached_buf(dev, img, DT_ZOOM_FIT, 'r');
-  if(buf)
-  {
-    const float sx = dev->image->width *fminf(dev->cache_width/(float)dev->image->width, dev->cache_height/(float)dev->image->height);
-    const float sy = dev->image->height*fminf(dev->cache_width/(float)dev->image->width, dev->cache_height/(float)dev->image->height);
-    dev->histogram_pre_max = dt_iop_create_histogram_f(buf, sx, sy, dev->cache_width, dev->histogram_pre);
-    dt_dev_release_cached_buf(dev, img, DT_ZOOM_FIT);
-  }
-  else if(dev->small_raw_hash == img->num)
-  {
-    dev->histogram_pre_max = dt_iop_create_histogram_f(dev->small_raw_cached, dev->small_raw_width, dev->small_raw_height, dev->small_raw_width, dev->histogram_pre);
-    dt_dev_update_cache(dev, img, DT_ZOOM_FIT);
-  }
-#endif
-}
-
-void dt_dev_set_histogram(dt_develop_t *dev)
-{
-#if 0
-  // TODO: count bins in pixmap
-  if(!dev->image) return;
-  dt_dev_image_t *img = dev->history + dev->history_top - 1;
-  float *buf = dt_dev_get_cached_buf(dev, img, DT_ZOOM_FIT, 'r');
-  if(buf)
-  {
-    const float sx = dev->image->width *fminf(dev->cache_width/(float)dev->image->width, dev->cache_height/(float)dev->image->height);
-    const float sy = dev->image->height*fminf(dev->cache_width/(float)dev->image->width, dev->cache_height/(float)dev->image->height);
-    dev->histogram_max = dt_iop_create_histogram_final_f(buf, sx, sy, dev->cache_width, dev->histogram, dev->gamma, dev->tonecurve);
-    dt_dev_release_cached_buf(dev, img, DT_ZOOM_FIT);
-  }
-  else if(dev->small_raw_hash == img->num)
-  {
-    dev->histogram_max = dt_iop_create_histogram_final_f(dev->small_raw_cached, dev->small_raw_width, dev->small_raw_height, dev->small_raw_width, dev->histogram, dev->gamma, dev->tonecurve);
-    dt_dev_update_cache(dev, img, DT_ZOOM_FIT);
-  }
-#endif
 }
 
 // helper used to synch a single history item with db
@@ -451,8 +432,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate(dev);
   dt_control_queue_draw();
-
-  // TODO: update histogram (launch job)?
 }
 
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
@@ -534,7 +513,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     hist->params = malloc(hist->module->params_size);
     memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));
-    // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
+    printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
     dev->history = g_list_append(dev->history, hist);
     dev->history_end ++;
 

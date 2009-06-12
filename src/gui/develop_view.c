@@ -132,7 +132,6 @@ void dt_dev_enter()
   DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
 
-#ifdef DT_USE_GEGL
   darktable.develop->gui_leaving = 0;
   dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
   // get top level vbox containing all expanders, iop_vbox:
@@ -145,7 +144,6 @@ void dt_dev_enter()
     gtk_expander_set_expanded(expander, TRUE);
     gtk_expander_set_spacing(expander, 10);
     gtk_box_pack_end(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
-    // module->widget = GTK_WIDGET(expander);
     module->gui_init(module);
     // add the widget created by gui_init to the expander.
     gtk_container_add(GTK_CONTAINER(expander), module->widget);
@@ -156,10 +154,6 @@ void dt_dev_enter()
   // FIXME: this assumes static pipeline as well
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
-#else
-  dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
-  dt_dev_configure(darktable.develop, darktable.control->width - 2*darktable.control->tabborder, darktable.control->height - 2*darktable.control->tabborder);
-#endif
 }
 
 void dt_dev_remove_child(GtkWidget *widget, gpointer data)
@@ -171,7 +165,32 @@ void dt_dev_leave()
 {
   // commit image ops to db
   dt_dev_write_history(darktable.develop);
-#ifdef DT_USE_GEGL
+
+  // commit updated mipmaps to db
+  if(darktable.develop->mipf)
+  {
+    int wd, ht;
+    dt_image_get_mip_size(darktable.develop->image, DT_IMAGE_MIPF, &wd, &ht);
+    dt_dev_process_preview_job(darktable.develop);
+    if(dt_image_alloc(darktable.develop->image, DT_IMAGE_MIP4))
+    {
+      fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
+      return;
+    }
+#if 0 // FIXME: this will not work until preview pipe is operating on full image:
+    dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
+    pthread_mutex_lock(&(darktable.develop->preview_pipe->backbuf_mutex));
+    memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->preview_pipe->backbuf, sizeof(uint8_t)*4*wd*ht);
+    pthread_mutex_unlock(&(darktable.develop->preview_pipe->backbuf_mutex));
+    if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
+      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
+    dt_image_update_mipmaps(darktable.develop->image);
+#endif
+    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
+    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
+    dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
+  }
+
   // clear gui.
   dt_develop_t *dev = darktable.develop;
   dev->gui_leaving = 1;
@@ -194,107 +213,59 @@ void dt_dev_leave()
   }
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);
   pthread_mutex_unlock(&dev->history_mutex);
-#endif
+  
   // release full buffer
   if(darktable.develop->image->pixels)
     dt_image_release(darktable.develop->image, DT_IMAGE_FULL, 'r');
 
   DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
-  // commit updated mipmaps to db
-#ifdef DT_USE_GEGL
-  if(darktable.develop->mipf)
-  {
-    int wd, ht;
-    dt_image_get_mip_size(darktable.develop->image, DT_IMAGE_MIPF, &wd, &ht);
-    dt_dev_process_preview_job(darktable.develop);
-    if(dt_image_alloc(darktable.develop->image, DT_IMAGE_MIP4))
-    {
-      fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
-      return;
-    }
-    // TODO: set up GEGL export/resize pipeline (on preview image?)
-#if 0
-    dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
-    memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->backbuf_preview, sizeof(uint8_t)*4*wd*ht);
-    if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
-      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
-    dt_image_update_mipmaps(darktable.develop->image);
-#endif
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
-  }
-#else
-  int wd = darktable.develop->small_raw_width, ht = darktable.develop->small_raw_height;
-  if(!dt_dev_small_cache_load(darktable.develop))
-  {
-    if(dt_image_alloc(darktable.develop->image, DT_IMAGE_MIP4)) return;
-    dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
-    memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->small_backbuf, sizeof(uint8_t)*4*wd*ht);
-    if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
-      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
-    dt_image_update_mipmaps(darktable.develop->image);
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
-  }
-#endif
   // release image struct with metadata as well.
   dt_image_cache_release(darktable.develop->image, 'r');
 }
 
 void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height)
 {
-#ifndef DT_USE_GEGL
-  // if(dev->cache_width != width || dev->cache_height != height) return;
- 
-  // dt_dev_configure(dev, width, height);
-  // draw top history item.
-  if(dev->history_top > 0)
-    dt_dev_image_expose(dev, dev->history + dev->history_top - 1, cr, width, height);
-#else
-  // if(dev->image_dirty) dt_dev_process_image(dev); // FIXME: each process => 4 buffer leaks?
+  if(dev->image_dirty)   dt_dev_process_image(dev);
   if(dev->preview_dirty) dt_dev_process_preview(dev);
-  else
+
+  pthread_mutex_t *mutex = NULL;
+  // TODO: adjust to real mipf width/height!
+  int wd, ht, stride;
+  cairo_surface_t *surface = NULL;
+  if(dev->image_dirty && !dev->preview_dirty)
   {
-    pthread_mutex_t *mutex = NULL;
-    // TODO: adjust to real mipf width/heiht?
-    int wd, ht, stride;
-    cairo_surface_t *surface = NULL;
-    if(/*dev->pipe->processing &&*/ !dev->preview_pipe->processing)
-    {
-      mutex = &dev->preview_pipe->backbuf_mutex;
-      pthread_mutex_lock(mutex);
-      wd = dev->capwidth_preview;
-      ht = dev->capheight_preview;
-      stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-      surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
-    }
-    // else if(!dev->image_processing)
-    //{
-    // wd = dev->capwidth_preview;
-    // ht = dev->height_preview;
-    // stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    //  surface = cairo_image_surface_create_for_data (dev->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
-    //}
-    if(surface)
-    {
-      cairo_set_source_rgb (cr, .2, .2, .2);
-      cairo_paint(cr);
-      cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
-      cairo_rectangle(cr, 0, 0, wd, ht);
-      cairo_set_source_surface (cr, surface, 0, 0);
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 1.0);
-      cairo_set_source_rgb (cr, .3, .3, .3);
-      cairo_stroke(cr);
-      cairo_surface_destroy (surface);
-      pthread_mutex_unlock(mutex);
-    }
+    mutex = &dev->preview_pipe->backbuf_mutex;
+    pthread_mutex_lock(mutex);
+    wd = dev->capwidth_preview;
+    ht = dev->capheight_preview;
+    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+  }
+  else if(!dev->image_dirty)
+  {
+    mutex = &dev->pipe->backbuf_mutex;
+    pthread_mutex_lock(mutex);
+    wd = dev->capwidth;
+    ht = dev->capheight;
+    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    surface = cairo_image_surface_create_for_data (dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+  }
+  if(surface)
+  {
+    cairo_set_source_rgb (cr, .2, .2, .2);
+    cairo_paint(cr);
+    cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
+    cairo_rectangle(cr, 0, 0, wd, ht);
+    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgb (cr, .3, .3, .3);
+    cairo_stroke(cr);
+    cairo_surface_destroy (surface);
+    pthread_mutex_unlock(mutex);
   }
   // TODO: execute module callback hook!
-#endif
 }
 

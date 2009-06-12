@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <strings.h>
+#include <math.h>
 
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
@@ -22,7 +23,6 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
 {
-  pipe->changed = DT_DEV_PIPE_UNCHANGED;
   pipe->iwidth = width;
   pipe->iheight = height;
   pipe->input = input;
@@ -58,7 +58,6 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     if(module->enabled)
     {
-      // printf("connecting %s\n", module->op);
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
       piece->module = module;
       piece->data = NULL;

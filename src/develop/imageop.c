@@ -53,6 +53,7 @@ void dt_iop_unload_module(dt_iop_module_t *module)
 void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
                                 float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
 {
+  /* FIXME: broken:
   // optimized 1:1 branch:
   if(iw == ow && ih == oh)
   {
@@ -71,7 +72,7 @@ void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, in
       idx = obw*j;
     }
     return;
-  }
+  }*/
   // general case
   const float scalex = iw/(float)ow;
   const float scaley = ih/(float)oh;
