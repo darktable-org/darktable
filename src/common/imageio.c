@@ -522,7 +522,7 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
-  uint16_t *buf = pipe.backbuf;
+  uint16_t *buf = (uint16_t *)pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");
@@ -558,7 +558,7 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
-  uint16_t *buf16 = pipe.backbuf;
+  uint16_t *buf16 = (uint16_t *)pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");

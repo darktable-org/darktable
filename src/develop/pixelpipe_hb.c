@@ -124,7 +124,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
   pthread_mutex_lock(&dev->history_mutex);
   switch (pipe->changed)
   {
-    case DT_DEV_PIPE_UNCHANGED:
+    case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
       break;
     case DT_DEV_PIPE_TOP_CHANGED:
       // only top history item changed.
@@ -178,7 +178,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   }
 
   // if history changed, abort processing?
-  if(pipe->changed != DT_DEV_PIPE_UNCHANGED || dev->gui_leaving) return 1;
+  if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
+  if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
 
   // input -> output
   if(!modules)

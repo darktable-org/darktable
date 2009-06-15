@@ -1,23 +1,18 @@
-0.2 essentials:
-- develop leave write through mip not done (due to scaling in preview_pipe)
-
 0.2 performance:
 - faster loading by reversing of thumbnail jpegs :)
 - parallel iop->processing (seems to be fast enough mono-core)?
-- dev_expose:
-    position full mipf in cairo
-    pixels are same (just possibly cropped to max)
 
 0.2 cleanup:
+- histogram redraw (tonecurve)
+- timeout for zoom/pan: first one frame preview then full?
 - progress bars for image folder import and image export
 - cleanup DT_USE_GEGL flag stuff
 - develop does not need gamma anymore
 - where to put ungamma table? 
-- mipf_real in cairo expose
 - remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
 - imageio_open_raw may get image de-alloced when leaving develop mode!
-  (dt exit: 1) ctl shutdown: kill threads 2) other 3) cleanup ctl)
+  (fix: add additional lock)
 - quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
 - save gui settings (expanded etc?) in operation stacks
@@ -55,14 +50,9 @@ bugs:
  - openmp crashes dt (in magick or elsewhere) :(
  - small images mip maps garbled.
  - check mipmap decisions (seem very lo-res)
- - ppm export crashing sometimes?
  - JPEG loading needs shrink + orientation (steal jhead source?)
- - dev switch resolution AFTER setting gui stuff.
-   control->width is updated in expose, and configure
-   is called in dev_enter. (just before) :(
  - image_load_job should take img id and get it from cache himself!
    (this is a serious problem if not all images fit into cache)
- - strange G_OBJECT cast errors when loading pfm/exr/pdf?
  - import folder file chooser sometimes not sized appropriately
 
 feature requests:

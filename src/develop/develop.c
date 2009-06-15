@@ -154,6 +154,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   { 
     // prefetch and lock
     if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF) return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
+    dev->mipf = dev->image->mipf;
     // drop reference again, we were just testing. dev holds one already.
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
     // init pixel pipeline for preview.
@@ -164,6 +165,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dev->preview_loading = 0;
   }
 
+  // TODO: always process the whole downsampled mipf buffer, to allow for fast scrolling and mip4 write-through.
   dt_dev_zoom_t zoom;
   float zoom_x, zoom_y;
   int closeup;
@@ -172,6 +174,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
+#if 0
   // FIXME: mipf precise width and actual mip width differ!
   float scale = (closeup?2:1)*dev->image->width/(float)dev->mipf_width;//1:1;
   // roi after scale has been applied:
@@ -184,13 +187,15 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   y = scale*dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/2;
   x      = MAX(0, x);
   y      = MAX(0, y);
+#endif
  
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
 restart:
   if(dev->gui_leaving) return;
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, x, y, dev->capwidth_preview, dev->capheight_preview, scale)) goto restart;
+  // if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, x, y, dev->capwidth_preview, dev->capheight_preview, scale)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->mipf_width, dev->mipf_height, 1.0)) goto restart;
 
   dev->preview_dirty = 0;
   dt_control_queue_draw();
@@ -222,15 +227,18 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
 #endif
 
-  printf("process: %d %d -> %d %d scale %f\n", x, y, dev->capwidth, dev->capheight, scale);
+  // printf("process: %d %d -> %d %d scale %f\n", x, y, dev->capwidth, dev->capheight, scale);
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
-  // this locks dev->history_mutex.
 restart:
   if(dev->gui_leaving) return;
+  // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale)) goto restart;
 
+  // maybe we got zoomed/panned in the meantime?
+  if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
   dev->image_dirty = 0;
+
   dt_control_queue_draw();
 }
 
@@ -311,6 +319,7 @@ gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer use
   {
     dev->width = event->width - 2*tb;
     dev->height = event->height - 2*tb;
+    dev->preview_pipe->changed = dev->pipe->changed = DT_DEV_PIPE_ZOOMED;
     dt_dev_invalidate(dev);
   }
   return TRUE;

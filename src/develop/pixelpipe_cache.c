@@ -26,10 +26,10 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 uint64_t dt_dev_pixelpipe_cache_hash(float scale, int x, int y, dt_develop_t *dev, int module)
 {
   // bernstein hash (djb2)
-  uint64_t hash = 5381;
+  uint64_t hash = 5381 + dev->image->id;
   // go through all modules up to module and compute a weird hash using the operation and params.
   GList *modules = dev->iop;
-  for(int k=0;k<module;k++)
+  for(int k=0;k<module&&modules;k++)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     if(module->enabled)
@@ -77,6 +77,7 @@ int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t h
   if(!*data)
   { // kill LRU entry
     *data = cache->data[max];
+    cache->hash[max] = hash;
     cache->used[max] = 0;
     return 1;
   }

@@ -177,7 +177,6 @@ void dt_dev_leave()
       fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
       return;
     }
-#if 0 // FIXME: this will not work until preview pipe is operating on full image:
     dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
     pthread_mutex_lock(&(darktable.develop->preview_pipe->backbuf_mutex));
     memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->preview_pipe->backbuf, sizeof(uint8_t)*4*wd*ht);
@@ -185,7 +184,7 @@ void dt_dev_leave()
     if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
       fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
     dt_image_update_mipmaps(darktable.develop->image);
-#endif
+
     dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
     dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
     dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
@@ -230,29 +229,78 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->preview_dirty) dt_dev_process_preview(dev);
 
   pthread_mutex_t *mutex = NULL;
-  // TODO: adjust to real mipf width/height!
   int wd, ht, stride;
   cairo_surface_t *surface = NULL;
+
   if(dev->image_dirty && !dev->preview_dirty)
-  {
+  { // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
-    wd = dev->capwidth_preview;
-    ht = dev->capheight_preview;
-    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    // wd = dev->capwidth_preview;
+    // ht = dev->capheight_preview;
+    // stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    // surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+
+    // TODO: replace by continuous zoom 
+    int32_t zoom, closeup;
+    float zoom_x, zoom_y;
+    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    float zoom_scale;
+    switch(zoom)
+    {
+      case DT_ZOOM_FIT:
+        zoom_scale = fminf(width/dev->mipf_exact_width, height/dev->mipf_exact_height);
+        break;
+      case DT_ZOOM_FILL:
+        zoom_scale = fmaxf(width/dev->mipf_exact_width, height/dev->mipf_exact_height);
+        break;
+      default: // 1:1 or higher
+        zoom_scale = dev->image->width/dev->mipf_exact_width;
+        if(closeup) zoom_scale *= 2.0;
+        break;
+    }
+    cairo_set_source_rgb (cr, .2, .2, .2);
+    cairo_paint(cr);
+    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, dev->mipf_width);
+    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, dev->mipf_width, dev->mipf_height, stride); 
+    cairo_translate(cr, width/2.0, height/2.0f);
+    // cairo_translate(cr, (dev->small_raw_width-fwd), (dev->small_raw_height-fht));
+    // cairo_scale(cr, zoom_scale*(dev->small_raw_width/fwd), zoom_scale*(dev->small_raw_height/fht));
+    cairo_scale(cr, zoom_scale, zoom_scale);
+    cairo_translate(cr, -.5f*dev->mipf_exact_width-zoom_x*dev->mipf_exact_width, -.5f*dev->mipf_exact_height-zoom_y*dev->mipf_exact_height);
+    // cairo_translate(cr, -1, -1); // compensate jumping draw below pointer
+    cairo_rectangle(cr, 0, 0, dev->mipf_exact_width, dev->mipf_exact_height);
+    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_fill(cr);
+    cairo_surface_destroy (surface);
+
+    /*
+    cairo_set_source_rgb (cr, .2, .2, .2);
+    cairo_paint(cr);
+    cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
+    cairo_rectangle(cr, 0, 0, wd, ht);
+    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgb (cr, .3, .3, .3);
+    cairo_stroke(cr);
+    cairo_surface_destroy (surface);
+    */
+    pthread_mutex_unlock(mutex);
   }
   else if(!dev->image_dirty)
-  {
+  { // draw image
     mutex = &dev->pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
     wd = dev->capwidth;
     ht = dev->capheight;
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
     surface = cairo_image_surface_create_for_data (dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
-  }
-  if(surface)
-  {
     cairo_set_source_rgb (cr, .2, .2, .2);
     cairo_paint(cr);
     cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));

@@ -62,6 +62,7 @@ void dt_library_toggle_selection(int iid)
 
 void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  static int last_offset = 0x7fffffff;
   float zoom, zoom_x, zoom_y;
   int32_t mouse_over_id, pan, track, center;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -98,6 +99,7 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
     {
       zoom_x = (int)oldx*wd;
       zoom_y = (int)oldy*ht;
+      last_offset = 0x7fffffff;
     }
     else
     {
@@ -132,6 +134,15 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM*offset_j;
   int seli = (int)((pointerx + zoom_x)/wd) - MAX(offset_i, 0);
   int selj = (int)((pointery + zoom_y)/ht) - offset_j;
+
+  // assure 1:1 is not switching images on resize/tab events:
+  if(last_offset != 0x7fffffff && zoom == 1)
+  {
+    offset = last_offset;
+    zoom_x = wd*(offset % DT_LIBRARY_MAX_ZOOM);
+    zoom_y = ht*(offset / DT_LIBRARY_MAX_ZOOM);
+  }
+  else last_offset = offset;
 
   sqlite3_stmt *stmt = NULL, *stmt2 = NULL;
   int rc, rc2, id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
