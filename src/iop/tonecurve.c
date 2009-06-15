@@ -253,7 +253,7 @@ gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
 
   // draw lum h istogram in background
   dt_develop_t *dev = darktable.develop;
-  uint32_t *hist, hist_max;
+  float *hist, hist_max;
   hist = dev->histogram_pre;
   hist_max = dev->histogram_pre_max;
   if(hist_max > 0)

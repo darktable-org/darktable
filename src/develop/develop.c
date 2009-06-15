@@ -58,14 +58,16 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->image_dirty = dev->preview_dirty = 
   dev->image_loading = dev->preview_loading = 0;
 
-  dev->pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
-  dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
-  dt_dev_pixelpipe_init(dev->pipe);
-  dt_dev_pixelpipe_init(dev->preview_pipe);
-
+  dev->pipe = dev->preview_pipe = NULL;
   dev->histogram = dev->histogram_pre = NULL;
+
   if(dev->gui_attached)
   {
+    dev->pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+    dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+    dt_dev_pixelpipe_init(dev->pipe);
+    dt_dev_pixelpipe_init(dev->preview_pipe);
+
     dev->histogram = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre = (float *)malloc(sizeof(float)*4*256);
     bzero(dev->histogram, sizeof(float)*256*4);
@@ -214,6 +216,12 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   x = MAX(0, scale*dev->image->width *(.5+zoom_x)-dev->capwidth/2);
   y = MAX(0, scale*dev->image->height*(.5+zoom_y)-dev->capheight/2);
  
+#ifndef HAVE_GEGL
+  // only necessary for full pixels pipeline
+  assert(dev->capwidth  <= DT_IMAGE_WINDOW_SIZE);
+  assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
+#endif
+
   printf("process: %d %d -> %d %d scale %f\n", x, y, dev->capwidth, dev->capheight, scale);
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
@@ -246,11 +254,14 @@ restart:
     img = dev->image;
     goto restart;
   }
-  // init pixel pipeline for preview.
-  dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height);
-  dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
-  dev->image_loading = 0;
-  dev->image_dirty = 1;
+  if(dev->gui_attached)
+  {
+    // init pixel pipeline for preview.
+    dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height);
+    dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
+    dev->image_loading = 0;
+    dev->image_dirty = 1;
+  }
 
   dt_dev_process_image(dev);
 }
@@ -551,10 +562,8 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
   if(boxhh) *boxhh = boxh;
 }
 
-// TODO: use full pixelpipe 
 void dt_dev_export(dt_job_t *job)
 {
-#if 0
   while(1)
   {
     // TODO: progress bar in ctl?
@@ -617,7 +626,6 @@ void dt_dev_export(dt_job_t *job)
     dt_image_cache_release(img, 'r');
     printf("[dev_export] exported to `%s'\n", filename);
   }
-#endif
 }
 
 

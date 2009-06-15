@@ -16,6 +16,7 @@ typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
   void *data;                      // to be used by the module to store stuff per pipe piece
+  int enabled;                     // used to disable parts of the pipe for export, independent on module itself.
 }
 dt_dev_pixelpipe_iop_t;
 
@@ -57,9 +58,13 @@ dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
 
-// inits the pixelpipe with plain passthrough input/output and empty input
+// inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
-// constructs a new input gegl_buffer from given RGB float array
+// inits the pixelpipe with settings optimized for full-image export (no history stack cache)
+void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+// inits the pixelpipe with given cacheline size and number of entries.
+void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
+// constructs a new input gegl_buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height);
 
 // destroys all allocated data.
@@ -78,6 +83,8 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 
 // process region of interest of pixels. returns 1 if pipe was altered during processing.
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width, int height, float scale);
+// convenience method that does not gamma-compress the image.
+int dt_dev_pixelpipe_process_16(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width, int height, float scale);
 
 
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc

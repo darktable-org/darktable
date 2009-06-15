@@ -507,39 +507,39 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 #endif
 }
 
-#ifndef DT_USE_GEGL
 // batch-processing enabled write method: history stack, raw image, custom copy of gamma/tonecurves
 int dt_imageio_export_f(dt_image_t *img, const char *filename)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, img);
-  // go through stack, exec stuff (like dt_dev_load_small_cache, only operate on full buf this time)
   const int wd = dev.image->width;
   const int ht = dev.image->height;
   dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
-  for(int k=1;k<dev.history_top;k++)
-  {
-    dt_dev_image_t *hist = dev.history + k;
-    // TODO: need to change iop_execute signature: full window info (param struct?)
-    dt_iop_execute(dev.image->pixels, dev.image->pixels, wd, ht, wd, ht, hist->operation, &(hist->op_params));
-  }
+
+  dt_dev_pixelpipe_t pipe;
+  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  uint16_t *buf = pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", wd, ht);
-    float tmp[3];
-    for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
+    for(int k=0;k<wd*ht;k++)
     {
-      tmp[k] = dev.tonecurve[(int)CLAMP(0xffff*dev.image->pixels[3*i+k], 0, 0xffff)]/(float)0x10000;
+      float tmp[3];
+      for(int i=0;i<3;i++) tmp[i] = buf[3*k+i]*(1.0/0x10000);
       (void)fwrite(tmp, sizeof(float)*3, 1, f);
     }
     fclose(f);
     status = 0;
   }
 
+  dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return status;
 }
@@ -549,35 +549,34 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, img);
-  // go through stack, exec stuff (like dt_dev_load_small_cache, only operate on full buf this time)
   const int wd = dev.image->width;
   const int ht = dev.image->height;
   dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
-  uint16_t *buf16 = (uint16_t *)malloc(sizeof(uint16_t)*3*wd*ht);
-  for(int k=1;k<dev.history_top;k++)
-  {
-    dt_dev_image_t *hist = dev.history + k;
-    // TODO: need to change iop_execute signature: full window info (param struct?)
-    dt_iop_execute(dev.image->pixels, dev.image->pixels, wd, ht, wd, ht, hist->operation, &(hist->op_params));
-  }
-  for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
-  {
-    buf16[3*i+k] = dev.tonecurve[(int)CLAMP(0xffff*dev.image->pixels[3*i+k], 0, 0xffff)];
-    buf16[3*i+k] = (0xff00 & (buf16[3*i+k]<<8))|(buf16[3*i+k]>>8);
-  }
+
+  dt_dev_pixelpipe_t pipe;
+  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  uint16_t *buf16 = pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
     (void)fprintf(f, "P6\n%d %d\n65535\n", wd, ht);
-    (void)fwrite(buf16, sizeof(uint16_t)*3, wd*ht, f);
+    for(int k=0;k<wd*ht;k++)
+    {
+      uint16_t tmp[3];
+      for(int i=0;i<3;i++) tmp[i] = (0xff00 & (buf16[3*k+i]<<8))|(buf16[3*k+i]>>8);
+      (void)fwrite(tmp, sizeof(uint16_t)*3, 1, f);
+    }
     fclose(f);
     status = 0;
   }
 
+  dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  free(buf16);
   return status;
 }
 
@@ -603,18 +602,17 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, img);
-  // go through stack, exec stuff (like dt_dev_load_small_cache, only operate on full buf this time)
   const int wd = dev.image->width;
   const int ht = dev.image->height;
   dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
-  uint8_t *buf8 = (uint8_t *)malloc(sizeof(uint8_t)*3*wd*ht);
-  for(int k=1;k<dev.history_top;k++)
-  {
-    dt_dev_image_t *hist = dev.history + k;
-    dt_iop_execute(dev.image->pixels, dev.image->pixels, wd, ht, wd, ht, hist->operation, &(hist->op_params));
-  }
-  for(int i=0;i<wd*ht;i++) for(int k=0;k<3;k++)
-    buf8[3*i+k] = dev.gamma[dev.tonecurve[(int)CLAMP(0xffff*dev.image->pixels[3*i+k], 0, 0xffff)]];
+
+  dt_dev_pixelpipe_t pipe;
+  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  uint8_t *buf8 = pipe.backbuf;
+  for(int k=0;k<wd*ht;k++) for(int i=0;i<3;i++) buf8[3*k+i] = buf8[4*k+2-i];
 
   // MagickCore write
   ImageInfo *image_info;
@@ -715,7 +713,8 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   image = DestroyImage(image);
   image_info = DestroyImageInfo(image_info);
   exception = DestroyExceptionInfo(exception);
-  free(buf8);
+
+  dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return 0;
 #else
@@ -723,7 +722,6 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   return 1;
 #endif
 }
-#endif
 
 // =================================================
 //   combined reading

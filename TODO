@@ -1,6 +1,5 @@
 0.2 essentials:
-- develop export
-- develop leave write through mip not done
+- develop leave write through mip not done (due to scaling in preview_pipe)
 
 0.2 performance:
 - faster loading by reversing of thumbnail jpegs :)
@@ -10,6 +9,10 @@
     pixels are same (just possibly cropped to max)
 
 0.2 cleanup:
+- progress bars for image folder import and image export
+- cleanup DT_USE_GEGL flag stuff
+- develop does not need gamma anymore
+- where to put ungamma table? 
 - mipf_real in cairo expose
 - remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
@@ -44,6 +47,7 @@
 - remove libraw in favour of native gegl loading
 - remove imagemagick in favour of native gegl writing
 - ubuntu package
+- database for linear/gamma parameters for each camera model
 
 bugs:
  - import while still importing crashes.
