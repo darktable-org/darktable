@@ -136,18 +136,18 @@ void dt_dev_enter()
   dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
   // get top level vbox containing all expanders, iop_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
-  GList *modules = darktable.develop->iop;
+  GList *modules = g_list_last(darktable.develop->iop);
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     GtkExpander *expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
     gtk_expander_set_expanded(expander, TRUE);
     gtk_expander_set_spacing(expander, 10);
-    gtk_box_pack_end(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
+    gtk_box_pack_start(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
     module->gui_init(module);
     // add the widget created by gui_init to the expander.
     gtk_container_add(GTK_CONTAINER(expander), module->widget);
-    modules = g_list_next(modules);
+    modules = g_list_previous(modules);
   }
   gtk_widget_show_all(GTK_WIDGET(box));
   // synch gui and flag gegl pipe as dirty

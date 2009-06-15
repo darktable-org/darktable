@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * File: libraw_const.h
- * Copyright 2008-2009 Alex Tutubalin <lexa@lexa.ru>
+ * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  8 , 2008
  *
  * LibRaw error codes
@@ -74,12 +74,12 @@ enum LibRaw_colorstate
 enum LibRaw_filtering
 {
     LIBRAW_FILTERING_DEFAULT            =0,
-    LIBRAW_FILTERING_NOZEROES           =1,  //  no remove zeroes
-    LIBRAW_FILTERING_NOBLACKS           =2,  //  no black subtraction
-    LIBRAW_FILTERING_NORAWCURVE         =4,  //  no raw data postprocessing (e.g. PhaseOne corrections etc)
-    LIBRAW_FILTERING_NONE               =7,  //  (_NOZEROES | _NOBLACKS | _NORAWCURVE)
-    LIBRAW_FILTERING_LIBRAWOWN          =(8 | LIBRAW_FILTERING_NONE), // NONE + 8 
-    LIBRAW_FILTERING_AUTOMATIC_BIT      =16,  //  - restore automatic mode after processing
+    LIBRAW_FILTERING_NOZEROES           =1,  
+    LIBRAW_FILTERING_NOBLACKS           =2, 
+    LIBRAW_FILTERING_NORAWCURVE         =4,
+    LIBRAW_FILTERING_NONE               =7,
+    LIBRAW_FILTERING_LIBRAWOWN          =(8 | LIBRAW_FILTERING_NONE),
+    LIBRAW_FILTERING_AUTOMATIC_BIT      =16,
     LIBRAW_FILTERING_AUTOMATIC          = (LIBRAW_FILTERING_LIBRAWOWN | LIBRAW_FILTERING_AUTOMATIC_BIT)
 };
 
@@ -106,7 +106,7 @@ enum LibRaw_progress
     LIBRAW_PROGRESS_APPLY_PROFILE       = 1<<16,
     LIBRAW_PROGRESS_CONVERT_RGB         = 1<<17,
     LIBRAW_PROGRESS_STRETCH             = 1<<18,
-// reserved
+/* reserved */
     LIBRAW_PROGRESS_STAGE19             = 1<<19,
     LIBRAW_PROGRESS_STAGE20             = 1<<20,
     LIBRAW_PROGRESS_STAGE21             = 1<<21,

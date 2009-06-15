@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * File: libraw_internal.h
- * Copyright 2008-2009 Alex Tutubalin <lexa@lexa.ru>
+ * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  8 , 2008
  *
  * LibRaw internal data structures (not visible outside)
@@ -33,7 +33,6 @@
 #endif
 
 #else
-// C build
 #ifndef CLASS
 #define CLASS
 #endif
@@ -76,7 +75,6 @@ public:
         int vbits, padding;
     }pana_bits;
 
-    // init - should use in constructor/recycle
     void init() 
         { 
             getbits.bitbuf = 0; getbits.vbits = getbits.reset = 0;
@@ -92,7 +90,7 @@ class LibRaw_constants
     static const float d65_white[3];
     static const double xyz_rgb[3][3];
 };
-#endif // __cplusplus
+#endif /* __cplusplus */
 
 #ifdef WIN32
 typedef long off_t;
@@ -104,8 +102,8 @@ typedef struct
     struct
 #endif
     LibRaw_abstract_datastream *input;
+    FILE        *output;
     int         input_internal;
-//    char        *ifname;
     char        *meta_data;
     off_t       profile_offset;
     off_t       toffset;
@@ -116,7 +114,6 @@ typedef struct
 {
     unsigned    mix_green;
     unsigned    raw_color;
-    unsigned    use_gamma;
     unsigned    zero_is_bad;
     ushort      shrink;
     ushort      fuji_width;
@@ -140,7 +137,7 @@ typedef struct
 
 typedef struct
 {
-    short       order; // II* / MM* - file word byte order
+    short       order; 
     ushort      sraw_mul[4],cr2_slice[3];
     unsigned    kodak_cbpp;
     off_t       strip_offset, data_offset;
@@ -165,7 +162,6 @@ typedef struct
     output_data_t output_data;
     identify_data_t identify_data;
     unpacker_data_t unpacker_data;
-//    callbacks_t callbacks;
 } libraw_internal_data_t;
 
 

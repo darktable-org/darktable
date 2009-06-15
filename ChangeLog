@@ -1,3 +1,11 @@
+darktable 0.2
+=============
+
+- new library look
+- updated to LibRaw 0.8
+- modular image operation backend, loaded from plug-ins
+- image operation core completely re-written
+- image operation core using gegl is implemented (but it is too slow)
 
 darktable 0.1
 =============

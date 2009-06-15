@@ -1,9 +1,9 @@
 /* -*- C++ -*-
  * File: libraw_c_api.cpp
- * Copyright 2008-2009 Alex Tutubalin <lexa@lexa.ru>
+ * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  8 , 2008
  *
- * LibRaw C++ interface (implementation)
+ * LibRaw C interface 
  */
 #include <errno.h>
 #include "libraw/libraw.h"
@@ -142,6 +142,12 @@ extern "C"
         if(!lr) return NULL;
         LibRaw *ip = (LibRaw*) lr->parent_class;
         return ip->dcraw_make_mem_image(errorcode);
+    }
+    libraw_processed_image_t* dcraw_make_mem_thumb(libraw_data_t* lr, int *errorcode)
+    {
+        if(!lr) return NULL;
+        LibRaw *ip = (LibRaw*) lr->parent_class;
+        return ip->dcraw_make_mem_thumb(errorcode);
     }
 
 #ifdef __cplusplus

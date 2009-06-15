@@ -23,7 +23,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
   free(cache->used);
 }
 
-uint64_t dt_dev_pixelpipe_cache_hash(float scale, int x, int y, dt_develop_t *dev, int module)
+uint64_t dt_dev_pixelpipe_cache_hash(float scale, int32_t x, int32_t y, dt_develop_t *dev, int module)
 {
   // bernstein hash (djb2)
   uint64_t hash = 5381 + dev->image->id;
@@ -43,8 +43,12 @@ uint64_t dt_dev_pixelpipe_cache_hash(float scale, int x, int y, dt_develop_t *de
     modules = g_list_next(modules);
   }
   // also add scale, x and y:
-  const char *str = (const char *)&scale;
-  for(int i=0;i<12;i++) hash = ((hash << 5) + hash) ^ str[i];
+  char *str = (const char *)&scale;
+  for(int i=0;i<4;i++) hash = ((hash << 5) + hash) ^ str[i];
+  str = (const char *)&x;
+  for(int i=0;i<4;i++) hash = ((hash << 5) + hash) ^ str[i];
+  str = (const char *)&y;
+  for(int i=0;i<4;i++) hash = ((hash << 5) + hash) ^ str[i];
   return hash;
 }
 

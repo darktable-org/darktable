@@ -224,13 +224,16 @@ void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8
 
 int dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
+  img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);
-  libraw_processed_image_t *image;
+  libraw_processed_image_t *image = NULL;
   raw->params.half_size = img->shrink; /* dcraw -h */
   raw->params.use_camera_wb = img->wb_cam;
   raw->params.use_auto_wb = img->wb_auto;
   raw->params.output_bps = 16;
+  raw->params.gamm[0] = 1.0;
+  raw->params.gamm[1] = 1.0;
   // TODO: make this user choosable.
   if(img->shrink) raw->params.user_qual = 0; // linear
   else            raw->params.user_qual = 3; // AHD
@@ -248,10 +251,21 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   }
   ret = libraw_unpack(raw);
   HANDLE_ERRORS(ret, 1);
-  ret = libraw_dcraw_process(raw);
-  HANDLE_ERRORS(ret, 1);
-  image = dcraw_make_mem_image(raw, &ret);
-  HANDLE_ERRORS(ret, 1);
+  // TODO: insert 
+#if 0
+  if(img->shrink)
+  {
+    image = dcraw_make_mem_thumb(raw, &ret);
+    image->type = LIBRAW_TYPE_JPEG/BITMAP?
+  }
+#endif
+  if(!image)
+  {
+    ret = libraw_dcraw_process(raw);
+    HANDLE_ERRORS(ret, 1);
+    image = dcraw_make_mem_image(raw, &ret);
+    HANDLE_ERRORS(ret, 1);
+  }
 
   img->shrink = raw->params.half_size;
   img->orientation = raw->sizes.flip;
@@ -272,6 +286,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     libraw_recycle(raw);
     libraw_close(raw);
     free(image);
+    dt_image_cache_release(img, 'r');
     return 1;
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
@@ -288,6 +303,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw = NULL;
   image = NULL;
   dt_image_release(img, DT_IMAGE_FULL, 'w');
+  dt_image_cache_release(img, 'r');
   return 0;
 }
 

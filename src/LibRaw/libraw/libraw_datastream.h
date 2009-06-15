@@ -1,6 +1,6 @@
 /* -*- C -*-
  * File: libraw_datastream.h
- * Copyright 2008-2009 Alex Tutubalin <lexa@lexa.ru>
+ * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
  * Created: Sun Jan 18 13:07:35 2009
  *
  * LibRaw Data stream interface
@@ -33,7 +33,7 @@
 
 struct LibRaw_abstract_datastream;
 
-#else // __cplusplus
+#else /* __cplusplus */
 
 #include "libraw_const.h"
 
@@ -45,9 +45,8 @@ class LibRaw_abstract_datastream
     LibRaw_abstract_datastream(){substream=0;};
     virtual             ~LibRaw_abstract_datastream(void){if(substream) delete substream;}
     virtual int         valid(){return 0;}
-    // file input emulation
     virtual int         read(void *,size_t, size_t ){ return -1;}
-    virtual int         seek(off_t o, int whence){return -1;}
+    virtual int         seek(off_t , int ){return -1;}
     virtual int         tell(){return -1;}
     virtual int         get_char(){return -1;}
     virtual char*       gets(char *, int){ return NULL;}
@@ -89,7 +88,7 @@ class LibRaw_file_datastream : public LibRaw_abstract_datastream
     virtual int read(void * ptr,size_t size, size_t nmemb) 
     { 
         CHK(); 
-        return substream?substream->read(ptr,size,nmemb):fread(ptr,size,nmemb,f);
+        return substream?substream->read(ptr,size,nmemb):int(fread(ptr,size,nmemb,f));
     }
     virtual int eof() 
     { 
@@ -124,7 +123,6 @@ class LibRaw_file_datastream : public LibRaw_abstract_datastream
 
     virtual const char *fname() { return filename; }
 
-    // secondary 
     virtual int subfile_open(const char *fn)
     {
         if(sav) return EBUSY;
@@ -172,7 +170,7 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
             return 0;
         memmove(ptr,buf+streampos,to_read);
         streampos+=to_read;
-        return (to_read+sz-1)/sz;
+        return int((to_read+sz-1)/sz);
     }
 
     virtual int eof() 
@@ -187,26 +185,33 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
         switch(whence)
             {
             case SEEK_SET:
-                streampos = o > streamsize ? streamsize: o;
+                if(o<0)
+                    streampos = 0;
+                else if (size_t(o) > streamsize)
+                    streampos = streamsize;
+                else
+                    streampos = size_t(o);
                 return 0;
             case SEEK_CUR:
                 if(o<0)
                     {
-                        if (o < - streampos)
-                            o  = - streampos;
-                        streampos += o;
+                        if(size_t(-o) >= streampos)
+                            streampos = 0;
+                        else
+                            streampos += o;
                     }
                 else if (o>0)
                     {
-                        if(o> streamsize-streampos)
-                            o = streamsize - streampos;
-                        streampos += o;
+                        if(o+streampos> streamsize)
+                            streampos = streamsize;
+                        else
+                            streampos += o;
                     }
                 return 0;
             case SEEK_END:
                 if(o>0)
                     streampos = streamsize;
-                else if ( -o > streamsize)
+                else if ( size_t(-o) > streamsize)
                     streampos = 0;
                 else
                     streampos = streamsize+o;
@@ -219,7 +224,7 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
     virtual int tell() 
     { 
         if(substream) return substream->tell();
-        return streampos;
+        return int(streampos);
     }
 
     virtual int get_char() 
@@ -236,7 +241,7 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
         str = (unsigned char *)s;
         psrc = buf+streampos;
         pdest = str;
-        while ( ((psrc - buf) < streamsize)
+        while ( (size_t(psrc - buf) < streamsize)
                &&
                 ((pdest-str)<sz)
 		)
@@ -247,7 +252,7 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
                 psrc++;
                 pdest++;
             }
-        if((psrc-buf) < streamsize)
+        if(size_t(psrc-buf) < streamsize)
             psrc++;
         if((pdest-str)<sz)
             *(++pdest)=0;

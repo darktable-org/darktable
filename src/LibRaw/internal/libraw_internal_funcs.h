@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * File: libraw_internal_funcs.h
- * Copyright 2008 Alex Tutubalin <lexa@lexa.ru>
+ * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  14, 2008
  *
  * LibRaw internal data structures (not visible outside)
@@ -61,7 +61,7 @@
     void        canon_compressed_load_raw();
     void        lossless_jpeg_load_raw();
     void        canon_sraw_load_raw();
-    void        canon_black(double *);
+void        canon_black(double *, int nblack);
 // Adobe DNG
     void        adobe_copy_pixel (int row, int col, ushort **rp);
     void        adobe_dng_load_raw_lj();
@@ -69,6 +69,7 @@
 
 // Pentax
     void        pentax_k10_load_raw();
+    void        pentax_tree();
 
 // Nikon (and Minolta Z2)
     void        nikon_compressed_load_raw();
@@ -112,7 +113,6 @@
     void        nokia_load_raw();
     unsigned    pana_bits (int nbits);
     void        panasonic_load_raw();
-    void        olympus_e300_load_raw();
     void        olympus_e410_load_raw();
     void        olympus_cseries_load_raw();
     void        minolta_rd175_load_raw();
@@ -148,7 +148,6 @@
     void        sony_arw2_load_raw();
     void        parse_minolta (int base);
 
-#ifndef NO_FOVEON
 // Foveon/Sigma
     void        foveon_load_camf();
     void        foveon_load_raw();
@@ -162,8 +161,6 @@
     void        foveon_interpolate();
     char *      foveon_gets (int offset, char *str, int len);
     void        parse_foveon();
-#endif
-
 
 // CAM/RGB
     void        pseudoinverse (double (*in)[3], double (*out)[3], int size);

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * File: libraw_alloc.h
- * Copyright 2008-2009 Alex Tutubalin <lexa@lexa.ru>
+ * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  22, 2008 
  *
  * LibRaw C++ interface
@@ -64,7 +64,6 @@ class libraw_memmgr
         for(int i = 0; i< MSIZE; i++)
             if(mems[i])
                 {
-//                    fprintf(stderr,"Found lost fragment at 0x%x\n",mems[i]);
                     free(mems[i]);
                     mems[i] = NULL;
                 }
@@ -93,6 +92,6 @@ class libraw_memmgr
 
 };
 
-#endif //C++
+#endif /* C++ */
 
 #endif

@@ -3,26 +3,22 @@
 - parallel iop->processing (seems to be fast enough mono-core)?
 
 0.2 cleanup:
+- openmp libraw?
 - histogram redraw (tonecurve)
 - timeout for zoom/pan: first one frame preview then full?
 - progress bars for image folder import and image export
-- cleanup DT_USE_GEGL flag stuff
 - develop does not need gamma anymore
 - where to put ungamma table? 
 - remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
-- imageio_open_raw may get image de-alloced when leaving develop mode!
-  (fix: add additional lock)
 - quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
 - save gui settings (expanded etc?) in operation stacks
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
-- code review, cleanup module categories (develop_view, iop?)
+- code review, cleanup module categories (develop_view, iop?, DT_USE_GEGL)
 - tmp robustness: clean up database on exit completely (or at least mip blobs?)
-- modules top aligned in vbox_right
-- window borders, alignment, avoid scrollbars.
 
 - release 0.2 :)
 

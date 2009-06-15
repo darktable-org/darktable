@@ -1,11 +1,10 @@
 /* 
    GENERATED FILE, DO NOT EDIT
-   Generated from dcraw/dcraw.c at Sat Feb  7 20:23:43 2009
+   Generated from dcraw/dcraw.c at Mon Jun  8 13:24:08 2009
    Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
    for copyright information.
 */
 
-#line 3250 "dcraw/dcraw.c"
 #define CLASS LibRaw::
 #include "libraw/libraw_types.h"
 #define LIBRAW_IO_REDEFINED
@@ -17,7 +16,6 @@
 #define SRC_USES_CURVE
 #include "internal/var_defines.h"
 #define sget4(s) sget4((uchar *)s)
-#line 3263 "dcraw/dcraw.c"
 
 /* RESTRICTED code starts here */
 
@@ -63,7 +61,7 @@ void CLASS foveon_decoder (unsigned size, unsigned code)
 #endif
 }
 
-void CLASS foveon_thumb (FILE *tfp)
+void CLASS foveon_thumb()
 {
   unsigned bwide, row, col, bitbuf=0, bit=1, c, i;
   char *buf;
@@ -71,14 +69,14 @@ void CLASS foveon_thumb (FILE *tfp)
   short pred[3];
 
   bwide = get4();
-  fprintf (tfp, "P6\n%d %d\n255\n", thumb_width, thumb_height);
+  fprintf (ofp, "P6\n%d %d\n255\n", thumb_width, thumb_height);
   if (bwide > 0) {
     if (bwide < thumb_width*3) return;
     buf = (char *) malloc (bwide);
     merror (buf, "foveon_thumb()");
     for (row=0; row < thumb_height; row++) {
       fread  (buf, 1, bwide, ifp);
-      fwrite (buf, 3, thumb_width, tfp);
+      fwrite (buf, 3, thumb_width, ofp);
     }
     free (buf);
     return;
@@ -97,7 +95,7 @@ void CLASS foveon_thumb (FILE *tfp)
 	  dindex = dindex->branch[bitbuf >> bit & 1];
 	}
 	pred[c] += dindex->leaf;
-	fputc (pred[c], tfp);
+	fputc (pred[c], ofp);
       }
   }
 }
@@ -277,12 +275,10 @@ int CLASS foveon_apply_curve (short *curve, int i)
   return i < 0 ? -curve[1-i] : curve[1+i];
 }
 
-#line 3525 "dcraw/dcraw.c"
 #ifdef image
 #undef image
 #endif
 #define image ((short(*)[4]) imgdata.image)
-#line 3532 "dcraw/dcraw.c"
 
 void CLASS foveon_interpolate()
 {
@@ -719,7 +715,6 @@ void CLASS foveon_interpolate()
 #undef image
 
 /* RESTRICTED code ends here */
-#line 7086 "dcraw/dcraw.c"
 char * CLASS foveon_gets (int offset, char *str, int len)
 {
   int i;

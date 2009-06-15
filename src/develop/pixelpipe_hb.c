@@ -227,7 +227,6 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     }
 
     // actual pixel processing done by module
-    // printf("[process] op: %d - %s\n", pos, module->op);
     module->process(module, piece, input, *output, x, y, scale, width, height);
 
     // final histogram:
