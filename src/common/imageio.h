@@ -8,6 +8,13 @@
 #include <inttypes.h>
 
 // opens the file using libraw, doing interpolation and stuff
+int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename);
+// opens file using imagemagick
+int dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename);
+// try both, first libraw.
+int dt_imageio_open_preview(dt_image_t *img, const char *filename);
+
+// opens the file using libraw, doing interpolation and stuff
 int dt_imageio_open_raw(dt_image_t *img, const char *filename);
 // opens file using imagemagick
 int dt_imageio_open_ldr(dt_image_t *img, const char *filename);

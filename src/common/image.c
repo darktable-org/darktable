@@ -80,6 +80,8 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
 
 int dt_image_preview_to_raw(dt_image_t *img)
 {
+  return 1;
+#if 0 // FIXME: this should only do mip4 -> mipf and leave pixels alone.
   const int raw_wd = img->loaded_width;
   const int raw_ht = img->loaded_height;
   int p_wd, p_ht;
@@ -128,6 +130,7 @@ int dt_image_preview_to_raw(dt_image_t *img)
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return ret;
+#endif
 }
 
 int dt_image_raw_to_preview(dt_image_t *img)
@@ -229,6 +232,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   // load small raw (try libraw then magick)
   img->shrink = 1;
+  // TODO: dt_imageio_open_raw_preview(img, filename);
   if(dt_imageio_open(img, filename))
   {
     dt_image_cleanup(img);

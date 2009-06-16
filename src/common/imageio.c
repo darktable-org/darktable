@@ -228,27 +228,24 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
   }                                                       \
 }
 
-int dt_imageio_open_raw(dt_image_t *img, const char *filename)
+int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
-  raw->params.half_size = img->shrink; /* dcraw -h */
+  raw->params.half_size = img->shrink = 1; /* dcraw -h */
   raw->params.use_camera_wb = img->wb_cam;
   raw->params.use_auto_wb = img->wb_auto;
   raw->params.output_bps = 16;
   raw->params.user_flip = -1;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
-  // TODO: make this user choosable.
-  if(img->shrink) raw->params.user_qual = 0; // linear
-  else            raw->params.user_qual = 3; // AHD
+  raw->params.user_qual = 0; // linear
   // img->raw->params.output_color = 1;
   raw->params.use_camera_matrix = 1;
   // TODO: let this unclipped for develop, clip for preview.
   raw->params.highlight = 0; //0 clip, 1 unclip, 2 blend, 3+ rebuild
-  // img->raw->params.user_flip = img->raw->sizes.flip;
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
   if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
@@ -257,9 +254,6 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     raw->params.half_size = img->shrink = 0;
   }
   // TODO: insert 
-#if 0
-  if(img->shrink)
-  {
     ret = libraw_unpack_thumb(raw);
     HANDLE_ERRORS(ret, 1);
     img->shrink = raw->params.half_size;
@@ -267,8 +261,6 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     // FIXME: broken here:
     img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
     img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-    img->width <<= img->shrink;
-    img->height <<= img->shrink;
     img->exif_iso = raw->other.iso_speed;
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
@@ -277,6 +269,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     strncpy(img->exif_model, raw->idata.model, 20);
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
     image = dcraw_make_mem_thumb(raw, &ret);
+    printf("preview: size %d %d\n", img->width, img->height);
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
 #ifdef HAVE_MAGICK
@@ -285,6 +278,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
       Image *imimage = BlobToImage(image_info, image->data, image->data_size, exception);
       image->width  = imimage->columns;
       image->height = imimage->rows;
+      printf("preview: thumb size %d %d\n", image->width, image->height);
       img->flags = DT_IMAGE_THUMBNAIL;
       if (imimage == (Image *) NULL || dt_image_alloc(img, DT_IMAGE_FULL))
       {
@@ -317,15 +311,15 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
         {
           if(QuantumDepth == 16)
           {
-            img->pixels[3*img->loaded_width*y + 3*x + 0] = (int)p->red>>8;
-            img->pixels[3*img->loaded_width*y + 3*x + 1] = (int)p->green>>8;
-            img->pixels[3*img->loaded_width*y + 3*x + 2] = (int)p->blue>>8;
+            img->pixels[3*imimage->columns*y + 3*x + 0] = (int)p->red>>8;
+            img->pixels[3*imimage->columns*y + 3*x + 1] = (int)p->green>>8;
+            img->pixels[3*imimage->columns*y + 3*x + 2] = (int)p->blue>>8;
           }
           else
           {
-            img->pixels[3*img->loaded_width*y + 3*x + 0] = (int)p->red;
-            img->pixels[3*img->loaded_width*y + 3*x + 1] = (int)p->green;
-            img->pixels[3*img->loaded_width*y + 3*x + 2] = (int)p->blue;
+            img->pixels[3*imimage->columns*y + 3*x + 0] = (int)p->red;
+            img->pixels[3*imimage->columns*y + 3*x + 1] = (int)p->green;
+            img->pixels[3*imimage->columns*y + 3*x + 2] = (int)p->blue;
           }
           p++;
         }
@@ -348,14 +342,10 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     }
     else
     {
-      img->loaded_width  = image->width;
-      img->loaded_height = image->height;
       dt_image_release(img, DT_IMAGE_FULL, 'w');
       // dt_image_cache_release(img, 'r');
       return 0;
     }
-  }
-#endif
   if(!image)
   {
     ret = libraw_unpack(raw);
@@ -379,8 +369,79 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   strncpy(img->exif_model, raw->idata.model, 20);
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-  img->loaded_width  = img->width>>img->shrink;
-  img->loaded_height = img->height>>img->shrink;
+  if(dt_image_alloc(img, DT_IMAGE_FULL))
+  {
+    libraw_recycle(raw);
+    libraw_close(raw);
+    free(image);
+    // dt_image_cache_release(img, 'r');
+    return 1;
+  }
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
+  const float m = 1./0xffff;
+// #pragma omp parallel for schedule(static) shared(img, image)
+  for(int k=0;k<3*(img->width>>img->shrink)*(img->height>>img->shrink);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
+  // clean up raw stuff.
+  libraw_recycle(raw);
+  libraw_close(raw);
+  free(image);
+  raw = NULL;
+  image = NULL;
+  dt_image_release(img, DT_IMAGE_FULL, 'w');
+  // dt_image_cache_release(img, 'r');
+  return 0;
+}
+
+int dt_imageio_open_raw(dt_image_t *img, const char *filename)
+{
+  // img = dt_image_cache_use(img->id, 'r');
+  int ret;
+  libraw_data_t *raw = libraw_init(0);
+  libraw_processed_image_t *image = NULL;
+  raw->params.half_size = img->shrink; /* dcraw -h */
+  raw->params.use_camera_wb = img->wb_cam;
+  raw->params.use_auto_wb = img->wb_auto;
+  raw->params.output_bps = 16;
+  raw->params.user_flip = -1;
+  raw->params.gamm[0] = 1.0;
+  raw->params.gamm[1] = 1.0;
+  // TODO: make this user choosable.
+  if(img->shrink) raw->params.user_qual = 0; // linear
+  else            raw->params.user_qual = 3; // AHD
+  // img->raw->params.output_color = 1;
+  raw->params.use_camera_matrix = 1;
+  // TODO: let this unclipped for develop, clip for preview.
+  raw->params.highlight = 0; //0 clip, 1 unclip, 2 blend, 3+ rebuild
+  // img->raw->params.user_flip = img->raw->sizes.flip;
+  ret = libraw_open_file(raw, filename);
+  HANDLE_ERRORS(ret, 0);
+  if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
+  { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
+    raw->params.user_qual = 0;
+    raw->params.half_size = img->shrink = 0;
+  }
+
+  ret = libraw_unpack(raw);
+  HANDLE_ERRORS(ret, 1);
+  ret = libraw_dcraw_process(raw);
+  HANDLE_ERRORS(ret, 1);
+  image = dcraw_make_mem_image(raw, &ret);
+  HANDLE_ERRORS(ret, 1);
+
+  img->shrink = raw->params.half_size;
+  img->orientation = raw->sizes.flip;
+  img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
+  img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+  img->width <<= img->shrink;
+  img->height <<= img->shrink;
+  img->exif_iso = raw->other.iso_speed;
+  img->exif_exposure = raw->other.shutter;
+  img->exif_aperture = raw->other.aperture;
+  img->exif_focal_length = raw->other.focal_len;
+  strncpy(img->exif_maker, raw->idata.make, 20);
+  strncpy(img->exif_model, raw->idata.model, 20);
+  dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
+
   if(dt_image_alloc(img, DT_IMAGE_FULL))
   {
     libraw_recycle(raw);
@@ -492,7 +553,12 @@ void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
 //   begin magickcore wrapper functions:
 // =================================================
 
-// transparent read method to load ldr/raw image to dt_raw_image_t with exif and so on.
+int dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
+{
+  return 1;
+}
+
+// transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
 #ifdef HAVE_MAGICK
@@ -847,3 +913,9 @@ int dt_imageio_open(dt_image_t *img, const char *filename)
   return 1;
 }
 
+int dt_imageio_open_preview(dt_image_t *img, const char *filename)
+{ // first try raw loading
+  if(!dt_imageio_open_raw_preview(img, filename)) return 0;
+  if(!dt_imageio_open_ldr_preview(img, filename)) return 0;
+  return 1;
+}

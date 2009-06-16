@@ -40,7 +40,7 @@ dt_image_lock_t;
 typedef struct dt_image_t
 {
   // common stuff
-  int32_t width, height, loaded_width, loaded_height;
+  int32_t width, height;
   char filename[512];
   // used by library
   int32_t num, flags, film_id, id;

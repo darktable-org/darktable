@@ -249,11 +249,9 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 restart:
   dev->image_loading = 1;
   dev->image->shrink = 0;
-  if(dt_image_get(dev->image, DT_IMAGE_FULL, 'r') != DT_IMAGE_FULL) // test and lock
-  {
-    int err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
-    if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
-  }
+  // not loaded from cache because it is obviously not there yet. so load unshrinked version:
+  int err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
+  if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
 
   // obsoleted by another job?
   if(dev->image != img)
