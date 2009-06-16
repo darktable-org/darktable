@@ -95,9 +95,6 @@ typedef struct
                 width,
                 colors,
                 bits;
-#ifdef _OPENMP
-#pragma omp firstprivate(colors,height,width)
-#endif
     unsigned int  data_size; 
     unsigned char data[1]; 
 }libraw_processed_image_t;
@@ -128,9 +125,6 @@ typedef struct
                 left_margin;
     ushort      iheight,
                 iwidth;
-#ifdef _OPENMP
-#pragma omp firstprivate(iheight,iwidth)
-#endif
     double      pixel_aspect;
     int         flip;
 
@@ -208,9 +202,6 @@ typedef struct
     unsigned    shot_select;    /* -s */
     float       bright;         /* -b */
     float       threshold;      /*  -n */
-#ifdef _OPENMP
-#pragma omp firstprivate(threshold)
-#endif
     int         half_size;      /* -h */
     int         four_color_rgb; /* -f */
     int         document_mode;  /* -d/-D */
@@ -262,9 +253,6 @@ typedef struct
     libraw_thumbnail_t          thumbnail;
     libraw_masked_t             masked_pixels;
     ushort                      (*image)[4] ;
-#ifdef _OPENMP
-#pragma omp shared(image)
-#endif
     libraw_output_params_t     params;
     void                *parent_class;      
 } libraw_data_t;

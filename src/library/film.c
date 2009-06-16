@@ -166,6 +166,9 @@ int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
   film->last_loaded = 0;
   strncpy(film->dirname, dirname, 512);
   film->dir = g_dir_open(film->dirname, 0, NULL);
+
+  // TODO: set film->num_images for progress bar!
+
   darktable.control->progress = .001f;
   for(int k=0;k<MAX(1,dt_ctl_get_num_procs()-1);k++) // keep one proc for the user.
   {

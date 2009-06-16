@@ -43,7 +43,7 @@ uint64_t dt_dev_pixelpipe_cache_hash(float scale, int32_t x, int32_t y, dt_devel
     modules = g_list_next(modules);
   }
   // also add scale, x and y:
-  char *str = (const char *)&scale;
+  const char *str = (const char *)&scale;
   for(int i=0;i<4;i++) hash = ((hash << 5) + hash) ^ str[i];
   str = (const char *)&x;
   for(int i=0;i<4;i++) hash = ((hash << 5) + hash) ^ str[i];

@@ -207,6 +207,12 @@ void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8
     for(int k=0;k<3;k++) p8[4*idx+2-k] = dt_dev_default_gamma[(int)CLAMP(0xffff*f[3*idx+k], 0, 0xffff)];
 }
 
+void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, float *f)
+{
+  for(int idx=0;idx < p_wd*p_ht; idx++)
+    for(int k=0;k<3;k++) f[3*idx+2-k] = dt_dev_de_gamma[p8[4*idx+k]];
+}
+
 
 // =================================================
 //   begin libraw wrapper functions:
@@ -224,7 +230,7 @@ void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8
 
 int dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
-  img = dt_image_cache_use(img->id, 'r');
+  // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
@@ -232,6 +238,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.use_camera_wb = img->wb_cam;
   raw->params.use_auto_wb = img->wb_auto;
   raw->params.output_bps = 16;
+  raw->params.user_flip = -1;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // TODO: make this user choosable.
@@ -249,28 +256,121 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     raw->params.user_qual = 0;
     raw->params.half_size = img->shrink = 0;
   }
-  ret = libraw_unpack(raw);
-  HANDLE_ERRORS(ret, 1);
   // TODO: insert 
 #if 0
   if(img->shrink)
   {
+    ret = libraw_unpack_thumb(raw);
+    HANDLE_ERRORS(ret, 1);
+    img->shrink = raw->params.half_size;
+    img->orientation = raw->sizes.flip;
+    // FIXME: broken here:
+    img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
+    img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+    img->width <<= img->shrink;
+    img->height <<= img->shrink;
+    img->exif_iso = raw->other.iso_speed;
+    img->exif_exposure = raw->other.shutter;
+    img->exif_aperture = raw->other.aperture;
+    img->exif_focal_length = raw->other.focal_len;
+    strncpy(img->exif_maker, raw->idata.make, 20);
+    strncpy(img->exif_model, raw->idata.model, 20);
+    dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
     image = dcraw_make_mem_thumb(raw, &ret);
-    image->type = LIBRAW_TYPE_JPEG/BITMAP?
+    if(image && image->type == LIBRAW_IMAGE_JPEG)
+    {
+#ifdef HAVE_MAGICK
+      ExceptionInfo *exception = AcquireExceptionInfo();
+      ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
+      Image *imimage = BlobToImage(image_info, image->data, image->data_size, exception);
+      image->width  = imimage->columns;
+      image->height = imimage->rows;
+      img->flags = DT_IMAGE_THUMBNAIL;
+      if (imimage == (Image *) NULL || dt_image_alloc(img, DT_IMAGE_FULL))
+      {
+        CatchException(exception);
+        image_info = DestroyImageInfo(image_info);
+        exception = DestroyExceptionInfo(exception);
+        fprintf(stderr, "[imageio_open_raw] could not get image from thumbnail!\n");
+        libraw_recycle(raw);
+        libraw_close(raw);
+        free(image);
+        // dt_image_cache_release(img, 'r');
+        return 1;
+      }
+      dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
+
+      const PixelPacket *p;
+      for (int y=0; y < imimage->rows; y++)
+      {
+        p = AcquireImagePixels(imimage,0,y,imimage->columns,1,exception);
+        if (p == (const PixelPacket *) NULL) 
+        {
+          fprintf(stderr, "[imageio_open_raw] pixel read failed!\n");
+          libraw_recycle(raw);
+          libraw_close(raw);
+          free(image);
+          // dt_image_cache_release(img, 'r');
+          return 1;
+        }
+        for (int x=0; x < imimage->columns; x++)
+        {
+          if(QuantumDepth == 16)
+          {
+            img->pixels[3*img->loaded_width*y + 3*x + 0] = (int)p->red>>8;
+            img->pixels[3*img->loaded_width*y + 3*x + 1] = (int)p->green>>8;
+            img->pixels[3*img->loaded_width*y + 3*x + 2] = (int)p->blue>>8;
+          }
+          else
+          {
+            img->pixels[3*img->loaded_width*y + 3*x + 0] = (int)p->red;
+            img->pixels[3*img->loaded_width*y + 3*x + 1] = (int)p->green;
+            img->pixels[3*img->loaded_width*y + 3*x + 2] = (int)p->blue;
+          }
+          p++;
+        }
+      }
+      imimage = DestroyImage(imimage);
+      image_info = DestroyImageInfo(image_info);
+      exception = DestroyExceptionInfo(exception);
+      // clean up raw stuff.
+      libraw_recycle(raw);
+      libraw_close(raw);
+      free(image);
+      raw = NULL;
+      image = NULL;
+      dt_image_release(img, DT_IMAGE_FULL, 'w');
+      // dt_image_cache_release(img, 'r');
+      return 0;
+#else
+      fprintf(stderr, "[imageio_load_raw] compiled without Magick support!\n");
+#endif
+    }
+    else
+    {
+      img->loaded_width  = image->width;
+      img->loaded_height = image->height;
+      dt_image_release(img, DT_IMAGE_FULL, 'w');
+      // dt_image_cache_release(img, 'r');
+      return 0;
+    }
   }
 #endif
   if(!image)
   {
+    ret = libraw_unpack(raw);
+    HANDLE_ERRORS(ret, 1);
     ret = libraw_dcraw_process(raw);
     HANDLE_ERRORS(ret, 1);
     image = dcraw_make_mem_image(raw, &ret);
     HANDLE_ERRORS(ret, 1);
   }
-
   img->shrink = raw->params.half_size;
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+  img->width <<= img->shrink;
+  img->height <<= img->shrink;
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
@@ -278,24 +378,21 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   strncpy(img->exif_maker, raw->idata.make, 20);
   strncpy(img->exif_model, raw->idata.model, 20);
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
-  
-  img->width <<= img->shrink;
-  img->height <<= img->shrink;
+
+  img->loaded_width  = img->width>>img->shrink;
+  img->loaded_height = img->height>>img->shrink;
   if(dt_image_alloc(img, DT_IMAGE_FULL))
   {
     libraw_recycle(raw);
     libraw_close(raw);
     free(image);
-    dt_image_cache_release(img, 'r');
+    // dt_image_cache_release(img, 'r');
     return 1;
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
-  // img->pixels = (float *)malloc(sizeof(float)*3*img->width*img->height);
   const float m = 1./0xffff;
 // #pragma omp parallel for schedule(static) shared(img, image)
   for(int k=0;k<3*(img->width>>img->shrink)*(img->height>>img->shrink);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
-  // TODO: wrap all exif data here:
-  // img->dreggn = 
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
@@ -303,7 +400,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw = NULL;
   image = NULL;
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-  dt_image_cache_release(img, 'r');
+  // dt_image_cache_release(img, 'r');
   return 0;
 }
 

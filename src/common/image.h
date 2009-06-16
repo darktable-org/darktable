@@ -12,7 +12,8 @@ typedef enum
   DT_IMAGE_PORTRAIT = 1,
   DT_IMAGE_GOOD = 2,
   DT_IMAGE_BAD = 4,
-  DT_IMAGE_SELECTED = 8
+  DT_IMAGE_SELECTED = 8,
+  DT_IMAGE_THUMBNAIL = 16
 }
 dt_image_flags_t;
 
@@ -39,7 +40,7 @@ dt_image_lock_t;
 typedef struct dt_image_t
 {
   // common stuff
-  int32_t width, height;
+  int32_t width, height, loaded_width, loaded_height;
   char filename[512];
   // used by library
   int32_t num, flags, film_id, id;

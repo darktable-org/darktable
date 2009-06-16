@@ -1,8 +1,12 @@
+bugs:
+- open_raw has img cleaned up before finished during dt_exit
+
 0.2 performance:
 - faster loading by reversing of thumbnail jpegs :)
 - parallel iop->processing (seems to be fast enough mono-core)?
 
 0.2 cleanup:
+- width/height in metadata
 - openmp libraw?
 - histogram redraw (tonecurve)
 - timeout for zoom/pan: first one frame preview then full?

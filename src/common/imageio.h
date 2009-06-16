@@ -24,5 +24,6 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename);
 int dt_imageio_export_f (dt_image_t *img, const char *filename);
 
 void dt_imageio_preview_f_to_8(int32_t wd, int32_t ht, const float *f, uint8_t *p8);
+void dt_imageio_preview_8_to_f(int32_t wd, int32_t ht, const uint8_t *p8, float *f);
 
 #endif
