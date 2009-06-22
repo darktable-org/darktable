@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="style/style.css" type="text/css" /> 
+    <title>contact | darktable</title>
+  </head>
+  <body style="counter-reset: chapter; counter-increment: chapter 6;"> <!-- chapter number goes here! -->
+    <div class="page">
+      <!--#include virtual="navigation.html" -->
+    	<span class="number"><img src="style/6.png" alt="6" width="142px" /></span><div class="headline"><img src="contact.png" alt="contact" width="157px"/></div>
+    	<div class="starterText">
+      fastest contact via email: &#104;&#97;&#110;&#97;&#116;&#111;&#115;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;.
+    	</div>
+    	<div class="listtext">
+    	<img src="images/clouds.jpg" alt="contributing" class="img" /><h1>contributing</h1>
+      <ul>
+        <li>use it! and then place bugreports, feature requests, suggestions, ... on the sourceforge site, or email me.</li>
+        <li>post beta: image operation plug-ins</li>
+      </ul>
+    	</div>
+    	<div class="listtext">
+    	<img src="images/mushroom.jpg" alt="imprint" class="img" /><h1>imprint</h1>
+      <ul>
+        <li><em>thorsten mahler</em> [<a href="http://medien.informatik.uni-ulm.de/~mahler">homepage</a>] webdesign</li>
+        <li><em>johannes hanika</em> darktable development</li>
+      </ul>
+    	</div>
+    </div> <!-- page -->
+    <!--#include virtual="footer.html" -->
+  </body>
+</html>

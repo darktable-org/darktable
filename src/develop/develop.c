@@ -3,6 +3,7 @@
 #include "control/jobs.h"
 #include "control/control.h"
 #include "common/image_cache.h"
+#include "common/imageio.h"
 #include "gui/gtk.h"
 
 #include <stdlib.h>

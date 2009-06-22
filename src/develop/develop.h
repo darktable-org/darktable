@@ -1,7 +1,6 @@
 #ifndef DARKTABLE_DEVELOP_H
 #define DARKTABLE_DEVELOP_H
 
-#include "common/imageio.h"
 #include "library/library.h"
 #include "control/settings.h"
 #include "develop/imageop.h"

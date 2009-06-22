@@ -2,7 +2,6 @@
 #include "library/library.h"
 #include "control/jobs.h"
 #include "control/settings.h"
-#include "common/imageio.h"
 #include "common/image_cache.h"
 #include "gui/gtk.h"
 

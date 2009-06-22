@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="style/style.css" type="text/css" /> 
+    <title>documentation | darktable</title>
+  </head>
+  <body style="counter-reset: chapter; counter-increment: chapter 5;"> <!-- chapter number goes here! -->
+    <div class="page">
+      <!--#include virtual="navigation.html" -->
+    	<span class="number"><img src="style/5.png" alt="5" width="142px" /></span><div class="headline"><img src="documentation.png" alt="documentation" width="324px"/></div>
+    	<div class="starterText">
+      none yet.
+    	</div>
+      <div class="listtext">
+    	<img src="images/ice.jpg" class="img" alt="dreggn" /><h1>known issues</h1>
+      <ul>
+       <li>we found some versions of image magick to cause problems. in particular there
+           was a problem with a funnily linked libpng in gs in turn linked to by image magick
+           on arch linux (thanks to chressie for pointing this out).</li>
+       <li>some openmp implementations seem unstable (as observed with gcc-4.3.2 on gentoo causing image magick to use openmp).
+           try to configure with something like <code>CC=gcc-4.2 CXX=g++-4.2 ./configure</code>
+           if this doesn't work, re-emerge image magick without openmp support :( (i'm working on it...)</li>
+      </ul>
+    	</div>
+
+    </div> <!-- page -->
+    <!--#include virtual="footer.html" -->
+  </body>
+</html>

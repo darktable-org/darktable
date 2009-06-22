@@ -1,0 +1,127 @@
+\documentclass[a4paper,twoside]{scrartcl}
+
+\usepackage{graphicx,color}
+\graphicspath{{images/}{../htdocs/images/header/}}
+
+\usepackage{mparhack}
+
+% \usepackage[a4paper]{geometry}
+% \geometry{%
+% twoside,%
+% %height=.7\paperheight,%
+% %width=.7\paperwidth,%
+% top=.1\paperheight,%
+% bottom=.2\paperheight,%
+% left=.1\paperwidth,%
+% right=.2\paperwidth%
+% %bindingoffset
+% }
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyfoot{}
+\fancyfoot[LE,RO]{\iffloatpage{}{\thepage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\oddsidemargin}{.1\paperwidth}
+\setlength{\evensidemargin}{.2\paperwidth}
+\setlength{\headheight}{.1\paperheight}
+\setlength{\headsep}{0pt}
+\setlength{\topmargin}{0pt}
+\setlength{\voffset}{-1in}
+\setlength{\hoffset}{-1in}
+\setlength{\textwidth}{.7\paperwidth}
+\setlength{\textheight}{.7\paperheight}
+\setlength{\marginparwidth}{.1\paperwidth}
+
+\newcommand{\nicesection}[2]{%
+\cleardoublepage
+\fbox{\includegraphics[width=\linewidth]{#1}}%
+\vspace*{-1em}%
+\section{\hfill #2}
+\hrule
+\vspace*{\baselineskip}%
+}
+
+\fboxsep0pt
+\setlength{\parindent}{0pt}
+
+\newcommand{\todo}[1]{{\color{red}\bf *** TODO: #1}}
+\newcommand{\comment}[1]{}
+\definecolor{codecol}{rgb}{0.1,0.2,0.5}
+\newcommand{\code}[1]{\texttt{\color{codecol}#1}}
+
+\frenchspacing
+% \usepackage[T1]{fontenc}
+% \usepackage[condensed,math]{iwona}
+
+%\usepackage[T1]{fontenc}
+%\usepackage[urw-garamond]{mathdesign}
+
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+%\setkomafont{sectioning}{\sfdefault}
+
+
+\title{Darktable Programmer's Guide}
+\author{hanatos}
+
+\begin{document}
+
+\fbox{\includegraphics[width=\linewidth]{header12}}%
+\vspace*{-1em}%
+\section*{\hfill Darktable Programmer's Guide}
+\hrule
+
+\vspace*{4\baselineskip}
+
+{\hfill version \input version.tex }
+
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+
+
+\nicesection{header1}{Introduction}
+\label{sec:introduction}
+
+
+\nicesection{header2}{System Layout}
+
+\resizebox{\linewidth}{!}{\input{graphs/system.pdftex_t}}
+
+\subsection{Disk to Image Data Flow}
+
+Related modules:
+\begin{itemize}
+  \item imageio \code{dt\_imageio\_*}
+  \item db (messily hidden in sqlite3 statements all over the place)
+  \item image cache \code{dt\_image\_cache\_*}
+  \item mip cache \code{dt\_mipmap\_cache\_*}
+  \item image \code{dt\_image\_t}
+\end{itemize}
+
+in image cache:
+\begin{itemize}
+  \item db $\rightarrow$ image struct, trigger imageio disk $\rightarrow$ image entry in db if miss.
+\end{itemize}
+
+in mip cache:
+\begin{itemize}
+  \item db $\rightarrow$ mip[0-4], trigger imageio disk $\rightarrow$ mip4 and mip4 $\rightarrow$ mip[0-3] if miss.
+\end{itemize}
+
+in imageio:
+\begin{itemize}
+  \item[[o]] disk $\rightarrow$ image entry in db, metadata through libraw/magick: \code{dt\_imageio\_import}
+  \item[[o]] disk $\rightarrow$ mip4 entry (thumbnail \code{dt\_imageio\_open\_preview}).
+  \item[[o]] mip4 $\rightarrow$ mipf (by guessed reverse gamma) \code{dt\_image\_raw\_to\_preview}.
+  \item[[x]] full pixels $\rightarrow$ mipf (downscaling) \code{dt\_image\_raw\_to\_preview}.
+  \item[[x]] mip4 $\rightarrow$ mip[0-3] \code{dt\_image\_update\_mipmaps}.
+\end{itemize}
+
+\end{document}

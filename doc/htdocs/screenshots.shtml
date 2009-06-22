@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="style/style.css" type="text/css" /> 
+    <title>screenshots | darktable</title>
+  </head>
+  <body style="counter-reset: chapter; counter-increment: chapter 3;"> <!-- chapter number goes here! -->
+    <div class="page">
+      <!--#include virtual="navigation.html" -->
+    	<span class="number"><img src="style/3.png" alt="3" width="142px" /></span><div class="headline"><img src="screenshots.png" alt="screenshots" width="251px"/></div>
+    	<div class="starterText">
+      here are some of the nice, obligatory screenshots. see darktable in action. the interface is loosely split in two parts:
+      the lighttable and the darkroom. in the lighttable, the mouse is used to zoom into the picture collection and to pan around.
+      the images are selected and sorted by arbitrary sql queries. the darkroom mode is used to develop the image to low dynamic
+      range.
+    	</div>
+      <div class="text">
+      <a href="images/Screenshot-0.png"><img src="images/Screenshot-0-thumb.jpg" alt="scr0" class="img"/></a><h1>screenshot 0</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-1.png"><img src="images/Screenshot-1-thumb.jpg" alt="scr1" class="img"/></a><h1>screenshot 1</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-2.png"><img src="images/Screenshot-2-thumb.jpg" alt="scr2" class="img"/></a><h1>screenshot 2</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-3.png"><img src="images/Screenshot-3-thumb.jpg" alt="scr3" class="img"/></a><h1>screenshot 3</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-4.png"><img src="images/Screenshot-4-thumb.jpg" alt="scr4" class="img"/></a><h1>screenshot 4</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-5.png"><img src="images/Screenshot-5-thumb.jpg" alt="scr5" class="img"/></a><h1>screenshot 5</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-6.png"><img src="images/Screenshot-6-thumb.jpg" alt="scr6" class="img"/></a><h1>screenshot 6</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-7.png"><img src="images/Screenshot-7-thumb.jpg" alt="scr7" class="img"/></a><h1>screenshot 7</h1>
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-8.png"><img src="images/Screenshot-8-thumb.jpg" alt="scr8" class="img"/></a><h1>screenshot 8</h1>
+      lighttable mode zoomed in a bit more, right panel hidden.
+      </div>
+      <div class="text">
+      <a href="images/Screenshot-9.jpg"><img src="images/Screenshot-9-thumb.jpg" alt="scr9" class="img"/></a><h1>screenshot 9</h1>
+      darktable can also be compiled for mac osx, as done here using macports.
+      </div>
+    </div> <!-- page -->
+    <!--#include virtual="footer.html" -->
+  </body>
+</html>
