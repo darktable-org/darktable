@@ -3,6 +3,7 @@ bugs:
 
 0.2 performance:
 - faster loading by reversing of thumbnail jpegs :)
+- libraw document mode and custom whitebalance/color processing.
 - parallel iop->processing (seems to be fast enough mono-core)?
 
 0.2 cleanup:

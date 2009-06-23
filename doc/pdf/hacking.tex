@@ -107,21 +107,29 @@ Related modules:
 
 in image cache:
 \begin{itemize}
-  \item db $\rightarrow$ image struct, trigger imageio disk $\rightarrow$ image entry in db if miss.
+  \item[[todo]] db $\rightarrow$ image struct, trigger imageio disk $\rightarrow$ image entry in db if miss.
 \end{itemize}
 
 in mip cache:
 \begin{itemize}
-  \item db $\rightarrow$ mip[0-4], trigger imageio disk $\rightarrow$ mip4 and mip4 $\rightarrow$ mip[0-3] if miss.
+{\color{red}\item[[todo]]} db $\rightarrow$ mip[0--4], trigger imageio disk $\rightarrow$ mip4 and mip4 $\rightarrow$ mip[0-3] if miss.
+  \item[[todo]] db $\rightarrow$ mipf, trigger mip4 $\rightarrow$ mipf or pixels $\rightarrow$ mipf if miss.
 \end{itemize}
 
 in imageio:
 \begin{itemize}
-  \item[[o]] disk $\rightarrow$ image entry in db, metadata through libraw/magick: \code{dt\_imageio\_import}
-  \item[[o]] disk $\rightarrow$ mip4 entry (thumbnail \code{dt\_imageio\_open\_preview}).
-  \item[[o]] mip4 $\rightarrow$ mipf (by guessed reverse gamma) \code{dt\_image\_raw\_to\_preview}.
-  \item[[x]] full pixels $\rightarrow$ mipf (downscaling) \code{dt\_image\_raw\_to\_preview}.
-  \item[[x]] mip4 $\rightarrow$ mip[0-3] \code{dt\_image\_update\_mipmaps}.
+  \item[[todo]] disk $\rightarrow$ image entry in db, metadata through libraw/magick: \code{dt\_imageio\_import}
+  \item[[todo]] disk $\rightarrow$ mip[0--4] entries in db (thumbnail \code{dt\_imageio\_open\_preview}).
+
+             \code{dt\_imageio\_open\_raw\_preview} (done)\\
+             \code{dt\_imageio\_open\_ldr\_preview} (todo)
+  \item[[todo]] mip4 $\rightarrow$ mipf (by guessed reverse gamma) \code{dt\_image\_raw\_to\_preview}.
+  \item full pixels $\rightarrow$ mipf (downscaling) \code{dt\_image\_raw\_to\_preview}.
+  \item mip4 $\rightarrow$ mip[0--3] \code{dt\_image\_update\_mipmaps}.
 \end{itemize}
+
+image import: only load \code{dt\_image\_t} and mip[0--4] to database.
+
+\code{dt\_image\_get}: check mipmap cache, check database, else \code{dt\_imageio\_open[\_preview]}.
 
 \end{document}

@@ -228,8 +228,10 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
   }                                                       \
 }
 
+// only set mip4..0.
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
+  // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);
@@ -253,9 +255,12 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     raw->params.user_qual = 0;
     raw->params.half_size = img->shrink = 0;
   }
-  // TODO: insert 
-    ret = libraw_unpack_thumb(raw);
-    HANDLE_ERRORS(ret, 1);
+
+  // get thumbnail
+  ret = libraw_unpack_thumb(raw);
+  if(!ret)
+  {
+    ret = 0;
     img->shrink = raw->params.half_size;
     img->orientation = raw->sizes.flip;
     // FIXME: broken here:
@@ -269,9 +274,14 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     strncpy(img->exif_model, raw->idata.model, 20);
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
     image = dcraw_make_mem_thumb(raw, &ret);
+    int p_wd, p_ht;
+    float f_wd, f_ht;
+    dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
+    dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
     printf("preview: size %d %d\n", img->width, img->height);
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
+      // JPEG: decode with magick (directly rescaled to mip4)
 #ifdef HAVE_MAGICK
       ExceptionInfo *exception = AcquireExceptionInfo();
       ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
@@ -279,51 +289,42 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       image->width  = imimage->columns;
       image->height = imimage->rows;
       printf("preview: thumb size %d %d\n", image->width, image->height);
-      img->flags = DT_IMAGE_THUMBNAIL;
-      if (imimage == (Image *) NULL || dt_image_alloc(img, DT_IMAGE_FULL))
-      {
-        CatchException(exception);
-        image_info = DestroyImageInfo(image_info);
-        exception = DestroyExceptionInfo(exception);
-        fprintf(stderr, "[imageio_open_raw] could not get image from thumbnail!\n");
-        libraw_recycle(raw);
-        libraw_close(raw);
-        free(image);
-        // dt_image_cache_release(img, 'r');
-        return 1;
-      }
-      dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
+      if (imimage == (Image *) NULL || dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_magick;
 
+      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(float));
+      assert(QuantumDepth == 16);
       const PixelPacket *p;
-      for (int y=0; y < imimage->rows; y++)
-      {
-        p = AcquireImagePixels(imimage,0,y,imimage->columns,1,exception);
-        if (p == (const PixelPacket *) NULL) 
+
+      if(image->width == p_wd && image->height == p_ht)
+      { // use 1:1
+        for (int j=0; j < image->height; j++)
         {
-          fprintf(stderr, "[imageio_open_raw] pixel read failed!\n");
-          libraw_recycle(raw);
-          libraw_close(raw);
-          free(image);
-          // dt_image_cache_release(img, 'r');
-          return 1;
-        }
-        for (int x=0; x < imimage->columns; x++)
-        {
-          if(QuantumDepth == 16)
+          p = AcquireImagePixels(imimage,0,y,imimage->columns,1,exception);
+          if (p == (const PixelPacket *) NULL) goto error_raw_magick_mip4;
+          for (int i=0; i < image->width; i++)
           {
-            img->pixels[3*imimage->columns*y + 3*x + 0] = (int)p->red>>8;
-            img->pixels[3*imimage->columns*y + 3*x + 1] = (int)p->green>>8;
-            img->pixels[3*imimage->columns*y + 3*x + 2] = (int)p->blue>>8;
+            uint8_t cam[3] = {p->red>>8, p->green>>8, p->blue>>8};
+            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i)+2-k] = cam[k];
+            p++;
           }
-          else
-          {
-            img->pixels[3*imimage->columns*y + 3*x + 0] = (int)p->red;
-            img->pixels[3*imimage->columns*y + 3*x + 1] = (int)p->green;
-            img->pixels[3*imimage->columns*y + 3*x + 2] = (int)p->blue;
-          }
-          p++;
         }
       }
+      else
+      { // scale to fit
+        bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+        const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
+        p = AcquireImagePixels(imimage,0,0,imimage->columns,imimage->rows,exception);
+        for(int j=0;j<p_ht && scale*j<image->height;j++) for(int i=0;i<p_wd && scale*i < image->width;i++)
+        {
+          const PixelPacket *p1 = p + 3*((int)(scale*j)*image->width + (int)(scale*i));
+          uint8_t cam[3] = {p1->red>>8, p1->green>>8, p1->blue>>8};
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i)+2-k] = cam[k];
+        }
+      }
+      // store in db.
+      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+      if(dt_image_update_mipmaps(img)) ret = 1;
+
       imimage = DestroyImage(imimage);
       image_info = DestroyImageInfo(image_info);
       exception = DestroyExceptionInfo(exception);
@@ -331,65 +332,74 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
-      raw = NULL;
-      image = NULL;
-      dt_image_release(img, DT_IMAGE_FULL, 'w');
+      dt_image_release(img, DT_IMAGE_MIP4, 'w');
+      dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
-      return 0;
+      return ret;
 #else
       fprintf(stderr, "[imageio_load_raw] compiled without Magick support!\n");
 #endif
     }
     else
     {
-      dt_image_release(img, DT_IMAGE_FULL, 'w');
+      // BMP: directly to mip4
+      if (dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw;
+      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(float));
+      if(image->width == p_wd && image->height == p_ht)
+      { // use 1:1
+        for(int j=0;j<image->height;j++) for(int i=0;i<image->width;i++)
+        {
+          uint8_t *cam = image->data + 3*(j*image->width + i);
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i) + 2-k] = cam[k];
+        }
+      }
+      else
+      { // scale to fit
+        bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+        const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
+        for(int j=0;j<p_ht && scale*j<image->height;j++) for(int i=0;i<p_wd && scale*i < image->width;i++)
+        {
+          uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i) + 2-k] = cam[k];
+        }
+      }
+      // store in db.
+      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+      if(dt_image_update_mipmaps(img)) ret = 1;
+      // clean up raw stuff.
+      libraw_recycle(raw);
+      libraw_close(raw);
+      free(image);
+      dt_image_release(img, DT_IMAGE_MIP4, 'w');
+      dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
-      return 0;
+      return ret;
     }
-  if(!image)
-  {
-    ret = libraw_unpack(raw);
-    HANDLE_ERRORS(ret, 1);
-    ret = libraw_dcraw_process(raw);
-    HANDLE_ERRORS(ret, 1);
-    image = dcraw_make_mem_image(raw, &ret);
-    HANDLE_ERRORS(ret, 1);
   }
-  img->shrink = raw->params.half_size;
-  img->orientation = raw->sizes.flip;
-  img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
-  img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-  img->width <<= img->shrink;
-  img->height <<= img->shrink;
-  img->exif_iso = raw->other.iso_speed;
-  img->exif_exposure = raw->other.shutter;
-  img->exif_aperture = raw->other.aperture;
-  img->exif_focal_length = raw->other.focal_len;
-  strncpy(img->exif_maker, raw->idata.make, 20);
-  strncpy(img->exif_model, raw->idata.model, 20);
-  dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-  if(dt_image_alloc(img, DT_IMAGE_FULL))
-  {
-    libraw_recycle(raw);
-    libraw_close(raw);
-    free(image);
-    // dt_image_cache_release(img, 'r');
-    return 1;
-  }
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
-  const float m = 1./0xffff;
-// #pragma omp parallel for schedule(static) shared(img, image)
-  for(int k=0;k<3*(img->width>>img->shrink)*(img->height>>img->shrink);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
-  // clean up raw stuff.
+  // if no thumbnail: load shrinked raw to tmp buffer (use dt_imageio_load_raw)
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
-  raw = NULL;
-  image = NULL;
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
+  ret = dt_imageio_open_raw(img, filename);
+  ret +=  dt_image_raw_to_preview(img);       // this updates mipf/mip4..0 from raw pixels.
+  dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
+  return ret;
+
+error_raw_magick_mip4: // clean up libraw, magick and release mip4 buffer
+  dt_image_release(img, DT_IMAGE_MIP4, 'w');
+  dt_image_release(img, DT_IMAGE_MIP4, 'r');
+error_raw_magick:// clean up libraw and magick only
+  CatchException(exception);
+  image_info = DestroyImageInfo(image_info);
+  exception = DestroyExceptionInfo(exception);
+error_raw:
+  fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
+  libraw_recycle(raw);
+  libraw_close(raw);
+  free(image);
   // dt_image_cache_release(img, 'r');
-  return 0;
+  return 1;
 }
 
 int dt_imageio_open_raw(dt_image_t *img, const char *filename)
