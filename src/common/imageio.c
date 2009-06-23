@@ -24,6 +24,7 @@
 #include <libexif/exif-data.h>
 // #include <exif-log.h>
 #include <string.h>
+#include <strings.h>
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
 {
@@ -231,8 +232,6 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
 // only set mip4..0.
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
-  return 1;
-#if 0
   // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
@@ -301,7 +300,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       { // use 1:1
         for (int j=0; j < image->height; j++)
         {
-          p = AcquireImagePixels(imimage,0,y,imimage->columns,1,exception);
+          p = AcquireImagePixels(imimage,0,j,imimage->columns,1,exception);
           if (p == (const PixelPacket *) NULL) goto error_raw_magick_mip4;
           for (int i=0; i < image->width; i++)
           {
@@ -338,6 +337,14 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
       return ret;
+error_raw_magick_mip4:// clean up libraw and magick only
+      dt_image_release(img, DT_IMAGE_MIP4, 'w');
+      dt_image_release(img, DT_IMAGE_MIP4, 'r');
+error_raw_magick:// clean up libraw and magick only
+      CatchException(exception);
+      image_info = DestroyImageInfo(image_info);
+      exception = DestroyExceptionInfo(exception);
+      goto error_raw;
 #else
       fprintf(stderr, "[imageio_load_raw] compiled without Magick support!\n");
 #endif
@@ -388,13 +395,9 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
   return ret;
 
-error_raw_magick_mip4: // clean up libraw, magick and release mip4 buffer
+error_raw_mip4: // clean up libraw, and release mip4 buffer
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
-error_raw_magick:// clean up libraw and magick only
-  CatchException(exception);
-  image_info = DestroyImageInfo(image_info);
-  exception = DestroyExceptionInfo(exception);
 error_raw:
   fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
   libraw_recycle(raw);
@@ -402,7 +405,6 @@ error_raw:
   free(image);
   // dt_image_cache_release(img, 'r');
   return 1;
-#endif
 }
 
 int dt_imageio_open_raw(dt_image_t *img, const char *filename)

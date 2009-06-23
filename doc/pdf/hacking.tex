@@ -94,9 +94,35 @@
 
 \resizebox{\linewidth}{!}{\input{graphs/system.pdftex_t}}
 
+\subsection{Module Descriptions}
+
+\begin{description}
+  \item[gui] using gtk2 and cairo.
+\end{description}
+\begin{description}
+  \item[control]
+  \item[control, scheduler] using pthreads and a custom job queuing system.
+\end{description}
+\begin{description}
+  \item[image]
+  \item[image cache]
+  \item[mipmap cache]
+  \item[db]
+  \item[imageio]
+\end{description}
+\begin{description}
+  \item[library] this is the lighttable module.
+  \item[film]
+\end{description}
+\begin{description}
+  \item[develop] this implements the darktable.
+  \item[pixelpipe]
+  \item[image operation (iop) modules, aka plug-ins]
+\end{description}
+
 \subsection{Disk to Image Data Flow}
 
-Related modules:
+\paragraph{Related Modules}
 \begin{itemize}
   \item imageio \code{dt\_imageio\_*}
   \item db (messily hidden in sqlite3 statements all over the place)
@@ -105,25 +131,25 @@ Related modules:
   \item image \code{dt\_image\_t}
 \end{itemize}
 
-in image cache:
+\paragraph{in image cache}
 \begin{itemize}
-  \item[[todo]] db $\rightarrow$ image struct, trigger imageio disk $\rightarrow$ image entry in db if miss.
+  \item[[todo]] db $\rightarrow$ image struct, trigger imageio disk $\rightarrow$ image entry in db if miss \code{dt\_image\_import}.
+                metadata through libraw/magick
 \end{itemize}
 
-in mip cache:
+\paragraph{in mip cache}
 \begin{itemize}
 {\color{red}\item[[todo]]} db $\rightarrow$ mip[0--4], trigger imageio disk $\rightarrow$ mip4 and mip4 $\rightarrow$ mip[0-3] if miss.
   \item[[todo]] db $\rightarrow$ mipf, trigger mip4 $\rightarrow$ mipf or pixels $\rightarrow$ mipf if miss.
 \end{itemize}
 
-in imageio:
+\paragraph{in imageio}
 \begin{itemize}
-  \item[[todo]] disk $\rightarrow$ image entry in db, metadata through libraw/magick: \code{dt\_imageio\_import}
   \item[[todo]] disk $\rightarrow$ mip[0--4] entries in db (thumbnail \code{dt\_imageio\_open\_preview}).
 
              \code{dt\_imageio\_open\_raw\_preview} (done)\\
              \code{dt\_imageio\_open\_ldr\_preview} (todo)
-  \item[[todo]] mip4 $\rightarrow$ mipf (by guessed reverse gamma) \code{dt\_image\_raw\_to\_preview}.
+  \item mip4 $\rightarrow$ mipf (by guessed reverse gamma) \code{dt\_image\_preview\_to\_raw}.
   \item full pixels $\rightarrow$ mipf (downscaling) \code{dt\_image\_raw\_to\_preview}.
   \item mip4 $\rightarrow$ mip[0--3] \code{dt\_image\_update\_mipmaps}.
 \end{itemize}
@@ -131,5 +157,16 @@ in imageio:
 image import: only load \code{dt\_image\_t} and mip[0--4] to database.
 
 \code{dt\_image\_get}: check mipmap cache, check database, else \code{dt\_imageio\_open[\_preview]}.
+
+\subsection{Plug-in Interface}
+
+For examples, have a look at \code{src/iop/*.\{h,c\}}.
+
+\subsubsection{Gui Callbacks}
+
+\subsubsection{Image Processing}
+
+State of libgegl support: enable at compile time with \texttt{--enable-gegl}. Using this
+flag is discouraged at the moment, as libgegl is really a lot slower than the homebrew version.
 
 \end{document}

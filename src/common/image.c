@@ -80,57 +80,21 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
 
 int dt_image_preview_to_raw(dt_image_t *img)
 {
-  return 1;
-#if 0 // FIXME: this should only do mip4 -> mipf and leave pixels alone.
-  const int raw_wd = img->loaded_width;
-  const int raw_ht = img->loaded_height;
   int p_wd, p_ht;
   float f_wd, f_ht;
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
 
-  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return 1;
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-
-  if(raw_wd == p_wd && raw_ht == p_ht)
-  { // use 1:1
-    for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
-    {
-      uint8_t *cam = (uint8_t *)img->pixels + 3*(j*raw_wd + i);
-      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i) + 2 - k] = cam[k];
-    }
-  }
-  else
-  { // scale to fit
-    bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
-    const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
-    for(int j=0;j<p_ht && scale*j<raw_ht;j++) for(int i=0;i<p_wd && scale*i < raw_wd;i++)
-    {
-      uint8_t *cam = (uint8_t *)img->pixels + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][3*(j*p_wd + i) + k] = cam[k];
-    }
-  }
-  // store in db.
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-
-  if(dt_image_alloc(img, DT_IMAGE_MIPF))
-  {
-    dt_image_release(img, DT_IMAGE_MIP4, 'w');
-    dt_image_release(img, DT_IMAGE_MIP4, 'r');
-    return 1;
-  }
+  if(dt_image_alloc(img, DT_IMAGE_MIPF)) return 1;
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-  int ret = 0;
+
+  // convert and store in db.
   dt_imageio_preview_8_to_f(p_wd, p_ht, img->mip[DT_IMAGE_MIP4], img->mipf);
   dt_imageio_preview_write(img, DT_IMAGE_MIPF);
-  if(dt_image_update_mipmaps(img)) ret = 1;
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return ret;
-#endif
+  return 0;
 }
 
 int dt_image_raw_to_preview(dt_image_t *img)

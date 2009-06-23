@@ -12,7 +12,7 @@ bugs:
 - histogram redraw (tonecurve)
 - timeout for zoom/pan: first one frame preview then full?
 - progress bars for image folder import and image export
-- develop does not need gamma anymore
+- develop does not need (object local) gamma anymore
 - where to put ungamma table? 
 - remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
@@ -50,6 +50,7 @@ ubuntu package deps:
 - re-check image data base import, updates, and storage in db
 
 1.0 roadmap:
+- image denoising (non-local means)
 - remove libraw in favour of native gegl loading
 - remove imagemagick in favour of native gegl writing
 - ubuntu package

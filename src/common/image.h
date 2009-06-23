@@ -115,4 +115,8 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip, con
 /** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
 void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 
+/** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
+int dt_image_raw_to_preview(dt_image_t *img);
+/** up-converts mip4 to mipf using guessed gamma values. needs mip4 r locked. */
+int dt_image_preview_to_raw(dt_image_t *img);
 #endif
