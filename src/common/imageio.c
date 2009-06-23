@@ -231,6 +231,8 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
 // only set mip4..0.
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
+  return 1;
+#if 0
   // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
@@ -400,6 +402,7 @@ error_raw:
   free(image);
   // dt_image_cache_release(img, 'r');
   return 1;
+#endif
 }
 
 int dt_imageio_open_raw(dt_image_t *img, const char *filename)
