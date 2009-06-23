@@ -285,3 +285,8 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   return 0;
 }
 
+void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe)
+{
+  dt_dev_pixelpipe_cache_flush(&pipe->cache);
+}
+

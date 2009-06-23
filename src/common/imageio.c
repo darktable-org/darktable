@@ -26,6 +26,7 @@
 #include <string.h>
 #include <strings.h>
 
+
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
 {
   if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1;
@@ -116,8 +117,8 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     blob = sqlite3_column_blob(stmt, 0);
     length = sqlite3_column_bytes(stmt, 0);
   }
-  if(!blob) 
-  {
+  if(!blob) return 1; // not there. will be handled by caller (load to db)
+  /*{
     fprintf(stderr, "[preview_read] could not get mipmap from database: %s, removing image %s.\n", sqlite3_errmsg(darktable.db), img->filename);
     rc = sqlite3_finalize(stmt);
     rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
@@ -129,7 +130,7 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     dt_image_cache_release(img, 'r');
     // TODO: need to preserve img id!
     return 1;//dt_image_import(film_id, filename);
-  }
+  }*/
   if(dt_image_alloc(img, mip))
   {
     rc = sqlite3_finalize(stmt);
@@ -279,7 +280,6 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     float f_wd, f_ht;
     dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
     dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
-    printf("preview: size %d %d\n", img->width, img->height);
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
       // JPEG: decode with magick (directly rescaled to mip4)
@@ -287,14 +287,16 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       ExceptionInfo *exception = AcquireExceptionInfo();
       ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
       Image *imimage = BlobToImage(image_info, image->data, image->data_size, exception);
+      if(raw->sizes.flip & 4) imimage = TransposeImage(imimage, exception);
+      if(raw->sizes.flip & 2) imimage = FlopImage(imimage, exception);
+      if(raw->sizes.flip & 1) imimage = FlipImage(imimage, exception);
       image->width  = imimage->columns;
       image->height = imimage->rows;
-      printf("preview: thumb size %d %d\n", image->width, image->height);
       if (imimage == (Image *) NULL || dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_magick;
 
-      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(float));
+      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
       assert(QuantumDepth == 16);
-      const PixelPacket *p;
+      const PixelPacket *p, *p1;
 
       if(image->width == p_wd && image->height == p_ht)
       { // use 1:1
@@ -304,7 +306,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
           if (p == (const PixelPacket *) NULL) goto error_raw_magick_mip4;
           for (int i=0; i < image->width; i++)
           {
-            uint8_t cam[3] = {p->red>>8, p->green>>8, p->blue>>8};
+            uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
             for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i)+2-k] = cam[k];
             p++;
           }
@@ -314,11 +316,11 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       { // scale to fit
         bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
-        p = AcquireImagePixels(imimage,0,0,imimage->columns,imimage->rows,exception);
+        p1 = AcquireImagePixels(imimage,0,0,imimage->columns,imimage->rows,exception);
         for(int j=0;j<p_ht && scale*j<image->height;j++) for(int i=0;i<p_wd && scale*i < image->width;i++)
         {
-          const PixelPacket *p1 = p + 3*((int)(scale*j)*image->width + (int)(scale*i));
-          uint8_t cam[3] = {p1->red>>8, p1->green>>8, p1->blue>>8};
+          p = p1 + ((int)(scale*j)*image->width + (int)(scale*i));
+          uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
           for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i)+2-k] = cam[k];
         }
       }
@@ -395,9 +397,6 @@ error_raw_magick:// clean up libraw and magick only
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
   return ret;
 
-error_raw_mip4: // clean up libraw, and release mip4 buffer
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
 error_raw:
   fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
   libraw_recycle(raw);
@@ -570,6 +569,8 @@ void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
 
 int dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
+  // TODO:
+  fprintf(stderr, "[imageio_open_ldr_preview] implement me!\n");
   return 1;
 }
 

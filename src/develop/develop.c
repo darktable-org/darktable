@@ -246,20 +246,23 @@ restart:
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
   // only load if not already there.
-  if(dev->image->pixels && !dev->image->shrink) return;
-restart:
-  dev->image_loading = 1;
-  dev->image->shrink = 0;
-  // not loaded from cache because it is obviously not there yet. so load unshrinked version:
-  int err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
-  if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
-
-  // obsoleted by another job?
-  if(dev->image != img)
+  if(!dev->image->pixels || dev->image->shrink)
   {
-    printf("[dev_raw_load] recovering from obsoleted read!\n");
-    img = dev->image;
-    goto restart;
+    int err;
+restart:
+    dev->image_loading = 1;
+    dev->image->shrink = 0;
+    // not loaded from cache because it is obviously not there yet. so load unshrinked version:
+    err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
+    if(err) fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
+
+    // obsoleted by another job?
+    if(dev->image != img)
+    {
+      printf("[dev_raw_load] recovering from obsoleted read!\n");
+      img = dev->image;
+      goto restart;
+    }
   }
   if(dev->gui_attached)
   {
@@ -268,8 +271,9 @@ restart:
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     dev->image_loading = 0;
     dev->image_dirty = 1;
+    // during load, a mipf update could have been issued.
+    dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
   }
-
   dt_dev_process_image(dev);
 }
 

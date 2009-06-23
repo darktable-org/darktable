@@ -196,8 +196,8 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   // load small raw (try libraw then magick)
   img->shrink = 1;
-  // TODO: dt_imageio_open_raw_preview(img, filename);
-  if(dt_imageio_open(img, filename))
+  if(dt_imageio_open_raw_preview(img, filename))
+  // if(dt_imageio_open(img, filename))
   {
     dt_image_cleanup(img);
     fprintf(stderr, "[image_import] could not open %s\n", filename);
@@ -229,8 +229,8 @@ int dt_image_import(const int32_t film_id, const char *filename)
   rc = sqlite3_finalize(stmt);
 
   // create preview images
-  if(img->flags & DT_IMAGE_THUMBNAIL) { if(dt_image_preview_to_raw(img)) ret = 3; }
-  else if(dt_image_raw_to_preview(img)) ret = 2;
+  // if(img->flags & DT_IMAGE_THUMBNAIL) { if(dt_image_preview_to_raw(img)) ret = 3; }
+  // else if(dt_image_raw_to_preview(img)) ret = 2;
   dt_image_release(img, DT_IMAGE_FULL, 'r');
   dt_image_cache_release(img, 'w');
   return ret;
@@ -340,8 +340,8 @@ void dt_image_cleanup(dt_image_t *img)
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
   int ret = 1, rc;
-  if(mip == DT_IMAGE_FULL)
-  {
+  if(dt_imageio_preview_read(img, mip))
+  { // img not in database. => mip == FULL or kicked out or corrupt or first time load..
     char filename[1024];
     sqlite3_stmt *stmt;
     rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
@@ -349,10 +349,44 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     if(sqlite3_step(stmt) == SQLITE_ROW)
       snprintf(filename, 1024, "%s/%s", sqlite3_column_text(stmt, 0), img->filename);
     rc = sqlite3_finalize(stmt);
-    ret = dt_imageio_open(img, filename);
-    if(ret) dt_image_cleanup(img);
+    if(mip == DT_IMAGE_MIPF)
+    {
+      dt_image_buffer_t mip;
+      mip = dt_image_get(img, DT_IMAGE_FULL, 'r');
+      if(mip != DT_IMAGE_FULL)
+      {
+        img->flags |= DT_IMAGE_THUMBNAIL;
+        mip = dt_image_get(img, DT_IMAGE_MIP4, 'r');
+        if(mip != DT_IMAGE_MIP4)
+        {
+          if(dt_imageio_open_preview(img, filename)) return 1;
+        }
+        dt_image_release(img, mip, 'r');
+        ret = dt_image_preview_to_raw(img);
+      }
+      else
+      {
+        img->flags &= ~DT_IMAGE_THUMBNAIL;
+        ret = dt_image_raw_to_preview(img);
+        dt_image_release(img, DT_IMAGE_FULL, 'r');
+      }
+    }
+    else if(mip == DT_IMAGE_FULL)
+    {
+      ret = dt_imageio_open(img, filename);
+      if(img->flags & DT_IMAGE_THUMBNAIL)
+      {
+        ret = dt_image_raw_to_preview(img);
+        img->flags &= ~DT_IMAGE_THUMBNAIL;
+      }
+      dt_image_release(img, mip, 'w');
+    }
+    else
+    {
+      ret = dt_imageio_open_preview(img, filename);
+      dt_image_release(img, mip, 'w');
+    }
   }
-  else ret = dt_imageio_preview_read(img, mip);
   // TODO: insert abstract hook here?
   dt_control_queue_draw();
   return ret;

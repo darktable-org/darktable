@@ -2,6 +2,7 @@
 #include "control/jobs.h"
 #include "develop/imageop.h"
 #include "common/image_cache.h"
+#include "common/imageio.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 

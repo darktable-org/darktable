@@ -32,5 +32,7 @@ int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t h
 /** test availability of a cache line without destroying another, if it is not found. */
 int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash);
 
+/** invalidates all cachelines. */
+void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
 
 #endif

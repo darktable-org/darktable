@@ -87,3 +87,12 @@ int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t h
   }
   else return 0;
 }
+
+void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
+{
+  for(int k=0;k<cache->entries;k++)
+  {
+    cache->hash[k] = -1;
+    cache->used[k] = 0;
+  }
+}

@@ -1,5 +1,6 @@
 bugs:
 - open_raw has img cleaned up before finished during dt_exit
+- already cached raw image buffer disappears in mipmap cache?
 
 0.2 performance:
 - faster loading by reversing of thumbnail jpegs :)
@@ -11,6 +12,7 @@ bugs:
 - openmp libraw?
 - histogram redraw (tonecurve)
 - timeout for zoom/pan: first one frame preview then full?
+  (actually full pixels just redraw even if dirty..)
 - progress bars for image folder import and image export
 - develop does not need (object local) gamma anymore
 - where to put ungamma table? 
@@ -48,6 +50,8 @@ ubuntu package deps:
   (dump dt module/hist stack and gegl ops)
 - investigate 16-bit compression for raw previews
 - re-check image data base import, updates, and storage in db
+  imageio_preview_write: update/insert into
+  image_import: no dummy entries!
 
 1.0 roadmap:
 - image denoising (non-local means)
