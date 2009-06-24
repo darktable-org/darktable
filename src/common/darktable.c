@@ -40,7 +40,7 @@ int dt_init(int argc, char *argv[])
 #ifdef HAVE_MAGICK
   MagickCoreGenesis(*argv, MagickTrue);
 #endif
-#ifdef DT_USE_GEGL
+#ifdef HAVE_GEGL
   (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
@@ -126,7 +126,7 @@ void dt_cleanup()
 #ifdef HAVE_MAGICK
   MagickCoreTerminus();
 #endif
-#ifdef DT_USE_GEGL
+#ifdef HAVE_GEGL
   gegl_exit();
 #endif
 }

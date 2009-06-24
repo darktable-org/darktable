@@ -124,16 +124,6 @@ void dt_ctl_settings_init(dt_control_t *s)
   s->image_settings.dev_gamma_linear = 0.1;
   s->image_settings.dev_gamma_gamma = 0.45;
 
-#ifndef DT_USE_GEGL
-  s->image_settings.tonecurve_preset = 0;
-  s->image_settings.tonecurve_x[0] = s->image_settings.tonecurve_y[0] = 0.0;
-  s->image_settings.tonecurve_x[1] = s->image_settings.tonecurve_y[1] = 0.08;
-  s->image_settings.tonecurve_x[2] = s->image_settings.tonecurve_y[2] = 0.4;//0.3;
-  s->image_settings.tonecurve_x[3] = s->image_settings.tonecurve_y[3] = 0.6;//0.7;
-  s->image_settings.tonecurve_x[4] = s->image_settings.tonecurve_y[4] = 0.92;
-  s->image_settings.tonecurve_x[5] = s->image_settings.tonecurve_y[5] = 1.0;
-#endif
-
   memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
   memcpy(&(s->image_defaults), &(s->image_settings), sizeof(dt_ctl_image_settings_t));
 }
@@ -189,11 +179,7 @@ int dt_control_load_config(dt_control_t *c)
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-#ifdef DT_USE_GEGL
     rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
-#else
-    rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, hash integer, operation char(20), op_params blob, settings blob, foreign key(imgid) references images(id))", NULL, NULL, NULL);
-#endif
     HANDLE_SQLITE_ERR(rc);
 
     // TODO: - table tags "tag str" "key#"
@@ -455,11 +441,7 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
   // float tb = darktable.control->tabborder;
   // re-configure all components:
   // dt_dev_configure(darktable.develop, width - 2*tb, height - 2*tb);
-#ifdef DT_USE_GEGL
   return dt_dev_configure(da, event, user_data);
-#else
-  return TRUE;
-#endif
 }
 
 void *dt_control_expose(void *voidptr)
@@ -602,11 +584,7 @@ void dt_control_mouse_moved(double x, double y, int which)
       if(darktable.control->button_down)
       { // depending on dev_zoom, adjust dev_zoom_x/y.
         dt_develop_t *dev = darktable.develop;
-#ifndef DT_USE_GEGL
-        const int cwd = dev->cache_width, cht = dev->cache_height;
-#else
         const int cwd = dev->width, cht = dev->height;
-#endif
         const int iwd = dev->image->width, iht = dev->image->height;
         float scale = 1.0f;
         dt_dev_zoom_t zoom;
@@ -626,9 +604,7 @@ void dt_control_mouse_moved(double x, double y, int which)
         DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
         darktable.control->button_x = x;
         darktable.control->button_y = y;
-#ifdef DT_USE_GEGL
         dt_dev_invalidate(darktable.develop);
-#endif
         dt_control_queue_draw();
       }
     }
@@ -778,20 +754,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-#ifndef DT_USE_GEGL
-  DT_CTL_GET_GLOBAL(bit, gui_tonecurve);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve_expander");
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  DT_CTL_GET_GLOBAL(bit, gui_hsb);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "hsb_expander");
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  DT_CTL_GET_GLOBAL(bit, gui_gamma);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-#endif
-
   DT_CTL_GET_GLOBAL(bit, gui_export);
   widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
@@ -849,26 +811,6 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   DT_CTL_SET_GLOBAL(gui_histogram, bit);
-
-#ifndef DT_USE_GEGL
-  DT_CTL_GET_GLOBAL(bit, gui_tonecurve);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve_expander");
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  DT_CTL_SET_GLOBAL(gui_tonecurve, bit);
-
-  DT_CTL_GET_GLOBAL(bit, gui_hsb);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "hsb_expander");
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  DT_CTL_SET_GLOBAL(gui_hsb, bit);
-
-  DT_CTL_GET_GLOBAL(bit, gui_gamma);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_expander");
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  DT_CTL_SET_GLOBAL(gui_gamma, bit);
-#endif
 
   DT_CTL_GET_GLOBAL(bit, gui_export);
   widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
@@ -997,13 +939,6 @@ int dt_control_key_pressed(uint16_t which)
   gtk_widget_queue_draw(widget);
   return 1;
 }
-
-#ifndef DT_USE_GEGL
-void dt_control_get_tonecurve(uint16_t *tonecurve, dt_ctl_image_settings_t *settings)
-{
-  dt_gui_curve_editor_get_curve(&(darktable.gui->tonecurve), tonecurve, settings);
-}
-#endif
 
 void dt_control_add_history_item(int32_t num_in, const char *label)
 {

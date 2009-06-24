@@ -7,6 +7,10 @@ bugs:
 - parallel iop->processing (seems to be fast enough mono-core)?
 
 0.2 cleanup:
+- merge develop_view to develop
+- remove develop/iop_hsb.*
+- remove dt_ctl_image_settings_t
+- remove src/gui/curveeditor.*
 - width/height in metadata
 - openmp libraw?
 - histogram redraw (tonecurve)

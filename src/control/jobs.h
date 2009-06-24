@@ -36,28 +36,6 @@ dt_dev_raw_load_t;
 void dt_dev_raw_load_job_run(dt_job_t *job);
 void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *image);
 
-#ifndef DT_USE_GEGL
-enum dt_dev_zoom_t;
-typedef struct dt_dev_cache_load_t
-{
-  dt_develop_t *dev;
-  int32_t stackpos;
-  enum dt_dev_zoom_t zoom;
-}
-dt_dev_cache_load_t;
-
-void dt_dev_cache_load_job_run(dt_job_t *job);
-void dt_dev_cache_load_job_init(dt_job_t *job, dt_develop_t *dev, int32_t stackpos, enum dt_dev_zoom_t zoom);
-
-typedef struct dt_dev_small_cache_load_t
-{
-  dt_develop_t *dev;
-}
-dt_dev_small_cache_load_t;
-
-void dt_dev_small_cache_load_run(dt_job_t *job);
-void dt_dev_small_cache_load_init(dt_job_t *job, dt_develop_t *dev);
-#else
 typedef struct dt_dev_process_t
 {
   dt_develop_t *dev;
@@ -67,7 +45,6 @@ void dt_dev_process_preview_job_run(dt_job_t *job);
 void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev);
 void dt_dev_process_image_job_run(dt_job_t *job);
 void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev);
-#endif
 
 void dt_dev_export_init(dt_job_t *job);
 

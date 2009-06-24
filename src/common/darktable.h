@@ -7,11 +7,7 @@
 #include <sqlite3.h>
 #include <pthread.h>
 
-#ifdef DT_USE_GEGL
-  #define DT_VERSION 10
-#else
-  #define DT_VERSION 9
-#endif
+#define DT_VERSION 10
 
 #define HANDLE_SQLITE_ERR(rc) \
   if(rc != SQLITE_OK) \

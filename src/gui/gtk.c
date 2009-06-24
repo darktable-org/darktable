@@ -35,11 +35,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
   gtk_widget_queue_draw(widget);
 
-#ifndef DT_USE_GEGL
-  widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve");
-  gtk_widget_queue_draw(widget);
-#endif
-
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
   {
@@ -48,25 +43,12 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   }
   else
   {
-    // TODO: reset modules (iop) !
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
     if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
 
     // reset operations, update expanders
     dt_dev_operation_t op;
     DT_CTL_GET_GLOBAL_STR(op, dev_op, 20);
-#ifndef DT_USE_GEGL
-    darktable.gui->reset = 1;
-    // reset non-fixed pipeline:
-    dt_iop_gui_reset();
-    darktable.gui->reset = 0;
-#else
-    // TODO: reset all modules..?
-#endif
-
-    // DT_CTL_GET_GLOBAL(zoom, lib_zoom);
-    // widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
-    // gtk_range_set_value(GTK_RANGE(widget), zoom);
   }
 
 	return TRUE;
@@ -321,21 +303,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 	g_signal_connect (G_OBJECT (widget), "value-changed",
                     G_CALLBACK (zoom), NULL);
 
-#ifndef DT_USE_GEGL
-  // gamma correction expander
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_linear");
-	g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (gamma), (gpointer)0);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "gamma_gamma");
-	g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (gamma), (gpointer)1);
-
-  // tone curve
-  widget = glade_xml_get_widget (darktable.gui->main_window, "tonecurve");
-  dt_gui_curve_editor_init(&gui->tonecurve, widget);
-#endif
-
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   dt_gui_navigation_init(&gui->navigation, widget);
 
@@ -375,19 +342,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
 
   darktable.gui->reset = 0;
-#ifndef DT_USE_GEGL
-  dt_iop_gui_init();
-#else
-  // TODO: need anything here? modules are inited anyways when they are needed.
-#endif
   return 0;
 }
 
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
-#ifndef DT_USE_GEGL
-  dt_gui_curve_editor_cleanup(&gui->tonecurve);
-#endif
   dt_gui_navigation_cleanup(&gui->navigation);
   dt_gui_histogram_cleanup(&gui->histogram);
 }
