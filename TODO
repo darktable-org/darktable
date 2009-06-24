@@ -1,6 +1,7 @@
 bugs:
 - open_raw has img cleaned up before finished during dt_exit
-- histogram update not working when jumping through history
+- histogram (hist) update not working when jumping through history
+- histogram redraw (tonecurve)
 
 0.2 performance:
 - libraw document mode and custom whitebalance/color processing.
@@ -13,7 +14,6 @@ bugs:
 - remove src/gui/curveeditor.*
 - width/height in metadata
 - openmp libraw?
-- histogram redraw (tonecurve)
 - timeout for zoom/pan: first one frame preview then full?
   (actually full pixels just redraw even if dirty..)
 - progress bars for image folder import and image export
@@ -27,6 +27,7 @@ bugs:
 - replace dev zoom/closeup weirdness by general scale factor.
 - re-think mipmap database layout (even smaller float preview
   to replace other mips?)
+  if kicking out mip maps: need to re-generate history pipeline mipf->mip4!
 - code review, cleanup module categories (develop_view, iop?, DT_USE_GEGL)
 - tmp robustness: clean up database on exit completely (or at least mip blobs?)
 
@@ -58,8 +59,8 @@ ubuntu package deps:
 
 1.0 roadmap:
 - image denoising (non-local means)
-- remove libraw in favour of native gegl loading
-- remove imagemagick in favour of native gegl writing
+- remove libraw in favour of native gegl loading?
+- remove imagemagick in favour of native gegl writing?
 - ubuntu package
 - database for linear/gamma parameters for each camera model
 
