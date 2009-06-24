@@ -204,6 +204,11 @@ restart:
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
+  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r'))
+  {
+    dt_dev_raw_load(dev, dev->image);
+  }
+  else dt_image_release(dev->image, DT_IMAGE_FULL, 'r'); // raw load already keeps one reference, we were just testing.
   dt_dev_zoom_t zoom;
   float zoom_x, zoom_y;
   int closeup;
@@ -246,7 +251,8 @@ restart:
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
   // only load if not already there.
-  if(!dev->image->pixels || dev->image->shrink)
+  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
+  // if(!dev->image->pixels || dev->image->shrink)
   {
     int err;
 restart:
@@ -273,8 +279,8 @@ restart:
     dev->image_dirty = 1;
     // during load, a mipf update could have been issued.
     dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
+    dt_dev_process_image(dev);
   }
-  dt_dev_process_image(dev);
 }
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
@@ -303,13 +309,10 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   dt_dev_read_history(dev);
   if(dev->gui_attached)
   {
-    if(!dev->image->pixels || dev->image->shrink)
-    {
-      dt_job_t job;
-      dt_dev_raw_load_job_init(&job, dev, dev->image);
-      int32_t err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_1);
-      if(err) fprintf(stderr, "[dev_load_image] job queue exceeded!\n");
-    }
+    dt_job_t job;
+    dt_dev_raw_load_job_init(&job, dev, dev->image);
+    int32_t err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_1);
+    if(err) fprintf(stderr, "[dev_load_image] job queue exceeded!\n");
   }
   else dt_dev_raw_load(dev, dev->image); // in this thread.
 }

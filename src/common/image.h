@@ -114,6 +114,8 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip);
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
 /** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
 void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
+/** locks the given mode if the buffer is available. returns non-zero and does nothing else on failure (no async loading is scheduled). */
+int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode);
 
 /** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
 int dt_image_raw_to_preview(dt_image_t *img);
