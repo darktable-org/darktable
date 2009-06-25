@@ -1,29 +1,38 @@
-#ifndef DARKTABLE_IOP_GAMMA_H
-#define DARKTABLE_IOP_GAMMA_H
+
+#ifndef DT_IOP_COLOR_TEMPERATURE
+#define DT_IOP_COLOR_TEMPERATURE
+// plug-in frontend for gegl:color-temperature: (in sRGB)
+// params: kelvin in, kelvin out (or just one slider with magic 0..1 ?)
 
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-typedef struct dt_iop_gamma_params_t
-{
-  float gamma, linear;
-}
-dt_iop_gamma_params_t;
+#define DT_IOP_LOWEST_TEMPERATURE     1000
+#define DT_IOP_HIGHEST_TEMPERATURE   12000
 
-typedef struct dt_iop_gamma_gui_data_t
+
+static const float dt_iop_temperature_rgb_r55[][12];
+
+typedef struct dt_iop_temperature_params_t
+{
+  float temperature_in, temperature_out;
+}
+dt_iop_temperature_params_t;
+
+typedef struct dt_iop_temperature_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2;
   GtkHScale *scale1, *scale2;
 }
-dt_iop_gamma_gui_data_t;
+dt_iop_temperature_gui_data_t;
 
-typedef struct dt_iop_gamma_data_t
+typedef struct dt_iop_temperature_data_t
 {
-  uint8_t table[0x10000];
+  float coeffs[3];
 }
-dt_iop_gamma_data_t;
+dt_iop_temperature_data_t;
 
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
@@ -39,7 +48,7 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height);
 
-void gamma_callback  (GtkRange *range, gpointer user_data);
-void linear_callback (GtkRange *range, gpointer user_data);
+void temperature_in_callback  (GtkRange *range, gpointer user_data);
+void temperature_out_callback (GtkRange *range, gpointer user_data);
 
 #endif

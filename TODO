@@ -6,6 +6,7 @@ bugs:
 0.2 performance:
 - libraw document mode and custom whitebalance/color processing.
 - parallel iop->processing (seems to be fast enough mono-core)?
+- try dt_iop std functions in parallel with openmp?
 
 0.2 cleanup:
 - merge develop_view to develop
@@ -32,6 +33,21 @@ bugs:
 - tmp robustness: clean up database on exit completely (or at least mip blobs?)
 
 - release 0.2 :)
+
+image operations:
+ - load ahd interpolated raw data, clip and zoom.
+ - hook temperature conversion (sRGB)
+ - pixelpipe_hb.c: convert input to Lab
+ - hook whitebalance/saturation module
+ - hook exposure control: black point, fill darks, recover highlights, exposure.
+ - hook denoising
+ - downconvert Lab_float -> Lab_16
+ - tonecurve histogram on L
+ - convert tonecurve to only work on L16
+ - convert back to sRGB
+ - gamma table
+ - output histogram in RGB_8
+ - put in documentation.
 
 ubuntu package deps:
 - libgtk2.0-dev

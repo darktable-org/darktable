@@ -194,6 +194,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
       dt_iop_clip_and_zoom(pipe->input, x/scale, y/scale, width/scale, height/scale, pipe->iwidth, pipe->iheight,
                            *output, 0, 0, width, height, width, height);
+      // TODO: convert to Lab (using lcms?)!
+      // dt_iop_sRGB_to_Lab((float *)*output, (float *)*output, 0, 0, scale, width, height)
     }
   }
   else
@@ -204,6 +206,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     // reserve new cache line: output
     (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     
+    // TODO: if gamma is next, convert Lab_16 to RGB_16
+    // TODO: if tonecurve is next, convert to L16
+    // TODO: make histogram only over L16!
     // tonecurve histogram:
     if(pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
     {

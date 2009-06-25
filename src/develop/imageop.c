@@ -1,6 +1,8 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
+
+#include <lcms.h>
 #include <strings.h>
 #include <assert.h>
 #include <math.h>
@@ -99,6 +101,65 @@ void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, in
       x += scalex; idx++;
     }
     y += scaley; x = ix2;
+  }
+}
+
+void dt_iop_sRGB_to_Lab(const float *in, float *out, int x, int y, float scale, int width, int height)
+{
+  // TODO: use lcms dbl/16-bit + upconversion?
+  cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
+  cmsHPROFILE  hLab  = cmsCreateLabProfile(cmsD50_xyY());
+
+  cmsHTRANSFORM  xform = cmsCreateTransform(hsRGB, TYPE_RGB_DBL, hLab, TYPE_Lab_DBL, 
+      INTENT_PERCEPTUAL, cmsFLAGS_NOTPRECALC);
+
+  for(int j=0;j<height;j++) for(int i=0;i<width;i++)
+  {
+    double RGB[3];
+    cmsCIELab Lab;
+
+    for(int k=0;k<3;k++) RGB[k] = in[3*(width*j + i) + k];
+    cmsDoTransform(xform, RGB, &Lab, 1);
+    out[3*(width*j+i) + 0] = Lab.L;
+    out[3*(width*j+i) + 1] = Lab.a;
+    out[3*(width*j+i) + 2] = Lab.b;
+  }
+}
+
+void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scale, int width, int height)
+{
+  cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
+  cmsHPROFILE hLab  = cmsCreateLabProfile(cmsD50_xyY());
+
+  cmsHTRANSFORM  xform = cmsCreateTransform(hLab, TYPE_Lab_16, hsRGB, TYPE_RGB_16, 
+      INTENT_PERCEPTUAL, cmsFLAGS_NOTPRECALC);
+
+  for(int j=0;j<height;j++)
+  {
+    uint16_t *lab = in + 3*width*j;
+    uint16_t *rgb = out + 3*width*j;
+    cmsDoTransform(xform, lab, rgb, width);
+  }
+}
+
+void dt_iop_Lab_to_sRGB(const float *in, float *out, int x, int y, float scale, int width, int height)
+{
+  cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
+  cmsHPROFILE hLab  = cmsCreateLabProfile(cmsD50_xyY());
+
+  cmsHTRANSFORM  xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, 
+      INTENT_PERCEPTUAL, cmsFLAGS_NOTPRECALC);
+
+  for(int j=0;j<height;j++) for(int i=0;i<width;i++)
+  {
+    double RGB[3];
+    cmsCIELab Lab;
+
+    Lab.L = in[3*(width*j+i) + 0];
+    Lab.a = in[3*(width*j+i) + 1];
+    Lab.b = in[3*(width*j+i) + 2];
+    cmsDoTransform(xform, &Lab, RGB, 1);
+    for(int k=0;k<3;k++) out[3*(width*j + i) + k] = RGB[k];
   }
 }
 

@@ -1,29 +1,31 @@
-#ifndef DARKTABLE_IOP_GAMMA_H
-#define DARKTABLE_IOP_GAMMA_H
+#ifndef DT_IOP_COLORCORRECTION_H
+#define DT_IOP_COLORCORRECTION_H
+
+// this wraps gegl:whitebalance
 
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-typedef struct dt_iop_gamma_params_t
+typedef struct dt_iop_colorcorrection_params_t
 {
-  float gamma, linear;
+  float hia, hib, loa, lob, saturation;
 }
-dt_iop_gamma_params_t;
+dt_iop_colorcorrection_params_t;
 
-typedef struct dt_iop_gamma_gui_data_t
+typedef struct dt_iop_colorcorrection_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2;
-  GtkHScale *scale1, *scale2;
+  GtkLabel *label1, *label2, *label3, *label4, *label5;
+  GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
 }
-dt_iop_gamma_gui_data_t;
+dt_iop_colorcorrection_gui_data_t;
 
-typedef struct dt_iop_gamma_data_t
+typedef struct dt_iop_colorcorrection_data_t
 {
-  uint8_t table[0x10000];
+  float a_scale, a_base, b_scale, b_base, saturation;
 }
-dt_iop_gamma_data_t;
+dt_iop_colorcorrection_data_t;
 
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
@@ -39,7 +41,10 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height);
 
-void gamma_callback  (GtkRange *range, gpointer user_data);
-void linear_callback (GtkRange *range, gpointer user_data);
+void loa_callback (GtkRange *range, gpointer user_data);
+void hia_callback (GtkRange *range, gpointer user_data);
+void lob_callback (GtkRange *range, gpointer user_data);
+void hib_callback (GtkRange *range, gpointer user_data);
+void sat_callback (GtkRange *range, gpointer user_data);
 
 #endif
