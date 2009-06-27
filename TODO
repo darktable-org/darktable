@@ -2,7 +2,7 @@ bugs:
 - open_raw has img cleaned up before finished during dt_exit
 - histogram (hist) update not working when jumping through history
 - histogram redraw (tonecurve)
-- serious memory leak somewhere in image loading (raw or magick?)
+- preview load mip4 errors?
 
 0.2 performance:
 - libraw document mode and custom whitebalance/color processing.

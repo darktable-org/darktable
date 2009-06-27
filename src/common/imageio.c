@@ -278,7 +278,6 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     ret = 0;
     img->shrink = raw->params.half_size;
     img->orientation = raw->sizes.flip;
-    // FIXME: broken here:
     img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
     img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
     img->exif_iso = raw->other.iso_speed;
@@ -376,7 +375,7 @@ error_raw_magick:// clean up libraw and magick only
     {
       // BMP: directly to mip4
       if (dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw;
-      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(float));
+      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
       const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
       const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
       if(image->width == p_wd2 && image->height == p_ht2)
