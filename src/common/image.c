@@ -352,8 +352,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     if(mip == DT_IMAGE_MIPF)
     {
       dt_image_buffer_t mip;
-      mip = dt_image_get(img, DT_IMAGE_FULL, 'r');
-      if(mip != DT_IMAGE_FULL)
+      if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
+      // if(mip != DT_IMAGE_FULL)
       {
         img->flags |= DT_IMAGE_THUMBNAIL;
         mip = dt_image_get(img, DT_IMAGE_MIP4, 'r');
@@ -425,6 +425,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
+  uint64_t bytes = 0;
   for(int k=0;k<(int)DT_IMAGE_NONE;k++)
   {
     int users = 0, write = 0, entries = 0;
@@ -432,13 +433,17 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
     {
       if(cache->mip_lru[k][i])
       {
-        dt_print(DT_DEBUG_CACHE, "[cache entry] buffer %d, image %s locks: %d r %d w\n", k, cache->mip_lru[k][i]->filename, cache->mip_lru[k][i]->lock[k].users, cache->mip_lru[k][i]->lock[k].write);
+        // dt_print(DT_DEBUG_CACHE, "[cache entry] buffer %d, image %s locks: %d r %d w\n", k, cache->mip_lru[k][i]->filename, cache->mip_lru[k][i]->lock[k].users, cache->mip_lru[k][i]->lock[k].write);
         entries++;
         users += cache->mip_lru[k][i]->lock[k].users;
         write += cache->mip_lru[k][i]->lock[k].write;
+#ifdef _DEBUG
+        bytes += cache->mip_lru[k][i]->mip_buf_size[k];
+#endif
       }
     }
     printf("mip %d: fill: %d/%d, users: %d, writers: %d\n", k, entries, cache->num_entries[k], users, write);
+    printf("mipmap cache occupies %.2f MB\n", bytes/(1024.0*1024.0));
   }
 }
 
@@ -566,7 +571,10 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
 
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
 {
-  // dt_mipmap_cache_print(darktable.mipmap_cache);
+#ifdef _DEBUG
+  if(darktable.unmuted & DT_DEBUG_CACHE)
+    dt_mipmap_cache_print(darktable.mipmap_cache);
+#endif
 
   dt_image_buffer_t mip = mip_in;
   if(mip == DT_IMAGE_NONE) return mip;

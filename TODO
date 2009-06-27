@@ -2,6 +2,7 @@ bugs:
 - open_raw has img cleaned up before finished during dt_exit
 - histogram (hist) update not working when jumping through history
 - histogram redraw (tonecurve)
+- serious memory leak somewhere in image loading (raw or magick?)
 
 0.2 performance:
 - libraw document mode and custom whitebalance/color processing.
@@ -60,6 +61,9 @@ ubuntu package deps:
 - liblcms1-dev
 
 0.3 roadmap:
+- new strategy to add images: add empty dia (with icon and filename)
+  ordered by filename. then launch jobs in bg to load images, priority
+  by visibility in lib
 - add/removable modules in module stack (replace fixed stack)
 - try gegl raw-load and openraw-load nodes
 - reduce db size by kicking out float/mip thumbnail images

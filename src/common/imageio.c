@@ -230,6 +230,19 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
   }                                                       \
 }
 
+int dt_imageio_write_pos(int i, int j, int wd, int ht, int orientation)
+{
+  int ii = i, jj = j, w = wd, h = ht;
+  if(orientation & 4)
+  {
+    w = ht; h = wd;
+    ii = j; jj = i;
+  }
+  if(orientation & 2) ii = w - ii - 1;
+  if(orientation & 1) jj = h - jj - 1;
+  return jj*w + ii;
+}
+
 // only set mip4..0.
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
@@ -287,27 +300,34 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       ExceptionInfo *exception = AcquireExceptionInfo();
       ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
       Image *imimage = BlobToImage(image_info, image->data, image->data_size, exception);
-      if(raw->sizes.flip & 4) imimage = TransposeImage(imimage, exception);
-      if(raw->sizes.flip & 2) imimage = FlopImage(imimage, exception);
-      if(raw->sizes.flip & 1) imimage = FlipImage(imimage, exception);
-      image->width  = imimage->columns;
-      image->height = imimage->rows;
+      if(raw->sizes.flip & 4)
+      {
+        image->width  = imimage->rows;
+        image->height = imimage->columns;
+      }
+      else
+      {
+        image->width  = imimage->columns;
+        image->height = imimage->rows;
+      }
       if (imimage == (Image *) NULL || dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_magick;
 
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
       assert(QuantumDepth == 16);
       const PixelPacket *p, *p1;
+      const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+      const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
 
       if(image->width == p_wd && image->height == p_ht)
       { // use 1:1
-        for (int j=0; j < image->height; j++)
+        for (int j=0; j < imimage->rows; j++)
         {
           p = AcquireImagePixels(imimage,0,j,imimage->columns,1,exception);
           if (p == (const PixelPacket *) NULL) goto error_raw_magick_mip4;
-          for (int i=0; i < image->width; i++)
+          for (int i=0; i < imimage->columns; i++)
           {
             uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
-            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i)+2-k] = cam[k];
+            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = cam[k];
             p++;
           }
         }
@@ -317,11 +337,12 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
         bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
         p1 = AcquireImagePixels(imimage,0,0,imimage->columns,imimage->rows,exception);
-        for(int j=0;j<p_ht && scale*j<image->height;j++) for(int i=0;i<p_wd && scale*i < image->width;i++)
+        if (p1 == (const PixelPacket *) NULL) goto error_raw_magick_mip4;
+        for(int j=0;j<p_ht2 && scale*j<imimage->rows;j++) for(int i=0;i<p_wd2 && scale*i < imimage->columns;i++)
         {
-          p = p1 + ((int)(scale*j)*image->width + (int)(scale*i));
+          p = p1 + ((int)(scale*j)*imimage->columns + (int)(scale*i));
           uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i)+2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = cam[k];
         }
       }
       // store in db.
@@ -356,22 +377,24 @@ error_raw_magick:// clean up libraw and magick only
       // BMP: directly to mip4
       if (dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw;
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(float));
-      if(image->width == p_wd && image->height == p_ht)
+      const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+      const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
+      if(image->width == p_wd2 && image->height == p_ht2)
       { // use 1:1
         for(int j=0;j<image->height;j++) for(int i=0;i<image->width;i++)
         {
           uint8_t *cam = image->data + 3*(j*image->width + i);
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i) + 2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
       else
       { // scale to fit
         bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
-        for(int j=0;j<p_ht && scale*j<image->height;j++) for(int i=0;i<p_wd && scale*i < image->width;i++)
+        for(int j=0;j<p_ht2 && scale*j<image->height;j++) for(int i=0;i<p_wd2 && scale*i < image->width;i++)
         {
           uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*(j*p_wd + i) + 2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
       // store in db.
