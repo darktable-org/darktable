@@ -67,12 +67,12 @@ void dt_dev_leave()
     dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
     pthread_mutex_lock(&(darktable.develop->preview_pipe->backbuf_mutex));
     memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->preview_pipe->backbuf, sizeof(uint8_t)*4*wd*ht);
+    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
     pthread_mutex_unlock(&(darktable.develop->preview_pipe->backbuf_mutex));
     if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
       fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
     dt_image_update_mipmaps(darktable.develop->image);
 
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
     dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
     dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
   }
