@@ -856,13 +856,13 @@ int dt_control_key_pressed(uint16_t which)
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);
 
-      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      /*widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);
 
       widget = glade_xml_get_widget (darktable.gui->main_window, "top");
       if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
+      else gtk_widget_show(widget);*/
       dt_dev_invalidate(darktable.develop);
       break;
     default:

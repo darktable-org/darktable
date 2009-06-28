@@ -238,6 +238,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
 int dt_image_update_mipmaps(dt_image_t *img)
 {
+  if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r')) return 1;
   int oldwd, oldht;
   dt_image_get_mip_size(img, DT_IMAGE_MIP4, &oldwd, &oldht);
   // create 8-bit mip maps:

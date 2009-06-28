@@ -35,17 +35,15 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
     sqlite3_stmt *stmt;
     int rc, wd, ht;
     dt_image_get_mip_size(img, DT_IMAGE_MIPF, &wd, &ht);
-    dt_image_check_buffer(img, mip, 3*wd*ht*sizeof(float));
-    dt_image_alloc(img, DT_IMAGE_MIP4);
-    dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*wd*ht*sizeof(uint8_t));
-    dt_image_compress(img->mipf, img->mip[DT_IMAGE_MIP4], wd, ht);
+    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
+    uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
+    dt_image_compress(img->mipf, buf, wd, ht);
     rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
-    rc = sqlite3_bind_blob(stmt, 1, img->mip[DT_IMAGE_MIP4], sizeof(uint8_t)*wd*ht, SQLITE_STATIC);
+    rc = sqlite3_bind_blob(stmt, 1, buf, sizeof(uint8_t)*wd*ht, free);
     rc = sqlite3_bind_int (stmt, 2, img->id);
     rc = sqlite3_bind_int (stmt, 3, mip);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
-    dt_image_release(img, DT_IMAGE_MIP4, 'w');
     return 0;
   }
 
@@ -344,6 +342,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
           for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = cam[k];
         }
       }
+      dt_image_release(img, DT_IMAGE_MIP4, 'w');
       // store in db.
       dt_imageio_preview_write(img, DT_IMAGE_MIP4);
       if(dt_image_update_mipmaps(img)) ret = 1;
@@ -355,7 +354,6 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
-      dt_image_release(img, DT_IMAGE_MIP4, 'w');
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
       return ret;
@@ -397,13 +395,13 @@ error_raw_magick:// clean up libraw and magick only
         }
       }
       // store in db.
+      dt_image_release(img, DT_IMAGE_MIP4, 'w');
       dt_imageio_preview_write(img, DT_IMAGE_MIP4);
       if(dt_image_update_mipmaps(img)) ret = 1;
       // clean up raw stuff.
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
-      dt_image_release(img, DT_IMAGE_MIP4, 'w');
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
       return ret;

@@ -2,12 +2,11 @@ bugs:
 - open_raw has img cleaned up before finished during dt_exit
 - histogram (hist) update not working when jumping through history
 - histogram redraw (tonecurve)
-- preview load mip4 errors?
 
 0.2 performance:
-- libraw document mode and custom whitebalance/color processing.
 - parallel iop->processing (seems to be fast enough mono-core)?
 - try dt_iop std functions in parallel with openmp?
+- openmp libraw?
 
 0.2 cleanup:
 - merge develop_view to develop
@@ -15,23 +14,16 @@ bugs:
 - remove dt_ctl_image_settings_t
 - remove src/gui/curveeditor.*
 - width/height in metadata
-- openmp libraw?
 - timeout for zoom/pan: first one frame preview then full?
-  (actually full pixels just redraw even if dirty..)
+  (actually full pixels just redraw even if dirty.. num_req/num_calc?)
 - progress bars for image folder import and image export
 - develop does not need (object local) gamma anymore
 - where to put ungamma table? 
 - remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
-- quality parameter for pixelpipe init callbacks in modules?
 - print GPLv3 notice on top of all files
 - save gui settings (expanded etc?) in operation stacks
-- replace dev zoom/closeup weirdness by general scale factor.
-- re-think mipmap database layout (even smaller float preview
-  to replace other mips?)
-  if kicking out mip maps: need to re-generate history pipeline mipf->mip4!
-- code review, cleanup module categories (develop_view, iop?, DT_USE_GEGL)
-- tmp robustness: clean up database on exit completely (or at least mip blobs?)
+- tmp robustness: clean up database on exit completely (lru film history)
 
 - release 0.2 :)
 
@@ -61,6 +53,10 @@ ubuntu package deps:
 - liblcms1-dev
 
 0.3 roadmap:
+- quality parameter for pixelpipe init callbacks in modules?
+- if kicking out mip maps from db: need to re-generate history pipeline mipf->mip4!
+- replace dev zoom/closeup weirdness by general scale factor.
+- libraw document mode and custom whitebalance/color processing.
 - new strategy to add images: add empty dia (with icon and filename)
   ordered by filename. then launch jobs in bg to load images, priority
   by visibility in lib
