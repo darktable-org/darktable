@@ -120,7 +120,11 @@ static inline int32_t dt_ctl_get_num_procs()
 #ifdef _OPENMP
   return omp_get_num_procs();
 #else
+#ifdef _SC_NPROCESSORS_ONLN
+  return sysconf (_SC_NPROCESSORS_ONLN);
+#else
   return 1;
+#endif
 #endif
 }
 

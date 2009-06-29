@@ -262,9 +262,11 @@ void dt_control_cleanup(dt_control_t *s)
   pthread_cond_broadcast(&s->cond);
   gdk_threads_leave();
   int k; for(k=0;k<s->num_threads;k++) 
-    pthread_join(s->thread[k], NULL);
+    pthread_kill(s->thread[k], 9);
+    // pthread_join(s->thread[k], NULL);
   for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
-    pthread_join(s->thread_res[k], NULL);
+    pthread_kill(s->thread_res[k], 9);
+    // pthread_join(s->thread_res[k], NULL);
   gdk_threads_enter();
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);

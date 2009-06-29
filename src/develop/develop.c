@@ -203,7 +203,7 @@ restart:
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
-  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r'))
+  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
   {
     dt_dev_raw_load(dev, dev->image);
   }
@@ -290,7 +290,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   dev->image = image;
   dev->image_loading = dev->preview_loading = 1;
-  if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
+  if(dev->gui_attached && dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
   else dev->mipf = NULL;
   dev->image_dirty = dev->preview_dirty = 1;
 
