@@ -191,6 +191,16 @@ image import: only load \code{dt\_image\_t} and mip[0--4] to database.
 
 For examples, have a look at \code{src/iop/*.\{h,c\}}.
 
+The main pixel pipeline stack is organised as follows:
+
+\begin{itemize}
+  \item gamma (sRGB)
+  \item tonecurve (Lab)
+  \item color correction (Lab)
+  \item temperature (sRGB)
+  \item demosaicing
+\end{itemize}
+
 \subsubsection{Gui Callbacks}
 
 \subsubsection{Image Processing}

@@ -105,7 +105,7 @@ void dt_cleanup()
   else fprintf(stderr, "[cleanup] could not write to %s!\n", filename);
   dt_control_write_config(darktable.control);
 
-  darktable.control->running = 0;
+  dt_control_shutdown(darktable.control);
 
   dt_dev_cleanup(darktable.develop);
   free(darktable.develop);

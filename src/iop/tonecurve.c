@@ -26,6 +26,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   for(int k=0;k<width*height;k++)
   {
+    out[0] = d->table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
+    out[1] = CLAMP((int)(in[1]*0x10000ul), 0, 0xffff);
+    out[2] = CLAMP((int)(in[2]*0x10000ul), 0, 0xffff);
+#if 0
 #if 0
     float col[3] = {in[0]+1.0, in[1]+1.0, in[2]+1.0};
     for(int c=0;c<3;c++) col[c] = fminf(2.0-0.0001f, fmaxf(1.0, col[c]));
@@ -33,6 +37,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int c=0;c<3;c++) out[c] = d->table[(ini[c] & 0x7fffff)>>7];
 #else
     for(int c=0;c<3;c++) out[c] = d->table[CLAMP((int)(in[c]*0x10000ul), 0, 0xffff)];
+#endif
 #endif
     in += 3; out += 3;
   }

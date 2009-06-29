@@ -108,10 +108,10 @@ void dt_iop_sRGB_to_Lab(const float *in, float *out, int x, int y, float scale, 
 {
   // TODO: use lcms dbl/16-bit + upconversion?
   cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  cmsHPROFILE  hLab  = cmsCreateLabProfile(cmsD50_xyY());
+  cmsHPROFILE  hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
 
   cmsHTRANSFORM  xform = cmsCreateTransform(hsRGB, TYPE_RGB_DBL, hLab, TYPE_Lab_DBL, 
-      INTENT_PERCEPTUAL, cmsFLAGS_NOTPRECALC);
+      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 
   for(int j=0;j<height;j++) for(int i=0;i<width;i++)
   {
@@ -129,10 +129,10 @@ void dt_iop_sRGB_to_Lab(const float *in, float *out, int x, int y, float scale, 
 void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scale, int width, int height)
 {
   cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  cmsHPROFILE hLab  = cmsCreateLabProfile(cmsD50_xyY());
+  cmsHPROFILE hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
 
   cmsHTRANSFORM  xform = cmsCreateTransform(hLab, TYPE_Lab_16, hsRGB, TYPE_RGB_16, 
-      INTENT_PERCEPTUAL, cmsFLAGS_NOTPRECALC);
+      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 
   for(int j=0;j<height;j++)
   {
@@ -145,10 +145,10 @@ void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scal
 void dt_iop_Lab_to_sRGB(const float *in, float *out, int x, int y, float scale, int width, int height)
 {
   cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  cmsHPROFILE hLab  = cmsCreateLabProfile(cmsD50_xyY());
+  cmsHPROFILE hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
 
   cmsHTRANSFORM  xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, 
-      INTENT_PERCEPTUAL, cmsFLAGS_NOTPRECALC);
+      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 
   for(int j=0;j<height;j++) for(int i=0;i<width;i++)
   {

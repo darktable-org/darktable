@@ -83,7 +83,6 @@ ubuntu package deps:
 
 bugs:
  - import while still importing crashes.
- - export mono-core?
  - openmp crashes dt (in magick or elsewhere) :(
  - small images mip maps garbled.
  - check mipmap decisions (seem very lo-res)

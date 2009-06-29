@@ -194,8 +194,6 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
       dt_iop_clip_and_zoom(pipe->input, x/scale, y/scale, width/scale, height/scale, pipe->iwidth, pipe->iheight,
                            *output, 0, 0, width, height, width, height);
-      // TODO: convert to Lab (using lcms?)!
-      // dt_iop_sRGB_to_Lab((float *)*output, (float *)*output, 0, 0, scale, width, height)
     }
   }
   else
@@ -206,10 +204,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     // reserve new cache line: output
     (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     
-    // TODO: if gamma is next, convert Lab_16 to RGB_16
-    // TODO: if tonecurve is next, convert to L16
-    // TODO: make histogram only over L16!
-    // tonecurve histogram:
+    // tonecurve histogram (collect luminance only):
     if(pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
     {
       float *pixel = (float *)input;
@@ -217,22 +212,30 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       bzero(dev->histogram_pre, sizeof(float)*4*0x100);
       for(int j=0;j<height;j+=3) for(int i=0;i<width;i+=3)
       {
-        uint8_t rgb[3];
+        uint8_t L = CLAMP(0xff*pixel[3*j*width+3*i], 0, 0xff);
+        dev->histogram_pre[4*L+3] ++;
+        /*uint8_t rgb[3];
         for(int k=0;k<3;k++)
           rgb[k] = CLAMP(0xff*pixel[3*j*width+3*i+k], 0, 0xff);
 
         for(int k=0;k<3;k++)
           dev->histogram_pre[4*rgb[k]+k] ++;
         uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-        dev->histogram_pre[4*lum+3] ++;
+        dev->histogram_pre[4*lum+3] ++;*/
       }
       // don't count <= 0 pixels
-      for(int k=0;k<4*256;k++) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
+      // for(int k=0;k<4*256;k++) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
+      for(int k=3;k<4*256;k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
       for(int k=19;k<4*256;k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
     }
 
     // actual pixel processing done by module
     module->process(module, piece, input, *output, x, y, scale, width, height);
+
+    if(strcmp(module->op, "temperature") == 0)
+      dt_iop_sRGB_to_Lab((float *)*output, (float *)*output, 0, 0, scale, width, height);
+    if(strcmp(module->op, "tonecurve") == 0)
+      dt_iop_Lab_to_sRGB_16((uint16_t *)*output, (uint16_t *)*output, 0, 0, scale, width, height);
 
     // final histogram:
     if(pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
