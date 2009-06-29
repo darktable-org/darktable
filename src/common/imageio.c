@@ -278,6 +278,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     img->orientation = raw->sizes.flip;
     img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
     img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+    // printf("size: %dx%d\n", img->width, img->height);
     img->exif_iso = raw->other.iso_speed;
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;

@@ -93,6 +93,8 @@ bugs:
  - import folder file chooser sometimes not sized appropriately
 
 feature requests:
+ - offline media reference in db
+ - image variants (different history etc, new image with same source)
  - pizza button.
  - some accel key => center and align images at left/right borders for
    given zoom rate
