@@ -2,6 +2,7 @@ bugs:
 - open_raw has img cleaned up before finished during dt_exit
 - histogram (hist) update not working when jumping through history
 - histogram redraw (tonecurve)
+- preview_ldr !
 
 0.2 performance:
 - parallel iop->processing (seems to be fast enough mono-core)?
