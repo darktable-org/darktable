@@ -174,21 +174,6 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
-#if 0
-  // FIXME: mipf precise width and actual mip width differ!
-  float scale = (closeup?2:1)*dev->image->width/(float)dev->mipf_width;//1:1;
-  // roi after scale has been applied:
-  if     (zoom == DT_ZOOM_FIT)  scale = fminf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
-  else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->mipf_width, dev->height/(float)dev->mipf_height);
-  dev->capwidth_preview  = MIN(dev->width,  dev->mipf_width *scale);
-  dev->capheight_preview = MIN(dev->height, dev->mipf_height*scale);
-  int x, y;
-  x = scale*dev->mipf_width *(.5+zoom_x)-dev->capwidth_preview/2;
-  y = scale*dev->mipf_height*(.5+zoom_y)-dev->capheight_preview/2;
-  x      = MAX(0, x);
-  y      = MAX(0, y);
-#endif
- 
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
 restart:
@@ -275,7 +260,7 @@ restart:
   }
   if(dev->gui_attached)
   {
-    // init pixel pipeline for preview.
+    // init pixel pipeline
     dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     dev->image_loading = 0;

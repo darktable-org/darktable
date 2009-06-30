@@ -126,15 +126,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-2.0, 2.0, 0.01));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(-2.0, 2.0, 0.01));
-  g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(-2.0, 2.0, 0.01));
-  g->scale4 = GTK_HSCALE(gtk_hscale_new_with_range(-2.0, 2.0, 0.01));
+  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-0.1, 0.1, 0.001));
+  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(-0.1, 0.1, 0.001));
+  g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(-0.1, 0.1, 0.001));
+  g->scale4 = GTK_HSCALE(gtk_hscale_new_with_range(-0.1, 0.1, 0.001));
   g->scale5 = GTK_HSCALE(gtk_hscale_new_with_range(-3.0, 3.0, 0.01));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale2), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale3), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale4), 2);
+  gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
+  gtk_scale_set_digits(GTK_SCALE(g->scale2), 3);
+  gtk_scale_set_digits(GTK_SCALE(g->scale3), 3);
+  gtk_scale_set_digits(GTK_SCALE(g->scale4), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale5), 2);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
@@ -174,36 +174,48 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void loa_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->loa = gtk_range_get_value(range);
+  float hia = gtk_range_get_value(GTK_RANGE(g->scale2));
+  if(p->loa > hia) gtk_range_set_value(GTK_RANGE(g->scale2), p->loa);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 void hia_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->hia = gtk_range_get_value(range);
+  float loa = gtk_range_get_value(GTK_RANGE(g->scale1));
+  if(loa > p->hia) gtk_range_set_value(GTK_RANGE(g->scale1), p->hia);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 void lob_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->lob = gtk_range_get_value(range);
+  float hib = gtk_range_get_value(GTK_RANGE(g->scale4));
+  if(p->lob > hib) gtk_range_set_value(GTK_RANGE(g->scale4), p->lob);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 void hib_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->hib = gtk_range_get_value(range);
+  float lob = gtk_range_get_value(GTK_RANGE(g->scale3));
+  if(lob > p->hib) gtk_range_set_value(GTK_RANGE(g->scale3), p->hib);
   dt_dev_add_history_item(darktable.develop, self);
 }
 

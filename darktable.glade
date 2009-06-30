@@ -11,7 +11,7 @@
         <property name="n_columns">3</property>
         <child>
           <widget class="GtkScrolledWindow" id="right">
-            <property name="width_request">204</property>
+            <property name="width_request">230</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hscrollbar_policy">never</property>
@@ -57,14 +57,16 @@
                       <widget class="GtkScrolledWindow" id="scrolledwindow1">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="hscrollbar_policy">automatic</property>
+                        <property name="hscrollbar_policy">never</property>
                         <property name="vscrollbar_policy">automatic</property>
                         <child>
                           <widget class="GtkViewport" id="viewport1">
+                            <property name="width_request">210</property>
                             <property name="visible">True</property>
                             <property name="resize_mode">queue</property>
                             <child>
                               <widget class="GtkVBox" id="iop_vbox">
+                                <property name="width_request">210</property>
                                 <property name="visible">True</property>
                                 <property name="orientation">vertical</property>
                                 <property name="spacing">10</property>

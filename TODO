@@ -11,6 +11,7 @@ bugs:
 - openmp libraw?
 
 0.2 cleanup:
+- histogram smoother (64 bins?)
 - merge develop_view to develop
 - remove develop/iop_hsb.*
 - remove dt_ctl_image_settings_t
@@ -30,19 +31,7 @@ bugs:
 - release 0.2 :)
 
 image operations:
- - load ahd interpolated raw data, clip and zoom.
- - hook temperature conversion (sRGB)
- - pixelpipe_hb.c: convert input to Lab
- - hook whitebalance/saturation module
- - hook exposure control: black point, fill darks, recover highlights, exposure.
- - hook denoising
- - downconvert Lab_float -> Lab_16
- - tonecurve histogram on L
- - convert tonecurve to only work on L16
- - convert back to sRGB
- - gamma table
- - output histogram in RGB_8
- - put in documentation.
+- better saturation/whitebalance module.
 
 ubuntu package deps:
 - libgtk2.0-dev
@@ -76,7 +65,7 @@ ubuntu package deps:
   image_import: no dummy entries!
 
 1.0 roadmap:
-- image denoising (non-local means)
+- image denoising (non-local means?)
 - remove libraw in favour of native gegl loading?
 - remove imagemagick in favour of native gegl writing?
 - ubuntu package

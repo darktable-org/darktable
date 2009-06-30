@@ -577,7 +577,7 @@ if test "$ac_test_CFLAGS" != "set"; then
      CFLAGS="-O3 -fomit-frame-pointer"
 
      # -malign-double for x86 systems
-     AX_CHECK_COMPILER_FLAGS(-malign-double, CFLAGS="$CFLAGS -malign-double")
+     # AX_CHECK_COMPILER_FLAGS(-malign-double, CFLAGS="$CFLAGS -malign-double")
 
      #  -fstrict-aliasing for gcc-2.95+
      AX_CHECK_COMPILER_FLAGS(-fstrict-aliasing,

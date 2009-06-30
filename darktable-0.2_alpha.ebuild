@@ -10,7 +10,7 @@ HOMEPAGE="http://darktable.sf.net/"
 SRC_URI="http://switch.dl.sourceforge.net/sourceforge/darktable/${P}.tar.bz2"
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS="~amd64"
 IUSE=""
 DEPEND=">=x11-libs/gtk+-2.14.7 >=gnome-base/libglade-2.6.3
 >=media-gfx/imagemagick-6.4.8.3 >=dev-db/sqlite-3.6.11 >=x11-libs/cairo-1.8.6"

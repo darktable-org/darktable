@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define DT_IOP_LOWEST_TEMPERATURE     1000
+#define DT_IOP_LOWEST_TEMPERATURE     3000
 #define DT_IOP_HIGHEST_TEMPERATURE   12000
 
 

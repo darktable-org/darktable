@@ -26,18 +26,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   for(int k=0;k<width*height;k++)
   {
-    out[0] = d->table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
-    out[1] = CLAMP((int)(in[1]*0x10000ul), 0, 0xffff);
-    out[2] = CLAMP((int)(in[2]*0x10000ul), 0, 0xffff);
-#if 0
-#if 0
-    float col[3] = {in[0]+1.0, in[1]+1.0, in[2]+1.0};
-    for(int c=0;c<3;c++) col[c] = fminf(2.0-0.0001f, fmaxf(1.0, col[c]));
-    uint32_t *ini = (uint32_t *)&col;
-    for(int c=0;c<3;c++) out[c] = d->table[(ini[c] & 0x7fffff)>>7];
-#else
+#if 0 // in YCbCr
+    out[0] = d->table[CLAMP((int)(in[0]*0xfffful), 0, 0xffff)];
+    out[1] = CLAMP((int)(in[1]*0xfffful), 0, 0xffff);
+    out[2] = CLAMP((int)(in[2]*0xfffful), 0, 0xffff);
+#else // in sRGB
     for(int c=0;c<3;c++) out[c] = d->table[CLAMP((int)(in[c]*0x10000ul), 0, 0xffff)];
-#endif
 #endif
     in += 3; out += 3;
   }
@@ -136,7 +130,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 200, 200);
+  gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -197,7 +191,7 @@ gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
 
   cairo_translate(cr, inset, inset);
   width -= 2*inset; height -= 2*inset;
-  
+
 #if 0
   // draw shadow around
   float alpha = 1.0f;

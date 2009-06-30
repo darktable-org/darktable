@@ -1,0 +1,20 @@
+[Desktop Entry]
+Name=darktable
+GenericName=Virtual Lighttable and Darkroom
+
+Comment=A utility to organize and develop raw images from digital cameras
+
+Encoding=UTF-8
+Version=1.0
+
+Type=Application
+Categories=Graphics;Photography;GTK;
+
+Exec=darktable %U
+TryExec=darktable
+Terminal=false
+StartupNotify=true
+
+MimeType=application/x-ufraw;image/x-dcraw
+
+Icon=darktable.png

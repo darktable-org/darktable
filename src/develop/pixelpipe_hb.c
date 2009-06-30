@@ -212,7 +212,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       bzero(dev->histogram_pre, sizeof(float)*4*0x100);
       for(int j=0;j<height;j+=3) for(int i=0;i<width;i+=3)
       {
-        uint8_t L = CLAMP(0xff*pixel[3*j*width+3*i], 0, 0xff);
+        float rgb[3] = {pixel[3*j*width+3*i], pixel[3*j*width+3*i+1], pixel[3*j*width+3*i+2]};
+        uint8_t L = CLAMP(0xff*(0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]), 0, 0xff);
         dev->histogram_pre[4*L+3] ++;
       }
       // don't count <= 0 pixels
@@ -220,40 +221,62 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       for(int k=19;k<4*256;k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
     }
 
+    // printf("processing %s\n", module->op);
     // actual pixel processing done by module
     module->process(module, piece, input, *output, x, y, scale, width, height);
 
     if(strcmp(module->op, "temperature") == 0)
     {
-
-      // Y   = 0.299R + 0.587G + 0.114B
-      // R-Y = 0.701R - 0.587G - 0.114B
-      // B-Y =    = -0.299R - 0.587G + 0.886B
-
-
-      // for(int k=0;k<10;k++) printf("Lab value: %f %f %f\n", ((float *)*output)[3*k+0], ((float *)*output)[3*k+1], ((float *)*output)[3*k+2]);
-      // for(int k=0;k<3*width*height;k++) ((float *)*output)[k] *= 256.0;
-      // dt_iop_sRGB_to_Lab((float *)*output, (float *)*output, 0, 0, scale, width, height);
-      // for(int k=0;k<10;k++) printf("Lab value: %f %f %f\n", ((float *)*output)[3*k+0], ((float *)*output)[3*k+1], ((float *)*output)[3*k+2]);
       for(int k=0;k<width*height;k++)
       { // to YCbCr
         float rgb[3] = {((float *)*output)[3*k], ((float *)*output)[3*k+1], ((float *)*output)[3*k+2]};
         ((float *)*output)[3*k+0] =  0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
-        ((float *)*output)[3*k+1] = -0.299*rgb[0] - 0.587*rgb[1] + 0.886*rgb[2];
-        ((float *)*output)[3*k+2] =  0.701*rgb[0] - 0.587*rgb[1] - 0.114*rgb[2];
+        ((float *)*output)[3*k+1] = -0.147*rgb[0] - 0.289*rgb[1] + 0.437*rgb[2];
+        ((float *)*output)[3*k+2] =  0.615*rgb[0] - 0.515*rgb[1] - 0.100*rgb[2];
       }
     }
-    else if(strcmp(module->op, "tonecurve") == 0)
+#if 0
+    const float m[9] = {0.299,  0.587, 0.114,
+                        -0.147, -0.289, 0.437,
+                         0.615, -0.515, -0.100};
+    float inv[9];
+#define A(y, x) m[(y - 1) * 3 + (x - 1)]
+#define B(y, x) inv[(y - 1) * 3 + (x - 1)]
+    const float det =
+      A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3)) -
+      A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3)) +
+      A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+    const float invDet = 1.f / det;
+    B(1, 1) =  invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));
+    B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));
+    B(1, 3) =  invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+    B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));
+    B(2, 2) =  invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));
+    B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));
+
+    B(3, 1) =  invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));
+    B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));
+    B(3, 3) =  invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));
+#undef A
+#undef B
+    printf("const float inv[9] = {%f, %f, %f,\n", inv[0], inv[1], inv[2]);
+    printf("     %f, %f, %f,\n", inv[3], inv[4], inv[5]);
+    printf("     %f, %f, %f};\n", inv[6], inv[7], inv[8]);
+    exit(0);
+#endif
+
+
+    if(strcmp(module->op, "colorcorrection") == 0)
     {
       for(int k=0;k<width*height;k++)
       { // to RGB
-        uint16_t YCbCr[3] = {((uint16_t *)*output)[3*k], ((uint16_t *)*output)[3*k+1], ((uint16_t *)*output)[3*k+2]};
-        ((uint16_t *)*output)[3*k+0] = CLAMP(YCbCr[0] + YCbCr[2], 0, 0xffff);
-        ((uint16_t *)*output)[3*k+1] = CLAMP(YCbCr[0] - 0.51*YCbCr[2] - 0.186*YCbCr[1], 0, 0xffff);
-        ((uint16_t *)*output)[3*k+2] = CLAMP(YCbCr[0] + YCbCr[1], 0, 0xffff);
+        float YCbCr[3] = {((float *)*output)[3*k], ((float *)*output)[3*k+1], ((float *)*output)[3*k+2]};
+        ((float *)*output)[3*k+0] = YCbCr[0]                  + 1.140*YCbCr[2];
+        ((float *)*output)[3*k+1] = YCbCr[0] - 0.394*YCbCr[1] - 0.581*YCbCr[2];
+        ((float *)*output)[3*k+2] = YCbCr[0] + 2.028*YCbCr[1]                 ;
       }
-      // dt_iop_Lab_to_sRGB_16((uint16_t *)*output, (uint16_t *)*output, 0, 0, scale, width, height);
-      // for(int k=0;k<10;k++) printf("sRGB 16 value: %d %d %d\n", ((uint16_t *)*output)[3*k+0], ((uint16_t *)*output)[3*k+1], ((uint16_t *)*output)[3*k+2]);
     }
 
     // final histogram:
