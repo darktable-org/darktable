@@ -3,6 +3,7 @@ bugs:
 - histogram (hist) update not working when jumping through history
 - histogram redraw (tonecurve)
 - preview_ldr !
+- libraw --disable-debug behaves weirdly.
 
 0.2 performance:
 - parallel iop->processing (seems to be fast enough mono-core)?
