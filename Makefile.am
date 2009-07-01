@@ -1,5 +1,5 @@
 SUBDIRS=src
-EXTRA_DIST=darktable.gtkrc darktable.glade
+EXTRA_DIST=darktable.gtkrc darktable.glade darktable.desktop darktable.png
 dtdatarootdir=$(datarootdir)/darktable
 dtdataroot_DATA=darktable.gtkrc darktable.glade
 dtapprootdir=$(datarootdir)/applications

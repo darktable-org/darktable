@@ -29,7 +29,7 @@ AM_LDFLAGS = -avoid-version -export-dynamic -module $(no_undefined)
 # ext_dir = $(DESTDIR)$(libdir)/gegl-@GEGL_API_VERSION@
 # ext_dir = $(libdir)/gegl-0.0
 # ext_dir = /usr/lib/gegl-0.0
-ext_dir = $(datadir)/darktable/gegl
+ext_dir = $(datarootdir)/darktable/gegl
 
 # LDADD           = $(op_libs)
 LDADD           = @GEGL_LIBS@

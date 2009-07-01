@@ -15,6 +15,6 @@ TryExec=darktable
 Terminal=false
 StartupNotify=true
 
-MimeType=application/x-ufraw;image/x-dcraw
+MimeType=application/x-darktable;image/x-dcraw
 
 Icon=darktable.png

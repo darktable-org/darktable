@@ -99,7 +99,7 @@ int dt_film_roll_open(dt_film_roll_t *film, const int32_t id)
 }
 
 int dt_film_roll_open_recent(dt_film_roll_t *film, const int num)
-{
+
   int32_t rc;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select id from film_rolls order by datetime_accessed desc limit ?1,1", -1, &stmt, NULL);

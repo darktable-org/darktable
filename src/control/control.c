@@ -1016,6 +1016,7 @@ void dt_control_update_recent_films()
   const int label_cnt = 26;
   char label[label_cnt];
   // rc = sqlite3_prepare_v2(darktable.db, "select * from (select folder from film_rolls order by datetime_accessed) as dreggn limit 0, 4", -1, &stmt, NULL);
+#if 0
   rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls order by datetime_accessed desc limit 0,4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1032,5 +1033,63 @@ void dt_control_update_recent_films()
     num++;
   }
   sqlite3_finalize(stmt);
+#else
+  // FIXME: this is a temporary hack to keep the database low:
+  // remove all data from db from all other films.
+  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if(num < 5)
+    {
+      filename = (char *)sqlite3_column_text(stmt, 0);
+      cnt = filename + MIN(512,strlen(filename));
+      int i;
+      for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
+      if(i == label_cnt-1) snprintf(label, label_cnt, "...%s", cnt+3);
+      else snprintf(label, label_cnt, "%s", cnt);
+      snprintf(wdname, 20, "recent_film_%d", num);
+      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+      gtk_button_set_label(GTK_BUTTON(widget), label);
+      gtk_widget_show(widget);
+    }
+    else
+    {
+      int film_id = sqlite3_column_int(stmt, 1);
+      sqlite3_stmt *stmt2;
+      int rc2;
+      rc2 = sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt2, NULL);
+      rc2 = sqlite3_bind_int (stmt, 1, film_id);
+      while(sqlite3_step(stmt2) == SQLITE_ROW)
+      {
+        int img_id = sqlite3_column_int(stmt, 0);
+        sqlite3_stmt *stmt3;
+        int rc3;
+        rc3 = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt3, NULL);
+        rc3 = sqlite3_bind_int (stmt, 1, img_id);
+        rc3 = sqlite3_step(stmt3);
+        sqlite3_finalize(stmt3);
+        rc3 = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt3, NULL);
+        rc3 = sqlite3_bind_int (stmt, 1, img_id);
+        rc3 = sqlite3_step(stmt3);
+        sqlite3_finalize(stmt3);
+        rc3 = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt3, NULL);
+        rc3 = sqlite3_bind_int (stmt, 1, img_id);
+        rc3 = sqlite3_step(stmt3);
+        sqlite3_finalize(stmt3);
+      }
+      sqlite3_finalize(stmt2);
+      rc2 = sqlite3_prepare_v2(darktable.db, "delete from images where film_id = ?1", -1, &stmt2, NULL);
+      rc2 = sqlite3_bind_int (stmt, 1, film_id);
+      rc2 = sqlite3_step(stmt2);
+      sqlite3_finalize(stmt2);
+      rc2 = sqlite3_prepare_v2(darktable.db, "delete from film_rolls where id = ?1", -1, &stmt2, NULL);
+      rc2 = sqlite3_bind_int (stmt, 1, film_id);
+      rc2 = sqlite3_step(stmt2);
+      sqlite3_finalize(stmt2);
+    }
+    num++;
+  }
+  sqlite3_finalize(stmt);
+#endif
 }
 

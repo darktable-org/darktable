@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
-#include "gui/curveeditor.h"
 #include "gui/histogram.h"
 #include "develop/develop.h"
 #include "control/control.h"

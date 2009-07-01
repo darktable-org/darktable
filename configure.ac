@@ -1,4 +1,4 @@
-AC_INIT([darktable], [0.2_alpha], [hanatos@gmail.com])
+AC_INIT([darktable], [0.2], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_PROG_CC
@@ -15,7 +15,7 @@ else
 fi
 AC_MSG_CHECKING([whether to use gegl for rendering])
 AC_ARG_ENABLE(gegl,
-	      AC_HELP_STRING([--enable-gegl], [use gegl for rendering]))
+	      AC_HELP_STRING([--enable-gegl], [use gegl for rendering (don't do this)]))
 if test "$enable_gegl" = "yes"; then
    AC_DEFINE(HAVE_GEGL, 1, [whether to use gegl for rendering])
    AC_MSG_RESULT([yes])
@@ -48,6 +48,6 @@ AC_CONFIG_FILES([
     src/Makefile
     src/LibRaw/Makefile
     src/iop/Makefile
-    src/gegl-operations/Makefile
     ])
+dnl    src/gegl-operations/Makefile
 AC_OUTPUT
