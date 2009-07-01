@@ -444,8 +444,8 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
       }
     }
     printf("mip %d: fill: %d/%d, users: %d, writers: %d\n", k, entries, cache->num_entries[k], users, write);
-    printf("mipmap cache occupies %.2f MB\n", bytes/(1024.0*1024.0));
   }
+  printf("mipmap cache occupies %.2f MB\n", bytes/(1024.0*1024.0));
 }
 
 void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t size)
@@ -472,7 +472,7 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   }
   if(ptr)
   {
-    dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
+    // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
     img->lock[mip].write = 1; // write lock
     img->lock[mip].users = 1; // read lock
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
@@ -491,7 +491,7 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
     return 1;
   }
 
-  dt_print(DT_DEBUG_CACHE, "[image_alloc] locking newly allocated image %s of size %f MB\n", img->filename, size/(1024*1024.0));
+  // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking newly allocated image %s of size %f MB\n", img->filename, size/(1024*1024.0));
 
   // insert image in node list at newest time
   for(int k=0;k<darktable.mipmap_cache->num_entries[mip];k++)
@@ -603,7 +603,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
     else img->lock[mip].users++;
   }
 
-  dt_print(DT_DEBUG_CACHE, "[image_get] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
+  // dt_print(DT_DEBUG_CACHE, "[image_get] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
 
   if(mip != mip_in && !img->lock[mip_in].write)
   { // start job to load this buf in bg.
@@ -633,6 +633,6 @@ void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode)
   if (mode == 'r' && img->lock[mip].users > 0) img->lock[mip].users --;
   else if (mode == 'w') img->lock[mip].write = 0;  // can only be one writing thread at a time.
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-  dt_print(DT_DEBUG_CACHE, "[image_release] released lock %c for buffer %d on image %s locks: %d r %d w\n", mode, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
+  // dt_print(DT_DEBUG_CACHE, "[image_release] released lock %c for buffer %d on image %s locks: %d r %d w\n", mode, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
 }
 

@@ -1055,35 +1055,36 @@ void dt_control_update_recent_films()
     else
     {
       int film_id = sqlite3_column_int(stmt, 1);
+      printf("removing %d\n", film_id);
       sqlite3_stmt *stmt2;
       int rc2;
       rc2 = sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt2, NULL);
       rc2 = sqlite3_bind_int (stmt, 1, film_id);
       while(sqlite3_step(stmt2) == SQLITE_ROW)
       {
-        int img_id = sqlite3_column_int(stmt, 0);
+        int img_id = sqlite3_column_int(stmt2, 0);
         sqlite3_stmt *stmt3;
         int rc3;
         rc3 = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt3, NULL);
-        rc3 = sqlite3_bind_int (stmt, 1, img_id);
+        rc3 = sqlite3_bind_int (stmt3, 1, img_id);
         rc3 = sqlite3_step(stmt3);
         sqlite3_finalize(stmt3);
         rc3 = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt3, NULL);
-        rc3 = sqlite3_bind_int (stmt, 1, img_id);
+        rc3 = sqlite3_bind_int (stmt3, 1, img_id);
         rc3 = sqlite3_step(stmt3);
         sqlite3_finalize(stmt3);
         rc3 = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt3, NULL);
-        rc3 = sqlite3_bind_int (stmt, 1, img_id);
+        rc3 = sqlite3_bind_int (stmt3, 1, img_id);
         rc3 = sqlite3_step(stmt3);
         sqlite3_finalize(stmt3);
       }
       sqlite3_finalize(stmt2);
       rc2 = sqlite3_prepare_v2(darktable.db, "delete from images where film_id = ?1", -1, &stmt2, NULL);
-      rc2 = sqlite3_bind_int (stmt, 1, film_id);
+      rc2 = sqlite3_bind_int (stmt2, 1, film_id);
       rc2 = sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
       rc2 = sqlite3_prepare_v2(darktable.db, "delete from film_rolls where id = ?1", -1, &stmt2, NULL);
-      rc2 = sqlite3_bind_int (stmt, 1, film_id);
+      rc2 = sqlite3_bind_int (stmt2, 1, film_id);
       rc2 = sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
     }

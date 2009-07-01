@@ -541,6 +541,8 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, hist->module->op);
   }
+  if(dev->gui_attached)
+    dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
   rc = sqlite3_finalize (stmt);
 }
 
