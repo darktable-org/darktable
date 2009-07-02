@@ -1,4 +1,6 @@
 #include "develop/pixelpipe.h"
+#include "gui/gtk.h"
+
 #include <assert.h>
 #include <string.h>
 #include <strings.h>
@@ -209,16 +211,17 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     {
       float *pixel = (float *)input;
       dev->histogram_pre_max = 0;
-      bzero(dev->histogram_pre, sizeof(float)*4*0x100);
+      bzero(dev->histogram_pre, sizeof(float)*4*64);
       for(int j=0;j<height;j+=3) for(int i=0;i<width;i+=3)
       {
         float rgb[3] = {pixel[3*j*width+3*i], pixel[3*j*width+3*i+1], pixel[3*j*width+3*i+2]};
-        uint8_t L = CLAMP(0xff*(0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]), 0, 0xff);
+        uint8_t L = CLAMP(63*(0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]), 0, 63);
         dev->histogram_pre[4*L+3] ++;
       }
       // don't count <= 0 pixels
-      for(int k=3;k<4*256;k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
-      for(int k=19;k<4*256;k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
+      for(int k=3;k<4*64;k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
+      for(int k=19;k<4*64;k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
+      gtk_widget_queue_draw(module->widget);
     }
 
     // printf("processing %s\n", module->op);
@@ -284,21 +287,22 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     {
       uint8_t *pixel = (uint8_t *)*output;
       dev->histogram_max = 0;
-      bzero(dev->histogram, sizeof(float)*4*0x100);
+      bzero(dev->histogram, sizeof(float)*4*64);
       for(int j=0;j<height;j+=4) for(int i=0;i<width;i+=4)
       {
         uint8_t rgb[3];
         for(int k=0;k<3;k++)
-          rgb[k] = pixel[4*j*width+4*i+2-k];
+          rgb[k] = pixel[4*j*width+4*i+2-k]>>2;
 
         for(int k=0;k<3;k++)
           dev->histogram[4*rgb[k]+k] ++;
         uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
         dev->histogram[4*lum+3] ++;
       }
-      for(int k=0;k<4*256;k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
+      for(int k=0;k<4*64;k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
       // don't count <= 0 pixels
-      for(int k=19;k<4*256;k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
+      for(int k=19;k<4*64;k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
+      gtk_widget_queue_draw(glade_xml_get_widget (darktable.gui->main_window, "histogram"));
     }
   }
   return 0;

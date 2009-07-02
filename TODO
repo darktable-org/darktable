@@ -1,7 +1,5 @@
 bugs:
 - open_raw has img cleaned up before finished during dt_exit
-- histogram (hist) update not working when jumping through history
-- histogram redraw (tonecurve)
 - preview_ldr !
 - import memory leak?
 
@@ -11,7 +9,6 @@ bugs:
 - openmp libraw?
 
 0.2 cleanup:
-- histogram smoother (64 bins?)
 - merge develop_view to develop
 - remove develop/iop_hsb.*
 - remove dt_ctl_image_settings_t

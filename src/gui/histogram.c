@@ -72,14 +72,17 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   {
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
     cairo_translate(cr, 0, height);
-    cairo_scale(cr, width/256.0, -(height-10)/hist_max);
+    cairo_scale(cr, width/63.0, -(height-10)/hist_max);
+    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+    // cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     cairo_set_line_width(cr, 1.);
-    cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
+    cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
     dt_gui_histogram_draw_8(cr, hist, 0);
-    cairo_set_source_rgba(cr, 0., 1., 0., 0.5);
+    cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
     dt_gui_histogram_draw_8(cr, hist, 1);
-    cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
+    cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
     dt_gui_histogram_draw_8(cr, hist, 2);
+    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
   }
 
@@ -112,13 +115,13 @@ gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *even
 void dt_gui_histogram_draw_8(cairo_t *cr, float *hist, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
-  for(int k=0;k<256;k++)
+  for(int k=0;k<64;k++)
   {
     // cairo_move_to(cr, k, 0);
     cairo_line_to(cr, k, hist[4*k+channel]);
     //cairo_stroke(cr);
   }
-  cairo_line_to(cr, 255, 0);
+  cairo_line_to(cr, 63, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
 }

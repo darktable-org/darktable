@@ -32,8 +32,8 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   gtk_widget_queue_draw(widget);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
-  gtk_widget_queue_draw(widget);
+  // widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
+  // gtk_widget_queue_draw(widget);
 
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
