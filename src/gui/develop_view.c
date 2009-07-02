@@ -28,7 +28,7 @@ void dt_dev_enter()
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     GtkExpander *expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
-    gtk_expander_set_expanded(expander, TRUE);
+    gtk_expander_set_expanded(expander, FALSE);
     gtk_expander_set_spacing(expander, 10);
     gtk_box_pack_start(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
     module->gui_init(module);

@@ -2,6 +2,8 @@ bugs:
 - open_raw has img cleaned up before finished during dt_exit
 - preview_ldr !
 - import memory leak?
+- check scale correct in pixelpipe_hb.c for preview_pipe?
+- scale in denoising: move closeup to cairo.
 
 0.2 performance:
 - parallel iop->processing (seems to be fast enough mono-core)?

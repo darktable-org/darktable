@@ -14,14 +14,15 @@ dt_iop_denoise_params_t;
 typedef struct dt_iop_denoise_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2, *label3;
-  GtkHScale *scale1, *scale2, *scale3;
+  GtkLabel *label1, *label2;//, *label3;
+  GtkHScale *scale1, *scale2;//, *scale3;
 }
 dt_iop_denoise_gui_data_t;
 
+#define DT_IOP_DENOISE_MAX_RAD 30
 typedef struct dt_iop_denoise_data_t
 {
-  float luma, chroma, edges;
+  float luma, chroma;// , edges;
 }
 dt_iop_denoise_data_t;
 
@@ -41,6 +42,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 void luma_callback   (GtkRange *range, gpointer user_data);
 void chroma_callback (GtkRange *range, gpointer user_data);
-void edges_callback  (GtkRange *range, gpointer user_data);
+// void edges_callback  (GtkRange *range, gpointer user_data);
 
 #endif
