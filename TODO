@@ -4,6 +4,8 @@ bugs:
 - import memory leak?
 - check scale correct in pixelpipe_hb.c for preview_pipe?
 - scale in denoising: move closeup to cairo.
+- gtk redraw problems?
+- import starts 3 threads but seems to be mono-core?
 
 0.2 performance:
 - parallel iop->processing (seems to be fast enough mono-core)?
@@ -11,6 +13,7 @@ bugs:
 - openmp libraw?
 
 0.2 cleanup:
+- add some user guide documentation.
 - merge develop_view to develop
 - remove develop/iop_hsb.*
 - remove dt_ctl_image_settings_t
@@ -28,9 +31,6 @@ bugs:
 - tmp robustness: clean up database on exit completely (lru film history)
 
 - release 0.2 :)
-
-image operations:
-- better saturation/whitebalance module.
 
 ubuntu package deps:
 - libgtk2.0-dev
@@ -61,7 +61,7 @@ ubuntu package deps:
 - investigate 16-bit compression for raw previews
 - re-check image data base import, updates, and storage in db
   imageio_preview_write: update/insert into
-  image_import: no dummy entries!
+  image_import: no dummy entries for mipmaps!
 
 1.0 roadmap:
 - image denoising (non-local means?)

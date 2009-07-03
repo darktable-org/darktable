@@ -39,7 +39,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
-    float threshold[3] = {d->luma*0.03, d->chroma*0.03, d->chroma*0.03};
+    float threshold[3] = {d->luma*0.04, d->chroma*0.15, d->chroma*0.15};
 
     float *fimg=0, *temp, thold;
     int size, lev, hpass, lpass, row, col;

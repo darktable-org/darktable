@@ -580,8 +580,8 @@ if test "$ac_test_CFLAGS" != "set"; then
      # AX_CHECK_COMPILER_FLAGS(-malign-double, CFLAGS="$CFLAGS -malign-double")
 
      #  -fstrict-aliasing for gcc-2.95+
-     AX_CHECK_COMPILER_FLAGS(-fstrict-aliasing,
-	CFLAGS="$CFLAGS -fstrict-aliasing")
+     # AX_CHECK_COMPILER_FLAGS(-fstrict-aliasing,
+	#CFLAGS="$CFLAGS -fstrict-aliasing")
 
      # note that we enable "unsafe" fp optimization with other compilers, too
      AX_CHECK_COMPILER_FLAGS(-ffast-math, CFLAGS="$CFLAGS -ffast-math")
