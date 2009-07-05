@@ -23,7 +23,7 @@ else
    AC_MSG_RESULT([no])
 fi
 dnl ***  disabled because of strange libgomp.so crashes: :(
-dnl AC_OPENMP
+AC_OPENMP
 AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG([0.22])
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14)

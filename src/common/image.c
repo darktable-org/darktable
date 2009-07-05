@@ -340,7 +340,7 @@ void dt_image_cleanup(dt_image_t *img)
 
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
-  int ret = 1, rc;
+  int ret = 0, rc;
   if(dt_imageio_preview_read(img, mip))
   { // img not in database. => mip == FULL or kicked out or corrupt or first time load..
     char filename[1024];
@@ -352,6 +352,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     rc = sqlite3_finalize(stmt);
     if(mip == DT_IMAGE_MIPF)
     {
+      ret = 0;
       dt_image_buffer_t mip;
       if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
       // if(mip != DT_IMAGE_FULL)
@@ -359,11 +360,9 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
         img->flags |= DT_IMAGE_THUMBNAIL;
         mip = dt_image_get(img, DT_IMAGE_MIP4, 'r');
         if(mip != DT_IMAGE_MIP4)
-        {
-          if(dt_imageio_open_preview(img, filename)) return 1;
-        }
+          if(dt_imageio_open_preview(img, filename)) ret = 1;
         dt_image_release(img, mip, 'r');
-        ret = dt_image_preview_to_raw(img);
+        ret += dt_image_preview_to_raw(img);
       }
       else
       {
@@ -389,7 +388,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     }
   }
   // TODO: insert abstract hook here?
-  dt_control_queue_draw();
+  dt_control_queue_draw_all();
   return ret;
 }
 
@@ -572,11 +571,6 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
 
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
 {
-#ifdef _DEBUG
-  if(darktable.unmuted & DT_DEBUG_CACHE)
-    dt_mipmap_cache_print(darktable.mipmap_cache);
-#endif
-
   dt_image_buffer_t mip = mip_in;
   if(mip == DT_IMAGE_NONE) return mip;
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
@@ -605,6 +599,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
 
   // dt_print(DT_DEBUG_CACHE, "[image_get] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
 
+#if 1
   if(mip != mip_in && !img->lock[mip_in].write)
   { // start job to load this buf in bg.
     dt_print(DT_DEBUG_CACHE, "[image_get] reloading mip %d for image %d\n", mip_in, img->id);
@@ -623,6 +618,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
       }
     }
   }
+#endif
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   return mip;
 }

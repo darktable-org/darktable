@@ -29,6 +29,7 @@ typedef struct dt_develop_t
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t image_loading, image_dirty;
   int32_t preview_loading, preview_dirty;
+  uint32_t timestamp, image_timestamp, preview_timestamp;
 
   // width, height: dimensions of window
   // capwidth, capheight: actual dimensions of scaled image inside window.

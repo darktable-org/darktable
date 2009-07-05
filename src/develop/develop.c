@@ -44,6 +44,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  dev->timestamp = dev->image_timestamp = dev->preview_timestamp = 0;
   dev->gui_leaving = 0;
   pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
@@ -146,10 +147,12 @@ void dt_dev_process_preview(dt_develop_t *dev)
 void dt_dev_invalidate(dt_develop_t *dev)
 {
   dev->preview_dirty = dev->image_dirty = 1;
+  dev->timestamp++;
 }
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
+  dev->preview_timestamp = dev->timestamp;
   if(dev->preview_loading)
   { 
     // prefetch and lock
@@ -165,14 +168,14 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dev->preview_loading = 0;
   }
 
-  // TODO: always process the whole downsampled mipf buffer, to allow for fast scrolling and mip4 write-through.
-  dt_dev_zoom_t zoom;
-  float zoom_x, zoom_y;
-  int closeup;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  // always process the whole downsampled mipf buffer, to allow for fast scrolling and mip4 write-through.
+  // dt_dev_zoom_t zoom;
+  // float zoom_x, zoom_y;
+  // int closeup;
+  // DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  // DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  // DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  // DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
@@ -183,11 +186,12 @@ restart:
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->mipf_width, dev->mipf_height, 1.0)) goto restart;
 
   dev->preview_dirty = 0;
-  dt_control_queue_draw();
+  dt_control_queue_draw_all();
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
+  dev->image_timestamp = dev->timestamp;
   if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
   {
     dt_dev_raw_load(dev, dev->image);
@@ -201,7 +205,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
-  float scale = (closeup?2:1);//1:1;
+  float scale = 1;//(closeup?2:1);//1:1;
   // roi after scale has been applied:
   if     (zoom == DT_ZOOM_FIT)  scale = fminf(dev->width/(float)dev->image->width, dev->height/(float)dev->image->height);
   else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->image->width, dev->height/(float)dev->image->height);
@@ -229,7 +233,7 @@ restart:
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
   dev->image_dirty = 0;
 
-  dt_control_queue_draw();
+  dt_control_queue_draw_all();
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
@@ -461,7 +465,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate(dev);
-  dt_control_queue_draw();
+  dt_control_queue_draw_all();
 }
 
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
@@ -498,7 +502,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   darktable.gui->reset = 0;
   pthread_mutex_unlock(&dev->history_mutex);
   dt_dev_invalidate(dev);
-  dt_control_queue_draw();
+  dt_control_queue_draw_all();
 }
 
 void dt_dev_write_history(dt_develop_t *dev)

@@ -221,6 +221,10 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   DT_CTL_SET_GLOBAL(lib_center, center);
   // dt_mipmap_cache_print(darktable.mipmap_cache);
   // dt_image_cache_print(darktable.image_cache);
+#ifdef _DEBUG
+  if(darktable.unmuted & DT_DEBUG_CACHE)
+    dt_mipmap_cache_print(darktable.mipmap_cache);
+#endif
 }
 
 void dt_library_button_released(dt_library_t *lib, double x, double y, int which, uint32_t state)
@@ -244,13 +248,13 @@ void dt_library_mouse_leave(dt_library_t *lib)
   if(!darktable.control->global_settings.lib_pan && darktable.control->global_settings.lib_zoom != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-    dt_control_queue_draw(); // remove focus
+    dt_control_queue_draw_all(); // remove focus
   }
 }
 
 void dt_library_mouse_moved(dt_library_t *lib, double xx, double yy, int which)
 {
-  dt_control_queue_draw();
+  dt_control_queue_draw_all();
 }
 
 void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom)

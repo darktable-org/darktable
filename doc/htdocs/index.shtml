@@ -18,7 +18,22 @@
 <p>all editing is fully non-destructive and only operates on cached image buffers for display. the full image is only converted during export.
 the frontend is written in gtk+/cairo, the database uses sqlite3, raw image loading is done using libraw, hdr, exr and low dynamic range are supported through imagemagick (magickcore).
 the core operates completely on floating point values, so darktable can not only be used for photography but also for scientifically acquired images or output of renderers (high dynamic range).</p>
+
+<p>darktable is released under the terms of the <a href="http://www.gnu.org/licenses/gpl-3.0.txt">gnu general public license version 3</a> or later.</b>
     	</div>
+
+      <div class="text">
+    	<img src="images/initial_release.jpg" class="img" alt="dreggn" /><h1>0.2 beta is out!</h1>
+      <em>(2009-07-06)</em> there have been some major changes in the last months. first, the processing
+      backend has been replaced completely, based on an interface which is able to use libgegl (but currently doesn't,
+      until gegl is fast enough). all operations are encapsulated in run-time loaded plug-ins.
+      raw reading is now based on libraw-0.8. the lighttable got a slightly different look, and more image
+      operations have been implemented (e.g. luma/chroma denoising). <br/>
+      this release is still marked <em>beta</em>, which should indicate that not all features are yet in
+      (especially some lighttable related tasks such as filtering, sorting etc.), and not everything will
+      work bug-free and stable yet.
+    	</div>
+
       <div class="text">
     	<img src="images/initial_release.jpg" class="img" alt="dreggn" /><h1>initial release!</h1>
       <em>(2009-04-08)</em> darktable is going online.. so this is the very first version of this page, be patient with it.

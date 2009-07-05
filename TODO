@@ -1,18 +1,16 @@
 bugs:
 - open_raw has img cleaned up before finished during dt_exit
 - preview_ldr !
-- import memory leak?
 - check scale correct in pixelpipe_hb.c for preview_pipe?
-- scale in denoising: move closeup to cairo.
-- gtk redraw problems?
+- scale in denoising: wavelet transform scale dependent.
 - import starts 3 threads but seems to be mono-core?
 
 0.2 performance:
 - parallel iop->processing (seems to be fast enough mono-core)?
 - try dt_iop std functions in parallel with openmp?
-- openmp libraw?
 
 0.2 cleanup:
+- sorted image loading (on import)!
 - add some user guide documentation.
 - merge develop_view to develop
 - remove develop/iop_hsb.*
@@ -28,21 +26,13 @@ bugs:
 - mip0 broken for very lo-res images.
 - print GPLv3 notice on top of all files
 - save gui settings (expanded etc?) in operation stacks
-- tmp robustness: clean up database on exit completely (lru film history)
 
 - release 0.2 :)
 
-ubuntu package deps:
-- libgtk2.0-dev
-- libsqlite3-dev
-- libglade2-dev
-- libmagickcore-dev
-- libgegl-0.0-dev
-- libcairo2-dev
-- libexif-dev
-- liblcms1-dev
-
 0.3 roadmap:
+- optimize cache in pixelpipe for history item buffers
+- try gegl 0.1.0
+- darkroom mode: click on 1:1 zoom spot
 - quality parameter for pixelpipe init callbacks in modules?
 - if kicking out mip maps from db: need to re-generate history pipeline mipf->mip4!
 - replace dev zoom/closeup weirdness by general scale factor.
@@ -58,16 +48,16 @@ ubuntu package deps:
 - harden db format
 - xml file per image export/import to db
   (dump dt module/hist stack and gegl ops)
-- investigate 16-bit compression for raw previews
-- re-check image data base import, updates, and storage in db
-  imageio_preview_write: update/insert into
-  image_import: no dummy entries for mipmaps!
+- import image: create dummy entry with this filename, create imgid and cache entry.
+  - then load image mip on demand, using image_get cache requests.
+  - image_import: no dummy entries for mipmaps!
+    imageio_preview_write: update/insert into
 
 1.0 roadmap:
 - image denoising (non-local means?)
 - remove libraw in favour of native gegl loading?
 - remove imagemagick in favour of native gegl writing?
-- ubuntu package
+- or: remove magick in favour of libjpg/libpng?
 - database for linear/gamma parameters for each camera model
 
 bugs:

@@ -260,14 +260,14 @@ void dt_control_shutdown(dt_control_t *s)
   s->running = 0;
   pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
-  gdk_threads_leave();
+  // gdk_threads_leave();
   int k; for(k=0;k<s->num_threads;k++) 
     // pthread_kill(s->thread[k], 9);
     pthread_join(s->thread[k], NULL);
   for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
-  gdk_threads_enter();
+  // gdk_threads_enter();
 }
 
 void dt_control_cleanup(dt_control_t *s)
@@ -456,11 +456,11 @@ void *dt_control_expose(void *voidptr)
   while(1)
   {
     int width, height, pointerx, pointery;
-    // gdk_threads_enter();
+    // ! gdk_threads_enter();
     gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_get_pointer(widget, &pointerx, &pointery);
-    // gdk_threads_leave();
+    // ! gdk_threads_leave();
 
     //create a gtk-independant surface to draw on
     cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -544,7 +544,7 @@ void *dt_control_expose(void *voidptr)
 
     cairo_destroy(cr);
 
-    // gdk_threads_enter();
+    // ! gdk_threads_enter();
     cairo_t *cr_pixmap = gdk_cairo_create(darktable.gui->pixmap);
     cairo_set_source_surface (cr_pixmap, cst, 0, 0);
     cairo_paint(cr_pixmap);
@@ -552,7 +552,7 @@ void *dt_control_expose(void *voidptr)
 
     // GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     // gtk_widget_queue_draw(widget);
-    // gdk_threads_leave();
+    // ! gdk_threads_leave();
 
     cairo_surface_destroy(cst);
     return NULL;
@@ -582,8 +582,8 @@ void dt_control_mouse_moved(double x, double y, int which)
   {
     if(gui == DT_LIBRARY)
     {
-        // fwd to lib or dev
-        dt_library_mouse_moved(darktable.library, x-tb, y-tb, which);
+      // fwd to lib or dev
+      dt_library_mouse_moved(darktable.library, x-tb, y-tb, which);
     }
     else // DT_DEVELOP
     {
@@ -611,7 +611,7 @@ void dt_control_mouse_moved(double x, double y, int which)
         darktable.control->button_x = x;
         darktable.control->button_y = y;
         dt_dev_invalidate(darktable.develop);
-        dt_control_queue_draw();
+        dt_control_queue_draw_all();
       }
     }
   }
@@ -708,12 +708,22 @@ void dt_control_gui_queue_draw()
   }
 }
 
-void dt_control_queue_draw()
+void dt_control_queue_draw_all()
 {
   if(darktable.control->running)
   {
     if(pthread_self() != darktable.control->gui_thread) gdk_threads_enter();
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    gtk_widget_queue_draw(widget);
+    if(pthread_self() != darktable.control->gui_thread) gdk_threads_leave();
+  }
+}
+
+void dt_control_queue_draw(GtkWidget *widget)
+{
+  if(darktable.control->running)
+  {
+    if(pthread_self() != darktable.control->gui_thread) gdk_threads_enter();
     gtk_widget_queue_draw(widget);
     if(pthread_self() != darktable.control->gui_thread) gdk_threads_leave();
   }

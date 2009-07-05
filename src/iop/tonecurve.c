@@ -22,14 +22,16 @@
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
 {
   float *in = (float *)i;
-  uint16_t *out = (uint16_t *)o;
+  float *out = (float *)o;
+  // uint16_t *out = (uint16_t *)o;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   for(int k=0;k<width*height;k++)
   {
-#if 0 // in YCbCr
-    out[0] = d->table[CLAMP((int)(in[0]*0xfffful), 0, 0xffff)];
-    out[1] = CLAMP((int)(in[1]*0xfffful), 0, 0xffff);
-    out[2] = CLAMP((int)(in[2]*0xfffful), 0, 0xffff);
+#if 1 // in YCbCr float
+    uint32_t tmp = 0x3f800000ul | (d->table[CLAMP((int)(in[0]*0xfffful), 0, 0xffff)]<<7);
+    out[0] = *(float *)&tmp - 1.0f;
+    out[1] = in[1];//CLAMP((int)(in[1]*0xfffful), 0, 0xffff);
+    out[2] = in[2];//CLAMP((int)(in[2]*0xfffful), 0, 0xffff);
 #else // in sRGB
     for(int c=0;c<3;c++) out[c] = d->table[CLAMP((int)(in[c]*0x10000ul), 0, 0xffff)];
 #endif

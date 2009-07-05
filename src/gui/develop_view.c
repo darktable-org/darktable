@@ -116,7 +116,8 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   if(dev->preview_dirty) dt_dev_process_preview(dev);
 
   pthread_mutex_t *mutex = NULL;
-  int wd, ht, stride;
+  int wd, ht, stride, closeup;
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   cairo_surface_t *surface = NULL;
 
   if(dev->image_dirty && !dev->preview_dirty)
@@ -129,12 +130,11 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
     // surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
 
     // TODO: replace by continuous zoom 
-    int32_t zoom, closeup;
+    int32_t zoom;
     float zoom_x, zoom_y;
     DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
     DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
     float zoom_scale;
     switch(zoom)
     {
@@ -180,7 +180,7 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
     */
     pthread_mutex_unlock(mutex);
   }
-  else if(!dev->image_dirty)
+  else if(!dev->image_dirty && dev->image_timestamp >= dev->preview_timestamp)
   { // draw image
     mutex = &dev->pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
@@ -191,6 +191,11 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
     cairo_set_source_rgb (cr, .2, .2, .2);
     cairo_paint(cr);
     cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
+    if(closeup)
+    {
+      cairo_scale(cr, 2.0, 2.0);
+      cairo_translate(cr, -.25f*wd, -.25f*ht);
+    }
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface (cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);

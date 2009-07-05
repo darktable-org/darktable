@@ -55,7 +55,7 @@ void dt_film_import1(dt_film_roll_t *film)
       pthread_mutex_lock(&film->images_mutex);
       darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
       pthread_mutex_unlock(&film->images_mutex);
-      dt_control_queue_draw();
+      dt_control_queue_draw_all();
     } // else not an image.
   }
 }
@@ -94,7 +94,7 @@ int dt_film_roll_open(dt_film_roll_t *film, const int32_t id)
   DT_CTL_SET_GLOBAL(lib_center, 1);
   DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
   dt_control_update_recent_films();
-  dt_control_queue_draw();
+  dt_control_queue_draw_all();
   return 0;
 }
 

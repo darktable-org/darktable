@@ -25,7 +25,16 @@
         <li>cairo</li>
         <li>libglade2</li>
         <li>lcms</li>
+        <li>gegl</li>
         <li>optional: gcc&gt;=4.2 (openmp)</li>
+      </ul>
+    	</div>
+    	<div class="listtext">
+    	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release for ubuntu amd64</h1>
+      <ul>
+        <li>get the .deb file <a href="">darktable_0.2_amd64.deb</a>.
+        <li>dpkg -i darktable_0.2_amd64.deb</li>
+        <li>Applications - Graphics - darktable</li>
       </ul>
     	</div>
     	<div class="listtext">

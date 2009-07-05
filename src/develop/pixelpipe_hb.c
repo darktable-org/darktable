@@ -214,14 +214,15 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       bzero(dev->histogram_pre, sizeof(float)*4*64);
       for(int j=0;j<height;j+=3) for(int i=0;i<width;i+=3)
       {
-        float rgb[3] = {pixel[3*j*width+3*i], pixel[3*j*width+3*i+1], pixel[3*j*width+3*i+2]};
-        uint8_t L = CLAMP(63*(0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]), 0, 63);
+        // float rgb[3] = {pixel[3*j*width+3*i], pixel[3*j*width+3*i+1], pixel[3*j*width+3*i+2]};
+        // uint8_t L = CLAMP(63*(0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]), 0, 63);
+        uint8_t L = CLAMP(63*(pixel[3*j*width+3*i]), 0, 63);
         dev->histogram_pre[4*L+3] ++;
       }
       // don't count <= 0 pixels
       for(int k=3;k<4*64;k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
       for(int k=19;k<4*64;k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
-      gtk_widget_queue_draw(module->widget);
+      dt_control_queue_draw(module->widget);
     }
 
     // printf("processing %s\n", module->op);
@@ -271,14 +272,18 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 #endif
 
 
-    if(strcmp(module->op, "colorcorrection") == 0)
+    // if(strcmp(module->op, "colorcorrection") == 0)
+    if(strcmp(module->op, "tonecurve") == 0)
     {
       for(int k=0;k<width*height;k++)
-      { // to RGB
+      { // to RGB 16
         float YCbCr[3] = {((float *)*output)[3*k], ((float *)*output)[3*k+1], ((float *)*output)[3*k+2]};
-        ((float *)*output)[3*k+0] = YCbCr[0]                  + 1.140*YCbCr[2];
-        ((float *)*output)[3*k+1] = YCbCr[0] - 0.394*YCbCr[1] - 0.581*YCbCr[2];
-        ((float *)*output)[3*k+2] = YCbCr[0] + 2.028*YCbCr[1]                 ;
+        // ((float *)*output)[3*k+0] = YCbCr[0]                  + 1.140*YCbCr[2];
+        // ((float *)*output)[3*k+1] = YCbCr[0] - 0.394*YCbCr[1] - 0.581*YCbCr[2];
+        // ((float *)*output)[3*k+2] = YCbCr[0] + 2.028*YCbCr[1]                 ;
+        ((uint16_t *)*output)[3*k+0] = CLAMP((int)(0xfffful*(YCbCr[0]                  + 1.140*YCbCr[2])), 0, 0xffff);
+        ((uint16_t *)*output)[3*k+1] = CLAMP((int)(0xfffful*(YCbCr[0] - 0.394*YCbCr[1] - 0.581*YCbCr[2])), 0, 0xffff);
+        ((uint16_t *)*output)[3*k+2] = CLAMP((int)(0xfffful*(YCbCr[0] + 2.028*YCbCr[1]                 )), 0, 0xffff);
       }
     }
 
@@ -302,7 +307,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       for(int k=0;k<4*64;k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
       // don't count <= 0 pixels
       for(int k=19;k<4*64;k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
-      gtk_widget_queue_draw(glade_xml_get_widget (darktable.gui->main_window, "histogram"));
+      dt_control_queue_draw(glade_xml_get_widget (darktable.gui->main_window, "histogram"));
     }
   }
   return 0;

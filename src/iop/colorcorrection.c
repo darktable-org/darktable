@@ -178,8 +178,8 @@ void loa_callback (GtkRange *range, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->loa = gtk_range_get_value(range);
-  float hia = gtk_range_get_value(GTK_RANGE(g->scale2));
-  if(p->loa > hia) gtk_range_set_value(GTK_RANGE(g->scale2), p->loa);
+  // float hia = gtk_range_get_value(GTK_RANGE(g->scale2));
+  // if(p->loa > hia) gtk_range_set_value(GTK_RANGE(g->scale2), p->loa);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -190,8 +190,8 @@ void hia_callback (GtkRange *range, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->hia = gtk_range_get_value(range);
-  float loa = gtk_range_get_value(GTK_RANGE(g->scale1));
-  if(loa > p->hia) gtk_range_set_value(GTK_RANGE(g->scale1), p->hia);
+  // float loa = gtk_range_get_value(GTK_RANGE(g->scale1));
+  // if(loa > p->hia) gtk_range_set_value(GTK_RANGE(g->scale1), p->hia);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -202,8 +202,8 @@ void lob_callback (GtkRange *range, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->lob = gtk_range_get_value(range);
-  float hib = gtk_range_get_value(GTK_RANGE(g->scale4));
-  if(p->lob > hib) gtk_range_set_value(GTK_RANGE(g->scale4), p->lob);
+  // float hib = gtk_range_get_value(GTK_RANGE(g->scale4));
+  // if(p->lob > hib) gtk_range_set_value(GTK_RANGE(g->scale4), p->lob);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -214,8 +214,8 @@ void hib_callback (GtkRange *range, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   p->hib = gtk_range_get_value(range);
-  float lob = gtk_range_get_value(GTK_RANGE(g->scale3));
-  if(lob > p->hib) gtk_range_set_value(GTK_RANGE(g->scale3), p->hib);
+  // float lob = gtk_range_get_value(GTK_RANGE(g->scale3));
+  // if(lob > p->hib) gtk_range_set_value(GTK_RANGE(g->scale3), p->hib);
   dt_dev_add_history_item(darktable.develop, self);
 }
 

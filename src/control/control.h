@@ -35,7 +35,8 @@ gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer
 void dt_control_gui_queue_draw();
 
 // called from core
-void dt_control_queue_draw();
+void dt_control_queue_draw_all();
+void dt_control_queue_draw(GtkWidget *widget);
 void dt_control_get_tonecurve(uint16_t *tonecurve, dt_ctl_image_settings_t *settings);
 void dt_control_add_history_item(int32_t num, const char *label);
 void dt_control_clear_history_items(int32_t num);
