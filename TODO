@@ -4,6 +4,7 @@ release:
  - tar.bz2
  - .deb
  - ubuntu bug comment
+ - bug on gentoo ebuild?
 
 bugs:
 - mipf sometimes not synched correctly

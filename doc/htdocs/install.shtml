@@ -30,9 +30,9 @@
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release for ubuntu amd64</h1>
+    	<img src="images/firering.jpg" alt="release" class="img" /><h1>current release for ubuntu amd64</h1>
       <ul>
-        <li>get the .deb file <a href="">darktable_0.2_amd64.deb</a>.
+        <li>get the .deb file <a href="https://sourceforge.net/projects/darktable/files/darktable/darktable_0.2_amd64.deb">darktable_0.2_amd64.deb</a>.
         <li>dpkg -i darktable_0.2_amd64.deb</li>
         <li>Applications - Graphics - darktable</li>
       </ul>
@@ -40,20 +40,20 @@
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/project/platformdownload.php?group_id=258690&amp;sel_platform=15259">0.1-alpha source .bz2</a></li>
-        <li>./configure [--enable-debug] [--enable-qwerty] [--prefix=/usr]</li>
-        <li>make [install]</li>
-        <li>src/darktable or darktable</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/darktable-0.2.tar.bz2">0.2 source .bz2</a></li>
+        <li>./configure [--enable-debug] [--prefix=/usr]</li>
+        <li>make all install</li>
+        <li>darktable</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/sun.jpg" alt="release" class="img" /><h1>current release for gentoo</h1>
       <ul>
         <li>unfortunately darktable is not in portage, so you have to:</li>
-        <li>download this <a href="darktable-0.1_alpha.ebuild">ebuild</a></li>
+        <li>download this <a href="darktable-0.2.build">ebuild</a></li>
         <li>mkdir -p /usr/portage/media-gfx/darktable/</li>
-        <li>cp darktable-0.1_alpha.ebuild /usr/portage/media-gfx/darktable/</li>
-        <li>ebuild /usr/portage/media-gfx/darktable/darktable-0.1_alpha.ebuild digest</li>
+        <li>cp darktable-0.2.ebuild /usr/portage/media-gfx/darktable/</li>
+        <li>ebuild /usr/portage/media-gfx/darktable/darktable-0.2.ebuild digest</li>
         <li>emerge darktable</li>
         <li>darktable</li>
       </ul>

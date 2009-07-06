@@ -14,7 +14,8 @@
       here are some of the nice, obligatory screenshots. see darktable in action. the interface is loosely split in two parts:
       the lighttable and the darkroom. in the lighttable, the mouse is used to zoom into the picture collection and to pan around.
       the images are selected and sorted by arbitrary sql queries. the darkroom mode is used to develop the image to low dynamic
-      range.
+      range. <br/>
+      Note that these shots are taken from the 0.1_alpha version and therefore a bit outdated.
     	</div>
       <div class="text">
       <a href="images/Screenshot-0.png"><img src="images/Screenshot-0-thumb.jpg" alt="scr0" class="img"/></a><h1>screenshot 0</h1>
