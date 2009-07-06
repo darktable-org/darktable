@@ -15,7 +15,7 @@ conflicts=('darktable')
 provides=('darktable')
 
 source=("http://switch.dl.sourceforge.net/sourceforge/darktable/${pkgname}-${pkgver}.tar.bz2")
-md5sums=('2d8bdd0d76e66e3884952c9398917296')
+md5sums=('bc39808ec46f5695c019ef351cdb6dd5')
 
 build() {
   cd "${srcdir}/${pkgname}-${pkgver}"
