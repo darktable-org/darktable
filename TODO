@@ -1,13 +1,5 @@
-release:
- - webpage update:
-   docs
- - tar.bz2
- - .deb
- - ubuntu bug comment
- - bug on gentoo ebuild?
-
 bugs:
-- mipf sometimes not synched correctly
+- mipf sometimes not synched correctly?
 - open_raw has img cleaned up before finished during dt_exit
 - preview_ldr !
 - check scale correct in pixelpipe_hb.c for preview_pipe?
