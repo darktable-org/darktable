@@ -1,5 +1,6 @@
 SUBDIRS=LibRaw iop # gegl-operations
 include shared.am
+AM_CFLAGS+=-Werror
 noinst_LIBRARIES=libdarktable.a
 libdarktable_a_SOURCES=control/jobs.c library/film.c library/library.c gui/gtk.c gui/navigation.c gui/histogram.c develop/develop.c develop/imageop.c common/imageio.c common/darktable.c common/nikon_curve.c control/control.c gui/develop_view.c common/image.c common/image_cache.c common/image_compression.c gui/metadata.c develop/pixelpipe.c
 bin_PROGRAMS=darktable

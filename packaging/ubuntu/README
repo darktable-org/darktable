@@ -5,3 +5,4 @@ cp -r packaging/ubuntu/debian /tmp/darktable-0.2
 cd /tmp/darktable-0.2
 dh_make -e hanatos@gmail.com -f ../darktable-0.2.tar.bz2 -c gpl
 dpkg-buildpackage -rfakeroot
+cd -

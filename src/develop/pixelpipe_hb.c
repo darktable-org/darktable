@@ -1,5 +1,6 @@
 #include "develop/pixelpipe.h"
 #include "gui/gtk.h"
+#include "control/control.h"
 
 #include <assert.h>
 #include <string.h>

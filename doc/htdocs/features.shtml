@@ -11,7 +11,7 @@
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/2.png" alt="2" width="142px" /></span><div class="headline"><img src="features.png" alt="features" width="177px"/></div>
     	<div class="starterText">
-      these are the current features and the roadmap for the beta release, which shall contain all essential core features, so we can then focus on smoothing the user interface, fixing bugs and so on.
+      these are the current features and the roadmap for future releases.
     	</div>
     	<div class="listtext">
     	<img src="images/gold.jpg" alt="done" class="img" /><h1>current features</h1>
@@ -23,15 +23,13 @@
         <li>all data is stored in an sql database for arbitrary access</li>
         <li>fully non-destructive editing</li>
         <li>core functions operate on floating point buffers</li>
-        <li>first, very basic image operations (tone curve, hsv, gamma correction)</li>
+        <li>modular image operations (plug-in interface)</li>
         <li>export to low dynamic range (jpg, png), 16-bit (ppm), or linear high dynamic range (pfm)</li>
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/moon.jpg" alt="todo" class="img" /><h1>features scheduled for beta</h1>
+    	<img src="images/moon.jpg" alt="todo" class="img" /><h1>scheduled features</h1>
       <ul>
-        <li>well-defined plug-in system for easily extensible gui</li>
-        <li>switch to gegl for image operations</li>
         <li>image tagging, sorting and filtering by tag system</li>
         <li>database format freeze for future compatibility of tag data</li>
         <li>...?</li>

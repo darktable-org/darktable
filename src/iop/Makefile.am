@@ -1,6 +1,6 @@
 include $(srcdir)/../shared.am
 LDFLAGS= -module -avoid-version
-CFLAGS=$(AM_CFLAGS) -I$(srcdir) -I$(srcdir)/..
+CFLAGS=$(AM_CFLAGS) -I$(srcdir) -I$(srcdir)/.. -Werror
 LTADD=$(GEGL_LIBS) $(LIBEXIF_LIBS) $(MAGICK_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) libdarktable.a LibRaw/libraw_r.a -lstdc++
 libtonecurve_la_SOURCES=tonecurve.c
 libgamma_la_SOURCES=gamma.c
