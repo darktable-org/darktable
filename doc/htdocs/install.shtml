@@ -26,6 +26,7 @@
         <li>libglade2</li>
         <li>lcms</li>
         <li>gegl</li>
+        <li>libexif</li>
         <li>optional: gcc&gt;=4.2 (openmp)</li>
       </ul>
     	</div>
@@ -50,7 +51,7 @@
     	<img src="images/sun.jpg" alt="release" class="img" /><h1>current release for gentoo</h1>
       <ul>
         <li>unfortunately darktable is not in portage, so you have to:</li>
-        <li>download this <a href="darktable-0.2.build">ebuild</a></li>
+        <li>download this <a href="darktable-0.2.ebuild">ebuild</a></li>
         <li>mkdir -p /usr/portage/media-gfx/darktable/</li>
         <li>cp darktable-0.2.ebuild /usr/portage/media-gfx/darktable/</li>
         <li>ebuild /usr/portage/media-gfx/darktable/darktable-0.2.ebuild digest</li>
@@ -62,19 +63,19 @@
     	<img src="images/oz.jpg" alt="release" class="img" /><h1>current release for arch linux</h1>
       <ul>
         <li>arch linux users will know what to do with this file:</li>
-        <li>download this <a href="PKGBUILD">PKGBUILD</a></li>
+        <li>download this <a href="darktable.tar.gz">PKGBUILD</a></li>
+        <li>if you run into trouble, check if this <a href="http://bugs.archlinux.org/task/14426">related bugreport</a> helps you out.</li>
         <li>thx to chressie for this.</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/fire.jpg" alt="svn" class="img" /><h1>svn version</h1>
       <ul>
-        <li>there are now additional dependencies: libexif, gegl</li>
         <li>svn co https://darktable.svn.sourceforge.net/svnroot/darktable darktable</li>
         <li>autoreconf --install</li>
-        <li>./configure [--enable-debug] [--prefix=/usr]</li>
-        <li>make [install]</li>
-        <li>src/darktable</li>
+        <li>./configure [--enable-debug] [--prefix=$(pwd)/install]</li>
+        <li>make install</li>
+        <li>install/bin/darktable</li>
         <li>let's rock!</li>
       </ul>
     	</div>

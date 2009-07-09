@@ -13,7 +13,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE=""
 DEPEND=">=x11-libs/gtk+-2.14.7 >=gnome-base/libglade-2.6.3
->=media-gfx/imagemagick-6.4.8.3 >=dev-db/sqlite-3.6.11 >=x11-libs/cairo-1.8.6"
+>=media-gfx/imagemagick-6.4.8.3 >=dev-db/sqlite-3.6.11 >=x11-libs/cairo-1.8.6 >=media-libs/gegl-0.0.22 >=media-libs/lcms-1.17"
 RDEPEND="${DEPEND}"
 
 src_unpack() {
