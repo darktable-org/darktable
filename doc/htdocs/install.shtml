@@ -64,6 +64,7 @@
       <ul>
         <li>arch linux users will know what to do with this file:</li>
         <li>download this <a href="darktable.tar.gz">PKGBUILD</a></li>
+        <li>or: build the svn head with this <a href="http://aur.archlinux.org/packages.php?ID=28117">AUR version</a></li>
         <li>if you run into trouble, check if this <a href="http://bugs.archlinux.org/task/14426">related bugreport</a> helps you out.</li>
         <li>thx to chressie for this.</li>
       </ul>
