@@ -5,6 +5,7 @@
 #include "common/imageio.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "library/library.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -22,6 +23,8 @@
 #include <libexif/exif-tag.h>
 #include <libexif/exif-content.h>
 #include <libexif/exif-data.h>
+#include <libexif/exif-loader.h>
+#include <libexif/exif-mnote-data.h>
 // #include <exif-log.h>
 #include <string.h>
 #include <strings.h>
@@ -244,6 +247,7 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, int orientation)
 // only set mip4..0.
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
+  dt_exif_read(img, filename);
   // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
@@ -293,6 +297,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
+      // TODO: .cc exiv2 module to load lens etc.
       // JPEG: decode with magick (directly rescaled to mip4)
 #ifdef HAVE_MAGICK
       ExceptionInfo *exception = AcquireExceptionInfo();
@@ -429,6 +434,7 @@ error_raw:
 
 int dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
+  dt_exif_read(img, filename);
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);

@@ -212,18 +212,19 @@ int dt_image_import(const int32_t film_id, const char *filename)
   }
 
   // update image data
-  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, exposure = ?5, aperture = ?6, iso = ?7, focal_length = ?8, film_id = ?9, datetime_taken = ?10 where id = ?11", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11 where id = ?12", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->width);
   rc = sqlite3_bind_int (stmt, 2, img->height);
   rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
   rc = sqlite3_bind_text(stmt, 4, img->exif_model, strlen(img->exif_model), SQLITE_STATIC);
-  rc = sqlite3_bind_double(stmt, 5, img->exif_exposure);
-  rc = sqlite3_bind_double(stmt, 6, img->exif_aperture);
-  rc = sqlite3_bind_double(stmt, 7, img->exif_iso);
-  rc = sqlite3_bind_double(stmt, 8, img->exif_focal_length);
-  rc = sqlite3_bind_int (stmt, 9, film_id);
-  rc = sqlite3_bind_text(stmt, 10, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
-  rc = sqlite3_bind_int (stmt, 11, img->id);
+  rc = sqlite3_bind_text(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_STATIC);
+  rc = sqlite3_bind_double(stmt, 6, img->exif_exposure);
+  rc = sqlite3_bind_double(stmt, 7, img->exif_aperture);
+  rc = sqlite3_bind_double(stmt, 8, img->exif_iso);
+  rc = sqlite3_bind_double(stmt, 9, img->exif_focal_length);
+  rc = sqlite3_bind_int (stmt, 10, film_id);
+  rc = sqlite3_bind_text(stmt, 11, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
+  rc = sqlite3_bind_int (stmt, 12, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
@@ -283,6 +284,7 @@ void dt_image_init(dt_image_t *img)
   img->cacheline = -1;
   strncpy(img->exif_model, "unknown\0", 20);
   strncpy(img->exif_maker, "unknown\0", 20);
+  strncpy(img->exif_lens,  "unknown\0", 20);
   strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
 #ifdef _DEBUG
@@ -302,7 +304,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
   int rc, ret = 1;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, exposure, aperture, iso, focal_length, datetime_taken from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -314,11 +316,12 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     strncpy(img->filename,   (char *)sqlite3_column_text(stmt, 4), 512);
     strncpy(img->exif_maker, (char *)sqlite3_column_text(stmt, 5), 20);
     strncpy(img->exif_model, (char *)sqlite3_column_text(stmt, 6), 20);
-    img->exif_exposure = sqlite3_column_double(stmt, 7);
-    img->exif_aperture = sqlite3_column_double(stmt, 8);
-    img->exif_iso = sqlite3_column_double(stmt, 9);
-    img->exif_focal_length = sqlite3_column_double(stmt, 10);
-    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 11), 20);
+    strncpy(img->exif_lens,  (char *)sqlite3_column_text(stmt, 7), 20);
+    img->exif_exposure = sqlite3_column_double(stmt, 8);
+    img->exif_aperture = sqlite3_column_double(stmt, 9);
+    img->exif_iso = sqlite3_column_double(stmt, 10);
+    img->exif_focal_length = sqlite3_column_double(stmt, 11);
+    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 12), 20);
     
     ret = 0;
   }

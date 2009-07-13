@@ -414,7 +414,7 @@ filename</property>
                   <widget class="GtkTable" id="metadata_expander_body">
                     <property name="visible">True</property>
                     <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-                    <property name="n_rows">8</property>
+                    <property name="n_rows">9</property>
                     <property name="n_columns">2</property>
                     <child>
                       <widget class="GtkLabel" id="label20">
@@ -608,6 +608,31 @@ filename</property>
                       <packing>
                         <property name="top_attach">5</property>
                         <property name="bottom_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="label2">
+                        <property name="visible">True</property>
+                        <property name="xalign">0</property>
+                        <property name="xpad">5</property>
+                        <property name="label" translatable="yes">lens</property>
+                      </widget>
+                      <packing>
+                        <property name="top_attach">8</property>
+                        <property name="bottom_attach">9</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="metadata_label_lens">
+                        <property name="visible">True</property>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">-</property>
+                      </widget>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="right_attach">2</property>
+                        <property name="top_attach">8</property>
+                        <property name="bottom_attach">9</property>
                       </packing>
                     </child>
                   </widget>

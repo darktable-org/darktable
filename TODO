@@ -31,6 +31,9 @@ bugs:
 - release 0.2 :)
 
 0.3 roadmap:
+- output/input profiles using lcms
+- exiv2 to replace libexif (write blob, manage as mips in db?)
+- lensfun
 - optimize cache in pixelpipe for history item buffers
 - try gegl 0.1.0
 - darkroom mode: click on 1:1 zoom spot

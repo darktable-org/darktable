@@ -25,6 +25,8 @@ void dt_gui_metadata_update()
     gtk_label_set_text(GTK_LABEL(widget), img->filename);
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_model");
     gtk_label_set_text(GTK_LABEL(widget), img->exif_model);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_lens");
+    gtk_label_set_text(GTK_LABEL(widget), img->exif_lens);
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_maker");
     gtk_label_set_text(GTK_LABEL(widget), img->exif_maker);
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_aperture");
