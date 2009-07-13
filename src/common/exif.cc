@@ -2,6 +2,7 @@
 #include "common/exif.h"
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
+#include <exiv2/canonmn.hpp>
 #include <sstream>
 #include <cassert>
 #include <glib.h>
@@ -12,6 +13,11 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 	Exiv2::ExifData::iterator pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
+  std::stringstream ss;
+  // (void)Exiv2::ExifTags::printTag(ss, 0x0016, Exiv2::canonIfdId, pos->value(), &exifData);
+  (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
+  // std::ostream &os, uint16_t tag, IfdId ifdId, const Value &value, const ExifData *pExifData=0)
+  str = ss.str();
 
   char *s = g_locale_to_utf8(str.c_str(), str.length(),
       NULL, NULL, NULL);
@@ -175,9 +181,9 @@ extern "C" int dt_exif_read(dt_image_t *img, const char* path)
         uf->inputExifBufLen);
     g_strlcpy(uf->conf->exifSource, EXV_PACKAGE_STRING, max_name);
 
-    std::cerr.rdbuf(savecerr);
     ufraw_message(UFRAW_SET_LOG, "%s\n", stderror.str().c_str());
 #endif
+    std::cerr.rdbuf(savecerr);
 
     return 0;
   }
