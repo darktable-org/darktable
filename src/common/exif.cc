@@ -122,24 +122,25 @@ extern "C" int dt_exif_read(dt_image_t *img, const char* path)
 #endif
     /* Read lens name */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Lens")))
-        != exifData.end() ) {
+        != exifData.end() )
+    {
       dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
-#if EXIV2_TEST_VERSION(0,17,91)		/* Exiv2 0.18-pre1 */
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType")))
-        != exifData.end() ) {
+    }
+    else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
+             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
+    {
+      std::stringstream ss;
+      // (void)Exiv2::ExifTags::printTag(ss, 0x0016, Exiv2::canonIfdId, pos->value(), &exifData);
+      (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
+      strncpy(img->exif_lens, ss.str().c_str(), 30);
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.LensID"))) != exifData.end() )
+    {
       dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
-#endif
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.LensType"))) != exifData.end() )
+    {
       dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.LensID")))
-        != exifData.end() ) {
-      dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
-#if EXIV2_TEST_VERSION(0,16,0)
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.LensType")))
-        != exifData.end() ) {
-      dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
-#endif
     }
 #if 0
     /* Read flash mode */

@@ -9,10 +9,10 @@
 
 typedef enum
 {
-  DT_IMAGE_PORTRAIT = 1,
-  DT_IMAGE_GOOD = 2,
-  DT_IMAGE_BAD = 4,
-  DT_IMAGE_SELECTED = 8,
+  DT_IMAGE_DELETE = 1,
+  DT_IMAGE_OKAY = 2,
+  DT_IMAGE_NICE = 3,
+  DT_IMAGE_EXCELLENT = 4,
   DT_IMAGE_THUMBNAIL = 16
 }
 dt_image_flags_t;
@@ -56,8 +56,6 @@ typedef struct dt_image_t
   int32_t shrink, wb_auto, wb_cam, orientation;
   float exposure;
   float *pixels;
-  // libexif data
-  // ExifContent *exif;
   // minimal exif data here:
   char exif_maker[30], exif_model[30], exif_lens[30], exif_datetime_taken[20];
   float exif_exposure;

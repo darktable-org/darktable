@@ -212,7 +212,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   }
 
   // update image data
-  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11 where id = ?12", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12 where id = ?13", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->width);
   rc = sqlite3_bind_int (stmt, 2, img->height);
   rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -224,7 +224,8 @@ int dt_image_import(const int32_t film_id, const char *filename)
   rc = sqlite3_bind_double(stmt, 9, img->exif_focal_length);
   rc = sqlite3_bind_int (stmt, 10, film_id);
   rc = sqlite3_bind_text(stmt, 11, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
-  rc = sqlite3_bind_int (stmt, 12, img->id);
+  rc = sqlite3_bind_int (stmt, 12, img->flags);
+  rc = sqlite3_bind_int (stmt, 13, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
@@ -304,7 +305,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
   int rc, ret = 1;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -321,7 +322,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->exif_aperture = sqlite3_column_double(stmt, 9);
     img->exif_iso = sqlite3_column_double(stmt, 10);
     img->exif_focal_length = sqlite3_column_double(stmt, 11);
-    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 12), 20);
+    img->flags = sqlite3_column_int(stmt, 12);
+    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 13), 20);
     
     ret = 0;
   }
