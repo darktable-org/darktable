@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
 {
@@ -191,5 +192,28 @@ void dt_image_cache_print(dt_image_cache_t *cache)
   printf("\n\n");
   assert(666 == 0);
 #endif
+}
+
+void dt_image_cache_flush(dt_image_t *img)
+{
+  int rc;
+  sqlite3_stmt *stmt;
+   rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12 where id = ?13", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, img->width);
+  rc = sqlite3_bind_int (stmt, 2, img->height);
+  rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
+  rc = sqlite3_bind_text(stmt, 4, img->exif_model, strlen(img->exif_model), SQLITE_STATIC);
+  rc = sqlite3_bind_text(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_STATIC);
+  rc = sqlite3_bind_double(stmt, 6, img->exif_exposure);
+  rc = sqlite3_bind_double(stmt, 7, img->exif_aperture);
+  rc = sqlite3_bind_double(stmt, 8, img->exif_iso);
+  rc = sqlite3_bind_double(stmt, 9, img->exif_focal_length);
+  rc = sqlite3_bind_int (stmt, 10, img->film_id);
+  rc = sqlite3_bind_text(stmt, 11, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
+  rc = sqlite3_bind_int (stmt, 12, img->flags);
+  rc = sqlite3_bind_int (stmt, 13, img->id);
+  rc = sqlite3_step(stmt);
+  if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_fluhs] sqlite3 error %d\n", rc);
+  rc = sqlite3_finalize(stmt);
 }
 

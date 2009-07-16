@@ -258,7 +258,9 @@ void dt_library_button_pressed(dt_library_t *lib, double xx, double yy, int whic
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       image->flags &= ~0x7;
-      image->flags |= lib->image_over;
+      if(!(lib->image_over == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)))
+        image->flags |= lib->image_over;
+      dt_image_cache_flush(image);
       dt_image_cache_release(image, 'r');
       break;
     }

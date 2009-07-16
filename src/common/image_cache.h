@@ -46,5 +46,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode);
 dt_image_t *dt_image_cache_get(int32_t id, const char mode);
 /** decrements users lock. */
 void dt_image_cache_release(dt_image_t *img, const char mode);
+/** synches this image and the db entry. */
+void dt_image_cache_flush(dt_image_t *img);
 
 #endif

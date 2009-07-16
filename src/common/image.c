@@ -212,7 +212,9 @@ int dt_image_import(const int32_t film_id, const char *filename)
   }
 
   // update image data
-  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12 where id = ?13", -1, &stmt, NULL);
+  img->film_id = film_id;
+  dt_image_cache_flush(img);
+  /*rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12 where id = ?13", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->width);
   rc = sqlite3_bind_int (stmt, 2, img->height);
   rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -229,6 +231,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
+  */
 
   // create preview images
   // if(img->flags & DT_IMAGE_THUMBNAIL) { if(dt_image_preview_to_raw(img)) ret = 3; }
@@ -285,7 +288,7 @@ void dt_image_init(dt_image_t *img)
   img->cacheline = -1;
   strncpy(img->exif_model, "unknown\0", 20);
   strncpy(img->exif_maker, "unknown\0", 20);
-  strncpy(img->exif_lens,  "unknown\0", 20);
+  strncpy(img->exif_lens,  "unknown\0", 50);
   strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
 #ifdef _DEBUG
@@ -315,9 +318,9 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->width   = sqlite3_column_int(stmt, 2);
     img->height  = sqlite3_column_int(stmt, 3);
     strncpy(img->filename,   (char *)sqlite3_column_text(stmt, 4), 512);
-    strncpy(img->exif_maker, (char *)sqlite3_column_text(stmt, 5), 20);
-    strncpy(img->exif_model, (char *)sqlite3_column_text(stmt, 6), 20);
-    strncpy(img->exif_lens,  (char *)sqlite3_column_text(stmt, 7), 20);
+    strncpy(img->exif_maker, (char *)sqlite3_column_text(stmt, 5), 30);
+    strncpy(img->exif_model, (char *)sqlite3_column_text(stmt, 6), 30);
+    strncpy(img->exif_lens,  (char *)sqlite3_column_text(stmt, 7), 50);
     img->exif_exposure = sqlite3_column_double(stmt, 8);
     img->exif_aperture = sqlite3_column_double(stmt, 9);
     img->exif_iso = sqlite3_column_double(stmt, 10);

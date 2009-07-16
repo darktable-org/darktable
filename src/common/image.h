@@ -42,7 +42,6 @@ typedef struct dt_image_t
 {
   // common stuff
   int32_t width, height;
-  char filename[512];
   // used by library
   int32_t num, flags, film_id, id;
   // cache
@@ -58,11 +57,15 @@ typedef struct dt_image_t
   float exposure;
   float *pixels;
   // minimal exif data here:
-  char exif_maker[30], exif_model[30], exif_lens[30], exif_datetime_taken[20];
   float exif_exposure;
   float exif_aperture;
   float exif_iso;
   float exif_focal_length;
+  char exif_maker[30];
+  char exif_model[30];
+  char exif_lens[50];
+  char exif_datetime_taken[20];
+  char filename[512];
 }
 dt_image_t;
 

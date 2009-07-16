@@ -247,7 +247,10 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, int orientation)
 // only set mip4..0.
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
-  dt_exif_read(img, filename);
+  (void) dt_exif_read(img, filename);
+  printf("datum: %s\n", img->exif_datetime_taken);
+  printf("lens: %s\n", img->exif_lens);
+  printf("lensptr : %lu\n", (long int)(img->exif_lens));
   // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
@@ -434,7 +437,7 @@ error_raw:
 
 int dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
-  dt_exif_read(img, filename);
+  (void) dt_exif_read(img, filename);
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);

@@ -10,14 +10,14 @@
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
-	Exiv2::ExifData::iterator pos, Exiv2::ExifData& exifData)
+	Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
-  std::stringstream ss;
+  // std::stringstream ss;
   // (void)Exiv2::ExifTags::printTag(ss, 0x0016, Exiv2::canonIfdId, pos->value(), &exifData);
-  (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
+  // (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
   // std::ostream &os, uint16_t tag, IfdId ifdId, const Value &value, const ExifData *pExifData=0)
-  str = ss.str();
+  // str = ss.str();
 
   char *s = g_locale_to_utf8(str.c_str(), str.length(),
       NULL, NULL, NULL);
@@ -129,10 +129,15 @@ int dt_exif_read(dt_image_t *img, const char* path)
     else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
              ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
     {
-      std::stringstream ss;
+      // std::stringstream ss;
+      // (void)Exiv2::ExifTags::printTag(ss, pos->tag(), pos->ifdId(), pos->value(), &exifData);
       // (void)Exiv2::ExifTags::printTag(ss, 0x0016, Exiv2::canonIfdId, pos->value(), &exifData);
-      (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
-      strncpy(img->exif_lens, ss.str().c_str(), 30);
+      // (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
+      // strncpy(img->exif_lens, ss.str().c_str(), 30);
+      // std::string str = pos->print(&exifData);
+      // strncpy(img->exif_lens, str.c_str(), 30);
+      std::cout << "found " << pos->print(&exifData) << std::endl;
+      dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.LensID"))) != exifData.end() )
     {
@@ -186,6 +191,9 @@ int dt_exif_read(dt_image_t *img, const char* path)
 #endif
     std::cerr.rdbuf(savecerr);
 
+    std::cout << "time c++: " << img->exif_datetime_taken << std::endl;
+    std::cout << "lens c++: " << img->exif_lens << std::endl;
+    std::cout << "lensptr : " << (long int)(img->exif_lens) << std::endl;
     return 0;
   }
   catch (Exiv2::AnyError& e)
