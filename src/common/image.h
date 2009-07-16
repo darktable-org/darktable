@@ -37,6 +37,7 @@ typedef struct dt_image_lock_t
 }
 dt_image_lock_t;
 
+// __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {
   // common stuff

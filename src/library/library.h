@@ -10,7 +10,7 @@
 
 #define DT_LIBRARY_MAX_ZOOM 13
 
-void dt_image_expose(dt_image_t *image, int32_t i, cairo_t *cr, int32_t width, int32_t height, int32_t zoom);
+void dt_image_expose(dt_image_t *image, int32_t i, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
 
 /**
  * film roll.
@@ -39,6 +39,16 @@ int dt_film_roll_import(dt_film_roll_t *film, const char *dirname);
 /** helper for import threads. */
 void dt_film_import1(dt_film_roll_t *film);
 
+typedef enum dt_library_image_over_t
+{
+  DT_LIB_DESERT = 0,
+  DT_LIB_STAR_1 = 1,
+  DT_LIB_STAR_2 = 2,
+  DT_LIB_STAR_3 = 3,
+  DT_LIB_STAR_4 = 4
+}
+dt_library_image_over_t;
+
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -51,6 +61,7 @@ typedef struct dt_library_t
   int32_t last_selected_id;
   int button;
   uint32_t modifiers;
+  dt_library_image_over_t image_over;
 }
 dt_library_t;
 

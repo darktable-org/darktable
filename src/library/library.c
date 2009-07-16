@@ -72,6 +72,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   DT_CTL_GET_GLOBAL(track, lib_track);
   DT_CTL_GET_GLOBAL(center, lib_center);
 
+  lib->image_over = DT_LIB_DESERT;
+
   if(zoom == 1) cairo_set_source_rgb (cr, .8, .8, .8);
   else cairo_set_source_rgb (cr, .9, .9, .9);
   cairo_paint(cr);
@@ -133,6 +135,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM*offset_j;
   int seli = (int)((pointerx + zoom_x)/wd) - MAX(offset_i, 0);
   int selj = (int)((pointery + zoom_y)/ht) - offset_j;
+  int img_pointerx = fmodf(pointerx + zoom_x, wd);// - wd*MAX(offset_i, 0);
+  int img_pointery = fmodf(pointery + zoom_y, ht);// - ht*offset_j;
 
   // assure 1:1 is not switching images on resize/tab events:
   if(last_offset != 0x7fffffff && zoom == 1)
@@ -176,6 +180,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
         dt_image_t *image = dt_image_cache_get(id, 'r');
         if(image)
         {
+          // printf("flags %d > k %d\n", image->flags, col);
+
           // set mouse over id
           if((zoom == 1 && mouse_over_id < 0) || (!pan && seli == col && selj == row))
           {
@@ -200,7 +206,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
             }
           }
           cairo_save(cr);
-          dt_image_expose(image, image->id, cr, wd, zoom == 1 ? height : ht, zoom);
+          // TODO: pass pointerx,y translated by cairo translate!
+          dt_image_expose(image, image->id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
         }
@@ -241,6 +248,23 @@ void dt_library_button_pressed(dt_library_t *lib, double xx, double yy, int whic
   lib->select_offset_x += xx;
   lib->select_offset_y += yy;
   DT_CTL_SET_GLOBAL(lib_pan, 1);
+  // image button pressed?
+  switch(lib->image_over)
+  {
+    case DT_LIB_DESERT: break;
+    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4:
+    { 
+      int32_t mouse_over_id;
+      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+      image->flags &= ~0x7;
+      image->flags |= lib->image_over;
+      dt_image_cache_release(image, 'r');
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 void dt_library_mouse_leave(dt_library_t *lib)
@@ -257,7 +281,19 @@ void dt_library_mouse_moved(dt_library_t *lib, double xx, double yy, int which)
   dt_control_queue_draw_all();
 }
 
-void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom)
+void dt_library_star(cairo_t *cr, float x, float y, float r1, float r2)
+{
+  const float d = 2.0*M_PI*0.1f;
+  const float dx[10] = {sinf(0.0), sinf(d), sinf(2*d), sinf(3*d), sinf(4*d), sinf(5*d), sinf(6*d), sinf(7*d), sinf(8*d), sinf(9*d)};
+  const float dy[10] = {cosf(0.0), cosf(d), cosf(2*d), cosf(3*d), cosf(4*d), cosf(5*d), cosf(6*d), cosf(7*d), cosf(8*d), cosf(9*d)};
+  cairo_move_to(cr, x+r1*dx[0], y-r1*dy[0]);
+  for(int k=1;k<10;k++)
+    if(k&1) cairo_line_to(cr, x+r2*dx[k], y-r2*dy[k]);
+    else    cairo_line_to(cr, x+r1*dx[k], y-r1*dy[k]);
+  cairo_close_path(cr);
+}
+
+void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
 {
   float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, imgsel;
@@ -353,6 +389,8 @@ void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width,
 
   if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
   cairo_rectangle(cr, 0, 0, fwd, fht);
+
+  // border around image
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
   if(selected)
   {
@@ -391,8 +429,38 @@ void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width,
   }
   cairo_restore(cr);
 
+  if(imgsel == img->id)
+  { // draw mouseover hover effects, set event hook for mouse button down!
+    darktable.library->image_over = DT_LIB_DESERT;
+    if(zoom != 1)
+    {
+      cairo_set_line_width(cr, 1.5);
+      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+      cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
+      const float r1 = 0.06*width, r2 = 0.025*width;
+      for(int k=0;k<4;k++)
+      {
+        const float x = (0.15+k*0.15)*width, y = 0.88*height;
+        dt_library_star(cr, x, y, r1, r2);
+        if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+        {
+          darktable.library->image_over = DT_LIB_STAR_1 + k;
+          cairo_fill(cr);
+        }
+        else if((img->flags & 0x7) > k)
+        {
+          cairo_fill_preserve(cr);
+          cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
+          cairo_stroke(cr);
+          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+        }
+        else cairo_stroke(cr);
+      }
+    }
+  }
+
   if(selected && (zoom == 1))
-  {
+  { // some exif data
     cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, .02*width);

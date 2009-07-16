@@ -29,7 +29,7 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
   }
 }
 
-extern "C" int dt_exif_read(dt_image_t *img, const char* path)
+int dt_exif_read(dt_image_t *img, const char* path)
 {
   /* Redirect exiv2 errors to a string buffer */
   std::ostringstream stderror;
