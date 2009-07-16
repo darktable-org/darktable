@@ -136,7 +136,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       // strncpy(img->exif_lens, ss.str().c_str(), 30);
       // std::string str = pos->print(&exifData);
       // strncpy(img->exif_lens, str.c_str(), 30);
-      std::cout << "found " << pos->print(&exifData) << std::endl;
+      // std::cout << "found " << pos->print(&exifData) << std::endl;
       dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.LensID"))) != exifData.end() )
@@ -191,9 +191,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
 #endif
     std::cerr.rdbuf(savecerr);
 
-    std::cout << "time c++: " << img->exif_datetime_taken << std::endl;
-    std::cout << "lens c++: " << img->exif_lens << std::endl;
-    std::cout << "lensptr : " << (long int)(img->exif_lens) << std::endl;
+    // std::cout << "time c++: " << img->exif_datetime_taken << std::endl;
+    // std::cout << "lens c++: " << img->exif_lens << std::endl;
+    // std::cout << "lensptr : " << (long int)(img->exif_lens) << std::endl;
+    // std::cout << "imgptr  : " << (long int)(img) << std::endl;
     return 0;
   }
   catch (Exiv2::AnyError& e)

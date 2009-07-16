@@ -40,6 +40,16 @@ dt_image_lock_t;
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {
+  // minimal exif data here:
+  float exif_exposure;
+  float exif_aperture;
+  float exif_iso;
+  float exif_focal_length;
+  char exif_maker[30];
+  char exif_model[30];
+  char exif_lens[50];
+  char exif_datetime_taken[20];
+  char filename[512];
   // common stuff
   int32_t width, height;
   // used by library
@@ -56,16 +66,6 @@ typedef struct dt_image_t
   int32_t shrink, wb_auto, wb_cam, orientation;
   float exposure;
   float *pixels;
-  // minimal exif data here:
-  float exif_exposure;
-  float exif_aperture;
-  float exif_iso;
-  float exif_focal_length;
-  char exif_maker[30];
-  char exif_model[30];
-  char exif_lens[50];
-  char exif_datetime_taken[20];
-  char filename[512];
 }
 dt_image_t;
 

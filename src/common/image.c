@@ -325,8 +325,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->exif_aperture = sqlite3_column_double(stmt, 9);
     img->exif_iso = sqlite3_column_double(stmt, 10);
     img->exif_focal_length = sqlite3_column_double(stmt, 11);
-    img->flags = sqlite3_column_int(stmt, 12);
-    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 13), 20);
+    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 12), 20);
+    img->flags = sqlite3_column_int(stmt, 13);
     
     ret = 0;
   }
