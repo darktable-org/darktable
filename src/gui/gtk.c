@@ -63,7 +63,7 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
   if(text != NULL)
   {
     if     (!strcmp(text, "all"))     { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_ALL); }
-    else if(!strcmp(text, "no star")) { printf("dreggn\n");DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_NO); }
+    else if(!strcmp(text, "no star")) { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_NO); }
     else if(!strcmp(text, "1 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_1); }
     else if(!strcmp(text, "2 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_2); }
     else if(!strcmp(text, "3 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_3); }
