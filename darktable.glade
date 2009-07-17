@@ -174,8 +174,11 @@
                       <widget class="GtkComboBox" id="image_filter">
                         <property name="visible">True</property>
                         <property name="items" translatable="yes">all
-good
-deleted</property>
+no star
+1 star
+2 star
+3 star
+4 star</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -198,9 +201,9 @@ deleted</property>
                     <child>
                       <widget class="GtkComboBox" id="image_sort">
                         <property name="visible">True</property>
-                        <property name="items" translatable="yes">appearance
-timestamp
-filename</property>
+                        <property name="items" translatable="yes">filename
+time
+rating</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>

@@ -31,6 +31,10 @@ bugs:
 - release 0.2 :)
 
 0.3 roadmap:
+- copy function in lib:
+  - flags, tags
+  - history stack
+  - histogram :)
 - small 1:1 preview for sharpen etc.
 - stars rating in db and image
 - write back images to db after cache drop!

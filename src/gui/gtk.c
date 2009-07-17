@@ -54,6 +54,44 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 	return TRUE;
 }
 
+
+void
+image_filter_changed (GtkComboBox *widget, gpointer user_data)
+{
+  // image_filter
+  gchar *text = gtk_combo_box_get_active_text(widget);
+  if(text != NULL)
+  {
+    if     (!strcmp(text, "all"))     { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_ALL); }
+    else if(!strcmp(text, "no star")) { printf("dreggn\n");DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_NO); }
+    else if(!strcmp(text, "1 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_1); }
+    else if(!strcmp(text, "2 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_2); }
+    else if(!strcmp(text, "3 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_3); }
+    else if(!strcmp(text, "4 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_4); }
+    g_free(text);
+  }
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(win);
+}
+
+
+void
+image_sort_changed (GtkComboBox *widget, gpointer user_data)
+{
+  // image_sort
+  gchar *text = gtk_combo_box_get_active_text(widget);
+  if(text != NULL)
+  {
+    if     (!strcmp(text, "filename")) { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_FILENAME); }
+    else if(!strcmp(text, "time"))     { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_DATETIME); }
+    else if(!strcmp(text, "rating"))   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_RATING); }
+    g_free(text);
+  }
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(win);
+}
+
+
 void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
@@ -336,6 +374,17 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect (G_OBJECT (widget), "clicked",
                     G_CALLBACK (export_button_clicked),
                     (gpointer)0);
+
+  // image filtering/sorting
+  widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (image_filter_changed),
+                    (gpointer)0);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (image_sort_changed),
+                    (gpointer)0);
+
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);

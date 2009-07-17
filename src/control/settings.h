@@ -71,6 +71,25 @@ typedef enum dt_dev_export_format_t
 }
 dt_dev_export_format_t;
 
+typedef enum dt_lib_filter_t
+{
+  DT_LIB_FILTER_ALL = 0,
+  DT_LIB_FILTER_STAR_1 = 1,
+  DT_LIB_FILTER_STAR_2 = 2,
+  DT_LIB_FILTER_STAR_3 = 3,
+  DT_LIB_FILTER_STAR_4 = 4,
+  DT_LIB_FILTER_STAR_NO = 5
+}
+dt_lib_filter_t;
+
+typedef enum dt_lib_sort_t
+{
+  DT_LIB_SORT_FILENAME,
+  DT_LIB_SORT_DATETIME,
+  DT_LIB_SORT_RATING
+}
+dt_lib_sort_t;
+
 typedef struct dt_ctl_settings_t
 {
   // global
@@ -87,6 +106,8 @@ typedef struct dt_ctl_settings_t
   float lib_zoom, lib_zoom_x, lib_zoom_y;
   int32_t lib_center, lib_pan, lib_track;
   int32_t lib_image_mouse_over_id;
+  dt_lib_filter_t lib_filter;
+  dt_lib_sort_t lib_sort;
 
   // navigation
   float dev_zoom_x, dev_zoom_y;

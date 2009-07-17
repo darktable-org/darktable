@@ -108,6 +108,8 @@ void dt_ctl_settings_init(dt_control_t *s)
   s->global_settings.lib_pan = 0;
   s->global_settings.lib_track = 0;
   s->global_settings.lib_image_mouse_over_id = -1;
+  s->global_settings.lib_sort = DT_LIB_SORT_FILENAME;
+  s->global_settings.lib_filter = DT_LIB_FILTER_ALL;
 
   s->global_settings.dev_closeup = 0;
   s->global_settings.dev_zoom_x = 0;

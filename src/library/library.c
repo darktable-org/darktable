@@ -64,6 +64,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   static int last_offset = 0x7fffffff;
   float zoom, zoom_x, zoom_y;
   int32_t mouse_over_id, pan, track, center;
+  dt_lib_sort_t sort;
+  dt_lib_filter_t filter;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   DT_CTL_GET_GLOBAL(zoom, lib_zoom);
   DT_CTL_GET_GLOBAL(zoom_x, lib_zoom_x);
@@ -71,6 +73,8 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   DT_CTL_GET_GLOBAL(pan, lib_pan);
   DT_CTL_GET_GLOBAL(track, lib_track);
   DT_CTL_GET_GLOBAL(center, lib_center);
+  DT_CTL_GET_GLOBAL(sort, lib_sort);
+  DT_CTL_GET_GLOBAL(filter, lib_filter);
 
   lib->image_over = DT_LIB_DESERT;
 
@@ -157,8 +161,21 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
     rc2 = sqlite3_step(stmt2);
     sqlite3_finalize(stmt2);
   }
-  // TODO: order by and where clauses from sort widget!
-  rc = sqlite3_prepare_v2(darktable.db, "select * from (select id from images where film_id = ?1 order by filename) as dreggn limit ?2, ?3", -1, &stmt, NULL);
+  char *sortstring[3] = {"datetime_taken", "flags & 7 desc", "filename"};
+  int sortindex = 2;
+  if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
+  else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
+  // else (sort == DT_LIB_SORT_FILENAME)
+
+  char query[512];
+  // order by and where clauses from sort widget.
+  if(filter == DT_LIB_FILTER_STAR_NO)
+  {
+    snprintf(query, 512, "select * from (select id from images where film_id = ?1 and (flags & 7) < 1 order by %s) as dreggn limit ?2, ?3", sortstring[sortindex]);
+  }
+  else
+    snprintf(query, 512, "select * from (select id from images where film_id = ?1 and (flags & 7) >= ?4 order by %s) as dreggn limit ?2, ?3", sortstring[sortindex]);
+  rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
   for(int row = 0; row < max_rows; row++)
@@ -169,9 +186,10 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
       offset += DT_LIBRARY_MAX_ZOOM;
       continue;
     }
-    rc = sqlite3_bind_int (stmt, 1, lib->film->id);
-    rc = sqlite3_bind_int (stmt, 2, offset);
-    rc = sqlite3_bind_int (stmt, 3, max_cols);
+    rc = sqlite3_bind_int  (stmt, 1, lib->film->id);
+    rc = sqlite3_bind_int  (stmt, 2, offset);
+    rc = sqlite3_bind_int  (stmt, 3, max_cols);
+    if(filter != DT_LIB_FILTER_STAR_NO) rc = sqlite3_bind_int  (stmt, 4, filter);
     for(int col = 0; col < max_cols; col++)
     {
       if(sqlite3_step(stmt) == SQLITE_ROW)

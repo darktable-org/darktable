@@ -283,7 +283,7 @@ void dt_image_init(dt_image_t *img)
   img->wb_auto = img->wb_cam = 1;
   img->shrink = 0;
   img->film_id = -1;
-  img->flags = 0;
+  img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;
   img->cacheline = -1;
   strncpy(img->exif_model, "unknown\0", 20);
