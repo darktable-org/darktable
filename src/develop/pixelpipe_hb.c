@@ -34,10 +34,11 @@ void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_
   pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
 }
 
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height, float iscale)
 {
   pipe->iwidth = width;
   pipe->iheight = height;
+  pipe->iscale = iscale;
   pipe->input = input;
 }
 

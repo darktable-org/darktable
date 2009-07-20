@@ -745,7 +745,7 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
 
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
@@ -782,7 +782,7 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
 
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
@@ -836,7 +836,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, wd, ht, 1.0);

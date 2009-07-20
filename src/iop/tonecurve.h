@@ -2,9 +2,9 @@
 #define DARKTABLE_IOP_CURVE_EDITOR_H
 
 #include "develop/imageop.h"
+#include "gui/draw.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <gegl.h>
 
 #define DT_IOP_TONECURVE_RES 64
 
@@ -17,7 +17,7 @@ dt_iop_tonecurve_params_t;
 
 typedef struct dt_iop_tonecurve_gui_data_t
 {
-  GeglCurve *minmax_curve;        // curve for gui to draw
+  dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkLabel *label;
@@ -25,15 +25,15 @@ typedef struct dt_iop_tonecurve_gui_data_t
   double mouse_x, mouse_y;
   int selected, dragging;
   double selected_offset, selected_y, selected_min, selected_max;
-  gdouble draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
-  gdouble draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
-  gdouble draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+  double draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
+  double draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
+  double draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
 }
 dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
 {
-  GeglCurve *curve;               // curve for gegl nodes and pixel processing
+  dt_draw_curve_t *curve;         // curve for gegl nodes and pixel processing
   uint16_t table[0x10000];        // precomputed look-up table for tone curve
 }
 dt_iop_tonecurve_data_t;

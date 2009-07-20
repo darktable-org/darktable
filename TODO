@@ -1,5 +1,5 @@
 bugs:
-- mipf sometimes not synched correctly?
+- pipe->iscale has to affect process(.. scale.. ) !
 - open_raw has img cleaned up before finished during dt_exit
 - preview_ldr !
 - check scale correct in pixelpipe_hb.c for preview_pipe?
@@ -31,6 +31,7 @@ bugs:
 - release 0.2 :)
 
 0.3 roadmap:
+- translations (de, etc)
 - copy function in lib:
   - flags, tags
   - history stack

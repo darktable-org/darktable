@@ -163,7 +163,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     // init pixel pipeline for preview.
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
-    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
     dev->preview_loading = 0;
   }
@@ -265,7 +265,7 @@ restart:
   if(dev->gui_attached)
   {
     // init pixel pipeline
-    dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height);
+    dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height, 1.0);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     dev->image_loading = 0;
     dev->image_dirty = 1;
@@ -296,6 +296,10 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, dev, "denoise")) exit(1);
   dev->iop = g_list_append(dev->iop, module);
+
+  // module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  // if(dt_iop_load_module(module, dev, "equalizer")) exit(1);
+  // dev->iop = g_list_append(dev->iop, module);
 
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, dev, "exposure")) exit(1);

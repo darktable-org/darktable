@@ -1,4 +1,5 @@
 #include "gui/histogram.h"
+#include "gui/draw.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 
@@ -57,13 +58,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  for(int k=1;k<4;k++)
-  {
-    cairo_move_to(cr, k/4.0*width, 0); cairo_line_to(cr, k/4.0*width, height);
-    cairo_stroke(cr);
-    cairo_move_to(cr, 0, k/4.0*height); cairo_line_to(cr, width, k/4.0*height);
-    cairo_stroke(cr);
-  }
+  dt_draw_grid(cr, 4, width, height);
   
   dt_develop_t *dev = darktable.develop;
   float *hist = dev->histogram;

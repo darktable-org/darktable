@@ -5,7 +5,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include <gegl.h>
 #include "iop/tonecurve.h"
 #include "gui/histogram.h"
 #include "develop/develop.h"
@@ -45,12 +44,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
 #ifdef HAVE_GEGL
-  for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0;k<6;k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   gegl_node_set(piece->input, "curve", d->curve, NULL);
 #else
-  for(int k=0;k<6;k++) gegl_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0;k<6;k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   for(int k=0;k<0x10000;k++)
-    d->table[k] = (uint16_t)(0xffff*gegl_curve_calc_value(d->curve, (1.0/0x10000)*k));
+    d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
 #endif
 }
 
@@ -60,8 +59,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
   dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
-  d->curve = gegl_curve_new(0.0, 1.0);
-  for(int k=0;k<6;k++) (void)gegl_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
+  d->curve = dt_draw_curve_new(0.0, 1.0);
+  for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
 #ifdef HAVE_GEGL
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
 #else
@@ -78,6 +77,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // (void)gegl_node_remove_child(pipe->gegl, d->node);
   // (void)gegl_node_remove_child(pipe->gegl, piece->output);
 #endif
+  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  dt_draw_curve_destroy(d->curve);
   free(piece->data);
 }
 
@@ -108,7 +109,6 @@ void cleanup(dt_iop_module_t *module)
   // gegl_node_remove_child(module->dev->gegl, d->node_preview);
   //..FIXME: ?? is this done by gegl?
   // free(d->curve);
-  // gegl_curve_destroy(d->curve);
   // g_unref(d->curve);
   // free(module->data);
   // module->data = NULL;
@@ -124,8 +124,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  c->minmax_curve = gegl_curve_new(0.0, 1.0);
-  for(int k=0;k<6;k++) (void)gegl_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
+  c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
+  for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1; c->selected_offset = 0.0;
   c->dragging = 0;
@@ -159,9 +159,8 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  // dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  // FIXME:????
-  // g_free(c->minmax_curve);
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_draw_curve_destroy(c->minmax_curve);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -182,7 +181,7 @@ gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  for(int k=0;k<6;k++) gegl_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0;k<6;k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -219,35 +218,28 @@ gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   {
     float oldx1, oldy1;
     oldx1 = p->tonecurve_x[c->selected]; oldy1 = p->tonecurve_y[c->selected];
-    // gegl_curve_get_point(d->curve, c->selected, &oldx1, &oldy1);
-    // if(c->selected == 2) gegl_curve_get_point(d->curve, 1, &oldx2, &oldy2);
-    // if(c->selected == 3) gegl_curve_get_point(d->curve, 4, &oldx2, &oldy2);
-    if(c->selected == 2) gegl_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_min, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
-    if(c->selected == 3) gegl_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_min, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
-    gegl_curve_set_point(c->minmax_curve, c->selected, oldx1, c->selected_min);
-    gegl_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_min_xs, c->draw_min_ys);
-    if(c->selected == 2) gegl_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_max, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
-    if(c->selected == 3) gegl_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_max, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
-    gegl_curve_set_point  (c->minmax_curve, c->selected, oldx1, c->selected_max);
-    gegl_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_max_xs, c->draw_max_ys);
-    gegl_curve_set_point(c->minmax_curve, c->selected, oldx1, oldy1);
-    if(c->selected == 2) gegl_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], p->tonecurve_y[1]);
-    if(c->selected == 3) gegl_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], p->tonecurve_y[4]);
+    // dt_draw_curve_get_point(d->curve, c->selected, &oldx1, &oldy1);
+    // if(c->selected == 2) dt_draw_curve_get_point(d->curve, 1, &oldx2, &oldy2);
+    // if(c->selected == 3) dt_draw_curve_get_point(d->curve, 4, &oldx2, &oldy2);
+    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_min, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
+    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_min, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
+    dt_draw_curve_set_point(c->minmax_curve, c->selected, oldx1, c->selected_min);
+    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_min_xs, c->draw_min_ys);
+    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_max, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
+    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_max, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
+    dt_draw_curve_set_point  (c->minmax_curve, c->selected, oldx1, c->selected_max);
+    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_max_xs, c->draw_max_ys);
+    dt_draw_curve_set_point(c->minmax_curve, c->selected, oldx1, oldy1);
+    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], p->tonecurve_y[1]);
+    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], p->tonecurve_y[4]);
   }
-  gegl_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
+  dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
 
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  for(int k=1;k<4;k++)
-  {
-    cairo_move_to(cr, k/4.0*width, 0); cairo_line_to(cr, k/4.0*width, height);
-    // cairo_move_to(cr, c->curve.m_anchors[k].x*width, 0); cairo_line_to(cr, c->curve.m_anchors[k].x*width, height);
-    cairo_stroke(cr);
-    cairo_move_to(cr, 0, k/4.0*height); cairo_line_to(cr, width, k/4.0*height);
-    cairo_stroke(cr);
-  }
-
+  dt_draw_grid(cr, 4, width, height);
+  
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
   cairo_translate(cr, 0, height);
@@ -324,14 +316,14 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     // if(c->selected == 3) c->curve.m_anchors[4].y = fmaxf(f, fminf(1.0, c->curve.m_anchors[4].y + DT_GUI_CURVE_INFL*(f - c->curve.m_anchors[3].y)));
     // c->curve.m_anchors[c->selected].y = f;
     /*gdouble oldx1, oldx2, oldy1, oldy2;
-    gegl_curve_get_point(d->curve, c->selected, &oldx1, &oldy1);
-    if(c->selected == 2) gegl_curve_get_point(d->curve, 1, &oldx2, &oldy2);
-    if(c->selected == 3) gegl_curve_get_point(d->curve, 4, &oldx2, &oldy2);
+    dt_draw_curve_get_point(d->curve, c->selected, &oldx1, &oldy1);
+    if(c->selected == 2) dt_draw_curve_get_point(d->curve, 1, &oldx2, &oldy2);
+    if(c->selected == 3) dt_draw_curve_get_point(d->curve, 4, &oldx2, &oldy2);
     if(c->selected == 2) oldy2 = fminf(f, fmaxf(0.0, oldy2 + DT_GUI_CURVE_INFL*(f - oldy1)));
     if(c->selected == 3) oldy2 = fmaxf(f, fminf(1.0, oldy2 + DT_GUI_CURVE_INFL*(f - oldy1)));
-    if(c->selected == 2) gegl_curve_set_point(d->curve, 1, oldx2, oldy2);
-    if(c->selected == 3) gegl_curve_set_point(d->curve, 4, oldx2, oldy2);
-    gegl_curve_set_point(d->curve, c->selected, oldx1, f);*/
+    if(c->selected == 2) dt_draw_curve_set_point(d->curve, 1, oldx2, oldy2);
+    if(c->selected == 3) dt_draw_curve_set_point(d->curve, 4, oldx2, oldy2);
+    dt_draw_curve_set_point(d->curve, c->selected, oldx1, f);*/
     if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
     if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
     // DT_CTL_SET_IMAGE(tonecurve_y[c->selected], f);

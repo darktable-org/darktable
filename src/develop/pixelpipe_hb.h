@@ -44,6 +44,7 @@ typedef struct dt_dev_pixelpipe_t
   float *input;
   // width and height of input buffer
   int iwidth, iheight;
+  float iscale; // input actually just downscaled buffer? iscale*iwidth = actual width
   // gegl instances of pixel pipeline, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag
@@ -66,7 +67,7 @@ void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32
 // inits the pixelpipe with given cacheline size and number of entries.
 void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height);
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height, float iscale);
 
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
