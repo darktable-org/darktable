@@ -1,12 +1,14 @@
 
+// TODO: remove assertions
+
 // edge-avoiding wavelet:
 #define gweight(i, j, ii, jj) 1.0/(fabsf(weight_a[l][(width>>(l-1))*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][(width>>(l-1))*((jj)>>(l-1)) + ((ii)>>(l-1))])+1.e-5)
 // std cdf(2,2) wavelet:
 // #define gweight(i, j, ii, jj) 1.0
-#define gbuf(BUF, A, B) ((BUF)[width*(y+(B)) + x+(A)])
+#define gbuf(BUF, A, B) ((BUF)[3*width*((B)) + 3*((A)) + ch])
 
 
-void step3w(float *buf, float *tmp, const int x, const int y, const int l, const int width, const int height)
+void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int width, const int height, const int ch)
 {
   // store weights
   memset(weight_a[l], 0, sizeof(float)*(width>>(l-1))*(height>>(l-1)));
@@ -52,7 +54,7 @@ void step3w(float *buf, float *tmp, const int x, const int y, const int l, const
   }
 }
 
-void istep3w(float *buf, float *tmp, const int x, const int y, const int l, const int width, const int height)
+void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int width, const int height, const int ch)
 {
   assert(l > 0); // 1 is first level.
   const int step = 1<<l;
@@ -92,3 +94,5 @@ void istep3w(float *buf, float *tmp, const int x, const int y, const int l, cons
   }
 }
 
+#undef gbuf
+#undef gweight

@@ -11,6 +11,9 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
+// FIXME:!!
+#include "iop/equalizer_eaw.c"
+
 #define DT_GUI_EQUALIZER_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 
@@ -20,7 +23,7 @@
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
 {
-  //float *in = (float *)i;
+  float *in = (float *)i;
   float *out = (float *)o;
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
 
@@ -29,32 +32,39 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // 1 pixel: level 1
   // 2 pixels: level 2
   // 4 pixels: level 3
-  const float l1 = 1.0f + log2f(1.0/scale);               // finest level
-  const float lm = 1.0f + log2f(MIN(width,height)/scale); // coarsest level
-  printf("level range in %d %d: %f %f\n", 1, d->num_levels, l1, lm);
+  const float l1 = 1.0f + log2f(1.0/scale);                      // finest level
+  float lm = 0; for(int k=MIN(width,height)/scale;k;k>>=1) lm++; // coarsest level
+  // printf("level range in %d %d: %f %f\n", 1, d->num_levels, l1, lm);
   // level 1 => full resolution
   int numl = 0; for(int k=MIN(width,height);k;k>>=1) numl++;
 
+  float **tmp = (float **)malloc(sizeof(float *)*numl);
+  for(int k=1;k<numl;k++)
+  {
+    tmp[k] = (float *)malloc(sizeof(float)*(width>>(k-1))*(height>>(k-1)));
+    printf("level %d with %d X %d\n", k, width>>(k-1), height>>(k-1));
+  }
+
+  memcpy(out, in, 3*sizeof(float)*width*height);
+
+  for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height, 0);
   for(int l=1;l<numl;l++)
   {
     // 1 => 1
     // 0 => num_levels
-    const float coeff = dt_draw_curve_calc_value(d->curve, 1.0-((lm-l1)*l/(float)numl + l1)/(float)d->num_levels);
-    printf("level %d => l: %f => x: %f\n", l, (lm-l1)*l/(float)numl + l1, 1.0-((lm-l1)*l/(float)numl + l1)/(float)d->num_levels);
-    const int step = 1<<l;
-    for(int j=0;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[width*j + i] *= coeff;
-    for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step) out[width*j + i] *= coeff;
-    for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[width*j + i] *= coeff;
+    // coefficients in range [0, 2], 1 being neutral.
+    const float coeff = 2*(dt_draw_curve_calc_value(d->curve, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels));
+    printf("level %d coeff %f\n", l, coeff);
+    // printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
+    // const int step = 1<<l;
+    // for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i] *= coeff;
+    // for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i] *= coeff;
+    // for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i] *= coeff;
   }
+  for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height, 0);
 
-
-#if 0
-  for(int k=0;k<width*height;k++)
-  {
-    // 
-    in += 3; out += 3;
-  }
-#endif
+  for(int k=1;k<numl;k++) free(tmp[k]);
+  free(tmp);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

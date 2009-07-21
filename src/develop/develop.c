@@ -297,9 +297,9 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   if(dt_iop_load_module(module, dev, "denoise")) exit(1);
   dev->iop = g_list_append(dev->iop, module);
 
-  // module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  // if(dt_iop_load_module(module, dev, "equalizer")) exit(1);
-  // dev->iop = g_list_append(dev->iop, module);
+  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  if(dt_iop_load_module(module, dev, "equalizer")) exit(1);
+  dev->iop = g_list_append(dev->iop, module);
 
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, dev, "exposure")) exit(1);
