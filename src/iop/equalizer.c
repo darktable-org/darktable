@@ -47,7 +47,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   memcpy(out, in, 3*sizeof(float)*width*height);
 
+  const int ch = 2;
   for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height, 0);
+  for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height, ch);
   for(int l=1;l<numl;l++)
   {
     // 1 => 1
@@ -55,13 +57,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // coefficients in range [0, 2], 1 being neutral.
     const float coeff = 2*(dt_draw_curve_calc_value(d->curve, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels));
     printf("level %d coeff %f\n", l, coeff);
-    // printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
-    // const int step = 1<<l;
-    // for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i] *= coeff;
-    // for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i] *= coeff;
-    // for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i] *= coeff;
+    printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
+    const int step = 1<<l;
+    for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
+    for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;
+    for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
   }
   for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height, 0);
+  for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height, ch);
 
   for(int k=1;k<numl;k++) free(tmp[k]);
   free(tmp);
@@ -189,10 +192,10 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 gboolean dt_iop_equalizer_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-  c->mouse_radius = 1.0/DT_IOP_EQUALIZER_BANDS;
-  c->mouse_x = c->mouse_y = -1.0;
+  // dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  // dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+  // c->mouse_radius = 1.0/DT_IOP_EQUALIZER_BANDS;
+  // c->mouse_x = c->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -326,6 +329,7 @@ gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion *event
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   if(c->dragging)
   {
+    *p = c->drag_params;
     dt_iop_equalizer_get_params(p, c->mouse_x, c->mouse_y, c->mouse_radius);
     dt_dev_add_history_item(darktable.develop, self);
   }
@@ -339,6 +343,7 @@ gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton *event,
 { // set active point
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+  c->drag_params = *(dt_iop_equalizer_params_t *)self->params;
   c->dragging = 1;
   return TRUE;
 }

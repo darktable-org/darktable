@@ -23,6 +23,7 @@ typedef struct dt_iop_equalizer_gui_data_t
   GtkToggleButton *button_Y, *button_Cb, *button_Cr, *button_all;
   double mouse_x, mouse_y;
   float mouse_radius;
+  dt_iop_equalizer_params_t drag_params;
   int dragging;
   double draw_xs[DT_IOP_EQUALIZER_RES], draw_ys[DT_IOP_EQUALIZER_RES];
   double draw_min_xs[DT_IOP_EQUALIZER_RES], draw_min_ys[DT_IOP_EQUALIZER_RES];

@@ -1,4 +1,5 @@
 bugs:
+- mipf processing in equalizer is way to coarse.
 - pipe->iscale has to affect process(.. scale.. ) !
 - open_raw has img cleaned up before finished during dt_exit
 - preview_ldr !
