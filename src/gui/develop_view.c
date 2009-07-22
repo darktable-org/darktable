@@ -112,7 +112,7 @@ void dt_dev_leave()
 
 void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height)
 {
-  if(dev->image_dirty)   dt_dev_process_image(dev);
+  if(dev->image_dirty || dev->image_timestamp < dev->preview_timestamp) dt_dev_process_image(dev);
   if(dev->preview_dirty) dt_dev_process_preview(dev);
 
   pthread_mutex_t *mutex = NULL;

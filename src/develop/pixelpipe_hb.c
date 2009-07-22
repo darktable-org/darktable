@@ -74,6 +74,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
       piece->enabled = 1;
+      piece->iscale = pipe->iscale;
       piece->module = module;
       piece->data = NULL;
       piece->module->init_pipe(piece->module, pipe, piece);

@@ -11,8 +11,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
-// FIXME:!!
-#include "iop/equalizer_eaw.c"
+#include "iop/equalizer_eaw.h"
 
 #define DT_GUI_EQUALIZER_INSET 5
 #define DT_GUI_CURVE_INFL .3f
@@ -25,6 +24,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   float *in = (float *)i;
   float *out = (float *)o;
+  memcpy(out, in, 3*sizeof(float)*width*height);
+#if 1
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
@@ -32,42 +33,45 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // 1 pixel: level 1
   // 2 pixels: level 2
   // 4 pixels: level 3
-  const float l1 = 1.0f + log2f(1.0/scale);                      // finest level
-  float lm = 0; for(int k=MIN(width,height)/scale;k;k>>=1) lm++; // coarsest level
+  const float l1 = 1.0f + log2f(piece->iscale/scale);                      // finest level
+  float lm = 0; for(int k=MIN(width,height)*piece->iscale/scale;k;k>>=1) lm++; // coarsest level
   // printf("level range in %d %d: %f %f\n", 1, d->num_levels, l1, lm);
   // level 1 => full resolution
   int numl = 0; for(int k=MIN(width,height);k;k>>=1) numl++;
 
+  // TODO: fixed alloc for data piece at capped resolution.
   float **tmp = (float **)malloc(sizeof(float *)*numl);
   for(int k=1;k<numl;k++)
   {
-    tmp[k] = (float *)malloc(sizeof(float)*(width>>(k-1))*(height>>(k-1)));
-    // printf("level %d with %d X %d\n", k, width>>(k-1), height>>(k-1));
+    const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));
+    tmp[k] = (float *)malloc(sizeof(float)*wd*ht);
+    // printf("level %d with %d X %d\n", k, wd, ht);
   }
 
-  memcpy(out, in, 3*sizeof(float)*width*height);
-
-  const int ch = 2;
-  for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height, 0);
-  for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height, ch);
+  for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
+  // for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height, ch);
   for(int l=1;l<numl;l++)
   {
-    // 1 => 1
-    // 0 => num_levels
-    // coefficients in range [0, 2], 1 being neutral.
-    const float coeff = 2*(dt_draw_curve_calc_value(d->curve, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels));
-    // printf("level %d coeff %f\n", l, coeff);
-    // printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
-    const int step = 1<<l;
-    for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
-    for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;
-    for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
+    for(int ch=0;ch<3;ch++)
+    {
+      // 1 => 1
+      // 0 => num_levels
+      // coefficients in range [0, 2], 1 being neutral.
+      const float coeff = 2*(dt_draw_curve_calc_value(d->curve[ch], 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels));
+      // printf("level %d coeff %f\n", l, coeff);
+      // printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
+      const int step = 1<<l;
+      for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
+      for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;
+      for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff*coeff;
+    }
   }
-  for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height, 0);
-  for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height, ch);
+  for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height);
+  // for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height, ch);
 
   for(int k=1;k<numl;k++) free(tmp[k]);
   free(tmp);
+#endif
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -78,7 +82,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #ifdef HAVE_GEGL
   // TODO
 #else
-  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) dt_draw_curve_set_point(d->curve, k, p->equalizer_x[k], p->equalizer_y[k]);
+  for(int ch=0;ch<3;ch++) for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+    dt_draw_curve_set_point(d->curve[ch], k, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
   int l = 0; for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale);k;k>>=1) l++;
   d->num_levels = l;
 #endif
@@ -90,10 +95,15 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)malloc(sizeof(dt_iop_equalizer_data_t));
   dt_iop_equalizer_params_t *default_params = (dt_iop_equalizer_params_t *)self->default_params;
   piece->data = (void *)d;
-  d->curve = dt_draw_curve_new(0.0, 1.0);
-  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) (void)dt_draw_curve_add_point(d->curve, default_params->equalizer_x[k], default_params->equalizer_y[k]);
+  for(int ch=0;ch<3;ch++)
+  {
+    d->curve[ch] = dt_draw_curve_new(0.0, 1.0);
+    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+      (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][k], default_params->equalizer_y[ch][k]);
+  }
 #ifdef HAVE_GEGL
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
+  #error "gegl version not implemeted!"
+  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve[0], NULL);
 #else
   d->num_levels = 1;
 #endif
@@ -107,7 +117,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // (void)gegl_node_remove_child(pipe->gegl, piece->input);
 #endif
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
-  dt_draw_curve_destroy(d->curve);
+  for(int ch=0;ch<3;ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
 }
 
@@ -124,8 +134,11 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
   dt_iop_equalizer_params_t tmp;
-  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) tmp.equalizer_x[k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
-  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) tmp.equalizer_y[k] = 0.5f;
+  for(int ch=0;ch<3;ch++)
+  {
+    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) tmp.equalizer_x[ch][k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
+    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) tmp.equalizer_y[ch][k] = 0.5f;
+  }
   memcpy(module->params, &tmp, sizeof(dt_iop_equalizer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_equalizer_params_t));
 }
@@ -144,9 +157,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)self->params;
 
+  c->channel = DT_IOP_EQUALIZER_Y;
+  int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
-  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[k], p->equalizer_y[k]);
-  c->mouse_x = c->mouse_y = -1.0;
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
+  c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->mouse_radius = 0.1f;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
@@ -171,15 +186,19 @@ void gui_init(struct dt_iop_module_t *self)
   c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
-  c->button_Y   = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label("Y"));
-  c->button_Cb  = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label("Cb"));
-  c->button_Cr  = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label("Cr"));
-  c->button_all = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label("all"));
+  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, "Y"));
+  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "Cb"));
+  c->channel_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "Cr"));
 
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->button_all), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->button_Cr),  FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->button_Cb),  FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->button_Y),   FALSE, FALSE, 5);
+  g_signal_connect (G_OBJECT (c->channel_button[0]), "toggled",
+                    G_CALLBACK (dt_iop_equalizer_button_toggled), self);
+  g_signal_connect (G_OBJECT (c->channel_button[1]), "toggled",
+                    G_CALLBACK (dt_iop_equalizer_button_toggled), self);
+  g_signal_connect (G_OBJECT (c->channel_button[2]), "toggled",
+                    G_CALLBACK (dt_iop_equalizer_button_toggled), self);
+
+  for(int k=2;k>=0;k--)
+    gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[k]), FALSE, FALSE, 5);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -192,21 +211,21 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 gboolean dt_iop_equalizer_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  // dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  // dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
   // c->mouse_radius = 1.0/DT_IOP_EQUALIZER_BANDS;
-  // c->mouse_x = c->mouse_y = -1.0;
+  if(!c->dragging) c->mouse_x = c->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
 // fills in new parameters based on mouse position (in 0,1)
-void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const double mouse_x, const double mouse_y, const float rad)
+void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const int ch, const double mouse_x, const double mouse_y, const float rad)
 {
   for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
   {
-    const float f = fmaxf(0.0, rad*rad - (mouse_x - p->equalizer_x[k])*(mouse_x - p->equalizer_x[k]))/(rad*rad);
-    p->equalizer_y[k] = (1-f)*p->equalizer_y[k] + f*mouse_y;
+    const float f = powf(fmaxf(0.0, rad*rad - (mouse_x - p->equalizer_x[ch][k])*(mouse_x - p->equalizer_x[ch][k]))/(rad*rad), 0.25);
+    p->equalizer_y[ch][k] = (1-f)*p->equalizer_y[ch][k] + f*mouse_y;
   }
 }
 
@@ -215,7 +234,8 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
   dt_iop_equalizer_params_t p = *(dt_iop_equalizer_params_t *)self->params;
-  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[k], p.equalizer_y[k]);
+  int ch = (int)c->channel;
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[ch][k], p.equalizer_y[ch][k]);
   const int inset = DT_GUI_EQUALIZER_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -239,22 +259,17 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   if(c->mouse_y > 0 || c->dragging)
   {
     // draw min/max curves:
-    dt_iop_equalizer_get_params(&p, c->mouse_x, 1.0, c->mouse_radius);
+    dt_iop_equalizer_get_params(&p, c->channel, c->mouse_x, 1., c->mouse_radius);
     for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
-      dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[k], p.equalizer_y[k]);
+      dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[ch][k], p.equalizer_y[ch][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_EQUALIZER_RES, c->draw_min_xs, c->draw_min_ys);
 
     p = *(dt_iop_equalizer_params_t *)self->params;
-    dt_iop_equalizer_get_params(&p, c->mouse_x, .0, c->mouse_radius);
+    dt_iop_equalizer_get_params(&p, c->channel, c->mouse_x, .0, c->mouse_radius);
     for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
-      dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[k], p.equalizer_y[k]);
+      dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[ch][k], p.equalizer_y[ch][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_EQUALIZER_RES, c->draw_max_xs, c->draw_max_ys);
-
-    p = *(dt_iop_equalizer_params_t *)self->params;
-    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
-      dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[k], p.equalizer_y[k]);
   }
-  dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_EQUALIZER_RES, c->draw_xs, c->draw_ys);
 
   // draw grid
   cairo_set_line_width(cr, .4);
@@ -282,17 +297,46 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   }
 #endif
  
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_line_width(cr, 2.);
+  for(int i=0;i<3;i++)
+  { // draw curves, selected last.
+    int ch = ((int)c->channel+i+1)%3;
+    switch(ch)
+    {
+      case DT_IOP_EQUALIZER_Y:
+        cairo_set_source_rgba(cr, .6, .6, .6, .2);
+        break;
+      case DT_IOP_EQUALIZER_Cb:
+        cairo_set_source_rgba(cr, .0, .0, 1., .2);
+        break;
+      default: //case DT_IOP_EQUALIZER_Cr:
+        cairo_set_source_rgba(cr, 1., .0, .0, .2);
+        break;
+    }
+    p = *(dt_iop_equalizer_params_t *)self->params;
+    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[ch][k], p.equalizer_y[ch][k]);
+    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_EQUALIZER_RES, c->draw_xs, c->draw_ys);
+    // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
+    cairo_move_to(cr, 0, 0);
+    for(int k=0;k<DT_IOP_EQUALIZER_RES;k++) cairo_line_to(cr, k*width/(float)(DT_IOP_EQUALIZER_RES-1), - height*c->draw_ys[k]);
+    cairo_line_to(cr, width, 0);
+    cairo_close_path(cr);
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+  }
+
   if(c->mouse_y > 0 || c->dragging)
-  {
-    // draw min/max, if selected
-    cairo_set_source_rgba(cr, .6, .6, .6, .5);
+  { // draw min/max, if selected
+    // cairo_set_source_rgba(cr, .6, .6, .6, .5);
     cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
-    for(int k=1;k<DT_IOP_EQUALIZER_RES;k++)   cairo_line_to(cr, k*width/(float)DT_IOP_EQUALIZER_RES, - height*c->draw_min_ys[k]);
-    for(int k=DT_IOP_EQUALIZER_RES-2;k>0;k--) cairo_line_to(cr, k*width/(float)DT_IOP_EQUALIZER_RES, - height*c->draw_max_ys[k]);
+    for(int k=1;k<DT_IOP_EQUALIZER_RES;k++)    cairo_line_to(cr, k*width/(float)(DT_IOP_EQUALIZER_RES-1), - height*c->draw_min_ys[k]);
+    for(int k=DT_IOP_EQUALIZER_RES-2;k>=0;k--) cairo_line_to(cr, k*width/(float)(DT_IOP_EQUALIZER_RES-1), - height*c->draw_max_ys[k]);
     cairo_close_path(cr);
     cairo_fill(cr);
     // draw mouse focus circle
-    cairo_set_source_rgb(cr, .9, .9, .9);
+    cairo_set_source_rgba(cr, .9, .9, .9, .5);
     const float pos = DT_IOP_EQUALIZER_RES * c->mouse_x;
     int k = (int)pos; const float f = k - pos;
     if(k >= DT_IOP_EQUALIZER_RES-1) k = DT_IOP_EQUALIZER_RES - 2;
@@ -301,13 +345,7 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
     cairo_stroke(cr);
   }
 
-  // draw curve
-  cairo_set_line_width(cr, 2.);
-  cairo_set_source_rgb(cr, .9, .9, .9);
-  // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
-  cairo_move_to(cr, 0, - height*c->draw_ys[0]);
-  for(int k=1;k<DT_IOP_EQUALIZER_RES;k++) cairo_line_to(cr, k*width/(float)DT_IOP_EQUALIZER_RES, - height*c->draw_ys[k]);
-  cairo_stroke(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
@@ -330,7 +368,7 @@ gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion *event
   if(c->dragging)
   {
     *p = c->drag_params;
-    dt_iop_equalizer_get_params(p, c->mouse_x, c->mouse_y, c->mouse_radius);
+    dt_iop_equalizer_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     dt_dev_add_history_item(darktable.develop, self);
   }
   gtk_widget_queue_draw(widget);
@@ -344,6 +382,10 @@ gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton *event,
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
   c->drag_params = *(dt_iop_equalizer_params_t *)self->params;
+  const int inset = DT_GUI_EQUALIZER_INSET;
+  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
+  c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   c->dragging = 1;
   return TRUE;
 }
@@ -365,3 +407,18 @@ gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *event, gpo
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
+
+void dt_iop_equalizer_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+  if(gtk_toggle_button_get_active(togglebutton))
+  {
+    for(int k=0;k<3;k++) if(c->channel_button[k] == GTK_RADIO_BUTTON(togglebutton))
+    {
+      c->channel = (dt_iop_equalizer_channel_t)k;
+      return;
+    }
+  }
+}
+

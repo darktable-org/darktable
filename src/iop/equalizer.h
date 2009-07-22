@@ -7,24 +7,33 @@
 #include <inttypes.h>
 
 #define DT_IOP_EQUALIZER_RES 64
-#define DT_IOP_EQUALIZER_BANDS 12
+#define DT_IOP_EQUALIZER_BANDS 8
 
 typedef struct dt_iop_equalizer_params_t
 {
-  float equalizer_x[DT_IOP_EQUALIZER_BANDS], equalizer_y[DT_IOP_EQUALIZER_BANDS];
+  float equalizer_x[3][DT_IOP_EQUALIZER_BANDS], equalizer_y[3][DT_IOP_EQUALIZER_BANDS];
 }
 dt_iop_equalizer_params_t;
+
+typedef enum dt_iop_equalizer_channel_t
+{
+  DT_IOP_EQUALIZER_Y = 0,
+  DT_IOP_EQUALIZER_Cb = 1,
+  DT_IOP_EQUALIZER_Cr = 2
+}
+dt_iop_equalizer_channel_t;
 
 typedef struct dt_iop_equalizer_gui_data_t
 {
   dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
-  GtkToggleButton *button_Y, *button_Cb, *button_Cr, *button_all;
-  double mouse_x, mouse_y;
+  GtkRadioButton *channel_button[3];
+  double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
   dt_iop_equalizer_params_t drag_params;
   int dragging;
+  dt_iop_equalizer_channel_t channel;
   double draw_xs[DT_IOP_EQUALIZER_RES], draw_ys[DT_IOP_EQUALIZER_RES];
   double draw_min_xs[DT_IOP_EQUALIZER_RES], draw_min_ys[DT_IOP_EQUALIZER_RES];
   double draw_max_xs[DT_IOP_EQUALIZER_RES], draw_max_ys[DT_IOP_EQUALIZER_RES];
@@ -33,7 +42,7 @@ dt_iop_equalizer_gui_data_t;
 
 typedef struct dt_iop_equalizer_data_t
 {
-  dt_draw_curve_t *curve;
+  dt_draw_curve_t *curve[3];
   int num_levels;
 }
 dt_iop_equalizer_data_t;
@@ -58,5 +67,6 @@ gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton *event,
 gboolean dt_iop_equalizer_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 gboolean dt_iop_equalizer_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
+void dt_iop_equalizer_button_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
 #endif

@@ -1,10 +1,7 @@
 bugs:
-- mipf processing in equalizer is way to coarse.
-- pipe->iscale has to affect process(.. scale.. ) !
+- c++ stream flush still crashes dt sometimes at exit.
 - open_raw has img cleaned up before finished during dt_exit
 - preview_ldr !
-- check scale correct in pixelpipe_hb.c for preview_pipe?
-- scale in denoising: wavelet transform scale dependent.
 - import starts 3 threads but seems to be mono-core?
 
 0.2 performance:
