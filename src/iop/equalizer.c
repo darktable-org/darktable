@@ -42,7 +42,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=1;k<numl;k++)
   {
     tmp[k] = (float *)malloc(sizeof(float)*(width>>(k-1))*(height>>(k-1)));
-    printf("level %d with %d X %d\n", k, width>>(k-1), height>>(k-1));
+    // printf("level %d with %d X %d\n", k, width>>(k-1), height>>(k-1));
   }
 
   memcpy(out, in, 3*sizeof(float)*width*height);
@@ -56,8 +56,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // 0 => num_levels
     // coefficients in range [0, 2], 1 being neutral.
     const float coeff = 2*(dt_draw_curve_calc_value(d->curve, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels));
-    printf("level %d coeff %f\n", l, coeff);
-    printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
+    // printf("level %d coeff %f\n", l, coeff);
+    // printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
     const int step = 1<<l;
     for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
     for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;

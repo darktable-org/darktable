@@ -14,7 +14,7 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
   { // store weights for luma channel only, chroma uses same basis.
     memset(weight_a[l], 0, sizeof(float)*(width>>(l-1))*(height>>(l-1)));
     for(int j=0;j<height>>(l-1);j++) for(int i=0;i<width>>(l-1);i++) weight_a[l][j*(width>>(l-1))+i] = gbuf(buf, i<<(l-1), j<<(l-1));
-    printf("storing weights for %d X %d to level %d\n", width>>(l-1), height>>(l-1), l);
+    // printf("storing weights for %d X %d to level %d\n", width>>(l-1), height>>(l-1), l);
   }
 
   assert(l > 0); // 1 is first level.

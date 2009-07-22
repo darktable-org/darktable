@@ -153,6 +153,7 @@ void dt_dev_invalidate(dt_develop_t *dev)
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
   dev->preview_timestamp = dev->timestamp;
+  dev->preview_dirty = 1;
   if(dev->preview_loading)
   { 
     // prefetch and lock
@@ -192,6 +193,7 @@ restart:
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   dev->image_timestamp = dev->timestamp;
+  dev->image_dirty = 1;
   if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
   {
     dt_dev_raw_load(dev, dev->image);
