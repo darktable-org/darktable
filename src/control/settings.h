@@ -86,7 +86,8 @@ typedef enum dt_lib_sort_t
 {
   DT_LIB_SORT_FILENAME,
   DT_LIB_SORT_DATETIME,
-  DT_LIB_SORT_RATING
+  DT_LIB_SORT_RATING,
+  DT_LIB_SORT_ID
 }
 dt_lib_sort_t;
 

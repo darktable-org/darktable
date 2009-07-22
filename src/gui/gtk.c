@@ -85,6 +85,7 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
     if     (!strcmp(text, "filename")) { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_FILENAME); }
     else if(!strcmp(text, "time"))     { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_DATETIME); }
     else if(!strcmp(text, "rating"))   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_RATING); }
+    else if(!strcmp(text, "id"))       { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_ID); }
     g_free(text);
   }
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");

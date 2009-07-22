@@ -297,7 +297,8 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   }
 #endif
  
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, 2.);
   for(int i=0;i<3;i++)
   { // draw curves, selected last.
@@ -305,13 +306,13 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
     switch(ch)
     {
       case DT_IOP_EQUALIZER_Y:
-        cairo_set_source_rgba(cr, .6, .6, .6, .2);
+        cairo_set_source_rgba(cr, .6, .6, .6, .3);
         break;
       case DT_IOP_EQUALIZER_Cb:
-        cairo_set_source_rgba(cr, .0, .0, 1., .2);
+        cairo_set_source_rgba(cr, .0, .2, 1., .3);
         break;
       default: //case DT_IOP_EQUALIZER_Cr:
-        cairo_set_source_rgba(cr, 1., .0, .0, .2);
+        cairo_set_source_rgba(cr, 1., .2, .0, .3);
         break;
     }
     p = *(dt_iop_equalizer_params_t *)self->params;
@@ -417,6 +418,7 @@ void dt_iop_equalizer_button_toggled(GtkToggleButton *togglebutton, gpointer use
     for(int k=0;k<3;k++) if(c->channel_button[k] == GTK_RADIO_BUTTON(togglebutton))
     {
       c->channel = (dt_iop_equalizer_channel_t)k;
+      gtk_widget_queue_draw(self->widget);
       return;
     }
   }

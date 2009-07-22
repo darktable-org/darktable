@@ -161,11 +161,12 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
     rc2 = sqlite3_step(stmt2);
     sqlite3_finalize(stmt2);
   }
-  char *sortstring[3] = {"datetime_taken", "flags & 7 desc", "filename"};
-  int sortindex = 2;
+  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
+  int sortindex = 3;
   if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
   else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
-  // else (sort == DT_LIB_SORT_FILENAME)
+  else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
+  // else (sort == DT_LIB_SORT_ID)
 
   char query[512];
   // order by and where clauses from sort widget.

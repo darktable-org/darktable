@@ -203,7 +203,8 @@ no star
                         <property name="visible">True</property>
                         <property name="items" translatable="yes">filename
 time
-rating</property>
+rating
+id</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
