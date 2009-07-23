@@ -1,4 +1,5 @@
 bugs:
+- equalizer band histogram not correctly compensated for scale.
 - c++ stream flush still crashes dt sometimes at exit.
 - open_raw has img cleaned up before finished during dt_exit
 - preview_ldr !

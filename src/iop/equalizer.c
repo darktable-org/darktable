@@ -27,6 +27,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   memcpy(out, in, 3*sizeof(float)*width*height);
 #if 1
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
+  dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
   // so finest possible level here is
@@ -38,19 +39,53 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // printf("level range in %d %d: %f %f\n", 1, d->num_levels, l1, lm);
   // level 1 => full resolution
   int numl = 0; for(int k=MIN(width,height);k;k>>=1) numl++;
+  const int numl_cap = MIN(5, numl);
 
   // TODO: fixed alloc for data piece at capped resolution.
-  float **tmp = (float **)malloc(sizeof(float *)*numl);
-  for(int k=1;k<numl;k++)
+  float **tmp = (float **)malloc(sizeof(float *)*numl_cap);
+  for(int k=1;k<numl_cap;k++)
   {
     const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));
     tmp[k] = (float *)malloc(sizeof(float)*wd*ht);
     // printf("level %d with %d X %d\n", k, wd, ht);
   }
 
-  for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
-  // for(int level=1;level<numl;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height, ch);
-  for(int l=1;l<numl;l++)
+  for(int level=1;level<numl_cap;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
+
+  // TODO: store wavelet histogram for later drawing!
+  if(piece->iscale == 1.0) // 1.0 => full pipe.
+  { // TODO: only preview pipe has all pixels.
+    // TODO: better to choose full pipe and current window?
+    int cnt[DT_IOP_EQUALIZER_BANDS];
+    for(int i=0;i<DT_IOP_EQUALIZER_BANDS;i++) cnt[i] = 0;
+    for(int l=1;l<numl_cap;l++)
+    {
+      const int lv = (lm-l1)*(l-1)/(float)(numl-1) + l1;
+      const int band = CLAMP(lv / (float)d->num_levels * (DT_IOP_EQUALIZER_BANDS+1), 0, DT_IOP_EQUALIZER_BANDS);
+      c->band_hist[band] = 0.0f;
+      cnt[band]++;
+      printf("level: %d %d band: %d\n", l, lv, band);
+      // for(int ch=0;ch<3;ch++)
+      int ch = 0;
+      {
+        const int step = 1<<l;
+        for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) c->band_hist[band] += out[3*width*j + 3*i + ch]*out[3*width*j + 3*i + ch];
+        for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      c->band_hist[band] += out[3*width*j + 3*i + ch]*out[3*width*j + 3*i + ch];
+        for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) c->band_hist[band] += out[3*width*j + 3*i + ch]*out[3*width*j + 3*i + ch]*.5f;
+      }
+    }
+    c->band_max = 0.0f;
+    for(int i=0;i<DT_IOP_EQUALIZER_BANDS;i++)
+    {
+      if(cnt[i]) c->band_hist[i] /= cnt[i];
+      else c->band_hist[i] = 0.0;
+      c->band_max = fmaxf(c->band_max, c->band_hist[i]);
+      printf("band %d = %f\n", i, c->band_hist[i]);
+    }
+    // if(self->widget) gtk_widget_queue_draw(self->widget);
+  }
+
+  for(int l=1;l<numl_cap;l++)
   {
     for(int ch=0;ch<3;ch++)
     {
@@ -66,10 +101,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff*coeff;
     }
   }
-  for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height);
-  // for(int level=numl-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height, ch);
+  for(int level=numl_cap-1;level>0;level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height);
 
-  for(int k=1;k<numl;k++) free(tmp[k]);
+  for(int k=1;k<numl_cap;k++) free(tmp[k]);
   free(tmp);
 #endif
 }
@@ -280,8 +314,8 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   cairo_set_line_width(cr, 1.);
   cairo_translate(cr, 0, height);
 
-  // TODO: draw frequency histogram in bg.
-#if 0
+  // draw frequency histogram in bg.
+#if 1
   // draw lum h istogram in background
   dt_develop_t *dev = darktable.develop;
   float *hist, hist_max;
@@ -290,9 +324,13 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   if(hist_max > 0)
   {
     cairo_save(cr);
-    cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
+    cairo_scale(cr, width/(DT_IOP_EQUALIZER_BANDS-1.0), -(height-5)/c->band_max);
     cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-    dt_gui_histogram_draw_8(cr, hist, 3);
+    cairo_move_to(cr, 0, 0);
+    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) cairo_line_to(cr, k, c->band_hist[k]);
+    cairo_line_to(cr, DT_IOP_EQUALIZER_BANDS, 0.);
+    cairo_close_path(cr);
+    cairo_fill(cr);
     cairo_restore(cr);
   }
 #endif
