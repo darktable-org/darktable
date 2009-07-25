@@ -32,7 +32,7 @@ typedef struct dt_iop_module_t
   /** the module is used in this develop module. */
   struct dt_develop_t *dev;
   /** non zero if this node should be processed. */
-  int32_t enabled;
+  int32_t enabled, default_enabled;
   /** parameters for the operation. will be replaced by history revert. */
   dt_iop_params_t *params, *default_params;
   /** exclusive access to params is needed, as gui and gegl processing is async. */
@@ -47,6 +47,10 @@ typedef struct dt_iop_module_t
   dt_dev_operation_t op;
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
+  /** off button, somewhere in header, common to all plug-ins. */
+  GtkToggleButton *off;
+  /** expander containing the widget. */
+  GtkExpander *expander;
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)    (struct dt_iop_module_t *self);
@@ -79,6 +83,10 @@ dt_iop_module_t;
 int dt_iop_load_module(dt_iop_module_t *module, struct dt_develop_t *dev, const char *op);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_unload_module(dt_iop_module_t *module);
+/** updates the gui params and the enabled switch. */
+void dt_iop_gui_update(dt_iop_module_t *module);
+/** creates a label widget for the expander, with callback to enable/disable this module. */
+GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,

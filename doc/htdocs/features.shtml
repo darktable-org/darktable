@@ -25,11 +25,15 @@
         <li>core functions operate on floating point buffers</li>
         <li>modular image operations (plug-in interface)</li>
         <li>export to low dynamic range (jpg, png), 16-bit (ppm), or linear high dynamic range (pfm)</li>
+        <li>[svn] image rating (stars) and filtering within the film roll</li>
+        <li>[svn] equalizer operation selectively enhances/attenuates frequencies in an edge-preserving way
+            (used for sharpen and denoising at the same time).</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/moon.jpg" alt="todo" class="img" /><h1>scheduled features</h1>
       <ul>
+        <li>lensfun support</li>
         <li>image tagging, sorting and filtering by tag system</li>
         <li>database format freeze for future compatibility of tag data</li>
         <li>...?</li>

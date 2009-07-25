@@ -31,6 +31,7 @@ bugs:
 - release 0.2 :)
 
 0.3 roadmap:
+- equalizer tutorial in documentation
 - translations (de, etc)
 - copy function in lib:
   - flags, tags

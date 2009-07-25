@@ -27,16 +27,21 @@ void dt_dev_enter()
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    GtkExpander *expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
-    gtk_expander_set_expanded(expander, FALSE);
-    gtk_expander_set_spacing(expander, 10);
-    gtk_box_pack_start(box, GTK_WIDGET(expander), FALSE, FALSE, 0);
     module->gui_init(module);
-    // add the widget created by gui_init to the expander.
-    gtk_container_add(GTK_CONTAINER(expander), module->widget);
+    // add the widget created by gui_init to an expander and both to list.
+    GtkWidget *expander = dt_iop_gui_get_expander(module);
+    gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     modules = g_list_previous(modules);
   }
   gtk_widget_show_all(GTK_WIDGET(box));
+  // hack: now hide all custom expander widgets again.
+  modules = darktable.develop->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    if(module->off) gtk_widget_hide(module->widget);
+    modules = g_list_next(modules);
+  }
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
@@ -112,7 +117,7 @@ void dt_dev_leave()
 
 void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height)
 {
-  if(dev->image_dirty || dev->image_timestamp < dev->preview_timestamp) dt_dev_process_image(dev);
+  if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
   if(dev->preview_dirty) dt_dev_process_preview(dev);
 
   pthread_mutex_t *mutex = NULL;
@@ -120,6 +125,8 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   cairo_surface_t *surface = NULL;
 
+   
+  // printf("develop_view draw timestamp pass: %d\n", dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp);
   if(dev->image_dirty && !dev->preview_dirty)
   { // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
@@ -180,8 +187,9 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
     */
     pthread_mutex_unlock(mutex);
   }
-  else if(!dev->image_dirty && dev->image_timestamp >= dev->preview_timestamp)
+  else if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
+    // printf("develop_view draw full\n");
     mutex = &dev->pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
     wd = dev->capwidth;

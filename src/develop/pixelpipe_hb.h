@@ -56,6 +56,8 @@ typedef struct dt_dev_pixelpipe_t
   pthread_mutex_t backbuf_mutex;
   // working?
   int processing;
+  // input data based on this timestamp:
+  int input_timestamp;
 }
 dt_dev_pixelpipe_t;
 

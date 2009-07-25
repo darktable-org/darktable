@@ -1,5 +1,5 @@
-#ifndef DARKROOM_H
-#define DARKROOM_H
+#ifndef DARKTABLE_H
+#define DARKTABLE_H
 
 #define _XOPEN_SOURCE 600 // for localtime_r
 #include <time.h>
@@ -7,7 +7,7 @@
 #include <sqlite3.h>
 #include <pthread.h>
 
-#define DT_VERSION 18
+#define DT_VERSION 19
 
 #define HANDLE_SQLITE_ERR(rc) \
   if(rc != SQLITE_OK) \

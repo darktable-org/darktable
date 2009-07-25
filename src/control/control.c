@@ -695,9 +695,10 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   }
   else if(y > ht-tb)
   {
+    /* nothing useful down there:
     widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
     if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-    else gtk_widget_show(widget);
+    else gtk_widget_show(widget); */
   }
 }
 
@@ -1007,7 +1008,7 @@ void dt_control_clear_history_items(int32_t num)
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    snprintf(numlabel, 50, "%d - %s", curr, hist->module->op);
+    snprintf(numlabel, 50, "%d - %s (%s)", curr, hist->module->op, hist->enabled ? "on" : "off");
     gtk_button_set_label(GTK_BUTTON(widget), numlabel);
     history = g_list_next(history);
   }

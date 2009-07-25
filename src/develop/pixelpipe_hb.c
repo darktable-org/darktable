@@ -31,6 +31,7 @@ void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_
   dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size);
   pipe->backbuf = NULL;
   pipe->processing = 0;
+  pipe->input_timestamp = 0;
   pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
 }
 
@@ -70,10 +71,10 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-    if(module->enabled)
+    // if(module->enabled) // no! always create nodes. just don't process.
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
-      piece->enabled = 1;
+      piece->enabled = module->default_enabled;
       piece->iscale = pipe->iscale;
       piece->module = module;
       piece->data = NULL;
@@ -94,7 +95,11 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   while(nodes)
   {
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-    if(piece->module == hist->module) hist->module->commit_params(hist->module, hist->params, pipe, piece);
+    if(piece->module == hist->module)
+    {
+      hist->module->commit_params(hist->module, hist->params, pipe, piece);
+      piece->enabled = hist->enabled;
+    }
     nodes = g_list_next(nodes);
   }
 }
@@ -107,6 +112,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     piece->module->commit_params(piece->module, piece->module->default_params, pipe, piece);
+    piece->enabled = piece->module->default_enabled;
     nodes = g_list_next(nodes);
   }
   // go through all history items and adjust params
@@ -170,8 +176,11 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     module = (dt_iop_module_t *)modules->data;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
-    if(!module->enabled || !piece->enabled)
+    if(!piece->enabled)
+    {
+      // printf("skipping disabled module %s\n", module->op);
       return dt_dev_pixelpipe_process_rec(pipe, dev, output, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1);
+    }
   }
 
   // if available, return data

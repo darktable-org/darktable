@@ -196,7 +196,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   // load small raw (try libraw then magick)
   img->shrink = 1;
-  if(dt_imageio_open_raw_preview(img, filename))
+  if(dt_imageio_open_preview(img, filename))
   // if(dt_imageio_open(img, filename))
   {
     dt_image_cleanup(img);

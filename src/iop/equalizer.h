@@ -7,7 +7,8 @@
 #include <inttypes.h>
 
 #define DT_IOP_EQUALIZER_RES 64
-#define DT_IOP_EQUALIZER_BANDS 8
+#define DT_IOP_EQUALIZER_BANDS 5
+#define DT_IOP_EQUALIZER_MAX_LEVEL 6
 
 typedef struct dt_iop_equalizer_params_t
 {

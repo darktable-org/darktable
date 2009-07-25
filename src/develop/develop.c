@@ -44,7 +44,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
-  dev->timestamp = dev->image_timestamp = dev->preview_timestamp = 0;
+  dev->timestamp = 0;
   dev->gui_leaving = 0;
   pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
@@ -152,7 +152,7 @@ void dt_dev_invalidate(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
-  dev->preview_timestamp = dev->timestamp;
+  dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_dirty = 1;
   if(dev->preview_loading)
   { 
@@ -192,7 +192,6 @@ restart:
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
-  dev->image_timestamp = dev->timestamp;
   dev->image_dirty = 1;
   if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
   {
@@ -227,6 +226,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
   if(dev->gui_leaving) return;
+  dev->pipe->input_timestamp = dev->timestamp;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale)) goto restart;
@@ -434,9 +434,14 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       // printf("adding new history item %d - %s\n", dev->history_end, module->op);
       // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1, ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
-      if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, module->op);
+      if(dev->gui_attached)
+      {
+        char label[512]; // print on/off
+        snprintf(label, 512, "%s (%s)", module->op, module->enabled ? "on" : "off");
+        dt_control_add_history_item(dev->history_end-1, label);
+      }
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
-      hist->enabled = 1;
+      hist->enabled = module->enabled;
       hist->module = module;
       hist->params = malloc(module->params_size);
       memcpy(hist->params, module->params, module->params_size);
@@ -487,6 +492,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     memcpy(module->params, module->default_params, module->params_size);
+    module->enabled = module->default_enabled;
     modules = g_list_next(modules);
   }
   // go through history and set gui params
@@ -495,6 +501,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     memcpy(hist->module->params, hist->params, hist->module->params_size);
+    hist->module->enabled = hist->enabled;
     history = g_list_next(history);
   }
   // update all gui modules
@@ -502,7 +509,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    module->gui_update(module);
+    dt_iop_gui_update(module);
     modules = g_list_next(modules);
   }
   darktable.gui->reset = 0;

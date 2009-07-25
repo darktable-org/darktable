@@ -32,9 +32,9 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 int dt_exif_read(dt_image_t *img, const char* path)
 {
   /* Redirect exiv2 errors to a string buffer */
-  std::ostringstream stderror;
-  std::streambuf *savecerr = std::cerr.rdbuf();
-  std::cerr.rdbuf(stderror.rdbuf());
+  // std::ostringstream stderror;
+  // std::streambuf *savecerr = std::cerr.rdbuf();
+  // std::cerr.rdbuf(stderror.rdbuf());
 
   try {
     Exiv2::Image::AutoPtr image;
@@ -189,7 +189,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
 
     ufraw_message(UFRAW_SET_LOG, "%s\n", stderror.str().c_str());
 #endif
-    std::cerr.rdbuf(savecerr);
+    // std::cerr.rdbuf(savecerr);
 
     // std::cout << "time c++: " << img->exif_datetime_taken << std::endl;
     // std::cout << "lens c++: " << img->exif_lens << std::endl;
@@ -199,9 +199,9 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
   catch (Exiv2::AnyError& e)
   {
-    std::cerr.rdbuf(savecerr);
+    // std::cerr.rdbuf(savecerr);
     std::string s(e.what());
-    std::cerr << s << std::endl;
+    std::cerr << "[exiv2] " << s << std::endl;
     return 1;
   }
 }

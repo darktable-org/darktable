@@ -1,6 +1,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
+#include "gui/gtk.h"
 
 #include <lcms.h>
 #include <strings.h>
@@ -18,7 +19,9 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   module->instance = dev->iop_instance++;
   module->dt = &darktable;
   module->dev = dev;
-  module->enabled = 1;
+  module->widget = NULL;
+  module->off = NULL;
+  module->enabled = module->default_enabled = 1; // all modules enabled by default.
   strncpy(module->op, op, 20);
   // load module from disk
   gchar *libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
@@ -35,6 +38,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;
   module->init(module);
+  module->enabled = module->default_enabled; // apply (possibly new) default.
   return 0;
 error:
   err = g_module_error();
@@ -48,6 +52,82 @@ void dt_iop_unload_module(dt_iop_module_t *module)
   module->cleanup(module);
   pthread_mutex_destroy(&module->params_mutex);
   if(module->module) g_module_close(module->module);
+}
+
+void dt_iop_gui_update(dt_iop_module_t *module)
+{
+  module->gui_update(module);
+  if(module->off) gtk_toggle_button_set_active(module->off, 1-module->enabled);
+}
+
+void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  if(!darktable.gui->reset)
+  {
+    if(gtk_toggle_button_get_active(togglebutton)) module->enabled = 0;
+    else module->enabled = 1;
+    dt_dev_add_history_item(module->dev, module);
+    // close parent expander.
+    gtk_expander_set_expanded(module->expander, module->enabled);
+  }
+  char tooltip[512];
+  snprintf(tooltip, 512, "%s is switched %s", module->op, module->enabled ? "on" : "off");
+  gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, NULL);
+}
+
+static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
+{
+  GtkExpander *expander = GTK_EXPANDER (object);
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  if (gtk_expander_get_expanded (expander)) gtk_widget_show(module->widget);
+  else gtk_widget_hide(module->widget);
+}
+
+GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
+{
+  // gamma is always needed for display (down to uint8_t)
+  // tonecurve and temperature for color conversion/histogram triggers
+  if(!strcmp(module->op, "gamma") || 
+     !strcmp(module->op, "tonecurve") ||
+     !strcmp(module->op, "temperature"))
+  {
+    module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
+    gtk_expander_set_expanded(module->expander, FALSE);
+    gtk_expander_set_spacing(module->expander, 10);
+    gtk_container_add(GTK_CONTAINER(module->expander), module->widget);
+    return GTK_WIDGET(module->expander);
+  }
+
+  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
+  gtk_expander_set_expanded(module->expander, FALSE);
+  // gtk_object_set(GTK_OBJECT(module->widget), "no-show-all", TRUE, NULL);
+  gtk_widget_hide(module->widget);
+  gtk_expander_set_spacing(module->expander, 10);
+  // GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
+  GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_check_button_new());
+  char tooltip[512];
+  snprintf(tooltip, 512, "%s is switched %s", module->op, module->enabled ? "on" : "off");
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, NULL);
+  gtk_toggle_button_set_active(button, 1-module->enabled);
+  char filename[512];
+  snprintf(filename, 512, "%s/pixmaps/off.png", DATADIR);
+  GtkWidget *image = gtk_image_new_from_file(filename);
+  gtk_button_set_image(GTK_BUTTON(button), image);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
+  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), module->widget, TRUE, TRUE, 0);
+
+  g_signal_connect (G_OBJECT (button), "toggled",
+                    G_CALLBACK (dt_iop_gui_off_callback), module);
+  g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
+                  G_CALLBACK (dt_iop_gui_expander_callback), module);
+  // gtk_widget_add_events(GTK_WIDGET(hbox), GDK_BUTTON_PRESS_MASK);
+  module->off = button;
+  return GTK_WIDGET(vbox);
 }
 
 void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
