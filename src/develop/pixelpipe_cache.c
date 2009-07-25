@@ -59,7 +59,17 @@ int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint
   return 0;
 }
 
+int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)
+{
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, -4);
+}
+
 int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)
+{
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, 0);
+}
+
+int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data, int weight)
 {
   *data = NULL;
   int max_used = -1, max = 0;
@@ -74,7 +84,7 @@ int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t h
     if(cache->hash[k] == hash)
     {
       *data = cache->data[k];
-      cache->used[k] = 0; // this is the MRU entry
+      cache->used[k] = weight; // this is the MRU entry
     }
   }
 
@@ -82,7 +92,7 @@ int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t h
   { // kill LRU entry
     *data = cache->data[max];
     cache->hash[max] = hash;
-    cache->used[max] = 0;
+    cache->used[max] = weight;
     return 1;
   }
   else return 0;

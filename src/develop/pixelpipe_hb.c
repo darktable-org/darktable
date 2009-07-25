@@ -187,7 +187,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   uint64_t hash = dt_dev_pixelpipe_cache_hash(scale, x, y, dev, pos);
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
-    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+    if(pos == 0) (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
+    else         (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     return 0;
   }
 
