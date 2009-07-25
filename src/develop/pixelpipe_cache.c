@@ -23,15 +23,17 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
   free(cache->used);
 }
 
-uint64_t dt_dev_pixelpipe_cache_hash(float scale, int32_t x, int32_t y, dt_develop_t *dev, int module)
+uint64_t dt_dev_pixelpipe_cache_hash(int imgid, float scale, int32_t x, int32_t y, dt_dev_pixelpipe_t *pipe, int module)
 {
   // bernstein hash (djb2)
-  uint64_t hash = 5381 + dev->image->id;
+  uint64_t hash = 5381 + imgid;
   // go through all modules up to module and compute a weird hash using the operation and params.
-  GList *modules = dev->iop;
-  for(int k=0;k<module&&modules;k++)
+  GList *pieces = pipe->nodes;
+  for(int k=0;k<module&&pieces;k++)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+    hash = ((hash << 5) + hash) ^ piece->hash;
+#if 0
     if(module->enabled)
     {
       uint64_t c;
@@ -40,7 +42,8 @@ uint64_t dt_dev_pixelpipe_cache_hash(float scale, int32_t x, int32_t y, dt_devel
       str = (const char *)module->params;
       for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
     }
-    modules = g_list_next(modules);
+#endif
+    pieces = g_list_next(pieces);
   }
   // also add scale, x and y:
   const char *str = (const char *)&scale;

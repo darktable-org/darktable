@@ -85,6 +85,8 @@ int dt_iop_load_module(dt_iop_module_t *module, struct dt_develop_t *dev, const 
 void dt_iop_unload_module(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
+/** commits params and updates piece hash. */
+void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 

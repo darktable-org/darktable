@@ -74,10 +74,11 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     // if(module->enabled) // no! always create nodes. just don't process.
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
-      piece->enabled = module->default_enabled;
+      piece->enabled = module->enabled;
       piece->iscale = pipe->iscale;
       piece->module = module;
       piece->data = NULL;
+      piece->hash = 0;
       piece->module->init_pipe(piece->module, pipe, piece);
       pipe->nodes = g_list_append(pipe->nodes, piece);
     }
@@ -97,8 +98,8 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     if(piece->module == hist->module)
     {
-      hist->module->commit_params(hist->module, hist->params, pipe, piece);
       piece->enabled = hist->enabled;
+      dt_iop_commit_params(hist->module, hist->params, pipe, piece);
     }
     nodes = g_list_next(nodes);
   }
@@ -111,8 +112,9 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   while(nodes)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-    piece->module->commit_params(piece->module, piece->module->default_params, pipe, piece);
+    piece->hash = 0;
     piece->enabled = piece->module->default_enabled;
+    dt_iop_commit_params(piece->module, piece->module->default_params, pipe, piece);
     nodes = g_list_next(nodes);
   }
   // go through all history items and adjust params
@@ -133,23 +135,19 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   pthread_mutex_lock(&dev->history_mutex);
-  switch (pipe->changed)
-  {
-    case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
-      break;
-    case DT_DEV_PIPE_TOP_CHANGED:
-      // only top history item changed.
-      dt_dev_pixelpipe_synch_top(pipe, dev);
-      break;
-    case DT_DEV_PIPE_SYNCH:
-      // pipeline topology remains intact, only change all params.
-      dt_dev_pixelpipe_synch_all(pipe, dev);
-      break;
-    default: // DT_DEV_PIPE_REMOVE
-      // modules have been added in between or removed. need to rebuild the whole pipeline.
-      dt_dev_pixelpipe_cleanup_nodes(pipe);
-      dt_dev_pixelpipe_create_nodes(pipe, dev);
-      break;
+  // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
+  if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
+  { // only top history item changed.
+    dt_dev_pixelpipe_synch_top(pipe, dev);
+  }
+  if(pipe->changed & DT_DEV_PIPE_SYNCH)
+  { // pipeline topology remains intact, only change all params.
+    dt_dev_pixelpipe_synch_all(pipe, dev);
+  }
+  if(pipe->changed & DT_DEV_PIPE_REMOVE)
+  { // modules have been added in between or removed. need to rebuild the whole pipeline.
+    dt_dev_pixelpipe_cleanup_nodes(pipe);
+    dt_dev_pixelpipe_create_nodes(pipe, dev);
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   pthread_mutex_unlock(&dev->history_mutex);
@@ -184,15 +182,17 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   }
 
   // if available, return data
-  uint64_t hash = dt_dev_pixelpipe_cache_hash(scale, x, y, dev, pos);
+  uint64_t hash = dt_dev_pixelpipe_cache_hash(dev->image->id, scale, x, y, pipe, pos);
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
+    // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
     if(pos == 0) (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
     else         (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     return 0;
   }
 
-  // if history changed, abort processing?
+  // if history changed or exit event, abort processing?
+  // preview pipe: abort on all but zoom events (same buffer anyways)
   if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
   if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
 
@@ -217,7 +217,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output
-    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+    // if(module) printf("reserving new buf in cache for module %s %s\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "");
+    if(pos == 0) (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
+    else         (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     
     // tonecurve histogram (collect luminance only):
     if(pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))

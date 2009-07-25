@@ -80,6 +80,7 @@ void dt_dev_invalidate(dt_develop_t *dev);
 void dt_dev_set_gamma(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
+void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label);
 
 gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 

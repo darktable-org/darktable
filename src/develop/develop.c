@@ -339,7 +339,8 @@ gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer use
   {
     dev->width = event->width - 2*tb;
     dev->height = event->height - 2*tb;
-    dev->preview_pipe->changed = dev->pipe->changed = DT_DEV_PIPE_ZOOMED;
+    dev->preview_pipe->changed |= DT_DEV_PIPE_ZOOMED;
+    dev->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     dt_dev_invalidate(dev);
   }
   return TRUE;
@@ -434,26 +435,29 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       // printf("adding new history item %d - %s\n", dev->history_end, module->op);
       // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1, ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
-      if(dev->gui_attached)
-      {
-        char label[512]; // print on/off
-        snprintf(label, 512, "%s (%s)", module->op, module->enabled ? "on" : "off");
-        dt_control_add_history_item(dev->history_end-1, label);
-      }
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
       hist->enabled = module->enabled;
       hist->module = module;
       hist->params = malloc(module->params_size);
       memcpy(hist->params, module->params, module->params_size);
+      if(dev->gui_attached)
+      {
+        char label[512]; // print on/off
+        dt_dev_get_history_item_label(hist, label);
+        dt_control_add_history_item(dev->history_end-1, label);
+      }
       dev->history = g_list_append(dev->history, hist);
-      dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
+      dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
     }
     else
     { // same operation, change params
       // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
-      dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_TOP_CHANGED;
+      hist->enabled = module->enabled;
+      dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+      dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
     }
   }
 #if 0
@@ -485,7 +489,6 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   pthread_mutex_lock(&dev->history_mutex);
   darktable.gui->reset = 1;
   dev->history_end = cnt;
-  dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
   // reset gui params for all modules
   GList *modules = dev->iop;
   while(modules)
@@ -512,6 +515,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     dt_iop_gui_update(module);
     modules = g_list_next(modules);
   }
+  dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
   darktable.gui->reset = 0;
   pthread_mutex_unlock(&dev->history_mutex);
   dt_dev_invalidate(dev);
@@ -560,14 +565,24 @@ void dt_dev_read_history(dt_develop_t *dev)
     hist->params = malloc(hist->module->params_size);
     memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));
+    // memcpy(hist->module->params, hist->params, hist->module->params_size);
+    // hist->module->enabled = hist->enabled;
     // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
     dev->history = g_list_append(dev->history, hist);
     dev->history_end ++;
 
-    if(dev->gui_attached) dt_control_add_history_item(dev->history_end-1, hist->module->op);
+    if(dev->gui_attached)
+    {
+      char label[50];
+      dt_dev_get_history_item_label(hist, label);
+      dt_control_add_history_item(dev->history_end-1, label);
+    }
   }
   if(dev->gui_attached)
-    dev->pipe->changed = dev->preview_pipe->changed = DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+  {
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+  }
   rc = sqlite3_finalize (stmt);
 }
 
@@ -598,6 +613,11 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
+}
+
+void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label)
+{
+  sprintf(label, "%s (%s)", hist->module->op, hist->enabled ? "on" : "off");
 }
 
 void dt_dev_export(dt_job_t *job)

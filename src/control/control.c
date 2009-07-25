@@ -987,7 +987,7 @@ void dt_control_clear_history_items(int32_t num)
 {
   // clear history items down to num (leave num-th on stack)
   darktable.control->history_start = MAX(0, num - 8);
-  char wdname[20], numlabel[50];
+  char wdname[20], numlabel[50], numlabel2[50];
   // hide all but original
   for(int k=1;k<10;k++)
   {
@@ -1008,7 +1008,8 @@ void dt_control_clear_history_items(int32_t num)
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    snprintf(numlabel, 50, "%d - %s (%s)", curr, hist->module->op, hist->enabled ? "on" : "off");
+    dt_dev_get_history_item_label(hist, numlabel2);
+    snprintf(numlabel, 50, "%d - %s", curr, numlabel2);
     gtk_button_set_label(GTK_BUTTON(widget), numlabel);
     history = g_list_next(history);
   }

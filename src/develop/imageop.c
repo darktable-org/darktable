@@ -54,6 +54,16 @@ void dt_iop_unload_module(dt_iop_module_t *module)
   if(module->module) g_module_close(module->module);
 }
 
+void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  uint64_t hash = 5381;
+  module->commit_params(module, params, pipe, piece);
+  const char *str = (const char *)params;
+  for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
+  if(piece->enabled) hash = ((hash << 5) + hash) ^ 13;
+  piece->hash = hash;
+}
+
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
   module->gui_update(module);
