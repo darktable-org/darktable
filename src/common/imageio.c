@@ -3,6 +3,7 @@
 #endif
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_jpeg.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -55,7 +56,7 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   int wd, ht;
   dt_image_get_mip_size(img, mip, &wd, &ht);
   dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-#ifdef HAVE_MAGICK
+#if 0//def HAVE_MAGICK
   ExceptionInfo *exception = AcquireExceptionInfo();
   ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
   Image *image = ConstituteImage(wd, ht, "RGBA", CharPixel, img->mip[mip], exception);
@@ -74,11 +75,14 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   HANDLE_SQLITE_ERR(rc);
   rc = sqlite3_bind_blob(stmt, 1, blob, sizeof(uint8_t)*length, (void (*)(void *))RelinquishMagickMemory);
 #else
-  uint8_t *blob = img->mip[mip];
-  size_t length = 4*wd*ht*sizeof(uint8_t);
+  /*uint8_t *blob = img->mip[mip];
+  size_t length = 4*wd*ht*sizeof(uint8_t);*/
+  uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
+  int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, 95);
   rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
   HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_blob(stmt, 1, blob, sizeof(uint8_t)*length, SQLITE_STATIC);
+  //rc = sqlite3_bind_blob(stmt, 1, blob, sizeof(uint8_t)*length, SQLITE_STATIC);
+  rc = sqlite3_bind_blob(stmt, 1, blob, length, free);
 #endif
   HANDLE_SQLITE_ERR(rc);
   rc = sqlite3_bind_int (stmt, 2, img->id);
@@ -87,7 +91,7 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   if(rc != SQLITE_DONE) fprintf(stderr, "[preview_write] update mipmap failed: %s\n", sqlite3_errmsg(darktable.db));
   rc = sqlite3_finalize(stmt);
 
-#ifdef HAVE_MAGICK
+#if 0//def HAVE_MAGICK
   image = DestroyImage(image);
   image_info = DestroyImageInfo(image_info);
   exception = DestroyExceptionInfo(exception);
@@ -147,7 +151,7 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
   else
   {
     dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-#ifdef HAVE_MAGICK
+#if 0//def HAVE_MAGICK
     ExceptionInfo *exception = AcquireExceptionInfo();
     ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
     Image *image = BlobToImage(image_info, blob, length, exception);
@@ -195,8 +199,19 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     image_info = DestroyImageInfo(image_info);
     exception = DestroyExceptionInfo(exception);
 #else
-    assert(length==sizeof(uint8_t)*4*wd*ht);
-    for(int k=0;k<length;k++) img->mip[mip][k] = ((uint8_t *)blob)[k];
+    dt_imageio_jpeg_t jpg;
+    dt_imageio_jpeg_header(blob, length, &jpg);
+    assert(jpg.width == wd && jpg.height == ht);
+    if(dt_imageio_jpeg_decompress(&jpg, img->mip[mip]))
+    {
+      rc = sqlite3_finalize(stmt);
+      dt_image_release(img, mip, 'w');
+      dt_image_release(img, mip, 'r');
+      fprintf(stderr, "[preview_read] could not get image from blob!\n");
+      return 1;
+    }
+    // assert(length==sizeof(uint8_t)*4*wd*ht);
+    // for(int k=0;k<length;k++) img->mip[mip][k] = ((uint8_t *)blob)[k];
 #endif
   }
   rc = sqlite3_finalize(stmt);

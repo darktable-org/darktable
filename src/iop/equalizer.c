@@ -33,10 +33,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
-  // so finest possible level here is
-  // 1 pixel: level 1
-  // 2 pixels: level 2
-  // 4 pixels: level 3
   const float l1 = 1.0f + log2f(piece->iscale/scale);                          // finest level
   float lm = 0; for(int k=MIN(width,height)*piece->iscale/scale;k;k>>=1) lm++; // coarsest level
   lm = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l1 + lm);
@@ -45,22 +41,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int numl_cap = MIN(DT_IOP_EQUALIZER_MAX_LEVEL-l1+1.5, numl);
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
-  // TODO: fixed alloc for data piece at capped resolution.
+  // TODO: fixed alloc for data piece at capped resolution?
   float **tmp = (float **)malloc(sizeof(float *)*numl_cap);
   for(int k=1;k<numl_cap;k++)
   {
     const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));
     tmp[k] = (float *)malloc(sizeof(float)*wd*ht);
-    // printf("level %d with %d X %d\n", k, wd, ht);
   }
 
   for(int level=1;level<numl_cap;level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
 
   // printf("transformed\n");
-  // TODO: store wavelet histogram for later drawing!
+  // store luma wavelet histogram for later drawing
   if(piece->iscale == 1.0) // 1.0 => full pipe.
-  { // TODO: only preview pipe has all pixels.
-    // TODO: better to choose full pipe and current window?
+  { // chose full pipe and current window.
     int cnt[DT_IOP_EQUALIZER_BANDS];
     for(int i=0;i<DT_IOP_EQUALIZER_BANDS;i++) cnt[i] = 0;
     for(int l=1;l<numl_cap;l++)
@@ -69,8 +63,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const int band = CLAMP(.5f + (1.0 - lv / d->num_levels) * (DT_IOP_EQUALIZER_BANDS), 0, DT_IOP_EQUALIZER_BANDS);
       c->band_hist[band] = 0.0f;
       cnt[band]++;
-      // printf("level: %d %.2f band: %d\n", l, lv, band);
-      // for(int ch=0;ch<3;ch++)
       int ch = 0;
       {
         const int step = 1<<l;
@@ -87,7 +79,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       c->band_max = fmaxf(c->band_max, c->band_hist[i]);
       // printf("band %d = %f\n", i, c->band_hist[i]);
     }
-    // if(self->widget) gtk_widget_queue_draw(self->widget);
   }
   // printf("histogrammed\n");
 
@@ -99,9 +90,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       // coefficients in range [0, 2], 1 being neutral.
       const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch], band);
-      // const float coeff = 2*(dt_draw_curve_calc_value(d->curve[ch], 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels));
-      // printf("level %d coeff %f\n", l, coeff);
-      // printf("level %d => l: %f => x: %f\n", l, (lm-l1)*(l-1)/(float)(numl-1) + l1, 1.0-((lm-l1)*(l-1)/(float)(numl-1) + l1)/(float)d->num_levels);
       const int step = 1<<l;
       for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
       for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;

@@ -1,16 +1,16 @@
 bugs:
-- equalizer band histogram not correctly compensated for scale.
-- c++ stream flush still crashes dt sometimes at exit.
+- check if there is a mem leak in jpg decompress.
 - open_raw has img cleaned up before finished during dt_exit
-- preview_ldr !
 - import starts 3 threads but seems to be mono-core?
 - zoom to wrong image bug: resize window helps (???)
 
-0.2 performance:
+performance:
 - parallel iop->processing (seems to be fast enough mono-core)?
 - try dt_iop std functions in parallel with openmp?
 
-0.2 cleanup:
+cleanup:
+- remove magickcore (=>jpeg,png)
+- remove libexif    (=>exiv2)
 - sorted image loading (on import)!
 - add some user guide documentation.
 - merge develop_view to develop
@@ -18,8 +18,6 @@ bugs:
 - remove dt_ctl_image_settings_t
 - remove src/gui/curveeditor.*
 - width/height in metadata
-- timeout for zoom/pan: first one frame preview then full?
-  (actually full pixels just redraw even if dirty.. num_req/num_calc?)
 - progress bars for image folder import and image export
 - develop does not need (object local) gamma anymore
 - where to put ungamma table? 
@@ -27,8 +25,6 @@ bugs:
 - mip0 broken for very lo-res images.
 - print GPLv3 notice on top of all files
 - save gui settings (expanded etc?) in operation stacks
-
-- release 0.2 :)
 
 0.3 roadmap:
 - equalizer tutorial in documentation
@@ -38,12 +34,10 @@ bugs:
   - history stack
   - histogram :)
 - small 1:1 preview for sharpen etc.
-- stars rating in db and image
 - write back images to db after cache drop!
 - output/input profiles using lcms
 - exiv2 to replace libexif (write blob, manage as mips in db?)
 - lensfun
-- optimize cache in pixelpipe for history item buffers
 - try gegl 0.1.0
 - darkroom mode: click on 1:1 zoom spot
 - quality parameter for pixelpipe init callbacks in modules?
@@ -67,10 +61,7 @@ bugs:
     imageio_preview_write: update/insert into
 
 1.0 roadmap:
-- image denoising (non-local means?)
 - remove libraw in favour of native gegl loading?
-- remove imagemagick in favour of native gegl writing?
-- or: remove magick in favour of libjpg/libpng?
 - database for linear/gamma parameters for each camera model
 
 bugs:
@@ -78,7 +69,6 @@ bugs:
  - openmp crashes dt (in magick or elsewhere) :(
  - small images mip maps garbled.
  - check mipmap decisions (seem very lo-res)
- - JPEG loading needs shrink + orientation (steal jhead source?)
  - image_load_job should take img id and get it from cache himself!
    (this is a serious problem if not all images fit into cache)
  - import folder file chooser sometimes not sized appropriately
@@ -95,7 +85,6 @@ feature requests:
    - load list from sql to dev->GList (be able to alter selection after)
    - progress bar
  - completely free zoom in dev mode (not just 1:1, fit, fill)
- - flags: deleted, cool, uncool..
  - clustered image view by similar tag/flag
  - user orient rotation
  - tonemapping for hdr?
@@ -108,7 +97,6 @@ feature requests:
  - set default parameters for all controls in dev mode while in lib mode?
  - clean up db for mem optimizations: keep only image+history, re-import mips.
  - remove dead links in library automatically?
- - GMM for color model using EM in opencv!
  - cache auf platte, echte bilder irgendwo auf dvd/platte extern/kamera chip etc
    - moeglicherweise ECHTE bilder (dias im schrank)
  - bilder sortieren, evtl manuell (mehrere kameras in einen film usw)
@@ -127,9 +115,7 @@ priority list:
  - libglade => gtkbuilder.
 
 image ops (GEGL):
- - white balance
  - exposure
- - luma/chroma denoising
  - crop
 
 usability:
@@ -158,5 +144,4 @@ cache:
 
 build/packaging:
  - doxygen documentation
- - debian/ubuntu package
 
