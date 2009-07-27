@@ -1,4 +1,6 @@
 bugs:
+- sometimes redraw event is not cast during add history item or hist button.
+- import very slow (hdd lock with gui??)
 - check if there is a mem leak in jpg decompress.
 - open_raw has img cleaned up before finished during dt_exit
 - import starts 3 threads but seems to be mono-core?

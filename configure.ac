@@ -34,9 +34,14 @@ PKG_CHECK_MODULES(SQLITE, [sqlite3])
 PKG_CHECK_MODULES(LIBEXIF, [libexif])
 PKG_CHECK_MODULES(EXIV2, exiv2 >= 0.18)
 PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
-PKG_CHECK_MODULES(MAGICK, MagickCore >= 6.4)
-AC_DEFINE(HAVE_MAGICK, 1, [whether the ImageMagick library is available])
+PKG_CHECK_MODULES(PNG, libpng12)
+dnl ** PKG_CHECK_MODULES(MAGICK, MagickCore >= 6.4)
+dnl ** AC_DEFINE(HAVE_MAGICK, 1, [whether the ImageMagick library is available])
  
+AC_CHECK_LIB(jpeg, jpeg_destroy_decompress,
+   [JPEG_LIBS="-ljpeg"])
+AC_SUBST(JPEG_LIBS)
+
 dnl *** Check for LittleCMS ***
 AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
    [AC_DEFINE(HAVE_LCMS, 1, [whether the LittleCMS development environment is available])

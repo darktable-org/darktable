@@ -200,10 +200,10 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     exception = DestroyExceptionInfo(exception);
 #else
     dt_imageio_jpeg_t jpg;
-    dt_imageio_jpeg_header(blob, length, &jpg);
-    assert(jpg.width == wd && jpg.height == ht);
-    if(dt_imageio_jpeg_decompress(&jpg, img->mip[mip]))
+    if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) || 
+       dt_imageio_jpeg_decompress(&jpg, img->mip[mip]))
     {
+      assert(jpg.width == wd && jpg.height == ht);
       rc = sqlite3_finalize(stmt);
       dt_image_release(img, mip, 'w');
       dt_image_release(img, mip, 'r');
@@ -316,9 +316,8 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
-      // TODO: .cc exiv2 module to load lens etc.
       // JPEG: decode with magick (directly rescaled to mip4)
-#ifdef HAVE_MAGICK
+#if 0//def HAVE_MAGICK
       ExceptionInfo *exception = AcquireExceptionInfo();
       ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
       Image *imimage = BlobToImage(image_info, image->data, image->data_size, exception);
@@ -391,7 +390,57 @@ error_raw_magick:// clean up libraw and magick only
       exception = DestroyExceptionInfo(exception);
       goto error_raw;
 #else
-      fprintf(stderr, "[imageio_load_raw] compiled without Magick support!\n");
+      dt_imageio_jpeg_t jpg;
+      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw;
+      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+      if(dt_imageio_jpeg_decompress(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
+      {
+        free(tmp);
+        goto error_raw;
+      }
+      if(raw->sizes.flip & 4)
+      {
+        image->width  = jpg.height;
+        image->height = jpg.width;
+      }
+      else
+      {
+        image->width  = jpg.width;
+        image->height = jpg.height;
+      }
+      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+      const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+      const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
+
+      if(image->width == p_wd && image->height == p_ht)
+      { // use 1:1
+        for (int j=0; j < jpg.height; j++)
+          for (int i=0; i < jpg.width; i++)
+            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = tmp[4*jpg.width*j+4*i+k];
+      }
+      else
+      { // scale to fit
+        bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+        const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
+        for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
+        {
+          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = cam[k];
+        }
+      }
+      free(tmp);
+      dt_image_release(img, DT_IMAGE_MIP4, 'w');
+      // store in db.
+      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+      if(dt_image_update_mipmaps(img)) ret = 1;
+
+      // clean up raw stuff.
+      libraw_recycle(raw);
+      libraw_close(raw);
+      free(image);
+      dt_image_release(img, DT_IMAGE_MIP4, 'r');
+      // dt_image_cache_release(img, 'r');
+      return ret;
 #endif
     }
     else
@@ -616,7 +665,7 @@ void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
 int dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
-#ifdef HAVE_MAGICK
+#if 0//def HAVE_MAGICK
   img->shrink = 0;
   img->orientation = 0;
 
@@ -728,8 +777,62 @@ error_magick_mip4:
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return 1;
 #else
-  fprintf(stderr, "[open_ldr] compiled without Magick support!\n");
-  return 1;
+  // TODO: get exif from exiv2!
+  img->shrink = 0;
+  img->orientation = 0;
+
+  dt_imageio_jpeg_t jpg;
+  if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
+  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
+  {
+    free(tmp);
+    return 1;
+  }
+
+  if(img->orientation & 4)
+  {
+    img->width  = jpg.height;
+    img->height = jpg.width;
+  }
+  else
+  {
+    img->width  = jpg.width;
+    img->height = jpg.height;
+  }
+  int p_wd, p_ht;
+  float f_wd, f_ht;
+  dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
+  dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
+
+  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  const int p_ht2 = img->orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+  const int p_wd2 = img->orientation & 4 ? p_ht : p_wd;
+
+  if(img->width == p_wd && img->height == p_ht)
+  { // use 1:1
+    for (int j=0; j < jpg.height; j++)
+      for (int i=0; i < jpg.width; i++)
+        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+k] = tmp[4*jpg.width*j+4*i+k];
+  }
+  else
+  { // scale to fit
+    bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+    const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
+    for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
+    {
+      uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.height + (int)(scale*i));
+      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+k] = cam[k];
+    }
+  }
+  free(tmp);
+  dt_image_release(img, DT_IMAGE_MIP4, 'w');
+  // store in db.
+  int ret = 0;
+  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+  if(dt_image_update_mipmaps(img)) ret = 1;
+  
+  return ret;
 #endif
 }
 
@@ -737,7 +840,7 @@ error_magick_mip4:
 int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
-#ifdef HAVE_MAGICK
+#if 0//def HAVE_MAGICK
   // TODO: shrink!!
   img->shrink = 0;
   img->orientation = 0;
@@ -884,8 +987,41 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return 0;
 #else
-  fprintf(stderr, "[open_ldr] compiled without Magick support!\n");
-  return 1;
+  // TODO: read more exiv2!
+  img->shrink = 0;
+  img->orientation = 0;
+
+  dt_imageio_jpeg_t jpg;
+  if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
+  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_FULL))
+  {
+    free(tmp);
+    return 1;
+  }
+
+  if(img->orientation & 4)
+  {
+    img->width  = jpg.height;
+    img->height = jpg.width;
+  }
+  else
+  {
+    img->width  = jpg.width;
+    img->height = jpg.height;
+  }
+
+  const int ht2 = img->orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
+  const int wd2 = img->orientation & 4 ? img->height : img->width;
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
+
+  for(int j=0; j < jpg.height; j++)
+    for(int i=0; i < jpg.width; i++)
+      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, img->orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+2-k]];
+
+  free(tmp);
+  dt_image_release(img, DT_IMAGE_FULL, 'w');
+  return 0;
 #endif
 }
 
@@ -982,6 +1118,8 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
+  // TODO: libjpg/libpng export!
+  // TODO: get exif blob from exiv2 (adjust?) and pass on to jpeg writing.
 #ifdef HAVE_MAGICK
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -1103,8 +1241,109 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_cleanup(&dev);
   return 0;
 #else
-  fprintf(stderr, "[export_8] compiled without Magick support!\n");
-  return 1;
+  dt_develop_t dev;
+  dt_dev_init(&dev, 0);
+  dt_dev_load_image(&dev, img);
+  const int wd = dev.image->width;
+  const int ht = dev.image->height;
+  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
+
+  dt_dev_pixelpipe_t pipe;
+  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_synch_all(&pipe, &dev);
+  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  uint8_t *buf8 = pipe.backbuf;
+  for(int k=0;k<wd*ht;k++)
+  {
+    uint8_t tmp = buf8[4*k+0];
+    buf8[4*k+0] = buf8[4*k+2];
+    buf8[4*k+2] = tmp;
+  }
+
+  // TODO: use exiv2!
+  // set image properties!
+  ExifRational rat;
+  int length;
+  uint8_t *exif_profile;
+  ExifData *exif_data = exif_data_new();
+  exif_data_set_byte_order(exif_data, EXIF_BYTE_ORDER_INTEL);
+  ExifContent *exif_content = exif_data->ifd[0];
+  ExifEntry *entry;
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_MAKE);
+  entry->components = strlen (img->exif_maker) + 1;
+  entry->format = EXIF_FORMAT_ASCII;
+  entry->size = exif_format_get_size (entry->format) * entry->components;
+  entry->data = realloc(entry->data, entry->size);
+  strncpy((char *)entry->data, img->exif_maker, entry->components);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_MODEL);
+  entry->components = strlen (img->exif_model) + 1;
+  entry->format = EXIF_FORMAT_ASCII;
+  entry->size = exif_format_get_size (entry->format) * entry->components;
+  entry->data = realloc(entry->data, entry->size);
+  strncpy((char *)entry->data, img->exif_model, entry->components);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_DATE_TIME_ORIGINAL);
+  entry->components = 20;
+  entry->format = EXIF_FORMAT_ASCII;
+  entry->size = exif_format_get_size (entry->format) * entry->components;
+  entry->data = realloc(entry->data, entry->size);
+  strncpy((char *)(entry->data), img->exif_datetime_taken, entry->components);
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_ISO_SPEED_RATINGS);
+  exif_set_short(entry->data, EXIF_BYTE_ORDER_INTEL, (int16_t)(img->exif_iso));
+  entry->size = 2;
+  entry->components = 1;
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_FNUMBER);
+  dt_imageio_to_fractional(img->exif_aperture, &rat.numerator, &rat.denominator);
+  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
+  entry->size = 8;
+  entry->components = 1;
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_EXPOSURE_TIME);
+  dt_imageio_to_fractional(img->exif_exposure, &rat.numerator, &rat.denominator);
+  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
+  entry->size = 8;
+  entry->components = 1;
+
+  entry = exif_entry_new();
+  exif_content_add_entry(exif_content, entry);
+  exif_entry_initialize(entry, EXIF_TAG_FOCAL_LENGTH);
+  dt_imageio_to_fractional(img->exif_focal_length, &rat.numerator, &rat.denominator);
+  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
+  entry->size = 8;
+  entry->components = 1;
+
+  exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
+  exif_data_free(exif_data);
+
+  if(dt_imageio_jpeg_write(filename, buf8, wd, ht, 97, exif_profile, length))
+  {
+    dt_dev_pixelpipe_cleanup(&pipe);
+    dt_dev_cleanup(&dev);
+    free(exif_profile);
+    return 1;
+  }
+  dt_dev_pixelpipe_cleanup(&pipe);
+  dt_dev_cleanup(&dev);
+  free(exif_profile);
+  return 0;
 #endif
 }
 
