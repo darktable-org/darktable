@@ -392,13 +392,7 @@ error_raw_magick:// clean up libraw and magick only
 #else
       dt_imageio_jpeg_t jpg;
       if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw;
-      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-      if(dt_imageio_jpeg_decompress(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
-      {
-        free(tmp);
-        goto error_raw;
-      }
-      if(raw->sizes.flip & 4)
+      if(img->orientation & 4)
       {
         image->width  = jpg.height;
         image->height = jpg.width;
@@ -408,15 +402,21 @@ error_raw_magick:// clean up libraw and magick only
         image->width  = jpg.width;
         image->height = jpg.height;
       }
+      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+      if(dt_imageio_jpeg_decompress(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
+      {
+        free(tmp);
+        goto error_raw;
+      }
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-      const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-      const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
+      const int p_ht2 = img->orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+      const int p_wd2 = img->orientation & 4 ? p_ht : p_wd;
 
       if(image->width == p_wd && image->height == p_ht)
       { // use 1:1
         for (int j=0; j < jpg.height; j++)
           for (int i=0; i < jpg.width; i++)
-            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = tmp[4*jpg.width*j+4*i+k];
+            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
       }
       else
       { // scale to fit
@@ -425,7 +425,7 @@ error_raw_magick:// clean up libraw and magick only
         for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
         {
           uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = cam[k];
         }
       }
       free(tmp);
@@ -783,13 +783,6 @@ error_magick_mip4:
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
-  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
-  {
-    free(tmp);
-    return 1;
-  }
-
   if(img->orientation & 4)
   {
     img->width  = jpg.height;
@@ -800,6 +793,13 @@ error_magick_mip4:
     img->width  = jpg.width;
     img->height = jpg.height;
   }
+  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
+  {
+    free(tmp);
+    return 1;
+  }
+
   int p_wd, p_ht;
   float f_wd, f_ht;
   dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
@@ -813,7 +813,7 @@ error_magick_mip4:
   { // use 1:1
     for (int j=0; j < jpg.height; j++)
       for (int i=0; i < jpg.width; i++)
-        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+k] = tmp[4*jpg.width*j+4*i+k];
+        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
   }
   else
   { // scale to fit
@@ -821,8 +821,8 @@ error_magick_mip4:
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
     {
-      uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.height + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+k] = cam[k];
+      uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = cam[k];
     }
   }
   free(tmp);
@@ -993,13 +993,6 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
-  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_FULL))
-  {
-    free(tmp);
-    return 1;
-  }
-
   if(img->orientation & 4)
   {
     img->width  = jpg.height;
@@ -1010,14 +1003,20 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     img->width  = jpg.width;
     img->height = jpg.height;
   }
-
+  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_FULL))
+  {
+    free(tmp);
+    return 1;
+  }
+ 
   const int ht2 = img->orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = img->orientation & 4 ? img->height : img->width;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
 
   for(int j=0; j < jpg.height; j++)
     for(int i=0; i < jpg.width; i++)
-      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, img->orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+2-k]];
+      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, img->orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+k]];
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');

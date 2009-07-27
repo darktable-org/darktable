@@ -476,10 +476,10 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   }
 #endif
 
-  pthread_mutex_unlock(&dev->history_mutex);
-
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate(dev);
+  pthread_mutex_unlock(&dev->history_mutex);
+
   dt_control_queue_draw_all();
 }
 
@@ -518,8 +518,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
   darktable.gui->reset = 0;
-  pthread_mutex_unlock(&dev->history_mutex);
   dt_dev_invalidate(dev);
+  pthread_mutex_unlock(&dev->history_mutex);
   dt_control_queue_draw_all();
 }
 
@@ -582,6 +582,7 @@ void dt_dev_read_history(dt_develop_t *dev)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+    dt_dev_invalidate(dev);
   }
   rc = sqlite3_finalize (stmt);
 }

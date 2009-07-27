@@ -212,11 +212,15 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
 	while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
 	{
 		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
-		for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
-			tmp[4*i+k] = row_pointer[0][3*i+k];
+    if(jpg->dinfo.num_components < 3)
+		  for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
+			  tmp[4*i+k] = row_pointer[0][jpg->dinfo.num_components*i+0];
+    else
+		  for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
+		  	tmp[4*i+k] = row_pointer[0][3*i+k];
     tmp += 4*jpg->width;
 	}
-	(void)jpeg_finish_decompress(&(jpg->dinfo));
+	// (void)jpeg_finish_decompress(&(jpg->dinfo));
 	jpeg_destroy_decompress(&(jpg->dinfo));
 	free(row_pointer[0]);
   fclose(jpg->f);

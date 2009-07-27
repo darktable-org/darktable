@@ -3,8 +3,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <jpeglib.h>
 #include <inttypes.h>
+// this fixes a rather annoying, long time bug in libjpeg :(
+#undef HAVE_STDLIB_H
+#undef HAVE_STDDEF_H
+#include <jpeglib.h>
+#undef HAVE_STDLIB_H
+#undef HAVE_STDDEF_H
 
 typedef struct dt_imageio_jpeg_t
 {

@@ -475,11 +475,15 @@ void *dt_control_expose(void *voidptr)
     darktable.control->width = width;
     darktable.control->height = height;
 
-    cairo_set_source_rgb (cr, .2, .2, .2);
+    // cairo_set_source_rgb (cr, .2, .2, .2);
+    cairo_set_source_rgb (cr, .25, .25, .25);
     cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
-    cairo_fill(cr);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 1.5);
+    cairo_set_source_rgb(cr, .1, .1, .1);
+    cairo_stroke(cr);
 
     cairo_save(cr);
     cairo_translate(cr, tb, tb);
