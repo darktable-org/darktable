@@ -21,11 +21,11 @@
 #ifdef HAVE_MAGICK
   #include <magick/MagickCore.h>
 #endif
-#include <libexif/exif-tag.h>
-#include <libexif/exif-content.h>
-#include <libexif/exif-data.h>
-#include <libexif/exif-loader.h>
-#include <libexif/exif-mnote-data.h>
+// #include <libexif/exif-tag.h>
+// #include <libexif/exif-content.h>
+// #include <libexif/exif-data.h>
+// #include <libexif/exif-loader.h>
+// #include <libexif/exif-mnote-data.h>
 // #include <exif-log.h>
 #include <string.h>
 #include <strings.h>
@@ -1119,7 +1119,6 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
   // TODO: libjpg/libpng export!
-  // TODO: get exif blob from exiv2 (adjust?) and pass on to jpeg writing.
 #ifdef HAVE_MAGICK
   dt_develop_t dev;
   dt_dev_init(&dev, 0);

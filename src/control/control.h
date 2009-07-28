@@ -37,7 +37,6 @@ void dt_control_gui_queue_draw();
 // called from core
 void dt_control_queue_draw_all();
 void dt_control_queue_draw(GtkWidget *widget);
-void dt_control_get_tonecurve(uint16_t *tonecurve, dt_ctl_image_settings_t *settings);
 void dt_control_add_history_item(int32_t num, const char *label);
 void dt_control_clear_history_items(int32_t num);
 void dt_control_update_recent_films();
@@ -81,7 +80,6 @@ typedef struct dt_control_t
   
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
-  dt_ctl_image_settings_t image_settings, image_defaults;
   pthread_mutex_t global_mutex, image_mutex;
 
   // job management

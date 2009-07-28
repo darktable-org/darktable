@@ -1,4 +1,5 @@
 bugs:
+- check for deleted images when opening a film roll!
 - sometimes redraw event is not cast during add history item or hist button.
 - import very slow (hdd lock with gui??)
 - check if there is a mem leak in jpg decompress.
@@ -11,15 +12,10 @@ performance:
 - try dt_iop std functions in parallel with openmp?
 
 cleanup:
-- remove magickcore (=>jpeg,png)
-- remove libexif    (=>exiv2)
+- keep stdout clean! (shut up exiv2 and jpg)
 - sorted image loading (on import)!
 - add some user guide documentation.
 - merge develop_view to develop
-- remove develop/iop_hsb.*
-- remove dt_ctl_image_settings_t
-- remove src/gui/curveeditor.*
-- width/height in metadata
 - progress bars for image folder import and image export
 - develop does not need (object local) gamma anymore
 - where to put ungamma table? 

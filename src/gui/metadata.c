@@ -44,6 +44,12 @@ void dt_gui_metadata_update()
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_datetime");
     gtk_label_set_text(GTK_LABEL(widget), img->exif_datetime_taken);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_width");
+    snprintf(lbl, 30, "%d", img->width);
+    gtk_label_set_text(GTK_LABEL(widget), lbl);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_height");
+    snprintf(lbl, 30, "%d", img->height);
+    gtk_label_set_text(GTK_LABEL(widget), lbl);
     dt_image_cache_release(img, 'r');
   }
   return;
@@ -63,6 +69,12 @@ fill_minuses:
   widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_iso");
   gtk_label_set_text(GTK_LABEL(widget), "-");
   widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_datetime");
+  gtk_label_set_text(GTK_LABEL(widget), "-");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_lens");
+  gtk_label_set_text(GTK_LABEL(widget), "-");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_width");
+  gtk_label_set_text(GTK_LABEL(widget), "-");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_height");
   gtk_label_set_text(GTK_LABEL(widget), "-");
   return;
 }

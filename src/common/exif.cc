@@ -166,6 +166,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
         != exifData.end() ) {
       dt_strlcpy_to_utf8(img->exif_model, 32, pos, exifData);
     }
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
+        != exifData.end() ) {
+      dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
+    }
 
     // std::cerr.rdbuf(savecerr);
 

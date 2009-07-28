@@ -123,11 +123,7 @@ void dt_ctl_settings_init(dt_control_t *s)
   s->global_settings.dev_gamma_linear = 0.1;
   s->global_settings.dev_gamma_gamma = 0.45;
   
-  s->image_settings.dev_gamma_linear = 0.1;
-  s->image_settings.dev_gamma_gamma = 0.45;
-
   memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
-  memcpy(&(s->image_defaults), &(s->image_settings), sizeof(dt_ctl_image_settings_t));
 }
 
 int dt_control_load_config(dt_control_t *c)

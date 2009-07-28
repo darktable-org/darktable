@@ -26,15 +26,6 @@
   strncpy(darktable.control->global_settings.attrib, x, n); \
   pthread_mutex_unlock(&(darktable.control->global_mutex))
   
-#define DT_CTL_GET_IMAGE(x, attrib) \
-  pthread_mutex_lock(&(darktable.control->image_mutex)); \
-  x = darktable.control->image_settings.attrib; \
-  pthread_mutex_unlock(&(darktable.control->image_mutex))
-
-#define DT_CTL_SET_IMAGE(attrib, x) \
-  pthread_mutex_lock(&(darktable.control->image_mutex)); \
-  darktable.control->image_settings.attrib = x; \
-  pthread_mutex_unlock(&(darktable.control->image_mutex))
 
 typedef enum dt_ctl_gui_mode_t
 {
@@ -127,12 +118,5 @@ typedef struct dt_ctl_settings_t
 dt_ctl_settings_t;
 
 enum dt_dev_zoom_t;
-// gui controlled per-image parameters
-typedef struct dt_ctl_image_settings_t
-{
-  // gamma correction
-  float dev_gamma_linear, dev_gamma_gamma;
-}
-dt_ctl_image_settings_t;
 
 #endif
