@@ -40,14 +40,14 @@ dt_image_lock_t;
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {
-  // minimal exif data here:
+  // minimal exif data here (all in multiples of 4-byte to interface nicely with c++):
   float exif_exposure;
   float exif_aperture;
   float exif_iso;
   float exif_focal_length;
-  char exif_maker[30];
-  char exif_model[30];
-  char exif_lens[50];
+  char exif_maker[32];
+  char exif_model[32];
+  char exif_lens[52];
   char exif_datetime_taken[20];
   char filename[512];
   // common stuff
@@ -72,6 +72,8 @@ dt_image_t;
 // image buffer operations:
 /** inits basic values to sensible defaults. */
 void dt_image_init(dt_image_t *img);
+/** returns the full path name where the image was imported from. */
+void dt_image_full_path(dt_image_t *img, char *pathname, int len);
 /** opens an image with minimal storage from the data base and stores it in image cache. */ 
 int dt_image_open(const int32_t id);
 int dt_image_open2(dt_image_t *img, const int32_t id);

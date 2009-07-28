@@ -36,7 +36,8 @@ int dt_exif_read(dt_image_t *img, const char* path)
   // std::streambuf *savecerr = std::cerr.rdbuf();
   // std::cerr.rdbuf(stderror.rdbuf());
 
-  try {
+  try
+  {
     Exiv2::Image::AutoPtr image;
     image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
@@ -51,73 +52,70 @@ int dt_exif_read(dt_image_t *img, const char* path)
 
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
     Exiv2::ExifData::iterator pos;
-#if 0
     /* Read shutter time */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureTime")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
-      uf->conf->shutter = pos->toFloat ();
+      // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
+      img->exif_exposure = pos->toFloat ();
     } else if ( (pos=exifData.findKey(
             Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
-      uf->conf->shutter = 1.0 / pos->toFloat ();
+      // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
+      img->exif_exposure = 1.0/pos->toFloat ();
     }
     /* Read aperture */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FNumber")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->apertureText, max_name, pos, exifData);
-      uf->conf->aperture = pos->toFloat ();
+      img->exif_aperture = pos->toFloat ();
     } else if ( (pos=exifData.findKey(
             Exiv2::ExifKey("Exif.Photo.ApertureValue")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->apertureText, max_name, pos, exifData);
-      uf->conf->aperture = pos->toFloat ();
+      img->exif_aperture = pos->toFloat ();
     }
     /* Read ISO speed */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ISOSpeedRatings")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(Exiv2::ExifKey(
               "Exif.CanonSi.ISOSpeed"))) != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon1.ISOSpeed")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon2.ISOSpeed")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.ISOSpeed")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(
             Exiv2::ExifKey("Exif.MinoltaCsNew.ISOSpeed")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(
             Exiv2::ExifKey("Exif.MinoltaCsOld.ISOSpeed")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(
             Exiv2::ExifKey("Exif.MinoltaCs5D.ISOSpeed")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     } else if ( (pos=exifData.findKey(Exiv2::ExifKey(
               "Exif.MinoltaCs7D.ISOSpeed")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->isoText, max_name, pos, exifData);
+      img->exif_iso = pos->toFloat ();
     }
     /* Read focal length */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FocalLength")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->focalLenText, max_name, pos, exifData);
-      uf->conf->focal_len = pos->toFloat ();
+      img->exif_focal_length = pos->toFloat ();
     }
+#if 0
     /* Read focal length in 35mm equivalent */
     if ( (pos=exifData.findKey(Exiv2::ExifKey(
               "Exif.Photo.FocalLengthIn35mmFilm")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->focalLen35Text, max_name, pos, exifData);
+      img->exif_focal_length = pos->toFloat ();
     }
 #endif
     /* Read lens name */
@@ -158,37 +156,17 @@ int dt_exif_read(dt_image_t *img, const char* path)
         != exifData.end() ) {
       uf_strlcpy_to_utf8(uf->conf->whiteBalanceText, max_name, pos, exifData);
     }
+#endif
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Make")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->real_make, max_name, pos, exifData);
+      dt_strlcpy_to_utf8(img->exif_maker, 32, pos, exifData);
     }
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Model")))
         != exifData.end() ) {
-      uf_strlcpy_to_utf8(uf->conf->real_model, max_name, pos, exifData);
+      dt_strlcpy_to_utf8(img->exif_model, 32, pos, exifData);
     }
-#endif
 
-#if 0 // TODO: use this to replace libexif during writing!
-    /* Store all EXIF data read in. */
-#if EXIV2_TEST_VERSION(0,17,91)		/* Exiv2 0.18-pre1 */
-    Exiv2::Blob blob;
-    Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
-    uf->inputExifBufLen = blob.size();
-    uf->inputExifBuf = g_new(unsigned char, uf->inputExifBufLen);
-    memcpy(uf->inputExifBuf, &blob[0], blob.size());
-#else
-    Exiv2::DataBuf buf(exifData.copy());
-    uf->inputExifBufLen = buf.size_;
-    uf->inputExifBuf = g_new(unsigned char, uf->inputExifBufLen);
-    memcpy(uf->inputExifBuf, buf.pData_, buf.size_);
-#endif
-    ufraw_message(UFRAW_SET_LOG, "EXIF data read using exiv2, buflen %d\n",
-        uf->inputExifBufLen);
-    g_strlcpy(uf->conf->exifSource, EXV_PACKAGE_STRING, max_name);
-
-    ufraw_message(UFRAW_SET_LOG, "%s\n", stderror.str().c_str());
-#endif
     // std::cerr.rdbuf(savecerr);
 
     // std::cout << "time c++: " << img->exif_datetime_taken << std::endl;
@@ -203,5 +181,46 @@ int dt_exif_read(dt_image_t *img, const char* path)
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;
     return 1;
+  }
+}
+
+int dt_exif_read_blob(void **buf, const char* path)
+{
+  try
+  {
+    *buf = NULL;
+    Exiv2::Image::AutoPtr image;
+    image = Exiv2::ImageFactory::open(path);
+    assert(image.get() != 0);
+    image->readMetadata();
+    Exiv2::ExifData &exifData = image->exifData();
+    if (exifData.empty())
+    {
+      std::string error(path);
+      error += ": no exif data found in the file";
+      throw Exiv2::Error(1, error);
+    }
+#if 1//EXIV2_TEST_VERSION(0,17,91)		/* Exiv2 0.18-pre1 */
+    Exiv2::Blob blob;
+    Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
+    const int length = blob.size();
+    *buf = malloc(length);
+    memcpy(buf, &blob[0], blob.size());
+#else
+    Exiv2::DataBuf buf(exifData.copy());
+    const int length = buf.size_;
+    *buf = malloc(length);
+    memcpy(buf, buf.pData_, buf.size_);
+#endif
+    return length;
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    free(*buf);
+    *buf = NULL;
+    // std::cerr.rdbuf(savecerr);
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return 0;
   }
 }

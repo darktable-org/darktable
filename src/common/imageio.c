@@ -831,6 +831,7 @@ error_magick_mip4:
   int ret = 0;
   dt_imageio_preview_write(img, DT_IMAGE_MIP4);
   if(dt_image_update_mipmaps(img)) ret = 1;
+  dt_image_release(img, DT_IMAGE_MIP4, 'r');
   
   return ret;
 #endif
@@ -1261,6 +1262,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
     buf8[4*k+2] = tmp;
   }
 
+#if 0
   // TODO: use exiv2!
   // set image properties!
   ExifRational rat;
@@ -1331,6 +1333,14 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
   exif_data_free(exif_data);
+#else
+  // exiv2
+  int length;
+  uint8_t *exif_profile;
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
+  length = dt_exif_read_blob((void **)&exif_profile, pathname);
+#endif
 
   if(dt_imageio_jpeg_write(filename, buf8, wd, ht, 97, exif_profile, length))
   {

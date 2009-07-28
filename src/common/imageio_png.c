@@ -47,7 +47,7 @@ int dt_imageio_png_write(const char *filename, const uint8_t *in, const int widt
 
   png_write_info(png_ptr, info_ptr);
 
-  png_bytep row_pointer = (png_bytep) buffer;
+  png_bytep row_pointer = (png_bytep) in;
   unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
   for (int y = 0; y < height; y++)
@@ -63,109 +63,122 @@ int dt_imageio_png_write(const char *filename, const uint8_t *in, const int widt
 }
 
 
-#if 0
 int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 {
+  png->f = fopen(filename, "rb");
+
+  if(!png->f) return 1;
+
+  const unsigned int NUM_BYTES_CHECK = 8;
+  png_byte dat[NUM_BYTES_CHECK];
+
+  fread(dat, 1, NUM_BYTES_CHECK, png->f);
+
+  if (png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK))
+  {
+	  fclose(png->f);
+    return 1;
+  }
+
+  png->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+  if (!png->png_ptr)
+  {
+    fclose(png->f);
+    return 1;
+  }
+
+  png->info_ptr = png_create_info_struct(png->png_ptr);
+  if (!png->info_ptr)
+  {
+    fclose(png->f);
+    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    return 1;
+  }
+
+  if (setjmp(png_jmpbuf(png->png_ptr)))
+  {
+    fclose(png->f);
+    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    return 1;
+  }
+
+  png_init_io(png->png_ptr, png->f);
+
+  // we checked some bytes
+  png_set_sig_bytes(png->png_ptr, NUM_BYTES_CHECK);
+
+  // image info
+  png_read_info(png->png_ptr, png->info_ptr);
+
+  uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
+  uint32_t color_type = png_get_color_type(png->png_ptr, png->info_ptr);
+
+  // image input transformations
+
+  // palette => rgb
+  if (color_type == PNG_COLOR_TYPE_PALETTE)
+    png_set_palette_to_rgb(png->png_ptr);
+
+  // 1, 2, 4 bit => 8 bit
+  if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+    png_set_gray_1_2_4_to_8(png->png_ptr);
+
+  // strip alpha channel
+  if (color_type & PNG_COLOR_MASK_ALPHA)
+    png_set_strip_alpha(png->png_ptr);
+
+  // grayscale => rgb
+  if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+	png_set_gray_to_rgb(png->png_ptr);
+
+  png->bytespp = 3*bit_depth/8;
+  png->width  = png_get_image_width(png->png_ptr, png->info_ptr);
+  png->height = png_get_image_height(png->png_ptr, png->info_ptr);
+
+  return 0;
 }
+
+int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
+{
+  if (setjmp(png_jmpbuf(png->png_ptr)))
+  {
+    fclose(png->f);
+    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    return 1;
+  }
+  uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
+  // strip down to 8 bit channels
+  if (bit_depth == 16) 
+    png_set_strip_16(png->png_ptr);
+
+  return 0;
+}
+
 int dt_imageio_png_read(dt_imageio_png_t *png, uint8_t *out)
 {
-    FILE *input = fopen(filename, "rb");
+  if (setjmp(png_jmpbuf(png->png_ptr)))
+  {
+    fclose(png->f);
+    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    return 1;
+  }
+  // reflect changes
+  png_read_update_info(png->png_ptr, png->info_ptr);
 
-    if (!input) { // file open?
-	cerr << "[makeTexturePNG] Could not open " << filename << "!" << endl;
-	fclose(input);
-	return;
-    }
+  png_bytep row_pointer = (png_bytep) out;
+  unsigned long rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
 
-    // check if it's PNG
-    const unsigned int NUM_BYTES_CHECK = 8;
-    png_byte dat[NUM_BYTES_CHECK];
+  for (int y = 0; y < png->height; y++)
+  {
+  	png_read_row(png->png_ptr, row_pointer, NULL);
+	  row_pointer += rowbytes;
+  }
 
-    fread(dat, 1, NUM_BYTES_CHECK, input);
+  png_read_end(png->png_ptr, png->info_ptr);
+  png_destroy_read_struct(&png->png_ptr, &png->info_ptr, png_infopp_NULL);
 
-    if (png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK)) {
-	cerr << "[makeTexturePNG] " << filename << " doesn't appear to be an PNG file." << endl;
-	fclose(input);
-	return;
-    }
-
-    // init structs
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-    if (!png_ptr) {
-	fclose(input);
-	return;
-    }
-
-    png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr) {
-	fclose(input);
-	png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
-	return;
-    }
-
-    if (setjmp(png_jmpbuf(png_ptr))) {
-	fclose(input);
-	png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
-	return;
-    }
-
-    png_init_io(png_ptr, input);
-
-    // we checked some bytes
-    png_set_sig_bytes(png_ptr, NUM_BYTES_CHECK);
-
-    // image info
-    png_read_info(png_ptr, info_ptr);
-
-    unsigned int bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-    unsigned int color_type = png_get_color_type(png_ptr, info_ptr);
-
-    // image input transformations
-    
-    // palette => rgb
-    if (color_type == PNG_COLOR_TYPE_PALETTE)
-        png_set_palette_to_rgb(png_ptr);
-
-    // 1, 2, 4 bit => 8 bit
-    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-	png_set_gray_1_2_4_to_8(png_ptr);
-
-    // strip down to 8 bit channels
-    if (bit_depth == 16) 
-        png_set_strip_16(png_ptr);
-
-    // strip alpha channel
-    if (color_type & PNG_COLOR_MASK_ALPHA)
-        png_set_strip_alpha(png_ptr);
-
-    // grayscale => rgb
-    if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-	png_set_gray_to_rgb(png_ptr);
-
-    // reflect changes
-    png_read_update_info(png_ptr, info_ptr);
-
-    texWidth = png_get_image_width(png_ptr, info_ptr);
-    texHeight = png_get_image_height(png_ptr, info_ptr);
-
-    // allocate buffer memory
-    texture = new unsigned char[texWidth * texHeight * 3];
-
-    // read one row at a time
-    png_bytep row_pointer = (png_bytep) texture;
-    unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-
-    for (int y = 0; y < texHeight; y++) {
-	png_read_row(png_ptr, row_pointer, NULL); // read into buffer data
-
-	row_pointer += rowbytes; // increment pointer to data
-    }
-
-    png_read_end(png_ptr, info_ptr);
-
-    png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
-
-    fclose(input);
+  fclose(png->f);
+  return 0;
 }
-#endif
+

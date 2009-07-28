@@ -12,6 +12,26 @@
 #include <stdlib.h>
 #include <assert.h>
 
+void dt_image_full_path(dt_image_t *img, char *pathname, int len)
+{
+  if(darktable.library->film->id == img->film_id)
+  {
+    snprintf(pathname, len, "%s/%s", darktable.library->film->dirname, img->filename);
+  }
+  else
+  {
+    int rc;
+    sqlite3_stmt *stmt;
+    rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, img->film_id);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      snprintf(pathname, len, "%s/%s", (char *)sqlite3_column_text(stmt, 0), img->filename);
+    }
+    rc = sqlite3_finalize(stmt);
+  }
+}
+
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
   const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->width), DT_IMAGE_WINDOW_SIZE/(float)(img->height));

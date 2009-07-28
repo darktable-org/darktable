@@ -13,7 +13,9 @@ extern "C"
 /** read exif data from file with full path name, store to image struct. returns 0 on success. */
 int dt_exif_read(dt_image_t *img, const char* path);
 
-// TODO: write exif to blob, pass on to png/jpg write.
+/** write exif to blob, return length in bytes. use free() to get rid of blob again. */
+int dt_exif_read_blob(void **blob, const char* path);
+
 #ifdef __cplusplus
 }
 #endif

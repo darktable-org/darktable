@@ -9,7 +9,10 @@
 typedef struct dt_imageio_png_t
 {
   int width, height;
+  int bytespp;
   FILE *f;
+  png_structp png_ptr;
+  png_infop info_ptr;
 }
 dt_imageio_png_t;
 
@@ -20,4 +23,6 @@ int dt_imageio_png_write(const char *filename, const uint8_t *in, const int widt
 int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png);
 /** reads the png to the (sufficiently allocated) buffer, closes file. */
 int dt_imageio_png_read(dt_imageio_png_t *png, uint8_t *out);
+/** if called directly after read_header, will strip 16-bit content of png down to 8-bit output. */
+int dt_imageio_png_read_assure_8(dt_imageio_png_t *png);
 #endif
