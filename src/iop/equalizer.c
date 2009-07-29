@@ -53,7 +53,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // printf("transformed\n");
   // store luma wavelet histogram for later drawing
-  if(piece->iscale == 1.0 && self->dev->preview_pipe) // 1.0 => full pipe, only for gui applications.
+  if(piece->iscale == 1.0 && self->dev->preview_pipe && c) // 1.0 => full pipe, only for gui applications.
   { // chose full pipe and current window.
     int cnt[DT_IOP_EQUALIZER_BANDS];
     for(int i=0;i<DT_IOP_EQUALIZER_BANDS;i++) cnt[i] = 0;
@@ -63,7 +63,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const int band = CLAMP(.5f + (1.0 - lv / d->num_levels) * (DT_IOP_EQUALIZER_BANDS), 0, DT_IOP_EQUALIZER_BANDS);
       c->band_hist[band] = 0.0f;
       cnt[band]++;
-      int ch = 0;
+      int ch = (int)c->channel;
       {
         const int step = 1<<l;
         for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) c->band_hist[band] += out[3*width*j + 3*i + ch]*out[3*width*j + 3*i + ch];
