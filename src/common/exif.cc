@@ -208,8 +208,9 @@ int dt_exif_read_blob(uint8_t *buf, const char* path)
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
     const int length = blob.size();
+    memcpy(buf, "Exif\000\000", 6);
     if(length > 0 && length < 65534)
-      memcpy(buf, &blob[0], length);
+      memcpy(buf+6, &(blob[0]), length);
 #else
     Exiv2::DataBuf buf(exifData.copy());
     const int length = buf.size_;
