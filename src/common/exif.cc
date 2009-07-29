@@ -188,11 +188,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
 }
 
-int dt_exif_read_blob(void **buf, const char* path)
+int dt_exif_read_blob(uint8_t *buf, const char* path)
 {
   try
   {
-    *buf = NULL;
     Exiv2::Image::AutoPtr image;
     image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
@@ -201,27 +200,25 @@ int dt_exif_read_blob(void **buf, const char* path)
     if (exifData.empty())
     {
       std::string error(path);
-      error += ": no exif data found in the file";
+      error += ": no exif data found in ";
+      error += path;
       throw Exiv2::Error(1, error);
     }
 #if 1//EXIV2_TEST_VERSION(0,17,91)		/* Exiv2 0.18-pre1 */
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
     const int length = blob.size();
-    *buf = malloc(length);
-    memcpy(buf, &blob[0], blob.size());
+    if(length > 0 && length < 65534)
+      memcpy(buf, &blob[0], length);
 #else
     Exiv2::DataBuf buf(exifData.copy());
     const int length = buf.size_;
-    *buf = malloc(length);
     memcpy(buf, buf.pData_, buf.size_);
 #endif
     return length;
   }
   catch (Exiv2::AnyError& e)
   {
-    free(*buf);
-    *buf = NULL;
     // std::cerr.rdbuf(savecerr);
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;

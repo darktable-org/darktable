@@ -47,13 +47,14 @@ int dt_imageio_png_write(const char *filename, const uint8_t *in, const int widt
 
   png_write_info(png_ptr, info_ptr);
 
-  png_bytep row_pointer = (png_bytep) in;
-  unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+  // png_bytep row_pointer = (png_bytep) in;
+  png_byte row[3*width];
+  // unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
   for (int y = 0; y < height; y++)
   {
-    png_write_row(png_ptr, row_pointer);
-    row_pointer += rowbytes;
+    for(int x=0;x<width;x++) for(int k=0;k<3;k++) row[3*x+k] = in[4*width*y + 4*x + k];
+    png_write_row(png_ptr, row);
   }	
 
   png_write_end(png_ptr, info_ptr);

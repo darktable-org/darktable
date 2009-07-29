@@ -4,6 +4,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
+#include "common/imageio_png.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -16,17 +17,9 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <assert.h>
-#ifdef HAVE_MAGICK
-  #include <magick/MagickCore.h>
-#endif
-// #include <libexif/exif-tag.h>
-// #include <libexif/exif-content.h>
-// #include <libexif/exif-data.h>
-// #include <libexif/exif-loader.h>
-// #include <libexif/exif-mnote-data.h>
-// #include <exif-log.h>
 #include <string.h>
 #include <strings.h>
 
@@ -777,7 +770,6 @@ error_magick_mip4:
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return 1;
 #else
-  // TODO: get exif from exiv2!
   img->shrink = 0;
   img->orientation = 0;
 
@@ -988,7 +980,6 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return 0;
 #else
-  // TODO: read more exiv2!
   img->shrink = 0;
   img->orientation = 0;
 
@@ -1118,7 +1109,6 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
-  // TODO: libjpg/libpng export!
 #ifdef HAVE_MAGICK
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -1253,6 +1243,11 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
+  const char *suffix = pathname + strlen(pathname) - 3;
+  int export_png = 0;
+  if(suffix > pathname && strncmp(suffix, "png", 3) == 0) export_png = 1;
   uint8_t *buf8 = pipe.backbuf;
   for(int k=0;k<wd*ht;k++)
   {
@@ -1261,96 +1256,19 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
     buf8[4*k+2] = tmp;
   }
 
-#if 0
-  // TODO: use exiv2!
-  // set image properties!
-  ExifRational rat;
   int length;
-  uint8_t *exif_profile;
-  ExifData *exif_data = exif_data_new();
-  exif_data_set_byte_order(exif_data, EXIF_BYTE_ORDER_INTEL);
-  ExifContent *exif_content = exif_data->ifd[0];
-  ExifEntry *entry;
+  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+  length = dt_exif_read_blob(exif_profile, pathname);
 
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_MAKE);
-  entry->components = strlen (img->exif_maker) + 1;
-  entry->format = EXIF_FORMAT_ASCII;
-  entry->size = exif_format_get_size (entry->format) * entry->components;
-  entry->data = realloc(entry->data, entry->size);
-  strncpy((char *)entry->data, img->exif_maker, entry->components);
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_MODEL);
-  entry->components = strlen (img->exif_model) + 1;
-  entry->format = EXIF_FORMAT_ASCII;
-  entry->size = exif_format_get_size (entry->format) * entry->components;
-  entry->data = realloc(entry->data, entry->size);
-  strncpy((char *)entry->data, img->exif_model, entry->components);
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_DATE_TIME_ORIGINAL);
-  entry->components = 20;
-  entry->format = EXIF_FORMAT_ASCII;
-  entry->size = exif_format_get_size (entry->format) * entry->components;
-  entry->data = realloc(entry->data, entry->size);
-  strncpy((char *)(entry->data), img->exif_datetime_taken, entry->components);
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_ISO_SPEED_RATINGS);
-  exif_set_short(entry->data, EXIF_BYTE_ORDER_INTEL, (int16_t)(img->exif_iso));
-  entry->size = 2;
-  entry->components = 1;
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_FNUMBER);
-  dt_imageio_to_fractional(img->exif_aperture, &rat.numerator, &rat.denominator);
-  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
-  entry->size = 8;
-  entry->components = 1;
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_EXPOSURE_TIME);
-  dt_imageio_to_fractional(img->exif_exposure, &rat.numerator, &rat.denominator);
-  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
-  entry->size = 8;
-  entry->components = 1;
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_FOCAL_LENGTH);
-  dt_imageio_to_fractional(img->exif_focal_length, &rat.numerator, &rat.denominator);
-  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
-  entry->size = 8;
-  entry->components = 1;
-
-  exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
-  exif_data_free(exif_data);
-#else
-  // exiv2
-  int length;
-  uint8_t *exif_profile;
-  char pathname[1024];
-  dt_image_full_path(img, pathname, 1024);
-  length = dt_exif_read_blob((void **)&exif_profile, pathname);
-#endif
-
-  if(dt_imageio_jpeg_write(filename, buf8, wd, ht, 97, exif_profile, length))
+  if((!export_png && dt_imageio_jpeg_write(filename, buf8, wd, ht, 97, exif_profile, length)) ||
+     ( export_png && dt_imageio_png_write (filename, buf8, wd, ht)))
   {
     dt_dev_pixelpipe_cleanup(&pipe);
     dt_dev_cleanup(&dev);
-    free(exif_profile);
     return 1;
   }
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  free(exif_profile);
   return 0;
 #endif
 }

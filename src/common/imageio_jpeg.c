@@ -161,7 +161,7 @@ int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int wid
   jpeg_set_linear_quality(&(jpg.cinfo), quality, TRUE);
 	jpeg_start_compress(&(jpg.cinfo), TRUE);
 
-  if(exif && exif_len < 65534)
+  if(exif && exif_len > 0 && exif_len < 65534)
     jpeg_write_marker(&(jpg.cinfo), JPEG_APP0+1, exif, exif_len);
 
   uint8_t row[3*width];

@@ -30,6 +30,7 @@ void dt_image_full_path(dt_image_t *img, char *pathname, int len)
     }
     rc = sqlite3_finalize(stmt);
   }
+  pathname[len-1] = '\0';
 }
 
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
