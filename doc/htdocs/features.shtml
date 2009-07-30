@@ -34,6 +34,7 @@
     	<img src="images/moon.jpg" alt="todo" class="img" /><h1>scheduled features</h1>
       <ul>
         <li>lensfun support</li>
+        <li>color profile management</li>
         <li>image tagging, sorting and filtering by tag system</li>
         <li>database format freeze for future compatibility of tag data</li>
         <li>...?</li>

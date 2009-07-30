@@ -11,19 +11,34 @@
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/5.png" alt="5" width="142px" /></span><div class="headline"><img src="documentation.png" alt="documentation" width="324px"/></div>
     	<div class="starterText">
-      none yet.
+      only a small doc about the new <em>equalizer</em> tool, as it is a bit exotic. you can use it to smooth your images
+      in an edge-aware way (similar to a bilateral filter, but a lot faster), do this on the color channels (i.e. remove high iso sensor noise),
+      or do the inverse and selectively accentuate a particular frequency range (enhance detail, sharpen). algorithmically, it is based on
+      <em>edge-avoiding wavelets</em>.
     	</div>
-      <div class="listtext">
-    	<img src="images/ice.jpg" class="img" alt="dreggn" /><h1>known issues</h1>
-      <ul>
-       <li>we found some versions of image magick to cause problems. in particular there
-           was a problem with a funnily linked libpng in gs in turn linked to by image magick
-           on arch linux (thanks to chressie for pointing this out).</li>
-       <li>some openmp implementations seem unstable (as observed with gcc-4.3.2 on gentoo causing image magick to use openmp).
-           try to configure with something like <code>CC=gcc-4.2 CXX=g++-4.2 ./configure</code>
-           if this doesn't work, re-emerge image magick without openmp support :( (i'm working on it...)</li>
-      </ul>
+      <div class="text">
+    	<a href="images/eaw_original.jpg"><img src="images/eaw_original_small.jpg" class="bigimg" alt="dreggn" /></a><h1>equalizer example: detail smoothing/enhancement</h1>
+      this is the original image, the button with <em>original</em> on it (in the history expander) has just been pressed. so the equalizer tool is
+      switched off and all curves are a straight line const = 1. left are the lowest frequencies (big holes), right are the highest (tiny holds).
+      the curve gives the number with which the frequency band is multiplied. lower half (smaller than one) attenuates, upper half will increase
+      the value. the histogram in the back indicates the mean power for the given band in the current view of the image and the currently
+      selected color channel.
     	</div>
+      <div class="text">
+    	<a href="images/eaw_smooth.jpg"><img src="images/eaw_smooth_small.jpg" class="bigimg" alt="dreggn" /></a>
+      to enhance the climbing skills, you could make some holds disappear by pulling down the luminance curve (Y). you can
+      increase/decrease the area of influence of your pointer (indicated by the circle) using the mouse wheel, similar to
+      blenders proportional edit.</br>
+      note how the sharp edges (arm, leg) are preserved.
+      </div>
+      <div class="text">
+    	<a href="images/eaw_sharpen.jpg"><img src="images/eaw_sharpen_small.jpg" class="bigimg" alt="dreggn" /></a>
+      contrary, it might look better if the rock had a sharper, high-contrast look. to accentuate holds of a certain size,
+      pull up the Y-curve over the middle at a certain position.
+      </div>
+      <div class="text">
+      still this is really just a programmer's example, suggestions welcome.
+      </div>
 
     </div> <!-- page -->
     <!--#include virtual="footer.html" -->
