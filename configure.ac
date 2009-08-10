@@ -22,8 +22,11 @@ if test "$enable_gegl" = "yes"; then
 else
    AC_MSG_RESULT([no])
 fi
-dnl ***  disabled because of strange libgomp.so crashes: :(
-AC_OPENMP
+dnl ***  disabled because of strange libgomp.so crashes for gcc < 4.4: :(
+AX_GCC_VERSION([4], [4], [0], try_openmp="yes", try_openmp="no")
+if test "$try_openmp" = "yes"; then
+    AC_OPENMP
+fi
 AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG([0.22])
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14)
