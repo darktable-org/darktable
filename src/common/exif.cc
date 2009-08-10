@@ -1,4 +1,7 @@
 
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
 #include "common/exif.h"
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
@@ -99,16 +102,16 @@ int dt_exif_read(dt_image_t *img, const char* path)
     } else if ( (pos=exifData.findKey(
             Exiv2::ExifKey("Exif.MinoltaCs5D.ISOSpeed")))
         != exifData.end() ) {
-      img->exif_iso = pos->toFloat ();
+      img->exif_iso = pos->toFloat();
     } else if ( (pos=exifData.findKey(Exiv2::ExifKey(
               "Exif.MinoltaCs7D.ISOSpeed")))
         != exifData.end() ) {
-      img->exif_iso = pos->toFloat ();
+      img->exif_iso = pos->toFloat();
     }
     /* Read focal length */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FocalLength")))
         != exifData.end() ) {
-      img->exif_focal_length = pos->toFloat ();
+      img->exif_focal_length = pos->toFloat();
     }
 #if 0
     /* Read focal length in 35mm equivalent */
@@ -118,6 +121,11 @@ int dt_exif_read(dt_image_t *img, const char* path)
       img->exif_focal_length = pos->toFloat ();
     }
 #endif
+    /** read image orientation */
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation")))
+        != exifData.end() ) {
+      img->orientation = pos->toLong();
+    }
     /* Read lens name */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Lens")))
         != exifData.end() )
@@ -204,6 +212,9 @@ int dt_exif_read_blob(uint8_t *buf, const char* path)
       error += path;
       throw Exiv2::Error(1, error);
     }
+    exifData["Exif.Image.Orientation"] = uint16_t(0);
+    exifData["Exif.Photo.UserComment"]
+        = "developed using "PACKAGE_NAME"-"PACKAGE_VERSION;
 #if 1//EXIV2_TEST_VERSION(0,17,91)		/* Exiv2 0.18-pre1 */
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);

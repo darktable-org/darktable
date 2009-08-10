@@ -818,10 +818,10 @@ id</property>
                     <child>
                       <widget class="GtkComboBox" id="export_format">
                         <property name="visible">True</property>
-                        <property name="items" translatable="yes">float pfm
+                        <property name="items" translatable="yes">8-bit jpg
+8-bit png
 16-bit ppm
-8-bit jpg
-8-bit png</property>
+float pfm</property>
                       </widget>
                       <packing>
                         <property name="padding">5</property>

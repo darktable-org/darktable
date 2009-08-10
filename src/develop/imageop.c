@@ -59,8 +59,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
   uint64_t hash = 5381;
   module->commit_params(module, params, pipe, piece);
   const char *str = (const char *)params;
-  for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
-  if(piece->enabled) hash = ((hash << 5) + hash) ^ 13;
+  if(piece->enabled)
+    for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
   piece->hash = hash;
 }
 

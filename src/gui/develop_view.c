@@ -126,9 +126,10 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   cairo_surface_t *surface = NULL;
 
    
-  // printf("develop_view draw timestamp pass: %d\n", dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp);
+  printf("develop_view draw timestamp pass: %d\n", dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp);
   if(dev->image_dirty && !dev->preview_dirty)
   { // draw preview
+    printf("drawing preview\n");
     mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
     // wd = dev->capwidth_preview;
@@ -189,7 +190,7 @@ void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height
   }
   else if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
-    // printf("develop_view draw full\n");
+    printf("develop_view draw full\n");
     mutex = &dev->pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
     wd = dev->capwidth;

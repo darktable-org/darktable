@@ -737,6 +737,19 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   int8_t bit;
   GtkWidget *widget;
 
+  widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
+  dt_lib_filter_t filter;
+  DT_CTL_GET_GLOBAL(filter, lib_filter);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)filter);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
+  dt_lib_sort_t sort;
+  DT_CTL_GET_GLOBAL(sort, lib_sort);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "export_format");
+  dt_dev_export_format_t format;
+  DT_CTL_GET_GLOBAL(format, dev_export_format);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)format);
+
   DT_CTL_GET_GLOBAL(bit, gui_left);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
   if(bit & (1<<mode)) gtk_widget_show(widget);

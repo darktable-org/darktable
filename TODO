@@ -1,19 +1,14 @@
 bugs:
-- equalizer sometimes hits boundary in j<<(l-1) loop.
-- export does not automatically rotate images
-- redraw update when changing e.g. equalizer.
+- aoe, keys not working anymore!
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
-- sometimes redraw event is not cast during add history item or hist button.
-- import very slow (hdd lock with gui??)
+- sometimes redraw event is not cast during add history item or hist button. (2nd image, cache filled, on/off prob?)
+- import very slow (hdd lock with gui??) on nfs homes
+- import starts 3 threads but seems to be mono-core?
 - check if there is a mem leak in jpg decompress.
 - open_raw has img cleaned up before finished during dt_exit
-- import starts 3 threads but seems to be mono-core?
 - zoom to wrong image bug: resize window helps (???)
-
-performance:
-- parallel iop->processing (seems to be fast enough mono-core)?
-- try dt_iop std functions in parallel with openmp?
+- glist instead of sql query in export (or else altering selection after pressing export will change the behavior)
 
 cleanup:
 - keep stdout clean! (shut up exiv2 and jpg)
@@ -29,6 +24,11 @@ cleanup:
 - save gui settings (expanded etc?) in operation stacks
 
 0.3 roadmap:
+- post-gamma crop/rotate plug-in:
+  - need mouse interface and draw hook
+  - draw 3x3 lines or similar
+  - move image around in crop window with darkened borders?
+- editable metadata (at least what's needed for lensfun..)
 - equalizer tutorial in documentation
 - translations (de, etc)
 - copy function in lib:
@@ -76,6 +76,7 @@ bugs:
  - import folder file chooser sometimes not sized appropriately
 
 feature requests:
+ - bzip2 compressed content
  - offline media reference in db
  - image variants (different history etc, new image with same source)
  - pizza button.

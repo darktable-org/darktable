@@ -13,13 +13,14 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
   int ch = 0;
   // store weights for luma channel only, chroma uses same basis.
   memset(weight_a[l], 0, sizeof(float)*wd*ht);
-  for(int j=0;j<ht;j++) for(int i=0;i<wd;i++) weight_a[l][j*wd+i] = gbuf(buf, i<<(l-1), j<<(l-1));
+  for(int j=0;j<ht-1;j++) for(int i=0;i<wd-1;i++) weight_a[l][j*wd+i] = gbuf(buf, i<<(l-1), j<<(l-1));
 
   const int step = 1<<l;
   const int st = step/2;
 
-  // omp does not seem to go well with pthreads or magic openmp?
-// #pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
+#endif
   for(int j=0;j<height;j++)
   { // rows
     // precompute weights:
@@ -37,7 +38,9 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
       gbuf(buf, i, j) += (tmp[i-st]*gbuf(buf, i-st, j) + tmp[i]*gbuf(buf, i+st, j))
         /(2.0*(tmp[i-st] + tmp[i]));
   }
-// #pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
+#endif
   for(int i=0;i<width;i++)
   { // cols
     // precompute weights:
@@ -63,7 +66,9 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
   const int st = step/2;
   const int wd = (int)(1 + (width>>(l-1)));
 
-// #pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
+#endif
   for(int i=0;i<width;i++)
   { //cols
     float tmp[height];
@@ -80,7 +85,9 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
         /(tmp[j-st] + tmp[j]);
     if(j < height) for(int ch=0;ch<3;ch++) gbuf(buf, i, j) += gbuf(buf, i, j-st);
   }
-// #pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
+#endif
   for(int j=0;j<height;j++)
   { // rows
     float tmp[width];

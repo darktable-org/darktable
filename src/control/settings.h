@@ -65,20 +65,20 @@ dt_dev_export_format_t;
 typedef enum dt_lib_filter_t
 {
   DT_LIB_FILTER_ALL = 0,
-  DT_LIB_FILTER_STAR_1 = 1,
-  DT_LIB_FILTER_STAR_2 = 2,
-  DT_LIB_FILTER_STAR_3 = 3,
-  DT_LIB_FILTER_STAR_4 = 4,
-  DT_LIB_FILTER_STAR_NO = 5
+  DT_LIB_FILTER_STAR_NO = 1,
+  DT_LIB_FILTER_STAR_1 = 2,
+  DT_LIB_FILTER_STAR_2 = 3,
+  DT_LIB_FILTER_STAR_3 = 4,
+  DT_LIB_FILTER_STAR_4 = 5
 }
 dt_lib_filter_t;
 
 typedef enum dt_lib_sort_t
 {
-  DT_LIB_SORT_FILENAME,
-  DT_LIB_SORT_DATETIME,
-  DT_LIB_SORT_RATING,
-  DT_LIB_SORT_ID
+  DT_LIB_SORT_FILENAME = 0,
+  DT_LIB_SORT_DATETIME = 1,
+  DT_LIB_SORT_RATING = 2,
+  DT_LIB_SORT_ID = 3
 }
 dt_lib_sort_t;
 

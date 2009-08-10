@@ -190,7 +190,7 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
     rc = sqlite3_bind_int  (stmt, 1, lib->film->id);
     rc = sqlite3_bind_int  (stmt, 2, offset);
     rc = sqlite3_bind_int  (stmt, 3, max_cols);
-    if(filter != DT_LIB_FILTER_STAR_NO) rc = sqlite3_bind_int  (stmt, 4, filter);
+    if(filter != DT_LIB_FILTER_STAR_NO) rc = sqlite3_bind_int  (stmt, 4, filter-1);
     for(int col = 0; col < max_cols; col++)
     {
       if(sqlite3_step(stmt) == SQLITE_ROW)
