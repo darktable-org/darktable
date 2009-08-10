@@ -1,4 +1,6 @@
 bugs:
+- equalizer sometimes hits boundary in j<<(l-1) loop.
+- export does not automatically rotate images
 - redraw update when changing e.g. equalizer.
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
