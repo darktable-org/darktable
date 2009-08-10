@@ -1,4 +1,6 @@
 bugs:
+- redraw update when changing e.g. equalizer.
+- can't create export folder=>crash
 - check for deleted images when opening a film roll!
 - sometimes redraw event is not cast during add history item or hist button.
 - import very slow (hdd lock with gui??)
