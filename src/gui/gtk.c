@@ -217,6 +217,16 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 }
 
 static void
+export_quality_changed (GtkRange *range, gpointer user_data)
+{
+  GtkWidget *widget;
+  int quality = (int)gtk_range_get_value(range);
+  DT_CTL_SET_GLOBAL(dev_export_quality, quality);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(widget);
+}
+
+static void
 zoom (GtkRange *range, gpointer user_data)
 {
   GtkWidget *widget;
@@ -374,6 +384,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "export_button");
   g_signal_connect (G_OBJECT (widget), "clicked",
                     G_CALLBACK (export_button_clicked),
+                    (gpointer)0);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "export_quality");
+  g_signal_connect (G_OBJECT (widget), "value-changed",
+                    G_CALLBACK (export_quality_changed),
                     (gpointer)0);
 
   // image filtering/sorting

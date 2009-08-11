@@ -93,6 +93,7 @@ typedef struct dt_ctl_settings_t
   dt_dev_operation_t dev_op; // currently active op
   dt_dev_operation_params_t dev_op_params; // params for currently active op
   dt_dev_export_format_t dev_export_format;
+  int dev_export_quality;
 
   // library
   float lib_zoom, lib_zoom_x, lib_zoom_y;

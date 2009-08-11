@@ -813,31 +813,74 @@ id</property>
                 <property name="can_focus">True</property>
                 <property name="spacing">10</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox4">
+                  <widget class="GtkVBox" id="vbox1">
                     <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <widget class="GtkComboBox" id="export_format">
+                      <widget class="GtkHBox" id="hbox1">
                         <property name="visible">True</property>
-                        <property name="items" translatable="yes">8-bit jpg
-8-bit png
-16-bit ppm
-float pfm</property>
+                        <child>
+                          <widget class="GtkLabel" id="label7">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="xpad">5</property>
+                            <property name="label" translatable="yes">quality</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkHScale" id="export_quality">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="adjustment">94 0 100 1 10 0</property>
+                            <property name="digits">0</property>
+                            <property name="value_pos">left</property>
+                          </widget>
+                          <packing>
+                            <property name="padding">5</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
-                        <property name="padding">5</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkButton" id="export_button">
-                        <property name="label" translatable="yes">export</property>
+                      <widget class="GtkHBox" id="hbox4">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <child>
+                          <widget class="GtkComboBox" id="export_format">
+                            <property name="visible">True</property>
+                            <property name="items" translatable="yes">8-bit jpg
+8-bit png
+16-bit ppm
+float pfm</property>
+                          </widget>
+                          <packing>
+                            <property name="padding">5</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkButton" id="export_button">
+                            <property name="label" translatable="yes">export</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="padding">5</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
                         <property name="padding">5</property>
                         <property name="position">1</property>
                       </packing>

@@ -37,4 +37,7 @@ int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint
 /** invalidates all cachelines. */
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
 
+/** print out cache lines/hashes (debug). */
+void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache);
+
 #endif

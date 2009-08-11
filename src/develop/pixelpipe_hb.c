@@ -48,7 +48,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->backbuf = NULL;
   pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_dev_pixelpipe_cleanup_nodes(pipe);
-  pipe->nodes = NULL;
   dt_dev_pixelpipe_cache_cleanup(&(pipe->cache));
 }
 
@@ -62,10 +61,12 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     piece->module->cleanup_pipe(piece->module, pipe, piece);
     nodes = g_list_next(nodes);
   }
+  pipe->nodes = NULL;
 }
 
 void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
+  assert(pipe->nodes == NULL);
   // for all modules in dev:
   GList *modules = dev->iop;
   while(modules)
@@ -185,7 +186,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   uint64_t hash = dt_dev_pixelpipe_cache_hash(dev->image->id, scale, x, y, pipe, pos);
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
-    if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
+    // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
     if(pos == 0) (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
     else         (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     return 0;
@@ -217,7 +218,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, x, y, width, height, scale, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output
-    if(module) printf("reserving new buf in cache for module %s %s\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "");
+    // if(module) printf("reserving new buf in cache for module %s %s\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "");
     if(pos == 0) (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
     else         (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     
@@ -343,6 +344,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 {
   pipe->processing = 1;
   // printf("pixelpipe homebrew process start\n");
+  // dt_dev_pixelpipe_cache_print(&pipe->cache);
 
   //  go through list of modules from the end:
   int pos = g_list_length(dev->iop);

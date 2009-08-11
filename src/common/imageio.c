@@ -1260,7 +1260,9 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
   length = dt_exif_read_blob(exif_profile, pathname);
 
-  if((!export_png && dt_imageio_jpeg_write(filename, buf8, wd, ht, 97, exif_profile, length)) ||
+  int quality = 100;
+  DT_CTL_GET_GLOBAL(quality, dev_export_quality);
+  if((!export_png && dt_imageio_jpeg_write(filename, buf8, wd, ht, quality, exif_profile, length)) ||
      ( export_png && dt_imageio_png_write (filename, buf8, wd, ht)))
   {
     dt_dev_pixelpipe_cleanup(&pipe);

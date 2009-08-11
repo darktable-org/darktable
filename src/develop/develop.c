@@ -128,7 +128,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(!dev->image || dev->image_loading || !dev->gui_attached || dev->pipe->processing) return;
+  if(!dev->image || /*dev->image_loading ||*/ !dev->gui_attached || dev->pipe->processing) return;
   dt_job_t job;
   dt_dev_process_image_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_2);
@@ -165,6 +165,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
     dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
+    dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
     dev->preview_loading = 0;
   }
@@ -193,11 +194,11 @@ restart:
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   dev->image_dirty = 1;
-  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
+  if(dev->image_loading) //dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
   {
     dt_dev_raw_load(dev, dev->image);
   }
-  else dt_image_release(dev->image, DT_IMAGE_FULL, 'r'); // raw load already keeps one reference, we were just testing.
+  // else dt_image_release(dev->image, DT_IMAGE_FULL, 'r'); // raw load already keeps one reference, we were just testing.
   dt_dev_zoom_t zoom;
   float zoom_x, zoom_y;
   int closeup;
@@ -242,7 +243,6 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
   // only load if not already there.
   if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
-  // if(!dev->image->pixels || dev->image->shrink)
   {
     int err;
 restart:
@@ -268,6 +268,7 @@ restart:
   {
     // init pixel pipeline
     dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height, 1.0);
+    dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     dev->image_loading = 0;
     dev->image_dirty = 1;
@@ -280,7 +281,8 @@ restart:
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   dev->image = image;
-  dev->image_loading = dev->preview_loading = 1;
+  dev->image_loading = 1;
+  dev->preview_loading = 1;
   if(dev->gui_attached && dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
   else dev->mipf = NULL;
   dev->image_dirty = dev->preview_dirty = 1;
@@ -321,6 +323,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 
   // TODO: this should read modules on demand!
   dt_dev_read_history(dev);
+#if 0 // done in process image job at start.
   if(dev->gui_attached)
   {
     dt_job_t job;
@@ -329,6 +332,10 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
     if(err) fprintf(stderr, "[dev_load_image] job queue exceeded!\n");
   }
   else dt_dev_raw_load(dev, dev->image); // in this thread.
+#else
+  // dev->image_dirty = 1;
+#endif
+  if(!dev->gui_attached) dt_dev_raw_load(dev, dev->image);
 }
 
 gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)

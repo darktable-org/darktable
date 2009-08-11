@@ -60,8 +60,11 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
   module->commit_params(module, params, pipe, piece);
   const char *str = (const char *)params;
   if(piece->enabled)
+  {
     for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
-  piece->hash = hash;
+    piece->hash = hash;
+  }
+  // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash, piece->enabled);
 }
 
 void dt_iop_gui_update(dt_iop_module_t *module)

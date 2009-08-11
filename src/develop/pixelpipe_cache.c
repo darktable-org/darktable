@@ -33,16 +33,6 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, float scale, int32_t x, int32_t 
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     hash = ((hash << 5) + hash) ^ piece->hash;
-#if 0
-    if(module->enabled)
-    {
-      uint64_t c;
-      const char *str = module->op;
-      while ((c = *str++)) hash = ((hash << 5) + hash) ^ c; /* hash * 33 + c */
-      str = (const char *)module->params;
-      for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
-    }
-#endif
     pieces = g_list_next(pieces);
   }
   // also add scale, x and y:
@@ -107,5 +97,15 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
   {
     cache->hash[k] = -1;
     cache->used[k] = 0;
+  }
+}
+
+void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
+{
+  for(int k=0;k<cache->entries;k++)
+  {
+    printf("pixelpipe cacheline %d ", k);
+    printf("used %d by %lu", cache->used[k], cache->hash[k]);
+    printf("\n");
   }
 }

@@ -117,6 +117,7 @@ void dt_ctl_settings_init(dt_control_t *s)
   s->global_settings.dev_zoom = DT_ZOOM_FIT;
 
   s->global_settings.dev_export_format = DT_DEV_EXPORT_JPG;
+  s->global_settings.dev_export_quality = 97;
 
   strncpy(s->global_settings.dev_op, "original", 20);
   
@@ -741,14 +742,21 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   dt_lib_filter_t filter;
   DT_CTL_GET_GLOBAL(filter, lib_filter);
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)filter);
+
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
   dt_lib_sort_t sort;
   DT_CTL_GET_GLOBAL(sort, lib_sort);
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
+
   widget = glade_xml_get_widget (darktable.gui->main_window, "export_format");
   dt_dev_export_format_t format;
   DT_CTL_GET_GLOBAL(format, dev_export_format);
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)format);
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "export_quality");
+  int quality = 100;
+  DT_CTL_GET_GLOBAL(quality, dev_export_quality);
+  gtk_range_set_value(GTK_RANGE(widget), quality);
 
   DT_CTL_GET_GLOBAL(bit, gui_left);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");

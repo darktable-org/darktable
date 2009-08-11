@@ -1,8 +1,8 @@
 bugs:
+- mipf reload THUMBNAIL flag in db?
 - aoe, keys not working anymore!
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
-- sometimes redraw event is not cast during add history item or hist button. (2nd image, cache filled, on/off prob?)
 - import very slow (hdd lock with gui??) on nfs homes
 - import starts 3 threads but seems to be mono-core?
 - check if there is a mem leak in jpg decompress.
@@ -29,7 +29,6 @@ cleanup:
   - draw 3x3 lines or similar
   - move image around in crop window with darkened borders?
 - editable metadata (at least what's needed for lensfun..)
-- equalizer tutorial in documentation
 - translations (de, etc)
 - copy function in lib:
   - flags, tags
@@ -38,7 +37,6 @@ cleanup:
 - small 1:1 preview for sharpen etc.
 - write back images to db after cache drop!
 - output/input profiles using lcms
-- exiv2 to replace libexif (write blob, manage as mips in db?)
 - lensfun
 - try gegl 0.1.0
 - darkroom mode: click on 1:1 zoom spot
@@ -68,8 +66,6 @@ cleanup:
 
 bugs:
  - import while still importing crashes.
- - openmp crashes dt (in magick or elsewhere) :(
- - small images mip maps garbled.
  - check mipmap decisions (seem very lo-res)
  - image_load_job should take img id and get it from cache himself!
    (this is a serious problem if not all images fit into cache)
@@ -83,11 +79,6 @@ feature requests:
  - some accel key => center and align images at left/right borders for
    given zoom rate
  - import: interrupt, continue, watch dir (all more robust)
- - export:
-   - jpg quality
-   - load list from sql to dev->GList (be able to alter selection after)
-   - progress bar
- - completely free zoom in dev mode (not just 1:1, fit, fill)
  - clustered image view by similar tag/flag
  - user orient rotation
  - tonemapping for hdr?
@@ -95,7 +86,6 @@ feature requests:
  - spot removal brush
  - ufraw style highlight reconstruction
  - images of expensive cameras for webpage.
- - blackpoint
  - ahd interpolation as user parameter?
  - set default parameters for all controls in dev mode while in lib mode?
  - clean up db for mem optimizations: keep only image+history, re-import mips.
@@ -111,15 +101,10 @@ feature requests:
  - LensFun
 
 priority list:
- - aoe, keys to change +-= table_cols/1 resp.
  - tags and some tag search facility (expander in lighttable mode)
  - image properties when zoomed in a lot
  - bottom control panel with buttons for lib->dev->lib
  - libglade => gtkbuilder.
-
-image ops (GEGL):
- - exposure
- - crop
 
 usability:
  - label_widgets on expanders? (zoom buttons, enable switches..)
@@ -129,7 +114,6 @@ usability:
  - disable dev controls/make invisible in lib?
  - make directory loading interruptible
  - adjust navigation preview in dev on the fly?
- - image loading: load thumbnails first, if any.
  - navigation widget for lib?
  - curve widget presets
    - x-axis adjusters
@@ -138,12 +122,10 @@ usability:
  - library graph with keyword edges.
 
 look:
- - shadow border between center and outer panels
  - end markers :)
 
 cache:
  - user profile guided prefetching for full raw load!
- - load cache from disk only if md5sum matches
 
 build/packaging:
  - doxygen documentation
