@@ -1,4 +1,5 @@
 bugs:
+- switch iop off => emit history item??
 - mipf reload THUMBNAIL flag in db?
 - aoe, keys not working anymore!
 - can't create export folder=>crash

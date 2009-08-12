@@ -70,7 +70,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
   module->gui_update(module);
-  if(module->off) gtk_toggle_button_set_active(module->off, 1-module->enabled);
+  if(module->off) gtk_toggle_button_set_active(module->off, module->enabled);
 }
 
 void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
@@ -78,8 +78,8 @@ void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(!darktable.gui->reset)
   {
-    if(gtk_toggle_button_get_active(togglebutton)) module->enabled = 0;
-    else module->enabled = 1;
+    if(gtk_toggle_button_get_active(togglebutton)) module->enabled = 1;
+    else module->enabled = 0;
     dt_dev_add_history_item(module->dev, module);
     // close parent expander.
     gtk_expander_set_expanded(module->expander, module->enabled);
@@ -124,11 +124,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   char tooltip[512];
   snprintf(tooltip, 512, "%s is switched %s", module->op, module->enabled ? "on" : "off");
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, NULL);
-  gtk_toggle_button_set_active(button, 1-module->enabled);
-  char filename[512];
-  snprintf(filename, 512, "%s/pixmaps/off.png", DATADIR);
-  GtkWidget *image = gtk_image_new_from_file(filename);
-  gtk_button_set_image(GTK_BUTTON(button), image);
+  gtk_toggle_button_set_active(button, module->enabled);
+  // char filename[512];
+  // snprintf(filename, 512, "%s/pixmaps/off.png", DATADIR);
+  // GtkWidget *image = gtk_image_new_from_file(filename);
+  // gtk_button_set_image(GTK_BUTTON(button), image);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
