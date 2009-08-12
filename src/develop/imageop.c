@@ -256,3 +256,17 @@ void dt_iop_Lab_to_sRGB(const float *in, float *out, int x, int y, float scale, 
   }
 }
 
+void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
+{
+  yuv[0] =  0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
+  yuv[1] = -0.147*rgb[0] - 0.289*rgb[1] + 0.437*rgb[2];
+  yuv[2] =  0.615*rgb[0] - 0.515*rgb[1] - 0.100*rgb[2];
+}
+
+void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb)
+{
+  rgb[0] = yuv[0]                + 1.140*yuv[2];
+  rgb[1] = yuv[0] - 0.394*yuv[1] - 0.581*yuv[2];
+  rgb[2] = yuv[0] + 2.028*yuv[1];
+}
+

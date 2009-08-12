@@ -15,6 +15,8 @@ dt_iop_colorcorrection_params_t;
 
 typedef struct dt_iop_colorcorrection_gui_data_t
 {
+  GtkDrawingArea *area;
+  GtkHBox *hbox;
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
   GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
@@ -46,5 +48,10 @@ void hia_callback (GtkRange *range, gpointer user_data);
 void lob_callback (GtkRange *range, gpointer user_data);
 void hib_callback (GtkRange *range, gpointer user_data);
 void sat_callback (GtkRange *range, gpointer user_data);
+gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
+gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+gboolean dt_iop_colorcorrection_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 
 #endif

@@ -96,6 +96,12 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/pointery;
   }
 
+  if     (track == 0);
+  else if(track > 1)  zoom_y += ht;
+  else if(track > 0)  zoom_x += wd;
+  else if(track > -2) zoom_x -= wd;
+  else                zoom_y -= ht;
+
   if(oldzoom != zoom)
   {
     float oldx = (pointerx + zoom_x)*oldzoom/width;
@@ -114,7 +120,6 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   }
   oldzoom = zoom;
 
-  // TODO: track on aoe, keys!
   if(center)
   {
     if(mouse_over_id >= 0)
@@ -131,19 +136,19 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
 
   int offset_i = (int)(zoom_x/wd);
   int offset_j = (int)(zoom_y/ht);
+  int seli = (int)((pointerx + zoom_x)/wd) - MAX(offset_i, 0);
+  int selj = (int)((pointery + zoom_y)/ht) - offset_j;
   float offset_x = zoom == 1 ? 0.0 : zoom_x/wd - (int)(zoom_x/wd);
   float offset_y = zoom == 1 ? 0.0 : zoom_y/ht - (int)(zoom_y/ht);
   const int max_rows = zoom == 1 ? 1 : 2 + (int)((height)/ht + .5);
   const int max_cols = zoom == 1 ? 1 : MIN(DT_LIBRARY_MAX_ZOOM - MAX(0, offset_i), 1 + (int)(zoom+.5));
 
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM*offset_j;
-  int seli = (int)((pointerx + zoom_x)/wd) - MAX(offset_i, 0);
-  int selj = (int)((pointery + zoom_y)/ht) - offset_j;
   int img_pointerx = fmodf(pointerx + zoom_x, wd);// - wd*MAX(offset_i, 0);
   int img_pointery = fmodf(pointery + zoom_y, ht);// - ht*offset_j;
 
   // assure 1:1 is not switching images on resize/tab events:
-  if(last_offset != 0x7fffffff && zoom == 1)
+  if(!track && last_offset != 0x7fffffff && zoom == 1)
   {
     offset = last_offset;
     zoom_x = wd*(offset % DT_LIBRARY_MAX_ZOOM);
@@ -202,7 +207,7 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
           // printf("flags %d > k %d\n", image->flags, col);
 
           // set mouse over id
-          if((zoom == 1 && mouse_over_id < 0) || (!pan && seli == col && selj == row))
+          if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row))
           {
             mouse_over_id = image->id;
             DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
@@ -243,7 +248,7 @@ void dt_library_expose(dt_library_t *lib, cairo_t *cr, int32_t width, int32_t he
   oldpan = pan;
   DT_CTL_SET_GLOBAL(lib_zoom_x, zoom_x);
   DT_CTL_SET_GLOBAL(lib_zoom_y, zoom_y);
-  DT_CTL_SET_GLOBAL(lib_track, track);
+  DT_CTL_SET_GLOBAL(lib_track, 0);
   DT_CTL_SET_GLOBAL(lib_center, center);
   // dt_mipmap_cache_print(darktable.mipmap_cache);
   // dt_image_cache_print(darktable.image_cache);

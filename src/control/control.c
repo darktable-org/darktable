@@ -910,32 +910,18 @@ int dt_control_key_pressed(uint16_t which)
   }
   if(gui == DT_LIBRARY) switch (which)
   {
-#if 0
     case KEYCODE_Left: case KEYCODE_a:
-      DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_i);
-      if(selected > 0) selected --;
-      DT_CTL_SET_GLOBAL(lib_image_mouse_over_i, selected);
-      DT_CTL_SET_GLOBAL(lib_track, 1);
+      DT_CTL_SET_GLOBAL(lib_track, -1);
       break;
     case KEYCODE_Right: case KEYCODE_e:
-      DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_i);
-      if(selected < DT_LIBRARY_MAX_ZOOM-1) selected ++;
-      DT_CTL_SET_GLOBAL(lib_image_mouse_over_i, selected);
       DT_CTL_SET_GLOBAL(lib_track, 1);
       break;
     case KEYCODE_Up: case KEYCODE_comma:
-      DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_j);
-      if(selected > 0) selected --;
-      DT_CTL_SET_GLOBAL(lib_image_mouse_over_j, selected);
-      DT_CTL_SET_GLOBAL(lib_track, 1);
+      DT_CTL_SET_GLOBAL(lib_track, -DT_LIBRARY_MAX_ZOOM);
       break;
     case KEYCODE_Down: case KEYCODE_o:
-      DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_j);
-      selected ++;
-      DT_CTL_SET_GLOBAL(lib_image_mouse_over_j, selected);
-      DT_CTL_SET_GLOBAL(lib_track, 1);
+      DT_CTL_SET_GLOBAL(lib_track, DT_LIBRARY_MAX_ZOOM);
       break;
-#endif
     case KEYCODE_1:
       DT_CTL_SET_GLOBAL(lib_zoom, 1);
       break;

@@ -100,5 +100,7 @@ void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scal
 /** for homebrew pixel pipe: convert Lab to sRGB, float buffers. */
 void dt_iop_Lab_to_sRGB(const float *in, float *out, int x, int y, float scale, int width, int height);
 
+void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
+void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
 
 #endif
