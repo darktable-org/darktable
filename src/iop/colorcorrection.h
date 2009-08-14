@@ -56,5 +56,6 @@ gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion 
 gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 gboolean dt_iop_colorcorrection_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 
 #endif

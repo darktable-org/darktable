@@ -129,6 +129,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_colorcorrection_motion_notify), self);
   g_signal_connect (G_OBJECT (g->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_colorcorrection_leave_notify), self);
+  g_signal_connect (G_OBJECT (g->area), "scroll-event",
+                    G_CALLBACK (dt_iop_colorcorrection_scrolled), self);
   
   g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
@@ -391,6 +393,18 @@ gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   g->selected = g->dragging = 0;
   gtk_widget_queue_draw(self->widget);
+  return TRUE;
+}
+
+gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
+  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
+  if(event->direction == GDK_SCROLL_UP   && p->saturation > -3.0) p->saturation -= 0.1;
+  if(event->direction == GDK_SCROLL_DOWN && p->saturation <  3.0) p->saturation += 0.1;
+  gtk_range_set_value(GTK_RANGE(g->scale5), p->saturation);
+  gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
