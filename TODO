@@ -1,7 +1,6 @@
 bugs:
 - switch iop off => emit history item??
 - mipf reload THUMBNAIL flag in db?
-- aoe, keys not working anymore!
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
 - import very slow (hdd lock with gui??) on nfs homes
@@ -12,6 +11,7 @@ bugs:
 - glist instead of sql query in export (or else altering selection after pressing export will change the behavior)
 
 cleanup:
+- libraw autoexposure etc off?
 - keep stdout clean! (shut up exiv2 and jpg)
 - sorted image loading (on import)!
 - add some user guide documentation.

@@ -20,6 +20,9 @@ typedef struct dt_iop_colorcorrection_gui_data_t
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
   GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
+  float press_x, press_y, mouse_x, mouse_y;
+  int selected, dragging;
+  dt_iop_colorcorrection_params_t press_params;
 }
 dt_iop_colorcorrection_gui_data_t;
 
