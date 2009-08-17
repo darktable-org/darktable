@@ -5,6 +5,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <lcms.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
@@ -190,6 +191,10 @@ void gui_init(struct dt_iop_module_t *self)
   //                   G_CALLBACK (hib_callback), self);
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (sat_callback), self);
+  g->hsRGB = cmsCreate_sRGBProfile();
+  g->hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, 
+      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -283,11 +288,15 @@ gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event,
   const int cells = 8;
   for(int j=0;j<cells;j++) for(int i=0;i<cells;i++)
   {
-    float yuv[3] = {0, 0, 0}, rgb[3] = {0.5, 0.5, 0.5};
-    dt_iop_RGB_to_YCbCr(rgb, yuv); // get grey in yuv
-    yuv[1] = p->saturation*(yuv[1] + yuv[0] * 4.0*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
-    yuv[2] = p->saturation*(yuv[2] + yuv[0] * 4.0*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
-    dt_iop_YCbCr_to_RGB(yuv, rgb); // get grey in yuv
+    double rgb[3] = {0.5, 0.5, 0.5}; // Lab: rgb grey converted to Lab
+    cmsCIELab Lab;
+    Lab.L = 53.390011; Lab.a = Lab.b = 0; // grey
+    // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
+    // printf("lab = %f %f %f\n", Lab[0], Lab[1], Lab[2]);
+    Lab.a = p->saturation*(Lab.a + Lab.L * 4.0*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
+    Lab.b = p->saturation*(Lab.b + Lab.L * 4.0*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
+    cmsDoTransform(g->xform, &Lab, rgb, 1);
+    // dt_iop_Lab_to_sRGB(Lab, rgb, 0, 0, 1.0, 1, 1);
     cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
     cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
     cairo_fill(cr);

@@ -26,9 +26,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   for(int k=0;k<width*height;k++)
   {
-#if 1 // in YCbCr float
-    uint32_t tmp = 0x3f800000ul | (d->table[CLAMP((int)(in[0]*0xfffful), 0, 0xffff)]<<7);
-    out[0] = *(float *)&tmp - 1.0f;
+#if 1 // in YCbCr float:
+    // uint32_t tmp = 0x3f800000ul | (d->table[CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff)]<<7);
+    // out[0] = *(float *)&tmp - 1.0f;
+    // in Lab:
+    out[0] = d->table[CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff)];
     out[1] = in[1];//CLAMP((int)(in[1]*0xfffful), 0, 0xffff);
     out[2] = in[2];//CLAMP((int)(in[2]*0xfffful), 0, 0xffff);
 #else // in sRGB
@@ -49,7 +51,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   for(int k=0;k<6;k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   for(int k=0;k<0x10000;k++)
-    d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
+    // d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
+    d->table[k] = 100.0*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k);
 #endif
 }
 
@@ -64,7 +67,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #ifdef HAVE_GEGL
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
 #else
-  for(int k=0;k<0x10000;k++) d->table[k] = k; // identity
+  for(int k=0;k<0x10000;k++) d->table[k] = 100.0f*k/0x10000; // identity
 #endif
 }
 

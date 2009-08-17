@@ -232,7 +232,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       {
         // float rgb[3] = {pixel[3*j*width+3*i], pixel[3*j*width+3*i+1], pixel[3*j*width+3*i+2]};
         // uint8_t L = CLAMP(63*(0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]), 0, 63);
-        uint8_t L = CLAMP(63*(pixel[3*j*width+3*i]), 0, 63);
+        uint8_t L = CLAMP(63/100.0*(pixel[3*j*width+3*i]), 0, 63);
         dev->histogram_pre[4*L+3] ++;
       }
       // don't count <= 0 pixels
@@ -247,13 +247,14 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 
     if(strcmp(module->op, "temperature") == 0)
     {
-      for(int k=0;k<width*height;k++)
+      dt_iop_sRGB_to_Lab((float *)*output, (float *)*output, 0, 0, 1.0, width, height);
+      /*for(int k=0;k<width*height;k++)
       { // to YCbCr
         float rgb[3] = {((float *)*output)[3*k], ((float *)*output)[3*k+1], ((float *)*output)[3*k+2]};
         ((float *)*output)[3*k+0] =  0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
         ((float *)*output)[3*k+1] = -0.147*rgb[0] - 0.289*rgb[1] + 0.437*rgb[2];
         ((float *)*output)[3*k+2] =  0.615*rgb[0] - 0.515*rgb[1] - 0.100*rgb[2];
-      }
+      }*/
     }
 #if 0
     const float m[9] = {0.299,  0.587, 0.114,
@@ -291,7 +292,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     // if(strcmp(module->op, "colorcorrection") == 0)
     if(strcmp(module->op, "tonecurve") == 0)
     {
-      for(int k=0;k<width*height;k++)
+      dt_iop_Lab_to_sRGB((float *)*output, (float *)*output, 0, 0, 1.0, width, height);
+      for(int k=0;k<3*width*height;k++) ((uint16_t *)*output)[k] = CLAMP((int)(0xfffful*(((float *)*output))[k]), 0, 0xffff);
+      /*for(int k=0;k<width*height;k++)
       { // to RGB 16
         float YCbCr[3] = {((float *)*output)[3*k], ((float *)*output)[3*k+1], ((float *)*output)[3*k+2]};
         // ((float *)*output)[3*k+0] = YCbCr[0]                  + 1.140*YCbCr[2];
@@ -300,7 +303,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         ((uint16_t *)*output)[3*k+0] = CLAMP((int)(0xfffful*(YCbCr[0]                  + 1.140*YCbCr[2])), 0, 0xffff);
         ((uint16_t *)*output)[3*k+1] = CLAMP((int)(0xfffful*(YCbCr[0] - 0.394*YCbCr[1] - 0.581*YCbCr[2])), 0, 0xffff);
         ((uint16_t *)*output)[3*k+2] = CLAMP((int)(0xfffful*(YCbCr[0] + 2.028*YCbCr[1]                 )), 0, 0xffff);
-      }
+      }*/
     }
 
     // final histogram:

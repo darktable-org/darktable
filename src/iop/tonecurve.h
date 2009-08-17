@@ -33,8 +33,8 @@ dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
 {
-  dt_draw_curve_t *curve;         // curve for gegl nodes and pixel processing
-  uint16_t table[0x10000];        // precomputed look-up table for tone curve
+  dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
+  float table[0x10000];        // precomputed look-up table for tone curve
 }
 dt_iop_tonecurve_data_t;
 

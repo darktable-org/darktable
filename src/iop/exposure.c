@@ -36,7 +36,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   d->black = p->black;
-  d->scale = 1.0/(p->white-p->black); 
+  d->scale = 100.0/(p->white-p->black); 
 #endif
 }
 
@@ -81,7 +81,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
-  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1.};
+  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 100.};
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
 }
@@ -111,10 +111,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale2), 2);
+  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 100.0, 1.0));
+  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 100.0, 1.0));
+  gtk_scale_set_digits(GTK_SCALE(g->scale1), 1);
+  gtk_scale_set_digits(GTK_SCALE(g->scale2), 1);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
   gtk_range_set_value(GTK_RANGE(g->scale1), p->black);

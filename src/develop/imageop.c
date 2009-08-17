@@ -201,7 +201,7 @@ void dt_iop_sRGB_to_Lab(const float *in, float *out, int x, int y, float scale, 
 {
   // TODO: use lcms dbl/16-bit + upconversion?
   cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  cmsHPROFILE  hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+  cmsHPROFILE  hLab = cmsCreateLabProfile(NULL);//cmsD50_xyY());
 
   cmsHTRANSFORM  xform = cmsCreateTransform(hsRGB, TYPE_RGB_DBL, hLab, TYPE_Lab_DBL, 
       INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);

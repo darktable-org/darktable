@@ -25,6 +25,9 @@ cleanup:
 - save gui settings (expanded etc?) in operation stacks
 
 0.3 roadmap:
+- plug-in loading system as rc.d
+- lcms plug-ins: input/output profiles (and directly convert to Lab and back).
+  - adjust tonecurve/exposure accordingly
 - post-gamma crop/rotate plug-in:
   - need mouse interface and draw hook
   - draw 3x3 lines or similar
