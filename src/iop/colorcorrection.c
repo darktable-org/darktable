@@ -16,7 +16,7 @@
 #include "develop/imageop.h"
 
 #define DT_COLORCORRECTION_INSET 5
-#define DT_COLORCORRECTION_MAX 0.1
+#define DT_COLORCORRECTION_MAX 20.
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
 {
@@ -40,9 +40,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   gegl_node_set(piece->input, "high_a_delta", p->hia, "high_b_delta", p->hib, "low_a_delta", p->loa, "low_b_delta", p->lob, "saturation", p->saturation, NULL);
 #else
   dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
-  d->a_scale = p->hia - p->loa;
+  d->a_scale = (p->hia - p->loa)/100.0;
   d->a_base  = p->loa;
-  d->b_scale = p->hib - p->lob;
+  d->b_scale = (p->hib - p->lob)/100.0;
   d->b_base  = p->lob;
   d->saturation = p->saturation;
 #endif
@@ -293,8 +293,8 @@ gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event,
     Lab.L = 53.390011; Lab.a = Lab.b = 0; // grey
     // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
     // printf("lab = %f %f %f\n", Lab[0], Lab[1], Lab[2]);
-    Lab.a = p->saturation*(Lab.a + Lab.L * 4.0*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
-    Lab.b = p->saturation*(Lab.b + Lab.L * 4.0*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
+    Lab.a = p->saturation*(Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
+    Lab.b = p->saturation*(Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
     cmsDoTransform(g->xform, &Lab, rgb, 1);
     // dt_iop_Lab_to_sRGB(Lab, rgb, 0, 0, 1.0, 1, 1);
     cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);

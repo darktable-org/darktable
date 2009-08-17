@@ -1,6 +1,5 @@
 bugs:
-- switch iop off => emit history item??
-- mipf reload THUMBNAIL flag in db?
+- mipf reload THUMBNAIL flag in db? or some other update prob on load raw.
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
 - import very slow (hdd lock with gui??) on nfs homes
@@ -25,6 +24,8 @@ cleanup:
 - save gui settings (expanded etc?) in operation stacks
 
 0.3 roadmap:
+- write/re-import small xml file for images to backup sql
+- exposure, blacks, highlights (replace libraw functionality)
 - plug-in loading system as rc.d
 - lcms plug-ins: input/output profiles (and directly convert to Lab and back).
   - adjust tonecurve/exposure accordingly
@@ -57,8 +58,6 @@ cleanup:
 - check libraw speed
 - insert more gegl:operations and modules
 - harden db format
-- xml file per image export/import to db
-  (dump dt module/hist stack and gegl ops)
 - import image: create dummy entry with this filename, create imgid and cache entry.
   - then load image mip on demand, using image_get cache requests.
   - image_import: no dummy entries for mipmaps!

@@ -269,7 +269,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   raw->params.use_camera_wb = img->wb_cam;
   raw->params.use_auto_wb = img->wb_auto;
   // raw->params.med_passes; // median filter TODO
-  raw->params.no_auto_bright = 1;
+  // raw->params.no_auto_bright = 1;
   raw->params.output_bps = 16;
   raw->params.user_flip = -1;
   raw->params.gamm[0] = 1.0;
@@ -505,7 +505,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.half_size = img->shrink; /* dcraw -h */
   raw->params.use_camera_wb = img->wb_cam;
   raw->params.use_auto_wb = img->wb_auto;
-  raw->params.no_auto_bright = 1;
+  // raw->params.no_auto_bright = 1;
   raw->params.output_bps = 16;
   raw->params.user_flip = -1;
   raw->params.gamm[0] = 1.0;

@@ -57,6 +57,7 @@ void dt_iop_unload_module(dt_iop_module_t *module)
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   uint64_t hash = 5381;
+  piece->hash = 0;
   module->commit_params(module, params, pipe, piece);
   const char *str = (const char *)params;
   if(piece->enabled)
@@ -200,12 +201,15 @@ void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, in
 void dt_iop_sRGB_to_Lab(const float *in, float *out, int x, int y, float scale, int width, int height)
 {
   // TODO: use lcms dbl/16-bit + upconversion?
-  cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  cmsHPROFILE  hLab = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+  const cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
+  const cmsHPROFILE  hLab = cmsCreateLabProfile(NULL);//cmsD50_xyY());
 
-  cmsHTRANSFORM  xform = cmsCreateTransform(hsRGB, TYPE_RGB_DBL, hLab, TYPE_Lab_DBL, 
+  const cmsHTRANSFORM xform = cmsCreateTransform(hsRGB, TYPE_RGB_DBL, hLab, TYPE_Lab_DBL, 
       INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 
+#ifdef _OPENMP // not thread safe?
+// #pragma omp parallel for schedule(static) default(none) shared(out, width, height, in)
+#endif
   for(int j=0;j<height;j++) for(int i=0;i<width;i++)
   {
     double RGB[3];
@@ -224,9 +228,12 @@ void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scal
   cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
   cmsHPROFILE hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
 
-  cmsHTRANSFORM  xform = cmsCreateTransform(hLab, TYPE_Lab_16, hsRGB, TYPE_RGB_16, 
+  cmsHTRANSFORM xform = cmsCreateTransform(hLab, TYPE_Lab_16, hsRGB, TYPE_RGB_16, 
       INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 
+#ifdef _OPENMP
+// #pragma omp parallel for schedule(static) default(none) shared(hsRGB, hLab, xform, out, width, height, in)
+#endif
   for(int j=0;j<height;j++)
   {
     uint16_t *lab = in + 3*width*j;
@@ -237,12 +244,15 @@ void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scal
 
 void dt_iop_Lab_to_sRGB(const float *in, float *out, int x, int y, float scale, int width, int height)
 {
-  cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  cmsHPROFILE hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+  const cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
+  const cmsHPROFILE hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
 
-  cmsHTRANSFORM  xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, 
+  const cmsHTRANSFORM xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, 
       INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 
+#ifdef _OPENMP
+// #pragma omp parallel for schedule(static) default(none) shared(out, width, height, in)
+#endif
   for(int j=0;j<height;j++) for(int i=0;i<width;i++)
   {
     double RGB[3];
