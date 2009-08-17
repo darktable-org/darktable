@@ -73,7 +73,7 @@ int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
   const unsigned int NUM_BYTES_CHECK = 8;
   png_byte dat[NUM_BYTES_CHECK];
 
-  fread(dat, 1, NUM_BYTES_CHECK, png->f);
+  (void)fread(dat, 1, NUM_BYTES_CHECK, png->f);
 
   if (png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK))
   {
