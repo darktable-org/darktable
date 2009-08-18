@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <string.h>
 #include <strings.h>
+#include <stdlib.h>
 #include <math.h>
 
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:

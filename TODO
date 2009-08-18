@@ -24,8 +24,7 @@ cleanup:
 - save gui settings (expanded etc?) in operation stacks
 
 0.3 roadmap:
-- write/re-import small xml file for images to backup sql
-- exposure, blacks, highlights (replace libraw functionality)
+- finish most develop (single film roll) functionality:
 - plug-in loading system as rc.d
 - lcms plug-ins: input/output profiles (and directly convert to Lab and back).
   - adjust tonecurve/exposure accordingly
@@ -33,15 +32,16 @@ cleanup:
   - need mouse interface and draw hook
   - draw 3x3 lines or similar
   - move image around in crop window with darkened borders?
+- exposure, blacks, highlights (replace libraw functionality)
 - editable metadata (at least what's needed for lensfun..)
-- translations (de, etc)
 - copy function in lib:
   - flags, tags
   - history stack
   - histogram :)
+- write/re-import small xml file for images to backup sql
+- translations (de, etc)
 - small 1:1 preview for sharpen etc.
 - write back images to db after cache drop!
-- output/input profiles using lcms
 - lensfun
 - try gegl 0.1.0
 - darkroom mode: click on 1:1 zoom spot

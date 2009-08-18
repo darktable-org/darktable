@@ -3,6 +3,7 @@
 /** some common drawing routines. */
 
 // TODO: remove gegl ifndef HAVE_GEGL and use nikon curve!
+#include <stdlib.h>
 #include <gegl.h>
 #include <cairo.h>
 

@@ -1,5 +1,7 @@
 
 #include "develop/pixelpipe_cache.h"
+#include <stdlib.h>
+#include <inttypes.h>
 
 void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
 {
@@ -105,7 +107,7 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
   for(int k=0;k<cache->entries;k++)
   {
     printf("pixelpipe cacheline %d ", k);
-    printf("used %d by %lu", cache->used[k], cache->hash[k]);
+    printf("used %d by %"PRIu64"", cache->used[k], cache->hash[k]);
     printf("\n");
   }
 }
