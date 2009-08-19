@@ -349,7 +349,6 @@ void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width,
   }
   else
   {
-    char num[10];
     double x0 = 0.007*width, y0 = 0.007*height, rect_width = 0.986*width, rect_height = 0.986*height, radius = 0.08*width;
     // double x0 = 0.*width, y0 = 0.*height, rect_width = 1.*width, rect_height = 1.*height, radius = 0.08*width;
     double x1, y1, off, off1;
@@ -373,6 +372,9 @@ void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width,
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
     cairo_stroke(cr);
 
+#if defined(__MACH__) || defined(__APPLE__) // dreggn
+#else
+    char num[10];
     cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, .25*width);
@@ -380,6 +382,7 @@ void dt_image_expose(dt_image_t *img, int32_t index, cairo_t *cr, int32_t width,
     cairo_move_to (cr, .0*width, .24*height);
     snprintf(num, 10, "%d", index);
     cairo_show_text (cr, num);
+#endif
   }
 
 #if 1
