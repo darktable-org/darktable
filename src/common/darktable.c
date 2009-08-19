@@ -17,7 +17,6 @@
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
-#include <gegl.h>
 
 darktable_t darktable;
 

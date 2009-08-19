@@ -4,7 +4,6 @@
 #include "common/darktable.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
-#include <gegl.h>
 #include <gmodule.h>
 #include <gtk/gtk.h>
 

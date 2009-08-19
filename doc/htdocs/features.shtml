@@ -24,6 +24,7 @@
         <li>fully non-destructive editing</li>
         <li>core functions operate on floating point buffers</li>
         <li>modular image operations (plug-in interface)</li>
+        <li>some image operations are implemented: color correction/temperature, contrast curve, denoise, denoise/enhance using edge-avoiding wavelets (equalizer)</li>
         <li>export to low dynamic range (jpg, png), 16-bit (ppm), or linear high dynamic range (pfm)</li>
         <li>[svn] image rating (stars) and filtering within the film roll</li>
         <li>[svn] equalizer operation selectively enhances/attenuates frequencies in an edge-preserving way
@@ -35,6 +36,7 @@
       <ul>
         <li>lensfun support</li>
         <li>color profile management</li>
+        <li>xml file dump/load on re-import (in case db is corrupted/deleted/format changed)</li>
         <li>image tagging, sorting and filtering by tag system</li>
         <li>database format freeze for future compatibility of tag data</li>
         <li>...?</li>

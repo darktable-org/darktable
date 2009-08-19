@@ -23,6 +23,13 @@ the core operates completely on floating point values, so darktable can not only
     	</div>
 
       <div class="text">
+    	<img src="images/mailinglist.jpg" class="img" alt="dreggn" /><h1>we now have a mailing list</h1>
+      <em>(2009-08-19)</em> in the hope to start a small community and to avoid duplicate email traffic, i
+      created this <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>. also
+      note that there are the <a href="http://sourceforge.net/forum/forum.php?forum_id=938786">forums</a>.
+      </div>
+
+      <div class="text">
     	<img src="images/release_0.2.jpg" class="img" alt="dreggn" /><h1>0.2 beta is out!</h1>
       <em>(2009-07-06)</em> there have been some major changes in the last months. first, the processing
       backend has been replaced completely, based on an interface which is able to use libgegl (but currently doesn't,

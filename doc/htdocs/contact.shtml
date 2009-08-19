@@ -11,7 +11,11 @@
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/6.png" alt="6" width="142px" /></span><div class="headline"><img src="contact.png" alt="contact" width="157px"/></div>
     	<div class="starterText">
-      fastest contact via email: &#104;&#97;&#110;&#97;&#116;&#111;&#115;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;.
+      fastest contact via email: &#104;&#97;&#110;&#97;&#116;&#111;&#115;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;,
+      <br/>
+      or subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>,
+      <br/>
+      or try your luck at the <a href="http://sourceforge.net/forum/forum.php?forum_id=938786">forums</a>.
     	</div>
     	<div class="listtext">
     	<img src="images/clouds.jpg" alt="contributing" class="img" /><h1>contributing</h1>

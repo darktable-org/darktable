@@ -1,3 +1,4 @@
+ACLOCAL_AMFLAGS=-I m4
 SUBDIRS=src pixmaps
 EXTRA_DIST=darktable.gtkrc darktable.glade darktable.desktop 
 dtdatarootdir=$(datarootdir)/darktable
