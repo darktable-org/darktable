@@ -1046,7 +1046,8 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
     {
       float tmp[3];
       for(int i=0;i<3;i++) tmp[i] = buf[3*k+i]*(1.0/0x10000);
-      (void)fwrite(tmp, sizeof(float)*3, 1, f);
+      int cnt = fwrite(tmp, sizeof(float)*3, 1, f);
+      if(cnt != sizeof(float)*3) break;
     }
     fclose(f);
     status = 0;
@@ -1083,7 +1084,8 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
     {
       uint16_t tmp[3];
       for(int i=0;i<3;i++) tmp[i] = (0xff00 & (buf16[3*k+i]<<8))|(buf16[3*k+i]>>8);
-      (void)fwrite(tmp, sizeof(uint16_t)*3, 1, f);
+      int cnt = fwrite(tmp, sizeof(uint16_t)*3, 1, f);
+      if(cnt != sizeof(float)*3) break;
     }
     fclose(f);
     status = 0;

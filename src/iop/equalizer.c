@@ -192,7 +192,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)self->params;
 
-  c->channel = DT_IOP_EQUALIZER_Y;
+  c->channel = DT_IOP_EQUALIZER_L;
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
   for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
@@ -221,9 +221,9 @@ void gui_init(struct dt_iop_module_t *self)
   c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
-  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, "Y"));
-  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "Cb"));
-  c->channel_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "Cr"));
+  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, "L"));
+  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "a"));
+  c->channel_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "b"));
 
   g_signal_connect (G_OBJECT (c->channel_button[0]), "toggled",
                     G_CALLBACK (dt_iop_equalizer_button_toggled), self);
@@ -344,14 +344,14 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
     int ch = ((int)c->channel+i+1)%3;
     switch(ch)
     {
-      case DT_IOP_EQUALIZER_Y:
+      case DT_IOP_EQUALIZER_L:
         cairo_set_source_rgba(cr, .6, .6, .6, .3);
         break;
-      case DT_IOP_EQUALIZER_Cb:
-        cairo_set_source_rgba(cr, .0, .2, 1., .3);
+      case DT_IOP_EQUALIZER_a:
+        cairo_set_source_rgba(cr, .4, .2, .0, .4);
         break;
-      default: //case DT_IOP_EQUALIZER_Cr:
-        cairo_set_source_rgba(cr, 1., .2, .0, .3);
+      default: //case DT_IOP_EQUALIZER_b:
+        cairo_set_source_rgba(cr, 0., .2, .4, .4);
         break;
     }
     p = *(dt_iop_equalizer_params_t *)self->params;

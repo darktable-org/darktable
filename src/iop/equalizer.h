@@ -18,9 +18,9 @@ dt_iop_equalizer_params_t;
 
 typedef enum dt_iop_equalizer_channel_t
 {
-  DT_IOP_EQUALIZER_Y = 0,
-  DT_IOP_EQUALIZER_Cb = 1,
-  DT_IOP_EQUALIZER_Cr = 2
+  DT_IOP_EQUALIZER_L = 0,
+  DT_IOP_EQUALIZER_a = 1,
+  DT_IOP_EQUALIZER_b = 2
 }
 dt_iop_equalizer_channel_t;
 
