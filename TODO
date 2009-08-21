@@ -1,4 +1,5 @@
 bugs:
+- jpeg import crashes?
 - mipf reload THUMBNAIL flag in db? or some other update prob on load raw.
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!

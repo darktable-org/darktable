@@ -1,11 +1,10 @@
 SUBDIRS=LibRaw iop # gegl-operations
 include shared.am
-AM_CFLAGS+=-Werror
+AM_CFLAGS+=-Werror -rdynamic
 noinst_LIBRARIES=libdarktable.a
 libdarktable_a_SOURCES=control/jobs.c library/film.c library/library.c gui/gtk.c gui/navigation.c gui/histogram.c develop/develop.c develop/imageop.c common/imageio.c common/darktable.c control/control.c gui/develop_view.c common/image.c common/image_cache.c common/image_compression.c gui/metadata.c develop/pixelpipe.c common/exif.cc common/imageio_jpeg.c common/imageio_png.c
 bin_PROGRAMS=darktable
 darktable_SOURCES=main.c
-darktable_LDFLAGS=-Wl,--export-dynamic
 # rpath for mac bundle, which supplies all dreggn in ./libs
 # don't forget to create the dir after uncommenting this line:
 # darktable_LDFLAGS+= -Wl,-rpath ./libs

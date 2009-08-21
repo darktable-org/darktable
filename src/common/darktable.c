@@ -10,6 +10,8 @@
 #include "gui/gtk.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <glib.h>
 #ifdef HAVE_MAGICK
   #include <magick/MagickCore.h>
 #endif
@@ -162,5 +164,18 @@ void *dt_alloc_align(size_t alignment, size_t size)
   if(posix_memalign(&ptr, alignment, size)) return NULL;
   return ptr;
 #endif
+}
+
+extern char *__progname, *__progname_full;
+void dt_get_datadir(char *datadir, size_t bufsize)
+{
+  gchar *curr = g_get_current_dir();
+  snprintf(datadir, bufsize, "%s/%s", curr, __progname_full);
+  size_t len = MIN(strlen(datadir), bufsize);
+  char *t = datadir + len; // strip off bin/darktable
+  for(;t>datadir && *t!='/';t--); t--;
+  for(;t>datadir && *t!='/';t--);
+  strcpy(t, "/share/darktable");
+  g_free(curr);
 }
 
