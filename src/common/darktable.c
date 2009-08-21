@@ -24,6 +24,7 @@ darktable_t darktable;
 
 int dt_init(int argc, char *argv[])
 {
+  darktable.progname = argv[0];
 #ifdef _OPENMP
   omp_set_num_threads(omp_get_num_procs());
 #endif
@@ -166,11 +167,10 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #endif
 }
 
-extern char *__progname, *__progname_full;
 void dt_get_datadir(char *datadir, size_t bufsize)
 {
   gchar *curr = g_get_current_dir();
-  snprintf(datadir, bufsize, "%s/%s", curr, __progname_full);
+  snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
   size_t len = MIN(strlen(datadir), bufsize);
   char *t = datadir + len; // strip off bin/darktable
   for(;t>datadir && *t!='/';t--); t--;

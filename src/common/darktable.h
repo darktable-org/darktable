@@ -42,6 +42,7 @@ typedef struct darktable_t
   struct dt_image_cache_t *image_cache;
   sqlite3 *db;
   pthread_mutex_t db_insert;
+  char *progname;
 }
 darktable_t;
 
