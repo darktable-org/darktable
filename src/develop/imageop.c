@@ -31,6 +31,12 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   gchar *libname = g_module_build_path(datadir, (const gchar *)op);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   g_free(libname);
+  if(!module->module)
+  {
+    libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
+    module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+    g_free(libname);
+  }
   if(!module->module) goto error;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
