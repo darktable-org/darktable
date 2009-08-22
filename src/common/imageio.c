@@ -774,10 +774,11 @@ error_magick_mip4:
   return 1;
 #else
   img->shrink = 0;
+  const int orientation = img->orientation ^ 1;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
-  if(img->orientation & 4)
+  if(orientation & 4)
   {
     img->width  = jpg.height;
     img->height = jpg.width;
@@ -803,14 +804,14 @@ error_magick_mip4:
   // FIXME: there is a black border on the left side of a portrait image!
 
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  const int p_ht2 = img->orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-  const int p_wd2 = img->orientation & 4 ? p_ht : p_wd;
+  const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+  const int p_wd2 = orientation & 4 ? p_ht : p_wd;
 
   if(img->width == p_wd && img->height == p_ht)
   { // use 1:1
     for (int j=0; j < jpg.height; j++)
       for (int i=0; i < jpg.width; i++)
-        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
   }
   else
   { // scale to fit
@@ -819,7 +820,7 @@ error_magick_mip4:
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
     {
       uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = cam[k];
+      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = cam[k];
     }
   }
   free(tmp);
@@ -986,10 +987,11 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   return 0;
 #else
   img->shrink = 0;
+  const int orientation = img->orientation ^ 1;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
-  if(img->orientation & 4)
+  if(orientation & 4)
   {
     img->width  = jpg.height;
     img->height = jpg.width;
@@ -1006,13 +1008,13 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     return 1;
   }
  
-  const int ht2 = img->orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
-  const int wd2 = img->orientation & 4 ? img->height : img->width;
+  const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
+  const int wd2 = orientation & 4 ? img->height : img->width;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
 
   for(int j=0; j < jpg.height; j++)
     for(int i=0; i < jpg.width; i++)
-      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, img->orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+k]];
+      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+k]];
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');

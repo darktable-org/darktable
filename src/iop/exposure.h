@@ -7,21 +7,21 @@
 
 typedef struct dt_iop_exposure_params_t
 {
-  float black, white;
+  float black, white, gain;
 }
 dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2;
-  GtkHScale *scale1, *scale2;
+  GtkLabel *label1, *label2, *label3;
+  GtkHScale *scale1, *scale2, *scale3;
 }
 dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
 {
-  float black, scale;
+  float black, scale, gain;
 }
 dt_iop_exposure_data_t;
 
@@ -41,5 +41,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 void black_callback  (GtkRange *range, gpointer user_data);
 void white_callback (GtkRange *range, gpointer user_data);
+void gain_callback (GtkRange *range, gpointer user_data);
 
 #endif
