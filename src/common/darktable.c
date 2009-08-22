@@ -174,6 +174,7 @@ void dt_get_datadir(char *datadir, size_t bufsize)
   size_t len = MIN(strlen(datadir), bufsize);
   char *t = datadir + len; // strip off bin/darktable
   for(;t>datadir && *t!='/';t--); t--;
+  if(*t == '.' && *(t-1) != '.') { for(;t>datadir && *t!='/';t--); t--; }
   for(;t>datadir && *t!='/';t--);
   strcpy(t, "/share/darktable");
   g_free(curr);
