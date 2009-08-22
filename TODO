@@ -1,7 +1,6 @@
 bugs:
-- luminance adjustment => saturation: *d/dL
-- jpeg import crashes?
-- mipf reload THUMBNAIL flag in db? or some other update prob on load raw.
+- mac os keys again.
+- jpeg import crashes (not for me..)?
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
 - import very slow (hdd lock with gui??) on nfs homes
@@ -77,6 +76,7 @@ bugs:
  - import folder file chooser sometimes not sized appropriately
 
 feature requests:
+ - reset button for iops
  - bzip2 compressed content
  - offline media reference in db
  - image variants (different history etc, new image with same source)

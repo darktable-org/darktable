@@ -216,7 +216,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   g_free(imgfname);
 
   // load small raw (try libraw then magick)
-  img->shrink = 1;
+  // img->shrink = 1;
   if(dt_imageio_open_preview(img, filename))
   // if(dt_imageio_open(img, filename))
   {
@@ -403,7 +403,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     else if(mip == DT_IMAGE_FULL)
     {
       ret = dt_imageio_open(img, filename);
-      if(img->flags & DT_IMAGE_THUMBNAIL)
+      // make sure we're consistent. overwrite each time.
+      // if(img->flags & DT_IMAGE_THUMBNAIL)
       {
         ret = dt_image_raw_to_preview(img);
         img->flags &= ~DT_IMAGE_THUMBNAIL;
