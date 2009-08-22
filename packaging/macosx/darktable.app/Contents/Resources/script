@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+# Author: Gregor Quade <u3dreal@yahoo.de>
+
+CWD="`(cd \"\`dirname \\\"$0\\\"\`\"; echo $PWD)`"
+
+exec "$CWD/bin/darktable" "$@"
