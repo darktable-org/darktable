@@ -21,8 +21,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<width*height;k++)
   {
     out[0] = fmaxf(0.0, (in[0]-d->black))*d->scale;
-    out[1] = in[1];
-    out[2] = in[2];
+    if(in[0] > 0)
+    {
+      out[1] = out[0]*in[1]/in[0];
+      out[2] = out[0]*in[2]/in[0];
+    }
+    else
+    {
+      out[1] = in[1];
+      out[2] = in[2];
+    }
     out += 3; in += 3;
   }
 }
