@@ -27,12 +27,12 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   char datadir[1024];
   dt_get_datadir(datadir, 1024);
   strcpy(datadir + strlen(datadir), "/plugins");
-  // gchar *libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
+  // first try relative path
   gchar *libname = g_module_build_path(datadir, (const gchar *)op);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   g_free(libname);
   if(!module->module)
-  {
+  { // then compiled-in absolute
     libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
     module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
     g_free(libname);

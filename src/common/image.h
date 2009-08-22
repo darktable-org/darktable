@@ -41,6 +41,7 @@ dt_image_lock_t;
 typedef struct dt_image_t
 {
   // minimal exif data here (all in multiples of 4-byte to interface nicely with c++):
+  int32_t orientation;
   float exif_exposure;
   float exif_aperture;
   float exif_iso;
@@ -63,7 +64,7 @@ typedef struct dt_image_t
   float *mipf;
   dt_image_lock_t lock[DT_IMAGE_NONE];
   // raw image
-  int32_t shrink, wb_auto, wb_cam, orientation;
+  int32_t shrink, wb_auto, wb_cam;
   float exposure;
   float *pixels;
 }

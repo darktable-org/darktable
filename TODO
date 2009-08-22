@@ -76,6 +76,7 @@ bugs:
  - import folder file chooser sometimes not sized appropriately
 
 feature requests:
+ - rescale during export (email etc)
  - reset button for iops
  - bzip2 compressed content
  - offline media reference in db

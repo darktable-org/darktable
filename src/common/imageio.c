@@ -774,7 +774,6 @@ error_magick_mip4:
   return 1;
 #else
   img->shrink = 0;
-  img->orientation = 0;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
@@ -799,6 +798,9 @@ error_magick_mip4:
   float f_wd, f_ht;
   dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
   dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
+
+  // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
+  // FIXME: there is a black border on the left side of a portrait image!
 
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   const int p_ht2 = img->orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
@@ -984,7 +986,6 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   return 0;
 #else
   img->shrink = 0;
-  img->orientation = 0;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
