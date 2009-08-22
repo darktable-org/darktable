@@ -3,5 +3,5 @@
 # Author: Gregor Quade <u3dreal@yahoo.de>
 
 CWD="`(cd \"\`dirname \\\"$0\\\"\`\"; echo $PWD)`"
-
+cd ~/
 exec "$CWD/bin/darktable" "$@"

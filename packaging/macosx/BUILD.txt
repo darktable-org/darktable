@@ -24,4 +24,4 @@ How To build darktable.app from source in 6 easy steps ;):
 
 6) run: . bscript.sh
 
-"Let's rock" u3dreal 
+"Let's rock" u3dreal '09
