@@ -774,7 +774,7 @@ error_magick_mip4:
   return 1;
 #else
   img->shrink = 0;
-  const int orientation = img->orientation ^ 1;
+  const int orientation = img->orientation & 4 ? img->orientation : img->orientation ^ 1;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
@@ -987,7 +987,7 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   return 0;
 #else
   img->shrink = 0;
-  const int orientation = img->orientation ^ 1;
+  const int orientation = img->orientation & 4 ? img->orientation : img->orientation ^ 1;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
