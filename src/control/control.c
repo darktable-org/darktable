@@ -34,11 +34,11 @@
 #define KEYCODE_Tab         56
 #else
 #define KEYCODE_a           0   // mac keycodes carbon :)
-#define KEYCODE_o           31
-#define KEYCODE_e           14
+#define KEYCODE_o           1
+#define KEYCODE_e           2
 #define KEYCODE_apostrophe  12
-#define KEYCODE_comma       43
-#define KEYCODE_period      47
+#define KEYCODE_comma       13
+#define KEYCODE_period      14
 #define KEYCODE_1           18
 #define KEYCODE_2           19
 #define KEYCODE_3           20
