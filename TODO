@@ -27,6 +27,7 @@ cleanup:
 0.3 roadmap:
 - finish most develop (single film roll) functionality:
 - plug-in loading system as rc.d
+  - need plug-in versioning
 - lcms plug-ins: input/output profiles (and directly convert to Lab and back).
   - adjust tonecurve/exposure accordingly
 - post-gamma crop/rotate plug-in:

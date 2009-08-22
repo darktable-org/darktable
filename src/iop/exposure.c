@@ -43,9 +43,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   fprintf(stderr, "implement exposure process gegl version! \n");
 #else
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-  d->black = p->black;
+  d->black = 100.0*(powf(2.0, p->black) - 1.0);
   d->gain = 2.0 - p->gain;
-  d->scale = 1.0/(p->white-p->black); 
+  d->scale = 1.0/(100.0*(powf(2.0, p->white) - 1.0) - p->black); 
 #endif
 }
 
@@ -91,7 +91,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
-  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 100., 1.0};
+  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
 }
@@ -124,11 +124,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 100.0, 1.0));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 100.0, 1.0));
+  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, .01));
+  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, .01));
   g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .05));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 1);
-  gtk_scale_set_digits(GTK_SCALE(g->scale2), 1);
+  gtk_scale_set_digits(GTK_SCALE(g->scale1), 2);
+  gtk_scale_set_digits(GTK_SCALE(g->scale2), 2);
   gtk_scale_set_digits(GTK_SCALE(g->scale3), 2);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);

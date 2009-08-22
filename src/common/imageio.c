@@ -385,9 +385,10 @@ error_raw_magick:// clean up libraw and magick only
       exception = DestroyExceptionInfo(exception);
       goto error_raw;
 #else
+      const int orientation = img->orientation;// & 4 ? img->orientation : img->orientation ^ 1;
       dt_imageio_jpeg_t jpg;
       if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw;
-      if(img->orientation & 4)
+      if(orientation & 4)
       {
         image->width  = jpg.height;
         image->height = jpg.width;
@@ -404,14 +405,14 @@ error_raw_magick:// clean up libraw and magick only
         goto error_raw;
       }
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-      const int p_ht2 = img->orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-      const int p_wd2 = img->orientation & 4 ? p_ht : p_wd;
+      const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+      const int p_wd2 = orientation & 4 ? p_ht : p_wd;
 
       if(image->width == p_wd && image->height == p_ht)
       { // use 1:1
         for (int j=0; j < jpg.height; j++)
           for (int i=0; i < jpg.width; i++)
-            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
       }
       else
       { // scale to fit
@@ -420,7 +421,7 @@ error_raw_magick:// clean up libraw and magick only
         for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
         {
           uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = cam[k];
         }
       }
       free(tmp);
