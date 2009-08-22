@@ -1,0 +1,26 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {cancel = id; }; 
+            CLASS = ScriptExecController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                aboutMenuItem = id; 
+                applicationMenu = id; 
+                cancelButton = id; 
+                hideMenuItem = id; 
+                messageTextField = id; 
+                progressBar = id; 
+                progressWindow = id; 
+                quitMenuItem = id; 
+                textOutputCancelButton = id; 
+                textOutputProgressIndicator = id; 
+                textOutputTextField = id; 
+                textOutputWindow = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}

@@ -1,0 +1,100 @@
+// !$*UTF8*$!
+{
+	29B97313FDCFA39411CA2CEA /* Project object */ = {
+		activeBuildConfigurationName = Release;
+		activeExecutable = 750EF88B0E82CE9D0007CD6E /* ScriptExec */;
+		activeTarget = 8D1107260486CEB800E47090 /* ScriptExec */;
+		codeSenseManager = 750EF8970E82CEBD0007CD6E /* Code sense */;
+		executables = (
+			750EF88B0E82CE9D0007CD6E /* ScriptExec */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					341,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 243453735;
+			PBXWorkspaceStateSaveDate = 243453735;
+		};
+		perUserProjectItems = {
+			750EF8AA0E82CF4B0007CD6E /* PBXBookmark */ = 750EF8AA0E82CF4B0007CD6E /* PBXBookmark */;
+			750EF8AB0E82CF4B0007CD6E /* PlistBookmark */ = 750EF8AB0E82CF4B0007CD6E /* PlistBookmark */;
+		};
+		sourceControlManager = 750EF8960E82CEBD0007CD6E /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	750EF88B0E82CE9D0007CD6E /* ScriptExec */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 1;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = ScriptExec;
+		sourceDirectories = (
+		);
+	};
+	750EF8960E82CEBD0007CD6E /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+		};
+	};
+	750EF8970E82CEBD0007CD6E /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	750EF8AA0E82CF4B0007CD6E /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = 8D1107310486CEB800E47090 /* Info.plist */;
+	};
+	750EF8AB0E82CF4B0007CD6E /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 8D1107310486CEB800E47090 /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+		);
+		name = /Users/ajv/devel/gimp/GIMPskel/ScriptExecCocoa/Info.plist;
+		rLen = 0;
+		rLoc = 2147483647;
+	};
+	8D1107260486CEB800E47090 /* ScriptExec */ = {
+		activeExec = 0;
+		executables = (
+			750EF88B0E82CE9D0007CD6E /* ScriptExec */,
+		);
+	};
+}

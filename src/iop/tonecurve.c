@@ -30,9 +30,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // uint32_t tmp = 0x3f800000ul | (d->table[CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff)]<<7);
     // out[0] = *(float *)&tmp - 1.0f;
     // in Lab:
-    out[0] = d->table[CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff)];
-    out[1] = in[1];//CLAMP((int)(in[1]*0xfffful), 0, 0xffff);
-    out[2] = in[2];//CLAMP((int)(in[2]*0xfffful), 0, 0xffff);
+    // correct compressed Luminance for saturation:
+    const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
+    // const float dLdt = (d->table[t<0xffff?t+1:0xffff] - d->table[t>1?t-1:0])*(0x10000/200.0);
+    out[0] = d->table[t];
+    const float rise = (out[0] - in[0]);
+    // const float rise = 1.0 + 2.0*(1.0-powf(1.0-(out[0] - in[0])/100., 3));
+    out[1] = in[1] - 0.50 * rise;
+    out[2] = in[2] + 0.20 * rise;
+    if(in[1] > 70 || in[2] > 70) printf("out: %f %f => %f %f\n", in[1], in[2], out[1], out[2]);
 #else // in sRGB
     for(int c=0;c<3;c++) out[c] = d->table[CLAMP((int)(in[c]*0x10000ul), 0, 0xffff)];
 #endif

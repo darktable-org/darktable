@@ -1,0 +1,27 @@
+Author: Gregor Quade <u3dreal@yahoo.de>
+
+How To build darktable.app from source in 6 easy steps ;):
+
+1) install macports from macports.org 
+	
+	-- mine is installed in /opt/local make sure to change the ./configure line further down accordingly
+
+2) add +quartz +atsui +no_x11 -x11 to /opt/local/etc/macports/variants.conf
+
+3) run:
+   sudo port -d sync
+   sudo port install gtk2 sqlite3 libglade2 lcms gegl libexiv2
+
+4) compile dt from svn:
+
+	svn co https://darktable.svn.sourceforge.net/svnroot/darktable darktable
+	cd darktable
+	autoreconf --install
+	LDFLAGS="-L/opt/local/lib -llcms" CC=gcc-4.2 CXX=g++-4.2 ./configure --prefix=/opt/local
+	sudo make install
+
+5) load ScriptExecCocoa/ScriptExec.xcodeproj with Xcode and click build
+
+6) run: . bscript.sh
+
+"Let's rock" u3dreal 
