@@ -21,7 +21,8 @@
     	<img src="images/clouds.jpg" alt="contributing" class="img" /><h1>contributing</h1>
       <ul>
         <li>use it! and then place bugreports, feature requests, suggestions, ... on the sourceforge site, or email me.</li>
-        <li>post beta: image operation plug-ins</li>
+        <li>post a patch to the mailing list.</li>
+        <li>post beta: write image operation plug-ins.</li>
       </ul>
     	</div>
     	<div class="listtext">
