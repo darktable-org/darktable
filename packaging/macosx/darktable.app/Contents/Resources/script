@@ -3,5 +3,9 @@
 # Author: Gregor Quade <u3dreal@yahoo.de>
 
 CWD="`(cd \"\`dirname \\\"$0\\\"\`\"; echo $PWD)`"
-cd ~/
-exec "$CWD/bin/darktable" "$@"
+
+cd $CWD
+
+DYLD_LIBRARY_PATH=$CWD/lib PANGO_RC_FILE=$CWD/etc/pango/pangorc GTK_PATH=$CWD/lib/gtk-2.0 bin/darktable
+
+#exec "$CWD/bin/darktable" "$@"

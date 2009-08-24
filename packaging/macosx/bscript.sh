@@ -31,8 +31,8 @@ tar -xf /tmp/dtguts.tar
 rm /tmp/dtguts.tar
 
 cat $PREFIX/etc/gtk-2.0/gtk.immodules | sed 's|'"$PREFIX"'/*|${CWD}/|g' > $FOO/etc/gtk-2.0/gtk.immodules
-cat $PREFIX/etc/gtk-2.0/gdk-pixbuf.loaders | sed 's|'"$PREFIX"'/*|${CWD}/|g' > $FOO/etc/gtk-2.0/gdk-pixbug.loaders
-cat $PREFIX/etc/pango/pangorc | sed 's|'"$PREFIX"'/*etc/pango|${ETC}|g' > $FOO/etc/pango/pangorc
-cat $PREFIX/etc/pango/pango.modules | sed 's|'"$PREFIX"'[^ ]*|"&"|g' | sed 's|'"$PREFIX"'/*|${CWD}/|g' > $FOO/etc/pango/pango.modules
+cat $PREFIX/etc/gtk-2.0/gdk-pixbuf.loaders | sed 's|'"$PREFIX"'/*|${CWD}/|g' > $FOO/etc/gtk-2.0/gdk-pixbuf.loaders
+cat $PREFIX/etc/pango/pangorc | sed 's|'"$PREFIX"'/*etc/pango|etc/pango|g' > $FOO/etc/pango/pangorc
+cat $PREFIX/etc/pango/pango.modules | sed 's|'"$PREFIX"'[^ ]*|"&"|g' | sed 's|'"$PREFIX"'/*||g' > $FOO/etc/pango/pango.modules
 
 
