@@ -31,7 +31,7 @@ typedef struct dt_draw_curve_t
 }
 dt_draw_curve_t;
 
-void dt_draw_grid(cairo_t *cr, const int num, const int width, const int height)
+static inline void dt_draw_grid(cairo_t *cr, const int num, const int width, const int height)
 {
   for(int k=1;k<num;k++)
   {
