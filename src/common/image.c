@@ -216,7 +216,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   g_free(imgfname);
 
   // load small raw (try libraw then magick)
-  // img->shrink = 1;
+  img->shrink = 0;
   if(dt_imageio_open_preview(img, filename))
   // if(dt_imageio_open(img, filename))
   {

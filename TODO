@@ -11,6 +11,7 @@ bugs:
 - glist instead of sql query in export (or else altering selection after pressing export will change the behavior)
 
 cleanup:
+- port all image processing from Lab => LCh
 - libraw autoexposure etc off?
 - keep stdout clean! (shut up exiv2 and jpg)
 - sorted image loading (on import)!

@@ -487,9 +487,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   dt_dev_invalidate(dev);
   pthread_mutex_unlock(&dev->history_mutex);
 
-  // update history (on) (off) annotation
-  dt_control_clear_history_items(dev->history_end);
-  dt_control_queue_draw_all();
+  if(dev->gui_attached)
+  {
+    // update history (on) (off) annotation
+    dt_control_clear_history_items(dev->history_end);
+    dt_control_queue_draw_all();
+  }
 }
 
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)

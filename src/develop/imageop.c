@@ -108,6 +108,15 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
   else gtk_widget_hide(module->widget);
 }
 
+static void dt_iop_gui_reset_callback(GtkButton *button, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  // module->enabled = module->default_enabled; // will not propagate correctly anyways ;)
+  memcpy(module->params, module->default_params, module->params_size);
+  module->gui_update(module);
+  dt_dev_add_history_item(module->dev, module);
+}
+
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   // gamma is always needed for display (down to uint8_t)
@@ -136,17 +145,23 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   snprintf(tooltip, 512, "%s is switched %s", module->op, module->enabled ? "on" : "off");
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, NULL);
   gtk_toggle_button_set_active(button, module->enabled);
+
+  GtkButton *resetbutton = GTK_BUTTON(gtk_button_new());
+
   // char filename[512];
   // snprintf(filename, 512, "%s/pixmaps/off.png", DATADIR);
   // GtkWidget *image = gtk_image_new_from_file(filename);
   // gtk_button_set_image(GTK_BUTTON(button), image);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
+  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), module->widget, TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (button), "toggled",
                     G_CALLBACK (dt_iop_gui_off_callback), module);
+  g_signal_connect (G_OBJECT (resetbutton), "pressed",
+                    G_CALLBACK (dt_iop_gui_reset_callback), module);
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
                   G_CALLBACK (dt_iop_gui_expander_callback), module);
   // gtk_widget_add_events(GTK_WIDGET(hbox), GDK_BUTTON_PRESS_MASK);

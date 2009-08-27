@@ -301,10 +301,12 @@ gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event,
     cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
     cairo_fill(cr);
   }
-  float loa = .5f*(width + width*p1->loa/(float)DT_COLORCORRECTION_MAX),
-        hia = .5f*(width + width*p1->hia/(float)DT_COLORCORRECTION_MAX),
-        lob = .5f*(height + height*p1->lob/(float)DT_COLORCORRECTION_MAX),
-        hib = .5f*(height + height*p1->hib/(float)DT_COLORCORRECTION_MAX);
+  float loa, hia, lob, hib;
+  if(!g->dragging) p1 = p;
+  loa = .5f*(width + width*p1->loa/(float)DT_COLORCORRECTION_MAX);
+  hia = .5f*(width + width*p1->hia/(float)DT_COLORCORRECTION_MAX);
+  lob = .5f*(height + height*p1->lob/(float)DT_COLORCORRECTION_MAX);
+  hib = .5f*(height + height*p1->hib/(float)DT_COLORCORRECTION_MAX);
   cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
   cairo_set_source_rgb(cr, .9, .9, .9);
   cairo_set_line_width(cr, 2.);
