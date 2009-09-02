@@ -7,7 +7,7 @@
 #include <sqlite3.h>
 #include <pthread.h>
 
-#define DT_VERSION 22
+#define DT_VERSION 23
 
 #define HANDLE_SQLITE_ERR(rc) \
   if(rc != SQLITE_OK) \

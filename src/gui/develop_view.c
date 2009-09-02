@@ -39,7 +39,7 @@ void dt_dev_enter()
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(module->off) gtk_widget_hide(module->widget);
+    if(!gtk_expander_get_expanded (module->expander)) gtk_widget_hide(module->widget);
     modules = g_list_next(modules);
   }
   // synch gui and flag gegl pipe as dirty

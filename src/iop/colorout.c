@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <string.h>
 // TODO: if using GEGL, this needs to be wrapped in color conversion routines of gegl?
-#include "iop/colorin.h"
+#include "iop/colorout.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -15,7 +15,7 @@ static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -24,8 +24,8 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   int pos = gtk_combo_box_get_active(widget);
   GList *prof = g->profiles;
   while(prof)
@@ -47,7 +47,7 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
 {
-  dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
+  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
 #ifdef _OPENMP // not thread safe?
@@ -57,31 +57,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     double RGB[3];
     cmsCIELab Lab;
-
-    // convert to La/Lb/L to be able to change L without changing saturation.
-    for(int c=0;c<3;c++) RGB[c] = in[3*k + c];
-    cmsDoTransform(d->xform, RGB, &Lab, 1);
-    // Lab.L = RGB[0]; Lab.a = RGB[1]; Lab.b = RGB[2];
-    out[3*k + 0] = Lab.L;
-    out[3*k + 1] = 100.0*Lab.a/Lab.L;
-    out[3*k + 2] = 100.0*Lab.b/Lab.L;
+    // convert from La/Lb/L to be able to change L without changing saturation.
+    Lab.L = in[3*k+0];
+    Lab.a = in[3*k+1]*Lab.L*(1.0/100.0);
+    Lab.b = in[3*k+2]*Lab.L*(1.0/100.0);
+    cmsDoTransform(d->xform, &Lab, RGB, 1);
+    // RGB[0] = Lab.L; RGB[1] = Lab.a; RGB[2] = Lab.b;
+    for(int c=0;c<3;c++) out[3*k + c] = RGB[c];
   }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
 #ifdef HAVE_GEGL
   // pull in new params to gegl
   #error "gegl version needs some more care!"
 #else
-  dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
-  if(d->input) cmsCloseProfile(d->input);
+  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  if(d->output) cmsCloseProfile(d->output);
   if(!strcmp(p->iccprofile, "sRGB"))
   { // default: sRGB
-    d->input = NULL;
+    d->output = NULL;
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->intent, 0);
   }
   else
   { // else: load file name
@@ -89,9 +88,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char filename[1024];
     dt_get_datadir(datadir, 1024);
     snprintf(filename, 1024, "%s/color/%s", datadir, p->iccprofile);
-    d->input = cmsOpenProfileFromFile(filename, "r");
+    d->output = cmsOpenProfileFromFile(filename, "r");
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
   }
 #endif
 }
@@ -101,9 +100,9 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #ifdef HAVE_GEGL
   // create part of the gegl pipeline
 #else
-  piece->data = malloc(sizeof(dt_iop_colorin_data_t));
-  dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
-  d->input = NULL;
+  piece->data = malloc(sizeof(dt_iop_colorout_data_t));
+  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  d->output = NULL;
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -114,8 +113,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // clean up everything again.
   // (void)gegl_node_remove_child(pipe->gegl, piece->input);
 #else
-  dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
-  if(d->input) cmsCloseProfile(d->input);
+  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  if(d->output) cmsCloseProfile(d->output);
   free(piece->data);
 #endif
 }
@@ -123,8 +122,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
   gtk_combo_box_set_active(g->cbox1, (int)p->intent);
   GList *prof = g->profiles;
   while(prof)
@@ -142,14 +141,14 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_colorin_data_t));
-  module->params = malloc(sizeof(dt_iop_colorin_params_t));
-  module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
-  module->params_size = sizeof(dt_iop_colorin_params_t);
+  // module->data = malloc(sizeof(dt_iop_colorout_data_t));
+  module->params = malloc(sizeof(dt_iop_colorout_params_t));
+  module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
+  module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"sRGB", DT_INTENT_PERCEPTUAL};
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
+  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){"sRGB", DT_INTENT_PERCEPTUAL};
+  memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -162,9 +161,9 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  // dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  // dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
@@ -214,7 +213,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   while(g->profiles)
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
   free(self->gui_data);

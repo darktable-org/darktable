@@ -1,55 +1,35 @@
-#ifndef DARKTABLE_IOP_COLORIN_H
-#define DARKTABLE_IOP_COLORIN_H
+#ifndef DARKTABLE_IOP_COLOROUT_H
+#define DARKTABLE_IOP_COLOROUT_H
 
 #include "develop/imageop.h"
+#include "iop/colorin.h" // common structs
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <lcms.h>
 
-// max iccprofile file name length
-#define DT_IOP_COLOR_ICC_LEN 100
-
-// constants fit to the ones from lcms.h:
-typedef enum dt_iop_color_intent_t
-{
-  DT_INTENT_PERCEPTUAL             = INTENT_PERCEPTUAL,            // 0
-  DT_INTENT_RELATIVE_COLORIMETRIC  = INTENT_RELATIVE_COLORIMETRIC, // 1
-  DT_INTENT_SATURATION             = INTENT_SATURATION,            // 2
-  DT_INTENT_ABSOLUTE_COLORIMETRIC  = INTENT_ABSOLUTE_COLORIMETRIC  // 3
-}
-dt_iop_color_intent_t;
-
-typedef struct dt_iop_color_profile_t
-{
-  char filename[512]; // icc file name
-  char name[512];     // product name
-  int  pos;           // position in combo box    
-}
-dt_iop_color_profile_t;
-
-typedef struct dt_iop_colorin_params_t
+typedef struct dt_iop_colorout_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
 }
-dt_iop_colorin_params_t;
+dt_iop_colorout_params_t;
 
-typedef struct dt_iop_colorin_gui_data_t
+typedef struct dt_iop_colorout_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2;
   GtkComboBox *cbox1, *cbox2;
   GList *profiles;
 }
-dt_iop_colorin_gui_data_t;
+dt_iop_colorout_gui_data_t;
 
-typedef struct dt_iop_colorin_data_t
+typedef struct dt_iop_colorout_data_t
 {
-  cmsHPROFILE input;
+  cmsHPROFILE output;
   cmsHPROFILE Lab;
   cmsHTRANSFORM xform;
 }
-dt_iop_colorin_data_t;
+dt_iop_colorout_data_t;
 
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
