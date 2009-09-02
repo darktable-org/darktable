@@ -24,6 +24,7 @@
 #ifndef _LIBRAW_TYPES_H
 #define _LIBRAW_TYPES_H
 
+#include <sys/types.h>
 #ifndef WIN32
 #include <sys/time.h>
 #endif
@@ -44,8 +45,14 @@ extern "C" {
 #include "libraw_const.h"
 #include "libraw_version.h"
 
+#ifdef WIN32
+typedef __int64 INT64;
+typedef unsigned __int64 UINT64;
+#else
 typedef long long INT64;
 typedef unsigned long long UINT64;
+#endif
+
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 
@@ -95,6 +102,9 @@ typedef struct
                 width,
                 colors,
                 bits;
+#ifdef _OPENMP
+// #pragma omp firstprivate(colors,height,width)
+#endif
     unsigned int  data_size; 
     unsigned char data[1]; 
 }libraw_processed_image_t;
@@ -125,6 +135,9 @@ typedef struct
                 left_margin;
     ushort      iheight,
                 iwidth;
+#ifdef _OPENMP
+// #pragma omp firstprivate(iheight,iwidth)
+#endif
     double      pixel_aspect;
     int         flip;
 
@@ -202,6 +215,9 @@ typedef struct
     unsigned    shot_select;    /* -s */
     float       bright;         /* -b */
     float       threshold;      /*  -n */
+#ifdef _OPENMP
+// #pragma omp firstprivate(threshold)
+#endif
     int         half_size;      /* -h */
     int         four_color_rgb; /* -f */
     int         document_mode;  /* -d/-D */
@@ -253,6 +269,9 @@ typedef struct
     libraw_thumbnail_t          thumbnail;
     libraw_masked_t             masked_pixels;
     ushort                      (*image)[4] ;
+#ifdef _OPENMP
+// #pragma omp shared(image)
+#endif
     libraw_output_params_t     params;
     void                *parent_class;      
 } libraw_data_t;

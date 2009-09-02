@@ -304,7 +304,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     strncpy(img->exif_maker, raw->idata.make, 20);
     strncpy(img->exif_model, raw->idata.model, 20);
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
-    image = dcraw_make_mem_thumb(raw, &ret);
+    image = libraw_dcraw_make_mem_thumb(raw, &ret);
     int p_wd, p_ht;
     float f_wd, f_ht;
     dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
@@ -531,7 +531,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
   HANDLE_ERRORS(ret, 1);
-  image = dcraw_make_mem_image(raw, &ret);
+  image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
   img->shrink = raw->params.half_size;
@@ -775,7 +775,7 @@ error_magick_mip4:
   return 1;
 #else
   img->shrink = 0;
-  const int orientation = img->orientation & 4 ? img->orientation : img->orientation ^ 1;
+  const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
@@ -988,7 +988,7 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   return 0;
 #else
   img->shrink = 0;
-  const int orientation = img->orientation & 4 ? img->orientation : img->orientation ^ 1;
+  const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;

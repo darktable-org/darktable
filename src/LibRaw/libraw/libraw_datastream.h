@@ -36,6 +36,7 @@ struct LibRaw_abstract_datastream;
 #else /* __cplusplus */
 
 #include "libraw_const.h"
+#include "libraw_types.h"
 
 class LibRaw_buffer_datastream;
 
@@ -46,8 +47,8 @@ class LibRaw_abstract_datastream
     virtual             ~LibRaw_abstract_datastream(void){if(substream) delete substream;}
     virtual int         valid(){return 0;}
     virtual int         read(void *,size_t, size_t ){ return -1;}
-    virtual int         seek(off_t , int ){return -1;}
-    virtual int         tell(){return -1;}
+    virtual int         seek(INT64 , int ){return -1;}
+    virtual INT64       tell(){return -1;}
     virtual int         get_char(){return -1;}
     virtual char*       gets(char *, int){ return NULL;}
     virtual int         scanf_one(const char *, void *){return -1;}
@@ -95,15 +96,31 @@ class LibRaw_file_datastream : public LibRaw_abstract_datastream
         CHK(); 
         return substream?substream->eof():feof(f);
     }
-    virtual int seek(off_t o, int whence) 
+    virtual int seek(INT64 o, int whence) 
     { 
         CHK(); 
+#if defined (WIN32) 
+#if __MSVCRT_VERSION__ >= 0x800
+        return substream?substream->seek(o,whence):_fseeki64(f,o,whence);
+#else
         return substream?substream->seek(o,whence):fseek(f,o,whence);
+#endif
+#else
+        return substream?substream->seek(o,whence):fseeko(f,o,whence);
+#endif
     }
-    virtual int tell() 
+    virtual INT64 tell() 
     { 
         CHK(); 
+#if defined (WIN32)
+#if __MSVCRT_VERSION__ >= 0x800
+        return substream?substream->tell():_ftelli64(f);
+#else
         return substream?substream->tell():ftell(f);
+#endif
+#else
+        return substream?substream->tell():ftello(f);
+#endif
     }
     virtual int get_char() 
     { 
@@ -179,7 +196,7 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
         return streampos >= streamsize;
     }
 
-    virtual int seek(off_t o, int whence) 
+    virtual int seek(INT64 o, int whence) 
     { 
         if(substream) return substream->seek(o,whence);
         switch(whence)
@@ -221,10 +238,10 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
             }
     }
     
-    virtual int tell() 
+    virtual INT64 tell() 
     { 
         if(substream) return substream->tell();
-        return int(streampos);
+        return INT64(streampos);
     }
 
     virtual int get_char() 

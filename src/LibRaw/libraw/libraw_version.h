@@ -26,8 +26,8 @@
 
 #define LIBRAW_MAJOR_VERSION  0
 #define LIBRAW_MINOR_VERSION  8
-#define LIBRAW_PATCH_VERSION  0
-#define LIBRAW_VERSION_TAIL   Beta3
+#define LIBRAW_PATCH_VERSION  1
+#define LIBRAW_VERSION_TAIL   Release
 
 #define _LIBRAW_VERSION_MAKE(a,b,c,d) #a"."#b"."#c"-"#d
 #define LIBRAW_VERSION_MAKE(a,b,c,d) _LIBRAW_VERSION_MAKE(a,b,c,d)

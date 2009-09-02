@@ -1,6 +1,6 @@
 /* 
    GENERATED FILE, DO NOT EDIT
-   Generated from dcraw/dcraw.c at Mon Jun  8 13:24:08 2009
+   Generated from dcraw/dcraw.c at Sun Aug 30 16:37:42 2009
    Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
    for copyright information.
 */
@@ -16,6 +16,9 @@
 #define SRC_USES_CURVE
 #include "internal/var_defines.h"
 #define sget4(s) sget4((uchar *)s)
+#ifndef M_PI
+#define	M_PI		3.14159265358979323846
+#endif
 
 /* RESTRICTED code starts here */
 
@@ -32,7 +35,8 @@ void CLASS foveon_decoder (unsigned size, unsigned code)
   if (!code) {
     for (i=0; i < size; i++)
       huff[i] = get4();
-    init_decoder();
+    memset (first_decode, 0, sizeof first_decode);
+    free_decode = first_decode;
   }
   cur = free_decode++;
   if (free_decode > first_decode+2048) {

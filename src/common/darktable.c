@@ -170,7 +170,10 @@ void *dt_alloc_align(size_t alignment, size_t size)
 void dt_get_datadir(char *datadir, size_t bufsize)
 {
   gchar *curr = g_get_current_dir();
-  snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
+  if(darktable.progname[0] == '/')
+    snprintf(datadir, bufsize, "%s", darktable.progname);
+  else
+    snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
   size_t len = MIN(strlen(datadir), bufsize);
   char *t = datadir + len; // strip off bin/darktable
   for(;t>datadir && *t!='/';t--); t--;

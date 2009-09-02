@@ -299,7 +299,7 @@ void dt_image_init(dt_image_t *img)
   img->width = img->height = 0;
   img->mipf = NULL;
   img->pixels = NULL;
-  img->orientation = 0;
+  img->orientation = -1; // not inited.
   img->exposure = 0;
   img->wb_auto = img->wb_cam = 1;
   img->shrink = 0;

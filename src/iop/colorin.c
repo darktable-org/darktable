@@ -88,7 +88,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char datadir[1024];
     char filename[1024];
     dt_get_datadir(datadir, 1024);
-    snprintf(filename, 1024, "%s/color/%s", datadir, p->iccprofile);
+    snprintf(filename, 1024, "%s/color/in/%s", datadir, p->iccprofile);
     d->input = cmsOpenProfileFromFile(filename, "r");
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
     d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
@@ -167,13 +167,40 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
+  // add std sRGB profile:
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
-  prof->pos = 0;
-  // TODO: read datadir/color/in/*.icc!
-  // cmsGetProductName(hProfile)
+  int pos = prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
+
+  // read datadir/color/in/*.icc!
+  char datadir[1024], dirname[1024];
+  dt_get_datadir(datadir, 1024);
+  snprintf(dirname, 1024, "%s/color/in", datadir);
+  cmsHPROFILE tmpprof;
+  const gchar *d_name;
+  GDir *dir = g_dir_open(dirname, 0, NULL);
+  printf("opening directory %s\n", dirname);
+  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
+  if(dir)
+  {
+    while((d_name = g_dir_read_name(dir)))
+    {
+      snprintf(datadir, 1024, "%s/%s", dirname, d_name);
+      tmpprof = cmsOpenProfileFromFile(datadir, "r");
+      if(tmpprof)
+      {
+        dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+        strcpy(prof->name, cmsTakeProductDesc(tmpprof));
+        strcpy(prof->filename, d_name);
+        prof->pos = ++pos;
+        cmsCloseProfile(tmpprof);
+        g->profiles = g_list_append(g->profiles, prof);
+      }
+    }
+    g_dir_close(dir);
+  }
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));

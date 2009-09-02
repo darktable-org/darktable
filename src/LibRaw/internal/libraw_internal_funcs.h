@@ -43,20 +43,21 @@
     void        canon_600_coeff();
     void        canon_600_load_raw();
     int         canon_s2is();
-    void        canon_a5_load_raw();
     void        parse_ciff (int offset, int length);
     void        ciff_block_1030();
 
 // LJPEG decoder
-    unsigned    getbits (int nbits);
-    void        init_decoder();
-    uchar *     make_decoder (const uchar *source, int level);
+    unsigned    getbithuff (int nbits, ushort *huff);
+    ushort*     make_decoder_ref (const uchar **source);
+    ushort*     make_decoder (const uchar *source);
     int         ljpeg_start (struct jhead *jh, int info_only);
-    int         ljpeg_diff (struct decode *dindex);
+    void        ljpeg_end(struct jhead *jh);
+    int         ljpeg_diff (ushort *huff);
     ushort *    ljpeg_row (int jrow, struct jhead *jh);
+    unsigned    ph1_bithuff (int nbits, ushort *huff);
 
 // Canon DSLRs
-    void        crw_init_tables (unsigned table);
+void        crw_init_tables (unsigned table, ushort *huff[2]);
     int         canon_has_lowbits();
     void        canon_compressed_load_raw();
     void        lossless_jpeg_load_raw();
@@ -68,7 +69,7 @@ void        canon_black(double *, int nblack);
     void        adobe_dng_load_raw_nc();
 
 // Pentax
-    void        pentax_k10_load_raw();
+    void        pentax_load_raw();
     void        pentax_tree();
 
 // Nikon (and Minolta Z2)
@@ -79,7 +80,6 @@ void        canon_black(double *, int nblack);
     int         nikon_e2100();
     void        nikon_3700();
     int         minolta_z2();
-    void        nikon_e900_load_raw();
     void        nikon_e2100_load_raw();
 
 // Fuji
@@ -104,7 +104,8 @@ void        canon_black(double *, int nblack);
     void        leaf_hdr_load_raw();
     void        sinar_4shot_load_raw();
     void        imacon_full_load_raw();
-    void        packed_12_load_raw();
+    void        packed_load_raw();
+    float	find_green(int,int,int,int);
     void        unpacked_load_raw();
     void        parse_sinar_ia();
     void        parse_phase_one (int base);
@@ -113,10 +114,9 @@ void        canon_black(double *, int nblack);
     void        nokia_load_raw();
     unsigned    pana_bits (int nbits);
     void        panasonic_load_raw();
-    void        olympus_e410_load_raw();
+    void        olympus_load_raw();
     void        olympus_cseries_load_raw();
     void        minolta_rd175_load_raw();
-    void        casio_qv5700_load_raw();
     void        quicktake_100_load_raw();
     const int*  make_decoder_int (const int *source, int level);
     int         radc_token (int tree);

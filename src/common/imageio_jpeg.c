@@ -47,6 +47,7 @@ void dt_imageio_jpeg_term_source(j_decompress_ptr cinfo) {}
 
 int dt_imageio_jpeg_decompress_header(const void *in, size_t length, dt_imageio_jpeg_t *jpg)
 {
+  jpeg_create_decompress(&(jpg->dinfo));
   jpg->src.init_source = dt_imageio_jpeg_init_source;
   jpg->src.fill_input_buffer = dt_imageio_jpeg_fill_input_buffer;
   jpg->src.skip_input_data = dt_imageio_jpeg_skip_input_data;
@@ -64,9 +65,8 @@ int dt_imageio_jpeg_decompress_header(const void *in, size_t length, dt_imageio_
     return 1;
   }
 
-  jpeg_create_decompress(&(jpg->dinfo));
   jpg->dinfo.src = &(jpg->src);
-  jpg->dinfo.buffered_image = TRUE;
+  // jpg->dinfo.buffered_image = TRUE;
   jpeg_read_header(&(jpg->dinfo), TRUE);
   jpg->width  = jpg->dinfo.image_width;
   jpg->height = jpg->dinfo.image_height;
@@ -75,6 +75,13 @@ int dt_imageio_jpeg_decompress_header(const void *in, size_t length, dt_imageio_
 
 int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
+  struct dt_imageio_jpeg_error_mgr jerr;
+  jpg->dinfo.err = jpeg_std_error(&jerr.pub);
+  if (setjmp(jerr.setjmp_buffer))
+  {
+	  jpeg_destroy_decompress(&(jpg->dinfo));
+    return 1;
+  }
   (void)jpeg_start_decompress(&(jpg->dinfo));
 	JSAMPROW row_pointer[1];
 	row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width*jpg->dinfo.num_components);

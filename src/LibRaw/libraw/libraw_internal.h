@@ -46,7 +46,7 @@
 class LibRaw_TLS
 {
 public:
-    struct 
+    struct
     {
          unsigned bitbuf;
          int vbits, reset;
@@ -57,12 +57,6 @@ public:
          int vbits;
 
     }ph1_bits;
-    int make_decoder_leaf;
-    struct
-    {
-        struct decode *dstart[18], *dindex;
-        const int *s;
-    }radc_token;
     struct
     {
          unsigned pad[128], p;
@@ -92,9 +86,6 @@ class LibRaw_constants
 };
 #endif /* __cplusplus */
 
-#ifdef WIN32
-typedef long off_t;
-#endif
 
 typedef struct
 {
@@ -105,8 +96,8 @@ typedef struct
     FILE        *output;
     int         input_internal;
     char        *meta_data;
-    off_t       profile_offset;
-    off_t       toffset;
+    INT64       profile_offset;
+    INT64       toffset;
 
 } internal_data_t;
 
@@ -140,8 +131,8 @@ typedef struct
     short       order; 
     ushort      sraw_mul[4],cr2_slice[3];
     unsigned    kodak_cbpp;
-    off_t       strip_offset, data_offset;
-    off_t       meta_offset;
+    INT64       strip_offset, data_offset;
+    INT64       meta_offset;
     unsigned     meta_length;
     unsigned    thumb_misc;
     unsigned    fuji_layout;
@@ -179,8 +170,7 @@ struct tiff_ifd_t
 
 struct jhead {
   int bits, high, wide, clrs, sraw, psv, restart, vpred[6];
-  struct decode *huff[6];
-  ushort *row;
+    ushort *huff[6], *free[4], *row;
 };
 struct tiff_tag {
   ushort tag, type;

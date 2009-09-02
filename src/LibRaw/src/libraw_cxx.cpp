@@ -133,6 +133,10 @@ void LibRaw::derror()
         }
     libraw_internal_data.unpacker_data.data_error = 1;
 }
+
+#define ZERO(a) memset(&a,0,sizeof(a))
+
+
 LibRaw:: LibRaw(unsigned int flags)
 {
     double aber[4] = {1,1,1,1};
@@ -143,9 +147,9 @@ LibRaw:: LibRaw(unsigned int flags)
 #else
     verbose = 0;
 #endif
-    bzero(&imgdata,sizeof(imgdata));
-    bzero(&libraw_internal_data,sizeof(libraw_internal_data));
-    bzero(&callbacks,sizeof(callbacks));
+    ZERO(imgdata);
+    ZERO(libraw_internal_data);
+    ZERO(callbacks);
     callbacks.mem_cb = (flags & LIBRAW_OPIONS_NO_MEMERR_CALLBACK) ? NULL:  &default_memory_callback;
     callbacks.data_cb = (flags & LIBRAW_OPIONS_NO_DATAERR_CALLBACK)? NULL : &default_data_callback;
     memmove(&imgdata.params.aber,&aber,sizeof(aber));
@@ -228,11 +232,9 @@ void LibRaw:: recycle()
     FREE(imgdata.masked_pixels.buffer);
     FREE(imgdata.masked_pixels.ph1_black);
 #undef FREE
-#define ZERO(a) bzero(&a,sizeof(a))
     ZERO(imgdata.masked_pixels);
     ZERO(imgdata.sizes);
     ZERO(libraw_internal_data.internal_output_params);
-#undef ZERO
     memmgr.cleanup();
     imgdata.thumbnail.tformat = LIBRAW_THUMBNAIL_UNKNOWN;
     imgdata.progress_flags = 0;
@@ -249,11 +251,9 @@ const char * LibRaw::unpack_function_name()
     if (load_raw == &LibRaw::adobe_dng_load_raw_nc)     return "adobe_dng_load_raw_nc()";
     if (load_raw == &LibRaw::canon_600_load_raw)        return "canon_600_load_raw()";
 
-    if (load_raw == &LibRaw::canon_a5_load_raw)         return "canon_a5_load_raw()";
     if (load_raw == &LibRaw::canon_compressed_load_raw) return "canon_compressed_load_raw()";
     if (load_raw == &LibRaw::canon_sraw_load_raw)       return "canon_sraw_load_raw()";
 
-    if (load_raw == &LibRaw::casio_qv5700_load_raw )    return "casio_qv5700_load_raw()";
     if (load_raw == &LibRaw::eight_bit_load_raw )       return "eight_bit_load_raw()";
     if (load_raw == &LibRaw::foveon_load_raw )          return "foveon_load_raw()";
     if (load_raw == &LibRaw::fuji_load_raw )            return "fuji_load_raw()";
@@ -276,14 +276,13 @@ const char * LibRaw::unpack_function_name()
     if (load_raw == &LibRaw::minolta_rd175_load_raw )   return "minolta_rd175_load_raw()";
 
     if (load_raw == &LibRaw::nikon_compressed_load_raw) return "nikon_compressed_load_raw()";
-    if (load_raw == &LibRaw::nikon_e900_load_raw )      return "nikon_e900_load_raw()";
     if (load_raw == &LibRaw::nokia_load_raw )           return "nokia_load_raw()";
 
-    if (load_raw == &LibRaw::olympus_e410_load_raw )    return "olympus_e410_load_raw()";
-    if (load_raw == &LibRaw::packed_12_load_raw )       return "packed_12_load_raw()";
+    if (load_raw == &LibRaw::olympus_load_raw )    return "olympus_load_raw()";
+    if (load_raw == &LibRaw::packed_load_raw )       return "packed_load_raw()";
     if (load_raw == &LibRaw::panasonic_load_raw )       return "panasonic_load_raw()";
     // 30
-    if (load_raw == &LibRaw::pentax_k10_load_raw )      return "pentax_k10_load_raw()";
+    if (load_raw == &LibRaw::pentax_load_raw )          return "pentax_load_raw()";
     if (load_raw == &LibRaw::phase_one_load_raw )       return "phase_one_load_raw()";
     if (load_raw == &LibRaw::phase_one_load_raw_c )     return "phase_one_load_raw_c()";
 
@@ -561,10 +560,10 @@ int LibRaw::open_datastream(LibRaw_abstract_datastream *stream)
         int saved_raw_width = S.raw_width;
         int saved_width = S.width;
         // from packed_12_load_raw
-        if ((load_raw == &LibRaw:: packed_12_load_raw) && (S.raw_width * 2 >= S.width * 3))
+        if ((load_raw == &LibRaw:: packed_load_raw) && (S.raw_width * 8U >= S.width * libraw_internal_data.unpacker_data.tiff_bps))
             {	
                 // raw_width is in bytes!
-                S.raw_width = S.raw_width * 2 / 3;	
+                S.raw_width = S.raw_width * 8 / libraw_internal_data.unpacker_data.tiff_bps;	
             }
         else if (S.pixel_aspect < 0.95 || S.pixel_aspect > 1.05)
             {
@@ -828,7 +827,7 @@ libraw_processed_image_t * LibRaw::dcraw_make_mem_thumb(int *errcode)
                     return NULL;
                 }
 
-            bzero(ret,sizeof(libraw_processed_image_t));
+            memset(ret,0,sizeof(libraw_processed_image_t));
             ret->type   = LIBRAW_IMAGE_BITMAP;
             ret->height = T.theight;
             ret->width  = T.twidth;
@@ -856,7 +855,7 @@ libraw_processed_image_t * LibRaw::dcraw_make_mem_thumb(int *errcode)
                     return NULL;
                 }
 
-            bzero(ret,sizeof(libraw_processed_image_t));
+            memset(ret,0,sizeof(libraw_processed_image_t));
 
             ret->type = LIBRAW_IMAGE_JPEG;
             ret->data_size = dsize;
@@ -921,7 +920,7 @@ libraw_processed_image_t *LibRaw::dcraw_make_mem_image(int *errcode)
                 if(errcode) *errcode= ENOMEM;
                 return NULL;
         }
-    bzero(ret,sizeof(libraw_processed_image_t));
+    memset(ret,0,sizeof(libraw_processed_image_t));
     // metadata init
 
     int s_iheight = S.iheight;
@@ -1091,15 +1090,16 @@ void LibRaw::kodak_thumb_loader()
         for (col=0; col < S.width; col++, img+=4)
             {
                 out[0] = out[1] = out[2] = 0;
-                for(int c=0;c<3;c++) 
+                int c;
+                for(c=0;c<3;c++) 
                     {
                         out[0] += out_cam[0][c] * img[c];
                         out[1] += out_cam[1][c] * img[c];
                         out[2] += out_cam[2][c] * img[c];
                     }
-                for(int c=0; c<3; c++)
+                for(c=0; c<3; c++)
                     img[c] = CLIP((int) out[c]);
-                for(int c=0; c<P1.colors;c++)
+                for(c=0; c<P1.colors;c++)
                     t_hist[c][img[c] >> 3]++;
                     
             }
@@ -1579,6 +1579,7 @@ int LibRaw::dcraw_process(void)
 static const char  *static_camera_list[] = 
 {
 "Adobe Digital Negative (DNG)",
+"AgfaPhoto DC-833m",
 "Apple QuickTake 100",
 "Apple QuickTake 150",
 "Apple QuickTake 200",
@@ -1592,6 +1593,7 @@ static const char  *static_camera_list[] =
 "Canon PowerShot A5 Zoom",
 "Canon PowerShot A50",
 "Canon PowerShot A460 (CHDK hack)",
+"Canon PowerShot A470 (CHDK hack)",
 "Canon PowerShot A530 (CHDK hack)",
 "Canon PowerShot A570 (CHDK hack)",
 "Canon PowerShot A590 (CHDK hack)",
@@ -1613,6 +1615,7 @@ static const char  *static_camera_list[] =
 "Canon PowerShot G7 (CHDK hack)",
 "Canon PowerShot G9",
 "Canon PowerShot G10",
+"Canon PowerShot G11",
 "Canon PowerShot S2 IS (CHDK hack)",
 "Canon PowerShot S3 IS (CHDK hack)",
 "Canon PowerShot S5 IS (CHDK hack)",
@@ -1656,10 +1659,13 @@ static const char  *static_camera_list[] =
 "Casio QV-R41",
 "Casio QV-R51",
 "Casio QV-R61",
+"Casio EX-S20",
 "Casio EX-S100",
 "Casio EX-Z4",
 "Casio EX-Z50",
 "Casio EX-Z55",
+"Casio EX-Z60",
+"Casio EX-Z75",
 "Casio Exlim Pro 505",
 "Casio Exlim Pro 600",
 "Casio Exlim Pro 700",
@@ -1728,6 +1734,7 @@ static const char  *static_camera_list[] =
 "Kodak C603",
 "Kodak P850",
 "Kodak P880",
+"Kodak Z980",
 "Kodak Z1015",
 "Kodak KAI-0340",
 "Konica KD-400Z",
@@ -1794,6 +1801,8 @@ static const char  *static_camera_list[] =
 "Nikon D200",
 "Nikon D300",
 "Nikon D700",
+"Nikon D3000",
+"Nikon D5000",
 "Nikon E700 (\"DIAG RAW\" hack)",
 "Nikon E800 (\"DIAG RAW\" hack)",
 "Nikon E880 (\"DIAG RAW\" hack)",
@@ -1824,6 +1833,7 @@ static const char  *static_camera_list[] =
 "Olympus C740UZ",
 "Olympus C770UZ",
 "Olympus C8080WZ",
+"Olympus X200,D560Z,C350Z",
 "Olympus E-1",
 "Olympus E-3",
 "Olympus E-10",
@@ -1837,6 +1847,8 @@ static const char  *static_camera_list[] =
 "Olympus E-500",
 "Olympus E-510",
 "Olympus E-520",
+"Olympus E-620",
+"Olympus E-P1",
 "Olympus SP310",
 "Olympus SP320",
 "Olympus SP350",
@@ -1849,6 +1861,7 @@ static const char  *static_camera_list[] =
 "Panasonic DMC-FZ18",
 "Panasonic DMC-FZ28",
 "Panasonic DMC-FZ30",
+"Panasonic DMC-FZ35/FZ38",
 "Panasonic DMC-FZ50",
 "Panasonic DMC-FX150",
 "Panasonic DMC-G1",
@@ -1870,6 +1883,7 @@ static const char  *static_camera_list[] =
 "Pentax K100D Super",
 "Pentax K200D",
 "Pentax K2000/K-m",
+"Pentax K-7",
 "Pentax Optio S",
 "Pentax Optio S4",
 "Pentax Optio 33WR",
@@ -1882,6 +1896,7 @@ static const char  *static_camera_list[] =
 "Phase One P 25",
 "Phase One P 30",
 "Phase One P 45",
+"Phase One P 45+",
 "Pixelink A782",
 "Polaroid x530",
 "Rollei d530flex",
@@ -1889,6 +1904,7 @@ static const char  *static_camera_list[] =
 "Samsung GX-1S",
 "Samsung GX-10",
 "Samsung S85 (hacked)",
+"Samsung S850 (hacked)",
 "Sarnoff 4096x5440",
 "Sigma SD9",
 "Sigma SD10",
@@ -1906,6 +1922,7 @@ static const char  *static_camera_list[] =
 "Sony DSLR-A100",
 "Sony DSLR-A200",
 "Sony DSLR-A300",
+"Sony DSLR-A330",
 "Sony DSLR-A350",
 "Sony DSLR-A700",
 "Sony DSLR-A900",

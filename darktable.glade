@@ -12,6 +12,7 @@
         <child>
           <widget class="GtkVBox" id="center_vbox">
             <property name="visible">True</property>
+            <property name="orientation">vertical</property>
             <child>
               <widget class="GtkAspectFrame" id="top">
                 <property name="visible">True</property>
@@ -128,6 +129,7 @@ id</property>
           <widget class="GtkVBox" id="left">
             <property name="width_request">250</property>
             <property name="visible">True</property>
+            <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
               <widget class="GtkExpander" id="navigation_expander">
@@ -168,6 +170,7 @@ id</property>
                   <widget class="GtkVBox" id="library_expander_body">
                     <property name="visible">True</property>
                     <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <widget class="GtkButton" id="button_import">
                         <property name="label" translatable="yes">import film roll</property>
@@ -579,6 +582,7 @@ id</property>
                   <widget class="GtkVBox" id="history_expander_body">
                     <property name="visible">True</property>
                     <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <widget class="GtkButton" id="history_09">
                         <property name="label" translatable="yes">button</property>

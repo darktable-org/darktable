@@ -26,9 +26,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#ifdef WIN32
-#define bzero(p,sz) memset(p,0,sz)
-#endif
 
 #ifdef __cplusplus
 
@@ -39,7 +36,7 @@ class libraw_memmgr
   public:
     libraw_memmgr()
         {
-            bzero(mems,sizeof(mems));
+            memset(mems,0,sizeof(mems));
             calloc_cnt=0;
         }
     void *malloc(size_t sz)

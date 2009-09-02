@@ -87,7 +87,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char datadir[1024];
     char filename[1024];
     dt_get_datadir(datadir, 1024);
-    snprintf(filename, 1024, "%s/color/%s", datadir, p->iccprofile);
+    snprintf(filename, 1024, "%s/color/out/%s", datadir, p->iccprofile);
     d->output = cmsOpenProfileFromFile(filename, "r");
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
     d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
