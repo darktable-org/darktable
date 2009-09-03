@@ -63,8 +63,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     cmsDoTransform(d->xform, RGB, &Lab, 1);
     // Lab.L = RGB[0]; Lab.a = RGB[1]; Lab.b = RGB[2];
     out[3*k + 0] = Lab.L;
-    out[3*k + 1] = 100.0*Lab.a/Lab.L;
-    out[3*k + 2] = 100.0*Lab.b/Lab.L;
+    if(Lab.L > 0)
+    {
+      out[3*k + 1] = 100.0*Lab.a/Lab.L;
+      out[3*k + 2] = 100.0*Lab.b/Lab.L;
+    }
+    else
+    {
+      out[3*k + 1] = Lab.a;
+      out[3*k + 2] = Lab.b;
+    }
   }
 }
 

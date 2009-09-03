@@ -288,14 +288,19 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   }
 
   // get thumbnail
+  ret = libraw_unpack(raw);
   ret = libraw_unpack_thumb(raw);
+  ret = libraw_adjust_sizes_info_only(raw);
+
   if(!ret)
   {
     ret = 0;
     img->shrink = raw->params.half_size;
     img->orientation = raw->sizes.flip;
-    img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
-    img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+    // img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
+    // img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+    img->width  = (img->orientation & 4) ? 2*raw->sizes.iheight : 2*raw->sizes.iwidth;
+    img->height = (img->orientation & 4) ? 2*raw->sizes.iwidth  : 2*raw->sizes.iheight;
     // printf("size: %dx%d\n", img->width, img->height);
     img->exif_iso = raw->other.iso_speed;
     img->exif_exposure = raw->other.shutter;
