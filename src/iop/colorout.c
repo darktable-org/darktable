@@ -129,7 +129,7 @@ void gui_update(struct dt_iop_module_t *self)
   while(prof)
   {
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
-    if(!strcmp(pp->name, p->iccprofile))
+    if(!strcmp(pp->filename, p->iccprofile))
     {
       gtk_combo_box_set_active(g->cbox2, pp->pos);
       return;
@@ -169,10 +169,35 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
-  prof->pos = 0;
-  // TODO: read datadir/color/in/*.icc!
-  // cmsGetProductName(hProfile)
+  int pos = prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
+
+  // read datadir/color/out/*.icc
+  char datadir[1024], dirname[1024], filename[1024];
+  dt_get_datadir(datadir, 1024);
+  snprintf(dirname, 1024, "%s/color/in", datadir);
+  cmsHPROFILE tmpprof;
+  const gchar *d_name;
+  GDir *dir = g_dir_open(dirname, 0, NULL);
+  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
+  if(dir)
+  {
+    while((d_name = g_dir_read_name(dir)))
+    {
+      snprintf(filename, 1024, "%s/%s", dirname, d_name);
+      tmpprof = cmsOpenProfileFromFile(filename, "r");
+      if(tmpprof)
+      {
+        dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+        strcpy(prof->name, cmsTakeProductDesc(tmpprof));
+        strcpy(prof->filename, d_name);
+        prof->pos = ++pos;
+        cmsCloseProfile(tmpprof);
+        g->profiles = g_list_append(g->profiles, prof);
+      }
+    }
+    g_dir_close(dir);
+  }
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
@@ -202,6 +227,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_set_active(g->cbox2, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
+
+  char tooltip[1024];
+  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", "rendering intent", NULL);
+  snprintf(tooltip, 1024, "icc profiles in %s/color/out", datadir);
+  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "changed",
                     G_CALLBACK (intent_changed),

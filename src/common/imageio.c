@@ -288,7 +288,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   }
 
   // get thumbnail
-  ret = libraw_unpack(raw);
+  // ret = libraw_unpack(raw);
   ret = libraw_unpack_thumb(raw);
   ret = libraw_adjust_sizes_info_only(raw);
 
@@ -299,8 +299,8 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     img->orientation = raw->sizes.flip;
     // img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
     // img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-    img->width  = (img->orientation & 4) ? 2*raw->sizes.iheight : 2*raw->sizes.iwidth;
-    img->height = (img->orientation & 4) ? 2*raw->sizes.iwidth  : 2*raw->sizes.iheight;
+    img->width  = /*(img->orientation & 4) ? 2*raw->sizes.iheight :*/ 2*raw->sizes.iwidth;
+    img->height = /*(img->orientation & 4) ? 2*raw->sizes.iwidth  :*/ 2*raw->sizes.iheight;
     // printf("size: %dx%d\n", img->width, img->height);
     img->exif_iso = raw->other.iso_speed;
     img->exif_exposure = raw->other.shutter;
@@ -520,7 +520,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   if(img->shrink) raw->params.user_qual = 0; // linear
   else            raw->params.user_qual = 3; // AHD
   // img->raw->params.output_color = 1;
-  raw->params.use_camera_matrix = 1;
+  raw->params.use_camera_matrix = 0;
   // TODO: let this unclipped for develop, clip for preview.
   raw->params.highlight = 0; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   // img->raw->params.user_flip = img->raw->sizes.flip;

@@ -11,8 +11,8 @@ bugs:
 
 cleanup:
 - sequentially work on preview/full?
-- port all image processing from Lab => LCh
 - libraw autoexposure etc off?
+- ahd,wb,autoexp,color_matrix in dt (use document mode proc)
 - keep stdout clean! (shut up exiv2 and jpg)
 - sorted image loading (on import)!
 - add some user guide documentation.
@@ -29,13 +29,10 @@ cleanup:
 - finish most develop (single film roll) functionality:
 - plug-in loading system as rc.d
   - need plug-in versioning
-- lcms plug-ins: input/output profiles (and directly convert to Lab and back).
-  - adjust tonecurve/exposure accordingly
 - post-gamma crop/rotate plug-in:
   - need mouse interface and draw hook
   - draw 3x3 lines or similar
   - move image around in crop window with darkened borders?
-- exposure, blacks, highlights (replace libraw functionality)
 - editable metadata (at least what's needed for lensfun..)
 - copy function in lib:
   - flags, tags
