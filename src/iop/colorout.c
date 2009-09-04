@@ -175,7 +175,7 @@ void gui_init(struct dt_iop_module_t *self)
   // read datadir/color/out/*.icc
   char datadir[1024], dirname[1024], filename[1024];
   dt_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/color/in", datadir);
+  snprintf(dirname, 1024, "%s/color/out", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
