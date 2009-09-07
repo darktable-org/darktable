@@ -10,6 +10,7 @@ bugs:
 - glist instead of sql query in export (or else altering selection after pressing export will change the behavior)
 
 cleanup:
+- colorin: use color matrix?
 - sequentially work on preview/full?
 - libraw autoexposure etc off?
 - ahd,wb,autoexp,color_matrix in dt (use document mode proc)

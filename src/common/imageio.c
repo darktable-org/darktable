@@ -310,6 +310,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     strncpy(img->exif_model, raw->idata.model, 20);
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
     image = libraw_dcraw_make_mem_thumb(raw, &ret);
+    if(!image) goto try_full_raw;
     int p_wd, p_ht;
     float f_wd, f_ht;
     dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
@@ -487,6 +488,7 @@ error_raw_magick:// clean up libraw and magick only
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
+try_full_raw:
   ret = dt_imageio_open_raw(img, filename);
   ret +=  dt_image_raw_to_preview(img);       // this updates mipf/mip4..0 from raw pixels.
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
@@ -520,7 +522,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   if(img->shrink) raw->params.user_qual = 0; // linear
   else            raw->params.user_qual = 3; // AHD
   // img->raw->params.output_color = 1;
-  raw->params.use_camera_matrix = 0;
+  raw->params.use_camera_matrix = 1;
   // TODO: let this unclipped for develop, clip for preview.
   raw->params.highlight = 0; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   // img->raw->params.user_flip = img->raw->sizes.flip;
