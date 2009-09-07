@@ -141,56 +141,16 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  // g->label1 = GTK_LABEL(gtk_label_new("a low"));
-  // g->label2 = GTK_LABEL(gtk_label_new("a high"));
-  // g->label3 = GTK_LABEL(gtk_label_new("b low"));
-  // g->label4 = GTK_LABEL(gtk_label_new("b high"));
   g->label5 = GTK_LABEL(gtk_label_new("saturation"));
-  // gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  // gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  // gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  // gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  // g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX, 0.001));
-  // g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(-DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX, 0.001));
-  // g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(-DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX, 0.001));
-  // g->scale4 = GTK_HSCALE(gtk_hscale_new_with_range(-DT_COLORCORRECTION_MAX, DT_COLORCORRECTION_MAX, 0.001));
   g->scale5 = GTK_HSCALE(gtk_hscale_new_with_range(-3.0, 3.0, 0.01));
-  // gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
-  // gtk_scale_set_digits(GTK_SCALE(g->scale2), 3);
-  // gtk_scale_set_digits(GTK_SCALE(g->scale3), 3);
-  // gtk_scale_set_digits(GTK_SCALE(g->scale4), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale5), 2);
-  // gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
-  // gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
-  // gtk_scale_set_value_pos(GTK_SCALE(g->scale3), GTK_POS_LEFT);
-  // gtk_scale_set_value_pos(GTK_SCALE(g->scale4), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale5), GTK_POS_LEFT);
-  // gtk_range_set_value(GTK_RANGE(g->scale1), p->loa);
-  // gtk_range_set_value(GTK_RANGE(g->scale2), p->hia);
-  // gtk_range_set_value(GTK_RANGE(g->scale3), p->lob);
-  // gtk_range_set_value(GTK_RANGE(g->scale4), p->hib);
   gtk_range_set_value(GTK_RANGE(g->scale5), p->saturation);
-  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
 
-  // g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-  //                   G_CALLBACK (loa_callback), self);
-  // g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-  //                   G_CALLBACK (hia_callback), self);
-  // g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-  //                   G_CALLBACK (lob_callback), self);
-  // g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-  //                   G_CALLBACK (hib_callback), self);
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (sat_callback), self);
   g->hsRGB = cmsCreate_sRGBProfile();
@@ -205,6 +165,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+#if 0
 void loa_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -256,6 +217,7 @@ void hib_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
   gtk_widget_queue_draw(self->widget);
 }
+#endif
 
 void sat_callback (GtkRange *range, gpointer user_data)
 {
@@ -309,15 +271,14 @@ gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event,
   hia = .5f*(width + width*p1->hia/(float)DT_COLORCORRECTION_MAX);
   lob = .5f*(height + height*p1->lob/(float)DT_COLORCORRECTION_MAX);
   hib = .5f*(height + height*p1->hib/(float)DT_COLORCORRECTION_MAX);
-  cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
-  cairo_set_source_rgb(cr, .9, .9, .9);
   cairo_set_line_width(cr, 2.);
   if(g->dragging)
   {
-    if(g->selected & 1) loa = MIN(g->selected < 0xf ? hia :  INFINITY, loa + g->mouse_x-g->press_x);
-    if(g->selected & 2) lob = MIN(g->selected < 0xf ? hib :  INFINITY, lob + g->mouse_y-g->press_y);
-    if(g->selected & 4) hia = MAX(g->selected < 0xf ? loa : -INFINITY, hia + g->mouse_x-g->press_x);
-    if(g->selected & 8) hib = MAX(g->selected < 0xf ? lob : -INFINITY, hib + g->mouse_y-g->press_y);
+    cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
+    if(g->selected & 1) loa = /*MIN(g->selected < 0xf ? hia :  INFINITY,*/ loa + g->mouse_x-g->press_x;//);
+    if(g->selected & 2) lob = /*MIN(g->selected < 0xf ? hib :  INFINITY,*/ lob + g->mouse_y-g->press_y;//);
+    if(g->selected & 4) hia = /*MAX(g->selected < 0xf ? loa : -INFINITY,*/ hia + g->mouse_x-g->press_x;//);
+    if(g->selected & 8) hib = /*MAX(g->selected < 0xf ? lob : -INFINITY,*/ hib + g->mouse_y-g->press_y;//);
     p->loa = (2.0*loa - width) *DT_COLORCORRECTION_MAX/(float)width;
     p->hia = (2.0*hia - width) *DT_COLORCORRECTION_MAX/(float)width;
     p->lob = (2.0*lob - height)*DT_COLORCORRECTION_MAX/(float)height;
@@ -325,11 +286,21 @@ gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event,
   }
   else
   {
-    if(g->selected & 1) loa = MIN(hia, g->mouse_x);
-    if(g->selected & 2) lob = MIN(hib, g->mouse_y);
-    if(g->selected & 4) hia = MAX(loa, g->mouse_x);
-    if(g->selected & 8) hib = MAX(lob, g->mouse_y);
-    cairo_stroke_preserve(cr);
+    cairo_set_source_rgb(cr, .1, .1, .1);
+    cairo_move_to(cr, loa, hib);
+    cairo_line_to(cr, loa, lob);
+    cairo_line_to(cr, hia, lob);
+    cairo_stroke(cr);
+    cairo_set_source_rgb(cr, .9, .9, .9);
+    cairo_move_to(cr, hia, lob);
+    cairo_line_to(cr, hia, hib);
+    cairo_line_to(cr, loa, hib);
+    cairo_stroke(cr);
+    cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
+    if(g->selected & 1) loa = /*MIN(hia,*/ g->mouse_x;//);
+    if(g->selected & 2) lob = /*MIN(hib,*/ g->mouse_y;//);
+    if(g->selected & 4) hia = /*MAX(loa,*/ g->mouse_x;//);
+    if(g->selected & 8) hib = /*MAX(lob,*/ g->mouse_y;//);
   }
   cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_set_source_rgba(cr, .9, .9, .9, .5);
@@ -371,10 +342,30 @@ gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion 
                 lob = .5f*(height + height*p->lob/(float)DT_COLORCORRECTION_MAX),
                 hib = .5f*(height + height*p->hib/(float)DT_COLORCORRECTION_MAX);
     g->selected = 0;
-    if(g->press_x <= loa) g->selected |= 1;
-    if(g->press_y <= lob) g->selected |= 2;
-    if(g->press_x >= hia) g->selected |= 4;
-    if(g->press_y >= hib) g->selected |= 8;
+    if(loa < hia)
+    {
+      if(g->press_x <= loa) g->selected |= 1;
+      if(g->press_x >= hia) g->selected |= 4;
+    }
+    else
+    {
+      if(g->press_x <= hia) g->selected |= 4;
+      if(g->press_x >= loa) g->selected |= 1;
+    }
+    if(lob < hib)
+    {
+      if(g->press_y <= lob) g->selected |= 2;
+      if(g->press_y >= hib) g->selected |= 8;
+    }
+    else
+    {
+      if(g->press_y <= hib) g->selected |= 8;
+      if(g->press_y >= lob) g->selected |= 2;
+    }
+    // if(g->press_x <= loa) g->selected |= 1;
+    // if(g->press_y <= lob) g->selected |= 2;
+    // if(g->press_x >= hia) g->selected |= 4;
+    // if(g->press_y >= hib) g->selected |= 8;
     if(g->press_x > loa && g->press_x < hia && g->press_y > lob && g->press_y < hib) g->selected = 0xf;
     g->press_params = *p;
   }
