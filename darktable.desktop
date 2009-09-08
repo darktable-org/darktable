@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=darktable
 GenericName=Virtual Lighttable and Darkroom
+GenericName[ru]=Программа для отсмотра и проявки цифровых негативов
 
 Comment=A utility to organize and develop raw images from digital cameras
+Comment[ru]=Организация, сортировка и проявка цифровых негативов
 
 Encoding=UTF-8
 Version=1.0
