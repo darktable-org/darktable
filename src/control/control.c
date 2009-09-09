@@ -181,6 +181,16 @@ int dt_control_load_config(dt_control_t *c)
     rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
 
+    // add dummy film roll for single images
+    char datetime[20];
+    dt_gettime(datetime);
+    rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, 'single images')", -1, &stmt, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+
     // TODO: - table tags "tag str" "key#"
     // TODO: - table frequency tagXtag?
     // TODO: - table tag X film_roll
@@ -1066,7 +1076,8 @@ void dt_control_update_recent_films()
       cnt = filename + MIN(512,strlen(filename));
       int i;
       for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
-      if(i == label_cnt-1) snprintf(label, label_cnt, "...%s", cnt+3);
+      // if(i == label_cnt-1) snprintf(label, label_cnt, "...%s", cnt+3);
+      if(cnt > filename) snprintf(label, label_cnt, "...%s", cnt+3);
       else snprintf(label, label_cnt, "%s", cnt);
       snprintf(wdname, 20, "recent_film_%d", num);
       GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);

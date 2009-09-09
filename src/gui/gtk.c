@@ -138,7 +138,7 @@ void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("Import file or directory",
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("Import directory",
 				      GTK_WINDOW (win),
 				      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
 				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -150,6 +150,46 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
     char *filename;
     filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
     dt_film_roll_import(darktable.library->film, filename);
+    g_free (filename);
+  }
+  gtk_widget_destroy (filechooser);
+  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(win);
+}
+
+void
+import_single_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("Import file",
+				      GTK_WINDOW (win),
+				      GTK_FILE_CHOOSER_ACTION_OPEN,
+				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+				      NULL);
+
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename;
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+    if(!dt_image_import(1, filename))
+    {
+      dt_film_roll_open(darktable.library->film, 1);
+      dt_ctl_gui_mode_t gui;
+      DT_CTL_GET_GLOBAL(gui, gui);
+      if(gui != DT_DEVELOP) dt_ctl_switch_mode();
+    }
+    else
+    {
+      GtkWidget *dialog = gtk_message_dialog_new (win,
+                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                  GTK_MESSAGE_ERROR,
+                                  GTK_BUTTONS_CLOSE,
+                                  "Error loading file '%s': %s",
+                                  filename, g_strerror (errno));
+       gtk_dialog_run (GTK_DIALOG (dialog));
+       gtk_widget_destroy (dialog);
+    }
     g_free (filename);
   }
   gtk_widget_destroy (filechooser);

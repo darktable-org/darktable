@@ -666,14 +666,21 @@ void dt_dev_export(dt_job_t *job)
       return;
     }
 
-    snprintf(filename, 1024, "%s/darktable_exported", darktable.library->film->dirname);
-    if(g_mkdir_with_parents(filename, 0755))
-    {
-      dt_image_cache_release(img, 'r');
-      fprintf(stderr, "[dev_export] could not create directory %s!\n", filename);
-      return;
+    if(darktable.library->film->id > 1)
+    { // single image does not need to prepend film dir name.
+      snprintf(filename, 1024, "%s/darktable_exported", darktable.library->film->dirname);
+      if(g_mkdir_with_parents(filename, 0755))
+      {
+        dt_image_cache_release(img, 'r');
+        fprintf(stderr, "[dev_export] could not create directory %s!\n", filename);
+        return;
+      }
+      snprintf(filename, 1024-4, "%s/darktable_exported/%s", darktable.library->film->dirname, img->filename);
     }
-    snprintf(filename, 1024-4, "%s/darktable_exported/%s", darktable.library->film->dirname, img->filename);
+    else
+    {
+      snprintf(filename, 1024-4, "%s", img->filename);
+    }
     char *c = filename + strlen(filename);
     for(;c>filename && *c != '.';c--);
     if(c <= filename) c = filename + strlen(filename);

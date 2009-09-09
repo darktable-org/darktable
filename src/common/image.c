@@ -175,7 +175,9 @@ int dt_image_import(const int32_t film_id, const char *filename)
   int rc;
   int ret = 0, id = -1;
   // select from images; if found => return
-  gchar *imgfname = g_path_get_basename((const gchar*)filename);
+  gchar *imgfname;
+  if(film_id > 1) imgfname = g_path_get_basename((const gchar*)filename);
+  else            imgfname = g_build_filename((const gchar*)filename, NULL);
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, film_id);
@@ -200,7 +202,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   pthread_mutex_unlock(&(darktable.db_insert));
   rc = sqlite3_finalize(stmt);
 
-  // insert dummy (zeroblob) entries in database!
+  // insert dummy entries in database
   for(dt_image_buffer_t mip=DT_IMAGE_MIP0;(int)mip<=(int)DT_IMAGE_MIPF;mip++)
   {
     rc = sqlite3_prepare_v2(darktable.db, "insert into mipmaps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
@@ -373,12 +375,19 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   if(dt_imageio_preview_read(img, mip))
   { // img not in database. => mip == FULL or kicked out or corrupt or first time load..
     char filename[1024];
-    sqlite3_stmt *stmt;
-    rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, img->film_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      snprintf(filename, 1024, "%s/%s", sqlite3_column_text(stmt, 0), img->filename);
-    rc = sqlite3_finalize(stmt);
+    if(img->film_id > 1)
+    { // not a single image
+      sqlite3_stmt *stmt;
+      rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+      rc = sqlite3_bind_int (stmt, 1, img->film_id);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+        snprintf(filename, 1024, "%s/%s", sqlite3_column_text(stmt, 0), img->filename);
+      rc = sqlite3_finalize(stmt);
+    }
+    else
+    { // single
+      snprintf(filename, 1024, "%s", img->filename);
+    }
     if(mip == DT_IMAGE_MIPF)
     {
       ret = 0;
