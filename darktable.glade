@@ -194,6 +194,17 @@ id</property>
                       </packing>
                     </child>
                     <child>
+                      <widget class="GtkButton" id="button_import_single">
+                        <property name="label" translatable="yes">import single image</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                      </widget>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
                       <widget class="GtkHSeparator" id="hseparator1">
                         <property name="visible">True</property>
                       </widget>
@@ -201,7 +212,7 @@ id</property>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="padding">3</property>
-                        <property name="position">2</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
@@ -214,7 +225,7 @@ id</property>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">3</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
@@ -227,7 +238,7 @@ id</property>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">4</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                     <child>
@@ -240,7 +251,7 @@ id</property>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">5</property>
+                        <property name="position">6</property>
                       </packing>
                     </child>
                     <child>
@@ -253,7 +264,7 @@ id</property>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">6</property>
+                        <property name="position">8</property>
                       </packing>
                     </child>
                   </widget>

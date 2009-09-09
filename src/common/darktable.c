@@ -29,13 +29,21 @@ int dt_init(int argc, char *argv[])
   omp_set_num_threads(omp_get_num_procs());
 #endif
   darktable.unmuted = 0;
+  char *image_to_load = NULL;
   for(int k=0;k<argc;k++)
   {
-    if(argv[k][0] == '-' && argv[k][1] == 'd' && argc > k+1)
+    if(argv[k][0] == '-')
     {
-      if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
-      if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
-      if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
+      if(argv[k][1] == 'd' && argc > k+1)
+      {
+        if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
+        if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
+        if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
+      }
+    }
+    else
+    {
+      image_to_load = argv[k];
     }
   }
 
@@ -86,6 +94,26 @@ int dt_init(int argc, char *argv[])
 
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
+
+  if(image_to_load)
+  {
+    int id = dt_image_import(1, image_to_load);
+    if(id)
+    {
+      dt_film_roll_open(darktable.library->film, 1);
+      DT_CTL_SET_GLOBAL(lib_zoom, 1);
+      DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+      dt_control_restore_gui_settings(DT_DEVELOP);
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_enter();
+      DT_CTL_SET_GLOBAL(gui, DT_DEVELOP);
+    }
+    else
+    {
+      fprintf(stderr, "[dt_init] could not open image file `%s'!\n", image_to_load);
+    }
+  }
 
   return 0;
 }

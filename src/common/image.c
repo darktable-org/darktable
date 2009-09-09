@@ -14,7 +14,11 @@
 
 void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 {
-  if(darktable.library->film->id == img->film_id)
+  if(img->film_id == 1)
+  {
+    snprintf(pathname, len, "%s", img->filename);
+  }
+  else if(darktable.library->film->id == img->film_id)
   {
     snprintf(pathname, len, "%s/%s", darktable.library->film->dirname, img->filename);
   }
@@ -187,7 +191,9 @@ int dt_image_import(const int32_t film_id, const char *filename)
     id = sqlite3_column_int(stmt, 0);
     g_free(imgfname);
     rc = sqlite3_finalize(stmt);
-    return dt_image_open(id); // image already in db, open this.
+    ret = dt_image_open(id); // image already in db, open this.
+    if(ret) return 0;
+    else return id;
   }
   rc = sqlite3_finalize(stmt);
 
@@ -231,11 +237,12 @@ int dt_image_import(const int32_t film_id, const char *filename)
     rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
     rc = sqlite3_bind_int (stmt, 1, id);
     rc = sqlite3_step(stmt);
-    return 1;
+    return 0;
   }
 
   // update image data
   img->film_id = film_id;
+  img->id = id;
   dt_image_cache_flush(img);
   /*rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12 where id = ?13", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->width);
@@ -261,7 +268,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   // else if(dt_image_raw_to_preview(img)) ret = 2;
   dt_image_release(img, DT_IMAGE_FULL, 'r');
   dt_image_cache_release(img, 'w');
-  return ret;
+  return id;
 }
 
 int dt_image_update_mipmaps(dt_image_t *img)

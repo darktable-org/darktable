@@ -50,7 +50,7 @@ void dt_film_import1(dt_film_roll_t *film)
     }
     pthread_mutex_unlock(&film->images_mutex);
 
-    if(!dt_image_import(film->id, filename))
+    if(dt_image_import(film->id, filename))
     {
       pthread_mutex_lock(&film->images_mutex);
       darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;

@@ -138,7 +138,7 @@ void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("Import directory",
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("import film",
 				      GTK_WINDOW (win),
 				      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
 				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -161,7 +161,7 @@ void
 import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("Import file",
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("import image",
 				      GTK_WINDOW (win),
 				      GTK_FILE_CHOOSER_ACTION_OPEN,
 				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -172,21 +172,26 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
   {
     char *filename;
     filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    if(!dt_image_import(1, filename))
+    int id = dt_image_import(1, filename);
+    if(id)
     {
       dt_film_roll_open(darktable.library->film, 1);
-      dt_ctl_gui_mode_t gui;
-      DT_CTL_GET_GLOBAL(gui, gui);
-      if(gui != DT_DEVELOP) dt_ctl_switch_mode();
+      DT_CTL_SET_GLOBAL(lib_zoom, 1);
+      DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+      dt_control_restore_gui_settings(DT_DEVELOP);
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_enter();
+      DT_CTL_SET_GLOBAL(gui, DT_DEVELOP);
     }
     else
     {
-      GtkWidget *dialog = gtk_message_dialog_new (win,
+      GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_ERROR,
                                   GTK_BUTTONS_CLOSE,
-                                  "Error loading file '%s': %s",
-                                  filename, g_strerror (errno));
+                                  "error loading file '%s'",
+                                  filename);
        gtk_dialog_run (GTK_DIALOG (dialog));
        gtk_widget_destroy (dialog);
     }
@@ -359,6 +364,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
   g_signal_connect (G_OBJECT (widget), "clicked",
                     G_CALLBACK (import_button_clicked),
+                    NULL);
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "button_import_single");
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (import_single_button_clicked),
                     NULL);
 
   /* Have the delete event (window close) end the program */
