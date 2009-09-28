@@ -30,7 +30,7 @@ int dt_init(int argc, char *argv[])
 #endif
   darktable.unmuted = 0;
   char *image_to_load = NULL;
-  for(int k=0;k<argc;k++)
+  for(int k=1;k<argc;k++)
   {
     if(argv[k][0] == '-')
     {

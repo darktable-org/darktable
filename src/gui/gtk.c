@@ -372,8 +372,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     NULL);
 
   /* Have the delete event (window close) end the program */
+  dt_get_datadir(datadir, 1024);
+  snprintf(path, 1024, "%s/pixmaps/darktable-16.png", datadir);
   widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  // gtk_window_set_icon_from_file(GTK_WINDOW(widget), "darktable.png", NULL);
+  gtk_window_set_icon_from_file(GTK_WINDOW(widget), path, NULL);
+
   g_signal_connect (G_OBJECT (widget), "delete_event",
                     G_CALLBACK (quit), NULL);
   g_signal_connect (G_OBJECT (widget), "key-press-event",
