@@ -21,16 +21,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<width*height;k++)
   {
     out[0] = 100.0*powf(fmaxf(0.0, (in[0]-d->black))*d->scale, d->gain);
-    if(in[0] > 0)
-    {
-      out[1] = out[0]*in[1]/in[0];
-      out[2] = out[0]*in[2]/in[0];
-    }
-    else
-    {
-      out[1] = in[1];
-      out[2] = in[2];
-    }
+    out[1] = in[1];
+    out[2] = in[2];
     out += 3; in += 3;
   }
 }
@@ -125,7 +117,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, .01));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, .01));
+  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .01));
   g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .05));
   gtk_scale_set_digits(GTK_SCALE(g->scale1), 2);
   gtk_scale_set_digits(GTK_SCALE(g->scale2), 2);
