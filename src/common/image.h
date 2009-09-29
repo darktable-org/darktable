@@ -57,9 +57,6 @@ typedef struct dt_image_t
   int32_t num, flags, film_id, id;
   // cache
   int32_t cacheline; // for image_cache
-#ifdef _DEBUG
-  int32_t mip_buf_size[DT_IMAGE_NONE];
-#endif
   uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
   float *mipf;
   dt_image_lock_t lock[DT_IMAGE_NONE];
@@ -67,6 +64,9 @@ typedef struct dt_image_t
   int32_t shrink, wb_auto, wb_cam;
   float exposure;
   float *pixels;
+#ifdef _DEBUG
+  int32_t mip_buf_size[DT_IMAGE_NONE];
+#endif
 }
 dt_image_t;
 

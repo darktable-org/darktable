@@ -9,6 +9,10 @@
 
 #define DT_VERSION 24
 
+#ifndef M_PI
+  #define M_PI 3.14159265358979323846
+#endif
+
 #define HANDLE_SQLITE_ERR(rc) \
   if(rc != SQLITE_OK) \
   { \
@@ -16,7 +20,7 @@
     return 1; \
   } \
 
-struct dt_library_t;
+struct dt_film_t;
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;
@@ -34,13 +38,14 @@ dt_debug_thread_t;
 typedef struct darktable_t
 {
   int32_t unmuted;
-  struct dt_library_t *library;
-  struct dt_develop_t *develop;
-  struct dt_control_t *control;
-  struct dt_gui_gtk_t *gui;
+  struct dt_develop_t      *develop;
+  struct dt_film_t         *film;
+  struct dt_view_manager_t *view_manager;
+  struct dt_control_t      *control;
+  struct dt_gui_gtk_t      *gui;
   struct dt_mipmap_cache_t *mipmap_cache;
-  struct dt_image_cache_t *image_cache;
-  sqlite3 *db;
+  struct dt_image_cache_t  *image_cache;
+  sqlite3                  *db;
   pthread_mutex_t db_insert;
   char *progname;
 }

@@ -9,13 +9,13 @@
 #include <pthread.h>
 
 #include "common/darktable.h"
-#include "library/library.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "gui/metadata.h"
 #include "control/control.h"
 #include "control/jobs.h"
+#include "views/view.h"
 
 static gboolean
 expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
@@ -107,9 +107,9 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
     else if(!strcmp(text, "float pfm"))  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PFM);   }
     g_free(text);
   }
-  pthread_mutex_lock(&(darktable.library->film->images_mutex));
-  darktable.library->film->last_exported = 0;
-  pthread_mutex_unlock(&(darktable.library->film->images_mutex));
+  pthread_mutex_lock(&(darktable.film->images_mutex));
+  darktable.film->last_exported = 0;
+  pthread_mutex_unlock(&(darktable.film->images_mutex));
   for(int k=0;k<MAX(1,dt_ctl_get_num_procs()-1);k++) // keep one proc for the user.
   {
     dt_job_t j;
@@ -122,7 +122,7 @@ void
 film_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   long int num = (long int)user_data;
-  (void)dt_film_roll_open_recent(darktable.library->film, num);
+  (void)dt_film_open_recent(darktable.film, num);
 }
 
 void
@@ -149,7 +149,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
   {
     char *filename;
     filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    dt_film_roll_import(darktable.library->film, filename);
+    dt_film_import(darktable.film, filename);
     g_free (filename);
   }
   gtk_widget_destroy (filechooser);
@@ -175,13 +175,11 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
     int id = dt_image_import(1, filename);
     if(id)
     {
-      dt_film_roll_open(darktable.library->film, 1);
+      dt_film_open(darktable.film, 1);
       DT_CTL_SET_GLOBAL(lib_zoom, 1);
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
       dt_control_restore_gui_settings(DT_DEVELOP);
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_enter();
+      dt_view_manager_switch(darktable.view_manager, DT_DEVELOP);
       DT_CTL_SET_GLOBAL(gui, DT_DEVELOP);
     }
     else
@@ -205,22 +203,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  int zoom;
-  DT_CTL_GET_GLOBAL(zoom, lib_zoom);
-  if(event->direction == GDK_SCROLL_UP)
-  {
-    zoom-=2;
-    if(zoom < 1) zoom = 1;
-    DT_CTL_SET_GLOBAL(lib_zoom, zoom);
-  }
-  else if(event->direction == GDK_SCROLL_DOWN)
-  {
-    zoom+=2;
-    if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-    DT_CTL_SET_GLOBAL(lib_zoom, zoom);
-  }
-  GtkWidget *range = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
-  gtk_range_set_value(GTK_RANGE(range), zoom);
+  dt_view_manager_scrolled(darktable.view_manager, event->direction == GDK_SCROLL_UP);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }

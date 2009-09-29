@@ -8,7 +8,6 @@
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "library/library.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

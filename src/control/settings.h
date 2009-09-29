@@ -29,8 +29,8 @@
 
 typedef enum dt_ctl_gui_mode_t
 {
-  DT_LIBRARY = 1,
-  DT_DEVELOP = 2
+  DT_DEVELOP = 0,
+  DT_LIBRARY = 1
 }
 dt_ctl_gui_mode_t;
 

@@ -32,16 +32,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // in Lab: correct compressed Luminance for saturation:
     const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
     out[0] = d->table[t];
-    // if(in[0] > 0)
-    // {
-    //   out[1] = out[0]*in[1]/in[0];
-    //   out[2] = out[0]*in[2]/in[0];
-    // }
-    // else
-    {
-      out[1] = in[1];
-      out[2] = in[2];
-    }
+    out[1] = in[1];
+    out[2] = in[2];
 #else // in sRGB
     for(int c=0;c<3;c++) out[c] = d->table[CLAMP((int)(in[c]*0x10000ul), 0, 0xffff)];
 #endif

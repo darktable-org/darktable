@@ -18,9 +18,9 @@ void dt_image_full_path(dt_image_t *img, char *pathname, int len)
   {
     snprintf(pathname, len, "%s", img->filename);
   }
-  else if(darktable.library->film->id == img->film_id)
+  else if(darktable.film->id == img->film_id)
   {
-    snprintf(pathname, len, "%s/%s", darktable.library->film->dirname, img->filename);
+    snprintf(pathname, len, "%s/%s", darktable.film->dirname, img->filename);
   }
   else
   {

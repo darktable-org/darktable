@@ -92,6 +92,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
 void dt_dev_cleanup(dt_develop_t *dev)
 {
+  if(!dev) return; 
   // image_cache does not have to be unref'd, this is done outside develop module.
   // unref used mipmap buffers:
   if(dev->image)
@@ -346,19 +347,16 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   if(!dev->gui_attached) dt_dev_raw_load(dev, dev->image);
 }
 
-gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
+void dt_dev_configure (dt_develop_t *dev, int wd, int ht)
 {
-  dt_develop_t *dev = darktable.develop;
-  int tb = darktable.control->tabborder;
-  if(dev->width - 2*tb != event->width || dev->height - 2*tb != event->height)
+  if(dev->width != wd || dev->height != ht)
   {
-    dev->width = event->width - 2*tb;
-    dev->height = event->height - 2*tb;
+    dev->width  = wd;
+    dev->height = ht;
     dev->preview_pipe->changed |= DT_DEV_PIPE_ZOOMED;
     dev->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     dt_dev_invalidate(dev);
   }
-  return TRUE;
 }
 
 // helper used to synch a single history item with db
@@ -648,9 +646,9 @@ void dt_dev_export(dt_job_t *job)
     // TODO: progress bar in ctl?
     char filename[1024];
     dt_image_t *img = NULL;
-    pthread_mutex_lock(&(darktable.library->film->images_mutex));
-    int32_t rc, start = darktable.library->film->last_exported++;
-    pthread_mutex_unlock(&(darktable.library->film->images_mutex));
+    pthread_mutex_lock(&(darktable.film->images_mutex));
+    int32_t rc, start = darktable.film->last_exported++;
+    pthread_mutex_unlock(&(darktable.film->images_mutex));
     sqlite3_stmt *stmt;
     rc = sqlite3_prepare_v2(darktable.db, "select * from (select * from selected_images) as dreggn limit ?1, 1", -1, &stmt, NULL);
     rc = sqlite3_bind_int(stmt, 1, start);
@@ -666,16 +664,16 @@ void dt_dev_export(dt_job_t *job)
       return;
     }
 
-    if(darktable.library->film->id > 1)
+    if(darktable.film->id > 1)
     { // single image does not need to prepend film dir name.
-      snprintf(filename, 1024, "%s/darktable_exported", darktable.library->film->dirname);
+      snprintf(filename, 1024, "%s/darktable_exported", darktable.film->dirname);
       if(g_mkdir_with_parents(filename, 0755))
       {
         dt_image_cache_release(img, 'r');
         fprintf(stderr, "[dev_export] could not create directory %s!\n", filename);
         return;
       }
-      snprintf(filename, 1024-4, "%s/darktable_exported/%s", darktable.library->film->dirname, img->filename);
+      snprintf(filename, 1024-4, "%s/darktable_exported/%s", darktable.film->dirname, img->filename);
     }
     else
     {

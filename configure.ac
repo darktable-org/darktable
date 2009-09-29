@@ -63,6 +63,7 @@ AC_CONFIG_FILES([
     src/Makefile
     src/LibRaw/Makefile
     src/iop/Makefile
+    src/views/Makefile
     pixmaps/Makefile
     ])
 dnl    src/gegl-operations/Makefile

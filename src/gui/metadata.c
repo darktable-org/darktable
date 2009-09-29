@@ -1,7 +1,6 @@
 
 #include "gui/gtk.h"
 #include "gui/metadata.h"
-#include "library/library.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "common/image_cache.h"

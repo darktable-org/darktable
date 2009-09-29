@@ -23,6 +23,66 @@
 #define DT_CTL_WORKER_5 4 // dev small prev
 #define DT_CTL_WORKER_6 5 // dev prefetch
 
+// keycodes mapped to dvorak keyboard layout for easier usage
+#if defined(__APPLE__) || defined(__MACH__)
+#if 0
+#define KEYCODE_a            8   // mac keycodes X11 :(
+#define KEYCODE_o            9
+#define KEYCODE_e           10
+#define KEYCODE_apostrophe  20
+#define KEYCODE_comma       21
+#define KEYCODE_period      22
+#define KEYCODE_1           26
+#define KEYCODE_2           27
+#define KEYCODE_3           28
+#define KEYCODE_Escape      61
+#define KEYCODE_Caps        61
+#define KEYCODE_F11        111
+#define KEYCODE_Up         134
+#define KEYCODE_Down       133
+#define KEYCODE_Left        78
+#define KEYCODE_Right       74
+#define KEYCODE_Tab         56
+#else
+#define KEYCODE_a           0   // mac keycodes carbon :)
+#define KEYCODE_o           1   // s
+#define KEYCODE_e           2   // d
+#define KEYCODE_apostrophe  12  // q
+#define KEYCODE_comma       13  // w
+#define KEYCODE_period      14  // e .. in qwerty :)
+#define KEYCODE_1           18
+#define KEYCODE_2           19
+#define KEYCODE_3           20
+#define KEYCODE_Escape      53
+#define KEYCODE_Caps        53
+#define KEYCODE_F11        103
+#define KEYCODE_Up         126
+#define KEYCODE_Down       125
+#define KEYCODE_Left       123
+#define KEYCODE_Right      124
+#define KEYCODE_Tab         48
+#define KEYCODE_space       49
+#endif
+#else
+#define KEYCODE_a           38
+#define KEYCODE_o           39  
+#define KEYCODE_e           40  
+#define KEYCODE_apostrophe  24  
+#define KEYCODE_comma       25  
+#define KEYCODE_period      26  
+#define KEYCODE_1           10  
+#define KEYCODE_2           11  
+#define KEYCODE_3           12  
+#define KEYCODE_Escape       9  
+#define KEYCODE_Caps        66
+#define KEYCODE_F11         95  
+#define KEYCODE_Up         111  
+#define KEYCODE_Down       116  
+#define KEYCODE_Left       113  
+#define KEYCODE_Right      114  
+#define KEYCODE_Tab         23  
+#endif
+
 
 // called from gui
 void *dt_control_expose(void *voidptr);

@@ -1,6 +1,6 @@
-#include "library/library.h"
 #include "control/control.h"
 #include "control/jobs.h"
+#include "common/film.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,15 +14,16 @@
 #include <errno.h>
 #include <assert.h>
 
-void dt_film_roll_init(dt_film_roll_t *film)
+void dt_film_init(dt_film_t *film)
 {
   pthread_mutex_init(&film->images_mutex, NULL);
   film->last_loaded = film->num_images = film->last_exported = 0;
   film->dirname[0] = '\0';
   film->dir = NULL;
+  film->id = -1;
 }
 
-void dt_film_import1(dt_film_roll_t *film)
+void dt_film_import1(dt_film_t *film)
 {
   const gchar *d_name;
   char filename[1024];
@@ -60,12 +61,12 @@ void dt_film_import1(dt_film_roll_t *film)
   }
 }
 
-void dt_film_roll_cleanup(dt_film_roll_t *film)
+void dt_film_cleanup(dt_film_t *film)
 {
   pthread_mutex_destroy(&film->images_mutex);
 }
 
-int dt_film_roll_open(dt_film_roll_t *film, const int32_t id)
+int dt_film_open(dt_film_t *film, const int32_t id)
 {
   int rc;
   sqlite3_stmt *stmt;
@@ -90,15 +91,12 @@ int dt_film_roll_open(dt_film_roll_t *film, const int32_t id)
   }
   rc = sqlite3_finalize(stmt);
   // TODO: prefetch to cache using image_open
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  DT_CTL_SET_GLOBAL(lib_center, 1);
-  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
   dt_control_update_recent_films();
   dt_control_queue_draw_all();
   return 0;
 }
 
-int dt_film_roll_open_recent(dt_film_roll_t *film, const int num)
+int dt_film_open_recent(dt_film_t *film, const int num)
 {
   int32_t rc;
   sqlite3_stmt *stmt;
@@ -110,7 +108,7 @@ int dt_film_roll_open_recent(dt_film_roll_t *film, const int num)
   {
     int id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    if(dt_film_roll_open(film, id)) return 1;
+    if(dt_film_open(film, id)) return 1;
     char datetime[20];
     dt_gettime(datetime);
     rc = sqlite3_prepare_v2(darktable.db, "update film_rolls set datetime_accessed = ?1 where id = ?2", -1, &stmt, NULL);
@@ -121,14 +119,11 @@ int dt_film_roll_open_recent(dt_film_roll_t *film, const int num)
     sqlite3_step(stmt);
   }
   rc = sqlite3_finalize(stmt);
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  DT_CTL_SET_GLOBAL(lib_center, 1);
-  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
   dt_control_update_recent_films();
   return 0;
 }
 
-int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
+int dt_film_import(dt_film_t *film, const char *dirname)
 {
   film->id = -1;
   int rc;
@@ -157,10 +152,6 @@ int dt_film_roll_import(dt_film_roll_t *film, const char *dirname)
     pthread_mutex_unlock(&(darktable.db_insert));
   }
   if(film->id <= 0) return 1;
-
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  DT_CTL_SET_GLOBAL(lib_center, 1);
-  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
 
   film->last_loaded = 0;
   strncpy(film->dirname, dirname, 512);

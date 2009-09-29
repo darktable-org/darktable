@@ -1,3 +1,21 @@
+- NO LOCK ON MIP0 when drawing!!??
+- modular views:
+  - control.c: save/restore gui settings => modules!
+  - control.c: call view callbacks (move gui=>view.c calls!)
+  - views/library.c
+   - check which vars are lib local and global
+   - remove src/library/ src/gui/develop_view.c
+  - plug loadable modules into control
+  - interface functions for sql query iteration/next/prev/selected image
+    - => common/film.h
+- modular image operations:
+  - pre/expose/post callbacks
+  - event handling callbacks
+- example op: crop/rotate (pre gamma hopefully, for ppm export)
+- lensfun op
+- save settings in modules (query fct?)
+- sequential lo-res/hi-res image processing
+
 bugs:
 - img unlock => flicker in library mode? (due to mipf trigger?)
 - can't create export folder=>crash

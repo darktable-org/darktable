@@ -1,7 +1,7 @@
 include $(srcdir)/../shared.am
 LDFLAGS= -module -avoid-version
 CFLAGS=$(AM_CFLAGS) -I$(srcdir) -I$(srcdir)/.. -Werror -g
-LTADD=$(GEGL_LIBS) $(LIBEXIF_LIBS) $(MAGICK_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) libdarktable.a LibRaw/libraw_r.a -lstdc++ -fPIC
+LTADD=$(GEGL_LIBS) $(LIBEXIF_LIBS) $(MAGICK_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) -fPIC
 libtonecurve_la_SOURCES=tonecurve.c
 libgamma_la_SOURCES=gamma.c
 libtemperature_la_SOURCES=temperature.c

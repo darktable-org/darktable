@@ -1,7 +1,7 @@
 #include "control/control.h"
-#include "library/library.h"
 #include "develop/develop.h"
 #include "common/darktable.h"
+#include "views/view.h"
 #include "gui/gtk.h"
 
 #include <stdlib.h>
@@ -13,62 +13,6 @@
 #  include "config.h"
 #endif
 
-// keycodes mapped to dvorak keyboard layout for easier usage
-#if defined(__APPLE__) || defined(__MACH__)
-#if 0
-#define KEYCODE_a            8   // mac keycodes X11 :(
-#define KEYCODE_o            9
-#define KEYCODE_e           10
-#define KEYCODE_apostrophe  20
-#define KEYCODE_comma       21
-#define KEYCODE_period      22
-#define KEYCODE_1           26
-#define KEYCODE_2           27
-#define KEYCODE_3           28
-#define KEYCODE_Escape      61
-#define KEYCODE_F11        111
-#define KEYCODE_Up         134
-#define KEYCODE_Down       133
-#define KEYCODE_Left        78
-#define KEYCODE_Right       74
-#define KEYCODE_Tab         56
-#else
-#define KEYCODE_a           0   // mac keycodes carbon :)
-#define KEYCODE_o           1   // s
-#define KEYCODE_e           2   // d
-#define KEYCODE_apostrophe  12  // q
-#define KEYCODE_comma       13  // w
-#define KEYCODE_period      14  // e .. in qwerty :)
-#define KEYCODE_1           18
-#define KEYCODE_2           19
-#define KEYCODE_3           20
-#define KEYCODE_Escape      53
-#define KEYCODE_F11        103
-#define KEYCODE_Up         126
-#define KEYCODE_Down       125
-#define KEYCODE_Left       123
-#define KEYCODE_Right      124
-#define KEYCODE_Tab         48
-#define KEYCODE_space       49
-#endif
-#else
-#define KEYCODE_a           38
-#define KEYCODE_o           39  
-#define KEYCODE_e           40  
-#define KEYCODE_apostrophe  24  
-#define KEYCODE_comma       25  
-#define KEYCODE_period      26  
-#define KEYCODE_1           10  
-#define KEYCODE_2           11  
-#define KEYCODE_3           12  
-#define KEYCODE_Escape       9  
-#define KEYCODE_F11         95  
-#define KEYCODE_Up         111  
-#define KEYCODE_Down       116  
-#define KEYCODE_Left       113  
-#define KEYCODE_Right      114  
-#define KEYCODE_Tab         23  
-#endif
 
 void dt_ctl_settings_init(dt_control_t *s)
 {
@@ -101,7 +45,7 @@ void dt_ctl_settings_init(dt_control_t *s)
   s->global_settings.gui_tonecurve = s->global_settings.gui_gamma =
   s->global_settings.gui_hsb = 1<<DT_DEVELOP;
 
-  s->global_settings.lib_zoom = DT_LIBRARY_MAX_ZOOM;
+  s->global_settings.lib_zoom = 13;
   s->global_settings.lib_zoom_x = 0.0f;
   s->global_settings.lib_zoom_y = 0.0f;
   s->global_settings.lib_center = 0;
@@ -453,10 +397,10 @@ void *dt_control_work(void *ptr)
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
   darktable.control->tabborder = fmaxf(10, event->width/100.0);
-  // float tb = darktable.control->tabborder;
+  int tb = darktable.control->tabborder;
   // re-configure all components:
-  // dt_dev_configure(darktable.develop, width - 2*tb, height - 2*tb);
-  return dt_dev_configure(da, event, user_data);
+  dt_view_manager_configure(darktable.view_manager, event->width - 2*tb, event->height - 2*tb);
+  return TRUE;
 }
 
 void *dt_control_expose(void *voidptr)
@@ -497,17 +441,8 @@ void *dt_control_expose(void *voidptr)
     cairo_rectangle(cr, 0, 0, width - 2*tb, height - 2*tb);
     cairo_clip(cr);
     cairo_new_path(cr);
-    switch(darktable.control->global_settings.gui)
-    {
-      case DT_LIBRARY:
-        dt_library_expose(darktable.library, cr,  width - 2*tb, height - 2*tb, pointerx-tb, pointery-tb);
-        break;
-      case DT_DEVELOP:
-        dt_dev_expose(darktable.develop, cr, width - 2*tb, height - 2*tb);
-        break;
-      default:
-        break;
-    }
+    // draw view
+    dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb, pointerx-tb, pointery-tb);
     cairo_restore(cr);
 
     // draw gui arrows.
@@ -575,12 +510,7 @@ void *dt_control_expose(void *voidptr)
 
 void dt_control_mouse_leave()
 {
-  dt_ctl_gui_mode_t gui;
-  DT_CTL_GET_GLOBAL(gui, gui);
-  if(gui == DT_LIBRARY)
-  {
-    dt_library_mouse_leave(darktable.library);
-  }
+  dt_view_manager_mouse_leave(darktable.view_manager);
 }
 
 void dt_control_mouse_moved(double x, double y, int which)
@@ -589,45 +519,8 @@ void dt_control_mouse_moved(double x, double y, int which)
   float wd = darktable.control->width;
   float ht = darktable.control->height;
 
-  dt_ctl_gui_mode_t gui;
-  DT_CTL_GET_GLOBAL(gui, gui);
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
-  {
-    if(gui == DT_LIBRARY)
-    {
-      // fwd to lib or dev
-      dt_library_mouse_moved(darktable.library, x-tb, y-tb, which);
-    }
-    else // DT_DEVELOP
-    {
-      if(darktable.control->button_down)
-      { // depending on dev_zoom, adjust dev_zoom_x/y.
-        dt_develop_t *dev = darktable.develop;
-        const int cwd = dev->width, cht = dev->height;
-        const int iwd = dev->image->width, iht = dev->image->height;
-        float scale = 1.0f;
-        dt_dev_zoom_t zoom;
-        int closeup;
-        DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-        DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-        if(zoom == DT_ZOOM_FIT)  return; //scale = fminf(iwd/(float)cwd, iht/(float)cht);
-        if(closeup) scale = .5f;
-        if(zoom == DT_ZOOM_FILL) scale = fmaxf(iwd/(float)cwd, iht/(float)cht);
-        float old_zoom_x, old_zoom_y;
-        DT_CTL_GET_GLOBAL(old_zoom_x, dev_zoom_x);
-        DT_CTL_GET_GLOBAL(old_zoom_y, dev_zoom_y);
-        float zx = old_zoom_x - scale*(x - darktable.control->button_x)/iwd;
-        float zy = old_zoom_y - scale*(y - darktable.control->button_y)/iht;
-        dt_dev_check_zoom_bounds(darktable.develop, &zx, &zy, zoom, closeup, NULL, NULL);
-        DT_CTL_SET_GLOBAL(dev_zoom_x, zx);
-        DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
-        darktable.control->button_x = x;
-        darktable.control->button_y = y;
-        dt_dev_invalidate(darktable.develop);
-        dt_control_queue_draw_all();
-      }
-    }
-  }
+    dt_view_manager_mouse_moved(darktable.view_manager, x-tb, y-tb, which);
 }
 
 void dt_control_button_released(double x, double y, int which, uint32_t state)
@@ -639,33 +532,17 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
 
   // always do this, to avoid missing some events.
   // if(x > tb && x < wd-tb && y > tb && y < ht-tb)
-  {
-    // fwd to lib or dev
-    dt_library_button_released(darktable.library, x-tb, y-tb, which, state);
-  }
+  dt_view_manager_button_released(darktable.view_manager, x-tb, y-tb, which, state);
 }
 
 void dt_ctl_switch_mode()
 {
   dt_ctl_gui_mode_t gui;
   DT_CTL_GET_GLOBAL(gui, gui);
-  int32_t id;
-  DT_CTL_GET_GLOBAL(id, lib_image_mouse_over_id);
   dt_control_save_gui_settings(gui);
-  if(gui == DT_DEVELOP)
-  {
-    gui = DT_LIBRARY;
-    dt_control_restore_gui_settings(gui);
-    dt_dev_leave();
-  }
-  else if(id >= 0)
-  {
-    gui = DT_DEVELOP;
-    dt_control_restore_gui_settings(gui);
-    DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-    DT_CTL_SET_GLOBAL(dev_closeup, 0);
-    dt_dev_enter();
-  }
+  gui ^= 1;  // FIXME: cycle through more modules!
+  dt_control_restore_gui_settings(gui);
+  dt_view_manager_switch(darktable.view_manager, gui);
   DT_CTL_SET_GLOBAL(gui, gui);
 }
 
@@ -682,9 +559,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
   {
     if(type == GDK_2BUTTON_PRESS) dt_ctl_switch_mode();
-    // fwd to lib or dev
-    // dt_library_button_pressed(darktable.library, (x-tb)/(wd-2.0*tb), (y-tb)/(wd-2.0*tb), which);
-    else dt_library_button_pressed(darktable.library, x-tb, y-tb, which, state);
+    else dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state);
   }
   else if(x < tb)
   {
@@ -871,7 +746,7 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 
 int dt_control_key_pressed(uint16_t which)
 {
-  int fullscreen, zoom, closeup, visible;
+  int fullscreen, visible;
   GtkWidget *widget;
   dt_ctl_gui_mode_t gui;
   DT_CTL_GET_GLOBAL(gui, gui);
@@ -889,7 +764,7 @@ int dt_control_key_pressed(uint16_t which)
       DT_CTL_SET_GLOBAL(gui_fullscreen, fullscreen);
       dt_dev_invalidate(darktable.develop);
       break;
-    case KEYCODE_Escape:
+    case KEYCODE_Escape: case KEYCODE_Caps:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
@@ -918,57 +793,9 @@ int dt_control_key_pressed(uint16_t which)
     default:
       break;
   }
-  if(gui == DT_LIBRARY) switch (which)
-  {
-    case KEYCODE_Left: case KEYCODE_a:
-      DT_CTL_SET_GLOBAL(lib_track, -1);
-      break;
-    case KEYCODE_Right: case KEYCODE_e:
-      DT_CTL_SET_GLOBAL(lib_track, 1);
-      break;
-    case KEYCODE_Up: case KEYCODE_comma:
-      DT_CTL_SET_GLOBAL(lib_track, -DT_LIBRARY_MAX_ZOOM);
-      break;
-    case KEYCODE_Down: case KEYCODE_o:
-      DT_CTL_SET_GLOBAL(lib_track, DT_LIBRARY_MAX_ZOOM);
-      break;
-    case KEYCODE_1:
-      DT_CTL_SET_GLOBAL(lib_zoom, 1);
-      break;
-    case KEYCODE_apostrophe:
-      DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
-      DT_CTL_SET_GLOBAL(lib_center, 1);
-      break;
-    default:
-      break;
-  }
-  else if(gui == DT_DEVELOP) switch (which)
-  {
-    case KEYCODE_1:
-      DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-      DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-      if(zoom == DT_ZOOM_1) closeup ^= 1;
-      DT_CTL_SET_GLOBAL(dev_closeup, closeup);
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
-      dt_dev_invalidate(darktable.develop);
-      break;
-    case KEYCODE_2:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, 0.0);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, 0.0);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(darktable.develop);
-      break;
-    case KEYCODE_3:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, 0.0);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, 0.0);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(darktable.develop);
-      break;
-    default:
-      break;
-  }
+  // propagate to view modules.
+  dt_view_manager_key_pressed(darktable.view_manager, which);
+
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");

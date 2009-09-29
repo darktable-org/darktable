@@ -1,13 +1,14 @@
 #ifndef DARKTABLE_DEVELOP_H
 #define DARKTABLE_DEVELOP_H
 
-#include "library/library.h"
-#include "control/settings.h"
-#include "develop/imageop.h"
-
+#include <inttypes.h>
 #include <cairo.h>
 #include <pthread.h>
 #include <glib.h>
+
+#include "control/settings.h"
+#include "develop/imageop.h"
+#include "common/image.h"
 
 extern uint8_t dt_dev_default_gamma[0x10000];
 extern float dt_dev_de_gamma[0x100];
@@ -82,7 +83,6 @@ void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label);
 
-gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxw, float *boxh);
 
@@ -96,8 +96,11 @@ void dt_dev_export(struct dt_job_t *job);
 // void dt_dev_init(dt_develop_t *dev);
 // void dt_dev_cleanup(dt_develop_t *dev);
 
-void dt_dev_leave();
-void dt_dev_enter();
+// void dt_dev_leave();
+// void dt_dev_enter();
+
+// gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
+void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
 
 void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height);
 

@@ -17,7 +17,7 @@ void dt_image_load_job_run(dt_job_t *job)
   if(!ret) dt_image_release(t->image, t->mip, 'r');
 }
 
-void dt_film_import1_init(dt_job_t *job, dt_film_roll_t *film)
+void dt_film_import1_init(dt_job_t *job, dt_film_t *film)
 {
   job->execute = &dt_film_import1_run;
   dt_film_import1_t *t = (dt_film_import1_t *)job->param;

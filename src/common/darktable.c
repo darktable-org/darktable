@@ -2,10 +2,10 @@
   #include "../config.h"
 #endif
 #include "common/darktable.h"
+#include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "library/library.h"
-#include "develop/develop.h"
+#include "views/view.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
@@ -83,14 +83,14 @@ int dt_init(int argc, char *argv[])
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, 500);
 
-  darktable.library = (dt_library_t *)malloc(sizeof(dt_library_t));
-  dt_library_init(darktable.library);
+  darktable.film = (dt_film_t *)malloc(sizeof(dt_film_t));
+  dt_film_init(darktable.film);
+
+  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
+  dt_view_manager_init(darktable.view_manager);
 
   darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
   dt_gui_gtk_init(darktable.gui, argc, argv);
-
-  darktable.develop = (dt_develop_t *)malloc(sizeof(dt_develop_t)); // after gui, this will init default modules
-  dt_dev_init(darktable.develop, 1);
 
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
@@ -100,13 +100,11 @@ int dt_init(int argc, char *argv[])
     int id = dt_image_import(1, image_to_load);
     if(id)
     {
-      dt_film_roll_open(darktable.library->film, 1);
+      dt_film_open(darktable.film, 1);
       DT_CTL_SET_GLOBAL(lib_zoom, 1);
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
       dt_control_restore_gui_settings(DT_DEVELOP);
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_enter();
+      dt_view_manager_switch(darktable.view_manager, DT_DEVELOP);
       DT_CTL_SET_GLOBAL(gui, DT_DEVELOP);
     }
     else
@@ -122,7 +120,7 @@ void dt_cleanup()
 {
   dt_ctl_gui_mode_t gui;
   DT_CTL_GET_GLOBAL(gui, gui);
-  if(gui == DT_DEVELOP) dt_dev_leave();
+  if(gui == DT_DEVELOP) dt_view_manager_switch(darktable.view_manager, DT_LIBRARY);
   char *homedir = getenv("HOME");
   char filename[512];
   snprintf(filename, 512, "%s/.darktablerc", homedir);
@@ -137,12 +135,12 @@ void dt_cleanup()
 
   dt_control_shutdown(darktable.control);
 
-  dt_dev_cleanup(darktable.develop);
-  free(darktable.develop);
-  dt_library_cleanup(darktable.library);
-  free(darktable.library);
   dt_gui_gtk_cleanup(darktable.gui);
   free(darktable.gui);
+  dt_view_manager_cleanup(darktable.view_manager);
+  free(darktable.view_manager);
+  dt_film_cleanup(darktable.film);
+  free(darktable.film);
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
@@ -198,10 +196,17 @@ void *dt_alloc_align(size_t alignment, size_t size)
 void dt_get_datadir(char *datadir, size_t bufsize)
 {
   gchar *curr = g_get_current_dir();
-  if(darktable.progname[0] == '/')
+  int contains = 0; for(int k=0;darktable.progname[k] != 0;k++) if(darktable.progname[k] == '/') { contains = 1; break; }
+  if(darktable.progname[0] == '/') // absolute path
     snprintf(datadir, bufsize, "%s", darktable.progname);
-  else
+  else if(contains) // relative path
     snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
+  else
+  { // no idea where we have been called. use compiled in path
+    g_free(curr);
+    snprintf(datadir, bufsize, "%s", DATADIR);
+    return;
+  }
   size_t len = MIN(strlen(datadir), bufsize);
   char *t = datadir + len; // strip off bin/darktable
   for(;t>datadir && *t!='/';t--); t--;

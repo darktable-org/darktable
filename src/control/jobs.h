@@ -3,7 +3,7 @@
 
 #include "common/image.h"
 #include "control/control.h"
-#include "library/library.h"
+#include "common/film.h"
 #include "develop/develop.h"
 
 typedef struct dt_image_load_t
@@ -18,12 +18,12 @@ void dt_image_load_job_init(dt_job_t *job, dt_image_t *image, dt_image_buffer_t 
 
 typedef struct dt_film_import1_t
 {
-  dt_film_roll_t *film;
+  dt_film_t *film;
 }
 dt_film_import1_t;
 
 void dt_film_import1_run(dt_job_t *job);
-void dt_film_import1_init(dt_job_t *job, dt_film_roll_t *film);
+void dt_film_import1_init(dt_job_t *job, dt_film_t *film);
 
 
 typedef struct dt_dev_raw_load_t
