@@ -155,6 +155,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
+  module->priority = 30;
   dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"sRGB", DT_INTENT_PERCEPTUAL};
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));

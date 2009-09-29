@@ -12,31 +12,37 @@
 #include <gmodule.h>
 #include <pthread.h>
 
-int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *op)
+gint sort_plugins(gconstpointer a, gconstpointer b)
 {
-  const gchar *err;
+  const dt_iop_module_t *am = (const dt_iop_module_t *)a;
+  const dt_iop_module_t *bm = (const dt_iop_module_t *)b;
+  return am->priority - bm->priority;
+}
+
+int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *libname, const char *op)
+{
   pthread_mutex_init(&module->params_mutex, NULL);
-  module->instance = dev->iop_instance++;
   module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
   module->off = NULL;
+  module->priority = 0;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   strncpy(module->op, op, 20);
   // load module from disk
-  char datadir[1024];
-  dt_get_datadir(datadir, 1024);
-  strcpy(datadir + strlen(datadir), "/plugins");
+  // char datadir[1024];
+  // dt_get_datadir(datadir, 1024);
+  // strcpy(datadir + strlen(datadir), "/plugins");
   // first try relative path
-  gchar *libname = g_module_build_path(datadir, (const gchar *)op);
+  // gchar *libname = g_module_build_path(datadir, (const gchar *)op);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
-  g_free(libname);
-  if(!module->module)
-  { // then compiled-in absolute
-    libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
-    module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
-    g_free(libname);
-  }
+  // g_free(libname);
+  // if(!module->module)
+  // { // then compiled-in absolute
+    // libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
+    // module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+    // g_free(libname);
+  // }
   if(!module->module) goto error;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
@@ -48,13 +54,57 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *o
   if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;
   module->init(module);
+  if(module->priority == 0)
+  {
+    fprintf(stderr, "[iop_load_module] %s needs to set priority!\n", op);
+    goto error;      // this needs to be set
+  }
   module->enabled = module->default_enabled; // apply (possibly new) default.
   return 0;
 error:
-  err = g_module_error();
-  fprintf(stderr, "[iop_load_module] failed to open operation `%s': %s\n", op, err);
+  fprintf(stderr, "[iop_load_module] failed to open operation `%s': %s\n", op, g_module_error());
   if(module->module) g_module_close(module->module);
   return 1;
+}
+
+GList *dt_iop_load_modules(dt_develop_t *dev)
+{
+  GList *res = NULL;
+  dt_iop_module_t *module;
+  dev->iop_instance = 0;
+  char datadir[1024], op[20];
+  const gchar *d_name;
+  dt_get_datadir(datadir, 1024);
+  strcpy(datadir + strlen(datadir), "/plugins");
+  GDir *dir = g_dir_open(datadir, 0, NULL); 
+  if(!dir) return NULL;
+  while((d_name = g_dir_read_name(dir)))
+  { // get lib*.so
+    if(strncmp(d_name, "lib", 3)) continue;
+    if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
+    strncpy(op, d_name+3, strlen(d_name)-6);
+    op[strlen(d_name)-6] = '\0';
+    module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+    gchar *libname = g_module_build_path(datadir, (const gchar *)op);
+    if(dt_iop_load_module(module, dev, libname, op))
+    {
+      free(module);
+      continue;
+    }
+    g_free(libname);
+    res = g_list_insert_sorted(res, module, sort_plugins);
+  }
+  g_dir_close(dir);
+
+  GList *it = res;
+  while(it)
+  {
+    module = (dt_iop_module_t *)it->data;
+    module->instance = dev->iop_instance++;
+    // printf("module %d - %s %d\n", module->priority, module->op, module->instance);
+    it = g_list_next(it);
+  }
+  return res;
 }
 
 void dt_iop_unload_module(dt_iop_module_t *module)

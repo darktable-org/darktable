@@ -288,8 +288,8 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   else dev->mipf = NULL;
   dev->image_dirty = dev->preview_dirty = 1;
 
-  // TODO: reset view to fit.
-
+  dev->iop = dt_iop_load_modules(dev);
+#if 0
   // TODO: load modules for this image in read history!
   dt_iop_module_t *module;
   dev->iop_instance = 0;
@@ -329,6 +329,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, dev, "gamma")) exit(1);
   dev->iop = g_list_append(dev->iop, module);
+#endif
 
   // TODO: this should read modules on demand!
   dt_dev_read_history(dev);
@@ -579,6 +580,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     GList *modules = g_list_nth(dev->iop, instance);
     assert(modules);
     hist->module = (dt_iop_module_t *)modules->data;
+    // FIXME: find operation in dev->iop and set instance.
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
     memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);

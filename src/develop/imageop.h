@@ -26,6 +26,8 @@ typedef struct dt_iop_module_t
   GModule *module;
   /** used to identify this module in the history stack. */
   int32_t instance;
+  /** order in which plugins are stacked. */
+  int32_t priority;
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */
@@ -78,8 +80,8 @@ typedef struct dt_iop_module_t
 }
 dt_iop_module_t;
 
-/** loads and inits the (already alloc'ed) module. */
-int dt_iop_load_module(dt_iop_module_t *module, struct dt_develop_t *dev, const char *op);
+/** loads and inits the modules in the plugins/ directory. */
+GList *dt_iop_load_modules(struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_unload_module(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
