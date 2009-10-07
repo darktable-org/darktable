@@ -31,6 +31,8 @@ void cleanup(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  cairo_save(cr);
+
   dt_develop_t *dev = (dt_develop_t *)self->data;
   
   if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
@@ -53,26 +55,12 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     // stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
     // surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
 
-    // TODO: replace by continuous zoom 
     int32_t zoom;
     float zoom_x, zoom_y;
     DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
     DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    float zoom_scale;
-    switch(zoom)
-    {
-      case DT_ZOOM_FIT:
-        zoom_scale = fminf(width/dev->mipf_exact_width, height/dev->mipf_exact_height);
-        break;
-      case DT_ZOOM_FILL:
-        zoom_scale = fmaxf(width/dev->mipf_exact_width, height/dev->mipf_exact_height);
-        break;
-      default: // 1:1 or higher
-        zoom_scale = dev->image->width/dev->mipf_exact_width;
-        if(closeup) zoom_scale *= 2.0;
-        break;
-    }
+    float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
     cairo_set_source_rgb (cr, .2, .2, .2);
     cairo_paint(cr);
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, dev->mipf_width);
@@ -106,11 +94,11 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
   else if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
-    // printf("develop_view draw full\n");
     mutex = &dev->pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
-    wd = dev->capwidth;
-    ht = dev->capheight;
+    wd = dev->pipe->backbuf_width;
+    ht = dev->pipe->backbuf_height;
+    // printf("darkroom draw full %d %d \n", wd, ht);
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
     surface = cairo_image_surface_create_for_data (dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
     cairo_set_source_rgb (cr, .2, .2, .2);
@@ -131,6 +119,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_surface_destroy (surface);
     pthread_mutex_unlock(mutex);
   }
+  cairo_restore(cr);
   // TODO: execute module callback hook!
 }
 
@@ -138,12 +127,15 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 void reset(dt_view_t *self)
 {
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+  DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
+  DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 }
 
 
 void enter(dt_view_t *self)
 {
+  dt_develop_t *dev = (dt_develop_t *)self->data;
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
   if(selected >= 0)
@@ -152,14 +144,11 @@ void enter(dt_view_t *self)
     DT_CTL_SET_GLOBAL(dev_closeup, 0);
   }
 
-  DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-  DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
-
-  darktable.develop->gui_leaving = 0;
-  dt_dev_load_image(darktable.develop, dt_image_cache_use(selected, 'r'));
+  dev->gui_leaving = 0;
+  dt_dev_load_image(dev, dt_image_cache_use(selected, 'r'));
   // get top level vbox containing all expanders, iop_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
-  GList *modules = g_list_last(darktable.develop->iop);
+  GList *modules = g_list_last(dev->iop);
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -171,7 +160,7 @@ void enter(dt_view_t *self)
   }
   gtk_widget_show_all(GTK_WIDGET(box));
   // hack: now hide all custom expander widgets again.
-  modules = darktable.develop->iop;
+  modules = dev->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -181,7 +170,13 @@ void enter(dt_view_t *self)
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
-  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
+  dt_dev_pop_history_items(dev, dev->history_end);
+
+  // image should be there now.
+  float zoom_x, zoom_y;
+  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
+  DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+  DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
 }
 
 
@@ -192,35 +187,35 @@ void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db
-  dt_dev_write_history(darktable.develop);
+  dt_dev_write_history(dev);
 
   // commit updated mipmaps to db
-  if(darktable.develop->mipf)
+  if(dev->mipf)
   {
     int wd, ht;
-    dt_image_get_mip_size(darktable.develop->image, DT_IMAGE_MIPF, &wd, &ht);
-    dt_dev_process_preview_job(darktable.develop);
-    if(dt_image_alloc(darktable.develop->image, DT_IMAGE_MIP4))
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &wd, &ht);
+    dt_dev_process_preview_job(dev);
+    if(dt_image_alloc(dev->image, DT_IMAGE_MIP4))
     {
       fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
       return;
     }
-    dt_image_check_buffer(darktable.develop->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
-    pthread_mutex_lock(&(darktable.develop->preview_pipe->backbuf_mutex));
-    memcpy(darktable.develop->image->mip[DT_IMAGE_MIP4], darktable.develop->preview_pipe->backbuf, sizeof(uint8_t)*4*wd*ht);
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'w');
-    pthread_mutex_unlock(&(darktable.develop->preview_pipe->backbuf_mutex));
-    if(dt_imageio_preview_write(darktable.develop->image, DT_IMAGE_MIP4))
-      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, darktable.develop->image->filename);
-    dt_image_update_mipmaps(darktable.develop->image);
+    dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
+    pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
+    memcpy(dev->image->mip[DT_IMAGE_MIP4], dev->preview_pipe->backbuf, sizeof(uint8_t)*4*wd*ht);
+    dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
+    pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
+    if(dt_imageio_preview_write(dev->image, DT_IMAGE_MIP4))
+      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, dev->image->filename);
+    dt_image_update_mipmaps(dev->image);
 
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIP4, 'r');
-    dt_image_release(darktable.develop->image, DT_IMAGE_MIPF, 'r');
+    dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
+    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
   }
 
   // clear gui.
-  dt_develop_t *dev = darktable.develop;
   dev->gui_leaving = 1;
   pthread_mutex_lock(&dev->history_mutex);
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
@@ -243,13 +238,13 @@ void leave(dt_view_t *self)
   pthread_mutex_unlock(&dev->history_mutex);
   
   // release full buffer
-  if(darktable.develop->image->pixels)
-    dt_image_release(darktable.develop->image, DT_IMAGE_FULL, 'r');
+  if(dev->image->pixels)
+    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
 
   DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
   // release image struct with metadata as well.
-  dt_image_cache_release(darktable.develop->image, 'r');
+  dt_image_cache_release(dev->image, 'r');
 }
 
 
@@ -257,9 +252,9 @@ void leave(dt_view_t *self)
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
+  dt_develop_t *dev = (dt_develop_t *)self->data;
   if(darktable.control->button_down)
   { // depending on dev_zoom, adjust dev_zoom_x/y.
-    dt_develop_t *dev = darktable.develop;
     const int cwd = dev->width, cht = dev->height;
     const int iwd = dev->image->width, iht = dev->image->height;
     float scale = 1.0f;
@@ -275,12 +270,12 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     DT_CTL_GET_GLOBAL(old_zoom_y, dev_zoom_y);
     float zx = old_zoom_x - scale*(x - darktable.control->button_x)/iwd;
     float zy = old_zoom_y - scale*(y - darktable.control->button_y)/iht;
-    dt_dev_check_zoom_bounds(darktable.develop, &zx, &zy, zoom, closeup, NULL, NULL);
+    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
     DT_CTL_SET_GLOBAL(dev_zoom_x, zx);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
     darktable.control->button_x = x;
     darktable.control->button_y = y;
-    dt_dev_invalidate(darktable.develop);
+    dt_dev_invalidate(dev);
     dt_control_queue_draw_all();
   }
 }
@@ -290,7 +285,9 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
 void key_pressed(dt_view_t *self, uint16_t which)
 {
+  dt_develop_t *dev = (dt_develop_t *)self->data;
   int zoom, closeup;
+  float zoom_x, zoom_y;
   switch (which)
   {
     case KEYCODE_1:
@@ -299,21 +296,23 @@ void key_pressed(dt_view_t *self, uint16_t which)
       if(zoom == DT_ZOOM_1) closeup ^= 1;
       DT_CTL_SET_GLOBAL(dev_closeup, closeup);
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
-      dt_dev_invalidate(darktable.develop);
+      dt_dev_invalidate(dev);
       break;
     case KEYCODE_2:
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, 0.0);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, 0.0);
+      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
       DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(darktable.develop);
+      dt_dev_invalidate(dev);
       break;
     case KEYCODE_3:
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, 0.0);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, 0.0);
+      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
       DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(darktable.develop);
+      dt_dev_invalidate(dev);
       break;
     default:
       break;

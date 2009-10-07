@@ -74,6 +74,22 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     cairo_set_source_surface (cr, surface, 0, 0);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
+
+#if 0
+    if(image->cropx != 0 || image->cropy != 0 || image->cropw != image->width || image->croph != image->height)
+    {
+      // draw crop area:
+      cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 0.8);
+      cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
+      cairo_rectangle(cr, 0, 0, iwd, iht);
+      cairo_rectangle(cr, iwd*image->cropx/(float)image->width, iht*image->cropy/(float)image->height, iwd*image->cropw/(float)image->width, iht*image->croph/(float)image->height);
+      cairo_fill_preserve(cr);
+      cairo_set_line_width(cr, 1.0);
+      cairo_set_source_rgb (cr, .3, .3, .3);
+      cairo_stroke(cr);
+    }
+#endif
+
     // cairo_restore(cr);
     // draw box where we are
     dt_dev_zoom_t zoom;
@@ -83,7 +99,7 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     DT_CTL_GET_GLOBAL(closeup, dev_closeup);
     DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-    if(zoom != DT_ZOOM_FIT)
+    if(zoom != DT_ZOOM_FIT)// || image->cropx != 0 || image->cropy != 0 || image->cropw != image->width || image->croph != image->height)
     {
       float boxw = 1, boxh = 1;
       dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);

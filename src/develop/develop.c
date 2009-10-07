@@ -172,21 +172,14 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   }
 
   // always process the whole downsampled mipf buffer, to allow for fast scrolling and mip4 write-through.
-  // dt_dev_zoom_t zoom;
-  // float zoom_x, zoom_y;
-  // int closeup;
-  // DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  // DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  // DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  // DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
-  // adjust pipeline according to changed flag set by {add,pop}_history_item.
-  // this locks dev->history_mutex.
 restart:
   if(dev->gui_leaving) return;
+  // adjust pipeline according to changed flag set by {add,pop}_history_item.
+  // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  // if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, x, y, dev->capwidth_preview, dev->capheight_preview, scale)) goto restart;
-  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->mipf_width, dev->mipf_height, 1.0)) goto restart;
+  // if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->mipf_width, dev->mipf_height, 1.0)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width, dev->preview_pipe->processed_height, 1.0)) goto restart;
 
   dev->preview_dirty = 0;
   dt_control_queue_draw_all();
@@ -195,34 +188,11 @@ restart:
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   dev->image_dirty = 1;
-  if(dev->image_loading) //dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
-  {
-    dt_dev_raw_load(dev, dev->image);
-  }
-  // else dt_image_release(dev->image, DT_IMAGE_FULL, 'r'); // raw load already keeps one reference, we were just testing.
-  dt_dev_zoom_t zoom;
-  float zoom_x, zoom_y;
-  int closeup;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  if(dev->image_loading) dt_dev_raw_load(dev, dev->image);
 
-  float scale = 1;//(closeup?2:1);//1:1;
-  // roi after scale has been applied:
-  if     (zoom == DT_ZOOM_FIT)  scale = fminf(dev->width/(float)dev->image->width, dev->height/(float)dev->image->height);
-  else if(zoom == DT_ZOOM_FILL) scale = fmaxf(dev->width/(float)dev->image->width, dev->height/(float)dev->image->height);
-  dev->capwidth  = MIN(MIN(dev->width,  dev->image->width *scale), DT_IMAGE_WINDOW_SIZE);
-  dev->capheight = MIN(MIN(dev->height, dev->image->height*scale), DT_IMAGE_WINDOW_SIZE);
-  int x, y;
-  x = MAX(0, scale*dev->image->width *(.5+zoom_x)-dev->capwidth/2);
-  y = MAX(0, scale*dev->image->height*(.5+zoom_y)-dev->capheight/2);
- 
-#ifndef HAVE_GEGL
-  // only necessary for full pixels pipeline
-  assert(dev->capwidth  <= DT_IMAGE_WINDOW_SIZE);
-  assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
-#endif
+  dt_dev_zoom_t zoom;
+  float zoom_x, zoom_y, scale;
+  int closeup, x, y;
 
   // printf("process: %d %d -> %d %d scale %f\n", x, y, dev->capwidth, dev->capheight, scale);
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -231,6 +201,23 @@ restart:
   dev->pipe->input_timestamp = dev->timestamp;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
+  // determine scale according to new dimensions
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+
+  scale = dt_dev_get_zoom_scale(dev, zoom, 1, 0);
+  dev->capwidth  = MIN(MIN(dev->width,  dev->pipe->processed_width *scale), DT_IMAGE_WINDOW_SIZE);
+  dev->capheight = MIN(MIN(dev->height, dev->pipe->processed_height*scale), DT_IMAGE_WINDOW_SIZE);
+  x = MAX(0, scale*dev->pipe->processed_width *(.5+zoom_x)-dev->capwidth/2);
+  y = MAX(0, scale*dev->pipe->processed_height*(.5+zoom_y)-dev->capheight/2);
+#ifndef HAVE_GEGL
+  // only necessary for full pixels pipeline
+  assert(dev->capwidth  <= DT_IMAGE_WINDOW_SIZE);
+  assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
+#endif
+ 
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale)) goto restart;
 
   // maybe we got zoomed/panned in the meantime?
@@ -279,6 +266,34 @@ restart:
   }
 }
 
+float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
+{
+  float zoom_scale;
+  // set processed width to something useful while image is not there yet:
+  const int procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
+  const int proch = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
+  const float w = preview ? dev->preview_pipe->processed_width  : procw;
+  const float h = preview ? dev->preview_pipe->processed_height : proch;
+  switch(zoom)
+  {
+    case DT_ZOOM_FIT:
+      zoom_scale = fminf(dev->width/w, dev->height/h);
+      break;
+    case DT_ZOOM_FILL:
+      zoom_scale = fmaxf(dev->width/w, dev->height/h);
+      break;
+    case DT_ZOOM_1:
+      zoom_scale = closeup_factor;
+      if(preview) zoom_scale *= dev->image->width/(float)dev->mipf_exact_width;
+      break;
+    default: // DT_ZOOM_FREE
+      DT_CTL_GET_GLOBAL(zoom_scale, dev_zoom_scale);
+      if(preview) zoom_scale *= dev->image->width/(float)dev->mipf_exact_width;
+      break;
+  }
+  return zoom_scale;
+}
+
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   dev->image = image;
@@ -289,62 +304,8 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   dev->image_dirty = dev->preview_dirty = 1;
 
   dev->iop = dt_iop_load_modules(dev);
-#if 0
-  // TODO: load modules for this image in read history!
-  dt_iop_module_t *module;
-  dev->iop_instance = 0;
 
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "temperature")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "colorin")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "denoise")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "equalizer")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "exposure")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "colorcorrection")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "tonecurve")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "colorout")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-
-  module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-  if(dt_iop_load_module(module, dev, "gamma")) exit(1);
-  dev->iop = g_list_append(dev->iop, module);
-#endif
-
-  // TODO: this should read modules on demand!
   dt_dev_read_history(dev);
-#if 0 // done in process image job at start.
-  if(dev->gui_attached)
-  {
-    dt_job_t job;
-    dt_dev_raw_load_job_init(&job, dev, dev->image);
-    int32_t err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_1);
-    if(err) fprintf(stderr, "[dev_load_image] job queue exceeded!\n");
-  }
-  else dt_dev_raw_load(dev, dev->image); // in this thread.
-#else
-  // dev->image_dirty = 1;
-#endif
   if(!dev->gui_attached) dt_dev_raw_load(dev, dev->image);
 }
 
@@ -609,28 +570,52 @@ void dt_dev_read_history(dt_develop_t *dev)
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxww, float *boxhh)
 {
-  float boxw = 1, boxh = 1;
+  const int procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
+  const int proch = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
+  float boxw = 1, boxh = 1; // viewport in normalised space
   if(zoom == DT_ZOOM_1)
   {
-    const float imgw = (closeup ? 2 : 1)*dev->image->width;
-    const float imgh = (closeup ? 2 : 1)*dev->image->height;
+    const float imgw = (closeup ? 2 : 1)*procw;
+    const float imgh = (closeup ? 2 : 1)*proch;
     const float devw = MIN(imgw, dev->width);
     const float devh = MIN(imgh, dev->height);
     boxw = fminf(1.0, devw/imgw); boxh = fminf(1.0, devh/imgh);
   }
-  else if(zoom == DT_ZOOM_FILL)
+  else
   {
-    const float imgw = dev->image->width;
-    const float imgh = dev->image->height;
+    const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
+    const float imgw = procw;
+    const float imgh = proch;
     const float devw = dev->width;
     const float devh = dev->height;
-    boxw = devw/(imgw*fmaxf(devw/imgw, devh/imgh)); boxh = devh/(imgh*fmaxf(devw/imgw, devh/imgh));
+    boxw = devw/(imgw*scale); boxh = devh/(imgh*scale);
   }
   
-  if(*zoom_x < boxw/2 - .5f) *zoom_x = boxw/2 - .5f;
-  if(*zoom_x > .5f - boxw/2) *zoom_x = .5f - boxw/2;
-  if(*zoom_y < boxh/2 - .5f) *zoom_y = boxh/2 - .5f;
-  if(*zoom_y > .5f - boxh/2) *zoom_y = .5f - boxh/2;
+  // const float cx = dev->image->cropx / (float)dev->image->width -.5;
+  // const float cy = dev->image->cropy / (float)dev->image->height-.5;
+  // const float cX = cx + dev->image->cropw / (float)dev->image->width;
+  // const float cY = cy + dev->image->croph / (float)dev->image->height;
+
+  if(*zoom_x < boxw/2 - .5) *zoom_x = boxw/2 - .5;
+  if(*zoom_x > .5 - boxw/2) *zoom_x = .5 - boxw/2;
+  if(*zoom_y < boxh/2 - .5) *zoom_y = boxh/2 - .5;
+  if(*zoom_y > .5 - boxh/2) *zoom_y = .5 - boxh/2;
+
+#if 0
+  // if range too large, center!
+  // if(boxw >= cX-cx) *zoom_x = .5f*(cx+cX);
+  // else
+  // {
+    if(*zoom_x < boxw/2 + cx) *zoom_x = boxw/2 + cx;
+    if(*zoom_x > cX - boxw/2) *zoom_x = cX - boxw/2;
+  // }
+  // if(boxh >= cY-cy) *zoom_y = .5f*(cy+cY);
+  // else
+  // {
+    if(*zoom_y < boxh/2 + cy) *zoom_y = boxh/2 + cy;
+    if(*zoom_y > cY - boxh/2) *zoom_y = cY - boxh/2;
+  // }
+#endif
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;

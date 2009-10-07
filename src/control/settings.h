@@ -38,7 +38,8 @@ typedef enum dt_dev_zoom_t
 {
   DT_ZOOM_FIT = 0,
   DT_ZOOM_FILL = 1,
-  DT_ZOOM_1 = 2
+  DT_ZOOM_1 = 2,
+  DT_ZOOM_FREE = 3
 }
 dt_dev_zoom_t;
 
@@ -103,7 +104,7 @@ typedef struct dt_ctl_settings_t
   dt_lib_sort_t lib_sort;
 
   // navigation
-  float dev_zoom_x, dev_zoom_y;
+  float dev_zoom_x, dev_zoom_y, dev_zoom_scale;
   dt_dev_zoom_t dev_zoom;
   int dev_closeup;
 

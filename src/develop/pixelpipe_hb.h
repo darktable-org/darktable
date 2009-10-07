@@ -46,7 +46,10 @@ typedef struct dt_dev_pixelpipe_t
   float *input;
   // width and height of input buffer
   int iwidth, iheight;
-  float iscale; // input actually just downscaled buffer? iscale*iwidth = actual width
+  // input actually just downscaled buffer? iscale*iwidth = actual width
+  float iscale;
+  // dimensions of processed buffer
+  int processed_width, processed_height;
   // gegl instances of pixel pipeline, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag
@@ -54,6 +57,7 @@ typedef struct dt_dev_pixelpipe_t
   // backbuffer (output)
   uint8_t *backbuf;
   int backbuf_size;
+  int backbuf_width, backbuf_height;
   pthread_mutex_t backbuf_mutex;
   // working?
   int processing;
@@ -72,6 +76,9 @@ void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32
 void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height, float iscale);
+
+// returns the dimensions of the full image after processing.
+void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in, int height_in, int *width, int *height);
 
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);

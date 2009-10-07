@@ -85,6 +85,7 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label);
 
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxw, float *boxh);
+float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int mode);
 
 struct dt_job_t;
 void dt_dev_export(struct dt_job_t *job);

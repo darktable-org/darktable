@@ -79,10 +79,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)module->params;
-  // gtk_range_set_value(GTK_RANGE(g->scale1), p->loa);
-  // gtk_range_set_value(GTK_RANGE(g->scale2), p->hia);
-  // gtk_range_set_value(GTK_RANGE(g->scale3), p->lob);
-  // gtk_range_set_value(GTK_RANGE(g->scale4), p->hib);
   gtk_range_set_value(GTK_RANGE(g->scale5), p->saturation);
   gtk_widget_queue_draw(self->widget);
 }
@@ -166,60 +162,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-#if 0
-void loa_callback (GtkRange *range, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  // dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  p->loa = gtk_range_get_value(range);
-  // float hia = gtk_range_get_value(GTK_RANGE(g->scale2));
-  // if(p->loa > hia) gtk_range_set_value(GTK_RANGE(g->scale2), p->loa);
-  dt_dev_add_history_item(darktable.develop, self);
-  gtk_widget_queue_draw(self->widget);
-}
-
-void hia_callback (GtkRange *range, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  // dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  p->hia = gtk_range_get_value(range);
-  // float loa = gtk_range_get_value(GTK_RANGE(g->scale1));
-  // if(loa > p->hia) gtk_range_set_value(GTK_RANGE(g->scale1), p->hia);
-  dt_dev_add_history_item(darktable.develop, self);
-  gtk_widget_queue_draw(self->widget);
-}
-
-void lob_callback (GtkRange *range, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  // dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  p->lob = gtk_range_get_value(range);
-  // float hib = gtk_range_get_value(GTK_RANGE(g->scale4));
-  // if(p->lob > hib) gtk_range_set_value(GTK_RANGE(g->scale4), p->lob);
-  dt_dev_add_history_item(darktable.develop, self);
-  gtk_widget_queue_draw(self->widget);
-}
-
-void hib_callback (GtkRange *range, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  // dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  p->hib = gtk_range_get_value(range);
-  // float lob = gtk_range_get_value(GTK_RANGE(g->scale3));
-  // if(lob > p->hib) gtk_range_set_value(GTK_RANGE(g->scale3), p->hib);
-  dt_dev_add_history_item(darktable.develop, self);
-  gtk_widget_queue_draw(self->widget);
-}
-#endif
-
 void sat_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -298,23 +240,18 @@ gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event,
     cairo_line_to(cr, loa, hib);
     cairo_stroke(cr);
     cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
-    if(g->selected & 1) loa = /*MIN(hia,*/ g->mouse_x;//);
-    if(g->selected & 2) lob = /*MIN(hib,*/ g->mouse_y;//);
-    if(g->selected & 4) hia = /*MAX(loa,*/ g->mouse_x;//);
-    if(g->selected & 8) hib = /*MAX(lob,*/ g->mouse_y;//);
+    if(g->selected & 1) loa = loa < hia ? loa-7 : loa+7;
+    if(g->selected & 2) lob = lob < hib ? lob-7 : lob+7;
+    if(g->selected & 4) hia = loa < hia ? hia+7 : hia-7;
+    if(g->selected & 8) hib = lob < hib ? hib+7 : hib-7;
   }
   cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_set_source_rgba(cr, .9, .9, .9, .5);
   cairo_rectangle(cr, loa, lob, hia-loa, hib-lob);
-  // cairo_set_line_width(cr, 2.);
-  // cairo_set_source_rgba(cr, .9, .9, .9, .5);
+  cairo_fill_preserve(cr);
+  cairo_stroke(cr);
   if(g->dragging)
-  {
-    cairo_fill_preserve(cr);
-    cairo_stroke(cr);
     dt_dev_add_history_item(darktable.develop, self);
-  }
-  else cairo_fill(cr);
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
@@ -363,11 +300,7 @@ gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion 
       if(g->press_y <= hib) g->selected |= 8;
       if(g->press_y >= lob) g->selected |= 2;
     }
-    // if(g->press_x <= loa) g->selected |= 1;
-    // if(g->press_y <= lob) g->selected |= 2;
-    // if(g->press_x >= hia) g->selected |= 4;
-    // if(g->press_y >= hib) g->selected |= 8;
-    if(g->press_x > loa && g->press_x < hia && g->press_y > lob && g->press_y < hib) g->selected = 0xf;
+    if(g->press_x > MIN(loa, hia) && g->press_x < MAX(hia,loa) && g->press_y > MIN(lob,hib) && g->press_y < MAX(hib,lob)) g->selected = 0xf;
     g->press_params = *p;
   }
   gtk_widget_queue_draw(self->widget);

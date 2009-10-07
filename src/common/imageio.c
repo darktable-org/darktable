@@ -255,10 +255,6 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, int orientation)
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
-  // printf("datum: %s\n", img->exif_datetime_taken);
-  // printf("lens: %s\n", img->exif_lens);
-  // printf("lensptr : %lu\n", (long int)(img->exif_lens));
-  // printf("imgptr  : %lu\n", (long int)(img));
   // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
@@ -1044,20 +1040,23 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
-  dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+  dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, pipe.processed_width, pipe.processed_height, 1.0);
   uint16_t *buf = (uint16_t *)pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
-    (void)fprintf(f, "PF\n%d %d\n-1.0\n", wd, ht);
-    for(int k=0;k<wd*ht;k++)
+    (void)fprintf(f, "PF\n%d %d\n-1.0\n", pipe.processed_width, pipe.processed_height);
+    for(int y=0;y<pipe.processed_height;y++)
+    for(int x=0;x<pipe.processed_width;x++)
     {
+      const int k = x + pipe.processed_width*y;
       float tmp[3];
       for(int i=0;i<3;i++) tmp[i] = buf[3*k+i]*(1.0/0x10000);
       int cnt = fwrite(tmp, sizeof(float)*3, 1, f);
-      if(cnt != sizeof(float)*3) break;
+      if(cnt != 1) break;
     }
     fclose(f);
     status = 0;
@@ -1082,20 +1081,23 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
-  dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+  dt_dev_pixelpipe_process_16(&pipe, &dev, 0, 0, pipe.processed_width, pipe.processed_height, 1.0);
   uint16_t *buf16 = (uint16_t *)pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
-    (void)fprintf(f, "P6\n%d %d\n65535\n", wd, ht);
-    for(int k=0;k<wd*ht;k++)
+    (void)fprintf(f, "P6\n%d %d\n65535\n", pipe.processed_width, pipe.processed_height);
+    for(int y=0;y<pipe.processed_height;y++)
+    for(int x=0;x<pipe.processed_width ;x++)
     {
+      const int k = x + pipe.processed_width*y;
       uint16_t tmp[3];
       for(int i=0;i<3;i++) tmp[i] = (0xff00 & (buf16[3*k+i]<<8))|(buf16[3*k+i]>>8);
       int cnt = fwrite(tmp, sizeof(uint16_t)*3, 1, f);
-      if(cnt != sizeof(float)*3) break;
+      if(cnt != 1) break;
     }
     fclose(f);
     status = 0;
@@ -1257,15 +1259,18 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
-  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, wd, ht, 1.0);
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, pipe.processed_width, pipe.processed_height, 1.0);
   char pathname[1024];
   dt_image_full_path(img, pathname, 1024);
-  const char *suffix = pathname + strlen(pathname) - 3;
+  const char *suffix = filename + strlen(filename) - 3;
   int export_png = 0;
-  if(suffix > pathname && strncmp(suffix, "png", 3) == 0) export_png = 1;
+  if(suffix > filename && strncmp(suffix, "png", 3) == 0) export_png = 1;
   uint8_t *buf8 = pipe.backbuf;
-  for(int k=0;k<wd*ht;k++)
+  for(int y=0;y<pipe.processed_height;y++)
+  for(int x=0;x<pipe.processed_width ;x++)
   {
+    const int k = x + pipe.processed_width*y;
     uint8_t tmp = buf8[4*k+0];
     buf8[4*k+0] = buf8[4*k+2];
     buf8[4*k+2] = tmp;
@@ -1277,8 +1282,8 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   int quality = 100;
   DT_CTL_GET_GLOBAL(quality, dev_export_quality);
-  if((!export_png && dt_imageio_jpeg_write(filename, buf8, wd, ht, quality, exif_profile, length)) ||
-     ( export_png && dt_imageio_png_write (filename, buf8, wd, ht)))
+  if((!export_png && dt_imageio_jpeg_write(filename, buf8, pipe.processed_width, pipe.processed_height, quality, exif_profile, length)) ||
+     ( export_png && dt_imageio_png_write (filename, buf8, pipe.processed_width, pipe.processed_height)))
   {
     dt_dev_pixelpipe_cleanup(&pipe);
     dt_dev_cleanup(&dev);

@@ -11,6 +11,14 @@ struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 
+/** region of interest */
+typedef struct dt_iop_roi_t
+{
+  int x, y, width, height;
+  float scale;
+}
+dt_iop_roi_t;
+
 typedef struct dt_iop_params_t
 {
   int keep;
@@ -71,6 +79,8 @@ typedef struct dt_iop_module_t
   void (*commit_params) (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
   void (*cleanup_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*modify_roi_in)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
+  void (*modify_roi_out) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
 
   /** this is the temp homebrew callback to operations, as long as gegl is so slow.
     * x,y, and scale are just given for orientation in the framebuffer. i and o are

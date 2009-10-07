@@ -58,7 +58,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int cnt[DT_IOP_EQUALIZER_BANDS];
     for(int i=0;i<DT_IOP_EQUALIZER_BANDS;i++) cnt[i] = 0;
     for(int l=1;l<numl_cap;l++)
-    {;
+    {
       const float lv = (lm-l1)*(l-1)/(float)(numl_cap-1) + l1; // appr level in real image.
       const int band = CLAMP(.5f + (1.0 - lv / d->num_levels) * (DT_IOP_EQUALIZER_BANDS), 0, DT_IOP_EQUALIZER_BANDS);
       c->band_hist[band] = 0.0f;
@@ -89,11 +89,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int ch=0;ch<3;ch++)
     {
       // coefficients in range [0, 2], 1 being neutral.
-      const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch], band);
+      const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch==0?0:1], band);
       const int step = 1<<l;
+#if 1 // scale coefficients
       for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
       for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;
       for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff*coeff;
+#else // soft-thresholding (shrinkage)
+#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[3*width*j + 3*i + ch]) - coeff), out[3*width*j + 3*i + ch]))
+      for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] = wshrink;
+      for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] = wshrink;
+      for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] = wshrink;
+#undef wshrink
+#endif
     }
   }
   // printf("applied\n");
@@ -222,19 +230,20 @@ void gui_init(struct dt_iop_module_t *self)
   c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
-  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, "L"));
-  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "a"));
-  c->channel_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "b"));
+  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, "luma"));
+  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "chroma"));
+  // c->channel_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "b"));
 
   g_signal_connect (G_OBJECT (c->channel_button[0]), "toggled",
                     G_CALLBACK (dt_iop_equalizer_button_toggled), self);
   g_signal_connect (G_OBJECT (c->channel_button[1]), "toggled",
                     G_CALLBACK (dt_iop_equalizer_button_toggled), self);
-  g_signal_connect (G_OBJECT (c->channel_button[2]), "toggled",
-                    G_CALLBACK (dt_iop_equalizer_button_toggled), self);
+  // g_signal_connect (G_OBJECT (c->channel_button[2]), "toggled",
+  //                   G_CALLBACK (dt_iop_equalizer_button_toggled), self);
 
-  for(int k=2;k>=0;k--)
-    gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[k]), FALSE, FALSE, 5);
+  // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[2]), FALSE, FALSE, 5);
+  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[1]), FALSE, FALSE, 5);
+  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 5);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -343,6 +352,7 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   for(int i=0;i<3;i++)
   { // draw curves, selected last.
     int ch = ((int)c->channel+i+1)%3;
+    if(ch == 2) continue;
     switch(ch)
     {
       case DT_IOP_EQUALIZER_L:

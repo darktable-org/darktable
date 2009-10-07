@@ -1,3 +1,24 @@
+0.3 darkroom release
+- preview pipe: mipf_exact into pipe clip and zoom (pipe_process_rec)
+- simple crop op with modify_roi_*
+- rot/crop commit:
+  - get rotation in m[]
+- modify aabb in roi according to m[]
+  - modify scale in roi, bake into rotation matrix
+- iop->process to take struct as argument: roi in/out
+- ROI!
+- crop: display:
+  DEBUG crop remove in imageio_raw_open
+  lighttable: crop in expose
+  darkroom: full view scale
+    zoom_x = 0 reset somewhere?
+    DT_ZOOM_FIT: need gray crop border
+  - sequential lo-res/hi-res image processing (synch in dev->image->crop)
+  - remove zoom in darkroom mode => free zoom
+- replace dev zoom/closeup weirdness by general scale factor.
+- darkroom mode: click on 1:1 zoom spot
+
+0.4 lighttable release
 - modular views:
   - control.c: save/restore gui settings => modules!
   - save settings in modules (query fct?)
@@ -5,14 +26,14 @@
   - interface functions for sql query iteration/next/prev/selected image
     - => common/film.h
 - modular image operations:
+  - need plug-in versioning
   - failsafe behavior if plugin is not available.
   - pre/expose/post callbacks
   - event handling callbacks
-- example op: crop/rotate (pre gamma hopefully, for ppm export)
 - lensfun op
-- sequential lo-res/hi-res image processing
 
 bugs:
+- darkroom mode 2:1 zoom bounds 0,0 hides upper left borders
 - img unlock => flicker in library mode? (due to mipf trigger?)
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
@@ -24,6 +45,7 @@ bugs:
 - glist instead of sql query in export (or else altering selection after pressing export will change the behavior)
 
 cleanup:
+- remove most iop/*.h 
 - colorin: use color matrix?
 - sequentially work on preview/full?
 - libraw autoexposure etc off?
@@ -40,14 +62,7 @@ cleanup:
 - print GPLv3 notice on top of all files
 - save gui settings (expanded etc?) in operation stacks
 
-0.3 roadmap:
 - finish most develop (single film roll) functionality:
-- plug-in loading system as rc.d
-  - need plug-in versioning
-- post-gamma crop/rotate plug-in:
-  - need mouse interface and draw hook
-  - draw 3x3 lines or similar
-  - move image around in crop window with darkened borders?
 - editable metadata (at least what's needed for lensfun..)
 - copy function in lib:
   - flags, tags
@@ -55,14 +70,11 @@ cleanup:
   - histogram :)
 - write/re-import small xml file for images to backup sql
 - translations (de, etc)
+- man page
 - small 1:1 preview for sharpen etc.
 - write back images to db after cache drop!
-- lensfun
-- try gegl 0.1.0
-- darkroom mode: click on 1:1 zoom spot
 - quality parameter for pixelpipe init callbacks in modules?
 - if kicking out mip maps from db: need to re-generate history pipeline mipf->mip4!
-- replace dev zoom/closeup weirdness by general scale factor.
 - libraw document mode and custom whitebalance/color processing.
 - new strategy to add images: add empty dia (with icon and filename)
   ordered by filename. then launch jobs in bg to load images, priority
@@ -80,7 +92,6 @@ cleanup:
 
 1.0 roadmap:
 - remove libraw in favour of native gegl loading?
-- database for linear/gamma parameters for each camera model
 
 bugs:
  - import while still importing crashes.
@@ -91,10 +102,9 @@ bugs:
 
 feature requests:
  - physically delete raw from disk (selected)
- - gphoto2 import.
+ - gphoto2 import (views/acquire)
  - step to next image in darkroom mode (precache:)
  - rescale during export (email etc)
- - reset button for iops
  - bzip2 compressed content
  - offline media reference in db
  - image variants (different history etc, new image with same source)
@@ -121,16 +131,12 @@ feature requests:
  - inotify dir watching
  - zoom in dev mode via mouse wheel/click
  - brightness/exposure highlight histogram stuff (fill blacks)
- - LensFun
-
-priority list:
  - tags and some tag search facility (expander in lighttable mode)
  - image properties when zoomed in a lot
  - bottom control panel with buttons for lib->dev->lib
  - libglade => gtkbuilder.
 
 usability:
- - label_widgets on expanders? (zoom buttons, enable switches..)
  - write out image_t at quit (exif, filenames, selected flags)
  - navigation: buttons for zoom levels
  - closeup in 3:1 5:1 or 2:1 ?

@@ -12,6 +12,16 @@
 #include <gmodule.h>
 #include <pthread.h>
 
+void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+{
+  *roi_in = *roi_out;
+}
+
+void dt_iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+{
+  *roi_out = *roi_in;
+}
+
 gint sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_iop_module_t *am = (const dt_iop_module_t *)a;
@@ -29,20 +39,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   module->priority = 0;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   strncpy(module->op, op, 20);
-  // load module from disk
-  // char datadir[1024];
-  // dt_get_datadir(datadir, 1024);
-  // strcpy(datadir + strlen(datadir), "/plugins");
-  // first try relative path
-  // gchar *libname = g_module_build_path(datadir, (const gchar *)op);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
-  // g_free(libname);
-  // if(!module->module)
-  // { // then compiled-in absolute
-    // libname = g_module_build_path(DATADIR"/plugins", (const gchar *)op);
-    // module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
-    // g_free(libname);
-  // }
   if(!module->module) goto error;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
@@ -53,6 +50,8 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "init_pipe",              (gpointer)&(module->init_pipe)))              goto error;
   if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;
+  if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
+  if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   module->init(module);
   if(module->priority == 0)
   {
