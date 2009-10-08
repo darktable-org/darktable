@@ -42,57 +42,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   int wd, ht, stride, closeup;
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   cairo_surface_t *surface = NULL;
-
    
   // printf("develop_view draw timestamp pass: %d\n", dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp);
-  if(dev->image_dirty && !dev->preview_dirty)
-  { // draw preview
-    // printf("drawing preview\n");
-    mutex = &dev->preview_pipe->backbuf_mutex;
-    pthread_mutex_lock(mutex);
-    // wd = dev->capwidth_preview;
-    // ht = dev->capheight_preview;
-    // stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    // surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
-
-    int32_t zoom;
-    float zoom_x, zoom_y;
-    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
-    cairo_set_source_rgb (cr, .2, .2, .2);
-    cairo_paint(cr);
-    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, dev->mipf_width);
-    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, dev->mipf_width, dev->mipf_height, stride); 
-    cairo_translate(cr, width/2.0, height/2.0f);
-    // cairo_translate(cr, (dev->small_raw_width-fwd), (dev->small_raw_height-fht));
-    // cairo_scale(cr, zoom_scale*(dev->small_raw_width/fwd), zoom_scale*(dev->small_raw_height/fht));
-    cairo_scale(cr, zoom_scale, zoom_scale);
-    cairo_translate(cr, -.5f*dev->mipf_exact_width-zoom_x*dev->mipf_exact_width, -.5f*dev->mipf_exact_height-zoom_y*dev->mipf_exact_height);
-    // cairo_translate(cr, -1, -1); // compensate jumping draw below pointer
-    cairo_rectangle(cr, 0, 0, dev->mipf_exact_width, dev->mipf_exact_height);
-    cairo_set_source_surface (cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_fill(cr);
-    cairo_surface_destroy (surface);
-
-    /*
-    cairo_set_source_rgb (cr, .2, .2, .2);
-    cairo_paint(cr);
-    cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
-    cairo_rectangle(cr, 0, 0, wd, ht);
-    cairo_set_source_surface (cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb (cr, .3, .3, .3);
-    cairo_stroke(cr);
-    cairo_surface_destroy (surface);
-    */
-    pthread_mutex_unlock(mutex);
-  }
-  else if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
+  if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
     mutex = &dev->pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
@@ -119,6 +71,35 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_surface_destroy (surface);
     pthread_mutex_unlock(mutex);
   }
+  else if(!dev->preview_dirty)
+  { // draw preview
+    // printf("drawing preview\n");
+    mutex = &dev->preview_pipe->backbuf_mutex;
+    pthread_mutex_lock(mutex);
+
+    int32_t zoom;
+    float zoom_x, zoom_y;
+    wd = dev->preview_pipe->backbuf_width;
+    ht = dev->preview_pipe->backbuf_height;
+    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+    float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+    cairo_set_source_rgb (cr, .2, .2, .2);
+    cairo_paint(cr);
+    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    cairo_translate(cr, width/2.0, height/2.0f);
+    cairo_scale(cr, zoom_scale, zoom_scale);
+    cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
+    cairo_rectangle(cr, 0, 0, wd, ht);
+    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_fill(cr);
+    cairo_surface_destroy (surface);
+
+    pthread_mutex_unlock(mutex);
+  }
   cairo_restore(cr);
   // TODO: execute module callback hook!
 }
@@ -141,6 +122,8 @@ void enter(dt_view_t *self)
   if(selected >= 0)
   {
     DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+    DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
+    DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
     DT_CTL_SET_GLOBAL(dev_closeup, 0);
   }
 
@@ -255,21 +238,26 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   if(darktable.control->button_down)
   { // depending on dev_zoom, adjust dev_zoom_x/y.
-    const int cwd = dev->width, cht = dev->height;
-    const int iwd = dev->image->width, iht = dev->image->height;
-    float scale = 1.0f;
+    // const int iwd = dev->image->width, iht = dev->image->height;
     dt_dev_zoom_t zoom;
     int closeup;
     DT_CTL_GET_GLOBAL(zoom, dev_zoom);
     DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    const int procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
+    const int proch = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
+#if 0
+    const int cwd = dev->width, cht = dev->height;
+    float scale = 1.0f;
     if(zoom == DT_ZOOM_FIT)  return; //scale = fminf(iwd/(float)cwd, iht/(float)cht);
     if(closeup) scale = .5f;
     if(zoom == DT_ZOOM_FILL) scale = fmaxf(iwd/(float)cwd, iht/(float)cht);
+#endif
+    const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
     float old_zoom_x, old_zoom_y;
     DT_CTL_GET_GLOBAL(old_zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(old_zoom_y, dev_zoom_y);
-    float zx = old_zoom_x - scale*(x - darktable.control->button_x)/iwd;
-    float zy = old_zoom_y - scale*(y - darktable.control->button_y)/iht;
+    float zx = old_zoom_x - (1.0/scale)*(x - darktable.control->button_x)/procw;// /iwd;
+    float zy = old_zoom_y - (1.0/scale)*(y - darktable.control->button_y)/proch;// /iht;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
     DT_CTL_SET_GLOBAL(dev_zoom_x, zx);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
@@ -308,9 +296,8 @@ void key_pressed(dt_view_t *self, uint16_t which)
       break;
     case KEYCODE_3:
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
       DT_CTL_SET_GLOBAL(dev_closeup, 0);
       dt_dev_invalidate(dev);
       break;

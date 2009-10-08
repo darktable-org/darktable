@@ -38,59 +38,39 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   width -= 2*inset; height -= 2*inset;
   cairo_translate(cr, inset, inset);
 
-  dt_image_t *image = darktable.develop->image;
-  dt_image_buffer_t mip = DT_IMAGE_NONE;
-  int32_t iiwd, iiht;
-  float iwd, iht;
-  if(image)
+  dt_develop_t *dev = darktable.develop;
+  if(!dev->preview_dirty)
   {
-    mip = dt_image_get_matching_mip_size(image, width, height, &iiwd, &iiht);
-    mip = dt_image_get(image, mip, 'r');
-    dt_image_get_exact_mip_size(image, mip, &iwd, &iht);
-    dt_image_get_mip_size(image, mip, &iiwd, &iiht);
-  }
-  if(mip != DT_IMAGE_NONE)
-  {
-    const float scale = fminf(width/iwd, height/iht);
-    int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, iiwd);
-    // cairo_save(cr);
-    cairo_surface_t *surface = cairo_image_surface_create_for_data (image->mip[mip], CAIRO_FORMAT_RGB24, iiwd, iiht, stride); 
+    pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+    pthread_mutex_lock(mutex);
+    const int wd = dev->preview_pipe->backbuf_width;
+    const int ht = dev->preview_pipe->backbuf_height;
+    const float scale = fminf(width/(float)wd, height/(float)ht);
+
+    const int stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
+    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
     cairo_translate(cr, width/2.0, height/2.0f);
     cairo_scale(cr, scale, scale);
-    cairo_translate(cr, -.5f*iwd, -.5f*iht);
+    cairo_translate(cr, -.5f*wd, -.5f*ht);
 
     // draw shadow around
     float alpha = 1.0f;
     for(int k=0;k<4;k++)
     {
-      cairo_rectangle(cr, -k/scale, -k/scale, iwd + 2*k/scale, iht + 2*k/scale);
+      cairo_rectangle(cr, -k/scale, -k/scale, wd + 2*k/scale, ht + 2*k/scale);
       cairo_set_source_rgba(cr, 0, 0, 0, alpha);
       alpha *= 0.6f;
       cairo_fill(cr);
     }
 
-    cairo_rectangle(cr, 0, 0, iwd, iht);
-    // cairo_stroke_preserve(cr);
+    cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
 
-#if 0
-    if(image->cropx != 0 || image->cropy != 0 || image->cropw != image->width || image->croph != image->height)
-    {
-      // draw crop area:
-      cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 0.8);
-      cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
-      cairo_rectangle(cr, 0, 0, iwd, iht);
-      cairo_rectangle(cr, iwd*image->cropx/(float)image->width, iht*image->cropy/(float)image->height, iwd*image->cropw/(float)image->width, iht*image->croph/(float)image->height);
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 1.0);
-      cairo_set_source_rgb (cr, .3, .3, .3);
-      cairo_stroke(cr);
-    }
-#endif
+    pthread_mutex_unlock(mutex);
 
-    // cairo_restore(cr);
     // draw box where we are
     dt_dev_zoom_t zoom;
     int closeup;
@@ -99,26 +79,25 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     DT_CTL_GET_GLOBAL(closeup, dev_closeup);
     DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-    if(zoom != DT_ZOOM_FIT)// || image->cropx != 0 || image->cropy != 0 || image->cropw != image->width || image->croph != image->height)
+    if(zoom != DT_ZOOM_FIT)
     {
       float boxw = 1, boxh = 1;
       dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);
-     
-      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
 
-      cairo_translate(cr, iwd*(.5f+zoom_x), iht*(.5f+zoom_y));
+      // DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+      // DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+
+      cairo_translate(cr, wd*(.5f+zoom_x), ht*(.5f+zoom_y));
       cairo_set_source_rgb(cr, 0., 0., 0.);
-      cairo_set_line_width(cr, 1.f);
-      boxw *= iwd;
-      boxh *= iht;
+      cairo_set_line_width(cr, 1.f/scale);
+      boxw *= wd;
+      boxh *= ht;
       cairo_rectangle(cr, -boxw/2-1, -boxh/2-1, boxw+2, boxh+2);
       cairo_stroke(cr);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_rectangle(cr, -boxw/2, -boxh/2, boxw, boxh);
       cairo_stroke(cr);
     }
-    dt_image_release(image, mip, 'r');
   }
 
   cairo_destroy(cr);
@@ -144,7 +123,9 @@ void dt_gui_navigation_set_position(dt_gui_navigation_t *n, double x, double y, 
   {
     const int inset = DT_NAVIGATION_INSET;
     const float width = wd - 2*inset, height = ht - 2*inset;
-    const float iwd = darktable.develop->image->width, iht = darktable.develop->image->height;
+    const dt_develop_t *dev = darktable.develop;
+    const float iwd = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
+    const float iht = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
     zoom_x = fmaxf(-.5, fminf(((x-inset)/width  - .5f), .5))/(iwd*fminf(wd/iwd, ht/iht)/wd);
     zoom_y = fmaxf(-.5, fminf(((y-inset)/height - .5f), .5))/(iht*fminf(wd/iwd, ht/iht)/ht);
     dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);

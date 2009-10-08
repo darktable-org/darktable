@@ -1,6 +1,6 @@
 0.3 darkroom release
-- preview pipe: mipf_exact into pipe clip and zoom (pipe_process_rec)
-- simple crop op with modify_roi_*
+- #if 0 cleanup
+- develop get processed width for image
 - rot/crop commit:
   - get rotation in m[]
 - modify aabb in roi according to m[]

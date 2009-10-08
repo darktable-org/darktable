@@ -78,6 +78,8 @@ void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history(dt_develop_t *dev);
 
 void dt_dev_invalidate(dt_develop_t *dev);
+// also invalidates preview (which is unaffected by resize/zoom/pan)
+void dt_dev_invalidate_all(dt_develop_t *dev);
 void dt_dev_set_gamma(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);

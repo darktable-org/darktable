@@ -77,8 +77,10 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
       piece->enabled = module->enabled;
-      piece->iscale = pipe->iscale;
-      piece->module = module;
+      piece->iscale  = pipe->iscale;
+      piece->iwidth  = pipe->iwidth;
+      piece->iheight = pipe->iheight;
+      piece->module  = module;
       piece->data = NULL;
       piece->hash = 0;
       piece->module->init_pipe(piece->module, pipe, piece);
@@ -153,7 +155,10 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   pthread_mutex_unlock(&dev->history_mutex);
-  dt_dev_pixelpipe_get_dimensions(pipe, dev, pipe->iwidth, pipe->iheight, &pipe->processed_width, &pipe->processed_height);
+  if(pipe == dev->preview_pipe)
+    dt_dev_pixelpipe_get_dimensions(pipe, dev, dev->mipf_exact_width, dev->mipf_exact_height, &pipe->processed_width, &pipe->processed_height);
+  else
+    dt_dev_pixelpipe_get_dimensions(pipe, dev, pipe->iwidth, pipe->iheight, &pipe->processed_width, &pipe->processed_height);
 }
 
 // TODO:
@@ -168,7 +173,7 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 // recursive helper for process:
 int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
-  dt_iop_roi_t roi_in;
+  dt_iop_roi_t roi_in = *roi_out;
 
   void *input = NULL;
   dt_iop_module_t *module = NULL;
@@ -181,7 +186,6 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(!piece->enabled)
     {
       // printf("skipping disabled module %s\n", module->op);
-      module->modify_roi_in(module, piece, roi_out, &roi_in);
       return dt_dev_pixelpipe_process_rec(pipe, dev, output, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1);
     }
   }
@@ -212,8 +216,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       // printf("[process] scale/pan\n");
       // reserve new cache line: output
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
-      dt_iop_clip_and_zoom(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale, roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
-                           *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
+      dt_iop_clip_and_zoom(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,
+          roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
+          *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
     }
   }
   else

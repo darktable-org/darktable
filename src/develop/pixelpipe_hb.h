@@ -18,6 +18,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   void *data;                      // to be used by the module to store stuff per pipe piece
   int enabled;                     // used to disable parts of the pipe for export, independent on module itself.
   float iscale;                    // input actually just downscaled buffer? iscale*iwidth = actual width
+  int iwidth, iheight;             // width and height of input buffer
   uint64_t hash;                   // hash of params and enabled.
 }
 dt_dev_pixelpipe_iop_t;

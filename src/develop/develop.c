@@ -56,7 +56,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->mipf = NULL;
 
   dev->image = NULL;
-  dev->image_dirty = dev->preview_dirty = 
+  dev->image_dirty = dev->preview_dirty = 1;
   dev->image_loading = dev->preview_loading = 0;
 
   dev->pipe = dev->preview_pipe = NULL;
@@ -147,6 +147,12 @@ void dt_dev_process_preview(dt_develop_t *dev)
 
 void dt_dev_invalidate(dt_develop_t *dev)
 {
+  dev->image_dirty = 1;
+  dev->timestamp++;
+}
+
+void dt_dev_invalidate_all(dt_develop_t *dev)
+{
   dev->preview_dirty = dev->image_dirty = 1;
   dev->timestamp++;
 }
@@ -207,7 +213,7 @@ restart:
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
-  scale = dt_dev_get_zoom_scale(dev, zoom, 1, 0);
+  scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0);
   dev->capwidth  = MIN(MIN(dev->width,  dev->pipe->processed_width *scale), DT_IMAGE_WINDOW_SIZE);
   dev->capheight = MIN(MIN(dev->height, dev->pipe->processed_height*scale), DT_IMAGE_WINDOW_SIZE);
   x = MAX(0, scale*dev->pipe->processed_width *(.5+zoom_x)-dev->capwidth/2);
@@ -452,7 +458,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 #endif
 
   // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate(dev);
+  dt_dev_invalidate_all(dev);
   pthread_mutex_unlock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -498,7 +504,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
   darktable.gui->reset = 0;
-  dt_dev_invalidate(dev);
+  dt_dev_invalidate_all(dev);
   pthread_mutex_unlock(&dev->history_mutex);
   dt_control_queue_draw_all();
 }
@@ -563,7 +569,7 @@ void dt_dev_read_history(dt_develop_t *dev)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
-    dt_dev_invalidate(dev);
+    dt_dev_invalidate_all(dev);
   }
   rc = sqlite3_finalize (stmt);
 }
@@ -581,6 +587,11 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
     const float devh = MIN(imgh, dev->height);
     boxw = fminf(1.0, devw/imgw); boxh = fminf(1.0, devh/imgh);
   }
+  if(zoom == DT_ZOOM_FIT)
+  {
+    *zoom_x = *zoom_y = 0.0f;
+    boxw = boxh = 1.0f;
+  }
   else
   {
     const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
@@ -591,31 +602,10 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
     boxw = devw/(imgw*scale); boxh = devh/(imgh*scale);
   }
   
-  // const float cx = dev->image->cropx / (float)dev->image->width -.5;
-  // const float cy = dev->image->cropy / (float)dev->image->height-.5;
-  // const float cX = cx + dev->image->cropw / (float)dev->image->width;
-  // const float cY = cy + dev->image->croph / (float)dev->image->height;
-
   if(*zoom_x < boxw/2 - .5) *zoom_x = boxw/2 - .5;
   if(*zoom_x > .5 - boxw/2) *zoom_x = .5 - boxw/2;
   if(*zoom_y < boxh/2 - .5) *zoom_y = boxh/2 - .5;
   if(*zoom_y > .5 - boxh/2) *zoom_y = .5 - boxh/2;
-
-#if 0
-  // if range too large, center!
-  // if(boxw >= cX-cx) *zoom_x = .5f*(cx+cX);
-  // else
-  // {
-    if(*zoom_x < boxw/2 + cx) *zoom_x = boxw/2 + cx;
-    if(*zoom_x > cX - boxw/2) *zoom_x = cX - boxw/2;
-  // }
-  // if(boxh >= cY-cy) *zoom_y = .5f*(cy+cY);
-  // else
-  // {
-    if(*zoom_y < boxh/2 + cy) *zoom_y = boxh/2 + cy;
-    if(*zoom_y > cY - boxh/2) *zoom_y = cY - boxh/2;
-  // }
-#endif
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
