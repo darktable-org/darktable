@@ -23,6 +23,14 @@ the core operates completely on floating point values, so darktable can not only
     	</div>
 
       <div class="text">
+    	<img src="images/clouds.jpg" class="img" alt="dreggn" /><h1>admin stuff</h1>
+      <em>(2009-10-08)</em> darktable moved from svn to git. get it from
+      <code>git://darktable.git.sf.net/gitroot/darktable/darktable</code>. the svn repository
+      is still around, but i will probably remove it in the next couple of weeks.
+      we also have <a href="http://sourceforge.net/apps/phpbb/darktable/">nicer forums now</a>.
+      </div>
+
+      <div class="text">
     	<img src="images/mailinglist.jpg" class="img" alt="dreggn" /><h1>we now have a mailing list</h1>
       <em>(2009-08-19)</em> in the hope to start a small community and to avoid duplicate email traffic, i
       created this <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>. also
