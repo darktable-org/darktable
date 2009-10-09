@@ -7,7 +7,7 @@
 #include <sqlite3.h>
 #include <pthread.h>
 
-#define DT_VERSION 24
+#define DT_VERSION 25
 
 #ifndef M_PI
   #define M_PI 3.14159265358979323846

@@ -125,10 +125,10 @@ void dt_gui_navigation_set_position(dt_gui_navigation_t *n, double x, double y, 
     const int inset = DT_NAVIGATION_INSET;
     const float width = wd - 2*inset, height = ht - 2*inset;
     const dt_develop_t *dev = darktable.develop;
-    const float iwd = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
-    const float iht = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
-    zoom_x = fmaxf(-.5, fminf(((x-inset)/width  - .5f), .5))/(iwd*fminf(wd/iwd, ht/iht)/wd);
-    zoom_y = fmaxf(-.5, fminf(((y-inset)/height - .5f), .5))/(iht*fminf(wd/iwd, ht/iht)/ht);
+    int iwd, iht;
+    dt_dev_get_processed_size(dev, &iwd, &iht);
+    zoom_x = fmaxf(-.5, fminf(((x-inset)/width  - .5f)/(iwd*fminf(wd/(float)iwd, ht/(float)iht)/(float)wd), .5));
+    zoom_y = fmaxf(-.5, fminf(((y-inset)/height - .5f)/(iht*fminf(wd/(float)iwd, ht/(float)iht)/(float)ht), .5));
     dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
     DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);

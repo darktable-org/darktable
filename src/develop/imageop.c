@@ -211,6 +211,38 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   return GTK_WIDGET(vbox);
 }
 
+void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
+                                 uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
+{
+  const float scalex = iw/(float)ow;
+  const float scaley = ih/(float)oh;
+  int32_t ix2 = MAX(ix, 0);
+  int32_t iy2 = MAX(iy, 0);
+  int32_t ox2 = MAX(ox, 0);
+  int32_t oy2 = MAX(oy, 0);
+  int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
+  int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
+  assert((int)(ix2 + ow2*scalex) <= ibw);
+  assert((int)(iy2 + oh2*scaley) <= ibh);
+  assert(ox2 + ow2 <= obw);
+  assert(oy2 + oh2 <= obh);
+  assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
+  float x = ix2, y = iy2;
+  for(int s=0;s<oh2;s++)
+  {
+    int idx = ox2 + obw*(oy2+s);
+    for(int t=0;t<ow2;t++)
+    {
+      for(int k=0;k<3;k++) o[4*idx + k] =  //i[3*(ibw* (int)y +             (int)x             ) + k)];
+       CLAMP(((int32_t)i[(4*(ibw*(int32_t) y +            (int32_t) (x + .5f*scalex)) + k)] +
+              (int32_t)i[(4*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x + .5f*scalex)) + k)] +
+              (int32_t)i[(4*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x             )) + k)] +
+              (int32_t)i[(4*(ibw*(int32_t) y +            (int32_t) (x             )) + k)])/4, 0, 255);
+      x += scalex; idx++;
+    }
+    y += scaley; x = ix2;
+  }
+}
 void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
                                 float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
 {

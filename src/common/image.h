@@ -52,7 +52,7 @@ typedef struct dt_image_t
   char exif_datetime_taken[20];
   char filename[512];
   // common stuff
-  int32_t width, height;
+  int32_t width, height, output_width, output_height;
   // used by library
   int32_t num, flags, film_id, id;
   // cache

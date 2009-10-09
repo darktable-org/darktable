@@ -198,7 +198,7 @@ void dt_image_cache_flush(dt_image_t *img)
 {
   int rc;
   sqlite3_stmt *stmt;
-   rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12 where id = ?13", -1, &stmt, NULL);
+   rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14 where id = ?15", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->width);
   rc = sqlite3_bind_int (stmt, 2, img->height);
   rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -211,7 +211,9 @@ void dt_image_cache_flush(dt_image_t *img)
   rc = sqlite3_bind_int (stmt, 10, img->film_id);
   rc = sqlite3_bind_text(stmt, 11, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
   rc = sqlite3_bind_int (stmt, 12, img->flags);
-  rc = sqlite3_bind_int (stmt, 13, img->id);
+  rc = sqlite3_bind_int (stmt, 13, img->output_width);
+  rc = sqlite3_bind_int (stmt, 14, img->output_height);
+  rc = sqlite3_bind_int (stmt, 15, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_fluhs] sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);

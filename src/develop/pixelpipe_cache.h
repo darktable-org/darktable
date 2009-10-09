@@ -21,8 +21,9 @@ dt_dev_pixelpipe_cache_t;
 void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size);
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache);
 
+struct dt_iop_roi_t;
 /** creates a hopefully unique hash from the complete module stack up to the module-th. */
-uint64_t dt_dev_pixelpipe_cache_hash(int imgid, float scale, int32_t x, int32_t y, struct dt_dev_pixelpipe_t *pipe, int module);
+uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module);
 
 /** returns the float data buffer for the given hash from the cache. if the hash does not match any
   * cache line, the least recently used cache line will be cleared and an empty buffer is returned

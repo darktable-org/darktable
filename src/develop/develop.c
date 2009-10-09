@@ -186,6 +186,7 @@ restart:
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
   // if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->mipf_width, dev->mipf_height, 1.0)) goto restart;
+  printf("processing preview\n");
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width, dev->preview_pipe->processed_height, 1.0)) goto restart;
 
   dev->preview_dirty = 0;
@@ -275,12 +276,13 @@ restart:
 
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
 {
-  float zoom_scale;
+  float zoom_scale, prevw, prevh;
   // set processed width to something useful while image is not there yet:
-  const int procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
-  const int proch = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
+  int procw, proch;
+  dt_dev_get_processed_size(dev, &procw, &proch);
   const float w = preview ? dev->preview_pipe->processed_width  : procw;
   const float h = preview ? dev->preview_pipe->processed_height : proch;
+  if(preview) dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &prevw, &prevh);
   switch(zoom)
   {
     case DT_ZOOM_FIT:
@@ -291,11 +293,11 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;
-      if(preview) zoom_scale *= dev->image->width/(float)dev->mipf_exact_width;
+      if(preview) zoom_scale *= dev->image->width/(float)prevw;
       break;
     default: // DT_ZOOM_FREE
       DT_CTL_GET_GLOBAL(zoom_scale, dev_zoom_scale);
-      if(preview) zoom_scale *= dev->image->width/(float)dev->mipf_exact_width;
+      if(preview) zoom_scale *= dev->image->width/(float)prevw;
       break;
   }
   return zoom_scale;
@@ -304,6 +306,8 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
   dev->image = image;
+  dev->pipe->processed_width  = 0;//dev->image->output_width;
+  dev->pipe->processed_height = 0;//dev->image->output_height;
   dev->image_loading = 1;
   dev->preview_loading = 1;
   if(dev->gui_attached && dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
@@ -577,8 +581,8 @@ void dt_dev_read_history(dt_develop_t *dev)
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxww, float *boxhh)
 {
-  const int procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
-  const int proch = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
+  int procw, proch;
+  dt_dev_get_processed_size(dev, &procw, &proch);
   float boxw = 1, boxh = 1; // viewport in normalised space
   if(zoom == DT_ZOOM_1)
   {
@@ -610,6 +614,13 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
+}
+
+void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
+{
+  const float scale = dev->image->width/dev->mipf_exact_width;
+  *procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : scale * dev->preview_pipe->processed_width;
+  *proch = dev->pipe->processed_height ? dev->pipe->processed_height : scale * dev->preview_pipe->processed_height;
 }
 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label)

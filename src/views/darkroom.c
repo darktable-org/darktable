@@ -43,14 +43,12 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   cairo_surface_t *surface = NULL;
    
-  // printf("develop_view draw timestamp pass: %d\n", dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp);
   if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
     mutex = &dev->pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
     wd = dev->pipe->backbuf_width;
     ht = dev->pipe->backbuf_height;
-    // printf("darkroom draw full %d %d \n", wd, ht);
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
     surface = cairo_image_surface_create_for_data (dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
     cairo_set_source_rgb (cr, .2, .2, .2);
@@ -73,7 +71,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
   else if(!dev->preview_dirty)
   { // draw preview
-    // printf("drawing preview\n");
     mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
 
@@ -178,7 +175,12 @@ void leave(dt_view_t *self)
   if(dev->mipf)
   {
     int wd, ht;
-    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &wd, &ht);
+    float fwd, fht;
+    // set processed width to something useful while image is not there yet:
+    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
+
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIP4, &wd, &ht);
+    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &fwd, &fht);
     dt_dev_process_preview_job(dev);
     if(dt_image_alloc(dev->image, DT_IMAGE_MIP4))
     {
@@ -187,7 +189,11 @@ void leave(dt_view_t *self)
     }
     dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
     pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
-    memcpy(dev->image->mip[DT_IMAGE_MIP4], dev->preview_pipe->backbuf, sizeof(uint8_t)*4*wd*ht);
+
+    dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
+                                                             dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
+                       dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
+
     dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
     pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
     if(dt_imageio_preview_write(dev->image, DT_IMAGE_MIP4))
@@ -227,6 +233,7 @@ void leave(dt_view_t *self)
   DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
   // release image struct with metadata as well.
+  dt_image_cache_flush(dev->image);
   dt_image_cache_release(dev->image, 'r');
 }
 
@@ -238,26 +245,18 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   if(darktable.control->button_down)
   { // depending on dev_zoom, adjust dev_zoom_x/y.
-    // const int iwd = dev->image->width, iht = dev->image->height;
     dt_dev_zoom_t zoom;
     int closeup;
     DT_CTL_GET_GLOBAL(zoom, dev_zoom);
     DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-    const int procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : dev->image->width  * dev->preview_pipe->processed_width/dev->mipf_exact_width;
-    const int proch = dev->pipe->processed_height ? dev->pipe->processed_height : dev->image->height * dev->preview_pipe->processed_height/dev->mipf_exact_height;
-#if 0
-    const int cwd = dev->width, cht = dev->height;
-    float scale = 1.0f;
-    if(zoom == DT_ZOOM_FIT)  return; //scale = fminf(iwd/(float)cwd, iht/(float)cht);
-    if(closeup) scale = .5f;
-    if(zoom == DT_ZOOM_FILL) scale = fmaxf(iwd/(float)cwd, iht/(float)cht);
-#endif
+    int procw, proch;
+    dt_dev_get_processed_size(dev, &procw, &proch);
     const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
     float old_zoom_x, old_zoom_y;
     DT_CTL_GET_GLOBAL(old_zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(old_zoom_y, dev_zoom_y);
-    float zx = old_zoom_x - (1.0/scale)*(x - darktable.control->button_x)/procw;// /iwd;
-    float zy = old_zoom_y - (1.0/scale)*(y - darktable.control->button_y)/proch;// /iht;
+    float zx = old_zoom_x - (1.0/scale)*(x - darktable.control->button_x)/procw;
+    float zy = old_zoom_y - (1.0/scale)*(y - darktable.control->button_y)/proch;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
     DT_CTL_SET_GLOBAL(dev_zoom_x, zx);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
@@ -269,7 +268,13 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 }
 
 // void button_released(dt_view_t *self, double x, double y, int which, uint32_t state) {}
-// void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state) {}
+void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  if(which == 1)
+  {
+    // zoom to 1:1 2:1 and back
+  }
+}
 
 void key_pressed(dt_view_t *self, uint16_t which)
 {

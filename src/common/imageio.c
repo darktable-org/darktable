@@ -294,8 +294,8 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     img->orientation = raw->sizes.flip;
     // img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
     // img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-    img->width  = /*(img->orientation & 4) ? 2*raw->sizes.iheight :*/ 2*raw->sizes.iwidth;
-    img->height = /*(img->orientation & 4) ? 2*raw->sizes.iwidth  :*/ 2*raw->sizes.iheight;
+    img->output_width  = img->width  = /*(img->orientation & 4) ? 2*raw->sizes.iheight :*/ 2*raw->sizes.iwidth;
+    img->output_height = img->height = /*(img->orientation & 4) ? 2*raw->sizes.iwidth  :*/ 2*raw->sizes.iheight;
     // printf("size: %dx%d\n", img->width, img->height);
     img->exif_iso = raw->other.iso_speed;
     img->exif_exposure = raw->other.shutter;
@@ -540,8 +540,10 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-  img->width <<= img->shrink;
+  img->width  <<= img->shrink;
   img->height <<= img->shrink;
+  img->output_width  = img->width;
+  img->output_height = img->height;
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
@@ -783,13 +785,13 @@ error_magick_mip4:
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
   if(orientation & 4)
   {
-    img->width  = jpg.height;
-    img->height = jpg.width;
+    img->output_width  = img->width  = jpg.height;
+    img->output_height = img->height = jpg.width;
   }
   else
   {
-    img->width  = jpg.width;
-    img->height = jpg.height;
+    img->output_width  = img->width  = jpg.width;
+    img->output_height = img->height = jpg.height;
   }
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
@@ -996,13 +998,13 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
   if(orientation & 4)
   {
-    img->width  = jpg.height;
-    img->height = jpg.width;
+    img->output_width  = img->width  = jpg.height;
+    img->output_height = img->height = jpg.width;
   }
   else
   {
-    img->width  = jpg.width;
-    img->height = jpg.height;
+    img->output_width  = img->width  = jpg.width;
+    img->output_height = img->height = jpg.height;
   }
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_FULL))

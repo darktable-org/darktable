@@ -492,12 +492,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   
 }
 
-void enter(dt_view_t *self)
-{
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  DT_CTL_SET_GLOBAL(lib_center, 1);
-  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
-}
+// void enter(dt_view_t *self) {}
 
 // void leave(dt_view_t *self) {}
 

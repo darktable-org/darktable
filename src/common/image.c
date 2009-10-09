@@ -39,15 +39,15 @@ void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
-  const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->width), DT_IMAGE_WINDOW_SIZE/(float)(img->height));
-  int32_t wd = MIN(img->width, (int)(scale*img->width)), ht = MIN(img->height, (int)(scale*img->height));
+  const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->output_width), DT_IMAGE_WINDOW_SIZE/(float)(img->output_height));
+  int32_t wd = MIN(img->output_width, (int)(scale*img->output_width)), ht = MIN(img->output_height, (int)(scale*img->output_height));
   if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
   if(ht & 0xf) ht = (ht & ~0xf) + 0x10;
   dt_image_buffer_t mip = DT_IMAGE_MIP4;
   while((int)mip > (int)DT_IMAGE_MIP0 && wd > width && ht > height)
   {
     mip--;
-    if(wd > 32 && ht > 32)
+    if(wd > 32 || ht > 32)
     { // only if it's not vanishing completely :)
       wd >>= 1;
       ht >>= 1;
@@ -60,7 +60,33 @@ dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const in
 
 void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, float *w, float *h)
 {
-  float wd = img->width, ht = img->height;
+  float wd = img->output_width, ht = img->output_height;
+  if(mip == DT_IMAGE_MIPF)
+  { // use input width, mipf is before processing
+    const float scale = fminf(1.0, fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height));
+    wd *= scale; ht *= scale;
+    while((int)mip < (int)DT_IMAGE_MIP4)
+    {
+      mip++;
+      if(wd > 32 || ht > 32)
+      { // only if it's not vanishing completely :)
+        wd *= .5;
+        ht *= .5;
+      }
+    }
+  }
+  else if((int)mip < (int)DT_IMAGE_FULL)
+  { // full image is full size, rest downscaled by output size
+    int mwd, mht;
+    dt_image_get_mip_size(img, mip, &mwd, &mht);
+    const float scale = fminf(1.0, fminf(mwd/(float)img->output_width, mht/(float)img->output_height));
+    wd = img->output_width*scale;
+    ht = img->output_height*scale;
+  }
+  *w = wd;
+  *h = ht;
+  /*
+  float wd = img->output_width, ht = img->output_height;
   if((int)mip < (int)DT_IMAGE_FULL)
   {
     const float scale = fminf(1.0, fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height));
@@ -68,7 +94,7 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
     while((int)mip < (int)DT_IMAGE_MIP4)
     {
       mip++;
-      if(wd > 32 && ht > 32)
+      if(wd > 32 || ht > 32)
       { // only if it's not vanishing completely :)
         wd *= .5;
         ht *= .5;
@@ -77,6 +103,7 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
   }
   *w = wd;
   *h = ht;
+  */
 }
 
 void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t *w, int32_t *h)
@@ -305,7 +332,7 @@ void dt_image_init(dt_image_t *img)
 {
   for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) img->mip[k] = NULL;
   bzero(img->lock, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
-  img->width = img->height = 0;
+  img->output_width = img->output_height = img->width = img->height = 0;
   img->mipf = NULL;
   img->pixels = NULL;
   img->orientation = -1; // not inited.
@@ -338,7 +365,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
   int rc, ret = 1;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -357,6 +384,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->exif_focal_length = sqlite3_column_double(stmt, 11);
     strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 12), 20);
     img->flags = sqlite3_column_int(stmt, 13);
+    img->output_width  = sqlite3_column_int(stmt, 14);
+    img->output_height = sqlite3_column_int(stmt, 15);
     
     ret = 0;
   }
