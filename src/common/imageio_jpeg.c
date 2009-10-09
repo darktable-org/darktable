@@ -125,7 +125,9 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
 	jpg.cinfo.input_components = 3;
 	jpg.cinfo.in_color_space = JCS_RGB;
 	jpeg_set_defaults(&(jpg.cinfo));
-  jpeg_set_linear_quality(&(jpg.cinfo), quality, TRUE);
+  jpeg_set_quality(&(jpg.cinfo), quality, TRUE);
+  if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
+  if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
 	jpeg_start_compress(&(jpg.cinfo), TRUE);
   uint8_t row[3*width];
   const uint8_t *buf;
