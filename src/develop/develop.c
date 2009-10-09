@@ -149,6 +149,7 @@ void dt_dev_invalidate(dt_develop_t *dev)
 {
   dev->image_dirty = 1;
   dev->timestamp++;
+  if(dev->preview_pipe) dev->preview_pipe->input_timestamp = dev->timestamp;
 }
 
 void dt_dev_invalidate_all(dt_develop_t *dev)

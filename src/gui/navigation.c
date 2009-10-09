@@ -29,18 +29,19 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
 {
   const int inset = DT_NAVIGATION_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
-
-  cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-  cairo_paint(cr);
-
-  width -= 2*inset; height -= 2*inset;
-  cairo_translate(cr, inset, inset);
 
   dt_develop_t *dev = darktable.develop;
-  if(!dev->preview_dirty)
+  // if(!dev->preview_dirty)
+  if(dev->image && dev->preview_pipe->backbuf)
   {
+    cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cairo_t *cr = cairo_create(cst);
+    cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+    cairo_paint(cr);
+
+    width -= 2*inset; height -= 2*inset;
+    cairo_translate(cr, inset, inset);
+
     pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
     const int wd = dev->preview_pipe->backbuf_width;
@@ -98,14 +99,14 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
       cairo_rectangle(cr, -boxw/2, -boxh/2, boxw, boxh);
       cairo_stroke(cr);
     }
-  }
 
-  cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
-  cairo_surface_destroy(cst);
+    cairo_destroy(cr);
+    cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+    cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+    cairo_paint(cr_pixmap);
+    cairo_destroy(cr_pixmap);
+    cairo_surface_destroy(cst);
+  }
   return TRUE;
 }
 

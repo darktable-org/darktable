@@ -1,4 +1,6 @@
 0.3 darkroom release
+- dev->dirty logic
+- 1:1 zoom in lighttable: prefetch mipf
 - #if 0 cleanup
 - develop get processed width for image
 - rot/crop commit:
