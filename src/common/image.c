@@ -63,6 +63,8 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
   float wd = img->output_width, ht = img->output_height;
   if(mip == DT_IMAGE_MIPF)
   { // use input width, mipf is before processing
+    wd = img->width;
+    ht = img->height;
     const float scale = fminf(1.0, fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height));
     wd *= scale; ht *= scale;
     while((int)mip < (int)DT_IMAGE_MIP4)

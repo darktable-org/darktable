@@ -185,8 +185,6 @@ restart:
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  // if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->mipf_width, dev->mipf_height, 1.0)) goto restart;
-  printf("processing preview\n");
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width, dev->preview_pipe->processed_height, 1.0)) goto restart;
 
   dev->preview_dirty = 0;

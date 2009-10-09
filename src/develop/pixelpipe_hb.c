@@ -249,7 +249,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       dt_control_queue_draw(module->widget);
     }
 
-    // printf("processing %s\n", module->op);
+    // printf("%s processing %s\n", pipe == dev->preview_pipe ? "[preview]" : "", module->op);
     // actual pixel processing done by module
     module->process(module, piece, input, *output, roi_out->x, roi_out->y, roi_out->scale, roi_out->width, roi_out->height);
 

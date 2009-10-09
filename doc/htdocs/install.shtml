@@ -18,15 +18,7 @@
     	<img src="images/bee.jpg" alt="prerequisites" class="img" /><h1>prerequisites</h1>
       <ul>
         <li>*nix (tested: ubuntu jaunty+karmic, arch linux, gentoo, fedora, mac osx with macports)</li>
-        <li>sqlite3</li>
-        <li>libjpeg, libpng</li>
-        <li>libraw (supplied)</li>
-        <li>gtk+</li>
-        <li>cairo</li>
-        <li>libglade2</li>
-        <li>lcms</li>
-        <li>gegl (optional)</li>
-        <li>exiv2</li>
+        <li>required packages: sqlite3, libjpeg, libpng, libraw (supplied), gtk+-2, cairo, libglade2, lcms, gegl (optional), exiv2</li>
         <li>optional: gcc&gt;=4.4 (openmp, earlier versions could not handle openmp statements in non-main threads)</li>
       </ul>
     	</div>
