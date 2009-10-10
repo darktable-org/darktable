@@ -589,7 +589,7 @@ void key_pressed(dt_view_t *self, uint16_t which)
   }
 }
 
-void scrolled(dt_view_t *view, int up)
+void scrolled(dt_view_t *view, double x, double y, int up)
 {
   int zoom;
   DT_CTL_GET_GLOBAL(zoom, lib_zoom);

@@ -305,6 +305,40 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
   }
 }
 
+void scrolled(dt_view_t *self, double x, double y, int up)
+{ // free zoom
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  dt_dev_zoom_t zoom;
+  int closeup, procw, proch;
+  float zoom_x, zoom_y;
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  dt_dev_get_processed_size(dev, &procw, &proch);
+  float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
+  const float minscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+  // offset from center now (current zoom_{x,y} points there)
+  float mouse_off_x = x - .5*dev->width, mouse_off_y = y - .5*dev->height;
+  zoom_x += mouse_off_x/(procw*scale);
+  zoom_y += mouse_off_y/(proch*scale);
+  zoom = DT_ZOOM_FREE;
+  closeup = 0;
+  if(up) scale = .25f*(3.0f*scale + 1.0);
+  else   scale = .25f*(3.0f*scale + minscale);
+  DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
+  if(scale > 0.99)            zoom = DT_ZOOM_1;
+  if(scale < minscale + 0.01) zoom = DT_ZOOM_FIT;
+  zoom_x -= mouse_off_x/(procw*scale);
+  zoom_y -= mouse_off_y/(proch*scale);
+  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+  DT_CTL_SET_GLOBAL(dev_zoom, zoom);
+  DT_CTL_SET_GLOBAL(dev_closeup, closeup);
+  DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+  DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+  dt_dev_invalidate(dev);
+}
+
 void key_pressed(dt_view_t *self, uint16_t which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;

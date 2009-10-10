@@ -134,9 +134,9 @@ void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
   }
 }
 
-void dt_view_manager_scrolled (dt_view_manager_t *vm, int up)
+void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up)
 {
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->scrolled) v->scrolled(v, up);
+  if(v->scrolled) v->scrolled(v, x, y, up);
 }
 

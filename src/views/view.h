@@ -30,7 +30,7 @@ typedef struct dt_view_t
   void (*button_pressed)  (struct dt_view_t *self, double x, double y, int which, int type, uint32_t state);
   void (*key_pressed)     (struct dt_view_t *self, uint16_t which);
   void (*configure)       (struct dt_view_t *self, int width, int height);
-  void (*scrolled)        (struct dt_view_t *self, int up);
+  void (*scrolled)        (struct dt_view_t *self, double x, double y, int up);
 }
 dt_view_t;
 
@@ -62,7 +62,7 @@ void dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y,
 void dt_view_manager_button_pressed  (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state);
 void dt_view_manager_key_pressed     (dt_view_manager_t *vm, uint16_t which);
 void dt_view_manager_configure       (dt_view_manager_t *vm, int width, int height);
-void dt_view_manager_scrolled        (dt_view_manager_t *vm, int up);
+void dt_view_manager_scrolled        (dt_view_manager_t *vm, double x, double y, int up);
 
 /** load module to view managers list, if still space. return slot number on success. */
 int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod);

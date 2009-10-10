@@ -1,24 +1,11 @@
 0.3 darkroom release
-- dev->dirty logic
 - 1:1 zoom in lighttable: prefetch mipf
 - #if 0 cleanup
-- develop get processed width for image
 - rot/crop commit:
   - get rotation in m[]
 - modify aabb in roi according to m[]
   - modify scale in roi, bake into rotation matrix
 - iop->process to take struct as argument: roi in/out
-- ROI!
-- crop: display:
-  DEBUG crop remove in imageio_raw_open
-  lighttable: crop in expose
-  darkroom: full view scale
-    zoom_x = 0 reset somewhere?
-    DT_ZOOM_FIT: need gray crop border
-  - sequential lo-res/hi-res image processing (synch in dev->image->crop)
-  - remove zoom in darkroom mode => free zoom
-- replace dev zoom/closeup weirdness by general scale factor.
-- darkroom mode: click on 1:1 zoom spot
 
 0.4 lighttable release
 - modular views:
