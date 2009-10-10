@@ -119,22 +119,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
 {
-  // dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
   for(int j=0;j<height;j++) for(int i=0;i<width;i++)
   {
     for(int c=0;c<3;c++) out[c] = in[c];
     out += 3; in += 3;
-#if 0
-    p[0] = i; p[1] = j;
-    mul_mat_vec2(d->m, p, o);
-    const int   ii = (int)o[0], jj = (int)o[1];
-    const float fi = o[0] - ii; fj = o[1] - jj;
-    // TODO: pump through matrix: get inverse sample, interpolate
-    for(int c=0;c<3;c++) out[c] = .25*(in[c];
-    out += 3; in += 3;
-#endif
   }
 }
 
@@ -161,8 +151,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #endif
   d->cx = p->cx*pipe->iwidth;
   d->cy = p->cy*pipe->iheight;
-  d->cw = p->cw*pipe->iwidth;
-  d->ch = p->ch*pipe->iheight;
+  d->cw = (p->cw-p->cx)*pipe->iwidth;
+  d->ch = (p->ch-p->cy)*pipe->iheight;
 #endif
 }
 

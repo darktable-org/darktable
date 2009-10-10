@@ -137,7 +137,7 @@ typedef struct dt_control_t
   int32_t width, height;
   float progress;
   pthread_t gui_thread;
-  int button_down;
+  int button_down, button_down_which;
   double button_x, button_y;
   int history_start;
   

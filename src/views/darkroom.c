@@ -243,7 +243,7 @@ void leave(dt_view_t *self)
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  if(darktable.control->button_down)
+  if(darktable.control->button_down && darktable.control->button_down_which == 2)
   { // depending on dev_zoom, adjust dev_zoom_x/y.
     dt_dev_zoom_t zoom;
     int closeup;
@@ -270,9 +270,38 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 // void button_released(dt_view_t *self, double x, double y, int which, uint32_t state) {}
 void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
+  dt_develop_t *dev = (dt_develop_t *)self->data;
   if(which == 1)
   {
     // zoom to 1:1 2:1 and back
+    dt_dev_zoom_t zoom;
+    int closeup, procw, proch;
+    float zoom_x, zoom_y;
+    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+    dt_dev_get_processed_size(dev, &procw, &proch);
+    const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
+    zoom_x += (1.0/scale)*(x - .5f*dev->width )/procw;
+    zoom_y += (1.0/scale)*(y - .5f*dev->height)/proch;
+    if(zoom == DT_ZOOM_1)
+    {
+      if(!closeup) closeup = 1;
+      else
+      {
+        zoom = DT_ZOOM_FIT;
+        zoom_x = zoom_y = 0.0f;
+        closeup = 0;
+      }
+    }
+    else zoom = DT_ZOOM_1;
+    dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+    DT_CTL_SET_GLOBAL(dev_zoom, zoom);
+    DT_CTL_SET_GLOBAL(dev_closeup, closeup);
+    DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+    DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+    dt_dev_invalidate(dev);
   }
 }
 

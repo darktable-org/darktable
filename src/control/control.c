@@ -204,6 +204,7 @@ void dt_control_init(dt_control_t *s)
     pthread_create(s->thread_res + k, NULL, dt_control_work_res, s);
   }
   s->button_down = 0;
+  s->button_down_which = 0;
   s->history_start = 1;
 }
 
@@ -526,6 +527,7 @@ void dt_control_mouse_moved(double x, double y, int which)
 void dt_control_button_released(double x, double y, int which, uint32_t state)
 {
   darktable.control->button_down = 0;
+  darktable.control->button_down_which = 0;
   float tb = darktable.control->tabborder;
   // float wd = darktable.control->width;
   // float ht = darktable.control->height;
@@ -549,6 +551,7 @@ void dt_ctl_switch_mode()
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state)
 {
   darktable.control->button_down = 1;
+  darktable.control->button_down_which = which;
   darktable.control->button_x = x;
   darktable.control->button_y = y;
   float tb = darktable.control->tabborder;
