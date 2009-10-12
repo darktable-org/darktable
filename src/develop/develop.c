@@ -545,6 +545,28 @@ void dt_dev_read_history(dt_develop_t *dev)
     // 0-img, 1-num, 2-module_instance, 3-operation char, 4-params blob, 5-enabled
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
     hist->enabled = sqlite3_column_int(stmt, 5);
+
+#if 1
+    GList *modules = dev->iop;
+    const char *opname = (const char *)sqlite3_column_text(stmt, 3);
+    hist->module = NULL;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+      if(!strcmp(module->op, opname))
+      {
+        hist->module = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+    if(!hist->module)
+    {
+      fprintf(stderr, "[read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
+      free(hist);
+      continue;
+    }
+#else
     int instance = sqlite3_column_int(stmt, 2);
     // FIXME: this is static pipeline: TODO: load module "operation" and insert in glist, get instance and set here!
     GList *modules = g_list_nth(dev->iop, instance);
@@ -552,6 +574,8 @@ void dt_dev_read_history(dt_develop_t *dev)
     hist->module = (dt_iop_module_t *)modules->data;
     // FIXME: find operation in dev->iop and set instance.
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
+#endif
+
     hist->params = malloc(hist->module->params_size);
     memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));

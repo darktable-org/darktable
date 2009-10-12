@@ -324,8 +324,8 @@ void scrolled(dt_view_t *self, double x, double y, int up)
   zoom_y += mouse_off_y/(proch*scale);
   zoom = DT_ZOOM_FREE;
   closeup = 0;
-  if(up) scale = .25f*(3.0f*scale + 1.0);
-  else   scale = .25f*(3.0f*scale + minscale);
+  if(up) scale += .1f*(1.0f - minscale);
+  else   scale -= .1f*(1.0f - minscale);
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if(scale > 0.99)            zoom = DT_ZOOM_1;
   if(scale < minscale + 0.01) zoom = DT_ZOOM_FIT;
