@@ -20,12 +20,12 @@
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 20.
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-  for(int k=0;k<width*height;k++)
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     out[0] = in[0];
     out[1] = d->saturation*(in[1] + in[0] * d->a_scale + d->a_base);

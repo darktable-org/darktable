@@ -96,12 +96,12 @@ static void convert_k_to_rgb (float temperature, float *rgb)
 
 #endif
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-  for(int k=0;k<width*height;k++)
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
     out += 3; in += 3;

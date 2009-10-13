@@ -27,15 +27,15 @@ void hat_transform (float *temp, float *base, int st, int size, int sc)
     temp[i] = 2*base[st*i] + base[st*(i-sc)] + base[st*(2*size-2-(i+sc))];
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, int x, int y, float scale, int iwidth, int iheight)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_denoise_data_t *d = (dt_iop_denoise_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   // FIXME: proper scale handling!
-  if((d->luma == 0.0 && d->chroma == 0.0) || scale < 1.0)
+  if((d->luma == 0.0 && d->chroma == 0.0) || roi_in->scale < 1.0)
   {
-    memcpy(out, in, 3*iwidth*iheight*sizeof(float));
+    memcpy(out, in, 3*roi_in->width*roi_in->height*sizeof(float));
   }
   else
   {
@@ -46,8 +46,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     static const float noise[] =
     { 0.8002,0.2735,0.1202,0.0585,0.0291,0.0152,0.0080,0.0044 };
 
-    if ((size = iheight*iwidth) < 0x15550000)
-      fimg = (float *) malloc ((size*3 + iheight + iwidth) * sizeof *fimg);
+    if ((size = roi_in->height*roi_in->width) < 0x15550000)
+      fimg = (float *) malloc ((size*3 + roi_in->height + roi_in->width) * sizeof *fimg);
     if(!fimg)
     {
       fprintf(stderr, "[denoise] could not alloc temp memory!\n");
@@ -63,15 +63,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         fimg[i] = in[3*i+c];
       for (hpass=lev=0; lev < 5; lev++) {
         lpass = size*((lev & 1)+1);
-        for (row=0; row < iheight; row++) {
-          hat_transform (temp, fimg+hpass+row*iwidth, 1, iwidth, 1 << lev);
-          for (col=0; col < iwidth; col++)
-            fimg[lpass + row*iwidth + col] = temp[col] * 0.25;
+        for (row=0; row < roi_in->height; row++) {
+          hat_transform (temp, fimg+hpass+row*roi_in->width, 1, roi_in->width, 1 << lev);
+          for (col=0; col < roi_in->width; col++)
+            fimg[lpass + row*roi_in->width + col] = temp[col] * 0.25;
         }
-        for (col=0; col < iwidth; col++) {
-          hat_transform (temp, fimg+lpass+col, iwidth, iheight, 1 << lev);
-          for (row=0; row < iheight; row++)
-            fimg[lpass + row*iwidth + col] = temp[row] * 0.25;
+        for (col=0; col < roi_in->width; col++) {
+          hat_transform (temp, fimg+lpass+col, roi_in->width, roi_in->height, 1 << lev);
+          for (row=0; row < roi_in->height; row++)
+            fimg[lpass + row*roi_in->width + col] = temp[row] * 0.25;
         }
         thold = threshold[c] * noise[lev];
         for (int i=0; i < size; i++) {

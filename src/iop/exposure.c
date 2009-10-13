@@ -13,12 +13,12 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   float *in =  (float *)i;
   float *out = (float *)o;
-  for(int k=0;k<width*height;k++)
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     out[0] = 100.0*powf(fmaxf(0.0, (in[0]-d->black))*d->scale, d->gain);
     out[1] = in[1];

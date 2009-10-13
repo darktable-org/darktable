@@ -18,13 +18,13 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in = (float *)i;
   float *out = (float *)o;
   // uint16_t *out = (uint16_t *)o;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
-  for(int k=0;k<width*height;k++)
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
 #if 1 // in YCbCr float:
     // uint32_t tmp = 0x3f800000ul | (d->table[CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff)]<<7);

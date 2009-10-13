@@ -45,7 +45,7 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   g_free(text);
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   float *in  = (float *)i;
@@ -53,7 +53,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP // not thread safe?
 // #pragma omp parallel for schedule(static) default(none) shared(out, width, height, in) firstprivate(d)
 #endif
-  for(int k=0;k<width*height;k++)
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     double RGB[3];
     cmsCIELab Lab;

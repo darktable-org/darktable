@@ -38,7 +38,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 void gui_init     (struct dt_iop_module_t *self);
 void gui_cleanup  (struct dt_iop_module_t *self);
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height);
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
 void luma_callback   (GtkRange *range, gpointer user_data);
 void chroma_callback (GtkRange *range, gpointer user_data);

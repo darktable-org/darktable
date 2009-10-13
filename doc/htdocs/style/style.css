@@ -32,6 +32,9 @@ body.navbody{
   margin-bottom: 0pt;
   width: 692px;
   counter-reset: section;
+  border-style:solid;
+  border-width:1px;
+  border-color:#222222;
 }
 .footer{
   background-image:none;

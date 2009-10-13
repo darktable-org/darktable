@@ -20,10 +20,12 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in = (float *)i;
   float *out = (float *)o;
+  const int width = roi_in->width, height = roi_in->height;
+  const float scale = roi_in->scale;
   memcpy(out, in, 3*sizeof(float)*width*height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());

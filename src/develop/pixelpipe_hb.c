@@ -251,7 +251,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 
     // printf("%s processing %s\n", pipe == dev->preview_pipe ? "[preview]" : "", module->op);
     // actual pixel processing done by module
-    module->process(module, piece, input, *output, roi_out->x, roi_out->y, roi_out->scale, roi_out->width, roi_out->height);
+    module->process(module, piece, input, *output, &roi_in, roi_out);
 
     if(strcmp(module->op, "colorout") == 0)
       for(int k=0;k<3*roi_out->width*roi_out->height;k++) ((uint16_t *)*output)[k] = CLAMP((int)(0xfffful*(((float *)*output))[k]), 0, 0xffff);

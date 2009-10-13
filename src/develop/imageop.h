@@ -86,7 +86,7 @@ typedef struct dt_iop_module_t
     * x,y, and scale are just given for orientation in the framebuffer. i and o are
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */
-  void (*process) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, int x, int y, float scale, int width, int height);
+  void (*process) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 }
 dt_iop_module_t;
 
