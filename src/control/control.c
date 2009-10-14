@@ -749,6 +749,8 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 
 int dt_control_key_pressed(uint16_t which)
 {
+  // this line is here to find the right key code on different platforms (mac).
+  // printf("key code pressed: %d\n", which);
   int fullscreen, visible;
   GtkWidget *widget;
   dt_ctl_gui_mode_t gui;

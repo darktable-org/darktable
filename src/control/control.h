@@ -54,7 +54,7 @@
 #define KEYCODE_2           19
 #define KEYCODE_3           20
 #define KEYCODE_Escape      53
-#define KEYCODE_Caps        -1
+#define KEYCODE_Caps        57
 #define KEYCODE_F11        103
 #define KEYCODE_Up         126
 #define KEYCODE_Down       125
