@@ -98,7 +98,10 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     pthread_mutex_unlock(mutex);
   }
   cairo_restore(cr);
-  // TODO: execute module callback hook!
+
+  // execute module callback hook.
+  if(dev->gui_module && dev->gui_module->gui_post_expose)
+    dev->gui_module->gui_post_expose(dev->gui_module, cr, width, height, pointerx, pointery);
 }
 
 
@@ -125,6 +128,7 @@ void enter(dt_view_t *self)
   }
 
   dev->gui_leaving = 0;
+  dev->gui_module = NULL;
   dt_dev_load_image(dev, dt_image_cache_use(selected, 'r'));
   // get top level vbox containing all expanders, iop_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));

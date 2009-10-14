@@ -44,6 +44,16 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+
+  if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
+  if(!g_module_symbol(module->module, "mouse_leave",            (gpointer)&(module->mouse_leave)))            module->mouse_leave = NULL;
+  if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
+  if(!g_module_symbol(module->module, "button_released",        (gpointer)&(module->button_released)))        module->button_released = NULL;
+  if(!g_module_symbol(module->module, "button_pressed",         (gpointer)&(module->button_pressed)))         module->button_pressed = NULL;
+  if(!g_module_symbol(module->module, "key_pressed",            (gpointer)&(module->key_pressed)))            module->key_pressed = NULL;
+  if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
+  if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
+
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
   if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
   if(!g_module_symbol(module->module, "commit_params",          (gpointer)&(module->commit_params)))          goto error;
@@ -153,8 +163,31 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
 {
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  if (gtk_expander_get_expanded (expander)) gtk_widget_show(module->widget);
-  else gtk_widget_hide(module->widget);
+  if (gtk_expander_get_expanded (expander))
+  {
+    gtk_widget_show(module->widget);
+    // register to receive draw events
+    module->dev->gui_module = module;
+    // hide all other module widgets
+    GList *iop = module->dev->iop;
+    while(iop)
+    {
+      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+      if(m != module) gtk_expander_set_expanded(m->expander, FALSE);
+      iop = g_list_next(iop);
+    }
+    // redraw gui (in case post expose is set)
+    dt_control_gui_queue_draw();
+  }
+  else
+  {
+    if(module->dev->gui_module == module)
+    {
+      module->dev->gui_module = NULL;
+      dt_control_gui_queue_draw();
+    }
+    gtk_widget_hide(module->widget);
+  }
 }
 
 static void dt_iop_gui_reset_callback(GtkButton *button, gpointer user_data)

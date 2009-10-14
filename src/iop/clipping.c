@@ -14,6 +14,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "gui/draw.h"
 
 /** rotate an image, then clip the buffer. */
 
@@ -425,3 +426,27 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  dt_develop_t *dev = self->dev;
+  int32_t zoom, closeup;
+  float zoom_x, zoom_y;
+  float wd = dev->preview_pipe->backbuf_width;
+  float ht = dev->preview_pipe->backbuf_height;
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+
+  cairo_translate(cr, width/2.0, height/2.0f);
+  cairo_scale(cr, zoom_scale, zoom_scale);
+  cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
+
+  cairo_set_line_width(cr, 1.0);
+  cairo_set_source_rgb(cr, .2, .2, .2);
+  dt_draw_grid(cr, 3, wd, ht);
+  cairo_translate(cr, 1.0, 1.0);
+  cairo_set_source_rgb(cr, .8, .8, .8);
+  dt_draw_grid(cr, 3, wd, ht);
+}

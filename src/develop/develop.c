@@ -44,6 +44,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->gui_leaving = 0;
   pthread_mutex_init(&dev->history_mutex, NULL);

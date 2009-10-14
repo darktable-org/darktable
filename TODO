@@ -1,11 +1,9 @@
 0.3 darkroom release
+- hide darkroom modules by default and if one is opened all others
 - 1:1 zoom in lighttable: prefetch mipf
 - #if 0 cleanup
-- rot/crop commit:
-  - get rotation in m[]
-- modify aabb in roi according to m[]
-  - modify scale in roi, bake into rotation matrix
-- iop->process to take struct as argument: roi in/out
+- clipping expose hook: draw 9-grid
+- clipping event hooks: crop/rotate
 
 0.4 lighttable release
 - modular views:
@@ -14,11 +12,7 @@
   - check which vars are lib local and global
   - interface functions for sql query iteration/next/prev/selected image
     - => common/film.h
-- modular image operations:
   - need plug-in versioning
-  - failsafe behavior if plugin is not available.
-  - pre/expose/post callbacks
-  - event handling callbacks
 - lensfun op
 
 bugs:

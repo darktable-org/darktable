@@ -60,15 +60,25 @@ typedef struct dt_iop_module_t
   GtkToggleButton *off;
   /** expander containing the widget. */
   GtkExpander *expander;
+
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
-  void (*gui_update)    (struct dt_iop_module_t *self);
+  void (*gui_update)      (struct dt_iop_module_t *self);
   /** construct widget. */
-  void (*gui_init)      (struct dt_iop_module_t *self);
+  void (*gui_init)        (struct dt_iop_module_t *self);
   /** destroy widget. */
-  void (*gui_cleanup)   (struct dt_iop_module_t *self);
+  void (*gui_cleanup)     (struct dt_iop_module_t *self);
+  /** optional method called after darkroom expose. */
+  void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 
-  // TODO: add more for mouse interaction dreggn.
+  /** optional event callbacks */
+  void (*mouse_leave)     (struct dt_iop_module_t *self);
+  void (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
+  void (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
+  void (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+  void (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
+  void (*configure)       (struct dt_iop_module_t *self, int width, int height);
+  void (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
   
   void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup) (struct dt_iop_module_t *self);
