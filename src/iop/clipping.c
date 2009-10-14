@@ -35,6 +35,7 @@ typedef struct dt_iop_clipping_data_t
 {
   float angle;              // rotation angle
   float m[9], invm[9];      // rot matrix
+  float tx, ty;             // rotation center
   float cx, cy, cw, ch;     // crop window
   float cix, ciy, ciw, cih; // crop window on roi_out 1.0 scale
 }
@@ -79,14 +80,14 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->cix = d->cx * sw*s; d->ciy = d->cy * sh*s;
   d->ciw = d->cw * sw*s; d->cih = d->ch * sh*s;
   // printf("set clip: %f %f %f %f scale: %f -> %f\n", d->cx, d->cy, d->cw, d->ch, roi_out->scale, roi_in->scale);
-  int clipx = d->cix, clipy = d->ciy, clipw = d->ciw, cliph = d->cih;
-  if(roi_out->x < clipx) roi_out->x = clipx;
+  // int clipx = d->cix, clipy = d->ciy, clipw = d->ciw, cliph = d->cih;
+  // if(roi_out->x < clipx) roi_out->x = clipx;
+  // if(roi_out->width > clipw) roi_out->width = clipw;
+  // if(roi_out->y < clipy) roi_out->y = clipy;
+  // if(roi_out->height > cliph) roi_out->height = cliph;
   // if(roi_out->x + roi_out->width > clipx + clipw) roi_out->width = clipw - roi_out->x;
-  if(roi_out->width > clipw) roi_out->width = clipw;
-  if(roi_out->y < clipy) roi_out->y = clipy;
   // if(roi_out->y + roi_out->height > clipy + cliph) roi_out->height = cliph - roi_out->y;
-  if(roi_out->height > cliph) roi_out->height = cliph;
-  printf("clipping: in (%d %d %d %d) -> (%d %d %d %d)\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  // printf("clipping: in (%d %d %d %d) -> (%d %d %d %d)\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle),-sinf(d->angle), 0.0f,
@@ -94,45 +95,54 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
                            0.0f,           0.0f, 1.0f};
 #if 1
   // fwd transform rotated points on corners and scale back inside roi_in bounds.
-  float p[2], o[2], aabb[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height};
   float cropscale = 1.0f;
-  for(int k=0;k<4;k++) aabb[k] *= 1.0f/roi_in->scale;
+#if 1
+  float p[2], o[2], aabb[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height};
+  // for(int k=0;k<4;k++) aabb[k] *= 1.0f/roi_in->scale;
   for(int c=0;c<4;c++)
   {
     get_corner(aabb, c, p);
     mul_mat_vec_2(rt, p, o);
     for(int k=0;k<2;k++) if(fabsf(o[k]) > 0.001f) cropscale = fminf(cropscale, aabb[(o[k] > 0 ? 2 : 0) + k]/o[k]);
   }
+#endif
 
   // modify roi_out by scaling inside rotated buffer.
   d->cix += (1.0 - cropscale)*.5f*d->ciw;
   d->ciy += (1.0 - cropscale)*.5f*d->cih;
   d->ciw *= cropscale;
   d->cih *= cropscale;
-  roi_out->x += (1.0 - cropscale)*.5f*roi_out->width;
-  roi_out->y += (1.0 - cropscale)*.5f*roi_out->height;
-  roi_out->width  *= cropscale;
-  roi_out->height *= cropscale;
+  // roi_out->x += (1.0 - cropscale)*.5f*roi_out->width;
+  // roi_out->y += (1.0 - cropscale)*.5f*roi_out->height;
+  // roi_out->width  *= cropscale;
+  // roi_out->height *= cropscale;
+  int clipx = d->cix, clipy = d->ciy, clipw = d->ciw, cliph = d->cih;
+  if(roi_out->x < clipx) roi_out->x = clipx;
+  if(roi_out->width > clipw) roi_out->width = clipw;
+  if(roi_out->y < clipy) roi_out->y = clipy;
+  if(roi_out->height > cliph) roi_out->height = cliph;
 
-  float t1[] = {1.0f, 0.0f, -roi_in->width *0.5f,
-                0.0f, 1.0f, -roi_in->height*0.5f,
+  float t1[] = {1.0f, 0.0f, 0.0f,//-roi_in->width *0.5f,
+                0.0f, 1.0f, 0.0f,//-roi_in->height*0.5f,
                 0.0f, 0.0f, 1.0f};
-  float t2[] = {1.0f, 0.0f, roi_in->width *0.5f,
-                0.0f, 1.0f, roi_in->height*0.5f,
+  float t2[] = {1.0f, 0.0f, 0.0f,//roi_in->width *0.5f,
+                0.0f, 1.0f, 0.0f,//roi_in->height*0.5f,
                 0.0f, 0.0f, 1.0f};
   float tmp[9];
   mul_mat_mat_2(t2, rt, tmp);
   mul_mat_mat_2(tmp, t1, d->invm); // in => out
   rt[1] = - rt[1];
   rt[3] = - rt[3];
-  t1[2] = - t1[2];
-  t1[5] = - t1[5];
-  t2[2] = - t2[2];
-  t2[5] = - t2[5];
-  mul_mat_mat_2(t1, rt, tmp);
-  mul_mat_mat_2(tmp, t2, d->m);    // out => in
+  // t1[2] = - t1[2];
+  // t1[5] = - t1[5];
+  // t2[2] = - t2[2];
+  // t2[5] = - t2[5];
+  mul_mat_mat_2(t2, rt, tmp);
+  mul_mat_mat_2(tmp, t1, d->m);    // out => in
+  d->tx = roi_in->width  * .5f;
+  d->ty = roi_in->height * .5f;
 
-#if 1
+#if 0
   printf("matrix m = \n");
   printf(" %.2f %.2f %.2f\n", d->m[0], d->m[1], d->m[2]);
   printf(" %.2f %.2f %.2f\n", d->m[3], d->m[4], d->m[5]);
@@ -146,8 +156,8 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 #endif
 
 
-  printf("cropscale: %f\n", cropscale);
-  printf("clipping: in (%d %d %d %d) -> (%d %d %d %d)\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  // printf("cropscale: %f\n", cropscale);
+  // printf("clipping: in (%d %d %d %d) -> (%d %d %d %d)\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 #endif
 }
 
@@ -175,10 +185,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // for(int k=0;k<4;k++) aabb[k] *= 1.0f/roi_out->scale;
   for(int c=0;c<4;c++)
   {
-    // get corner points of roi_out in world space
+    // get corner points of roi_out
     get_corner(aabb, c, p);
     // backtransform aabb using m
+    p[0] -= d->tx*so; p[1] -= d->ty*so;
     mul_mat_vec_2(d->m, p, o);
+    o[0] += d->tx*so; o[1] += d->ty*so;
     // transform to roi_in space, get aabb.
     // o[0] *= roi_in->scale; o[1] *= roi_in->scale;
     adjust_aabb(o, aabb_in);
@@ -192,12 +204,11 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // roi_in->y = fminf(roi_in->y, aabb_in[1]);
   // roi_in->width  = fmaxf(roi_in->width,  aabb_in[2]-roi_in->x);
   // roi_in->height = fmaxf(roi_in->height, aabb_in[3]-roi_in->y);
-  printf("clipping: out (%d %d %d %d) -> (%d %d %d %d)\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  // printf("clipping: out (%d %d %d %d) -> (%d %d %d %d)\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_in->x, roi_in->y, roi_in->width, roi_in->height);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  printf("process: in: %d %d %d %d -- out %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_out->x, roi_out->y, roi_out->width, roi_out->height);
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
@@ -208,18 +219,24 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     p1[0] = (roi_out->x + roi_out->scale*d->cix + i);// /roi_out->scale;
     p1[1] = (roi_out->y + roi_out->scale*d->ciy + j);// /roi_out->scale;
     // transform this point from using matrix m
+    p1[0] -= d->tx*roi_out->scale; p1[1] -= d->ty*roi_out->scale;
     mul_mat_vec_2(d->m, p1, p2);
+    p2[0] += d->tx*roi_in->scale;  p2[1] += d->ty*roi_in->scale;
     // transform this point to roi_in
     // p2[0] *= roi_in->scale; p2[1] *= roi_in->scale;
     // if(p2[0] < roi_in->x || p2[0] > roi_in->x + roi_in->width)  printf("point outside x: %f  | %d %d \n", p2[0], roi_in->x, roi_in->x+roi_in->width);
     // if(p2[1] < roi_in->y || p2[1] > roi_in->y + roi_in->height) printf("point outside y: %f  | %d %d \n", p2[1], roi_in->y, roi_in->y+roi_in->height);
     p2[0] -= roi_in->x; p2[1] -= roi_in->y;
     // set color
-    for(int c=0;c<3;c++) out[c] = in[3*roi_in->width*(int)p2[1] + 3*(int)p2[0] + c];
-      //in[3*roi_in->width*(int)p2[1] + ];
-      //in[3*roi_in->width*(int)p2[1] + ];
-      //in[3*roi_in->width*(int)p2[1] + ];
-    // for(int c=0;c<3;c++) out[c] = in[c]; in += 3;
+    // for(int c=0;c<3;c++) out[c] = in[3*roi_in->width*j + 3*i + c];
+    // for(int c=0;c<3;c++) out[c] = ((roi_out->x+i)/10+(roi_out->y+j)/10) & 1 ? .7 : 0.0f;
+    const int ii = (int)p2[0], jj = (int)p2[1];
+    const float fi = p2[0] - ii, fj = p2[1] - jj;
+    for(int c=0;c<3;c++) out[c] = // in[3*roi_in->width*(int)p2[1] + 3*(int)p2[0] + c];
+          ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
+           (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
+           (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
+           (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
     out += 3;
   }
 }

@@ -80,6 +80,7 @@ cleanup:
     imageio_preview_write: update/insert into
 
 1.0 roadmap:
+- quickly template for dt plugins
 - remove libraw in favour of native gegl loading?
 
 bugs:

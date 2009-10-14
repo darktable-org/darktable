@@ -16,11 +16,11 @@
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
-  uint16_t *in = (uint16_t *)i;
+  float *in = (float *)i;
   uint8_t *out = (uint8_t *)o;
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int c=0;c<3;c++) out[2-c] = d->table[in[c]];
+    for(int c=0;c<3;c++) out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
     out += 4; in += 3;
   }
 }
