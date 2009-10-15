@@ -1,8 +1,6 @@
 0.3 darkroom release
-- hide darkroom modules by default and if one is opened all others
 - 1:1 zoom in lighttable: prefetch mipf
 - #if 0 cleanup
-- clipping expose hook: draw 9-grid
 - clipping event hooks: crop/rotate
 
 0.4 lighttable release
@@ -74,6 +72,8 @@ cleanup:
     imageio_preview_write: update/insert into
 
 1.0 roadmap:
+- better demosaicing
+- edge-avoiding wavelets with easy preset sliders for bayesshrink denoise.
 - quickly template for dt plugins
 - remove libraw in favour of native gegl loading?
 
