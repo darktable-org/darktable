@@ -539,13 +539,18 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
 
 void dt_ctl_switch_mode()
 {
-  dt_ctl_gui_mode_t gui;
-  DT_CTL_GET_GLOBAL(gui, gui);
-  dt_control_save_gui_settings(gui);
-  gui ^= 1;  // FIXME: cycle through more modules!
-  dt_control_restore_gui_settings(gui);
-  dt_view_manager_switch(darktable.view_manager, gui);
-  DT_CTL_SET_GLOBAL(gui, gui);
+  int selected;
+  DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
+  if(selected >= 0)
+  {
+    dt_ctl_gui_mode_t gui;
+    DT_CTL_GET_GLOBAL(gui, gui);
+    dt_control_save_gui_settings(gui);
+    gui ^= 1;  // FIXME: cycle through more modules!
+    dt_control_restore_gui_settings(gui);
+    dt_view_manager_switch(darktable.view_manager, gui);
+    DT_CTL_SET_GLOBAL(gui, gui);
+  }
 }
 
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state)
