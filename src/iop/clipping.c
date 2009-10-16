@@ -136,7 +136,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-#pragma omp parallel for default(none) shared(roi_out, roi_in, d, in, out) schedule(static)
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, roi_in, d, in, out) schedule(static)
+#endif
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     float p1[2], p2[2];
