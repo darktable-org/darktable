@@ -37,6 +37,14 @@ void dt_image_full_path(dt_image_t *img, char *pathname, int len)
   pathname[len-1] = '\0';
 }
 
+void dt_image_print_exif(dt_image_t *img, char *line, int len)
+{
+  if(img->exif_exposure >= 0.1f)
+    snprintf(line, len, "Tv %.1f'' Av f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
+  else
+    snprintf(line, len, "Tv 1/%.0f Av f/%.1f %dmm iso %d", 1.0/img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
+}
+
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
   const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->output_width), DT_IMAGE_WINDOW_SIZE/(float)(img->output_height));

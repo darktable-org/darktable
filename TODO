@@ -1,5 +1,4 @@
 0.3 darkroom release
-- image properties when zoomed in a lot
 - 1:1 zoom in lighttable: prefetch mipf
 - #if 0 cleanup
 - clipping event hooks: crop/rotate

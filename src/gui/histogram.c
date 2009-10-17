@@ -68,6 +68,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   float hist_max = dev->histogram_max;
   if(hist_max > 0)
   {
+    cairo_save(cr);
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
     cairo_translate(cr, 0, height);
     cairo_scale(cr, width/63.0, -(height-10)/hist_max);
@@ -82,6 +83,23 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
     dt_gui_histogram_draw_8(cr, hist, 2);
     cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+    cairo_restore(cr);
+  }
+
+  if(dev->image)
+  {
+    cairo_set_source_rgb(cr, .3, .3, .3);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size (cr, .1*height);
+
+    char exifline[50];
+    cairo_move_to (cr, .02*width, .98*height);
+    dt_image_print_exif(dev->image, exifline, 50);
+    cairo_text_path(cr, exifline);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+    cairo_stroke(cr);
   }
 
   cairo_destroy(cr);

@@ -75,6 +75,8 @@ dt_image_t;
 void dt_image_init(dt_image_t *img);
 /** returns the full path name where the image was imported from. */
 void dt_image_full_path(dt_image_t *img, char *pathname, int len);
+/** prints a one-line exif information string. */
+void dt_image_print_exif(dt_image_t *img, char *line, int len);
 /** opens an image with minimal storage from the data base and stores it in image cache. */ 
 int dt_image_open(const int32_t id);
 int dt_image_open2(dt_image_t *img, const int32_t id);

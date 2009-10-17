@@ -100,7 +100,6 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   float imgwd = 0.8f;
   if(zoom == 1)
   {
-    // TODO: draw exif info etc
     imgwd = .97f;
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
   }
@@ -250,16 +249,22 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
 
   if(selected && (zoom == 1))
   { // some exif data
-    cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+    cairo_set_source_rgb(cr, .3, .3, .3);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, .02*width);
+    const float scale = fminf(width, height);
+    cairo_set_font_size (cr, .03*scale);
 
-    cairo_move_to (cr, .0*width, .024*height);
-    cairo_show_text(cr, img->filename);
-    // cairo_text_path(cr, image->filename);
-    // cairo_fill_preserve(cr);
-    // cairo_set_source_rgb(cr, 0, 0, 0);
-    // cairo_stroke(cr);
+    cairo_move_to (cr, .02*scale, .04*scale);
+    // cairo_show_text(cr, img->filename);
+    cairo_text_path(cr, img->filename);
+    char exifline[50];
+    cairo_move_to (cr, .02*scale, .08*scale);
+    dt_image_print_exif(img, exifline, 50);
+    cairo_text_path(cr, exifline);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_stroke(cr);
   }
 
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
