@@ -164,8 +164,6 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   cairo_scale(cr, scale, scale);
   cairo_translate(cr, -.5f*fwd, -.5f*fht);
 
-  const float border = zoom == 1 ? 16/scale : 2/scale;
-
   if(mip != DT_IMAGE_NONE)
   {
     cairo_set_source_surface (cr, surface, 0, 0);
@@ -179,6 +177,7 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   cairo_rectangle(cr, 0, 0, fwd, fht);
 
   // border around image
+  const float border = zoom == 1 ? 16/scale : 2/scale;
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
   if(selected)
   {
@@ -249,7 +248,7 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
 
   if(selected && (zoom == 1))
   { // some exif data
-    cairo_set_source_rgb(cr, .3, .3, .3);
+    cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     const float scale = fminf(width, height);
     cairo_set_font_size (cr, .03*scale);
@@ -263,7 +262,7 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
     cairo_text_path(cr, exifline);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
   }
 

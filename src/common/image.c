@@ -192,23 +192,27 @@ int dt_image_raw_to_preview(dt_image_t *img)
   // store in db.
   dt_imageio_preview_write(img, DT_IMAGE_MIPF);
 
-  if(dt_image_alloc(img, DT_IMAGE_MIP4))
-  {
+  // don't write through to mip4..0, as these should be processed by the pixel pipeline!
+  // if(dt_image_alloc(img, DT_IMAGE_MIP4))
+  // {
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
-    return 1;
-  }
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-  int ret = 0;
-  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-  dt_image_release(img, DT_IMAGE_MIPF, 'w');
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  if(dt_image_update_mipmaps(img)) ret = 1;
-  dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return ret;
+    return 0;
+#if 0
+    // return 1;
+  // }
+  // dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  // dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  // int ret = 0;
+  // dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
+  // dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+  // dt_image_release(img, DT_IMAGE_MIPF, 'w');
+  // dt_image_release(img, DT_IMAGE_MIP4, 'w');
+  // if(dt_image_update_mipmaps(img)) ret = 1;
+  // dt_image_release(img, DT_IMAGE_MIPF, 'r');
+  // dt_image_release(img, DT_IMAGE_MIP4, 'r');
+  // return ret;
+#endif
 }
 
 int dt_image_import(const int32_t film_id, const char *filename)
@@ -439,7 +443,6 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
       ret = 0;
       dt_image_buffer_t mip;
       if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
-      // if(mip != DT_IMAGE_FULL)
       {
         img->flags |= DT_IMAGE_THUMBNAIL;
         mip = dt_image_get(img, DT_IMAGE_MIP4, 'r');

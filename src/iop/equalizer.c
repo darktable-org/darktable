@@ -93,7 +93,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // coefficients in range [0, 2], 1 being neutral.
       const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch==0?0:1], band);
       const int step = 1<<l;
-#if 0 // scale coefficients
+#if 1 // scale coefficients
       for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
       for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;
       for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff*coeff;

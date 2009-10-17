@@ -95,11 +95,12 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
     char exifline[50];
     cairo_move_to (cr, .02*width, .98*height);
     dt_image_print_exif(dev->image, exifline, 50);
-    cairo_text_path(cr, exifline);
+    cairo_show_text(cr, exifline);
+    /*cairo_text_path(cr, exifline);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-    cairo_stroke(cr);
+    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+    cairo_stroke(cr);*/
   }
 
   cairo_destroy(cr);

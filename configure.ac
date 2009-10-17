@@ -16,6 +16,14 @@ else
 fi
 dnl ***  disabled because of strange libgomp.so crashes for gcc < 4.4: :(
 AX_GCC_VERSION([4], [4], [0], try_openmp="yes", try_openmp="no")
+AC_ARG_ENABLE(openmp,
+	      AC_HELP_STRING([--enable-openmp], [use multiple threads with openmp]))
+if test "$enable_openmp" = "no"; then
+   try_openmp="no"
+   AC_MSG_RESULT([no])
+else
+   AC_MSG_RESULT([yes])
+fi
 if test "$try_openmp" = "yes"; then
     AC_OPENMP
 fi
