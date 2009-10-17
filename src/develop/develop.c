@@ -440,6 +440,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
+      // if the user changed stuff and the module is still not enabled, do it:
+      if(!hist->enabled && !module->enabled)
+      {
+        module->enabled = 1;
+        darktable.gui->reset = 1; gtk_toggle_button_set_active(module->off, module->enabled); darktable.gui->reset = 0;
+      }
       hist->enabled = module->enabled;
       dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
       dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;

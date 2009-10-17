@@ -3,10 +3,16 @@
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include "develop/imageop.h"
 
 typedef struct dt_gui_histogram_t
 {
+  dt_iop_module_t *exposure;
+  float white;
+  void  (*set_white)(dt_iop_module_t *exp, const float white);
+  float (*get_white)(dt_iop_module_t *exp);
   int32_t dragging;
+  int32_t button_down_x, button_down_y;
 }
 dt_gui_histogram_t;
 

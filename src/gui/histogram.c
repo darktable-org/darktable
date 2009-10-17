@@ -1,13 +1,16 @@
+#include <string.h>
 #include "gui/histogram.h"
 #include "gui/draw.h"
 #include "develop/develop.h"
-#include "develop/imageop.h"
 
 #define DT_HIST_INSET 5
 
 void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
 {
   n->dragging = 0;
+  n->exposure = NULL;
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
+      "drag to change exposure,\ndoubleclick resets", NULL);
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_gui_histogram_expose), n);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
@@ -92,18 +95,47 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
 
 gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
+  dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
+  if(n->dragging && n->exposure && n->set_white)
+  {
+    float white = n->white - (event->x - n->button_down_x)/(float)widget->allocation.width; 
+    n->set_white(n->exposure, white);
+  }
+  gint x, y; // notify gtk for motion_hint.
+  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
+
 gboolean dt_gui_histogram_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
+  dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
+  if(event->type == GDK_2BUTTON_PRESS && n->exposure)
+  {
+    memcpy(n->exposure->params, n->exposure->default_params, n->exposure->params_size);
+    n->exposure->gui_update(n->exposure);
+    dt_dev_add_history_item(n->exposure->dev, n->exposure);
+  }
+  else
+  {
+    n->dragging = 1;
+    if(n->exposure && n->get_white) n->white = n->get_white(n->exposure);
+    n->button_down_x = event->x;
+    n->button_down_y = event->y;
+  }
   return TRUE;
 }
+
 gboolean dt_gui_histogram_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
+  dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
+  n->dragging = 0;
   return TRUE;
 }
+
 gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
+  dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
+  n->dragging = 0;
   return TRUE;
 }
 
@@ -111,11 +143,7 @@ void dt_gui_histogram_draw_8(cairo_t *cr, float *hist, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k=0;k<64;k++)
-  {
-    // cairo_move_to(cr, k, 0);
     cairo_line_to(cr, k, hist[4*k+channel]);
-    //cairo_stroke(cr);
-  }
   cairo_line_to(cr, 63, 0);
   cairo_close_path(cr);
   cairo_fill(cr);

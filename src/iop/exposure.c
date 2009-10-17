@@ -97,11 +97,28 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
+{
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  gtk_range_set_value(GTK_RANGE(g->scale2), white);
+}
+
+float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
+{
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  return p->white;
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_exposure_gui_data_t));
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  // register with histogram
+  darktable.gui->histogram.exposure = self;
+  darktable.gui->histogram.set_white = dt_iop_exposure_set_white;
+  darktable.gui->histogram.get_white = dt_iop_exposure_get_white;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
@@ -143,6 +160,9 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  darktable.gui->histogram.exposure  = NULL;
+  darktable.gui->histogram.set_white = NULL;
+  darktable.gui->histogram.get_white = NULL;
   free(self->gui_data);
   self->gui_data = NULL;
 }

@@ -41,6 +41,36 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
+static void presets_changed (GtkComboBox *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  
+  float linear[6] = {0.0, 0.08, 0.4, 0.6, 0.92, 1.0};
+  int pos = gtk_combo_box_get_active(widget);
+  switch(pos)
+  {
+    case 1: // med contrast
+      for(int k=0;k<6;k++) p->tonecurve_x[k] = linear[k];
+      for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
+      p->tonecurve_y[1] -= 0.03; p->tonecurve_y[4] += 0.03;
+      p->tonecurve_y[2] -= 0.03; p->tonecurve_y[3] += 0.03;
+      break;
+    case 2: // high contrast
+      for(int k=0;k<6;k++) p->tonecurve_x[k] = linear[k];
+      for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
+      p->tonecurve_y[1] -= 0.06; p->tonecurve_y[4] += 0.06;
+      p->tonecurve_y[2] -= 0.10; p->tonecurve_y[3] += 0.10;
+      break;
+    default: // case 0: // linear
+      for(int k=0;k<6;k++) p->tonecurve_x[k] = linear[k];
+      for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
+      break;
+  }
+  dt_dev_add_history_item(darktable.develop, self);
+  gtk_widget_queue_draw(self->widget);
+}
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
@@ -161,6 +191,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), "med contrast");
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), "high contrast");
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
+  g_signal_connect (G_OBJECT (c->presets), "changed",
+                    G_CALLBACK (presets_changed),
+                    (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -302,13 +335,9 @@ gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
 
 gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-  // TODO: don't set gegl stuff, only overwrite params_t and update history item!
-  // dt_dev history will come 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  // dt_iop_get_params(self, (void*)&p);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width);
@@ -318,27 +347,9 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
   {
     float f = c->selected_y - (c->mouse_y-c->selected_offset)/height;
     f = fmaxf(c->selected_min, fminf(c->selected_max, f));
-    // if(c->selected == 2) c->curve.m_anchors[1].y = fminf(f, fmaxf(0.0, c->curve.m_anchors[1].y + DT_GUI_CURVE_INFL*(f - c->curve.m_anchors[2].y)));
-    // if(c->selected == 3) c->curve.m_anchors[4].y = fmaxf(f, fminf(1.0, c->curve.m_anchors[4].y + DT_GUI_CURVE_INFL*(f - c->curve.m_anchors[3].y)));
-    // c->curve.m_anchors[c->selected].y = f;
-    /*gdouble oldx1, oldx2, oldy1, oldy2;
-    dt_draw_curve_get_point(d->curve, c->selected, &oldx1, &oldy1);
-    if(c->selected == 2) dt_draw_curve_get_point(d->curve, 1, &oldx2, &oldy2);
-    if(c->selected == 3) dt_draw_curve_get_point(d->curve, 4, &oldx2, &oldy2);
-    if(c->selected == 2) oldy2 = fminf(f, fmaxf(0.0, oldy2 + DT_GUI_CURVE_INFL*(f - oldy1)));
-    if(c->selected == 3) oldy2 = fmaxf(f, fminf(1.0, oldy2 + DT_GUI_CURVE_INFL*(f - oldy1)));
-    if(c->selected == 2) dt_draw_curve_set_point(d->curve, 1, oldx2, oldy2);
-    if(c->selected == 3) dt_draw_curve_set_point(d->curve, 4, oldx2, oldy2);
-    dt_draw_curve_set_point(d->curve, c->selected, oldx1, f);*/
     if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
     if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
-    // DT_CTL_SET_IMAGE(tonecurve_y[c->selected], f);
-    // if(c->selected == 2) DT_CTL_SET_IMAGE(tonecurve_y[1], oldy2);
-    // if(c->selected == 3) DT_CTL_SET_IMAGE(tonecurve_y[4], oldy2);
     p->tonecurve_y[c->selected] = f;
-    // if(c->selected == 2) p->tonecurve_y[1] = oldy2;
-    // if(c->selected == 3) p->tonecurve_y[4] = oldy2;
-    // dt_iop_set_params(self, (void*)&p);
     dt_dev_add_history_item(darktable.develop, self);
   }
   else

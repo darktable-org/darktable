@@ -1,4 +1,5 @@
 0.3 darkroom release
+- image properties when zoomed in a lot
 - 1:1 zoom in lighttable: prefetch mipf
 - #if 0 cleanup
 - clipping event hooks: crop/rotate
@@ -32,16 +33,10 @@ cleanup:
 - libraw autoexposure etc off?
 - ahd,wb,autoexp,color_matrix in dt (use document mode proc)
 - keep stdout clean! (shut up exiv2 and jpg)
-- sorted image loading (on import)!
 - add some user guide documentation.
-- merge develop_view to develop
 - progress bars for image folder import and image export
-- develop does not need (object local) gamma anymore
-- where to put ungamma table? 
-- remove gegl dependency in tonecurve.c completely
 - mip0 broken for very lo-res images.
 - print GPLv3 notice on top of all files
-- save gui settings (expanded etc?) in operation stacks
 
 - finish most develop (single film roll) functionality:
 - editable metadata (at least what's needed for lensfun..)
@@ -56,7 +51,6 @@ cleanup:
 - write back images to db after cache drop!
 - quality parameter for pixelpipe init callbacks in modules?
 - if kicking out mip maps from db: need to re-generate history pipeline mipf->mip4!
-- libraw document mode and custom whitebalance/color processing.
 - new strategy to add images: add empty dia (with icon and filename)
   ordered by filename. then launch jobs in bg to load images, priority
   by visibility in lib
@@ -93,8 +87,6 @@ feature requests:
  - offline media reference in db
  - image variants (different history etc, new image with same source)
  - pizza button.
- - some accel key => center and align images at left/right borders for
-   given zoom rate
  - import: interrupt, continue, watch dir (all more robust)
  - clustered image view by similar tag/flag
  - user orient rotation
@@ -103,36 +95,22 @@ feature requests:
  - spot removal brush
  - ufraw style highlight reconstruction
  - images of expensive cameras for webpage.
- - ahd interpolation as user parameter?
- - set default parameters for all controls in dev mode while in lib mode?
  - clean up db for mem optimizations: keep only image+history, re-import mips.
  - remove dead links in library automatically?
  - cache auf platte, echte bilder irgendwo auf dvd/platte extern/kamera chip etc
    - moeglicherweise ECHTE bilder (dias im schrank)
  - bilder sortieren, evtl manuell (mehrere kameras in einen film usw)
- - animated zoom-in in 3 steps?
- - hide gui triangles andere form und switch in/out
- - inotify dir watching
- - zoom in dev mode via mouse wheel/click
- - brightness/exposure highlight histogram stuff (fill blacks)
  - tags and some tag search facility (expander in lighttable mode)
- - image properties when zoomed in a lot
  - bottom control panel with buttons for lib->dev->lib
  - libglade => gtkbuilder.
 
 usability:
- - write out image_t at quit (exif, filenames, selected flags)
  - navigation: buttons for zoom levels
  - closeup in 3:1 5:1 or 2:1 ?
  - disable dev controls/make invisible in lib?
  - make directory loading interruptible
- - adjust navigation preview in dev on the fly?
  - navigation widget for lib?
- - curve widget presets
-   - x-axis adjusters
- - active live histogram (exposure etc)
  - all functions mouse-accessible
- - library graph with keyword edges.
 
 look:
  - end markers :)
