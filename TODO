@@ -1,9 +1,6 @@
-- exiv2: canonmn.cpp: 379:
-  {   6, "Sigma 28-80mm f/3.5-5.0 aspherical"                         }, // 4
-
 0.3 darkroom release
 - #if 0 cleanup
-- clipping event hooks: crop/rotate
+- clipping event hooks: crop
 
 0.4 lighttable release
 - modular views:
