@@ -302,11 +302,11 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;
-      if(preview) zoom_scale *= dev->image->width/(float)prevw;
+      if(preview) zoom_scale *= dev->image->width/prevw;
       break;
     default: // DT_ZOOM_FREE
       DT_CTL_GET_GLOBAL(zoom_scale, dev_zoom_scale);
-      if(preview) zoom_scale *= dev->image->width/(float)prevw;
+      if(preview) zoom_scale *= dev->image->width/prevw;
       break;
   }
   return zoom_scale;
