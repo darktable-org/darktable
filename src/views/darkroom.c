@@ -69,7 +69,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_surface_destroy (surface);
     pthread_mutex_unlock(mutex);
   }
-  else if(!dev->preview_dirty)
+  else // if(!dev->preview_dirty)
   { // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
@@ -185,6 +185,7 @@ void leave(dt_view_t *self)
 
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIP4, &wd, &ht);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &fwd, &fht);
+    dev->preview_downsampling = 1.0;
     dt_dev_process_preview_job(dev);
     if(dt_image_alloc(dev->image, DT_IMAGE_MIP4))
     {
@@ -247,6 +248,10 @@ void leave(dt_view_t *self)
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  int handled = 0;
+  if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
+  if(handled) return;
+
   if(darktable.control->button_down && darktable.control->button_down_which == 2)
   { // depending on dev_zoom, adjust dev_zoom_x/y.
     dt_dev_zoom_t zoom;
@@ -275,6 +280,10 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  int handled = 0;
+  if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
+  if(handled) return;
+
   if(which == 1)
   {
     // zoom to 1:1 2:1 and back

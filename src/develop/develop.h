@@ -33,6 +33,7 @@ typedef struct dt_develop_t
   int32_t preview_loading, preview_dirty, preview_input_changed;
   uint32_t timestamp;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
+  float preview_downsampling; // < 1.0: optionally downsample preview
 
   // width, height: dimensions of window
   // capwidth, capheight: actual dimensions of scaled image inside window.
@@ -91,23 +92,12 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label);
 void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxw, float *boxh);
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int mode);
+void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x, float *zoom_y);
 
 struct dt_job_t;
 void dt_dev_export(struct dt_job_t *job);
 
 
-// ====================
-// gui methods
-
-// void dt_dev_init(dt_develop_t *dev);
-// void dt_dev_cleanup(dt_develop_t *dev);
-
-// void dt_dev_leave();
-// void dt_dev_enter();
-
-// gboolean dt_dev_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
-
-void dt_dev_expose(dt_develop_t *dev, cairo_t *cr, int32_t width, int32_t height);
 
 #endif

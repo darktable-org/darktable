@@ -59,6 +59,7 @@ typedef struct dt_dev_pixelpipe_t
   uint8_t *backbuf;
   int backbuf_size;
   int backbuf_width, backbuf_height;
+  uint64_t backbuf_hash;
   pthread_mutex_t backbuf_mutex;
   // working?
   int processing;

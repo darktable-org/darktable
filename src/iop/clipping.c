@@ -29,6 +29,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
   GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
+  float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
 }
 dt_iop_clipping_gui_data_t;
 
@@ -136,6 +137,55 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
+  
+  float pi[2], p0[2], tmp[2];
+  float dx[2], dy[2];
+  // get whole-buffer point from i,j
+  pi[0] = roi_out->x + roi_out->scale*d->cix;
+  pi[1] = roi_out->y + roi_out->scale*d->ciy;
+  // transform this point from using matrix m
+  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
+  mul_mat_vec_2(d->m, pi, p0);
+  p0[0] += d->tx*roi_in->scale;  p0[1] += d->ty*roi_in->scale;
+  // transform this point to roi_in
+  p0[0] -= roi_in->x; p0[1] -= roi_in->y;
+
+  pi[0] = roi_out->x + roi_out->scale*d->cix + 1;
+  pi[1] = roi_out->y + roi_out->scale*d->ciy;
+  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
+  mul_mat_vec_2(d->m, pi, tmp);
+  tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
+  tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
+  dx[0] = tmp[0] - p0[0]; dx[1] = tmp[1] - p0[1];
+
+  pi[0] = roi_out->x + roi_out->scale*d->cix;
+  pi[1] = roi_out->y + roi_out->scale*d->ciy + 1;
+  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
+  mul_mat_vec_2(d->m, pi, tmp);
+  tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
+  tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
+  dy[0] = tmp[0] - p0[0]; dy[1] = tmp[1] - p0[1];
+
+  pi[0] = p0[0]; pi[1] = p0[1];
+  for(int j=0;j<roi_out->height;j++)
+  {
+    for(int i=0;i<roi_out->width;i++)
+    {
+      const int ii = (int)pi[0], jj = (int)pi[1];
+      const float fi = pi[0] - ii, fj = pi[1] - jj;
+      for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];
+            ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
+             (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
+             (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
+             (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
+      for(int k=0;k<2;k++) pi[k] += dx[k];
+      out += 3;
+    }
+    for(int k=0;k<2;k++) pi[k] -= roi_out->width*dx[k];
+    for(int k=0;k<2;k++) pi[k] += dy[k];
+  }
+
+#if 0
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, roi_in, d, in, out) schedule(static)
 #endif
@@ -159,6 +209,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
            (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
            (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
   }
+#endif
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -243,9 +294,8 @@ void angle_callback (GtkRange *range, gpointer user_data)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)module->params;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   gtk_range_set_value(GTK_RANGE(g->scale1), p->cx);
   gtk_range_set_value(GTK_RANGE(g->scale2), p->cy);
   gtk_range_set_value(GTK_RANGE(g->scale3), p->cw);
@@ -363,15 +413,42 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
 
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .2, .2, .2);
   dt_draw_grid(cr, 3, wd, ht);
-  cairo_translate(cr, 1.0, 1.0);
+  cairo_translate(cr, 1.0/zoom_scale, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
   dt_draw_grid(cr, 3, wd, ht);
 }
 
-// TODO: mouse dragged: depending on switched mode:
-// - set clip to zoom_x ..
-// - drag rotation angle
-// synch with gui
+// TODO: if mode crop
+int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
+{
+  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  {
+    dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+    float zoom_x, zoom_y;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &zoom_x, &zoom_y);
+    float old_angle = atan2f(g->button_down_zoom_y, g->button_down_zoom_x);
+    float angle     = atan2f(zoom_y, zoom_x);
+    angle = fmaxf(-180.0, fminf(180.0, g->button_down_angle + 180.0/M_PI * (angle - old_angle)));
+    gtk_range_set_value(GTK_RANGE(g->scale5), angle);
+    dt_control_gui_queue_draw();
+    return 1;
+  }
+  else return 0;
+}
+
+int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  if(which == 1)
+  {
+    dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+    dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
+    g->button_down_angle = p->angle;
+    return 1;
+  }
+  else return 0;
+}
+

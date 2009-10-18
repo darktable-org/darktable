@@ -195,15 +195,17 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
-    if(pos == 0) (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
-    else         (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     return 0;
   }
 
   // if history changed or exit event, abort processing?
   // preview pipe: abort on all but zoom events (same buffer anyways)
-  if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
-  if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
+  if(pipe != dev->preview_pipe)
+  {
+    if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
+    if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
+  }
 
   // input -> output
   if(!modules)
@@ -229,8 +231,10 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output
     // if(module) printf("reserving new buf in cache for module %s %s\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "");
-    if(pos == 0) (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
-    else         (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+    if(strcmp(module->op, "gamma"))
+      (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
+    else
+      (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     
     // tonecurve histogram (collect luminance only):
     if(pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
@@ -305,6 +309,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   void *buf = NULL;
   if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &roi, modules, pieces, pos)) return 1;
   pthread_mutex_lock(&pipe->backbuf_mutex);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(dev->image->id, &roi, pipe, 0);
   pipe->backbuf = buf;
   pipe->backbuf_width  = width;
   pipe->backbuf_height = height;

@@ -72,13 +72,13 @@ typedef struct dt_iop_module_t
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 
   /** optional event callbacks */
-  void (*mouse_leave)     (struct dt_iop_module_t *self);
-  void (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
-  void (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-  void (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-  void (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
+  int  (*mouse_leave)     (struct dt_iop_module_t *self);
+  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
+  int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
+  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+  int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
+  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
-  void (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
   
   void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup) (struct dt_iop_module_t *self);

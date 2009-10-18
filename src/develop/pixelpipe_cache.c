@@ -52,7 +52,7 @@ int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint
 
 int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)
 {
-  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, -4);
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, 5);
 }
 
 int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)

@@ -44,6 +44,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  dev->preview_downsampling = .5;
   dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->gui_leaving = 0;
@@ -193,7 +194,7 @@ restart:
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width, dev->preview_pipe->processed_height, 1.0)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width*dev->preview_downsampling, dev->preview_pipe->processed_height*dev->preview_downsampling, dev->preview_downsampling)) goto restart;
 
   dev->preview_dirty = 0;
   dt_control_queue_draw_all();
@@ -287,9 +288,10 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   // set processed width to something useful while image is not there yet:
   int procw, proch;
   dt_dev_get_processed_size(dev, &procw, &proch);
-  const float w = preview ? dev->preview_pipe->processed_width  : procw;
-  const float h = preview ? dev->preview_pipe->processed_height : proch;
+  const float w = preview ? dev->preview_pipe->backbuf_width  : procw;
+  const float h = preview ? dev->preview_pipe->backbuf_height : proch;
   if(preview) dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &prevw, &prevh);
+  prevw *= dev->preview_downsampling;
   switch(zoom)
   {
     case DT_ZOOM_FIT:
@@ -661,6 +663,25 @@ void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
   const float scale = dev->image->width/dev->mipf_exact_width;
   *procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : scale * dev->preview_pipe->processed_width;
   *proch = dev->pipe->processed_height ? dev->pipe->processed_height : scale * dev->preview_pipe->processed_height;
+}
+
+void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x, float *zoom_y)
+{
+  dt_dev_zoom_t zoom;
+  int closeup, procw, proch;
+  float zoom2_x, zoom2_y;
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  DT_CTL_GET_GLOBAL(zoom2_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom2_y, dev_zoom_y);
+  dt_dev_get_processed_size(dev, &procw, &proch);
+  const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
+  // offset from center now (current zoom_{x,y} points there)
+  const float mouse_off_x = px - .5*dev->width, mouse_off_y = py - .5*dev->height;
+  zoom2_x += mouse_off_x/(procw*scale);
+  zoom2_y += mouse_off_y/(proch*scale);
+  *zoom_x = zoom2_x;
+  *zoom_y = zoom2_y;
 }
 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label)

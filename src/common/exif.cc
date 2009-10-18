@@ -135,14 +135,6 @@ int dt_exif_read(dt_image_t *img, const char* path)
     else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
              ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
     {
-      // std::stringstream ss;
-      // (void)Exiv2::ExifTags::printTag(ss, pos->tag(), pos->ifdId(), pos->value(), &exifData);
-      // (void)Exiv2::ExifTags::printTag(ss, 0x0016, Exiv2::canonIfdId, pos->value(), &exifData);
-      // (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
-      // strncpy(img->exif_lens, ss.str().c_str(), 30);
-      // std::string str = pos->print(&exifData);
-      // strncpy(img->exif_lens, str.c_str(), 30);
-      // std::cout << "found " << pos->print(&exifData) << std::endl;
       dt_strlcpy_to_utf8(img->exif_lens, 30, pos, exifData);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.LensID"))) != exifData.end() )
