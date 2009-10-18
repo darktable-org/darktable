@@ -69,7 +69,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_surface_destroy (surface);
     pthread_mutex_unlock(mutex);
   }
-  else // if(!dev->preview_dirty)
+  // else // if(!dev->preview_dirty)
+  else if(!dev->preview_loading)
   { // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
