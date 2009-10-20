@@ -216,18 +216,39 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   }
   cairo_restore(cr);
 
+  const float fscale = fminf(width, height);
   if(imgsel == img->id)
   { // draw mouseover hover effects, set event hook for mouse button down!
     lib->image_over = DT_LIB_DESERT;
-    if(zoom != 1)
+    if(zoom != 1 || (zoom == 1 && selected))
     {
       cairo_set_line_width(cr, 1.5);
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
       cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-      const float r1 = 0.06*width, r2 = 0.025*width;
+      float r1, r2;
+      if(zoom != 1) 
+      {
+        r1 = 0.06*width;
+        r2 = 0.025*width;
+      }
+      else
+      {
+        r1 = 0.02*fscale;
+        r2 = 0.0083*fscale;
+      }
       for(int k=0;k<4;k++)
       {
-        const float x = (0.15+k*0.15)*width, y = 0.88*height;
+        float x, y;
+        if(zoom != 1) 
+        {
+          x = (0.15+k*0.15)*width;
+          y = 0.88*height;
+        }
+        else
+        {
+          x = (.04+k*0.04)*fscale;
+          y = .12*fscale;
+        }
         dt_library_star(cr, x, y, r1, r2);
         if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
         {
@@ -250,14 +271,13 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   { // some exif data
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    const float scale = fminf(width, height);
-    cairo_set_font_size (cr, .03*scale);
+    cairo_set_font_size (cr, .025*fscale);
 
-    cairo_move_to (cr, .02*scale, .04*scale);
+    cairo_move_to (cr, .02*fscale, .04*fscale);
     // cairo_show_text(cr, img->filename);
     cairo_text_path(cr, img->filename);
     char exifline[50];
-    cairo_move_to (cr, .02*scale, .08*scale);
+    cairo_move_to (cr, .02*fscale, .08*fscale);
     dt_image_print_exif(img, exifline, 50);
     cairo_text_path(cr, exifline);
     cairo_fill_preserve(cr);
@@ -520,6 +540,7 @@ void mouse_leave(dt_view_t *self)
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
+  // update stars/etc :(
   dt_control_queue_draw_all();
 }
 

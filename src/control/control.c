@@ -422,7 +422,7 @@ void *dt_control_expose(void *voidptr)
 
     // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
     // 
-    float tb = fmaxf(10, width/100.0);
+    float tb = 10;//fmaxf(10, width/100.0);
     darktable.control->tabborder = tb;
     darktable.control->width = width;
     darktable.control->height = height;

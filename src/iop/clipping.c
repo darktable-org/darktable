@@ -413,12 +413,17 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
 
+  // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
   cairo_set_line_width(cr, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .2, .2, .2);
   dt_draw_grid(cr, 3, wd, ht);
   cairo_translate(cr, 1.0/zoom_scale, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
   dt_draw_grid(cr, 3, wd, ht);
+  cairo_set_source_rgba(cr, .8, .8, .8, 0.5);
+  double dashes = 5.0/zoom_scale;
+  cairo_set_dash(cr, &dashes, 1, 0);
+  dt_draw_grid(cr, 9, wd, ht);
 }
 
 // TODO: if mode crop

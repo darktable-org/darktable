@@ -280,7 +280,7 @@ gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion 
                 lob = .5f*(height + height*p->lob/(float)DT_COLORCORRECTION_MAX),
                 hib = .5f*(height + height*p->hib/(float)DT_COLORCORRECTION_MAX);
     g->selected = 0;
-    if(loa < hia)
+    if(loa <= hia)
     {
       if(g->press_x <= loa) g->selected |= 1;
       if(g->press_x >= hia) g->selected |= 4;
@@ -290,7 +290,7 @@ gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion 
       if(g->press_x <= hia) g->selected |= 4;
       if(g->press_x >= loa) g->selected |= 1;
     }
-    if(lob < hib)
+    if(lob <= hib)
     {
       if(g->press_y <= lob) g->selected |= 2;
       if(g->press_y >= hib) g->selected |= 8;

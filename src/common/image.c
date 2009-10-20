@@ -40,19 +40,23 @@ void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 void dt_image_print_exif(dt_image_t *img, char *line, int len)
 {
   if(img->exif_exposure >= 0.1f)
-    snprintf(line, len, "Tv %.1f'' Av f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
+    snprintf(line, len, "%.1f'' f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
   else
-    snprintf(line, len, "Tv 1/%.0f Av f/%.1f %dmm iso %d", 1.0/img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
+    snprintf(line, len, "1/%.0f f/%.1f %dmm iso %d", 1.0/img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
-  const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->output_width), DT_IMAGE_WINDOW_SIZE/(float)(img->output_height));
-  int32_t wd = MIN(img->output_width, (int)(scale*img->output_width)), ht = MIN(img->output_height, (int)(scale*img->output_height));
+  // const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->output_width), DT_IMAGE_WINDOW_SIZE/(float)(img->output_height));
+  // int32_t wd = MIN(img->output_width, (int)(scale*img->output_width)), ht = MIN(img->output_height, (int)(scale*img->output_height));
+  const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->width), DT_IMAGE_WINDOW_SIZE/(float)(img->height));
+  int32_t wd = MIN(img->width, (int)(scale*img->width)), ht = MIN(img->height, (int)(scale*img->height));
   if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
   if(ht & 0xf) ht = (ht & ~0xf) + 0x10;
   dt_image_buffer_t mip = DT_IMAGE_MIP4;
-  while((int)mip > (int)DT_IMAGE_MIP0 && wd > width && ht > height)
+  const int32_t wd2 = width + width/2;
+  const int32_t ht2 = height + height/2;
+  while((int)mip > (int)DT_IMAGE_MIP0 && wd > wd2 && ht > ht2)
   {
     mip--;
     if(wd > 32 || ht > 32)

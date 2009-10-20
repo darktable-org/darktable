@@ -37,7 +37,7 @@ style "clearlooks-default"
 	base[PRELIGHT]    = "#646668"
 	base[SELECTED]    = "#5A5C5F"
 
-	text[NORMAL]      = "#000000"
+	text[NORMAL]      = "#CACAC6"
 	text[ACTIVE]      = "#000000"
 	text[PRELIGHT]    = "#000000"
 	text[SELECTED]    = "#E0D6AD"
