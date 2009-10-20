@@ -169,6 +169,7 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
     // register to receive draw events
     module->dev->gui_module = module;
     // hide all other module widgets
+#if 0 // TODO: make this an option. it is quite annoying when using expose/tonecurve together.
     GList *iop = module->dev->iop;
     while(iop)
     {
@@ -176,6 +177,7 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
       if(m != module) gtk_expander_set_expanded(m->expander, FALSE);
       iop = g_list_next(iop);
     }
+#endif
     // redraw gui (in case post expose is set)
     dt_control_gui_queue_draw();
   }
