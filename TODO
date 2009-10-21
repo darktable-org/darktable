@@ -1,4 +1,7 @@
 0.3 darkroom release
+- vng4 as default?
+- usm sharpen iop
+- cross-check icc behaviour with ufraw 0.16
 - crop in image < 1024^2 get_exact_mip_size
 - #if 0 cleanup
 - clipping event hooks: crop
