@@ -7,6 +7,9 @@
 - clipping event hooks: crop
 
 0.4 lighttable release
+- document mode rg1g2b noise histogram profiling tool
+- then subtract noise and normalise two greens
+- then demosaic
 - modular views:
   - control.c: save/restore gui settings => modules!
   - save settings in modules (query fct?)
