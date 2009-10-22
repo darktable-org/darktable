@@ -10,6 +10,7 @@
 - document mode rg1g2b noise histogram profiling tool
 - then subtract noise and normalise two greens
 - then demosaic
+- wt/iwt iops and sharpen/denoise in between
 - modular views:
   - control.c: save/restore gui settings => modules!
   - save settings in modules (query fct?)
