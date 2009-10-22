@@ -359,6 +359,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   snprintf(path, 1024, "%s/pixmaps/darktable-16.png", datadir);
   widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   gtk_window_set_icon_from_file(GTK_WINDOW(widget), path, NULL);
+  gtk_window_set_title(GTK_WINDOW(widget), PACKAGE_NAME"-"PACKAGE_VERSION);
 
   g_signal_connect (G_OBJECT (widget), "delete_event",
                     G_CALLBACK (quit), NULL);
