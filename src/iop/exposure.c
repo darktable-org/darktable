@@ -134,12 +134,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, .01));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .01));
-  g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .05));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale2), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale3), 2);
+  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, .001));
+  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .001));
+  g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .005));
+  gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
+  gtk_scale_set_digits(GTK_SCALE(g->scale2), 3);
+  gtk_scale_set_digits(GTK_SCALE(g->scale3), 3);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale3), GTK_POS_LEFT);

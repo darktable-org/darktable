@@ -285,10 +285,10 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   // get thumbnail
   // ret = libraw_unpack(raw);
   ret = libraw_unpack_thumb(raw);
-  ret = libraw_adjust_sizes_info_only(raw);
 
   if(!ret)
   {
+    ret = libraw_adjust_sizes_info_only(raw);
     ret = 0;
     img->shrink = raw->params.half_size;
     img->orientation = raw->sizes.flip;
@@ -487,8 +487,22 @@ error_raw_magick:// clean up libraw and magick only
   free(image);
 try_full_raw:
   ret = dt_imageio_open_raw(img, filename);
-  ret +=  dt_image_raw_to_preview(img);       // this updates mipf/mip4..0 from raw pixels.
+  ret +=  dt_image_raw_to_preview(img);
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
+  // this updates mipf/mip4..0 from raw pixels.
+  int p_wd, p_ht;
+  dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
+  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return 1;
+  dt_image_get(img, DT_IMAGE_MIPF, 'r');
+  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  ret = 0;
+  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
+  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+  dt_image_release(img, DT_IMAGE_MIP4, 'w');
+  if(dt_image_update_mipmaps(img)) ret = 1;
+  dt_image_release(img, DT_IMAGE_MIPF, 'r');
+  dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return ret;
 
 error_raw:

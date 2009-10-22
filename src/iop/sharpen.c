@@ -63,22 +63,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  // const int off = MAXR/piece->iscale;
-  // printf("off : %d, widths: %d => %d\n", off, roi_in->width, roi_out->width);
-  // printf("xy: %d %d => %d %d\n", roi_in->x, roi_in->y, roi_out->x, roi_out->y);
   const int rad = data->radius * roi_in->scale / (piece->iscale * piece->iscale);
   if(rad == 0)
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
-  // printf("rad = %f = %f * %f / %f\n", data->radius * roi_in->scale, data->radius, roi_in->scale, piece->iscale);
-  // printf("irad = %d (iscale %f)\n", rad, piece->iscale);
   float mat[2*(MAXR+1)*2*(MAXR+1)];
   const int wd = 2*rad+1;
   float *m = mat + rad*wd + rad;
   const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale)*(data->radius*roi_in->scale);
-  // const float fac = 1.f/(2.f*M_PI) * 1./sigma2;
   float weight = 0.0f;
   // init gaussian kernel
   for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
@@ -90,7 +84,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     in  = ((float *)ivoid) + 3*((rad+j)*roi_in->width + rad);
-    out = ((float *)ovoid) + 3*((rad+j)*roi_out->width + rad);
+    out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
     for(int i=rad;i<roi_out->width-rad;i++)
     {
       for(int c=0;c<3;c++) out[c] = 0.0f;
@@ -101,12 +95,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   in  = (float *)ivoid;
   out = (float *)ovoid;
+
+#if 1 // fill unsharpened border
+  for(int j=0;j<rad;j++)
+    memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+  for(int j=roi_out->height-rad;j<roi_out->height;j++)
+    memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+  for(int j=rad;j<roi_out->height-rad;j++)
+  {
+    for(int i=0;i<rad;i++)
+      for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+    for(int i=roi_out->width-rad;i<roi_out->width;i++)
+      for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+  }
+#endif
+
   // subtract blurred image, if diff > thrs, add *amount to orginal image
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     for(int c=0;c<3;c++)
     {
-      // out[c] = in[c] - out[c];
       const float diff = in[c] - out[c];
       if(fabsf(diff) > data->threshold)
       {
@@ -150,9 +158,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 {
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)p1;
 #ifdef HAVE_GEGL
-  fprintf(stderr, "[denoise] TODO: implement gegl version!\n");
+  fprintf(stderr, "[sharpen] TODO: implement gegl version!\n");
   // pull in new params to gegl
-  // gegl_node_set(piece->input, "linear_value", p->linear, "gamma_value", p->gamma, NULL);
 #else
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
   d->radius = p->radius;
@@ -166,8 +173,6 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #ifdef HAVE_GEGL
   // create part of the gegl pipeline
   piece->data = NULL;
-  dt_iop_sharpen_params_t *default_params = (dt_iop_sharpen_params_t *)self->default_params;
-  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear_value", default_params->linear, "gamma_value", default_params->gamma, NULL);
 #else
   piece->data = malloc(sizeof(dt_iop_sharpen_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
