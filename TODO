@@ -1,12 +1,5 @@
-0.3 darkroom release
-- vng4 as default?
-- usm sharpen iop
-- cross-check icc behaviour with ufraw 0.16
-- crop in image < 1024^2 get_exact_mip_size
-- #if 0 cleanup
-- clipping event hooks: crop
-
 0.4 lighttable release
+- clipping event hooks: crop
 - document mode rg1g2b noise histogram profiling tool
 - then subtract noise and normalise two greens
 - then demosaic
@@ -75,6 +68,7 @@ cleanup:
 1.0 roadmap:
 - better demosaicing
 - edge-avoiding wavelets with easy preset sliders for bayesshrink denoise.
+- remove sharpen/denoise in favour of wavelet ops.
 - quickly template for dt plugins
 - remove libraw in favour of native gegl loading?
 
