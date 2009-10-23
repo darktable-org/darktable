@@ -1,8 +1,8 @@
 make dist
-cp darktable-0.2.tar.bz2 /tmp
-cd /tmp; tar xvjf darktable-0.2.tar.bz2; cd -
-cp -r packaging/ubuntu/debian /tmp/darktable-0.2
-cd /tmp/darktable-0.2
-dh_make -e hanatos@gmail.com -f ../darktable-0.2.tar.bz2 -c gpl
-dpkg-buildpackage -rfakeroot
+cp darktable-0.3.tar.bz2 /tmp
+cd /tmp; tar xvjf darktable-0.3.tar.bz2; cd -
+cp -r packaging/ubuntu/debian /tmp/darktable-0.3
+cd /tmp/darktable-0.3
+dh_make -e hanatos@gmail.com -f ../darktable-0.3.tar.bz2 -c gpl
+dpkg-buildpackage -k0xF98D76B8 -rfakeroot
 cd -
