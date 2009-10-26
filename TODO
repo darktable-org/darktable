@@ -1,8 +1,10 @@
 0.4 lighttable release
 - clipping event hooks: crop
 - document mode rg1g2b noise histogram profiling tool
-- then subtract noise and normalise two greens
-- then demosaic
+  - then subtract noise (wavelet shrinkage based on var estimate
+    or measured noise statistics)
+  - and normalise two greens (using histogram matching)
+  - then demosaic using float-ahd optimized code.
 - wt/iwt iops and sharpen/denoise in between
 - modular views:
   - control.c: save/restore gui settings => modules!
