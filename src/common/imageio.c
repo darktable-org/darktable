@@ -5,6 +5,7 @@
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
+#include "common/imageio_pfm.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -251,6 +252,35 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, int orientation)
   return jj*w + ii;
 }
 
+int dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
+{
+  int ret = dt_imageio_open_hdr(img, filename);
+  if(ret) return ret;
+  ret +=  dt_image_raw_to_preview(img);
+  dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
+  // this updates mipf/mip4..0 from raw pixels.
+  int p_wd, p_ht;
+  dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
+  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return 1;
+  dt_image_get(img, DT_IMAGE_MIPF, 'r');
+  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  ret = 0;
+  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
+  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+  dt_image_release(img, DT_IMAGE_MIP4, 'w');
+  if(dt_image_update_mipmaps(img)) ret = 1;
+  dt_image_release(img, DT_IMAGE_MIPF, 'r');
+  dt_image_release(img, DT_IMAGE_MIP4, 'r');
+  return ret;
+}
+
+int dt_imageio_open_hdr(dt_image_t *img, const char *filename)
+{
+  if(!dt_imageio_open_pfm(img, filename)) return 0;
+  return 1;
+}
+
 // only set mip4..0.
 int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
@@ -487,6 +517,7 @@ error_raw_magick:// clean up libraw and magick only
   free(image);
 try_full_raw:
   ret = dt_imageio_open_raw(img, filename);
+  if(ret) return ret;
   ret +=  dt_image_raw_to_preview(img);
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
   // this updates mipf/mip4..0 from raw pixels.
@@ -1322,14 +1353,16 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 // =================================================
 
 int dt_imageio_open(dt_image_t *img, const char *filename)
-{ // first try raw loading
+{ // first try hdr and raw loading
+  if(!dt_imageio_open_hdr(img, filename)) return 0;
   if(!dt_imageio_open_raw(img, filename)) return 0;
   if(!dt_imageio_open_ldr(img, filename)) return 0;
   return 1;
 }
 
 int dt_imageio_open_preview(dt_image_t *img, const char *filename)
-{ // first try raw loading
+{ // first try hdr and raw loading
+  if(!dt_imageio_open_hdr_preview(img, filename)) return 0;
   if(!dt_imageio_open_raw_preview(img, filename)) return 0;
   if(!dt_imageio_open_ldr_preview(img, filename)) return 0;
   return 1;
