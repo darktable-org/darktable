@@ -1,9 +1,16 @@
 0.4 lighttable release
+- zoom 2:1 upper left corner cut off bug!
+- replace white by exposure: w = 2^-exp
+- navigation: don't draw borders on zoom <= fit
+- exposure: highlight clipped parts
+- hdr exr import
+- tonemapping widget?
 - clipping event hooks: crop
 - document mode rg1g2b noise histogram profiling tool
   - then subtract noise (wavelet shrinkage based on var estimate
     or measured noise statistics)
   - and normalise two greens (using histogram matching)
+    not for 5d, but for 400d for example.
   - then demosaic using float-ahd optimized code.
 - wt/iwt iops and sharpen/denoise in between
 - modular views:
