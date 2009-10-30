@@ -208,6 +208,14 @@ void dt_control_init(dt_control_t *s)
   s->history_start = 1;
 }
 
+void dt_control_change_cursor(dt_cursor_t curs)
+{
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GdkCursor* cursor = gdk_cursor_new(curs);
+  gdk_window_set_cursor(widget->window, cursor);
+  gdk_cursor_destroy(cursor);
+}
+
 void dt_control_shutdown(dt_control_t *s)
 {
   pthread_mutex_lock(&s->cond_mutex);

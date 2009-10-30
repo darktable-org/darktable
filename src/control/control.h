@@ -83,6 +83,7 @@
 #define KEYCODE_Tab         23  
 #endif
 
+typedef GdkCursorType dt_cursor_t;
 
 // called from gui
 void *dt_control_expose(void *voidptr);
@@ -93,6 +94,7 @@ void dt_control_mouse_leave();
 int  dt_control_key_pressed(uint16_t which);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_gui_queue_draw();
+void dt_control_change_cursor(dt_cursor_t cursor);
 
 // called from core
 void dt_control_queue_draw_all();

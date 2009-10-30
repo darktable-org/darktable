@@ -283,7 +283,11 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   }
 }
 
-// void button_released(dt_view_t *self, double x, double y, int which, uint32_t state) {}
+void button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
+{
+  if(which == 1) dt_control_change_cursor(GDK_ARROW);
+}
+
 void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -291,6 +295,7 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
   if(handled) return;
 
+  if(which == 1) dt_control_change_cursor(GDK_HAND1);
   if(which == 2)
   {
     // zoom to 1:1 2:1 and back
