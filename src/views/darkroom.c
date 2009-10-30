@@ -259,7 +259,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
   if(handled) return;
 
-  if(darktable.control->button_down && darktable.control->button_down_which == 2)
+  if(darktable.control->button_down && darktable.control->button_down_which == 1)
   { // depending on dev_zoom, adjust dev_zoom_x/y.
     dt_dev_zoom_t zoom;
     int closeup;
@@ -291,7 +291,7 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
   if(handled) return;
 
-  if(which == 1)
+  if(which == 2)
   {
     // zoom to 1:1 2:1 and back
     dt_dev_zoom_t zoom;

@@ -1,7 +1,5 @@
 0.4 lighttable release
-- zoom 2:1 upper left corner cut off bug!
 - replace white by exposure: w = 2^-exp
-- navigation: don't draw borders on zoom <= fit
 - exposure: highlight clipped parts
 - hdr exr import
 - tonemapping widget?
