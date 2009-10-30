@@ -1,5 +1,4 @@
 0.4 lighttable release
-- replace white by exposure: w = 2^-exp
 - exposure: highlight clipped parts
 - hdr exr import
 - tonemapping widget?

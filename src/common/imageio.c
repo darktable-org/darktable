@@ -6,6 +6,7 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_pfm.h"
+#include "common/imageio_rgbe.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -277,6 +278,7 @@ int dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
 
 int dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
+  if(!dt_imageio_open_rgbe(img, filename)) return 0;
   if(!dt_imageio_open_pfm(img, filename)) return 0;
   return 1;
 }
