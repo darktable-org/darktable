@@ -40,6 +40,11 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   pthread_mutex_t *mutex = NULL;
   int wd, ht, stride, closeup;
+  int32_t zoom;
+  float zoom_x, zoom_y;
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   cairo_surface_t *surface = NULL;
    
@@ -56,8 +61,14 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
     if(closeup)
     {
-      cairo_scale(cr, 2.0, 2.0);
-      cairo_translate(cr, -.25f*wd, -.25f*ht);
+      const float closeup_scale = 2.0;
+      cairo_scale(cr, closeup_scale, closeup_scale);
+      float boxw = 1, boxh = 1, zx0 = zoom_x, zy0 = zoom_y, zx1 = zoom_x, zy1 = zoom_y, zxm = -1.0, zym = -1.0;
+      dt_dev_check_zoom_bounds(dev, &zx0, &zy0, zoom, 0, &boxw, &boxh);
+      dt_dev_check_zoom_bounds(dev, &zx1, &zy1, zoom, 1, &boxw, &boxh);
+      dt_dev_check_zoom_bounds(dev, &zxm, &zym, zoom, 1, &boxw, &boxh);
+      const float fx = 1.0 - fmaxf(0.0, (zx0 - zx1)/(zx0 - zxm)), fy = 1.0 - fmaxf(0.0, (zy0 - zy1)/(zy0 - zym));
+      cairo_translate(cr, -wd/(2.0*closeup_scale) * fx, -ht/(2.0*closeup_scale) * fy);
     }
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface (cr, surface, 0, 0);
@@ -75,13 +86,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
 
-    int32_t zoom;
-    float zoom_x, zoom_y;
     wd = dev->preview_pipe->backbuf_width;
     ht = dev->preview_pipe->backbuf_height;
-    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
     float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
     cairo_set_source_rgb (cr, .2, .2, .2);
     cairo_paint(cr);

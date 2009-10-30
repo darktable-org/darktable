@@ -80,13 +80,12 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     DT_CTL_GET_GLOBAL(closeup, dev_closeup);
     DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-    if(zoom != DT_ZOOM_FIT)
+    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
+    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom,        closeup ? 2.0 : 1.0, 0);
+    if(cur_scale > min_scale)
     {
       float boxw = 1, boxh = 1;
       dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);
-
-      // DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-      // DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
 
       cairo_translate(cr, wd*(.5f+zoom_x), ht*(.5f+zoom_y));
       cairo_set_source_rgb(cr, 0., 0., 0.);
