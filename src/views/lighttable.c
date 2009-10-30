@@ -548,6 +548,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 void button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   DT_CTL_SET_GLOBAL(lib_pan, 0);
+  if(which == 1) dt_control_change_cursor(GDK_ARROW);
 }
 
 
@@ -561,6 +562,7 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
   lib->select_offset_x += x;
   lib->select_offset_y += y;
   DT_CTL_SET_GLOBAL(lib_pan, 1);
+  if(which == 1) dt_control_change_cursor(GDK_HAND1);
   // image button pressed?
   switch(lib->image_over)
   {
