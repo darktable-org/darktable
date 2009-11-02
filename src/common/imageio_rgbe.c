@@ -188,9 +188,12 @@ int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
   }
   if (fgets(buf,sizeof(buf)/sizeof(buf[0]),fp) == 0)
     return rgbe_error(rgbe_read_error,NULL);
-  if (strcmp(buf,"\n") != 0)
-    return rgbe_error(rgbe_format_error,
-        "missing blank line after FORMAT specifier");
+  // if (strcmp(buf,"\n") != 0)
+    // return rgbe_error(rgbe_format_error,
+        // "missing blank line after FORMAT specifier");
+  while (strcmp(buf,"\n") != 0)
+    if (fgets(buf,sizeof(buf)/sizeof(buf[0]),fp) == 0)
+      return rgbe_error(rgbe_read_error,NULL);
   if (fgets(buf,sizeof(buf)/sizeof(buf[0]),fp) == 0)
     return rgbe_error(rgbe_read_error,NULL);
   if (sscanf(buf,"-Y %d +X %d",height,width) < 2)

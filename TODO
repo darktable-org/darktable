@@ -1,6 +1,8 @@
 0.4 lighttable release
+- histogram fill light mouse gesture
+- preview blacklist modules
 - exposure: highlight clipped parts
-- hdr exr import
+- exr import
 - tonemapping widget?
 - clipping event hooks: crop
 - document mode rg1g2b noise histogram profiling tool
@@ -18,16 +20,17 @@
     - => common/film.h
   - need plug-in versioning
 - user preferences
+  - default processing stack, if exif matches
+  - libraw settings (have to restart)
+  - outside database
 - lensfun op
 
 bugs:
-- darkroom mode 2:1 zoom bounds 0,0 hides upper left borders
 - img unlock => flicker in library mode? (due to mipf trigger?)
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
 - import very slow (hdd lock with gui??) on nfs homes
 - import starts 3 threads but seems to be mono-core?
-- check if there is a mem leak in jpg decompress.
 - open_raw has img cleaned up before finished during dt_exit
 - zoom to wrong image bug: resize window helps (???)
 - glist instead of sql query in export (or else altering selection after pressing export will change the behavior)
@@ -44,7 +47,6 @@ cleanup:
 - mip0 broken for very lo-res images.
 - print GPLv3 notice on top of all files
 
-- finish most develop (single film roll) functionality:
 - editable metadata (at least what's needed for lensfun..)
 - copy function in lib:
   - flags, tags
@@ -97,7 +99,6 @@ feature requests:
  - import: interrupt, continue, watch dir (all more robust)
  - clustered image view by similar tag/flag
  - user orient rotation
- - tonemapping for hdr?
  - linear/gamma from database for camera models.
  - spot removal brush
  - ufraw style highlight reconstruction

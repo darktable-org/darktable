@@ -564,7 +564,10 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.gamm[1] = 1.0;
   // TODO: make this user choosable.
   if(img->shrink) raw->params.user_qual = 0; // linear
-  else            raw->params.user_qual = 3; // AHD 2; // PPG // 1; // VNG
+  else            raw->params.user_qual = 2; // 3: AHD, 2: PPG, 1: VNG
+  if(!strcmp(img->exif_model, "EOS 400D DIGITAL"))
+    raw->params.four_color_rgb = 1;
+  raw->params.med_passes = 0;
   // img->raw->params.output_color = 1;
   raw->params.use_camera_matrix = 1;
   // TODO: let this unclipped for develop, clip for preview.
