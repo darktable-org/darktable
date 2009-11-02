@@ -206,7 +206,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
-  gtk_expander_set_spacing(module->expander, 10);
   // gamma is always needed for display (down to uint8_t)
   // colorin/colorout are essential for La/Lb/L conversion.
   if(!(!strcmp(module->op, "gamma") || 
@@ -241,6 +240,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
                   G_CALLBACK (dt_iop_gui_expander_callback), module);
   // gtk_widget_add_events(GTK_WIDGET(hbox), GDK_BUTTON_PRESS_MASK);
+  gtk_expander_set_spacing(module->expander, 10);
   gtk_widget_hide_all(module->widget);
   gtk_expander_set_expanded(module->expander, FALSE);
   return GTK_WIDGET(vbox);

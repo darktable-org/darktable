@@ -186,7 +186,7 @@ void black_callback (GtkRange *range, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   p->black = gtk_range_get_value(range);
-  float white = gtk_range_get_value(GTK_RANGE(g->scale2));
+  float white = exp2f(-gtk_range_get_value(GTK_RANGE(g->scale2)));
   if(white < p->black) gtk_range_set_value(GTK_RANGE(g->scale2), - log2f(p->black));
   dt_dev_add_history_item(darktable.develop, self);
 }
