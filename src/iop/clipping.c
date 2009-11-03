@@ -63,6 +63,11 @@ void adjust_aabb(const float *p, float *aabb)
   aabb[3] = fmaxf(aabb[3], p[1]);
 }
 
+const char *name()
+{
+  return _("clipping");
+}
+
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
@@ -336,11 +341,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new("crop x"));
-  g->label2 = GTK_LABEL(gtk_label_new("crop y"));
-  g->label3 = GTK_LABEL(gtk_label_new("crop w"));
-  g->label4 = GTK_LABEL(gtk_label_new("crop h"));
-  g->label5 = GTK_LABEL(gtk_label_new("angle"));
+  g->label1 = GTK_LABEL(gtk_label_new(_("crop x")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("crop y")));
+  g->label3 = GTK_LABEL(gtk_label_new(_("crop w")));
+  g->label4 = GTK_LABEL(gtk_label_new(_("crop h")));
+  g->label5 = GTK_LABEL(gtk_label_new(_("angle")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);

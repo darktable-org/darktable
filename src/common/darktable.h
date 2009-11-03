@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <sqlite3.h>
 #include <pthread.h>
+#include <glib/gi18n.h>
 
 #define DT_VERSION 25
 

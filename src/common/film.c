@@ -146,7 +146,7 @@ int dt_film_import(dt_film_t *film, const char *dirname)
     HANDLE_SQLITE_ERR(rc);
     pthread_mutex_lock(&(darktable.db_insert));
     rc = sqlite3_step(stmt);
-    if(rc != SQLITE_DONE) fprintf(stderr, "failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
+    if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
     rc = sqlite3_finalize(stmt);
     film->id = sqlite3_last_insert_rowid(darktable.db);
     pthread_mutex_unlock(&(darktable.db_insert));

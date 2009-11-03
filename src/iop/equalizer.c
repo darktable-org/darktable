@@ -20,6 +20,11 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
+const char *name()
+{
+  return _("equalizer");
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in = (float *)i;

@@ -59,17 +59,13 @@ void
 image_filter_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_filter
-  gchar *text = gtk_combo_box_get_active_text(widget);
-  if(text != NULL)
-  {
-    if     (!strcmp(text, "all"))     { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_ALL); }
-    else if(!strcmp(text, "no star")) { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_NO); }
-    else if(!strcmp(text, "1 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_1); }
-    else if(!strcmp(text, "2 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_2); }
-    else if(!strcmp(text, "3 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_3); }
-    else if(!strcmp(text, "4 star"))  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_4); }
-    g_free(text);
-  }
+  int i = gtk_combo_box_get_active(widget);
+  if     (i == 0)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_ALL); }
+  else if(i == 1)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_NO); }
+  else if(i == 2)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_1); }
+  else if(i == 3)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_2); }
+  else if(i == 4)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_3); }
+  else if(i == 5)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_4); }
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }
@@ -79,15 +75,11 @@ void
 image_sort_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_sort
-  gchar *text = gtk_combo_box_get_active_text(widget);
-  if(text != NULL)
-  {
-    if     (!strcmp(text, "filename")) { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_FILENAME); }
-    else if(!strcmp(text, "time"))     { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_DATETIME); }
-    else if(!strcmp(text, "rating"))   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_RATING); }
-    else if(!strcmp(text, "id"))       { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_ID); }
-    g_free(text);
-  }
+  int i = gtk_combo_box_get_active(widget);
+  if     (i == 0)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_FILENAME); }
+  else if(i == 1)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_DATETIME); }
+  else if(i == 2)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_RATING); }
+  else if(i == 3)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_ID); }
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }
@@ -98,15 +90,11 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   // read "export_format" to global settings
   GtkWidget *wid = glade_xml_get_widget (darktable.gui->main_window, "export_format");
-  gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(wid));
-  if(text != NULL)
-  {
-    if     (!strcmp(text, "8-bit jpg"))  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_JPG);   }
-    else if(!strcmp(text, "8-bit png"))  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PNG);   }
-    else if(!strcmp(text, "16-bit ppm")) { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PPM16); }
-    else if(!strcmp(text, "float pfm"))  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PFM);   }
-    g_free(text);
-  }
+  int i = gtk_combo_box_get_active(GTK_COMBO_BOX(wid));
+  if     (i == 0)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_JPG);   }
+  else if(i == 1)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PNG);   }
+  else if(i == 2)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PPM16); }
+  else if(i == 3)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PFM);   }
   pthread_mutex_lock(&(darktable.film->images_mutex));
   darktable.film->last_exported = 0;
   pthread_mutex_unlock(&(darktable.film->images_mutex));
@@ -138,7 +126,7 @@ void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("import film",
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
 				      GTK_WINDOW (win),
 				      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
 				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -161,7 +149,7 @@ void
 import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new ("import image",
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
 				      GTK_WINDOW (win),
 				      GTK_FILE_CHOOSER_ACTION_OPEN,
 				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -188,7 +176,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_ERROR,
                                   GTK_BUTTONS_CLOSE,
-                                  "error loading file '%s'",
+                                  _("error loading file '%s'"),
                                   filename);
        gtk_dialog_run (GTK_DIALOG (dialog));
        gtk_widget_destroy (dialog);

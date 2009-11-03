@@ -90,6 +90,10 @@ static Image *ApplyModifier (int modflags, bool reverse, Image *img,
     return img;
 }
 
+const char *name()
+{
+  return _("lens distortions");
+}
 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
 {

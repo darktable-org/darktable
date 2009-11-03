@@ -20,6 +20,12 @@
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 20.
 
+const char *name()
+{
+  return _("color correction");
+}
+
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
@@ -138,7 +144,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label5 = GTK_LABEL(gtk_label_new("saturation"));
+  g->label5 = GTK_LABEL(gtk_label_new(_("saturation")));
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
   g->scale5 = GTK_HSCALE(gtk_hscale_new_with_range(-3.0, 3.0, 0.01));

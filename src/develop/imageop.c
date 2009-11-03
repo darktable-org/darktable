@@ -41,6 +41,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   strncpy(module->op, op, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
+  if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
@@ -155,7 +156,7 @@ void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     gtk_expander_set_expanded(module->expander, module->enabled);
   }
   char tooltip[512];
-  snprintf(tooltip, 512, "%s is switched %s", module->op, module->enabled ? "on" : "off");
+  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->op);
   gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, NULL);
 }
 
@@ -205,7 +206,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->op)));
+  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
   // gamma is always needed for display (down to uint8_t)
   // colorin/colorout are essential for La/Lb/L conversion.
   if(!(!strcmp(module->op, "gamma") || 
@@ -215,7 +216,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     // GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
     GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_check_button_new());
     char tooltip[512];
-    snprintf(tooltip, 512, "%s is switched %s", module->op, module->enabled ? "on" : "off");
+    snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
     gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, NULL);
     gtk_toggle_button_set_active(button, module->enabled);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);

@@ -11,6 +11,11 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
+const char *name()
+{
+  return _("color input profile");
+}
+
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -215,17 +220,17 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new("intent"));
-  g->label2 = GTK_LABEL(gtk_label_new("profile"));
+  g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("profile")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->cbox1, "perceptual");
-  gtk_combo_box_append_text(g->cbox1, "relative colorimetric");
-  gtk_combo_box_append_text(g->cbox1, "saturation");
-  gtk_combo_box_append_text(g->cbox1, "absolute colorimetric");
+  gtk_combo_box_append_text(g->cbox1, _("perceptual"));
+  gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
+  gtk_combo_box_append_text(g->cbox1, _("saturation"));
+  gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *l = g->profiles;
   while(l)
@@ -240,8 +245,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
 
   char tooltip[1024];
-  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", "rendering intent", NULL);
-  snprintf(tooltip, 1024, "icc profiles in %s/color/in", datadir);
+  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), NULL);
+  snprintf(tooltip, 1024, _("icc profiles in %s/color/in"), datadir);
   gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "changed",

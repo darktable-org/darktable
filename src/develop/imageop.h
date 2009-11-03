@@ -61,6 +61,8 @@ typedef struct dt_iop_module_t
   /** expander containing the widget. */
   GtkExpander *expander;
 
+  /** get name of the module, to be translated. */
+  const char* (*name)     ();
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)      (struct dt_iop_module_t *self);

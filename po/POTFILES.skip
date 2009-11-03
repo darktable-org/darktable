@@ -1,0 +1,5 @@
+src/LibRaw/internal/dcraw_common.cpp
+src/LibRaw/internal/dcraw_fileio.cpp
+src/LibRaw/internal/foveon.cpp
+src/gegl-operations/dt-contrast-curve.c
+src/gegl-operations/dt-gamma.c

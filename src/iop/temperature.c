@@ -50,6 +50,10 @@ static const float dt_iop_temperature_rgb_r55[][12] =
 };
 
 
+const char *name()
+{
+  return _("temperature");
+}
 
 static void convert_k_to_rgb (float temperature, float *rgb)
 {
@@ -190,8 +194,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-  g->label1 = GTK_LABEL(gtk_label_new("original temperature"));
-  g->label2 = GTK_LABEL(gtk_label_new("intended temperature"));
+  g->label1 = GTK_LABEL(gtk_label_new(_("original temperature")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("intended temperature")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.));

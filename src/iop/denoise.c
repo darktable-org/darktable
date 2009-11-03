@@ -15,6 +15,11 @@
 
 #define POW2(a) ((a)*(a))
 
+const char *name()
+{
+  return _("denoise");
+}
+
 /* this piece of 1337-code is from dcraw. most enjoyable parts removed, as we don't need them here. */
 void hat_transform (float *temp, float *base, int st, int size, int sc)
 {
@@ -170,8 +175,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new("luma"));
-  g->label2 = GTK_LABEL(gtk_label_new("chroma"));
+  g->label1 = GTK_LABEL(gtk_label_new(_("luma")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("chroma")));
   // g->label3 = GTK_LABEL(gtk_label_new("edges"));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);

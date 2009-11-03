@@ -18,6 +18,11 @@
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
+const char *name()
+{
+  return _("tonecurve");
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in = (float *)i;
@@ -184,12 +189,12 @@ void gui_init(struct dt_iop_module_t *self)
   // init gtk stuff
   c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
-  c->label = GTK_LABEL(gtk_label_new("presets"));
+  c->label = GTK_LABEL(gtk_label_new(_("presets")));
   gtk_box_pack_start(GTK_BOX(c->hbox), GTK_WIDGET(c->label), FALSE, FALSE, 5);
   c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), "linear");
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), "med contrast");
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), "high contrast");
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("linear"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("med contrast"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("high contrast"));
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
   g_signal_connect (G_OBJECT (c->presets), "changed",
                     G_CALLBACK (presets_changed),

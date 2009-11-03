@@ -22,9 +22,6 @@ void dt_ctl_settings_init(dt_control_t *s)
   pthread_mutex_init(&(s->global_mutex), NULL);
   pthread_mutex_init(&(s->image_mutex), NULL);
 
-  // char *homedir = getenv("HOME");
-  // snprintf(s->global_settings.dbname, 512, "%s/.darktabledb", homedir);
-
   s->global_settings.version = DT_VERSION;
 
   s->global_settings.gui = DT_LIBRARY;
@@ -860,7 +857,7 @@ void dt_control_clear_history_items(int32_t num)
   // 0 - original
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "history_00");
   gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), "0 - original");
+  gtk_button_set_label(GTK_BUTTON(widget), _("0 - original"));
   GList *history = g_list_nth(darktable.develop->history, darktable.control->history_start);
   for(int k=1;k<9;k++)
   { // k is button number: history_0k

@@ -10,7 +10,7 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
   n->dragging = 0;
   n->exposure = NULL;
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
-      "drag to change exposure,\ndoubleclick resets", NULL);
+      _("drag to change exposure,\ndoubleclick resets"), NULL);
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_gui_histogram_expose), n);
   g_signal_connect (G_OBJECT (widget), "button-press-event",

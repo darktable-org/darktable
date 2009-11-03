@@ -343,9 +343,9 @@ void dt_image_init(dt_image_t *img)
   img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;
   img->cacheline = -1;
-  strncpy(img->exif_model, "unknown\0", 20);
-  strncpy(img->exif_maker, "unknown\0", 20);
-  strncpy(img->exif_lens,  "unknown\0", 50);
+  strncpy(img->exif_model, _("unknown"), 20);
+  strncpy(img->exif_maker, _("unknown"), 20);
+  strncpy(img->exif_lens,  _("unknown"), 50);
   strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
 #ifdef _DEBUG

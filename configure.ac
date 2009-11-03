@@ -4,6 +4,14 @@ AC_PREREQ(2.63)
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AC_PROG_CXX
+IT_PROG_INTLTOOL([0.41])
+ALL_LINGUAS=""
+AM_GLIB_GNU_GETTEXT
+AM_GLIB_DEFINE_LOCALEDIR(DARKTABLE_LOCALEDIR)
+GETTEXT_PACKAGE=darktable
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
+
 AX_CC_MAXOPT
 AC_MSG_CHECKING([whether to enable debugging])
 AC_ARG_ENABLE(debug,
@@ -31,7 +39,7 @@ AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG([0.22])
 AC_MSG_CHECKING([whether to use gegl for rendering])
 AC_ARG_ENABLE(gegl,
-	      AC_HELP_STRING([--enable-gegl], [use gegl for rendering (don't do this)]),
+	      AC_HELP_STRING([--enable-gegl], [use gegl for rendering (dont do this)]),
         [
           if test "$enable_gegl" = "yes"; then
              AC_DEFINE(HAVE_GEGL, 1, [whether to use gegl for rendering])
@@ -68,6 +76,7 @@ AC_SUBST(LCMS_LIBS)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
     Makefile
+    po/Makefile.in
     src/Makefile
     src/LibRaw/Makefile
     src/iop/Makefile

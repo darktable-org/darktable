@@ -24,6 +24,10 @@ darktable_t darktable;
 
 int dt_init(int argc, char *argv[])
 {
+  bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
+  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+  textdomain (GETTEXT_PACKAGE);
+
   darktable.progname = argv[0];
 #ifdef _OPENMP
   omp_set_num_threads(omp_get_num_procs());
