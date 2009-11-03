@@ -1,3 +1,5 @@
+- PPG openmp upstream libraw
+
 0.4 lighttable release
 - clean up gui: lighttable/darkroom switches only there if
   module is entered!
