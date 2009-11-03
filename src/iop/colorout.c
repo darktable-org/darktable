@@ -13,7 +13,7 @@
 
 const char *name()
 {
-  return _("color output profile");
+  return _("output color profile");
 }
 
 static void intent_changed (GtkComboBox *widget, gpointer user_data)

@@ -52,6 +52,8 @@ static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int hei
   for(int k=1;k<16;k+=2) v[k] = v[k]*0.03 + 0.5;
   for(int k=0;k<16;k+=2) v[k] *= width;
   for(int k=1;k<16;k+=2) v[k] *= height;
+  if(left)
+    for(int k=0;k<16;k+=2) v[k] = width - v[k];
   cairo_set_line_width(cr, 2.);
   cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
   cairo_move_to (cr, v[0], v[1]);

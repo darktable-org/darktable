@@ -426,6 +426,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (image_sort_changed),
                     (gpointer)0);
 
+  // nice endmarker drawing.
+  widget = glade_xml_get_widget (darktable.gui->main_window, "endmarker_left");
+  g_signal_connect (G_OBJECT (widget), "expose-event",
+                    G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);

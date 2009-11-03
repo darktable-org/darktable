@@ -3,6 +3,7 @@
 #include "common/darktable.h"
 #include "views/view.h"
 #include "gui/gtk.h"
+#include "gui/draw.h"
 
 #include <stdlib.h>
 #include <strings.h>
@@ -512,6 +513,21 @@ void *dt_control_expose(void *voidptr)
     return NULL;
   }
   return NULL;
+}
+
+gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{
+  const int width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  dt_draw_endmarker(cr, width, height, (long int)user_data);
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+  return TRUE;
 }
 
 void dt_control_mouse_leave()

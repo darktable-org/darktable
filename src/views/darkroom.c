@@ -7,7 +7,6 @@
 #include "common/imageio.h"
 #include "control/control.h"
 #include "gui/gtk.h"
-#include "gui/draw.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -122,21 +121,6 @@ void reset(dt_view_t *self)
 }
 
 
-gboolean dt_darkroom_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-  const int width = widget->allocation.width, height = widget->allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
-  dt_draw_endmarker(cr, width, height, (long int)user_data);
-  cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
-  cairo_surface_destroy(cst);
-  return TRUE;
-}
-
 void enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -170,7 +154,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                    G_CALLBACK (dt_darkroom_expose_endmarker), 0);
+                    G_CALLBACK (dt_control_expose_endmarker), 0);
   gtk_widget_show_all(GTK_WIDGET(box));
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;

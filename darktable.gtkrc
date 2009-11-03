@@ -119,6 +119,11 @@ style "clearlooks-combo" = "clearlooks-default"
   ythickness = 2
 }
 
+style "clearlooks-checkbutton" = "clearlooks-default"
+{
+  text[NORMAL] = "#202020"
+}
+
 style "metacity-frame"
 {
   # Normal base color
@@ -141,6 +146,7 @@ style "metacity-frame"
 }
 class "GtkWidget" style "clearlooks-default"
 class "GtkButton" style "clearlooks-wide"
+class "GtkCheckButton" style "clearlooks-checkbutton"
 class "GtkRange" style "clearlooks-wide"
 class "GtkFrame" style "clearlooks-wide"
 class "GtkStatusbar" style "clearlooks-wide"
