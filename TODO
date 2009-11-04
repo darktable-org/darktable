@@ -1,5 +1,7 @@
 - PPG openmp upstream libraw
 
+- BUG: rotate accesses stuff outside the buffer if cropped!
+
 0.4 lighttable release
 - clean up gui: lighttable/darkroom switches only there if
   module is entered!

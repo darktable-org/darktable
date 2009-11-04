@@ -127,22 +127,24 @@ style "clearlooks-checkbutton" = "clearlooks-default"
 style "metacity-frame"
 {
   # Normal base color
-  #bg[NORMAL]  = "#bbbbbb"
+  fg[NORMAL]        = "#333333"
 
   # Unfocused title background color
   #bg[INSENSITIVE]  = { 0.8, 0.8, 0.8 }
+	bg[INSENSITIVE]   = "#333333"
 
   # Unfocused title text color
   #fg[INSENSITIVE]  = { 1.55, 1.55, 1.55 }
+  fg[NORMAL]        = "#CACAC6"
 
   # Focused icon color
   #fg[NORMAL]  = { 0.2, 0.2, 0.2 }
 
   # Focused title background color
-  #bg[SELECTED]  = { 0.5, 0.8, 0.5 }
+	bg[SELECTED]      = "#505050"
 
   # Focused title text color
-  #fg[SELECTED]  = "black"
+	fg[SELECTED]      = "#E2E2E2"
 }
 class "GtkWidget" style "clearlooks-default"
 class "GtkButton" style "clearlooks-wide"

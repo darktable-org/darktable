@@ -843,7 +843,7 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
   snprintf(numlabel, 50, "%d - %s", num, label);
   if(num >= 10) for(int i=1;i<9;i++)
   {
-    darktable.control->history_start = num - 8;
+    darktable.control->history_start = num - 9;
     snprintf(wdname, 20, "history_%02d", i+1);
     widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     lbl = gtk_button_get_label(GTK_BUTTON(widget));
