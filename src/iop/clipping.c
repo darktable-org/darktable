@@ -68,57 +68,36 @@ const char *name()
   return _("clipping");
 }
 
-// FIXME: these ROI exceed the valid area if crop is applied!
-// TODO: keep x + w constant, the rotate step messes up these values!
-// TODO: rotation is arount roi_in center, this backrotation does not take into account asymetry of crop
-//       => asym crop => center roi_in = rotation center != center of roi_out!
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   float sw = roi_in->width, sh = roi_in->height, s = roi_out->scale/roi_in->scale;
-  // modify cx/cy/.. to be on scale of roi out: (0..1) of roi in size
-  d->cix = d->cx * sw*s; d->ciy = d->cy * sh*s;
-  d->ciw = d->cw * sw*s; d->cih = d->ch * sh*s;
 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle),-sinf(d->angle),
                  sinf(d->angle), cosf(d->angle)};
-  // FIXME: rotation around 0,0!!!
-  // FIXME: roi_in has to be centered around 0, aabbo has to be centered around the same offset.
   // fwd transform rotated points on corners and scale back inside roi_in bounds.
-  float p[2], o[2], aabbi[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height},
-                    aabbo[4] = {d->cix-.5f*roi_in->width, d->ciy-.5f*roi_in->height, d->cix-.5f*roi_in->width+d->ciw, d->ciy-.5f*roi_in->height+d->cih};
-  float center[2] = {(aabbo[1] + aabbo[0])*.5f, (aabbo[3] + aabbo[2])*.5f}, centert[2];
-  // also transform center point of roi_out and get cropscale towards this point
-  mul_mat_vec_2(rt, center, centert);
-  float crops[4] = {1.0, 1.0, 1.0, 1.0};
+  float cropscale = 1.0f;
+  float p[2], o[2], aabb[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height};
   for(int c=0;c<4;c++)
   {
-    // get corner of cropped roi_out, backtransformed to input
-    get_corner(aabbo, c, p);
+    get_corner(aabb, c, p);
     mul_mat_vec_2(rt, p, o);
-    for(int k=0;k<2;k++)
-    {
-      const float t1 = (aabbi[  k]-centert[k])/(o[k]-centert[k]);
-      const float t2 = (aabbi[2+k]-centert[k])/(o[k]-centert[k]);
-      const float t = fmaxf(t1, t2);
-      if(t > .0) crops[c] = fminf(crops[c], t);
-    }
+    for(int k=0;k<2;k++) if(fabsf(o[k]) > 0.001f) cropscale = fminf(cropscale, aabb[(o[k] > 0 ? 2 : 0) + k]/o[k]);
   }
 
-  printf("corner scales: %f %f %f %f\n", crops[0], crops[1], crops[2], crops[3]);
   // modify roi_out by scaling inside rotated buffer.
-  d->cix += (1.0 - fminf(crops[0], crops[2]))*.5f*d->ciw;
-  d->ciy += (1.0 - fminf(crops[0], crops[1]))*.5f*d->cih;
-  d->ciw *= .5f + .5f*fminf(crops[0], crops[2]);
-  d->cih *= .5f + .5f*fminf(crops[0], crops[1]);
-  d->ciw *= .5f + .5f*fminf(crops[1], crops[3]);
-  d->cih *= .5f + .5f*fminf(crops[2], crops[3]);
+  // modify cx/cy/.. to be on scale of roi out: (0..1) of roi in size
+  const float cx = d->cx + (1.0-cropscale)*.5f, cy = d->cy + (1.0-cropscale)*.5f;
+  d->cix = cx * sw*s;
+  d->ciy = cy * sh*s;
+  d->ciw = cropscale * (d->cw-cx) * sw*s;
+  d->cih = cropscale * (d->ch-cy) * sh*s;
   int clipx = d->cix, clipy = d->ciy, clipw = d->ciw, cliph = d->cih;
   if(roi_out->x < clipx) roi_out->x = clipx;
+  if(roi_out->width > clipw) roi_out->width = clipw;
   if(roi_out->y < clipy) roi_out->y = clipy;
-  if(roi_out->width  > clipw) roi_out->width = clipw;
   if(roi_out->height > cliph) roi_out->height = cliph;
 
   rt[1] = - rt[1];
@@ -197,12 +176,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=0;i<roi_out->width;i++)
     {
       const int ii = (int)pi[0], jj = (int)pi[1];
-      const float fi = pi[0] - ii, fj = pi[1] - jj;
-      for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];
-            ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-             (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-             (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-             (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
+      if(ii >= 0 || jj >= 0 || ii <= roi_in->width-2 || jj <= roi_in->height-2) 
+      {
+        const float fi = pi[0] - ii, fj = pi[1] - jj;
+        for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];
+              ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
+               (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
+               (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
+               (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
+      }
+      else for(int c=0;c<3;c++) out[c] = 0.0f;
       for(int k=0;k<2;k++) pi[k] += dx[k];
       out += 3;
     }
@@ -248,8 +231,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->angle = M_PI/180.0 * p->angle;
   d->cx = p->cx;
   d->cy = p->cy;
-  d->cw = (p->cw-p->cx);
-  d->ch = (p->ch-p->cy);
+  d->cw = p->cw;
+  d->ch = p->ch;
 #endif
 }
 

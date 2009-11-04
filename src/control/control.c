@@ -564,6 +564,8 @@ void dt_ctl_switch_mode()
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
   if(selected >= 0)
   {
+    darktable.control->button_down = 0;
+    darktable.control->button_down_which = 0;
     dt_ctl_gui_mode_t gui;
     DT_CTL_GET_GLOBAL(gui, gui);
     dt_control_save_gui_settings(gui);
