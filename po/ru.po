@@ -1,0 +1,375 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: DarkTable 0.4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-04 12:33+0300\n"
+"PO-Revision-Date: 2009-11-04 13:09+0300\n"
+"Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
+"Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-Country: RUSSIAN FEDERATION\n"
+
+#: ../darktable.glade.h:1
+msgid "-"
+msgstr "-"
+
+#: ../darktable.glade.h:2
+msgid ""
+"8-bit jpg\n"
+"8-bit png\n"
+"16-bit ppm\n"
+"float pfm"
+msgstr ""
+"8-разрядный JPEG\n"
+"8-разрядный PNG\n"
+"16-разрядный PPM\n"
+"PFM с плавающей точкой"
+
+#: ../darktable.glade.h:6
+msgid ""
+"all\n"
+"no star\n"
+"1 star\n"
+"2 star\n"
+"3 star\n"
+"4 star"
+msgstr ""
+"Все\n"
+"Без оценки\n"
+"1 звезда\n"
+"2 звезды\n"
+"3 звезды\n"
+"4 звезды"
+
+#: ../darktable.glade.h:12
+msgid "aperture"
+msgstr "Апертура"
+
+#: ../darktable.glade.h:13
+msgid "button"
+msgstr ""
+
+#: ../darktable.glade.h:14
+msgid "datetime"
+msgstr "Дата и время"
+
+#: ../darktable.glade.h:15
+msgid "export"
+msgstr "Экспортировать"
+
+#: ../darktable.glade.h:16
+msgid "export selected"
+msgstr "Экспорт выбранного"
+
+#: ../darktable.glade.h:17
+#: ../src/iop/exposure.c:18
+#: ../src/iop/exposure.c:134
+msgid "exposure"
+msgstr "Экспозиция"
+
+#: ../darktable.glade.h:18
+msgid "f-length"
+msgstr "Фокусное расстояние"
+
+#: ../darktable.glade.h:19
+msgid "filename"
+msgstr "Имя файла"
+
+#: ../darktable.glade.h:20
+msgid ""
+"filename\n"
+"time\n"
+"rating\n"
+"id"
+msgstr ""
+"Имя файла\n"
+"Дата и время\n"
+"Оценка\n"
+"ID"
+
+#: ../darktable.glade.h:24
+msgid "height"
+msgstr "Высота"
+
+#: ../darktable.glade.h:25
+msgid "histogram"
+msgstr "Гистограмма"
+
+#: ../darktable.glade.h:26
+msgid "history"
+msgstr "История изменений"
+
+#: ../darktable.glade.h:27
+msgid "images sorted by"
+msgstr "Критерий сортировки:"
+
+#: ../darktable.glade.h:28
+msgid "import film roll"
+msgstr "Импортировать съёмку"
+
+#: ../darktable.glade.h:29
+msgid "import single image"
+msgstr "Импортировать отдельный снимок"
+
+#: ../darktable.glade.h:30
+msgid "iso"
+msgstr "ISO"
+
+#: ../darktable.glade.h:31
+msgid "lens"
+msgstr "Объектив"
+
+#: ../darktable.glade.h:32
+msgid "library"
+msgstr "Библиотека"
+
+#: ../darktable.glade.h:33
+msgid "list"
+msgstr "Перечислять:"
+
+#: ../darktable.glade.h:34
+msgid "maker"
+msgstr "Производитель"
+
+#: ../darktable.glade.h:35
+msgid "metadata"
+msgstr "Метаданные"
+
+#: ../darktable.glade.h:36
+msgid "model"
+msgstr "Модель"
+
+#: ../darktable.glade.h:37
+msgid "navigation"
+msgstr "Навигация"
+
+#: ../darktable.glade.h:38
+msgid "original"
+msgstr ""
+
+#: ../darktable.glade.h:39
+msgid "quality"
+msgstr "Качество"
+
+#: ../darktable.glade.h:40
+msgid "width"
+msgstr "Ширина"
+
+#: ../src/control/control.c:876
+msgid "0 - original"
+msgstr "0 - исходный вариант"
+
+#: ../src/develop/imageop.c:159
+#: ../src/develop/imageop.c:219
+#, c-format
+msgid "%s is switched on"
+msgstr ""
+
+#: ../src/develop/imageop.c:159
+#: ../src/develop/imageop.c:219
+#, c-format
+msgid "%s is switched off"
+msgstr ""
+
+#: ../src/iop/lensfun.cpp:95
+msgid "lens distortions"
+msgstr "Искажения объектива"
+
+#: ../src/iop/tonecurve.c:23
+msgid "tonecurve"
+msgstr "Кривая тонкоррекции"
+
+#: ../src/iop/tonecurve.c:192
+msgid "presets"
+msgstr "Профили"
+
+#: ../src/iop/tonecurve.c:195
+#: ../src/iop/gamma.c:132
+msgid "linear"
+msgstr "Линейная"
+
+#: ../src/iop/tonecurve.c:196
+msgid "med contrast"
+msgstr "Средний контраст"
+
+#: ../src/iop/tonecurve.c:197
+msgid "high contrast"
+msgstr "Высокий контраст"
+
+#: ../src/iop/colorout.c:16
+msgid "output color profile"
+msgstr "Цветовой профиль вывода"
+
+#: ../src/iop/colorout.c:213
+#: ../src/iop/colorin.c:223
+msgid "intent"
+msgstr "Цветопередача"
+
+#: ../src/iop/colorout.c:214
+#: ../src/iop/colorin.c:224
+msgid "profile"
+msgstr "Профиль"
+
+#: ../src/iop/colorout.c:220
+#: ../src/iop/colorin.c:230
+msgid "perceptual"
+msgstr "Воспринимаемая"
+
+#: ../src/iop/colorout.c:221
+#: ../src/iop/colorin.c:231
+msgid "relative colorimetric"
+msgstr "Относительная колориметрическая"
+
+#: ../src/iop/colorout.c:222
+#: ../src/iop/colorin.c:232
+#: ../src/iop/colorcorrection.c:147
+msgid "saturation"
+msgstr "Насыщенность"
+
+#: ../src/iop/colorout.c:223
+#: ../src/iop/colorin.c:233
+msgid "absolute colorimetric"
+msgstr "Абсолютная колориметрическая"
+
+#: ../src/iop/colorout.c:238
+#: ../src/iop/colorin.c:248
+msgid "rendering intent"
+msgstr "Цветопередача"
+
+#: ../src/iop/colorout.c:239
+#, c-format
+msgid "icc profiles in %s/color/out"
+msgstr "Цветовые профили из %s/color/out"
+
+#: ../src/iop/equalizer.c:25
+msgid "equalizer"
+msgstr "Эквалайзер"
+
+#: ../src/iop/exposure.c:133
+msgid "black"
+msgstr "Тёмные области"
+
+#: ../src/iop/exposure.c:135
+msgid "gain"
+msgstr "Усиление"
+
+#: ../src/iop/denoise.c:20
+msgid "denoise"
+msgstr "Подавление шума"
+
+#: ../src/iop/denoise.c:178
+msgid "luma"
+msgstr "Яркостный канал"
+
+#: ../src/iop/denoise.c:179
+msgid "chroma"
+msgstr "Хроматический канал"
+
+#: ../src/iop/colorin.c:16
+msgid "input color profile"
+msgstr "Цветовой профиль камеры"
+
+#: ../src/iop/colorin.c:249
+#, c-format
+msgid "icc profiles in %s/color/in"
+msgstr "Цветовые профили из %s/color/in"
+
+#: ../src/iop/gamma.c:18
+#: ../src/iop/gamma.c:133
+msgid "gamma"
+msgstr "Гамма"
+
+#: ../src/iop/sharpen.c:62
+msgid "sharpen"
+msgstr "Повышение резкости"
+
+#: ../src/iop/sharpen.c:241
+msgid "radius"
+msgstr "Радиус"
+
+#: ../src/iop/sharpen.c:242
+msgid "amount"
+msgstr "Сила"
+
+#: ../src/iop/sharpen.c:243
+msgid "threshold"
+msgstr "Порог"
+
+#: ../src/iop/colorcorrection.c:25
+msgid "color correction"
+msgstr "Цветокоррекция"
+
+#: ../src/iop/temperature.c:55
+msgid "temperature"
+msgstr "Температура цвета"
+
+#: ../src/iop/temperature.c:197
+msgid "original temperature"
+msgstr "Исходная"
+
+#: ../src/iop/temperature.c:198
+msgid "intended temperature"
+msgstr "Конечная"
+
+#: ../src/iop/clipping.c:68
+msgid "clipping"
+msgstr "Кадрирование и вращение"
+
+#: ../src/iop/clipping.c:344
+msgid "crop x"
+msgstr "X:"
+
+#: ../src/iop/clipping.c:345
+msgid "crop y"
+msgstr "Y:"
+
+#: ../src/iop/clipping.c:346
+msgid "crop w"
+msgstr "Ш:"
+
+#: ../src/iop/clipping.c:347
+msgid "crop h"
+msgstr "В:"
+
+#: ../src/iop/clipping.c:348
+msgid "angle"
+msgstr "Угол"
+
+#: ../src/gui/gtk.c:129
+msgid "import film"
+msgstr "Импортировать съёмку"
+
+#: ../src/gui/gtk.c:152
+msgid "import image"
+msgstr "Импортировать снимок"
+
+#: ../src/gui/gtk.c:179
+#, c-format
+msgid "error loading file '%s'"
+msgstr "Ошибка при загрузке файла '%s'"
+
+#: ../src/gui/histogram.c:13
+msgid ""
+"drag to change exposure,\n"
+"doubleclick resets"
+msgstr ""
+"Перетаскивание меняет экспозицию,\n"
+"двойной щелчок обнуляет изменения"
+
+#: ../src/develop/develop.c:689
+msgid "on"
+msgstr "вкл"
+
+#: ../src/develop/develop.c:689
+msgid "off"
+msgstr "выкл"
+
+#: ../src/common/image.c:346
+#: ../src/common/image.c:347
+#: ../src/common/image.c:348
+msgid "unknown"
+msgstr ""
+
