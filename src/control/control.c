@@ -932,13 +932,20 @@ void dt_control_update_recent_films()
   {
     if(num < 5)
     {
-      filename = (char *)sqlite3_column_text(stmt, 0);
-      cnt = filename + MIN(512,strlen(filename));
-      int i;
-      for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
-      // if(i == label_cnt-1) snprintf(label, label_cnt, "...%s", cnt+3);
-      if(cnt > filename) snprintf(label, label_cnt, "...%s", cnt+3);
-      else snprintf(label, label_cnt, "%s", cnt);
+      const int id = sqlite3_column_int(stmt, 1);
+      if(id == 0)
+      {
+        snprintf(label, label_cnt, _("single images"));
+      }
+      else
+      {
+        filename = (char *)sqlite3_column_text(stmt, 0);
+        cnt = filename + MIN(512,strlen(filename));
+        int i;
+        for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
+        if(cnt > filename) snprintf(label, label_cnt, "...%s", cnt+3);
+        else snprintf(label, label_cnt, "%s", cnt);
+      }
       snprintf(wdname, 20, "recent_film_%d", num);
       GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
       gtk_button_set_label(GTK_BUTTON(widget), label);
