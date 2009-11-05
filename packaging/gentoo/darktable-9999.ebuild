@@ -21,11 +21,12 @@ DEPEND=">=x11-libs/gtk+-2.14.7 >=gnome-base/libglade-2.6.3
 RDEPEND="${DEPEND}"
 
 src_unpack() {
-  git_src_unpack
+	git_src_unpack
 	cd "${S}"
 }
 
 src_compile() {
+	./autogen.sh
 	econf $(use_enable openmp)
 	emake || die "emake failed."
 }
