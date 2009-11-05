@@ -34,21 +34,24 @@
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
         <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.3/darktable-0.3.tar.bz2/download">0.3 source .bz2</a></li>
-        <li>./configure [--enable-debug] [--prefix=/usr]</li>
-        <li>make all install</li>
-        <li>darktable</li>
+        <li>tar xvjf darktable-0.3.tar.bz2 &amp;&amp; cd darktable-0.3</li>
+        <li>./autogen.sh</li>
+        <li>./configure [--enable-debug] [--prefix=$(pwd)/install]</li>
+        <li>make all &amp;&amp; make install</li>
+        <li>[install/bin/]darktable</li>
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/sun.jpg" alt="release" class="img" /><h1>current release for gentoo</h1>
+    	<img src="images/sun.jpg" alt="release" class="img" /><h1>gentoo linux</h1>
       <ul>
         <li>unfortunately darktable is not in portage, so you have to:</li>
-        <li>download this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.3/darktable-0.3.ebuild/download">ebuild</a></li>
-        <li>mkdir -p /usr/portage/media-gfx/darktable/</li>
-        <li>cp darktable-0.3.ebuild /usr/portage/media-gfx/darktable/</li>
-        <li>ebuild /usr/portage/media-gfx/darktable/darktable-0.3.ebuild digest</li>
-        <li>emerge darktable</li>
-        <li>darktable</li>
+        <li>download this <a href="darktable-9999.ebuild">ebuild for the git version</a></li>
+        <li>or this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.3/darktable-0.3.ebuild/download">ebuild for the 0.3 release</a></li>
+        <li># mkdir -p /usr/portage/media-gfx/darktable/</li>
+        <li># cp darktable-*.ebuild /usr/portage/media-gfx/darktable/</li>
+        <li># ebuild /usr/portage/media-gfx/darktable/darktable-*.ebuild digest</li>
+        <li># emerge darktable</li>
+        <li>$ darktable</li>
       </ul>
     	</div>
     	<div class="listtext">
