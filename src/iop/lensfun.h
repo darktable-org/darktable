@@ -1,8 +1,6 @@
 #ifndef DT_IOP_LENSFUN_H
 #define DT_IOP_LENSFUN_H
 
-extern "C" {
-
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -16,8 +14,8 @@ typedef struct dt_iop_lensfun_params_t
   float focal;
   float aperture;
   float distance;
-  lfLensType TargetGeom;
-  const char lens[30];
+  lfLensType target_geom;
+  const char lens[52];
 }
 dt_iop_lensfun_params_t;
 
@@ -31,6 +29,19 @@ dt_iop_lensfun_gui_data_t;
 
 typedef struct dt_iop_lensfun_data_t
 {
+  const lfLens *lens;
+  float *tmpbuf;
+  float *tmpbuf2;
+  size_t tmpbuf_len;
+  size_t tmpbuf2_len;
+  int modify_flags;
+  int inverse;
+  float scale;
+  float crop;
+  float focal;
+  float aperture;
+  float distance;
+  lfLensType target_geom;
 }
 dt_iop_lensfun_data_t;
 
@@ -52,5 +63,4 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
-}
 #endif

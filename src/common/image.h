@@ -46,6 +46,7 @@ typedef struct dt_image_t
   float exif_aperture;
   float exif_iso;
   float exif_focal_length;
+  float exif_crop;
   char exif_maker[32];
   char exif_model[32];
   char exif_lens[52];

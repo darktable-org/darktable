@@ -1,8 +1,7 @@
 - PPG openmp upstream libraw
 
-- BUG: rotate accesses stuff outside the buffer if cropped!
-
 0.4 lighttable release
+- lensfun:
 - clean up gui: lighttable/darkroom switches only there if
   module is entered!
 - histogram fill light mouse gesture
@@ -29,7 +28,6 @@
   - default processing stack, if exif matches
   - libraw settings (have to restart)
   - outside database
-- lensfun op
 
 bugs:
 - img unlock => flicker in library mode? (due to mipf trigger?)

@@ -211,7 +211,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_enabled = 0;
-  module->priority = 97;
+  module->priority = 970;
   module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){1.0, 1.0, 0.0};

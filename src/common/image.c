@@ -347,7 +347,7 @@ void dt_image_init(dt_image_t *img)
   strncpy(img->exif_maker, _("unknown"), 20);
   strncpy(img->exif_lens,  _("unknown"), 50);
   strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
-  img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
+  img->exif_crop = img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
 #ifdef _DEBUG
   for(int k=0;(int)k<(int)DT_IMAGE_NONE;k++) img->mip_buf_size[k] = 0;
 #endif
@@ -365,7 +365,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
   int rc, ret = 1;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -386,6 +386,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->flags = sqlite3_column_int(stmt, 13);
     img->output_width  = sqlite3_column_int(stmt, 14);
     img->output_height = sqlite3_column_int(stmt, 15);
+    img->exif_crop = sqlite3_column_double(stmt, 16);
     
     ret = 0;
   }
