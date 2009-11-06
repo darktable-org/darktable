@@ -4,6 +4,7 @@
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <lensfun.h>
   
 typedef struct dt_iop_lensfun_params_t
 {

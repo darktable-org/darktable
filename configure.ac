@@ -62,6 +62,7 @@ PKG_CHECK_MODULES(GLADE, [libglade-2.0])
 PKG_CHECK_MODULES(SQLITE, [sqlite3])
 PKG_CHECK_MODULES(EXIV2, exiv2 >= 0.18)
 PKG_CHECK_MODULES(PNG, libpng12)
+PKG_CHECK_MODULES(LENSFUN, lensfun >= 0.2.3)
  
 AC_CHECK_LIB(jpeg, jpeg_destroy_decompress,
    [JPEG_LIBS="-ljpeg"])
