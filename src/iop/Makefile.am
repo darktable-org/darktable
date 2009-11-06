@@ -16,4 +16,3 @@ libsharpen_la_SOURCES=sharpen.c
 noinst_HEADERS=tonecurve.h gamma.h temperature.h colorcorrection.h exposure.h denoise.h equalizer.h equalizer_eaw.h colorin.h colorout.h
 dtpluginsdir=$(datarootdir)/darktable/plugins
 dtplugins_LTLIBRARIES=libtonecurve.la libgamma.la libtemperature.la libcolorcorrection.la libexposure.la libdenoise.la libequalizer.la libcolorin.la libcolorout.la libclipping.la libsharpen.la
-EXTRA_DIST=lensfun.cpp
