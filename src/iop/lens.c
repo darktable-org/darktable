@@ -15,7 +15,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
-#include "iop/lensfun.h"
+#include "iop/lens.h"
 
 static lfDatabase *dt_iop_lensfun_db = NULL;
 
@@ -25,12 +25,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
-  lfModifier *modifier = lf_modifier_new( d->lens, d->crop, piece.iwidth, piece.iheight);
+  lfModifier *modifier = lf_modifier_new( d->lens, d->crop, piece->iwidth, piece->iheight);
 
   // TODO: build these in gui somewhere:
   // float real_scale = powf(2.0, uf->conf->lens_scale);
-  // const int modflags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
-    // LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
 
   int modflags = lf_modifier_initialize(
       modifier, d->lens, LF_PF_F32,
@@ -60,7 +58,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         /* Colour correction: vignetting and CCI */
         // TODO: actually this way row stride does not matter. but give a buffer pointer
         //       offset by -roi_in.x * sizeof pixel :)
-        if(lf_modifier_apply_color_modification (
+        if(lf_modifier_apply_color_modification (modifier,
               d->tmpbuf + 3*roi_in->width*y, 0.0, y,
               roi_in->width, 1, LF_CR_3 (RED, GREEN, BLUE), 0)) break;
       }
@@ -82,7 +80,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if (!lf_modifier_apply_subpixel_geometry_distortion (
               modifier, 0, y, roi_out->width, 1, d->tmpbuf2)) break;
         // TODO: reverse transform the global coords from lf to our buffer!
-        const float *pi = tmpbuf2;
+        const float *pi = d->tmpbuf2;
         for (int x = 0; x < roi_out->width; x++)
         {
           for(int c=0;c<3;c++) 
@@ -133,10 +131,28 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #error "lensfun needs to be ported to GEGL!"
 #else
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  const lfLens **lenses = lf_db_find_lenses_hd (dt_iop_lensfun_db, NULL, NULL, p->lens, 0);
-  if (lenses) lf_lens_copy(d->lens, lenses [0]);
-  lf_free (lenses);
-  d->modify       = p->modify;
+
+  const lfCamera *camera = NULL;
+  const lfCamera **cam = NULL;
+  dt_image_t *img = self->dev->image;
+  if(img->exif_maker[0] || img->exif_model[0])
+  {
+    cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
+        img->exif_maker, img->exif_model, 0);
+    if(cam) camera = cam[0];
+  }
+  if(p->lens[0])
+  {
+    const lfLens **lens = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL,
+        p->lens, 0);
+    if(lens)
+    {
+      printf("lensfun found lens %s\n", lens[0]->Model);
+      lf_lens_copy(d->lens, lens[0]);
+      lf_free (lens);
+    }
+  }
+  lf_free(cam);
   d->modify_flags = p->modify_flags;
   d->inverse      = p->inverse;
   d->scale        = p->scale;
@@ -180,13 +196,18 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  // dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  // dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   // gtk_range_set_value(GTK_RANGE(g->scale1), p->cx);
 }
 
 void init(dt_iop_module_t *module)
 {
+  dt_iop_lensfun_db = lf_db_new ();
+  if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
+  {
+    fprintf(stderr, "[iop_lens]: could not load lensfun database!\n");
+  }
   // module->data = malloc(sizeof(dt_iop_lensfun_data_t));
   module->params = malloc(sizeof(dt_iop_lensfun_params_t));
   module->default_params = malloc(sizeof(dt_iop_lensfun_params_t));
@@ -194,40 +215,45 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
   module->priority = 940;
-#if 0 // TODO: get all we can from exif data!
-/* Create a default lens & camera */
-CFG->lens = lf_lens_new ();
-CFG->camera = lf_camera_new ();
-CFG->cur_lens_type = LF_UNKNOWN;
+  // get all we can from exif:
+  dt_iop_lensfun_params_t tmp;
+  strncpy(tmp.lens, module->dev->image->exif_lens, 52);
+  tmp.crop     = module->dev->image->exif_crop;
+  tmp.aperture = module->dev->image->exif_aperture;
+  tmp.focal    = module->dev->image->exif_focal_length;
+  tmp.scale    = 1.0;
+  tmp.inverse  = 0;
+  tmp.modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
+    LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
+  tmp.distance = 5.0;
+  tmp.target_geom = LF_RECTILINEAR;
+  printf("exif returns crop %f\n", tmp.crop);
 
-/* Set lens and camera from EXIF info, if possible */
-if (CFG->real_make [0] || CFG->real_model [0])
-{
-  const lfCamera **cams = lf_db_find_cameras (
-      CFG->lensdb, CFG->real_make, CFG->real_model);
-  if (cams)
+  // init crop from db:
+  dt_image_t *img = module->dev->image;
+  char model[100];  // truncate often complex descriptions.
+  strncpy(model, img->exif_model, 100);
+  for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
+  printf("lensfun searching for %s - %s\n", img->exif_maker, model);
+  if(img->exif_maker[0] || model[0])
   {
-    camera_set (data, cams [0]);
-    lf_free (cams);
+    printf("...\n");
+    // const lfCamera **cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
+        // img->exif_maker, model, LF_SEARCH_LOOSE);
+    const lfCamera **cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
+        img->exif_maker, img->exif_model, 0);
+    if(cam)
+    {
+      printf("lensfun db found %s - %s\n", cam[0]->Maker, cam[0]->Model);
+      img->exif_crop = tmp.crop = cam[0]->CropFactor;
+      lf_free(cam);
+    }
   }
-}
 
-const lfLens **lenses = NULL;
-if (strlen(CFG->lensText) > 0)
-  lenses = lf_db_find_lenses_hd(CFG->lensdb,
-      CFG->camera, NULL, CFG->lensText, 0);
-if (lenses!=NULL) {
-  lf_lens_copy(CFG->lens, lenses[0]);
-  lf_free(lenses);
-}
-#endif
+  printf("lensfun inited with crop %f\n", tmp.crop);
 
-  dt_iop_lensfun_params_t tmp = (dt_iop_lensfun_params_t){0, 0, 1.0, 1.0, 50.0, 3.5, 5.0, LF_RECTILINEAR, ""};
   memcpy(module->params, &tmp, sizeof(dt_iop_lensfun_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lensfun_params_t));
-
-  dt_iop_lensfun_db = lf_db_new ();
-  lf_db_load(dt_iop_lensfun_db);
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -243,7 +269,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  // dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
@@ -252,6 +278,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new("crop x"));
   g->label2 = GTK_LABEL(gtk_label_new("crop y"));
+#if 0
   g->label3 = GTK_LABEL(gtk_label_new("crop w"));
   g->label4 = GTK_LABEL(gtk_label_new("crop h"));
   g->label5 = GTK_LABEL(gtk_label_new("angle"));
@@ -301,6 +328,7 @@ void gui_init(struct dt_iop_module_t *self)
       G_CALLBACK (ch_callback), self);
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
       G_CALLBACK (angle_callback), self);
+#endif
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
