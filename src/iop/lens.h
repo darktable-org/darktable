@@ -16,15 +16,18 @@ typedef struct dt_iop_lensfun_params_t
   float aperture;
   float distance;
   lfLensType target_geom;
+  char camera[52];
   char lens[52];
 }
 dt_iop_lensfun_params_t;
 
 typedef struct dt_iop_lensfun_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2;
-  GtkHScale *scale1, *scale2;
+  const lfCamera *camera;
+  GtkEntry *camera_model;
+  GtkMenu *camera_menu;
+  GtkEntry *lens_model;
+  GtkMenu *lens_menu;
 }
 dt_iop_lensfun_gui_data_t;
 
