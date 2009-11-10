@@ -277,13 +277,13 @@ void gui_update(struct dt_iop_module_t *self)
   // gtk_range_set_value(GTK_RANGE(g->scale1), p->cx);
 }
 
+#if 0
 GtkWidget *stock_image_button(const gchar *stock_id, GtkIconSize size,
     const char *tip, GCallback callback, void *data)
 {
   GtkWidget *button;
   button = gtk_button_new();
-  gtk_container_add(GTK_CONTAINER(button),
-      gtk_image_new_from_stock(stock_id, size));
+  // gtk_container_add(GTK_CONTAINER(button), gtk_image_new_from_stock(stock_id, size));
   if (tip != NULL)
     gtk_object_set(GTK_OBJECT(button), "tooltip-text", tip, NULL);
   g_signal_connect(G_OBJECT(button), "clicked", callback, data);
@@ -296,6 +296,7 @@ GtkWidget *stock_icon_button(const gchar *stock_id,
   return stock_image_button(stock_id, GTK_ICON_SIZE_BUTTON,
       tip, callback, data);
 }
+#endif
 
 /* -- ufraw ptr array functions -- */
 
@@ -545,6 +546,9 @@ static void camera_search_clicked(
 
   parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
 
+  // TODO: if txt == ""
+  //   camlist = lf_db_get_cameras (dt_iop_lensfun_db);
+  // and remove second button.
   camlist = lf_db_find_cameras_ext (dt_iop_lensfun_db, make, model, 0);
   if (!camlist)
     return;
@@ -556,6 +560,7 @@ static void camera_search_clicked(
       0, gtk_get_current_event_time ());
 }
 
+#if 0
 static void camera_list_clicked(
     GtkWidget *button, gpointer user_data)
 {
@@ -574,6 +579,7 @@ static void camera_list_clicked(
   gtk_menu_popup (GTK_MENU (g->camera_menu), NULL, NULL, NULL, NULL,
       0, gtk_get_current_event_time ());
 }
+#endif
 
 /* -- end camera -- */
 
@@ -864,6 +870,7 @@ static void lens_search_clicked(
       0, gtk_get_current_event_time ());
 }
 
+#if 0
 static void lens_list_clicked(
     GtkWidget *button, gpointer user_data)
 {
@@ -892,6 +899,7 @@ static void lens_list_clicked(
   gtk_menu_popup (GTK_MENU (g->lens_menu), NULL, NULL, NULL, NULL,
       0, gtk_get_current_event_time ());
 }
+#endif
 
 #if 0
 static void reset_adjustment_value (GtkWidget *widget, const lfParameter *param)
@@ -948,50 +956,65 @@ void gui_init(struct dt_iop_module_t *self)
   g->lens_menu = NULL;
 
   GtkTable *table;//, *subTable;
-  GtkWidget *label, *button;
+  GtkWidget *button;
 
   table = GTK_TABLE(gtk_table_new(10, 10, FALSE));
   self->widget = GTK_WIDGET(table);
 
   /* Camera selector */
-  label = gtk_label_new(_("camera"));
-  gtk_misc_set_alignment(GTK_MISC(label), 1.0, 0.5);
-  gtk_table_attach(table, label, 0, 1, 0, 1, GTK_FILL, 0, 2, 0);
+  // label = gtk_label_new(_("camera"));
+  // gtk_misc_set_alignment(GTK_MISC(label), 1.0, 0.5);
+  // gtk_table_attach(table, label, 0, 1, 0, 1, GTK_FILL, 0, 2, 0);
 
   g->camera_model = GTK_ENTRY(gtk_entry_new());
+  gtk_editable_set_editable(GTK_EDITABLE(g->camera_model), TRUE);
   gtk_table_attach(table, GTK_WIDGET(g->camera_model), 1, 2, 0, 1,
       GTK_EXPAND|GTK_FILL, 0, 2, 0);
 
-  button = stock_icon_button(GTK_STOCK_FIND,
-      _("search for camera using a pattern\n"
-        "format: [maker, ][model]"),
-      G_CALLBACK(camera_search_clicked), (gpointer)self);
-  gtk_table_attach(table, button, 2, 3, 0, 1, 0, 0, 0, 0);
+  // button = stock_icon_button(GTK_STOCK_FIND,
+  //     _("search for camera using a pattern\n"
+  //       "format: [maker, ][model]"),
+  //     G_CALLBACK(camera_search_clicked), (gpointer)self);
+  button = gtk_button_new_with_label(_("cam"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("search for camera using a pattern\n"
+        "format: [maker, ][model]"), NULL);
+  g_signal_connect (G_OBJECT (button), "clicked",
+      G_CALLBACK (camera_search_clicked), self);
+  gtk_table_attach(table, button, 2, 3, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  button = stock_icon_button(GTK_STOCK_INDEX,
-      _("choose camera from complete list"),
-      G_CALLBACK(camera_list_clicked), (gpointer)self);
-  gtk_table_attach(table, button, 3, 4, 0, 1, 0, 0, 0, 0);
+  // button = stock_icon_button(GTK_STOCK_INDEX,
+  //     _("choose camera from complete list"),
+  //     G_CALLBACK(camera_list_clicked), (gpointer)self);
+  // gtk_table_attach(table, button, 3, 4, 0, 1, 0, 0, 0, 0);
 
   /* Lens selector */
-  label = gtk_label_new(_("lens"));
-  gtk_misc_set_alignment(GTK_MISC(label), 1.0, 0.5);
-  gtk_table_attach(table, label, 0, 1, 1, 2, GTK_FILL, 0, 2, 0);
+  // label = gtk_label_new(_("lens"));
+  // gtk_misc_set_alignment(GTK_MISC(label), 1.0, 0.5);
+  // gtk_table_attach(table, label, 0, 1, 1, 2, GTK_FILL, 0, 2, 0);
 
   g->lens_model = GTK_ENTRY(gtk_entry_new());
+  gtk_editable_set_editable(GTK_EDITABLE(g->lens_model), TRUE);
   gtk_table_attach(table, GTK_WIDGET(g->lens_model), 1, 2, 1, 2,
       GTK_EXPAND|GTK_FILL, 0, 2, 0);
 
-  button = stock_icon_button(GTK_STOCK_FIND,
-      _("search for lens using a pattern\n"
-        "format: [maker, ][model]"),
-      G_CALLBACK(lens_search_clicked), self);
-  gtk_table_attach(table, button, 2, 3, 1, 2, 0, 0, 0, 0);
+  // button = stock_icon_button(GTK_STOCK_FIND,
+  //     _("search for lens using a pattern\n"
+  //       "format: [maker, ][model]"),
+  //     G_CALLBACK(lens_search_clicked), self);
+  // gtk_table_attach(table, button, 2, 3, 1, 2, 0, 0, 0, 0);
+  button = gtk_button_new_with_label(_("lens"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text",
+       _("search for lens using a pattern\n"
+         "format: [maker, ][model]"), NULL);
+  g_signal_connect (G_OBJECT (button), "clicked",
+      G_CALLBACK (lens_search_clicked), self);
+  gtk_table_attach(table, button, 2, 3, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  button = stock_icon_button(GTK_STOCK_INDEX,
-      _("choose lens from list of possible variants"),
-      G_CALLBACK(lens_list_clicked), self);
-  gtk_table_attach(table, button, 3, 4, 1, 2, 0, 0, 0, 0);
+
+  // button = stock_icon_button(GTK_STOCK_INDEX,
+  //     _("choose lens from list of possible variants"),
+  //     G_CALLBACK(lens_list_clicked), self);
+  // gtk_table_attach(table, button, 3, 4, 1, 2, 0, 0, 0, 0);
 
 #if 0
   g->label3 = GTK_LABEL(gtk_label_new("crop w"));

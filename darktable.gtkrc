@@ -94,6 +94,11 @@ style "clearlooks-frame-title" = "clearlooks-default"
   fg[NORMAL] = "#FFFFFF"
 }
 
+style "clearlooks-entry" = "clearlooks-default"
+{
+  text[NORMAL] = "#333333"
+}
+
 style "clearlooks-panel" = "clearlooks-default"
 {
   xthickness = 3
@@ -160,7 +165,7 @@ widget_class "*.GtkRadioMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkCheckMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkImageMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkSeparatorMenuItem.*" style "clearlooks-menu-item"
-class "GtkEntry" style "clearlooks-wide"
+class "GtkEntry" style "clearlooks-entry"
 widget_class "*.tooltips.*.GtkToggleButton" style "clearlooks-tasklist"
 widget_class "*.GtkTreeView.GtkButton" style "clearlooks-tree"
 widget_class "*.GtkCTree.GtkButton" style "clearlooks-tree"
