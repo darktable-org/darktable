@@ -26,10 +26,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
-  lfModifier *modifier = lf_modifier_new( d->lens, d->crop, piece->iwidth, piece->iheight);
+  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, piece->iwidth, piece->iheight);
 
-  // TODO: build these in gui somewhere:
-  // float real_scale = powf(2.0, uf->conf->lens_scale);
+  printf("[lens::process] modifier: %d, lens : %s, focal %.2f, f/%.1f, dist %.1f, scale %.1f, geom %d, inverse %d\n", d->modify_flags, d->lens->Maker, d->focal, d->aperture, d->distance, d->scale, d->target_geom, d->inverse);
 
   int modflags = lf_modifier_initialize(
       modifier, d->lens, LF_PF_F32,
@@ -274,29 +273,118 @@ void gui_update(struct dt_iop_module_t *self)
 {
   // dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   // dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  // gtk_range_set_value(GTK_RANGE(g->scale1), p->cx);
+  // TODO: let gui elements reflect params!
 }
 
-#if 0
-GtkWidget *stock_image_button(const gchar *stock_id, GtkIconSize size,
-    const char *tip, GCallback callback, void *data)
+static GtkComboBoxEntry *combo_entry_text (
+    GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip)
 {
-  GtkWidget *button;
-  button = gtk_button_new();
-  // gtk_container_add(GTK_CONTAINER(button), gtk_image_new_from_stock(stock_id, size));
-  if (tip != NULL)
-    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tip, NULL);
-  g_signal_connect(G_OBJECT(button), "clicked", callback, data);
-  return button;
+  GtkWidget *label, *combo;
+
+  label = gtk_label_new(lbl);
+  gtk_misc_set_alignment(GTK_MISC(label), 1.0, 0.5);
+  if (GTK_IS_TABLE (container))
+    gtk_table_attach (GTK_TABLE (container), label, x, x + 1, y, y + 1, 0, 0, 2, 0);
+  else if (GTK_IS_BOX (container))
+    gtk_box_pack_start (GTK_BOX (container), label, FALSE, FALSE, 2);
+  gtk_object_set(GTK_OBJECT(label), "tooltip-text", tip, NULL);
+
+  combo = gtk_combo_box_entry_new_text ();
+  if (GTK_IS_TABLE (container))
+    gtk_table_attach (GTK_TABLE (container), combo, x+1, x+2, y, y+1, 0, 0, 2, 0);
+  else if (GTK_IS_BOX (container))
+    gtk_box_pack_start (GTK_BOX (container), combo, FALSE, FALSE, 2);
+  gtk_object_set(GTK_OBJECT(combo), "tooltip-text", tip, NULL);
+
+  return GTK_COMBO_BOX_ENTRY (combo);
 }
 
-GtkWidget *stock_icon_button(const gchar *stock_id,
-    const char *tip, GCallback callback, void *data)
+/* simple function to compute the floating-point precision
+   which is enough for "normal use". The criteria is to have
+   about 3 leading digits after the initial zeros.  */
+static int precision (double x, double adj)
 {
-  return stock_image_button(stock_id, GTK_ICON_SIZE_BUTTON,
-      tip, callback, data);
+  x *= adj;
+  if (x < 1.0)
+    if (x < 0.1)
+      if (x < 0.01)
+        return 5;
+      else
+        return 4;
+    else
+      return 3;
+  else
+    if (x < 100.0)
+      if (x < 10.0)
+        return 2;
+      else
+        return 1;
+    else
+      return 0;
 }
-#endif
+
+static GtkComboBoxEntry *combo_entry_numeric (
+    GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
+    gdouble val, gdouble precadj, gdouble *values, int nvalues)
+{
+  int i;
+  char txt [30];
+  GtkEntry *entry;
+  GtkComboBoxEntry *combo;
+
+  combo = combo_entry_text (container, x, y, lbl, tip);
+  entry = GTK_ENTRY (GTK_BIN (combo)->child);
+
+  gtk_entry_set_width_chars (entry, 4);
+
+  snprintf (txt, sizeof (txt), "%.*f", precision (val, precadj), val);
+  gtk_entry_set_text (entry, txt);
+
+  for (i = 0; i < nvalues; i++)
+  {
+    gdouble v = values [i];
+    snprintf (txt, sizeof (txt), "%.*f", precision (v, precadj), v);
+    gtk_combo_box_append_text (GTK_COMBO_BOX (combo), txt);
+  }
+
+  return combo;
+}
+
+static GtkComboBoxEntry *combo_entry_numeric_log (
+    GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
+    gdouble val, gdouble min, gdouble max, gdouble step, gdouble precadj)
+{
+  int phase, nvalues;
+  gdouble *values = NULL;
+  for (phase = 0; phase < 2; phase++)
+  {
+    nvalues = 0;
+    gboolean done = FALSE;
+    gdouble v = min;
+    while (!done)
+    {
+      if (v > max)
+      {
+        v = max;
+        done = TRUE;
+      }
+
+      if (values)
+        values [nvalues++] = v;
+      else
+        nvalues++;
+
+      v *= step;
+    }
+    if (!values)
+      values = g_new (gdouble, nvalues);
+  }
+
+  GtkComboBoxEntry *cbe = combo_entry_numeric (
+      container, x, y, lbl, tip, val, precadj, values, nvalues);
+  g_free (values);
+  return cbe;
+}
 
 /* -- ufraw ptr array functions -- */
 
@@ -538,23 +626,26 @@ static void camera_search_clicked(
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  const lfCamera **camlist;
   char make [200], model [200];
   const gchar *txt = gtk_entry_get_text(GTK_ENTRY(g->camera_model));
 
   (void)button;
 
-  parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
-
-  // TODO: if txt == ""
-  //   camlist = lf_db_get_cameras (dt_iop_lensfun_db);
-  // and remove second button.
-  camlist = lf_db_find_cameras_ext (dt_iop_lensfun_db, make, model, 0);
-  if (!camlist)
-    return;
-
-  camera_menu_fill (self, camlist);
-  lf_free (camlist);
+  if(txt[0] == '\0')
+  {
+    const lfCamera *const *camlist;
+    camlist = lf_db_get_cameras (dt_iop_lensfun_db);
+    if (!camlist) return;
+    camera_menu_fill (self, camlist);
+  }
+  else
+  {
+    parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
+    const lfCamera **camlist = lf_db_find_cameras_ext (dt_iop_lensfun_db, make, model, 0);
+    if (!camlist) return;
+    camera_menu_fill (self, camlist);
+    lf_free (camlist);
+  }
 
   gtk_menu_popup (GTK_MENU (g->camera_menu), NULL, NULL, NULL, NULL,
       0, gtk_get_current_event_time ());
@@ -642,22 +733,18 @@ static void lens_interpolate (preview_data *data, const lfLens *lens)
 }
 #endif
 
-#if 0
 static void lens_comboentry_update (GtkComboBox *widget, float *valuep)
 {
-  preview_data *data = get_preview_data (widget);
-  if (sscanf (gtk_combo_box_get_active_text (widget), "%f", valuep) == 1)
-    lens_interpolate (data, CFG->lens);
+  // if (sscanf (gtk_combo_box_get_active_text (widget), "%f", valuep) == 1)
+  //   lens_interpolate (data, CFG->lens);
+  (void)sscanf (gtk_combo_box_get_active_text (widget), "%f", valuep);
 }
-#endif
 
-#if 0
 static void delete_children (GtkWidget *widget, gpointer data)
 {
   (void)data;
   gtk_widget_destroy (widget);
 }
-#endif
 
 static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 {
@@ -666,7 +753,6 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   gchar *fm;
   const char *maker, *model;
   unsigned i;
-#if 0
   GtkComboBoxEntry *cbe;
   static gdouble focal_values [] =
   {
@@ -679,7 +765,6 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
     1, 1.2, 1.4, 1.7, 2, 2.4, 2.8, 3.4, 4, 4.8, 5.6, 6.7,
     8, 9.5, 11, 13, 16, 19, 22, 27, 32, 38
   };
-#endif
 
   if (!lens)
   {
@@ -736,7 +821,6 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   gtk_object_set(GTK_OBJECT(g->lens_model), "tooltip-text", fm, NULL);
   g_free (fm);
 
-#if 0
   /* Create the focal/aperture/distance combo boxes */
   gtk_container_foreach (
       GTK_CONTAINER (g->lens_param_box), delete_children, NULL);
@@ -754,29 +838,28 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   if (fli < ffi)
     fli = ffi + 1;
   cbe = combo_entry_numeric (
-      data->LensParamBox, 0, 0, _("focal"), _("focal length"),
-      CFG->focal_len, 10.0, focal_values + ffi, fli - ffi);
+      g->lens_param_box, 0, 0, _("mm"), _("focal length (mm)"),
+      p->focal, 10.0, focal_values + ffi, fli - ffi);
   g_signal_connect (G_OBJECT(cbe), "changed",
-      G_CALLBACK(lens_comboentry_update), &CFG->focal_len);
+      G_CALLBACK(lens_comboentry_update), &p->focal);
 
   ffi = 0;
   for (i = 0; i < sizeof (aperture_values) / sizeof (gdouble); i++)
     if (aperture_values [i] < lens->MinAperture)
       ffi = i + 1;
   cbe = combo_entry_numeric (
-      data->LensParamBox, 0, 0, _("f"), _("f-number (aperture)"),
-      CFG->aperture, 10.0, aperture_values + ffi, sizeof (aperture_values) / sizeof (gdouble) - ffi);
+      g->lens_param_box, 0, 0, _("f/"), _("f-number (aperture)"),
+      p->aperture, 10.0, aperture_values + ffi, sizeof (aperture_values) / sizeof (gdouble) - ffi);
   g_signal_connect (G_OBJECT(cbe), "changed",
-      G_CALLBACK(lens_comboentry_update), &CFG->aperture);
+      G_CALLBACK(lens_comboentry_update), &p->aperture);
 
   cbe = combo_entry_numeric_log (
-      data->LensParamBox, 0, 0, _("distance"), _("distance to subject"),
-      CFG->subject_distance, 0.25, 1000, 1.41421356237309504880, 10.0);
+      g->lens_param_box, 0, 0, _("d"), _("distance to subject"),
+      p->distance, 0.25, 1000, 1.41421356237309504880, 10.0);
   g_signal_connect (G_OBJECT(cbe), "changed",
-      G_CALLBACK(lens_comboentry_update), &CFG->subject_distance);
+      G_CALLBACK(lens_comboentry_update), &p->distance);
 
   gtk_widget_show_all (g->lens_param_box);
-#endif
 
   // CFG->cur_lens_type = LF_UNKNOWN;
   // CFG->lens_scale = 0.0;
@@ -856,15 +939,22 @@ static void lens_search_clicked(
 
   (void)button;
 
-  parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
-  lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
-      make [0] ? make : NULL,
-      model [0] ? model : NULL, 0);
-  if (!lenslist)
-    return;
-
-  lens_menu_fill (self, lenslist);
-  lf_free (lenslist);
+  if(txt[0] != '\0')
+  {
+    parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
+    lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
+        make [0] ? make : NULL,
+        model [0] ? model : NULL, 0);
+    if (!lenslist) return;
+    lens_menu_fill (self, lenslist);
+    lf_free (lenslist);
+  }
+  else
+  {
+    const lfLens *const *lenslist = lf_db_get_lenses (dt_iop_lensfun_db);
+    if (!lenslist) return;
+    lens_menu_fill (self, lenslist);
+  }
 
   gtk_menu_popup (GTK_MENU (g->lens_menu), NULL, NULL, NULL, NULL,
       0, gtk_get_current_event_time ());
@@ -970,6 +1060,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_editable_set_editable(GTK_EDITABLE(g->camera_model), TRUE);
   gtk_table_attach(table, GTK_WIDGET(g->camera_model), 1, 2, 0, 1,
       GTK_EXPAND|GTK_FILL, 0, 2, 0);
+  gtk_entry_set_text(g->camera_model, self->dev->image->exif_model);
 
   // button = stock_icon_button(GTK_STOCK_FIND,
   //     _("search for camera using a pattern\n"
@@ -996,6 +1087,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_editable_set_editable(GTK_EDITABLE(g->lens_model), TRUE);
   gtk_table_attach(table, GTK_WIDGET(g->lens_model), 1, 2, 1, 2,
       GTK_EXPAND|GTK_FILL, 0, 2, 0);
+  gtk_entry_set_text(g->lens_model, self->dev->image->exif_lens);
 
   // button = stock_icon_button(GTK_STOCK_FIND,
   //     _("search for lens using a pattern\n"
@@ -1015,6 +1107,23 @@ void gui_init(struct dt_iop_module_t *self)
   //     _("choose lens from list of possible variants"),
   //     G_CALLBACK(lens_list_clicked), self);
   // gtk_table_attach(table, button, 3, 4, 1, 2, 0, 0, 0, 0);
+
+  // lens properties
+  g->lens_param_box = gtk_hbox_new(FALSE, 5);
+  gtk_table_attach(table, g->lens_param_box, 1, 3, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
+  // if unambigious info is there, use it.
+  if(self->dev->image->exif_lens[0] != '\0')
+  {
+    char make [200], model [200];
+    const gchar *txt = gtk_entry_get_text(GTK_ENTRY(g->lens_model));
+    parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
+    const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
+        make [0] ? make : NULL,
+        model [0] ? model : NULL, 0);
+    if(!lenslist[1]) lens_set (self, lenslist[0]);
+    lf_free (lenslist);
+  }
 
 #if 0
   g->label3 = GTK_LABEL(gtk_label_new("crop w"));
