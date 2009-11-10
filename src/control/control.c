@@ -824,6 +824,7 @@ int dt_control_key_pressed(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     default:
+      return 0;
       break;
   }
   // propagate to view modules.

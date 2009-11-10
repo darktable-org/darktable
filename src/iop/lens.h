@@ -29,6 +29,7 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkMenu *camera_menu;
   GtkEntry *lens_model;
   GtkMenu *lens_menu;
+  GtkComboBox *target_geom;
 }
 dt_iop_lensfun_gui_data_t;
 

@@ -377,6 +377,7 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 {
+  if(darktable.gui->reset) return;
   pthread_mutex_lock(&dev->history_mutex);
   if(dev->gui_attached)
   {
