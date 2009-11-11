@@ -33,10 +33,11 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
         /(tmp[i-st] + tmp[i]);
     if(i < width) for(ch=0;ch<3;ch++) gbuf(buf, i, j) -= gbuf(buf, i-st, j);
     // update coarse
-    for(ch=0;ch<3;ch++) gbuf(buf, 0, j) += gbuf(buf, st, j)*0.5;
+    for(ch=0;ch<3;ch++) gbuf(buf, 0, j) += gbuf(buf, st, j)*0.5f;
     for(i=step;i<width-st;i+=step) for(ch=0;ch<3;ch++) 
       gbuf(buf, i, j) += (tmp[i-st]*gbuf(buf, i-st, j) + tmp[i]*gbuf(buf, i+st, j))
         /(2.0*(tmp[i-st] + tmp[i]));
+    if(i < width) for(ch=0;ch<3;ch++) gbuf(buf, i, j) += gbuf(buf, i-st, j)*.5f;
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
@@ -51,12 +52,13 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
     for(;j<height-st;j+=step) for(ch=0;ch<3;ch++) 
       gbuf(buf, i, j) -= (tmp[j-st]*gbuf(buf, i, j-st) + tmp[j]*gbuf(buf, i, j+st))
         /(tmp[j-st] + tmp[j]);
-    if(j < height) for(ch=0;ch<3;ch++) gbuf(buf, i, j) -= gbuf(buf, i, j-st);
+    if(j < height) for(int ch=0;ch<3;ch++) gbuf(buf, i, j) -= gbuf(buf, i, j-st);
     // update
     for(ch=0;ch<3;ch++) gbuf(buf, i, 0) += gbuf(buf, i, st)*0.5;
     for(j=step;j<height-st;j+=step) for(ch=0;ch<3;ch++) 
       gbuf(buf, i, j) += (tmp[j-st]*gbuf(buf, i, j-st) + tmp[j]*gbuf(buf, i, j+st))
         /(2.0*(tmp[j-st] + tmp[j]));
+    if(j < height) for(int ch=0;ch<3;ch++) gbuf(buf, i, j) += gbuf(buf, i, j-st)*.5f;
   }
 }
 
@@ -72,15 +74,16 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
   for(int i=0;i<width;i++)
   { //cols
     float tmp[height];
-    for(int j=0;j<height-st;j+=st) tmp[j] = gweight(i, j, i, j+st);
+    int j;
+    for(j=0;j<height-st;j+=st) tmp[j] = gweight(i, j, i, j+st);
     // update coarse
     for(int ch=0;ch<3;ch++) gbuf(buf, i, 0) -= gbuf(buf, i, st)*0.5f;
-    for(int j=step;j<height-st;j+=step) for(int ch=0;ch<3;ch++) 
+    for(j=step;j<height-st;j+=step) for(int ch=0;ch<3;ch++) 
       gbuf(buf, i, j) -= (tmp[j-st]*gbuf(buf, i, j-st) + tmp[j]*gbuf(buf, i, j+st))
         /(2.0*(tmp[j-st] + tmp[j]));
+    if(j < height) for(int ch=0;ch<3;ch++) gbuf(buf, i, j) -= gbuf(buf, i, j-st)*.5f;
     // predict
-    int j=st;
-    for(;j<height-st;j+=step) for(int ch=0;ch<3;ch++)
+    for(j=st;j<height-st;j+=step) for(int ch=0;ch<3;ch++)
       gbuf(buf, i, j) += (tmp[j-st]*gbuf(buf, i, j-st) + tmp[j]*gbuf(buf, i, j+st))
         /(tmp[j-st] + tmp[j]);
     if(j < height) for(int ch=0;ch<3;ch++) gbuf(buf, i, j) += gbuf(buf, i, j-st);
@@ -91,15 +94,16 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
   for(int j=0;j<height;j++)
   { // rows
     float tmp[width];
+    int i;
     for(int i=0;i<width-st;i+=st) tmp[i] = gweight(i, j, i+st, j);
     // update
     for(int ch=0;ch<3;ch++) gbuf(buf, 0, j) -= gbuf(buf, st, j)*0.5f;
-    for(int i=step;i<width-st;i+=step) for(int ch=0;ch<3;ch++)
+    for(i=step;i<width-st;i+=step) for(int ch=0;ch<3;ch++)
       gbuf(buf, i, j) -= (tmp[i-st]*gbuf(buf, i-st, j) + tmp[i]*gbuf(buf, i+st, j))
         /(2.0*(tmp[i-st] + tmp[i]));
+    if(i < width) for(int ch=0;ch<3;ch++) gbuf(buf, i, j) -= gbuf(buf, i-st, j)*0.5f;
     // predict
-    int i = st;
-    for(;i<width-st;i+=step) for(int ch=0;ch<3;ch++)
+    for(i=st;i<width-st;i+=step) for(int ch=0;ch<3;ch++)
       gbuf(buf, i, j) += (tmp[i-st]*gbuf(buf, i-st, j) + tmp[i]*gbuf(buf, i+st, j))
         /(tmp[i-st] + tmp[i]);
     if(i < width) for(int ch=0;ch<3;ch++) gbuf(buf, i, j) += gbuf(buf, i-st, j);

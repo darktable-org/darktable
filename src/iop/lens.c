@@ -62,10 +62,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // TODO: openmp this? is lf thread-safe?
       for (int y = 0; y < roi_in->height; y++)
       {
-        float *buf = d->tmpbuf - 3*(roi_in->width*roi_in->y + roi_in->x);
         /* Colour correction: vignetting and CCI */
-        // TODO: actually this way row stride does not matter. but give a buffer pointer
-        //       offset by -roi_in.x * sizeof pixel :)
+        // actually this way row stride does not matter. but give a buffer pointer
+        // offset by -roi_in.x
+        float *buf = d->tmpbuf - 3*(roi_in->width*roi_in->y + roi_in->x);
         if(lf_modifier_apply_color_modification (modifier,
               buf + 3*roi_in->width*y, roi_in->x, roi_in->y + y,
               roi_in->width, 1, LF_CR_3 (RED, GREEN, BLUE), 3*roi_in->width)) break;
@@ -95,14 +95,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= 0 || jj >= 0 || ii <= roi_in->width-2 || jj <= roi_in->height-2) 
+            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
             {
               const float fi = pi0 - ii, fj = pi1 - jj;
               out[c] = // in[3*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-               (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-               (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-               (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
+              ((1.0f-fj)*(1.0f-fi)*d->tmpbuf[3*(roi_in->width*(jj)   + (ii)  ) + c] +
+               (1.0f-fj)*(     fi)*d->tmpbuf[3*(roi_in->width*(jj)   + (ii+1)) + c] +
+               (     fj)*(     fi)*d->tmpbuf[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
+               (     fj)*(1.0f-fi)*d->tmpbuf[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
             }
             else for(int c=0;c<3;c++) out[c] = 0.0f;
             pi+=2;
@@ -110,6 +110,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           out += 3;
         }
       }
+    }
+    else
+    {
+      memcpy(out, d->tmpbuf, sizeof(float)*3*roi_out->width*roi_out->height);
     }
   }
   lf_modifier_destroy(modifier);
@@ -1061,7 +1065,7 @@ static void target_geometry_changed (GtkComboBox *widget, gpointer user_data)
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   
   int pos = gtk_combo_box_get_active(widget);
-  p->target_geom = pos + LF_UNKNOWN;
+  p->target_geom = pos + LF_UNKNOWN + 1;
   if(darktable.gui->reset) return;
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -1230,7 +1234,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   gtk_entry_set_text(g->camera_model, p->camera);
   gtk_entry_set_text(g->lens_model, p->lens);
-  gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN);
+  gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])
