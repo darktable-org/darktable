@@ -6,6 +6,7 @@
 #include "common/imageio.h"
 #include "gui/gtk.h"
 
+#include <glib/gprintf.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -687,7 +688,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label)
 {
-  sprintf(label, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
+  g_sprintf(label, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
 }
 
 void dt_dev_export(dt_job_t *job)

@@ -30,6 +30,8 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkEntry *lens_model;
   GtkMenu *lens_menu;
   GtkComboBox *target_geom;
+  GtkCheckButton *reverse;
+  GtkHScale *scale;
 }
 dt_iop_lensfun_gui_data_t;
 

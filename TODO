@@ -4,8 +4,7 @@
 - demosaic: patch libraw => green1/2 histograms, denoise l/c.
   - have demosaic input widget with reload button (will be slow)
 - lensfun:
-  - gui: nicer raster, don't overfill area
-  - more functionality
+  - border around all iop widgets!
   - roi...
 - clean up gui: lighttable/darkroom switches only there if
   module is entered!

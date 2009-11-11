@@ -843,7 +843,7 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
   const gchar *lbl = NULL;
   int32_t num = num_in + 1; // one after orginal
   GtkWidget *widget = NULL;
-  snprintf(numlabel, 50, "%d - %s", num, label);
+  g_snprintf(numlabel, 50, "%d - %s", num, label);
   if(num >= 10) for(int i=1;i<9;i++)
   {
     darktable.control->history_start = num - 9;
@@ -955,7 +955,7 @@ void dt_control_update_recent_films()
     else
     {
       int film_id = sqlite3_column_int(stmt, 1);
-      printf("removing %d\n", film_id);
+      // printf("removing %d\n", film_id);
       sqlite3_stmt *stmt2;
       int rc2;
       rc2 = sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt2, NULL);
