@@ -35,7 +35,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
               orig_h = piece->iscale != 1.0 ? roi_in->height : roi_in->scale*piece->iheight;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
-  printf("[lens::process] modifier: %d, lens : %s, focal %.2f, f/%.1f, dist %.1f, scale %.1f, geom %d, inverse %d width %f height %f\n", d->modify_flags, d->lens->Maker, d->focal, d->aperture, d->distance, d->scale, d->target_geom, d->inverse, orig_w, orig_h);
+  // printf("[lens::process] modifier: %d, lens : %s, focal %.2f, f/%.1f, dist %.1f, scale %.1f, geom %d, inverse %d width %f height %f\n", d->modify_flags, d->lens->Maker, d->focal, d->aperture, d->distance, d->scale, d->target_geom, d->inverse, orig_w, orig_h);
 
   int modflags = lf_modifier_initialize(
       modifier, d->lens, LF_PF_F32,
@@ -199,7 +199,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
-  printf("lensfun searching for lens %s\n", p->lens);
+  // printf("lensfun searching for lens %s\n", p->lens);
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
   if(p->camera[0])
@@ -214,7 +214,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         p->lens, 0);
     if(lens)
     {
-      printf("lensfun found lens %s\n", lens[0]->Model);
+      // printf("lensfun found lens %s\n", lens[0]->Model);
       lf_lens_copy(d->lens, lens[0]);
       lf_free (lens);
     }
@@ -288,28 +288,28 @@ void init(dt_iop_module_t *module)
     LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
   tmp.distance = 5.0;
   tmp.target_geom = LF_RECTILINEAR;
-  printf("exif returns crop %f\n", tmp.crop);
+  // printf("exif returns crop %f\n", tmp.crop);
 
   // init crop from db:
   dt_image_t *img = module->dev->image;
   char model[100];  // truncate often complex descriptions.
   strncpy(model, img->exif_model, 100);
   for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
-  printf("lensfun searching for %s - %s\n", img->exif_maker, model);
+  // printf("lensfun searching for %s - %s\n", img->exif_maker, model);
   if(img->exif_maker[0] || model[0])
   {
-    printf("...\n");
+    // printf("...\n");
     const lfCamera **cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
         img->exif_maker, img->exif_model, 0);
     if(cam)
     {
-      printf("lensfun db found %s - %s\n", cam[0]->Maker, cam[0]->Model);
+      // printf("lensfun db found %s - %s\n", cam[0]->Maker, cam[0]->Model);
       img->exif_crop = tmp.crop = cam[0]->CropFactor;
       lf_free(cam);
     }
   }
 
-  printf("lensfun inited with crop %f\n", tmp.crop);
+  // printf("lensfun inited with crop %f\n", tmp.crop);
 
   memcpy(module->params, &tmp, sizeof(dt_iop_lensfun_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lensfun_params_t));
@@ -1074,7 +1074,7 @@ void gui_init(struct dt_iop_module_t *self)
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
         make [0] ? make : NULL,
         model [0] ? model : NULL, 0);
-    if(!lenslist[1]) lens_set (self, lenslist[0]);
+    if(lenslist && !lenslist[1]) lens_set (self, lenslist[0]);
     lf_free (lenslist);
   }
 
@@ -1153,7 +1153,7 @@ void gui_update(struct dt_iop_module_t *self)
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
         make [0] ? make : NULL,
         model [0] ? model : NULL, 0);
-    if(!lenslist[1]) lens_set (self, lenslist[0]);
+    if(lenslist && !lenslist[1]) lens_set (self, lenslist[0]);
     lf_free (lenslist);
   }
 }

@@ -1,10 +1,11 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- border/padding around all iop widgets!
 - demosaic: patch libraw => green1/2 histograms, denoise l/c.
   - have demosaic input widget with reload button (will be slow)
 - lensfun:
-  - border around all iop widgets!
+  - clipping after lensfun=>broken (due to roi)
   - roi...
 - clean up gui: lighttable/darkroom switches only there if
   module is entered!
