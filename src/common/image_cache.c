@@ -213,8 +213,8 @@ void dt_image_cache_flush(dt_image_t *img)
   rc = sqlite3_bind_int (stmt, 12, img->flags);
   rc = sqlite3_bind_int (stmt, 13, img->output_width);
   rc = sqlite3_bind_int (stmt, 14, img->output_height);
-  rc = sqlite3_bind_double(stmt, 16, img->exif_crop);
-  rc = sqlite3_bind_int (stmt, 15, img->id);
+  rc = sqlite3_bind_double(stmt, 15, img->exif_crop);
+  rc = sqlite3_bind_int (stmt, 16, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
