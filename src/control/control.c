@@ -824,11 +824,10 @@ int dt_control_key_pressed(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     default:
-      return 0;
+      // propagate to view modules.
+      dt_view_manager_key_pressed(darktable.view_manager, which);
       break;
   }
-  // propagate to view modules.
-  dt_view_manager_key_pressed(darktable.view_manager, which);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);

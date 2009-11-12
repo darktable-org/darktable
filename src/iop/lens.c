@@ -61,7 +61,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for (int y = 0; y < roi_out->height; y++)
       {
         if (!lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_in->x, roi_in->y+y, roi_out->width, 1, d->tmpbuf2)) break;
+              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2)) break;
         // reverse transform the global coords from lf to our buffer
         const float *pi = d->tmpbuf2;
         for (int x = 0; x < roi_out->width; x++)
@@ -94,15 +94,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if (modflags & LF_MODIFY_VIGNETTING)
     {
       // TODO: openmp this? is lf thread-safe?
-      for (int y = 0; y < roi_in->height; y++)
+      for (int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter. but give a buffer pointer
         // offset by -roi_in.x
-        float *buf = out - 3*(roi_in->width*roi_in->y + roi_in->x);
+        float *buf = out - 3*(roi_out->width*roi_out->y + roi_out->x);
         if(lf_modifier_apply_color_modification (modifier,
-              buf + 3*roi_in->width*y, roi_in->x, roi_in->y + y,
-              roi_in->width, 1, LF_CR_3 (RED, GREEN, BLUE), 3*roi_in->width)) break;
+              buf + 3*roi_out->width*y, roi_out->x, roi_out->y + y,
+              roi_out->width, 1, LF_CR_3 (RED, GREEN, BLUE), 3*roi_out->width)) break;
       }
     }
   }
@@ -131,7 +131,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
 
-    const size_t req2 = roi_in->width*2*3*sizeof(float);
+    const size_t req2 = roi_out->width*2*3*sizeof(float);
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
           LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
@@ -145,7 +145,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for (int y = 0; y < roi_out->height; y++)
       {
         if (!lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_in->x, roi_in->y+y, roi_out->width, 1, d->tmpbuf2)) break;
+              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2)) break;
         // reverse transform the global coords from lf to our buffer
         const float *pi = d->tmpbuf2;
         for (int x = 0; x < roi_out->width; x++)
