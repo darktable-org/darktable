@@ -31,8 +31,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
-  const float orig_w = piece->iscale != 1.0 ? roi_in->width  : roi_in->scale*piece->iwidth,
-              orig_h = piece->iscale != 1.0 ? roi_in->height : roi_in->scale*piece->iheight;
+  // const float orig_w = piece->iscale != 1.0 ? piece->iwidth  : roi_in->scale*piece->iwidth,
+              // orig_h = piece->iscale != 1.0 ? piece->iheight : roi_in->scale*piece->iheight;
+  const float orig_w = roi_in->scale*piece->iwidth,
+              orig_h = roi_in->scale*piece->iheight;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
   // printf("[lens::process] modifier: %d, lens : %s, focal %.2f, f/%.1f, dist %.1f, scale %.1f, geom %d, inverse %d width %f height %f\n", d->modify_flags, d->lens->Maker, d->focal, d->aperture, d->distance, d->scale, d->target_geom, d->inverse, orig_w, orig_h);
