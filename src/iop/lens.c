@@ -31,8 +31,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
-  // const float orig_w = piece->iscale != 1.0 ? piece->iwidth  : roi_in->scale*piece->iwidth,
-              // orig_h = piece->iscale != 1.0 ? piece->iheight : roi_in->scale*piece->iheight;
   const float orig_w = roi_in->scale*piece->iwidth,
               orig_h = roi_in->scale*piece->iheight;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
@@ -108,7 +106,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
-  else
+  else // correct distortions:
   {
     // acquire temp memory for image buffer
     const size_t req = roi_in->width*roi_in->height*3*sizeof(float);
@@ -188,8 +186,56 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
+  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   *roi_in = *roi_out;
-  // TODO: inverse transform with given params
+  // inverse transform with given params
+
+  // TODO: subsample:
+  const float orig_w = roi_in->scale*piece->iwidth,
+              orig_h = roi_in->scale*piece->iheight;
+  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
+
+  float xm = INFINITY, xM = - INFINITY, ym = INFINITY, yM = - INFINITY;
+
+  int modflags = lf_modifier_initialize(
+      modifier, d->lens, LF_PF_F32,
+      d->focal, d->aperture,
+      d->distance, d->scale,
+      d->target_geom, d->modify_flags, d->inverse);
+
+  if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
+        LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+  {
+    // acquire temp memory for distorted pixel coords
+    const size_t req2 = roi_in->width*2*3*sizeof(float);
+    if(req2 > 0 && d->tmpbuf2_len < req2)
+    {
+      d->tmpbuf2_len = req2;
+      d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2);
+    }
+    // TODO: openmp this?
+    for (int y = 0; y < roi_out->height; y++)
+    {
+      if (!lf_modifier_apply_subpixel_geometry_distortion (
+            modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2)) break;
+      // reverse transform the global coords from lf to our buffer
+      const float *pi = d->tmpbuf2;
+      for (int x = 0; x < roi_out->width; x++)
+      {
+        for(int c=0;c<3;c++) 
+        {
+          xm = fminf(xm, pi[0]); xM = fmaxf(xM, pi[0]);
+          ym = fminf(ym, pi[1]); yM = fmaxf(yM, pi[1]);
+          pi+=2;
+        }
+      }
+    }
+  }
+  roi_in->x = fmaxf(0.0f, xm); roi_in->y = fmaxf(0.0f, ym);
+  roi_in->width = fminf(orig_w-roi_in->x, xM - xm); roi_in->height = fminf(orig_h-roi_in->y, yM - ym);
+  // printf("roi_in: (%d %d %d %d) => (%d %d %d %d)\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height,
+                                                     // roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  lf_modifier_destroy(modifier);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
