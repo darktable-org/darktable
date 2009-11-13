@@ -31,6 +31,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
+  if(!d->lens->Maker)
+  {
+    memcpy(out, in, 3*sizeof(float)*roi_out->width*roi_out->height);
+    return;
+  }
+
   const float orig_w = roi_in->scale*piece->iwidth,
               orig_h = roi_in->scale*piece->iheight;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
@@ -88,7 +94,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     else
     {
-      memcpy(out, in, sizeof(float)*roi_out->width*roi_out->height);
+      memcpy(out, in, 3*sizeof(float)*roi_out->width*roi_out->height);
     }
 
     if (modflags & LF_MODIFY_VIGNETTING)
@@ -172,7 +178,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     else
     {
-      memcpy(out, d->tmpbuf, sizeof(float)*3*roi_out->width*roi_out->height);
+      size_t len = sizeof(float)*3*roi_out->width*roi_out->height;
+      if (d->tmpbuf_len >= len)
+           memcpy(out, d->tmpbuf, len);
+      else memcpy(out, in, len);
     }
   }
   lf_modifier_destroy(modifier);
@@ -189,6 +198,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   *roi_in = *roi_out;
   // inverse transform with given params
+
+  if(!d->lens->Maker) return;
 
   // TODO: subsample:
   const float orig_w = roi_in->scale*piece->iwidth,
@@ -230,9 +241,9 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
         }
       }
     }
+    roi_in->x = fmaxf(0.0f, xm); roi_in->y = fmaxf(0.0f, ym);
+    roi_in->width = fminf(orig_w-roi_in->x, xM - xm); roi_in->height = fminf(orig_h-roi_in->y, yM - ym);
   }
-  roi_in->x = fmaxf(0.0f, xm); roi_in->y = fmaxf(0.0f, ym);
-  roi_in->width = fminf(orig_w-roi_in->x, xM - xm); roi_in->height = fminf(orig_h-roi_in->y, yM - ym);
   // printf("roi_in: (%d %d %d %d) => (%d %d %d %d)\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height,
                                                      // roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   lf_modifier_destroy(modifier);
