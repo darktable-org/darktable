@@ -1,12 +1,11 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- overwrite keys: tab/esc in key_press(_after)
+- show which images have been modified in lighttable mode.
 - border/padding around all iop widgets!
 - demosaic: patch libraw => green1/2 histograms, denoise l/c.
   - have demosaic input widget with reload button (will be slow)
-- lensfun:
-  - clipping after lensfun=>broken (due to roi)
-  - roi...
 - clean up gui: lighttable/darkroom switches only there if
   module is entered!
 - histogram fill light mouse gesture
@@ -56,7 +55,6 @@ cleanup:
 - mip0 broken for very lo-res images.
 - print GPLv3 notice on top of all files
 
-- editable metadata (at least what's needed for lensfun..)
 - copy function in lib:
   - flags, tags
   - history stack
