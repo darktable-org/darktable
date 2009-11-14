@@ -346,19 +346,19 @@ void dt_dev_configure (dt_develop_t *dev, int wd, int ht)
 }
 
 // helper used to synch a single history item with db
-int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32_t num)
+int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32_t num)
 {
-  if(!dev->image) return 1;
+  if(!image) return 1;
   sqlite3_stmt *stmt;
   int rc;
   rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, dev->image->id);
+  rc = sqlite3_bind_int (stmt, 1, image->id);
   rc = sqlite3_bind_int (stmt, 2, num);
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {
     rc = sqlite3_finalize(stmt);
     rc = sqlite3_prepare_v2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, dev->image->id);
+    rc = sqlite3_bind_int (stmt, 1, image->id);
     rc = sqlite3_bind_int (stmt, 2, num);
     rc = sqlite3_step (stmt);
   }
@@ -369,7 +369,7 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
   rc = sqlite3_bind_blob(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   rc = sqlite3_bind_int (stmt, 3, h->module->instance);
   rc = sqlite3_bind_int (stmt, 4, h->enabled);
-  rc = sqlite3_bind_int (stmt, 5, dev->image->id);
+  rc = sqlite3_bind_int (stmt, 5, image->id);
   rc = sqlite3_bind_int (stmt, 6, num);
   rc = sqlite3_step (stmt);
   rc = sqlite3_finalize (stmt);
@@ -546,7 +546,7 @@ void dt_dev_write_history(dt_develop_t *dev)
   for(int i=0;i<dev->history_end && history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    (void)dt_dev_write_history_item(dev, hist, i);
+    (void)dt_dev_write_history_item(dev->image, hist, i);
     history = g_list_next(history);
   }
 }

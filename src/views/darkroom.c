@@ -187,6 +187,16 @@ void leave(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db
   dt_dev_write_history(dev);
+  // write .dt file
+  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/write_dt_files", NULL))
+  {
+    char filename[512];
+    dt_image_full_path(dev->image, filename, 512);
+    char *c = filename + strlen(filename);
+    for(;c>filename && *c != '.';c--);
+    sprintf(c, ".dt");
+    dt_imageio_dt_write(dev->image, filename);
+  }
 
   // commit updated mipmaps to db
   if(dev->mipf)

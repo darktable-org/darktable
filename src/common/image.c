@@ -250,10 +250,8 @@ int dt_image_import(const int32_t film_id, const char *filename)
   strncpy(img->filename, imgfname, 256);
   g_free(imgfname);
 
-  // load small raw (try libraw then magick)
   img->shrink = 0;
   if(dt_imageio_open_preview(img, filename))
-  // if(dt_imageio_open(img, filename))
   {
     dt_image_cleanup(img);
     fprintf(stderr, "[image_import] could not open %s\n", filename);
@@ -271,28 +269,16 @@ int dt_image_import(const int32_t film_id, const char *filename)
   img->film_id = film_id;
   img->id = id;
   dt_image_cache_flush(img);
-  /*rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12 where id = ?13", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->width);
-  rc = sqlite3_bind_int (stmt, 2, img->height);
-  rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
-  rc = sqlite3_bind_text(stmt, 4, img->exif_model, strlen(img->exif_model), SQLITE_STATIC);
-  rc = sqlite3_bind_text(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_STATIC);
-  rc = sqlite3_bind_double(stmt, 6, img->exif_exposure);
-  rc = sqlite3_bind_double(stmt, 7, img->exif_aperture);
-  rc = sqlite3_bind_double(stmt, 8, img->exif_iso);
-  rc = sqlite3_bind_double(stmt, 9, img->exif_focal_length);
-  rc = sqlite3_bind_int (stmt, 10, film_id);
-  rc = sqlite3_bind_text(stmt, 11, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
-  rc = sqlite3_bind_int (stmt, 12, img->flags);
-  rc = sqlite3_bind_int (stmt, 13, img->id);
-  rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
-  rc = sqlite3_finalize(stmt);
-  */
+
+  // try loading a .dt file
+  char dtfilename[512];
+  dt_image_full_path(img, dtfilename, 512);
+  char *c = dtfilename + strlen(dtfilename);
+  for(;c>dtfilename && *c != '.';c--);
+  sprintf(c, ".dt");
+  dt_imageio_dt_read(img, dtfilename); 
 
   // create preview images
-  // if(img->flags & DT_IMAGE_THUMBNAIL) { if(dt_image_preview_to_raw(img)) ret = 3; }
-  // else if(dt_image_raw_to_preview(img)) ret = 2;
   dt_image_release(img, DT_IMAGE_FULL, 'r');
   dt_image_cache_release(img, 'w');
   return id;

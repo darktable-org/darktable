@@ -1372,3 +1372,93 @@ int dt_imageio_open_preview(dt_image_t *img, const char *filename)
   if(!dt_imageio_open_ldr_preview(img, filename)) return 0;
   return 1;
 }
+
+// =================================================
+//   dt-file synching
+// =================================================
+
+int dt_imageio_dt_write(dt_image_t *img, const char *filename)
+{
+  if(!img) return 1;
+
+  FILE *f = NULL;
+  // read history from db
+  sqlite3_stmt *stmt;
+  int rc;
+  size_t rd;
+  dt_dev_operation_t op;
+  rc = sqlite3_prepare_v2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, img->id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if(!f) f = fopen(filename, "wb");
+    if(!f) break;
+    int32_t enabled = sqlite3_column_int(stmt, 5);
+    rd = fwrite(&enabled, sizeof(int32_t), 1, f);
+    snprintf(op, 20, "%s", (const char *)sqlite3_column_text(stmt, 3));
+    rd = fwrite(op, 1, sizeof(op), f);
+    int32_t len = sqlite3_column_bytes(stmt, 4);
+    rd = fwrite(&len, sizeof(int32_t), 1, f);
+    rd = fwrite(sqlite3_column_blob(stmt, 4), len, 1, f);
+  }
+  rc = sqlite3_finalize (stmt);
+  if(f) fclose(f);
+  else return 1;
+  return 0;
+}
+
+int dt_imageio_dt_read (dt_image_t *img, const char *filename)
+{
+  if(!img) return 1;
+  FILE *f = fopen(filename, "rb");
+  if(!f) return 1;
+
+  sqlite3_stmt *stmt;
+  int rc, num = 0;
+  size_t rd;
+  rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, img->id);
+  sqlite3_step(stmt);
+  rc = sqlite3_finalize (stmt);
+
+  while(!feof(f))
+  {
+    int32_t enabled, len;
+    dt_dev_operation_t op;
+    rd = fread(&enabled, 1, sizeof(int32_t), f);
+    if(rd < sizeof(int32_t)) break;
+    rd = fread(op, 1, sizeof(dt_dev_operation_t), f);
+    if(rd < sizeof(dt_dev_operation_t)) break;
+    rd = fread(&len, 1, sizeof(int32_t), f);
+    if(rd < sizeof(int32_t)) break;
+    char *params = (char *)malloc(len);
+    rd = fread(params, 1, len, f);
+    if(rd < len) { free(params); break; }
+    rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, img->id);
+    rc = sqlite3_bind_int (stmt, 2, num);
+    if(sqlite3_step(stmt) != SQLITE_ROW)
+    {
+      rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
+      rc = sqlite3_bind_int (stmt, 1, img->id);
+      rc = sqlite3_bind_int (stmt, 2, num);
+      rc = sqlite3_step (stmt);
+    }
+    rc = sqlite3_finalize (stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+    rc = sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
+    rc = sqlite3_bind_blob(stmt, 2, params, len, SQLITE_TRANSIENT);
+    rc = sqlite3_bind_int (stmt, 3, 666);
+    rc = sqlite3_bind_int (stmt, 4, enabled);
+    rc = sqlite3_bind_int (stmt, 5, img->id);
+    rc = sqlite3_bind_int (stmt, 6, num);
+    rc = sqlite3_step (stmt);
+    rc = sqlite3_finalize (stmt);
+    free(params);
+    num ++;
+  }
+  return 0;
+  fclose(f);
+}
+
