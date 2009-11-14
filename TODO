@@ -1,6 +1,7 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- install: remove schema installation.
 - user config:
   - write history stack etc file per image
 - db load: re-import and process images 

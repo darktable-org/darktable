@@ -14,9 +14,17 @@
 #  include "config.h"
 #endif
 
+void dt_ctl_settings_default(dt_control_t *c)
+{
+  // init some global defaults in gconf:
+  // write out .dt file for each processed image, for later re-import.
+  // (void)gconf_client_set_bool(c->gconf, DT_GCONF_DIR"/write_dt_files", TRUE, NULL);
+}
 
 void dt_ctl_settings_init(dt_control_t *s)
 {
+  s->gconf = gconf_client_get_default();
+
   // same thread as init
   s->gui_thread = pthread_self();
   // init global defaults.
@@ -109,6 +117,7 @@ int dt_control_load_config(dt_control_t *c)
   }
   else
   { // db not yet there, create it
+    dt_ctl_settings_default(darktable.control);
     rc = sqlite3_finalize(stmt);
     rc = sqlite3_exec(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
@@ -234,6 +243,7 @@ void dt_control_cleanup(dt_control_t *s)
 {
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);
+  g_object_unref(s->gconf);
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)

@@ -12,6 +12,7 @@ GETTEXT_PACKAGE=darktable
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
 
+dnl ** AM_GCONF_SOURCE_2
 AX_CC_MAXOPT
 AC_MSG_CHECKING([whether to enable debugging])
 AC_ARG_ENABLE(debug,
@@ -56,6 +57,7 @@ AC_ARG_ENABLE(gegl,
         ]
         )
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14)
+PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
 PKG_CHECK_MODULES(CAIRO, [cairo])
 PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
 PKG_CHECK_MODULES(GLADE, [libglade-2.0])

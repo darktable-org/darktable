@@ -7,4 +7,11 @@ dtdatarootdir=$(datarootdir)/darktable
 dtdataroot_DATA=darktable.gtkrc darktable.glade
 dtapprootdir=$(datarootdir)/applications
 dtapproot_DATA=darktable.desktop
+schemadir=$(datadir)/gconf/schemas
+#@GCONF_SCHEMA_FILE_DIR@
+schema_DATA=darktable.schemas
+
+#install-data-local:
+#	GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $(srcdir)/$(schema_DATA)
+
 
