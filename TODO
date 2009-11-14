@@ -1,6 +1,9 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- user config:
+  - write history stack etc file per image
+- db load: re-import and process images 
 - overwrite keys: tab/esc in key_press(_after)
 - show which images have been modified in lighttable mode.
 - border/padding around all iop widgets!
