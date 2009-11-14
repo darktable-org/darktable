@@ -86,6 +86,15 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
 
 
 void
+selected_action_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  GtkWidget *wid = glade_xml_get_widget (darktable.gui->main_window, "select_action");
+  int i = gtk_combo_box_get_active(GTK_COMBO_BOX(wid));
+  if     (i == 0) dt_control_write_dt_files();
+  else if(i == 1) dt_control_delete_images();
+}
+
+void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   // read "export_format" to global settings
@@ -242,15 +251,10 @@ export_quality_changed (GtkRange *range, gpointer user_data)
   gtk_widget_queue_draw(widget);
 }
 
-static void
-zoom (GtkRange *range, gpointer user_data)
+static gboolean
+key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  GtkWidget *widget;
-  int zoom;
-  zoom = gtk_range_get_value(range);
-  DT_CTL_SET_GLOBAL(lib_zoom, zoom);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(widget);
+  return dt_control_key_pressed_override(event->hardware_keycode);
 }
 
 static gboolean
@@ -351,6 +355,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   g_signal_connect (G_OBJECT (widget), "delete_event",
                     G_CALLBACK (quit), NULL);
+  g_signal_connect (G_OBJECT (widget), "key-press-event",
+                    G_CALLBACK (key_pressed_override), NULL);
   g_signal_connect_after (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed), NULL);
 
@@ -374,10 +380,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // TODO: left, right, top, bottom:
   //leave-notify-event
 
-  // lib zoom
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_zoom");
-	g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (zoom), NULL);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "selected_action_button");
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (selected_action_button_clicked),
+                    (gpointer)0);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   dt_gui_navigation_init(&gui->navigation, widget);

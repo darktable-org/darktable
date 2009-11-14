@@ -1,6 +1,8 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "common/darktable.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -10,6 +12,7 @@
 #include <assert.h>
 #include <math.h>
 #include <string.h>
+#include <glib/gstdio.h>
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
@@ -614,10 +617,9 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   }
   else if(y > ht-tb)
   {
-    /* nothing useful down there:
     widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
     if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-    else gtk_widget_show(widget); */
+    else gtk_widget_show(widget);
   }
 }
 
@@ -777,28 +779,14 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   DT_CTL_SET_GLOBAL(gui_export, bit);
 }
 
-int dt_control_key_pressed(uint16_t which)
+int dt_control_key_pressed_override(uint16_t which)
 {
-  // this line is here to find the right key code on different platforms (mac).
-  // printf("key code pressed: %d\n", which);
   int fullscreen, visible;
   GtkWidget *widget;
   dt_ctl_gui_mode_t gui;
   DT_CTL_GET_GLOBAL(gui, gui);
   switch (which)
   {
-    case KEYCODE_period:
-      dt_ctl_switch_mode();
-      break;
-    case KEYCODE_F11:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-      DT_CTL_GET_GLOBAL(fullscreen, gui_fullscreen);
-      if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
-      else           gtk_window_fullscreen  (GTK_WINDOW(widget));
-      fullscreen ^= 1;
-      DT_CTL_SET_GLOBAL(gui_fullscreen, fullscreen);
-      dt_dev_invalidate(darktable.develop);
-      break;
     case KEYCODE_Escape: case KEYCODE_Caps:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
@@ -823,6 +811,40 @@ int dt_control_key_pressed(uint16_t which)
       widget = glade_xml_get_widget (darktable.gui->main_window, "top");
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);*/
+      dt_dev_invalidate(darktable.develop);
+      break;
+    default:
+      return 0;
+      break;
+  }
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(widget);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  gtk_widget_queue_draw(widget);
+  return 1;
+}
+
+int dt_control_key_pressed(uint16_t which)
+{
+  // this line is here to find the right key code on different platforms (mac).
+  // printf("key code pressed: %d\n", which);
+  int fullscreen;
+  GtkWidget *widget;
+  dt_ctl_gui_mode_t gui;
+  DT_CTL_GET_GLOBAL(gui, gui);
+  switch (which)
+  {
+    case KEYCODE_period:
+      dt_ctl_switch_mode();
+      break;
+    case KEYCODE_F11:
+      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+      DT_CTL_GET_GLOBAL(fullscreen, gui_fullscreen);
+      if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
+      else           gtk_window_fullscreen  (GTK_WINDOW(widget));
+      fullscreen ^= 1;
+      DT_CTL_SET_GLOBAL(gui_fullscreen, fullscreen);
       dt_dev_invalidate(darktable.develop);
       break;
     default:
@@ -993,5 +1015,116 @@ void dt_control_update_recent_films()
   }
   sqlite3_finalize(stmt);
 #endif
+}
+
+typedef struct dt_control_image_enumerator_t
+{
+  GList *index;
+}
+dt_control_image_enumerator_t;
+
+void dt_control_write_dt_files_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  while(t)
+  {
+    imgid = (long int)t->data;
+    dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    char dtfilename[512];
+    dt_image_full_path(img, dtfilename, 512);
+    char *c = dtfilename + strlen(dtfilename);
+    for(;c>dtfilename && *c != '.';c--);
+    sprintf(c, ".dt");
+    dt_imageio_dt_write(imgid, dtfilename);
+    dt_image_cache_release(img, 'r');
+    t = g_list_delete_link(t, t);
+  }
+}
+
+void dt_control_delete_images_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  while(t)
+  {
+    imgid = (long int)t->data;
+    dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    char dtfilename[512];
+    dt_image_full_path(img, dtfilename, 512);
+    int rc;
+    sqlite3_stmt *stmt;
+    // remove from db:
+    rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, imgid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize (stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, imgid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize (stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, imgid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize (stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, imgid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize (stmt);
+    // remove from disk:
+    (void)g_unlink(dtfilename);
+    char *c = dtfilename + strlen(dtfilename);
+    for(;c>dtfilename && *c != '.';c--);
+    sprintf(c, ".dt");
+    (void)g_unlink(dtfilename);
+    dt_image_cache_release(img, 'r');
+    t = g_list_delete_link(t, t);
+  }
+}
+
+void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
+{
+  t->index = NULL;
+  int rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    long int imgid = sqlite3_column_int(stmt, 0);
+    t->index = g_list_prepend(t->index, (gpointer)imgid);
+  }
+  sqlite3_finalize(stmt);
+}
+
+void dt_control_write_dt_files_job_init(dt_job_t *job)
+{
+  job->execute = &dt_control_write_dt_files_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+  dt_control_job_init(job, "write dt files");
+}
+
+void dt_control_write_dt_files()
+{
+  dt_job_t j;
+  dt_control_write_dt_files_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_delete_images_job_init(dt_job_t *job)
+{
+  job->execute = &dt_control_delete_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+  dt_control_job_init(job, "delete images");
+}
+
+void dt_control_delete_images()
+{
+  dt_job_t j;
+  dt_control_delete_images_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
 }
 

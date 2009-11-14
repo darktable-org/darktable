@@ -195,7 +195,7 @@ void leave(dt_view_t *self)
     char *c = filename + strlen(filename);
     for(;c>filename && *c != '.';c--);
     sprintf(c, ".dt");
-    dt_imageio_dt_write(dev->image, filename);
+    dt_imageio_dt_write(dev->image->id, filename);
   }
 
   // commit updated mipmaps to db

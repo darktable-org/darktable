@@ -276,7 +276,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   char *c = dtfilename + strlen(dtfilename);
   for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dt");
-  dt_imageio_dt_read(img, dtfilename); 
+  dt_imageio_dt_read(img->id, dtfilename); 
 
   // create preview images
   dt_image_release(img, DT_IMAGE_FULL, 'r');

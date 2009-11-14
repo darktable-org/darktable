@@ -97,20 +97,52 @@ id</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkHBox" id="bottom">
+              <widget class="GtkAspectFrame" id="bottom">
                 <property name="visible">True</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
                 <child>
-                  <widget class="GtkHScale" id="library_zoom">
+                  <widget class="GtkHBox" id="hbox2">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="adjustment">13 1 13 1 1 0</property>
-                    <property name="digits">0</property>
-                    <property name="value_pos">right</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <widget class="GtkComboBox" id="select_action">
+                        <property name="visible">True</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="items" translatable="yes">write a history file for
+physically delete</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="label9">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">all selected images</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkButton" id="selected_action_button">
+                        <property name="label" translatable="yes">go</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
                   </widget>
-                  <packing>
-                    <property name="pack_type">end</property>
-                    <property name="position">-1</property>
-                  </packing>
                 </child>
               </widget>
               <packing>

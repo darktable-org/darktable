@@ -1377,10 +1377,8 @@ int dt_imageio_open_preview(dt_image_t *img, const char *filename)
 //   dt-file synching
 // =================================================
 
-int dt_imageio_dt_write(dt_image_t *img, const char *filename)
+int dt_imageio_dt_write(const int imgid, const char *filename)
 {
-  if(!img) return 1;
-
   FILE *f = NULL;
   // read history from db
   sqlite3_stmt *stmt;
@@ -1388,7 +1386,7 @@ int dt_imageio_dt_write(dt_image_t *img, const char *filename)
   size_t rd;
   dt_dev_operation_t op;
   rc = sqlite3_prepare_v2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     if(!f) f = fopen(filename, "wb");
@@ -1407,9 +1405,8 @@ int dt_imageio_dt_write(dt_image_t *img, const char *filename)
   return 0;
 }
 
-int dt_imageio_dt_read (dt_image_t *img, const char *filename)
+int dt_imageio_dt_read (const int imgid, const char *filename)
 {
-  if(!img) return 1;
   FILE *f = fopen(filename, "rb");
   if(!f) return 1;
 
@@ -1417,7 +1414,7 @@ int dt_imageio_dt_read (dt_image_t *img, const char *filename)
   int rc, num = 0;
   size_t rd;
   rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
   sqlite3_step(stmt);
   rc = sqlite3_finalize (stmt);
 
@@ -1435,13 +1432,13 @@ int dt_imageio_dt_read (dt_image_t *img, const char *filename)
     rd = fread(params, 1, len, f);
     if(rd < len) { free(params); break; }
     rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, img->id);
+    rc = sqlite3_bind_int (stmt, 1, imgid);
     rc = sqlite3_bind_int (stmt, 2, num);
     if(sqlite3_step(stmt) != SQLITE_ROW)
     {
       rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
-      rc = sqlite3_bind_int (stmt, 1, img->id);
+      rc = sqlite3_bind_int (stmt, 1, imgid);
       rc = sqlite3_bind_int (stmt, 2, num);
       rc = sqlite3_step (stmt);
     }
@@ -1451,7 +1448,7 @@ int dt_imageio_dt_read (dt_image_t *img, const char *filename)
     rc = sqlite3_bind_blob(stmt, 2, params, len, SQLITE_TRANSIENT);
     rc = sqlite3_bind_int (stmt, 3, 666);
     rc = sqlite3_bind_int (stmt, 4, enabled);
-    rc = sqlite3_bind_int (stmt, 5, img->id);
+    rc = sqlite3_bind_int (stmt, 5, imgid);
     rc = sqlite3_bind_int (stmt, 6, num);
     rc = sqlite3_step (stmt);
     rc = sqlite3_finalize (stmt);

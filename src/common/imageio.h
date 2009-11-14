@@ -31,9 +31,9 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip);
 int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip);
 
 // writes out all image information to a .dt-file
-int dt_imageio_dt_write(dt_image_t *img, const char *filename);
+int dt_imageio_dt_write(const int imgid, const char *filename);
 // reads the history stack etc from disk and synchs with the db.
-int dt_imageio_dt_read (dt_image_t *img, const char *filename);
+int dt_imageio_dt_read (const int imgid, const char *filename);
 
 int dt_imageio_export_8 (dt_image_t *img, const char *filename);
 int dt_imageio_export_16(dt_image_t *img, const char *filename);

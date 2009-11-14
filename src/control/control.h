@@ -96,9 +96,12 @@ void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
 void dt_control_mouse_leave();
 int  dt_control_key_pressed(uint16_t which);
+int  dt_control_key_pressed_override(uint16_t which);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_gui_queue_draw();
 void dt_control_change_cursor(dt_cursor_t cursor);
+void dt_control_write_dt_files();
+void dt_control_delete_images();
 
 // called from core
 void dt_control_queue_draw_all();
