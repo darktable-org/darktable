@@ -176,7 +176,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=0;i<roi_out->width;i++)
     {
       const int ii = (int)pi[0], jj = (int)pi[1];
-      if(ii >= 0 || jj >= 0 || ii <= roi_in->width-2 || jj <= roi_in->height-2) 
+      if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
       {
         const float fi = pi[0] - ii, fj = pi[1] - jj;
         for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];

@@ -6,6 +6,7 @@
 #include "common/imageio.h"
 #include "gui/gtk.h"
 
+#include <glib/gprintf.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -377,6 +378,7 @@ int dt_dev_write_history_item(dt_develop_t *dev, dt_dev_history_item_t *h, int32
 
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 {
+  if(darktable.gui->reset) return;
   pthread_mutex_lock(&dev->history_mutex);
   if(dev->gui_attached)
   {
@@ -686,7 +688,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label)
 {
-  sprintf(label, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
+  g_sprintf(label, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
 }
 
 void dt_dev_export(dt_job_t *job)

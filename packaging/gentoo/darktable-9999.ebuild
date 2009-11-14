@@ -17,7 +17,7 @@ IUSE="openmp"
 DEPEND=">=x11-libs/gtk+-2.14.7 >=gnome-base/libglade-2.6.3
 >=dev-db/sqlite-3.6.11 >=x11-libs/cairo-1.8.6
 >=media-libs/gegl-0.0.22 >=media-libs/lcms-1.17 >=media-libs/jpeg-6b-r8
->=media-gfx/exiv2-0.18.1 >=media-libs/libpng-1.2.38 >=dev-util/intltool-0.40.5"
+>=media-gfx/exiv2-0.18.1 >=media-libs/libpng-1.2.38 >=dev-util/intltool-0.40.5 >=media-libs/lensfun-0.2.4"
 RDEPEND="${DEPEND}"
 
 src_unpack() {

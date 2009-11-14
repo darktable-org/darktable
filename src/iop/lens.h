@@ -1,7 +1,8 @@
-#ifndef DT_IOP_LENSFUN_H
-#define DT_IOP_LENSFUN_H
+#ifndef DT_IOP_LENS_H
+#define DT_IOP_LENS_H
 
 #include "develop/imageop.h"
+#include <lensfun.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
   
@@ -15,21 +16,28 @@ typedef struct dt_iop_lensfun_params_t
   float aperture;
   float distance;
   lfLensType target_geom;
-  const char lens[52];
+  char camera[52];
+  char lens[52];
 }
 dt_iop_lensfun_params_t;
 
 typedef struct dt_iop_lensfun_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2;
-  GtkHScale *scale1, *scale2;
+  const lfCamera *camera;
+  GtkWidget *lens_param_box;
+  GtkEntry *camera_model;
+  GtkMenu *camera_menu;
+  GtkEntry *lens_model;
+  GtkMenu *lens_menu;
+  GtkComboBox *target_geom;
+  GtkCheckButton *reverse;
+  GtkHScale *scale;
 }
 dt_iop_lensfun_gui_data_t;
 
 typedef struct dt_iop_lensfun_data_t
 {
-  const lfLens *lens;
+  lfLens *lens;
   float *tmpbuf;
   float *tmpbuf2;
   size_t tmpbuf_len;

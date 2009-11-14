@@ -351,12 +351,12 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   g_signal_connect (G_OBJECT (widget), "delete_event",
                     G_CALLBACK (quit), NULL);
-  g_signal_connect (G_OBJECT (widget), "key-press-event",
+  g_signal_connect_after (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed), NULL);
 
   gtk_widget_show_all(widget);
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
- 
+
 	g_signal_connect (G_OBJECT (widget), "configure-event",
                     G_CALLBACK (configure), NULL);
 	g_signal_connect (G_OBJECT (widget), "expose-event",
