@@ -577,6 +577,10 @@ void dt_ctl_switch_mode()
     gui ^= 1;  // FIXME: cycle through more modules!
     dt_control_restore_gui_settings(gui);
     dt_view_manager_switch(darktable.view_manager, gui);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
+    char buf[512];
+    snprintf(buf, 512, "<big><b><i>%s</i></b></big>", dt_view_manager_name(darktable.view_manager));
+    gtk_label_set_label(GTK_LABEL(widget), buf);
     DT_CTL_SET_GLOBAL(gui, gui);
   }
 }

@@ -1,7 +1,11 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
-- design: darktable -- modus labels
+- more gconf options:
+  - preview pipe subsampling
+  - window position
+  - gui configurations (recently used combobox constellations etc)
+- lib: separator thickness
 - design: larger panels histogram/navigation
 - module cleanup: extra export view and use space for plug-in loaders.
 - install: remove schema installation.

@@ -60,6 +60,7 @@ style "clearlooks-notebook" = "clearlooks-wide"
 {
   bg[NORMAL] = "#5a5c5f"
 }
+
 style "clearlooks-tasklist" = "clearlooks-default"
 {
   xthickness = 5
@@ -129,6 +130,14 @@ style "clearlooks-checkbutton" = "clearlooks-default"
   text[NORMAL] = "#202020"
 }
 
+style "clearlooks-alignment" = "clearlooks-default"
+{
+  bg[NORMAL] = "#ff0000" # #7f7f7f"
+  fg[NORMAL] = "#ff0000" # #7f7f7f"
+  text[NORMAL] = "#ff0000" # #7f7f7f"
+  base[NORMAL] = "#ff0000" # #7f7f7f"
+}
+
 style "metacity-frame"
 {
   # Normal base color
@@ -159,6 +168,9 @@ class "GtkFrame" style "clearlooks-wide"
 class "GtkStatusbar" style "clearlooks-wide"
 class "GtkMenu" style "clearlooks-menu"
 class "GtkMenuItem" style "clearlooks-menu-item"
+# class "GtkAlignment" style "clearlooks-alignment"
+## widget "*.iop_vbox.*" style "clearlooks-alignment"
+# widget_class "*.GtkExpander.*.*" style "clearlooks-alignment"
 widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkAccelMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkRadioMenuItem.*" style "clearlooks-menu-item"

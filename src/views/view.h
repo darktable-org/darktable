@@ -11,11 +11,12 @@
 struct dt_view_t;
 typedef struct dt_view_t
 {
-  char name[64];
+  char module_name[64];
   // dlopened module
   GModule *module;
   // custom data for module
   void *data;
+  const char *(*name)     (struct dt_view_t *self); // get translatable name
   void (*init)            (struct dt_view_t *self); // init *data
   void (*cleanup)         (struct dt_view_t *self); // cleanup *data
   void (*expose)          (struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery); // expose the module (gtk callback)
@@ -49,6 +50,8 @@ dt_view_manager_t;
 void dt_view_manager_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
+/** return translated name. */
+const char *dt_view_manager_name (dt_view_manager_t *vm);
 /** switch to this module. */
 void dt_view_manager_switch(dt_view_manager_t *vm, int k);
 /** expose current module. */

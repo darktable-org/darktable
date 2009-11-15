@@ -164,6 +164,18 @@ physically delete</property>
             <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
+              <widget class="GtkLabel" id="darktable_label">
+                <property name="visible">True</property>
+                <property name="ypad">7</property>
+                <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;&lt;i&gt;darktable&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;</property>
+                <property name="use_markup">True</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
               <widget class="GtkExpander" id="navigation_expander">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -189,7 +201,7 @@ physically delete</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -259,7 +271,6 @@ physically delete</property>
                                   </widget>
                                   <packing>
                                     <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="padding">7</property>
                                     <property name="position">3</property>
                                   </packing>
@@ -819,7 +830,7 @@ physically delete</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </widget>
@@ -834,6 +845,18 @@ physically delete</property>
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="spacing">10</property>
+            <child>
+              <widget class="GtkLabel" id="view_label">
+                <property name="visible">True</property>
+                <property name="ypad">7</property>
+                <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;&lt;i&gt;lighttable&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;</property>
+                <property name="use_markup">True</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <widget class="GtkExpander" id="histogram_expander">
                 <property name="visible">True</property>
@@ -860,7 +883,7 @@ physically delete</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -889,7 +912,7 @@ physically delete</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -986,7 +1009,7 @@ float pfm</property>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
                 <property name="padding">10</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </widget>

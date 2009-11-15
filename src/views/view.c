@@ -36,7 +36,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
 {
   bzero(view, sizeof(dt_view_t));
   view->data = NULL;
-  strncpy(view->name, module, 64);
+  strncpy(view->module_name, module, 64);
   char datadir[1024];
   dt_get_datadir(datadir, 1024);
   strcpy(datadir + strlen(datadir), "/views");
@@ -49,6 +49,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
     return -1;
   }
 
+  if(!g_module_symbol(view->module, "name",            (gpointer)&(view->name)))            view->name = NULL;
   if(!g_module_symbol(view->module, "init",            (gpointer)&(view->init)))            view->init = NULL;
   if(!g_module_symbol(view->module, "cleanup",         (gpointer)&(view->cleanup)))         view->cleanup = NULL;
   if(!g_module_symbol(view->module, "expose",          (gpointer)&(view->expose)))          view->expose = NULL;
@@ -81,6 +82,13 @@ void dt_view_manager_switch (dt_view_manager_t *vm, int k)
   if(k < DT_VIEW_MAX_MODULES && k >= 0) vm->current_view = k;
   v = vm->view + vm->current_view;
   if(v->enter) v->enter(v);
+}
+
+const char *dt_view_manager_name (dt_view_manager_t *vm)
+{
+  dt_view_t *v = vm->view + vm->current_view;
+  if(v->name) return v->name(v);
+  else return v->module_name;
 }
 
 void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)

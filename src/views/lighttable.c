@@ -48,6 +48,10 @@ typedef struct dt_library_t
 }
 dt_library_t;
 
+const char *name(dt_view_t *self)
+{
+  return _("lighttable");
+}
 
 void init(dt_view_t *self)
 {

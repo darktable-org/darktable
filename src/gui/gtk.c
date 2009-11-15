@@ -361,6 +361,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (key_pressed), NULL);
 
   gtk_widget_show_all(widget);
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
+  gtk_label_set_label(GTK_LABEL(widget), "<big><b><i>"PACKAGE_NAME"-"PACKAGE_VERSION"</i></b></big>");
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
 
 	g_signal_connect (G_OBJECT (widget), "configure-event",

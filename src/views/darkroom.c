@@ -13,6 +13,10 @@
 #include <math.h>
 #include <glade/glade.h>
 
+const char *name(dt_view_t *self)
+{
+  return _("darkroom");
+}
 
 void init(dt_view_t *self)
 {

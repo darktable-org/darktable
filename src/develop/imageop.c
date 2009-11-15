@@ -234,7 +234,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkButton *resetbutton = GTK_BUTTON(gtk_button_new());
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), module->widget, TRUE, TRUE, 0);
+  // GtkWidget *al = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
+  GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 5, 5, 5, 5);
+  gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(al), module->widget);
 
   g_signal_connect (G_OBJECT (resetbutton), "pressed",
                     G_CALLBACK (dt_iop_gui_reset_callback), module);
