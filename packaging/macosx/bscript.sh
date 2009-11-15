@@ -13,17 +13,21 @@ BIN=`echo $PREFIX/bin/darktable`
 
 SO=`echo $PREFIX/lib/gtk-2.0/*/*/*.so $PREFIX/lib/pango/*/*/*.so`
 
-LIB=`otool -L $BIN $SO | grep -v : | grep $PREFIX/ | awk '{print $1;}' | sed -E 's/([0-9][.])dylib/\1*dylib/g' | sort -u | xargs echo`
+PLUGINS=`echo $PREFIX/share/darktable/plugins/*.so`
+
+LIB=`otool -L $BIN $SO $PLUGINS | grep -v : | grep $PREFIX/ | awk '{print $1;}' | sed -E 's/([0-9][.])dylib/\1*dylib/g' | sort -u | xargs echo`
 
 ETC="$PREFIX/etc/gtk-2.0/ $PREFIX/etc/pango/ $PREFIX/etc/fonts"
 
-SHARE=`echo $PREFIX/share/darktable/`
+SHARE=`echo $PREFIX/share/darktable/ $PREFIX/share/lensfun/`
+
+LENSFUN=`echo $PREFIX/lib/liblensfun*`
 
 cp ScriptExecCocoa/build/Release/ScriptExec.app/Contents/MacOS/ScriptExec $FOO/../MacOS/darktable
 
 cd $PREFIX
 
-echo $BIN $SO $LIB $ETC $SHARE | sed "s|$PREFIX/"'*||g' | xargs tar -cf /tmp/dtguts.tar
+echo $BIN $SO $LIB $LENSFUN $ETC $SHARE | sed "s|$PREFIX/"'*||g' | xargs tar -cf /tmp/dtguts.tar
 
 cd $FOO
 

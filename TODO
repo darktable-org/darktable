@@ -1,11 +1,11 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- design: darktable -- modus labels
+- design: larger panels histogram/navigation
+- module cleanup: extra export view and use space for plug-in loaders.
 - install: remove schema installation.
-- user config:
-  - write history stack etc file per image
 - db load: re-import and process images 
-- overwrite keys: tab/esc in key_press(_after)
 - show which images have been modified in lighttable mode.
 - border/padding around all iop widgets!
 - demosaic: patch libraw => green1/2 histograms, denoise l/c.

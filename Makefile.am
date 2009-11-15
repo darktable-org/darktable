@@ -12,7 +12,7 @@ schema_in_file=darktable.schemas.in
 schema_DATA=$(schema_in_file:.schemas.in=.schemas)
 @INTLTOOL_SCHEMAS_RULE@
 
-CLEANFILES=$(dtdataroot_DATA) $(dtapproot_DATA) $(schema_DATA)
+CLEANFILES=$(schema_DATA)
 
 if GCONF_SCHEMAS_INSTALL
 install-data-local:

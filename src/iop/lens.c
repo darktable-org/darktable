@@ -318,7 +318,16 @@ void init(dt_iop_module_t *module)
   dt_iop_lensfun_db = lf_db_new ();
   if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
   {
-    fprintf(stderr, "[iop_lens]: could not load lensfun database!\n");
+    char path[1024];
+    dt_get_datadir(path, 1024);
+    char *c = path + strlen(path);
+    for(;c>path && *c != '/';c--);
+    sprintf(c, "/lensfun");
+    dt_iop_lensfun_db->HomeDataDir = path;
+    if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
+    {
+      fprintf(stderr, "[iop_lens]: could not load lensfun database!\n");
+    }
   }
   module->params = malloc(sizeof(dt_iop_lensfun_params_t));
   module->default_params = malloc(sizeof(dt_iop_lensfun_params_t));
