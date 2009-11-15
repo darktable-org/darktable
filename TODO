@@ -5,11 +5,11 @@
   - preview pipe subsampling
   - window position
   - gui configurations (recently used combobox constellations etc)
+    (port over dt_control_restore_gui_settings)
 - lib: separator thickness
-- design: larger panels histogram/navigation
 - module cleanup: extra export view and use space for plug-in loaders.
 - install: remove schema installation.
-- db load: re-import and process images 
+- db load: re-import and _process_ images 
 - show which images have been modified in lighttable mode.
 - border/padding around all iop widgets!
 - demosaic: patch libraw => green1/2 histograms, denoise l/c.

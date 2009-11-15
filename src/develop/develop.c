@@ -45,7 +45,8 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
-  dev->preview_downsampling = .5;
+  float downsampling = gconf_client_get_float(darktable.control->gconf, DT_GCONF_DIR"/preview_subsample", NULL);
+  dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
   dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->gui_leaving = 0;

@@ -159,7 +159,7 @@ physically delete</property>
         </child>
         <child>
           <widget class="GtkVBox" id="left">
-            <property name="width_request">250</property>
+            <property name="width_request">300</property>
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="spacing">10</property>
@@ -167,7 +167,7 @@ physically delete</property>
               <widget class="GtkLabel" id="darktable_label">
                 <property name="visible">True</property>
                 <property name="ypad">7</property>
-                <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;&lt;i&gt;darktable&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;</property>
+                <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;&lt;i&gt;darktable&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
               <packing>
@@ -177,13 +177,13 @@ physically delete</property>
             </child>
             <child>
               <widget class="GtkExpander" id="navigation_expander">
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="no_show_all">True</property>
                 <property name="expanded">True</property>
                 <child>
                   <widget class="GtkDrawingArea" id="navigation">
-                    <property name="width_request">200</property>
-                    <property name="height_request">133</property>
+                    <property name="width_request">250</property>
+                    <property name="height_request">167</property>
                     <property name="visible">True</property>
                     <property name="events">GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK</property>
                   </widget>
@@ -645,8 +645,8 @@ physically delete</property>
                         </child>
                         <child>
                           <widget class="GtkExpander" id="history_expander">
-                            <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="no_show_all">True</property>
                             <property name="expanded">True</property>
                             <property name="spacing">10</property>
                             <child>
@@ -841,7 +841,7 @@ physically delete</property>
         </child>
         <child>
           <widget class="GtkVBox" id="right">
-            <property name="width_request">250</property>
+            <property name="width_request">300</property>
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="spacing">10</property>
@@ -849,7 +849,7 @@ physically delete</property>
               <widget class="GtkLabel" id="view_label">
                 <property name="visible">True</property>
                 <property name="ypad">7</property>
-                <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;&lt;i&gt;lighttable&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;</property>
+                <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;&lt;i&gt;lighttable mode&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
               <packing>
@@ -859,13 +859,13 @@ physically delete</property>
             </child>
             <child>
               <widget class="GtkExpander" id="histogram_expander">
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="no_show_all">True</property>
                 <property name="expanded">True</property>
                 <child>
                   <widget class="GtkDrawingArea" id="histogram">
-                    <property name="width_request">200</property>
-                    <property name="height_request">133</property>
+                    <property name="width_request">250</property>
+                    <property name="height_request">167</property>
                     <property name="visible">True</property>
                     <property name="events">GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK</property>
                   </widget>
@@ -894,7 +894,7 @@ physically delete</property>
                 <property name="vscrollbar_policy">automatic</property>
                 <child>
                   <widget class="GtkViewport" id="viewport1">
-                    <property name="width_request">230</property>
+                    <property name="width_request">280</property>
                     <property name="visible">True</property>
                     <property name="resize_mode">queue</property>
                     <child>

@@ -520,9 +520,21 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   
 }
 
-// void enter(dt_view_t *self) {}
+#if 0
+void enter(dt_view_t *self)
+{
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
+  gtk_widget_set_visible(widget, TRUE);
+}
 
-// void leave(dt_view_t *self) {}
+void leave(dt_view_t *self)
+{
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
+  gtk_widget_set_visible(widget, FALSE);
+}
+#endif
 
 void reset(dt_view_t *self)
 {

@@ -127,6 +127,14 @@ void reset(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
+  gtk_widget_set_visible(widget, TRUE);
+
   dt_develop_t *dev = (dt_develop_t *)self->data;
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
@@ -188,6 +196,14 @@ void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
+  gtk_widget_set_visible(widget, FALSE);
+
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db
   dt_dev_write_history(dev);

@@ -1,0 +1,57 @@
+<gconfschemafile>
+  <schemalist>
+    <schema>
+      <key>/schemas/apps/darktable/write_dt_files</key>
+      <applyto>/apps/darktable/write_dt_files</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>true</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>write a redundant file for each image</short>
+        <long>these files can later be re-imported into a different database, preserving your changes to the image.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/ask_before_delete</key>
+      <applyto>/apps/darktable/ask_before_delete</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>true</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>ask before deleting images</short>
+        <long>always ask the user before any image file is deleted.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/preview_subsample</key>
+      <applyto>/apps/darktable/preview_subsample</applyto>
+      <owner>darktable</owner>
+      <type>float</type>
+      <default>0.5</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>downsample the preview pixels</short>
+        <long>this value smaller than 1.0 downsamples the preview pixels for faster feedback.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/select_action</key>
+      <applyto>/apps/darktable/ui_last/select_action</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+  </schemalist>
+</gconfschemafile>
+

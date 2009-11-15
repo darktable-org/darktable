@@ -19,6 +19,7 @@
 
 void dt_ctl_settings_init(dt_control_t *s)
 {
+  g_type_init();
   s->gconf = gconf_client_get_default();
 
   // same thread as init
@@ -579,7 +580,7 @@ void dt_ctl_switch_mode()
     dt_view_manager_switch(darktable.view_manager, gui);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
     char buf[512];
-    snprintf(buf, 512, "<big><b><i>%s</i></b></big>", dt_view_manager_name(darktable.view_manager));
+    snprintf(buf, 512, "<span color=\"#7f7f7f\"><big><b><i>%s %s</i></b></big></span>", dt_view_manager_name(darktable.view_manager), _("mode"));
     gtk_label_set_label(GTK_LABEL(widget), buf);
     DT_CTL_SET_GLOBAL(gui, gui);
   }
@@ -598,7 +599,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
 
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
   {
-    if(type == GDK_2BUTTON_PRESS) dt_ctl_switch_mode();
+    if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
     else dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state);
   }
   else if(x < tb)
@@ -661,6 +662,9 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 {
   int8_t bit;
   GtkWidget *widget;
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "select_action");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), gconf_client_get_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/select_action", NULL));
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
   dt_lib_filter_t filter;
@@ -1127,6 +1131,20 @@ void dt_control_delete_images_job_init(dt_job_t *job)
 
 void dt_control_delete_images()
 {
+  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/ask_before_delete", NULL))
+  {
+    GtkWidget *dialog;
+    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_YES_NO,
+        _("do you really want to physically delete all selected images from disk?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    if(res != GTK_RESPONSE_YES) return;
+  }
   dt_job_t j;
   dt_control_delete_images_job_init(&j);
   dt_control_add_job(darktable.control, &j);

@@ -34,25 +34,30 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
   cairo_paint(cr);
 
-  cairo_translate(cr, inset, inset);
-  width -= 2*inset; height -= 2*inset;
+  cairo_translate(cr, 4*inset, inset);
+  width -= 2*4*inset; height -= 2*inset;
 
-#if 0
+#if 1
   // draw shadow around
   float alpha = 1.0f;
+  cairo_set_line_width(cr, 0.2);
   for(int k=0;k<inset;k++)
   {
     cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
     cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-    alpha *= 0.6f;
+    alpha *= 0.5f;
     cairo_fill(cr);
-  }
+  } 
+  cairo_set_line_width(cr, 1.0);
 #else
   cairo_set_line_width(cr, 1.0);
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
 #endif
+
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_clip(cr);
 
   cairo_set_source_rgb (cr, .3, .3, .3);
   cairo_rectangle(cr, 0, 0, width, height);
