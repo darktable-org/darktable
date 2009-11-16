@@ -1,5 +1,5 @@
 this is darktable, a free raw photo viewer and organiser.
-darktable is not a light table. it's digital.
+darktable is not a lighttable.
 
 to build it, you need:
 
@@ -8,8 +8,10 @@ to build it, you need:
  - libglade-2.0
  - libgthread-2.0
  - cairo
- - MagickCore
- - gegl
+ - libjpeg
+ - libpng
+ - gconf
+ - lensfun
 
 other used packages (supplied in the source tree):
 
@@ -18,13 +20,14 @@ other used packages (supplied in the source tree):
 
 then, type:
 
- $ autoreconf --install --force
- $ ./configure [--enable-debug] [--enable-gegl] --prefix=$(pwd)/install
+ $ ./autogen.sh
+ $ ./configure [--enable-debug] --prefix=$(pwd)/install
  $ make install
  $ ./install/bin/darktable
 
-(the first step is only necessary when building from svn for the first time)
+(the first step is only necessary when building from git for the first time)
 and enjoy!
 
 send any bugreports to me: hanatos@gmail.com
+or find more information on the web: http://darktable.sf.net
 
