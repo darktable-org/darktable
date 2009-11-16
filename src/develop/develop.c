@@ -202,6 +202,62 @@ restart:
   dt_control_queue_draw_all();
 }
 
+// process preview to gain ldr-mipmaps:
+void dt_dev_process_to_mip(dt_develop_t *dev)
+{
+  // TODO: efficiency: check hash on preview_pipe->backbuf
+  if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF) return; // not loaded yet.
+
+  if(!dev->preview_pipe)
+  {
+    // init pixel pipeline for preview.
+    dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+    dt_dev_pixelpipe_init(dev->preview_pipe);
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
+    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
+    dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
+    dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
+    dev->preview_loading = 0;
+  }
+
+  int wd, ht;
+  float fwd, fht;
+
+  dev->preview_downsampling = 1.0;
+  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dt_dev_process_preview_job(dev);
+
+  // now the real wd/ht is available.
+  dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
+  dt_image_get_mip_size(dev->image, DT_IMAGE_MIP4, &wd, &ht);
+  dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &fwd, &fht);
+
+  if(dt_image_alloc(dev->image, DT_IMAGE_MIP4))
+  {
+    fprintf(stderr, "[dev_process_to_mip] could not alloc mip4 to write mipmaps!\n");
+    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+    return;
+  }
+
+  dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
+  pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
+
+  dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
+      dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
+      dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
+
+  dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
+  pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
+
+  if(dt_imageio_preview_write(dev->image, DT_IMAGE_MIP4))
+    fprintf(stderr, "[dev_process_to_mip] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, dev->image->filename);
+  dt_image_update_mipmaps(dev->image);
+
+  dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
+  dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+}
+
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
   dev->image_dirty = 1;
@@ -313,6 +369,19 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   }
   return zoom_scale;
 }
+
+void dt_dev_load_preview(dt_develop_t *dev, dt_image_t *image)
+{
+  dev->image = image;
+  dev->preview_loading = 1;
+  if(dt_image_get_blocking(dev->image, DT_IMAGE_MIPF, 'r') == DT_IMAGE_MIPF) dev->mipf = dev->image->mipf; // prefetch and lock
+  else dev->mipf = NULL;
+  dev->preview_dirty = 1;
+
+  dev->iop = dt_iop_load_modules(dev);
+  dt_dev_read_history(dev);
+}
+
 
 void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 {
@@ -664,8 +733,8 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
 {
   const float scale = dev->image->width/dev->mipf_exact_width;
-  *procw = dev->pipe->processed_width  ? dev->pipe->processed_width  : scale * dev->preview_pipe->processed_width;
-  *proch = dev->pipe->processed_height ? dev->pipe->processed_height : scale * dev->preview_pipe->processed_height;
+  *procw = dev->pipe && dev->pipe->processed_width  ? dev->pipe->processed_width  : scale * dev->preview_pipe->processed_width;
+  *proch = dev->pipe && dev->pipe->processed_height ? dev->pipe->processed_height : scale * dev->preview_pipe->processed_height;
 }
 
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x, float *zoom_y)

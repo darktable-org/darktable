@@ -1,24 +1,21 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- dt_dev_process_to_mip: check hash
 - more gconf options:
-  - preview pipe subsampling
   - window position
   - gui configurations (recently used combobox constellations etc)
     (port over dt_control_restore_gui_settings)
 - lib: separator thickness
 - module cleanup: extra export view and use space for plug-in loaders.
 - install: remove schema installation.
-- db load: re-import and _process_ images 
 - show which images have been modified in lighttable mode.
-- border/padding around all iop widgets!
 - demosaic: patch libraw => green1/2 histograms, denoise l/c.
   - have demosaic input widget with reload button (will be slow)
-- clean up gui: lighttable/darkroom switches only there if
-  module is entered!
 - histogram fill light mouse gesture
 - preview blacklist modules
 - exposure: highlight clipped parts
+- exposure: color artifacts when too bright?
 - exr import
 - tonemapping widget?
 - clipping event hooks: crop
@@ -29,6 +26,7 @@
     not for 5d, but for 400d for example.
   - then demosaic using float-ahd optimized code.
 - wt/iwt iops and sharpen/denoise in between
+  - or just presets for equalizer
 - modular views:
   - control.c: save/restore gui settings => modules!
   - save settings in modules (query fct?)
@@ -134,9 +132,6 @@ usability:
  - make directory loading interruptible
  - navigation widget for lib?
  - all functions mouse-accessible
-
-look:
- - end markers :)
 
 cache:
  - user profile guided prefetching for full raw load!

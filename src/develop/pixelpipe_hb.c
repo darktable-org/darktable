@@ -237,7 +237,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
     
     // tonecurve histogram (collect luminance only):
-    if(pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
+    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
     {
       float *pixel = (float *)input;
       dev->histogram_pre_max = 0;
@@ -258,7 +258,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     module->process(module, piece, input, *output, &roi_in, roi_out);
 
     // final histogram:
-    if(pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
+    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
       uint8_t *pixel = (uint8_t *)*output;
       dev->histogram_max = 0;

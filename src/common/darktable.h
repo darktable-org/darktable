@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <glib/gi18n.h>
 
-#define DT_VERSION 26
+#define DT_VERSION 27
 
 #ifndef M_PI
   #define M_PI 3.14159265358979323846

@@ -219,6 +219,8 @@ void leave(dt_view_t *self)
   }
 
   // commit updated mipmaps to db
+  dt_dev_process_to_mip(dev);
+#if 0
   if(dev->mipf)
   {
     int wd, ht;
@@ -251,6 +253,7 @@ void leave(dt_view_t *self)
     dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
   }
+#endif
 
   // clear gui.
   dev->gui_leaving = 1;

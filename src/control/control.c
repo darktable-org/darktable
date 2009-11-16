@@ -17,6 +17,17 @@
 #  include "config.h"
 #endif
 
+void dt_ctl_settings_default(dt_control_t *c)
+{
+  gconf_client_set_int(c->gconf, DT_GCONF_DIR"/config_version", DT_VERSION, NULL);
+  gconf_client_set_bool(c->gconf, DT_GCONF_DIR"/write_dt_files", TRUE, NULL);
+  gconf_client_set_bool(c->gconf, DT_GCONF_DIR"/ask_before_delete", TRUE, NULL);
+  gconf_client_set_float(c->gconf, DT_GCONF_DIR"/preview_subsample", .5f, NULL);
+
+  // recently used ui configuration
+  gconf_client_set_int(c->gconf, DT_GCONF_DIR"/ui_last/select_action", 0, NULL);
+}
+
 void dt_ctl_settings_init(dt_control_t *s)
 {
   g_type_init();
@@ -114,6 +125,7 @@ int dt_control_load_config(dt_control_t *c)
   }
   else
   { // db not yet there, create it
+    dt_ctl_settings_default(darktable.control);
     rc = sqlite3_finalize(stmt);
     rc = sqlite3_exec(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
@@ -187,6 +199,10 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
   s->progress = 200.0f;
+
+  // if config is old, replace with new defaults.
+  if(DT_VERSION > gconf_client_get_int(s->gconf, DT_GCONF_DIR"/config_version", NULL))
+    dt_ctl_settings_default(s);
 
   pthread_cond_init(&s->cond, NULL);
   pthread_mutex_init(&s->cond_mutex, NULL);

@@ -130,14 +130,6 @@ style "clearlooks-checkbutton" = "clearlooks-default"
   text[NORMAL] = "#202020"
 }
 
-style "clearlooks-alignment" = "clearlooks-default"
-{
-  bg[NORMAL] = "#ff0000" # #7f7f7f"
-# fg[NORMAL] = "#ff0000" # #7f7f7f"
-# text[NORMAL] = "#ff0000" # #7f7f7f"
-# base[NORMAL] = "#ff0000" # #7f7f7f"
-}
-
 style "metacity-frame"
 {
   # Normal base color
@@ -188,7 +180,3 @@ class "GtkProgressBar" style "clearlooks-progressbar"
 widget_class "*.GtkComboBox.GtkButton" style "clearlooks-combo"
 widget_class "*.GtkCombo.GtkButton" style "clearlooks-combo"
 class "MetaFrames" style "metacity-frame"
-# widget "main_window.table1.right.scrolledwindow1.viewport1.iop_vbox.*" style "clearlooks-alignment"
-# widget "main_window.table1.right.scrolledwindow1.viewport1.*" style "clearlooks-alignment"
-# widget "main_window.table1.right.scrolledwindow1.viewport1" style "clearlooks-alignment"
-# class "*.GtkExpander.GtkContainer" style "clearlooks-alignment"

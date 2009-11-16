@@ -120,6 +120,8 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip);
 void dt_image_free(dt_image_t *img, dt_image_buffer_t mip);
 /** gets the requested image buffer or a smaller preview if it is not available (w lock || =NULL), marking this with the read lock. returns found mip level. */
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
+/** returns the requested image buffer. loads while blocking, if necessary. */
+dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
 /** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
 void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 /** locks the given mode if the buffer is available. returns non-zero and does nothing else on failure (no async loading is scheduled). */

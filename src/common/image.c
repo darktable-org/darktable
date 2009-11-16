@@ -203,6 +203,9 @@ int dt_image_raw_to_preview(dt_image_t *img)
 
 int dt_image_import(const int32_t film_id, const char *filename)
 {
+  const char *cc = filename + strlen(filename);
+  for(;*cc!='.'&&cc>filename;cc--);
+  if(!strcmp(cc, ".dt")) return 1;
   int rc;
   int ret = 0, id = -1;
   // select from images; if found => return
@@ -276,9 +279,15 @@ int dt_image_import(const int32_t film_id, const char *filename)
   char *c = dtfilename + strlen(dtfilename);
   for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dt");
-  dt_imageio_dt_read(img->id, dtfilename); 
+  if(!dt_imageio_dt_read(img->id, dtfilename))
+  {
+    dt_develop_t dev;
+    dt_dev_init(&dev, 0);
+    dt_dev_load_preview(&dev, img);
+    dt_dev_process_to_mip(&dev);
+    dt_dev_cleanup(&dev);
+  }
 
-  // create preview images
   dt_image_release(img, DT_IMAGE_FULL, 'r');
   dt_image_cache_release(img, 'w');
   return id;
@@ -627,6 +636,60 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   return ret;
+}
+
+dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
+{
+  dt_image_buffer_t mip = mip_in;
+  if(mip == DT_IMAGE_NONE) return mip;
+  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  // get image with no write lock set!
+  if((int)mip < (int)DT_IMAGE_MIPF)
+  {
+    while(mip > 0 && (img->mip[mip] == NULL || img->lock[mip].write)) mip--; // level 0 always there.
+  }
+  else if(mip == DT_IMAGE_MIPF)
+  {
+    if(img->mipf == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
+  }
+  else if(mip == DT_IMAGE_FULL)
+  {
+    if(img->pixels == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
+  }
+  // found?
+  if(mip == mip_in)
+  {
+    if(mode == 'w')
+    {
+      img->lock[mip].write = 1;
+      img->lock[mip].users = 1;
+    }
+    img->lock[mip].users++;
+    return mip;
+  }
+  // already loading? 
+  if(img->lock[mip_in].write) return DT_IMAGE_NONE;
+  pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+ 
+  // dt_print(DT_DEBUG_CACHE, "[image_get_blocking] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
+
+  // start job to load this buf in bg.
+  dt_print(DT_DEBUG_CACHE, "[image_get_blocking] reloading mip %d for image %d\n", mip_in, img->id);
+  dt_image_load(img, mip_in); // this returns with 'r' locked
+  mip = mip_in;
+
+  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  if(mip != DT_IMAGE_NONE)
+  {
+    if(mode == 'w')
+    {
+      img->lock[mip].write = 1;
+      img->lock[mip].users = 1;
+    }
+    // else img->lock[mip].users++; // already incremented by image_load
+  }
+  pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+  return mip;
 }
 
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
