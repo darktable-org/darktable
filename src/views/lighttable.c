@@ -638,13 +638,13 @@ void scrolled(dt_view_t *view, double x, double y, int up)
   DT_CTL_GET_GLOBAL(zoom, lib_zoom);
   if(up)
   {
-    zoom-=2;
+    zoom--;
     if(zoom < 1) zoom = 1;
     DT_CTL_SET_GLOBAL(lib_zoom, zoom);
   }
   else
   {
-    zoom+=2;
+    zoom++;
     if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
     DT_CTL_SET_GLOBAL(lib_zoom, zoom);
   }
