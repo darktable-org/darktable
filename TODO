@@ -3,8 +3,10 @@
 0.4 lighttable release
 - write .dt-tags file (stars, keywords, ..?)
 - dt_dev_process_to_mip: check hash
-  - output_width not adjusted correctly.
 - more gconf options:
+  - remove dt_ctl_settings_t in settings.h?
+  - move dt_ctl_settings_init to gconf
+  - move some settings to local lighttable/darkroom module vars?
   - window position
   - gui configurations (recently used combobox constellations etc)
     (port over dt_control_restore_gui_settings)

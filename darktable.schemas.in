@@ -65,6 +65,292 @@
       </locale>
     </schema>
 
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/fullscreen</key>
+      <applyto>/apps/darktable/ui_last/fullscreen</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/view</key>
+      <applyto>/apps/darktable/ui_last/view</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/window_x</key>
+      <applyto>/apps/darktable/ui_last/window_x</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/window_y</key>
+      <applyto>/apps/darktable/ui_last/window_y</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/window_w</key>
+      <applyto>/apps/darktable/ui_last/window_w</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>640</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/window_h</key>
+      <applyto>/apps/darktable/ui_last/window_h</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>480</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/panel_left</key>
+      <applyto>/apps/darktable/ui_last/panel_left</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>-1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/panel_right</key>
+      <applyto>/apps/darktable/ui_last/panel_right</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>-1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/panel_top</key>
+      <applyto>/apps/darktable/ui_last/panel_top</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/panel_bottom</key>
+      <applyto>/apps/darktable/ui_last/panel_bottom</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/expander_library</key>
+      <applyto>/apps/darktable/ui_last/expander_library</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>2</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/expander_export</key>
+      <applyto>/apps/darktable/ui_last/expander_export</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>2</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/expander_metadata</key>
+      <applyto>/apps/darktable/ui_last/expander_metadata</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/expander_navigation</key>
+      <applyto>/apps/darktable/ui_last/expander_navigation</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>-1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/expander_histogram</key>
+      <applyto>/apps/darktable/ui_last/expander_histogram</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>-1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/expander_history</key>
+      <applyto>/apps/darktable/ui_last/expander_history</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>-1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/combo_sort</key>
+      <applyto>/apps/darktable/ui_last/combo_sort</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/combo_filter</key>
+      <applyto>/apps/darktable/ui_last/combo_filter</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>2</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/combo_export</key>
+      <applyto>/apps/darktable/ui_last/combo_export</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/export_quality</key>
+      <applyto>/apps/darktable/ui_last/export_quality</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>97</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/gamma_linear</key>
+      <applyto>/apps/darktable/gamma_linear</applyto>
+      <owner>darktable</owner>
+      <type>float</type>
+      <default>.1f</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/gamma_gamma</key>
+      <applyto>/apps/darktable/gamma_gamma</applyto>
+      <owner>darktable</owner>
+      <type>float</type>
+      <default>.45f</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
   </schemalist>
 </gconfschemafile>
 

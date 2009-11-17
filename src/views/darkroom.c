@@ -281,7 +281,7 @@ void leave(dt_view_t *self)
   if(dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
 
-  DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
+  // DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
   // release image struct with metadata as well.
   dt_image_cache_flush(dev->image);

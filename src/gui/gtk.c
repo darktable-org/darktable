@@ -32,9 +32,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   gtk_widget_queue_draw(widget);
 
-  // widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
-  // gtk_widget_queue_draw(widget);
-
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
   {
@@ -45,10 +42,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   {
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
     if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
-
-    // reset operations, update expanders
-    dt_dev_operation_t op;
-    DT_CTL_GET_GLOBAL_STR(op, dev_op, 20);
   }
 
 	return TRUE;

@@ -44,6 +44,8 @@ typedef struct dt_library_t
   int32_t last_selected_id;
   int button;
   uint32_t modifiers;
+  uint32_t center, pan, track;
+  float zoom_x, zoom_y, zoom;
   dt_library_image_over_t image_over;
 }
 dt_library_t;
@@ -61,6 +63,10 @@ void init(dt_view_t *self)
   lib->last_selected_id = -1;
   lib->button = 0;
   lib->modifiers = 0;
+  lib->center = lib->pan = lib->track = 0;
+  lib->zoom = DT_LIBRARY_MAX_ZOOM;
+  lib->zoom_x = 0.0f;
+  lib->zoom_y = 0.0f;
 }
 
 
@@ -328,12 +334,12 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   dt_lib_sort_t sort;
   dt_lib_filter_t filter;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  DT_CTL_GET_GLOBAL(zoom, lib_zoom);
-  DT_CTL_GET_GLOBAL(zoom_x, lib_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, lib_zoom_y);
-  DT_CTL_GET_GLOBAL(pan, lib_pan);
-  DT_CTL_GET_GLOBAL(track, lib_track);
-  DT_CTL_GET_GLOBAL(center, lib_center);
+  zoom   = lib->zoom;
+  zoom_x = lib->zoom_x;
+  zoom_y = lib->zoom_y;
+  pan    = lib->pan;
+  center = lib->center;
+  track  = lib->track;
   DT_CTL_GET_GLOBAL(sort, lib_sort);
   DT_CTL_GET_GLOBAL(filter, lib_filter);
 
@@ -507,10 +513,10 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   sqlite3_finalize(stmt);
 
   oldpan = pan;
-  DT_CTL_SET_GLOBAL(lib_zoom_x, zoom_x);
-  DT_CTL_SET_GLOBAL(lib_zoom_y, zoom_y);
-  DT_CTL_SET_GLOBAL(lib_track, 0);
-  DT_CTL_SET_GLOBAL(lib_center, center);
+  lib->zoom_x = zoom_x;
+  lib->zoom_y = zoom_y;
+  lib->track  = 0;
+  lib->center = center;
   // dt_mipmap_cache_print(darktable.mipmap_cache);
   // dt_image_cache_print(darktable.image_cache);
 #ifdef _DEBUG
@@ -538,8 +544,10 @@ void leave(dt_view_t *self)
 
 void reset(dt_view_t *self)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->center = 1;
+  lib->track = lib->pan = 0;
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  DT_CTL_SET_GLOBAL(lib_center, 1);
   DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
 }
 
@@ -606,26 +614,27 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
 
 void key_pressed(dt_view_t *self, uint16_t which)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
   switch (which)
   {
     case KEYCODE_Left: case KEYCODE_a:
-      DT_CTL_SET_GLOBAL(lib_track, -1);
+      lib->track = -1;
       break;
     case KEYCODE_Right: case KEYCODE_e:
-      DT_CTL_SET_GLOBAL(lib_track, 1);
+      lib->track = 1;
       break;
     case KEYCODE_Up: case KEYCODE_comma:
-      DT_CTL_SET_GLOBAL(lib_track, -DT_LIBRARY_MAX_ZOOM);
+      lib->track = -DT_LIBRARY_MAX_ZOOM;
       break;
     case KEYCODE_Down: case KEYCODE_o:
-      DT_CTL_SET_GLOBAL(lib_track, DT_LIBRARY_MAX_ZOOM);
+      lib->track = DT_LIBRARY_MAX_ZOOM;
       break;
     case KEYCODE_1:
-      DT_CTL_SET_GLOBAL(lib_zoom, 1);
+      lib->zoom = 1;
       break;
     case KEYCODE_apostrophe:
-      DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
-      DT_CTL_SET_GLOBAL(lib_center, 1);
+      lib->zoom = DT_LIBRARY_MAX_ZOOM;
+      lib->center = 1;
       break;
     default:
       break;
@@ -634,19 +643,19 @@ void key_pressed(dt_view_t *self, uint16_t which)
 
 void scrolled(dt_view_t *view, double x, double y, int up)
 {
-  int zoom;
-  DT_CTL_GET_GLOBAL(zoom, lib_zoom);
+  dt_library_t *lib = (dt_library_t *)self->data;
+  int zoom = lib->zoom;
   if(up)
   {
     zoom--;
     if(zoom < 1) zoom = 1;
-    DT_CTL_SET_GLOBAL(lib_zoom, zoom);
+    lib->zoom = zoom;
   }
   else
   {
     zoom++;
     if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-    DT_CTL_SET_GLOBAL(lib_zoom, zoom);
+    lib->zoom = zoom;
   }
 }
 

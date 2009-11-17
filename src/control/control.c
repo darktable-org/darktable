@@ -19,13 +19,41 @@
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
-  gconf_client_set_int(c->gconf, DT_GCONF_DIR"/config_version", DT_VERSION, NULL);
-  gconf_client_set_bool(c->gconf, DT_GCONF_DIR"/write_dt_files", TRUE, NULL);
-  gconf_client_set_bool(c->gconf, DT_GCONF_DIR"/ask_before_delete", TRUE, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/config_version", DT_VERSION, NULL);
+  gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/write_dt_files", TRUE, NULL);
+  gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/ask_before_delete", TRUE, NULL);
   gconf_client_set_float(c->gconf, DT_GCONF_DIR"/preview_subsample", .5f, NULL);
 
   // recently used ui configuration
-  gconf_client_set_int(c->gconf, DT_GCONF_DIR"/ui_last/select_action", 0, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/select_action", 0, NULL);
+  gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/ui_last/fullscreen", FALSE, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/view", DT_LIBRARY, NULL);
+
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_x",      0, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_y",      0, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_w",    640, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_h",    480, NULL);
+
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_left",   -1, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_right",  -1, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_top",     0, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_bottom",  0, NULL);
+
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_library",     1<<DT_LIBRARY, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_export",      1<<DT_LIBRARY, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_metadata",    0, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_navigation", -1, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_histogram",  -1, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_history",    -1, NULL);
+
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_FILENAME, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_filter",   DT_LIB_FILTER_STAR_1, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_JPG, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/export_quality", 97, NULL);
+
+  // default [de-]gamma values.
+  gconf_client_set_float(c->gconf, DT_GCONF_DIR"/gamma_linear", .1f, NULL);
+  gconf_client_set_float(c->gconf, DT_GCONF_DIR"/gamma_gamma", .45f, NULL);
 }
 
 void dt_ctl_settings_init(dt_control_t *s)
@@ -39,48 +67,64 @@ void dt_ctl_settings_init(dt_control_t *s)
   pthread_mutex_init(&(s->global_mutex), NULL);
   pthread_mutex_init(&(s->image_mutex), NULL);
 
-  s->global_settings.version = DT_VERSION;
+  // TODO: remove (gconf already exists)
+  // s->global_settings.version = DT_VERSION;
 
-  s->global_settings.gui = DT_LIBRARY;
-  s->global_settings.gui_fullscreen = 0;
+  // TODO: => gconf
+  // s->global_settings.gui = DT_LIBRARY;
+  // s->global_settings.gui_fullscreen = 0;
   // expand everything
   // except top/bottm, retract everything but the lib button in lib mode
   // retract lib button in dev mode
-  s->global_settings.gui_x = 0;
-  s->global_settings.gui_y = 0;
-  s->global_settings.gui_w = 640;
-  s->global_settings.gui_h = 480;
-  s->global_settings.gui_top = s->global_settings.gui_bottom = 0;
-  s->global_settings.gui_left = s->global_settings.gui_right = -1;
-  s->global_settings.gui_export = 
-  s->global_settings.gui_library = 1<<DT_LIBRARY;
-  s->global_settings.gui_navigation = 
-  s->global_settings.gui_history = s->global_settings.gui_histogram =
-  s->global_settings.gui_tonecurve = s->global_settings.gui_gamma =
-  s->global_settings.gui_hsb = 1<<DT_DEVELOP;
+  // s->global_settings.gui_x = 0;
+  // s->global_settings.gui_y = 0;
+  // s->global_settings.gui_w = 640;
+  // s->global_settings.gui_h = 480;
+  // s->global_settings.gui_top = s->global_settings.gui_bottom = 0;
+  // s->global_settings.gui_left = s->global_settings.gui_right = -1;
+  // s->global_settings.gui_export = 
+  // s->global_settings.gui_library = 1<<DT_LIBRARY;
+  // s->global_settings.gui_navigation = 
+  // s->global_settings.gui_history = s->global_settings.gui_histogram =
+  // s->global_settings.gui_tonecurve = s->global_settings.gui_gamma =
+  // s->global_settings.gui_hsb = 1<<DT_DEVELOP;
 
-  s->global_settings.lib_zoom = 13;
-  s->global_settings.lib_zoom_x = 0.0f;
-  s->global_settings.lib_zoom_y = 0.0f;
-  s->global_settings.lib_center = 0;
-  s->global_settings.lib_pan = 0;
-  s->global_settings.lib_track = 0;
+  // TODO: move these to lighttable settings blob:
+  // TODO: sort out which we actually want to save, and if so, dependent on film?
+
+  // TODO: move these to lighttable locally (store per film)
+  // s->global_settings.lib_zoom = 13;
+  // s->global_settings.lib_zoom_x = 0.0f;
+  // s->global_settings.lib_zoom_y = 0.0f;
+
+  // s->global_settings.lib_center = 0;
+  // s->global_settings.lib_pan = 0;
+  // s->global_settings.lib_track = 0;
+
+  // TODO: move the mouse_over_id of lighttable to something general in control: gui-thread selected img or so?
   s->global_settings.lib_image_mouse_over_id = -1;
-  s->global_settings.lib_sort = DT_LIB_SORT_FILENAME;
-  s->global_settings.lib_filter = DT_LIB_FILTER_ALL;
 
+  // TODO: gconf: combobox
+  // s->global_settings.lib_sort = DT_LIB_SORT_FILENAME;
+  // s->global_settings.lib_filter = DT_LIB_FILTER_ALL;
+
+  // TODO: move these to darkroom settings blob:
   s->global_settings.dev_closeup = 0;
   s->global_settings.dev_zoom_x = 0;
   s->global_settings.dev_zoom_y = 0;
   s->global_settings.dev_zoom = DT_ZOOM_FIT;
+  // TODO: dev_zoom_scale?
 
-  s->global_settings.dev_export_format = DT_DEV_EXPORT_JPG;
-  s->global_settings.dev_export_quality = 97;
+  // TODO: => gconf: this is actually a combobox
+  // s->global_settings.dev_export_format = DT_DEV_EXPORT_JPG;
+  // s->global_settings.dev_export_quality = 97;
 
-  strncpy(s->global_settings.dev_op, "original", 20);
+  // TODO: what is this used for??
+  // strncpy(s->global_settings.dev_op, "original", 20);
   
-  s->global_settings.dev_gamma_linear = 0.1;
-  s->global_settings.dev_gamma_gamma = 0.45;
+  // TODO: => gconf
+  // s->global_settings.dev_gamma_linear = 0.1;
+  // s->global_settings.dev_gamma_gamma = 0.45;
   
   memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
 }
@@ -94,13 +138,15 @@ int dt_control_load_config(dt_control_t *c)
   rc = sqlite3_prepare_v2(darktable.db, "select settings from settings", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
+#if 0 // global settings not needed anymore
     pthread_mutex_lock(&(darktable.control->global_mutex));
     darktable.control->global_settings.version = -1;
     const void *set = sqlite3_column_blob(stmt, 0);
     int len = sqlite3_column_bytes(stmt, 0);
     if(len == sizeof(dt_ctl_settings_t)) memcpy(&(darktable.control->global_settings), set, len);
+#endif
     rc = sqlite3_finalize(stmt);
-
+#if 0
     if(darktable.control->global_settings.version != DT_VERSION)
     {
       fprintf(stderr, "[load_config] wrong version %d (should be %d), substituting defaults.\n", darktable.control->global_settings.version, DT_VERSION);
@@ -122,6 +168,7 @@ int dt_control_load_config(dt_control_t *c)
       // dt_film_roll_open(darktable.library->film, film_id);
       // weg: dt_film_roll_import(darktable.library->film, darktable.control->global_settings.lib_last_film);
     }
+#endif
   }
   else
   { // db not yet there, create it
@@ -161,10 +208,9 @@ int dt_control_load_config(dt_control_t *c)
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
   }
-  DT_CTL_SET_GLOBAL(gui, DT_LIBRARY);
-  int width, height;
-  DT_CTL_GET_GLOBAL(width, gui_w);
-  DT_CTL_GET_GLOBAL(height, gui_h);
+  gconf_client_set_int(c->gconf, DT_GCONF_DIR"/last_ui/view", DT_LIBRARY, NULL);
+  int width  = gconf_client_get_int(c->gconf, DT_GCONF_DIR"/last_ui/window_w", NULL);
+  int height = gconf_client_get_int(c->gconf, DT_GCONF_DIR"/last_ui/window_h", NULL);
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   dt_control_restore_gui_settings(DT_LIBRARY);
@@ -175,14 +221,15 @@ int dt_control_load_config(dt_control_t *c)
 int dt_control_write_config(dt_control_t *c)
 {
   dt_ctl_gui_mode_t gui;
-  DT_CTL_GET_GLOBAL(gui, gui);
+  dt_ctl_gui_mode_t gui = gconf_client_get_int(c->gconf,
+      DT_GCONF_DIR"/last_ui/view", NULL);
   dt_control_save_gui_settings(gui);
 
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  DT_CTL_SET_GLOBAL(gui_x, widget->allocation.x);
-  DT_CTL_SET_GLOBAL(gui_y, widget->allocation.y);
-  DT_CTL_SET_GLOBAL(gui_w, widget->allocation.width);
-  DT_CTL_SET_GLOBAL(gui_h, widget->allocation.height);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_x",  widget->allocation.x, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_y",  widget->allocation.y, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_w",  widget->allocation.width, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_h",  widget->allocation.height, NULL);
 
   int rc;
   sqlite3_stmt *stmt;
