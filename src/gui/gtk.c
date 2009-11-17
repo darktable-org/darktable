@@ -54,6 +54,16 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 	return TRUE;
 }
 
+gboolean
+view_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+  {
+    dt_ctl_switch_mode();
+    return TRUE;
+  }
+  return FALSE;
+}
 
 void
 image_filter_changed (GtkComboBox *widget, gpointer user_data)
@@ -439,6 +449,12 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "endmarker_left");
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+
+  // switch modes in gui by double-clicking label
+  widget = glade_xml_get_widget (darktable.gui->main_window, "view_label_eventbox");
+  g_signal_connect (G_OBJECT (widget), "button-press-event",
+                    G_CALLBACK (view_label_clicked),
+                    (gpointer)0);
 
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");

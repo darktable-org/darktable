@@ -254,6 +254,7 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
     fprintf(stderr, "[dev_process_to_mip] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, dev->image->filename);
   dt_image_update_mipmaps(dev->image);
 
+  dt_image_cache_flush(dev->image); // write new output size to db.
   dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
   dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
 }

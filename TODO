@@ -1,7 +1,9 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- write .dt-tags file (stars, keywords, ..?)
 - dt_dev_process_to_mip: check hash
+  - output_width not adjusted correctly.
 - more gconf options:
   - window position
   - gui configurations (recently used combobox constellations etc)

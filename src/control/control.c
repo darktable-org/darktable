@@ -593,9 +593,11 @@ void dt_ctl_switch_mode()
     dt_control_save_gui_settings(gui);
     gui ^= 1;  // FIXME: cycle through more modules!
     dt_control_restore_gui_settings(gui);
-    dt_view_manager_switch(darktable.view_manager, gui);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
     char buf[512];
+    snprintf(buf, 512, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
+    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, NULL);
+    dt_view_manager_switch(darktable.view_manager, gui);
     snprintf(buf, 512, "<span color=\"#7f7f7f\"><big><b><i>%s %s</i></b></big></span>", dt_view_manager_name(darktable.view_manager), _("mode"));
     gtk_label_set_label(GTK_LABEL(widget), buf);
     DT_CTL_SET_GLOBAL(gui, gui);
