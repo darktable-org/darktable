@@ -81,9 +81,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_max = -1;
     dev->histogram_pre_max = -1;
 
-    float lin, gam;
-    DT_CTL_GET_GLOBAL(lin, dev_gamma_linear);
-    DT_CTL_GET_GLOBAL(gam, dev_gamma_gamma);
+    float lin = gconf_client_get_float(darktable.control->gconf, DT_GCONF_DIR"/gamma_linear", NULL);
+    float gam = gconf_client_get_float(darktable.control->gconf, DT_GCONF_DIR"/gamma_gamma",  NULL);
     dt_dev_set_gamma_array(dev, lin, gam, dt_dev_default_gamma);
     int last = 0; // invert
     for(int i=0;i<0x100;i++) for(int k=last;k<0x10000;k++)
@@ -807,8 +806,8 @@ void dt_dev_export(dt_job_t *job)
     if(c <= filename) c = filename + strlen(filename);
 
     // read type from global config.
-    dt_dev_export_format_t fmt;
-    DT_CTL_GET_GLOBAL(fmt, dev_export_format);
+    dt_dev_export_format_t fmt =
+      gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export", NULL);
     switch(fmt)
     {
       case DT_DEV_EXPORT_JPG:

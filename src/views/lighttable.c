@@ -340,8 +340,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   pan    = lib->pan;
   center = lib->center;
   track  = lib->track;
-  DT_CTL_GET_GLOBAL(sort, lib_sort);
-  DT_CTL_GET_GLOBAL(filter, lib_filter);
+  sort   = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",   NULL);
+  filter = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter", NULL);
 
   lib->image_over = DT_LIB_DESERT;
 
@@ -526,14 +526,13 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   
 }
 
-#if 0
 void enter(dt_view_t *self)
 {
-  GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
-  gtk_widget_set_visible(widget, TRUE);
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->zoom = 1;
 }
 
+#if 0
 void leave(dt_view_t *self)
 {
   GtkWidget *widget;
@@ -547,14 +546,15 @@ void reset(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->center = 1;
   lib->track = lib->pan = 0;
+  lib->zoom = DT_LIBRARY_MAX_ZOOM;
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  DT_CTL_SET_GLOBAL(lib_zoom, DT_LIBRARY_MAX_ZOOM);
 }
 
 
 void mouse_leave(dt_view_t *self)
 {
-  if(!darktable.control->global_settings.lib_pan && darktable.control->global_settings.lib_zoom != 1)
+  dt_library_t *lib = (dt_library_t *)self->data;
+  if(!lib->pan && lib->zoom != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
     dt_control_queue_draw_all(); // remove focus
@@ -571,7 +571,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
 void button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
-  DT_CTL_SET_GLOBAL(lib_pan, 0);
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->pan = 0;
   if(which == 1) dt_control_change_cursor(GDK_ARROW);
 }
 
@@ -581,11 +582,11 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->modifiers = state;
   lib->button = which;
-  DT_CTL_GET_GLOBAL(lib->select_offset_x, lib_zoom_x);
-  DT_CTL_GET_GLOBAL(lib->select_offset_y, lib_zoom_y);
+  lib->select_offset_x = lib->zoom_x;
+  lib->select_offset_y = lib->zoom_y;
   lib->select_offset_x += x;
   lib->select_offset_y += y;
-  DT_CTL_SET_GLOBAL(lib_pan, 1);
+  lib->pan = 1;
   if(which == 1) dt_control_change_cursor(GDK_HAND1);
   // image button pressed?
   switch(lib->image_over)
@@ -643,7 +644,7 @@ void key_pressed(dt_view_t *self, uint16_t which)
 
 void scrolled(dt_view_t *view, double x, double y, int up)
 {
-  dt_library_t *lib = (dt_library_t *)self->data;
+  dt_library_t *lib = (dt_library_t *)view->data;
   int zoom = lib->zoom;
   if(up)
   {

@@ -105,11 +105,8 @@ int dt_init(int argc, char *argv[])
     if(id)
     {
       dt_film_open(darktable.film, 1);
-      DT_CTL_SET_GLOBAL(lib_zoom, 1);
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-      dt_control_restore_gui_settings(DT_DEVELOP);
-      dt_view_manager_switch(darktable.view_manager, DT_DEVELOP);
-      DT_CTL_SET_GLOBAL(gui, DT_DEVELOP);
+      dt_ctl_switch_mode_to(DT_DEVELOP);
     }
     else
     {
@@ -122,9 +119,7 @@ int dt_init(int argc, char *argv[])
 
 void dt_cleanup()
 {
-  dt_ctl_gui_mode_t gui;
-  DT_CTL_GET_GLOBAL(gui, gui);
-  if(gui == DT_DEVELOP) dt_view_manager_switch(darktable.view_manager, DT_LIBRARY);
+  dt_ctl_switch_mode_to(DT_LIBRARY);
   char *homedir = getenv("HOME");
   char filename[512];
   snprintf(filename, 512, "%s/.darktablerc", homedir);

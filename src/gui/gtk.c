@@ -63,12 +63,12 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_filter
   int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_ALL); }
-  else if(i == 1)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_NO); }
-  else if(i == 2)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_1); }
-  else if(i == 3)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_2); }
-  else if(i == 4)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_3); }
-  else if(i == 5)  { DT_CTL_SET_GLOBAL(lib_filter, DT_LIB_FILTER_STAR_4); }
+  if     (i == 0)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_ALL, NULL);
+  else if(i == 1)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_NO, NULL);
+  else if(i == 2)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_1, NULL);
+  else if(i == 3)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_2, NULL);
+  else if(i == 4)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_3, NULL);
+  else if(i == 5)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_4, NULL);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }
@@ -79,10 +79,10 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_sort
   int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_FILENAME); }
-  else if(i == 1)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_DATETIME); }
-  else if(i == 2)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_RATING); }
-  else if(i == 3)   { DT_CTL_SET_GLOBAL(lib_sort, DT_LIB_SORT_ID); }
+  if     (i == 0)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_FILENAME, NULL);
+  else if(i == 1)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_DATETIME, NULL);
+  else if(i == 2)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_RATING, NULL);
+  else if(i == 3)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_ID, NULL);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }
@@ -103,10 +103,10 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   // read "export_format" to global settings
   GtkWidget *wid = glade_xml_get_widget (darktable.gui->main_window, "export_format");
   int i = gtk_combo_box_get_active(GTK_COMBO_BOX(wid));
-  if     (i == 0)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_JPG);   }
-  else if(i == 1)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PNG);   }
-  else if(i == 2)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PPM16); }
-  else if(i == 3)  { DT_CTL_SET_GLOBAL(dev_export_format, DT_DEV_EXPORT_PFM);   }
+  if     (i == 0)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_JPG, NULL);
+  else if(i == 1)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_PNG, NULL);
+  else if(i == 2)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_PPM16, NULL);
+  else if(i == 3)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_PFM, NULL);
   pthread_mutex_lock(&(darktable.film->images_mutex));
   darktable.film->last_exported = 0;
   pthread_mutex_unlock(&(darktable.film->images_mutex));
@@ -176,11 +176,8 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
     if(id)
     {
       dt_film_open(darktable.film, 1);
-      DT_CTL_SET_GLOBAL(lib_zoom, 1);
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-      dt_control_restore_gui_settings(DT_DEVELOP);
-      dt_view_manager_switch(darktable.view_manager, DT_DEVELOP);
-      DT_CTL_SET_GLOBAL(gui, DT_DEVELOP);
+      dt_ctl_switch_mode_to(DT_DEVELOP);
     }
     else
     {
@@ -249,7 +246,7 @@ export_quality_changed (GtkRange *range, gpointer user_data)
 {
   GtkWidget *widget;
   int quality = (int)gtk_range_get_value(range);
-  DT_CTL_SET_GLOBAL(dev_export_quality, quality);
+  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/export_quality", quality, NULL);
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
 }

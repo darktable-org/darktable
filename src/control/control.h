@@ -112,6 +112,7 @@ void dt_control_update_recent_films();
 
 // could be both
 void dt_ctl_switch_mode();
+void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
