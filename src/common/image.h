@@ -83,6 +83,8 @@ int dt_image_open(const int32_t id);
 int dt_image_open2(dt_image_t *img, const int32_t id);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
 int dt_image_import(const int32_t film_id, const char *filename);
+/** image is in db, mipmaps aren't? call this: */
+int dt_image_reimport(dt_image_t *img, const char *filename);
 /** cleanup. */
 void dt_image_cleanup(dt_image_t *img);
 /** loads the requested buffer to cache, with read lock set. */

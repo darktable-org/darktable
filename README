@@ -3,20 +3,11 @@ darktable is not a lighttable.
 
 to build it, you need:
 
- - lcms
- - gtk+-2.0
- - libglade-2.0
- - libgthread-2.0
- - cairo
- - libjpeg
- - libpng
- - gconf
- - lensfun
+ - lcms gtk+-2.0 libglade-2.0 libgthread-2.0 cairo libjpeg libpng gconf lensfun
 
 other used packages (supplied in the source tree):
 
- - LibRaw
- - nikon_curve (taken from ufraw)
+ - LibRaw nikon_curve (taken from ufraw)
 
 then, type:
 
@@ -27,6 +18,15 @@ then, type:
 
 (the first step is only necessary when building from git for the first time)
 and enjoy!
+
+
+speedhack:
+
+ $ cp ~/.darktabledb /dev/shm
+ $ echo -n "/dev/shm/.darktabledb" > ~/.darktablerc
+ $ darktable
+ $ cp /dev/shm/.darktabledb ~/
+ :)
 
 send any bugreports to me: hanatos@gmail.com
 or find more information on the web: http://darktable.sf.net

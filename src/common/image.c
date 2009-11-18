@@ -201,6 +201,31 @@ int dt_image_raw_to_preview(dt_image_t *img)
   return 0;
 }
 
+int dt_image_reimport(dt_image_t *img, const char *filename)
+{
+  if(dt_imageio_open_preview(img, filename))
+  {
+    fprintf(stderr, "[image_reimport] could not open %s\n", filename);
+    return 1;
+  }
+
+  // try loading a .dt file
+  char dtfilename[1024];
+  strncpy(dtfilename, filename, 1024);
+  char *c = dtfilename + strlen(dtfilename);
+  for(;c>dtfilename && *c != '.';c--);
+  sprintf(c, ".dt");
+  if(!dt_imageio_dt_read(img->id, dtfilename))
+  {
+    dt_develop_t dev;
+    dt_dev_init(&dev, 0);
+    dt_dev_load_preview(&dev, img);
+    dt_dev_process_to_mip(&dev);
+    dt_dev_cleanup(&dev);
+  }
+  return 0;
+}
+
 int dt_image_import(const int32_t film_id, const char *filename)
 {
   const char *cc = filename + strlen(filename);
@@ -402,39 +427,29 @@ void dt_image_cleanup(dt_image_t *img)
 
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
-  int ret = 0, rc;
+  int ret = 0;
   if(dt_imageio_preview_read(img, mip))
   { // img not in database. => mip == FULL or kicked out or corrupt or first time load..
     char filename[1024];
-    if(img->film_id > 1)
-    { // not a single image
-      sqlite3_stmt *stmt;
-      rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-      rc = sqlite3_bind_int (stmt, 1, img->film_id);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-        snprintf(filename, 1024, "%s/%s", sqlite3_column_text(stmt, 0), img->filename);
-      rc = sqlite3_finalize(stmt);
-    }
-    else
-    { // single
-      snprintf(filename, 1024, "%s", img->filename);
-    }
+    dt_image_full_path(img, filename, 1024);
     if(mip == DT_IMAGE_MIPF)
     {
       ret = 0;
-      dt_image_buffer_t mip;
       if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
       {
+        if(dt_image_reimport(img, filename)) ret = 1;
+#if 0 // since mips could have been processed, we need to re-import.
         img->flags |= DT_IMAGE_THUMBNAIL;
         mip = dt_image_get(img, DT_IMAGE_MIP4, 'r');
         if(mip != DT_IMAGE_MIP4)
-          if(dt_imageio_open_preview(img, filename)) ret = 1;
+          if(dt_image_reimport(img, filename)) ret = 1;
         dt_image_release(img, mip, 'r');
         ret += dt_image_preview_to_raw(img);
+#endif
       }
       else
       {
-        img->flags &= ~DT_IMAGE_THUMBNAIL;
+        // img->flags &= ~DT_IMAGE_THUMBNAIL;
         ret = dt_image_raw_to_preview(img);
         dt_image_release(img, DT_IMAGE_FULL, 'r');
       }
@@ -446,13 +461,13 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
       // if(img->flags & DT_IMAGE_THUMBNAIL)
       {
         ret = dt_image_raw_to_preview(img);
-        img->flags &= ~DT_IMAGE_THUMBNAIL;
+        // img->flags &= ~DT_IMAGE_THUMBNAIL;
       }
       dt_image_release(img, mip, 'w');
     }
     else
     {
-      ret = dt_imageio_open_preview(img, filename);
+      ret = dt_image_reimport(img, filename);
       dt_image_release(img, mip, 'w');
     }
   }
@@ -665,10 +680,15 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
       img->lock[mip].users = 1;
     }
     img->lock[mip].users++;
+    pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
     return mip;
   }
   // already loading? 
-  if(img->lock[mip_in].write) return DT_IMAGE_NONE;
+  if(img->lock[mip_in].write)
+  {
+    pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+    return DT_IMAGE_NONE;
+  }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
  
   // dt_print(DT_DEBUG_CACHE, "[image_get_blocking] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
@@ -700,7 +720,8 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   // get image with no write lock set!
   if((int)mip < (int)DT_IMAGE_MIPF)
   {
-    while(mip > 0 && (img->mip[mip] == NULL || img->lock[mip].write)) mip--; // level 0 always there.
+    while(mip > 0 && (img->mip[mip] == NULL || img->lock[mip].write)) mip--; // level 0 always there..?
+    if(mip == 0 && (img->mip[mip] == NULL || img->lock[mip].write)) mip = DT_IMAGE_NONE;
   }
   else if(mip == DT_IMAGE_MIPF)
   {

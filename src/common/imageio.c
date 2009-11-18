@@ -117,19 +117,6 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     length = sqlite3_column_bytes(stmt, 0);
   }
   if(!blob) return 1; // not there. will be handled by caller (load to db)
-  /*{
-    fprintf(stderr, "[preview_read] could not get mipmap from database: %s, removing image %s.\n", sqlite3_errmsg(darktable.db), img->filename);
-    rc = sqlite3_finalize(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, img->id);
-    (void)sqlite3_step(stmt);
-    // char filename[512];
-    // strncpy(filename, img->filename, 512);
-    // int film_id = img->film_id;
-    dt_image_cache_release(img, 'r');
-    // TODO: need to preserve img id!
-    return 1;//dt_image_import(film_id, filename);
-  }*/
   if(dt_image_alloc(img, mip))
   {
     rc = sqlite3_finalize(stmt);
@@ -469,6 +456,7 @@ error_raw_magick:// clean up libraw and magick only
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
+      (void)dt_image_preview_to_raw(img);
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
       return ret;
@@ -499,6 +487,7 @@ error_raw_magick:// clean up libraw and magick only
           for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
+      (void)dt_image_preview_to_raw(img);
       // store in db.
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
       dt_imageio_preview_write(img, DT_IMAGE_MIP4);
@@ -883,6 +872,7 @@ error_magick_mip4:
     }
   }
   free(tmp);
+  (void)dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   // store in db.
   int ret = 0;

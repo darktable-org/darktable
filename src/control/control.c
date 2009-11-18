@@ -258,7 +258,7 @@ void dt_control_init(dt_control_t *s)
   s->idle_top = DT_CONTROL_MAX_JOBS;
   s->queued_top = 0;
   // start threads
-  s->num_threads = DT_CTL_WORKER_RESERVED + 6;//4; // TODO: omp_get procs equiv.!
+  s->num_threads = DT_CTL_WORKER_RESERVED + 6;
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   s->running = 1;
   for(k=0;k<s->num_threads;k++)
@@ -398,6 +398,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   }
   else
   {
+    fprintf(stderr, "[ctl_add_job] too many jobs in queue!\n");
     pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
@@ -713,10 +714,11 @@ void dt_control_queue_draw_all()
 {
   if(darktable.control->running)
   {
-    if(pthread_self() != darktable.control->gui_thread) gdk_threads_enter();
+    int needlock = pthread_self() != darktable.control->gui_thread;
+    if(needlock) gdk_threads_enter();
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_queue_draw(widget);
-    if(pthread_self() != darktable.control->gui_thread) gdk_threads_leave();
+    if(needlock) gdk_threads_leave();
   }
 }
 

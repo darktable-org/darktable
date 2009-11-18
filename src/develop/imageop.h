@@ -26,6 +26,7 @@ typedef struct dt_iop_params_t
 dt_iop_params_t;
 typedef void* dt_iop_gui_data_t;
 typedef void* dt_iop_data_t;
+typedef void* dt_iop_global_data_t;
 
 struct dt_iop_module_t;
 typedef struct dt_iop_module_t
@@ -50,8 +51,8 @@ typedef struct dt_iop_module_t
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
-  // other stuff that may be needed by the module (as GeglNode*), not only in gui mode.
-  // dt_iop_data_t *data;
+  /** other stuff that may be needed by the module, not only in gui mode. */
+  dt_iop_global_data_t *data;
   /** string identifying this operation. */
   dt_dev_operation_t op;
   /** child widget which is added to the GtkExpander. */

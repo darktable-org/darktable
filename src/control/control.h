@@ -14,7 +14,7 @@
 
 #define DT_GCONF_DIR "/apps/darktable"
 
-#define DT_CONTROL_MAX_JOBS 100
+#define DT_CONTROL_MAX_JOBS 300
 #define DT_CONTROL_JOB_DEBUG
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers

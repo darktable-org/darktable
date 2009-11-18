@@ -18,8 +18,6 @@
 #include "gui/draw.h"
 #include "iop/lens.h"
 
-static lfDatabase *dt_iop_lensfun_db = NULL;
-
 const char *name()
 {
   return _("lens distortions");
@@ -253,6 +251,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
   if(p->camera[0])
@@ -315,7 +314,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void init(dt_iop_module_t *module)
 {
-  dt_iop_lensfun_db = lf_db_new ();
+  lfDatabase *dt_iop_lensfun_db = lf_db_new();
+  module->data = (void *)dt_iop_lensfun_db;
   if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
   {
     char path[1024];
@@ -371,6 +371,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)module->data;
   lf_db_destroy(dt_iop_lensfun_db);
   free(module->gui_data);
   module->gui_data = NULL;
@@ -733,6 +734,7 @@ static void camera_search_clicked(
     GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   char make [200], model [200];
   const gchar *txt = gtk_entry_get_text(GTK_ENTRY(g->camera_model));
@@ -970,6 +972,7 @@ static void lens_search_clicked(
     GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
   char make [200], model [200];
@@ -1033,6 +1036,7 @@ void scale_changed(GtkRange *range, gpointer user_data)
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   g->camera = NULL;
@@ -1147,6 +1151,7 @@ void gui_update(struct dt_iop_module_t *self)
   // let gui elements reflect params
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
   gtk_entry_set_text(g->camera_model, p->camera);
   gtk_entry_set_text(g->lens_model, p->lens);
   gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
