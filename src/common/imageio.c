@@ -27,11 +27,16 @@
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
 {
-  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1;
+  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1; 
+  sqlite3_stmt *stmt;
+  int rc, wd, ht;
+  rc = sqlite3_prepare_v2(darktable.db, "insert into mipmaps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, img->id);
+  rc = sqlite3_bind_int (stmt, 2, mip);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
   if(mip == DT_IMAGE_MIPF)
   {
-    sqlite3_stmt *stmt;
-    int rc, wd, ht;
     dt_image_get_mip_size(img, DT_IMAGE_MIPF, &wd, &ht);
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
     uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
@@ -45,9 +50,6 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
     return 0;
   }
 
-  sqlite3_stmt *stmt;
-  int rc;
-  int wd, ht;
   dt_image_get_mip_size(img, mip, &wd, &ht);
   dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
 #if 0//def HAVE_MAGICK
@@ -424,6 +426,7 @@ error_raw_magick:// clean up libraw and magick only
       if(dt_imageio_jpeg_decompress(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
       {
         free(tmp);
+        fprintf(stderr, "[raw_preview] could not alloc mip4!\n");
         goto error_raw;
       }
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));

@@ -203,10 +203,16 @@ int dt_image_raw_to_preview(dt_image_t *img)
 
 int dt_image_reimport(dt_image_t *img, const char *filename)
 {
+  // FIXME: this brute-force lock might be a bit too much:
+  dt_image_t *imgl = dt_image_cache_use(img->id, 'w');
+  if(!imgl)
+  {
+    // fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
+    return 1;
+  }
   if(dt_imageio_open_preview(img, filename))
   {
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
-    return 1;
   }
 
   // try loading a .dt file
@@ -223,6 +229,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     dt_dev_process_to_mip(&dev);
     dt_dev_cleanup(&dev);
   }
+  dt_image_cache_release(imgl, 'w');
   return 0;
 }
 
@@ -438,18 +445,9 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
       if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
       {
         if(dt_image_reimport(img, filename)) ret = 1;
-#if 0 // since mips could have been processed, we need to re-import.
-        img->flags |= DT_IMAGE_THUMBNAIL;
-        mip = dt_image_get(img, DT_IMAGE_MIP4, 'r');
-        if(mip != DT_IMAGE_MIP4)
-          if(dt_image_reimport(img, filename)) ret = 1;
-        dt_image_release(img, mip, 'r');
-        ret += dt_image_preview_to_raw(img);
-#endif
       }
       else
       {
-        // img->flags &= ~DT_IMAGE_THUMBNAIL;
         ret = dt_image_raw_to_preview(img);
         dt_image_release(img, DT_IMAGE_FULL, 'r');
       }
@@ -457,12 +455,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     else if(mip == DT_IMAGE_FULL)
     {
       ret = dt_imageio_open(img, filename);
-      // make sure we're consistent. overwrite each time.
-      // if(img->flags & DT_IMAGE_THUMBNAIL)
-      {
-        ret = dt_image_raw_to_preview(img);
-        // img->flags &= ~DT_IMAGE_THUMBNAIL;
-      }
+      ret = dt_image_raw_to_preview(img);
       dt_image_release(img, mip, 'w');
     }
     else
