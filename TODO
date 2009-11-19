@@ -1,6 +1,7 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- mip to raw broken? raw->ldr->raw feedback loop?
 - write .dt-tags file (stars, keywords, ..?)
 - dt_dev_process_to_mip: check hash
 - more gconf options:

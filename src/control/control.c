@@ -135,6 +135,9 @@ int dt_control_load_config(dt_control_t *c)
   sqlite3_stmt *stmt;
   // unsafe, fast write:
   rc = sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
+  // free memory on disk if we call the line below:
+  rc = sqlite3_exec(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
+  // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   rc = sqlite3_prepare_v2(darktable.db, "select settings from settings", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -645,7 +648,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
     snprintf(buf, 512, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
     gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, NULL);
     dt_view_manager_switch(darktable.view_manager, mode);
-    snprintf(buf, 512, "<span color=\"#7f7f7f\"><big><b><i>%s %s</i></b></big></span>", dt_view_manager_name(darktable.view_manager), _("mode"));
+    snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"), dt_view_manager_name(darktable.view_manager));
     gtk_label_set_label(GTK_LABEL(widget), buf);
     gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", mode, NULL);
   }
