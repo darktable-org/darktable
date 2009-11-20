@@ -66,7 +66,25 @@ PKG_CHECK_MODULES(GLADE, [libglade-2.0])
 PKG_CHECK_MODULES(SQLITE, [sqlite3])
 PKG_CHECK_MODULES(EXIV2, exiv2 >= 0.18)
 PKG_CHECK_MODULES(PNG, libpng12)
-PKG_CHECK_MODULES(LENSFUN, lensfun >= 0.2.3)
+AC_ARG_ENABLE(lensfun,
+	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),
+        [
+          AC_MSG_CHECKING([whether build the lensfun plugin])
+          if test "$enable_lensfun" = "yes"; then
+             PKG_CHECK_MODULES(LENSFUN, lensfun >= 0.2.3)
+             AC_DEFINE(HAVE_LENSFUN, 1, [whether build the lensfun plugin])
+             AC_MSG_RESULT([yes])
+          else
+             AC_MSG_RESULT([no])
+          fi
+          AM_CONDITIONAL([HAVE_LENSFUN], [test "$enable_lensfun" = yes])
+        ],
+        [
+          PKG_CHECK_MODULES(LENSFUN, lensfun >= 0.2.3)
+          AC_DEFINE(HAVE_LENSFUN, 1, [whether build the lensfun plugin])
+          AM_CONDITIONAL([HAVE_LENSFUN], [true])
+        ]
+        )
  
 AC_CHECK_LIB(jpeg, jpeg_destroy_decompress,
    [JPEG_LIBS="-ljpeg"])
