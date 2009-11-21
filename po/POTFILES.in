@@ -1,7 +1,7 @@
 darktable.glade
 src/control/control.c
 src/develop/imageop.c
-src/iop/lensfun.cpp
+src/iop/lens.c
 src/iop/tonecurve.c
 src/iop/colorout.c
 src/iop/equalizer.c
