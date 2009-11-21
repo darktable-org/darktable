@@ -1042,7 +1042,7 @@ void dt_control_update_recent_films()
     if(num < 5)
     {
       const int id = sqlite3_column_int(stmt, 1);
-      if(id == 0)
+      if(id == 1)
       {
         snprintf(label, label_cnt, _("single images"));
       }
