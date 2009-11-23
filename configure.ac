@@ -105,6 +105,7 @@ AC_CONFIG_FILES([
     src/iop/Makefile
     src/views/Makefile
     pixmaps/Makefile
+    pixmaps/plugins-darkroom/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT

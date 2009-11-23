@@ -134,14 +134,14 @@ void module_show_callback(GtkToggleButton *togglebutton, gpointer user_data)
     gtk_widget_show_all(GTK_WIDGET(module->topwidget));
     gconf_client_set_bool (darktable.control->gconf, option, TRUE, NULL);
     gtk_expander_set_expanded(module->expander, TRUE);
-    snprintf(option, 512, _("hide module %s"), module->name());
+    snprintf(option, 512, _("hide %s"), module->name());
   }
   else
   {
     gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
     gconf_client_set_bool (darktable.control->gconf, option, FALSE, NULL);
     gtk_expander_set_expanded(module->expander, FALSE);
-    snprintf(option, 512, _("show module %s"), module->name());
+    snprintf(option, 512, _("show %s"), module->name());
   }
   gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, NULL);
 }
@@ -155,6 +155,8 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
+  gtk_widget_set_visible(widget, FALSE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   int selected;
@@ -184,9 +186,20 @@ void enter(dt_view_t *self)
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     module->showhide = gtk_toggle_button_new();
+    char filename[1024], datadir[1024];
+    dt_get_datadir(datadir, 1024);
+    snprintf(filename, 1024, "%s/pixmaps/plugins-darkroom/%s.png", datadir, module->op);
+    if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+      snprintf(filename, 1024, "%s/pixmaps/plugins-darkroom/template.png", datadir);
+    GtkWidget *image = gtk_image_new_from_file(filename);
+    gtk_button_set_image(GTK_BUTTON(module->showhide), image);
     g_signal_connect(G_OBJECT(module->showhide), "toggled",
                      G_CALLBACK(module_show_callback), module);
-    gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1, GTK_FILL | GTK_EXPAND | GTK_SHRINK, GTK_FILL | GTK_EXPAND | GTK_SHRINK, 0, 0);
+    gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
+        GTK_FILL | GTK_EXPAND | GTK_SHRINK,
+        GTK_SHRINK,
+        // GTK_FILL | GTK_EXPAND | GTK_SHRINK,
+        0, 0);
     if(ti < 5) ti++;
     else { ti = 0; tj ++; }
     modules = g_list_previous(modules);
@@ -241,6 +254,8 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
+  gtk_widget_set_visible(widget, TRUE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db
