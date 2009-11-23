@@ -59,6 +59,10 @@ typedef struct dt_iop_module_t
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkToggleButton *off;
+  /** this widget contains all of the module: expander and label decoration. */
+  GtkWidget *topwidget;
+  /** button used to show/hide this module in the plugin list. */
+  GtkWidget *showhide;
   /** expander containing the widget. */
   GtkExpander *expander;
 

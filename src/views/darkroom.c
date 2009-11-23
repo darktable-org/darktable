@@ -124,6 +124,27 @@ void reset(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 }
 
+void module_show_callback(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  char option[512];
+  snprintf(option, 512, DT_GCONF_DIR"/plugins_darkroom/%s_visible", module->op);
+  if(gtk_toggle_button_get_active(togglebutton))
+  {
+    gtk_widget_show_all(GTK_WIDGET(module->topwidget));
+    gconf_client_set_bool (darktable.control->gconf, option, TRUE, NULL);
+    gtk_expander_set_expanded(module->expander, TRUE);
+    snprintf(option, 512, _("hide module %s"), module->name());
+  }
+  else
+  {
+    gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+    gconf_client_set_bool (darktable.control->gconf, option, FALSE, NULL);
+    gtk_expander_set_expanded(module->expander, FALSE);
+    snprintf(option, 512, _("show module %s"), module->name());
+  }
+  gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, NULL);
+}
 
 void enter(dt_view_t *self)
 {
@@ -151,14 +172,23 @@ void enter(dt_view_t *self)
   dt_dev_load_image(dev, dt_image_cache_use(selected, 'r'));
   // get top level vbox containing all expanders, iop_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+  GtkTable *module_list = GTK_TABLE(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
   GList *modules = g_list_last(dev->iop);
+  int ti = 0, tj = 0;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     module->gui_init(module);
     // add the widget created by gui_init to an expander and both to list.
     GtkWidget *expander = dt_iop_gui_get_expander(module);
+    module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+    module->showhide = gtk_toggle_button_new();
+    g_signal_connect(G_OBJECT(module->showhide), "toggled",
+                     G_CALLBACK(module_show_callback), module);
+    gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1, GTK_FILL | GTK_EXPAND | GTK_SHRINK, GTK_FILL | GTK_EXPAND | GTK_SHRINK, 0, 0);
+    if(ti < 5) ti++;
+    else { ti = 0; tj ++; }
     modules = g_list_previous(modules);
   }
   // end marker widget:
@@ -168,12 +198,20 @@ void enter(dt_view_t *self)
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), 0);
   gtk_widget_show_all(GTK_WIDGET(box));
+  gtk_widget_show_all(GTK_WIDGET(module_list));
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(!gtk_expander_get_expanded (module->expander)) gtk_widget_hide(module->widget);
+    char option[512];
+    snprintf(option, 512, DT_GCONF_DIR"/plugins_darkroom/%s_visible", module->op);
+    gboolean active = gconf_client_get_bool  (darktable.control->gconf, option, NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+
+    gtk_expander_set_expanded (module->expander, FALSE);
+    // if(!gtk_expander_get_expanded (module->expander)) gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
   // synch gui and flag gegl pipe as dirty

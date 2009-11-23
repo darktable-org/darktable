@@ -2,11 +2,13 @@
 #include "common/darktable.h"
 #include "develop/develop.h"
 #include "views/view.h"
+#include "gui/gtk.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <glib.h>
 #include <string.h>
 #include <strings.h>
+#include <glade/glade.h>
 
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
@@ -75,8 +77,17 @@ void dt_view_unload_module (dt_view_t *view)
   if(view->module) g_module_close(view->module);
 }
 
+void dt_vm_remove_child(GtkWidget *widget, gpointer data)
+{
+  gtk_container_remove(GTK_CONTAINER(data), widget);
+}
+
 void dt_view_manager_switch (dt_view_manager_t *vm, int k)
 {
+  // destroy old module list
+  GtkContainer *table = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
+  gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
+
   dt_view_t *v = vm->view + vm->current_view;
   if(v->leave) v->leave(v);
   if(k < DT_VIEW_MAX_MODULES && k >= 0) vm->current_view = k;
