@@ -40,6 +40,28 @@
       still this is really just a programmer's example, suggestions welcome.
       </div>
 
+      <div class="text">
+    	<h1>speed hack</h1>
+      <ul>
+        <li> $ cp ~/.darktabledb /dev/shm</li>
+        <li> $ echo -n "/dev/shm/.darktabledb" &gt; ~/.darktablerc</li>
+        <li> $ darktable</li>
+        <li> $ cp /dev/shm/.darktabledb ~/</li>
+        <li> :)</li>
+      </ul>
+    	</div>
+
+      <div class="text">
+    	<h1>size hack</h1>
+      <ul>
+        <li> $ sqlite3 ~/.darktabledb</li>
+        <li> &gt; delete from mipmaps;</li>
+        <li> &gt; vacuum;</li>
+        <li> darktable will re-generate cached mipmaps in db on demand.</li>
+      </ul>
+    	</div>
+
+
     </div> <!-- page -->
     <!--#include virtual="footer.html" -->
   </body>

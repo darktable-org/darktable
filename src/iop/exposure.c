@@ -25,7 +25,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)o;
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    out[0] = 100.0*powf(fmaxf(0.0, (in[0]-d->black))*d->scale, d->gain);
+    out[0] = fminf(128.0, 100.0*powf(fmaxf(0.0, (in[0]-d->black))*d->scale, d->gain));
     out[1] = in[1];
     out[2] = in[2];
     out += 3; in += 3;

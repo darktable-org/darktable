@@ -28,6 +28,14 @@ speedhack:
  $ cp /dev/shm/.darktabledb ~/
  :)
 
+sizehack:
+
+ $ sqlite3 ~/.darktabledb
+ > delete from mipmaps;
+ > vacuum;
+
+ darktable will re-generate cached mipmaps in db on demand.
+
 send any bugreports to me: hanatos@gmail.com
 or find more information on the web: http://darktable.sf.net
 

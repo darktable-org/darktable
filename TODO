@@ -1,16 +1,15 @@
 - PPG openmp upstream libraw
 
 0.4 lighttable release
+- plug-in-template (translatable)
+- cleanup: lib-plugins/, dev-plugins/, view-plugins/
+  - /apps/darktable/lib-plugins/export/..
+- new libraw
+- module pick stack instead of export tab
+- lighttable modules (export)
 - mip to raw broken? raw->ldr->raw feedback loop?
 - write .dt-tags file (stars, keywords, ..?)
 - dt_dev_process_to_mip: check hash
-- more gconf options:
-  - remove dt_ctl_settings_t in settings.h?
-  - move dt_ctl_settings_init to gconf
-  - move some settings to local lighttable/darkroom module vars?
-  - window position
-  - gui configurations (recently used combobox constellations etc)
-    (port over dt_control_restore_gui_settings)
 - lib: separator thickness
 - module cleanup: extra export view and use space for plug-in loaders.
 - install: remove schema installation.
@@ -30,15 +29,8 @@
   - and normalise two greens (using histogram matching)
     not for 5d, but for 400d for example.
   - then demosaic using float-ahd optimized code.
-- wt/iwt iops and sharpen/denoise in between
-  - or just presets for equalizer
-- modular views:
-  - control.c: save/restore gui settings => modules!
-  - save settings in modules (query fct?)
-  - check which vars are lib local and global
-  - interface functions for sql query iteration/next/prev/selected image
-    - => common/film.h
-  - need plug-in versioning
+- presets for equalizer
+- need plug-in versioning
 - user preferences
   - default processing stack, if exif matches
   - libraw settings (have to restart)
