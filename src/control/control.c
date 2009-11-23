@@ -877,7 +877,7 @@ int dt_control_key_pressed_override(uint16_t which)
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
-      gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/fullscreen", fullscreen, NULL);
+      gconf_client_set_bool(c, DT_GCONF_DIR"/ui_last/fullscreen", fullscreen, NULL);
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
@@ -925,11 +925,11 @@ int dt_control_key_pressed(uint16_t which)
       break;
     case KEYCODE_F11:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-      fullscreen = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/fullscreen", NULL);
+      fullscreen = gconf_client_get_bool(c, DT_GCONF_DIR"/ui_last/fullscreen", NULL);
       if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
       else           gtk_window_fullscreen  (GTK_WINDOW(widget));
       fullscreen ^= 1;
-      gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/fullscreen", fullscreen, NULL);
+      gconf_client_set_bool(c, DT_GCONF_DIR"/ui_last/fullscreen", fullscreen, NULL);
       dt_dev_invalidate(darktable.develop);
       break;
     default:
