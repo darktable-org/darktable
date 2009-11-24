@@ -40,9 +40,9 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8"
-     inkscape:cx="85.2748"
-     inkscape:cy="101.54724"
+     inkscape:zoom="3.959798"
+     inkscape:cx="104.09816"
+     inkscape:cy="95.960886"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -87,8 +87,8 @@
     <path
        id="rect3615"
        style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:16;stroke-opacity:1;fill-rule:evenodd"
-       d="m 50,90 30,0 0,10 -30,0 0,-10 z m 110.37254,45.42819 c -19.56646,33.34283 -62.4579,44.5108 -95.80073,24.94435 C 31.308864,140.85297 20.101014,98.105564 39.507723,64.776649 M 40,65 c 30,0 45,0 60,35 15,35 30,35 60,35"
-       sodipodi:nodetypes="ccccccsccsc" />
+       d="m 50,90 30,0 0,10 -30,0 0,-10 z m 110.18627,45.21409 C 140.61981,168.55692 97.91464,179.93899 64.57181,160.37254 31.308864,140.85297 20.101014,98.105564 39.753861,64.888325 70,65 85,65 100,100 c 15,35 30.18627,35.21409 60.18627,35.21409 z"
+       sodipodi:nodetypes="ccccccscsc" />
     <rect
        style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
        id="rect3620"
