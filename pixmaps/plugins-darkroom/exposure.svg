@@ -15,9 +15,9 @@
    sodipodi:version="0.32"
    inkscape:version="0.47pre4 r22446"
    version="1.0"
-   sodipodi:docname="denoise.svg"
+   sodipodi:docname="exposure.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/denoise.png"
+   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/exposure.png"
    inkscape:export-xdpi="10.8"
    inkscape:export-ydpi="10.8">
   <defs
@@ -41,8 +41,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="112.41766"
-     inkscape:cy="109.32099"
+     inkscape:cx="85.2748"
+     inkscape:cy="101.54724"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -84,5 +84,24 @@
        sodipodi:ry="70"
        d="M 217.5,87.5 A 70,70 0 1 1 77.5,87.5 A 70,70 0 1 1 217.5,87.5 z"
        transform="translate(-47.5,12.5)" />
+    <path
+       id="rect3615"
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:16;stroke-opacity:1;fill-rule:evenodd"
+       d="m 50,90 30,0 0,10 -30,0 0,-10 z m 110.37254,45.42819 c -19.56646,33.34283 -62.4579,44.5108 -95.80073,24.94435 C 31.308864,140.85297 20.101014,98.105564 39.507723,64.776649 M 40,65 c 30,0 45,0 60,35 15,35 30,35 60,35"
+       sodipodi:nodetypes="ccccccsccsc" />
+    <rect
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect3620"
+       width="30"
+       height="10"
+       x="120"
+       y="90" />
+    <rect
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect3622"
+       width="10"
+       height="30"
+       x="130"
+       y="80" />
   </g>
 </svg>

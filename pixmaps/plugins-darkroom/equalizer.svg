@@ -15,9 +15,9 @@
    sodipodi:version="0.32"
    inkscape:version="0.47pre4 r22446"
    version="1.0"
-   sodipodi:docname="denoise.svg"
+   sodipodi:docname="equalizer.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/denoise.png"
+   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/equalizer.png"
    inkscape:export-xdpi="10.8"
    inkscape:export-ydpi="10.8">
   <defs
@@ -41,8 +41,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="112.41766"
-     inkscape:cy="109.32099"
+     inkscape:cx="82.7748"
+     inkscape:cy="126.52898"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -76,13 +76,39 @@
      id="layer1">
     <path
        sodipodi:type="arc"
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="path2385"
        sodipodi:cx="147.5"
        sodipodi:cy="87.5"
        sodipodi:rx="70"
        sodipodi:ry="70"
-       d="M 217.5,87.5 A 70,70 0 1 1 77.5,87.5 A 70,70 0 1 1 217.5,87.5 z"
-       transform="translate(-47.5,12.5)" />
+       d="M 181.27658,26.188154 A 70,70 0 1 1 82.841222,60.681304"
+       transform="translate(-47.5,12.5)"
+       sodipodi:start="5.2159215"
+       sodipodi:end="9.8179542"
+       sodipodi:open="true" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:16"
+       id="rect3634"
+       width="30"
+       height="100"
+       x="50"
+       y="35"
+       inkscape:export-xdpi="10.8"
+       inkscape:export-ydpi="10.8" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:16"
+       id="rect3636"
+       width="30"
+       height="120"
+       x="85"
+       y="15" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:16"
+       id="rect3638"
+       width="30"
+       height="50"
+       x="120"
+       y="85" />
   </g>
 </svg>

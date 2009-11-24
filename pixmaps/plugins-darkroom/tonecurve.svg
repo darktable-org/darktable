@@ -15,11 +15,8 @@
    sodipodi:version="0.32"
    inkscape:version="0.47pre4 r22446"
    version="1.0"
-   sodipodi:docname="denoise.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/denoise.png"
-   inkscape:export-xdpi="10.8"
-   inkscape:export-ydpi="10.8">
+   sodipodi:docname="template.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -41,8 +38,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="112.41766"
-     inkscape:cy="109.32099"
+     inkscape:cx="80.502923"
+     inkscape:cy="92.113005"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -76,13 +73,34 @@
      id="layer1">
     <path
        sodipodi:type="arc"
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="path2385"
        sodipodi:cx="147.5"
        sodipodi:cy="87.5"
        sodipodi:rx="70"
        sodipodi:ry="70"
-       d="M 217.5,87.5 A 70,70 0 1 1 77.5,87.5 A 70,70 0 1 1 217.5,87.5 z"
-       transform="translate(-47.5,12.5)" />
+       d="M 201.61044,43.092118 A 70,70 0 0 1 121.68566,152.56627"
+       transform="translate(-47.5,12.5)"
+       sodipodi:start="5.5959554"
+       sodipodi:end="8.2316738"
+       sodipodi:open="true" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 25,160 c 35,0 45,0 75,-60 35,-70 75,-70 75,-70"
+       id="path8857"
+       sodipodi:nodetypes="csc" />
+    <path
+       transform="translate(-47.5,12.5)"
+       d="M 94.273842,132.96401 A 70,70 0 0 1 176.25468,23.678623"
+       sodipodi:ry="70"
+       sodipodi:rx="70"
+       sodipodi:cy="87.5"
+       sodipodi:cx="147.5"
+       id="path8859"
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       sodipodi:type="arc"
+       sodipodi:start="2.4346846"
+       sodipodi:end="5.1356997"
+       sodipodi:open="true" />
   </g>
 </svg>

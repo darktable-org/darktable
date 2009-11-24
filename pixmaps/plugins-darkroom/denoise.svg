@@ -84,5 +84,10 @@
        sodipodi:ry="70"
        d="M 217.5,87.5 A 70,70 0 1 1 77.5,87.5 A 70,70 0 1 1 217.5,87.5 z"
        transform="translate(-47.5,12.5)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 15,110 C 25,40 35,20 40,20 c 10,0 20,115 30,115 10,0 10,-90 20,-90 10,0 15,50 20,50 15,0 30,0 45,0"
+       id="path3632"
+       sodipodi:nodetypes="cssccc" />
   </g>
 </svg>
