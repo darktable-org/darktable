@@ -3936,6 +3936,9 @@ void CLASS ppg_interpolate()
 #ifdef LIBRAW_LIBRARY_BUILD
   RUN_CALLBACK(LIBRAW_PROGRESS_INTERPOLATE,0,3);
 #endif
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(guess, diff, row, col, d, c, i, pix) schedule(static)
+#endif
   for (row=3; row < height-3; row++)
     for (col=3+(FC(row,3) & 1), c=FC(row,col); col < width-3; col+=2) {
       pix = image + row*width+col;
@@ -3955,6 +3958,9 @@ void CLASS ppg_interpolate()
 #ifdef LIBRAW_LIBRARY_BUILD
   RUN_CALLBACK(LIBRAW_PROGRESS_INTERPOLATE,1,3);
 #endif
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(guess, diff, row, col, d, c, i, pix) schedule(static)
+#endif
   for (row=1; row < height-1; row++)
     for (col=1+(FC(row,2) & 1), c=FC(row,col+1); col < width-1; col+=2) {
       pix = image + row*width+col;
@@ -3965,6 +3971,9 @@ void CLASS ppg_interpolate()
 /*  Calculate blue for red pixels and vice versa:		*/
 #ifdef LIBRAW_LIBRARY_BUILD
   RUN_CALLBACK(LIBRAW_PROGRESS_INTERPOLATE,2,3);
+#endif
+#ifdef _OPENMP
+#pragma omp parallel for default(shared) private(guess, diff, row, col, d, c, i, pix) schedule(static)
 #endif
   for (row=1; row < height-1; row++)
     for (col=1+(FC(row,1) & 1), c=2-FC(row,col); col < width-1; col+=2) {
