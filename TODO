@@ -1,10 +1,17 @@
 0.4 lighttable release
+- lighttable plugins:
+  - copy style
+  - export
+- libraw options plugin-dev: reload raw image.
+  - image.h struct
+  - table in image lib
+- magic numbers in header of binary .dt files
+- 2x version in plugin: dt and plugin (=>params)
 - plug-in-template (translatable)
 - cleanup: lib-plugins/, dev-plugins/, view-plugins/
   - /apps/darktable/lib-plugins/export/..
 - new libraw
 - module pick stack instead of export tab
-- lighttable modules (export)
 - write .dt-tags file (stars, keywords, ..?)
 - dt_dev_process_to_mip: check hash
 - lib: separator thickness

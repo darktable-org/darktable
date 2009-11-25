@@ -947,11 +947,11 @@ int dt_control_key_pressed(uint16_t which)
 
 void dt_control_add_history_item(int32_t num_in, const char *label)
 {
-  char wdname[20], numlabel[50];
+  char wdname[20], numlabel[256];
   const gchar *lbl = NULL;
   int32_t num = num_in + 1; // one after orginal
   GtkWidget *widget = NULL;
-  g_snprintf(numlabel, 50, "%d - %s", num, label);
+  g_snprintf(numlabel, 256, "%d - %s", num, label);
   if(num >= 10) for(int i=1;i<9;i++)
   {
     darktable.control->history_start = num - 9;
@@ -973,7 +973,7 @@ void dt_control_clear_history_items(int32_t num)
 {
   // clear history items down to num (leave num-th on stack)
   darktable.control->history_start = MAX(0, num - 8);
-  char wdname[20], numlabel[50], numlabel2[50];
+  char wdname[20], numlabel[256], numlabel2[256];
   // hide all but original
   for(int k=1;k<10;k++)
   {
@@ -994,8 +994,8 @@ void dt_control_clear_history_items(int32_t num)
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_show(widget);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_dev_get_history_item_label(hist, numlabel2);
-    snprintf(numlabel, 50, "%d - %s", curr, numlabel2);
+    dt_dev_get_history_item_label(hist, numlabel2, 256);
+    snprintf(numlabel, 256, "%d - %s", curr, numlabel2);
     gtk_button_set_label(GTK_BUTTON(widget), numlabel);
     history = g_list_next(history);
   }

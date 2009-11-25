@@ -89,7 +89,7 @@ void dt_dev_invalidate_all(dt_develop_t *dev);
 void dt_dev_set_gamma(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
-void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label);
+void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt);
 
 
 void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);

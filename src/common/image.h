@@ -61,9 +61,18 @@ typedef struct dt_image_t
   uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
   float *mipf;
   dt_image_lock_t lock[DT_IMAGE_NONE];
+
   // raw image
+  // TODO: replace these with meaningful libraw options:
+  // TODO: denoise_threshold, auto_bright_thrs, (2x float)
+  // TODO: wb_auto, wb_cam, cmatrix, no_auto_bright, highlight[2], demosaic_method[2], (8-bits)
+  // TODO: med_passes, (1 char)
+
+  // TODO: user_flip?, grey_box? (3-bit + 4x int) (or better: wb and user flip somewhere else)
+  // TODO: user_mul?, aber? (6x float) (or better: have white balance and lensfun C/A correction)
   int32_t shrink, wb_auto, wb_cam;
   float exposure;
+
   float *pixels;
 #ifdef _DEBUG
   int32_t mip_buf_size[DT_IMAGE_NONE];

@@ -513,7 +513,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       if(dev->gui_attached)
       {
         char label[512]; // print on/off
-        dt_dev_get_history_item_label(hist, label);
+        dt_dev_get_history_item_label(hist, label, 512);
         dt_control_add_history_item(dev->history_end-1, label);
       }
       dev->history = g_list_append(dev->history, hist);
@@ -679,8 +679,8 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     if(dev->gui_attached)
     {
-      char label[50];
-      dt_dev_get_history_item_label(hist, label);
+      char label[256];
+      dt_dev_get_history_item_label(hist, label, 256);
       dt_control_add_history_item(dev->history_end-1, label);
     }
   }
@@ -756,9 +756,9 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
   *zoom_y = zoom2_y;
 }
 
-void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label)
+void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt)
 {
-  g_sprintf(label, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
+  g_snprintf(label, cnt, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
 }
 
 void dt_dev_export(dt_job_t *job)
