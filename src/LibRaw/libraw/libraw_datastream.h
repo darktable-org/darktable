@@ -103,7 +103,7 @@ class LibRaw_file_datastream : public LibRaw_abstract_datastream
 #if __MSVCRT_VERSION__ >= 0x800
         return substream?substream->seek(o,whence):_fseeki64(f,o,whence);
 #else
-        return substream?substream->seek(o,whence):fseek(f,o,whence);
+        return substream?substream->seek(o,whence):fseek(f,(size_t)o,whence);
 #endif
 #else
         return substream?substream->seek(o,whence):fseeko(f,o,whence);
@@ -215,14 +215,14 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
                         if(size_t(-o) >= streampos)
                             streampos = 0;
                         else
-                            streampos += o;
+                            streampos += (size_t)o;
                     }
                 else if (o>0)
                     {
                         if(o+streampos> streamsize)
                             streampos = streamsize;
                         else
-                            streampos += o;
+                            streampos += (size_t)o;
                     }
                 return 0;
             case SEEK_END:
@@ -231,7 +231,7 @@ class LibRaw_buffer_datastream : public LibRaw_abstract_datastream
                 else if ( size_t(-o) > streamsize)
                     streampos = 0;
                 else
-                    streampos = streamsize+o;
+                    streampos = streamsize+(size_t)o;
                 return 0;
             default:
                 return 0;

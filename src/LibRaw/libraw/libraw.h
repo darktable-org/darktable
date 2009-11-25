@@ -105,12 +105,12 @@ class DllDef LibRaw
     void                        set_progress_handler(progress_callback pcb, void *data) { callbacks.progresscb_data = data; callbacks.progress_cb = pcb;}
 
     /* helpers */
-    static const char*          version() { return LIBRAW_VERSION_STR;}
-    static int                  versionNumber() { return LIBRAW_VERSION; }
+    static const char*          version();
+    static int                  versionNumber();
     static const char**         cameraList();
     static int                  cameraCount();
     static const char*          strprogress(enum LibRaw_progress);
-    static const char*          strerror(int p) { return libraw_strerror(p);}
+    static const char*          strerror(int p);
     /* dcraw emulation */
     int                         dcraw_document_mode_processing();
     int                         dcraw_ppm_tiff_writer(const char *filename);
