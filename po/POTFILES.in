@@ -1,4 +1,5 @@
 darktable.glade
+darktable.schemas.in
 src/control/control.c
 src/develop/imageop.c
 src/iop/lens.c

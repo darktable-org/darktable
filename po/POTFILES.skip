@@ -1,3 +1,4 @@
+src/LibRaw/dcraw/dcraw.c
 src/LibRaw/internal/dcraw_common.cpp
 src/LibRaw/internal/dcraw_fileio.cpp
 src/LibRaw/internal/foveon.cpp
