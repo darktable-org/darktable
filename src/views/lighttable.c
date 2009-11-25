@@ -6,6 +6,7 @@
 #include "common/image_cache.h"
 #include "common/darktable.h"
 #include "gui/gtk.h"
+#include "gui/draw.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,7 +93,7 @@ void dt_library_star(cairo_t *cr, float x, float y, float r1, float r2)
 void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
 {
   float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
-  int selected = 0, imgsel;
+  int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
   sqlite3_stmt *stmt;
@@ -100,6 +101,10 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->id);
   if(sqlite3_step(stmt) == SQLITE_ROW) selected = 1;
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, img->id);
+  if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
   sqlite3_finalize(stmt);
   if(selected == 1)
   {
@@ -246,7 +251,7 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
         r1 = 0.02*fscale;
         r2 = 0.0083*fscale;
       }
-      for(int k=0;k<4;k++)
+      for(int k=0;k<5;k++)
       {
         float x, y;
         if(zoom != 1) 
@@ -259,20 +264,27 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
           x = (.04+k*0.04)*fscale;
           y = .12*fscale;
         }
-        dt_library_star(cr, x, y, r1, r2);
-        if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+        if(k == 4)
         {
-          lib->image_over = DT_LIB_STAR_1 + k;
-          cairo_fill(cr);
+          if(altered) dt_draw_altered(cr, x, y, (r1+r2)*.5);
         }
-        else if((img->flags & 0x7) > k)
+        else
         {
-          cairo_fill_preserve(cr);
-          cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
-          cairo_stroke(cr);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          dt_library_star(cr, x, y, r1, r2);
+          if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+          {
+            lib->image_over = DT_LIB_STAR_1 + k;
+            cairo_fill(cr);
+          }
+          else if((img->flags & 0x7) > k)
+          {
+            cairo_fill_preserve(cr);
+            cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
+            cairo_stroke(cr);
+            cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+          }
+          else cairo_stroke(cr);
         }
-        else cairo_stroke(cr);
       }
     }
   }

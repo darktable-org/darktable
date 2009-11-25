@@ -7,6 +7,7 @@
 #endif
 
 #include <stdlib.h>
+#include <math.h>
 #ifdef HAVE_GEGL
   #ifndef USE_GEGL_CURVE
     #define USE_GEGL_CURVE
@@ -40,6 +41,21 @@ static inline void dt_draw_grid(cairo_t *cr, const int num, const int width, con
     cairo_move_to(cr, 0, k/(float)num*height); cairo_line_to(cr, width, k/(float)num*height);
     cairo_stroke(cr);
   }
+}
+
+static inline void dt_draw_altered(cairo_t *cr, const float x, const float y, const float r)
+{
+  cairo_arc(cr, x, y, r, 0, 2.0f*M_PI);
+  const float dx = r*cosf(M_PI/8.0f), dy = r*sinf(M_PI/8.0f);
+  cairo_move_to(cr, x-dx, y-dy);
+  cairo_curve_to(cr, x, y-2*dy, x, y+2*dy, x+dx, y+dy);
+  cairo_move_to(cr, x-.20*dx, y+.8*dy);
+  cairo_line_to(cr, x-.80*dx, y+.8*dy);
+  cairo_move_to(cr, x+.20*dx, y-.8*dy);
+  cairo_line_to(cr, x+.80*dx, y-.8*dy);
+  cairo_move_to(cr, x+.50*dx, y-.8*dy-0.3*dx);
+  cairo_line_to(cr, x+.50*dx, y-.8*dy+0.3*dx);
+  cairo_stroke(cr);
 }
 
 static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int height, const int left)

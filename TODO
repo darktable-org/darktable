@@ -1,5 +1,4 @@
 0.4 lighttable release
-- history: togglebuttons
 - equalizer: presets.
 - lighttable plugins:
   - copy style
@@ -15,6 +14,7 @@
 - write .dt-tags file (stars, keywords, ..?)
 - progress bars
 - dt_dev_process_to_mip: check hash
+- dt_image_expose: check history cached in flags
 - lib: separator thickness
 - install: remove schema installation.
 - show which images have been modified in lighttable mode.
@@ -23,7 +23,6 @@
 - histogram fill light mouse gesture
 - preview blacklist modules
 - exposure: highlight clipped parts
-- exposure: color artifacts when too bright?
 - exr import
 - tonemapping widget?
 - clipping event hooks: crop
@@ -33,12 +32,10 @@
   - and normalise two greens (using histogram matching)
     not for 5d, but for 400d for example.
   - then demosaic using float-ahd optimized code.
-- presets for equalizer
 - need plug-in versioning
 - user preferences
   - default processing stack, if exif matches
   - libraw settings (have to restart)
-  - outside database
 
 bugs:
 - img unlock => flicker in library mode? (due to mipf trigger?)
