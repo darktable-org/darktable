@@ -202,6 +202,43 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static void presets_changed (GtkComboBox *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)self->params;
+  
+  int pos = gtk_combo_box_get_active(widget);
+  switch(pos)
+  {
+    case 2: // denoise
+      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+      {
+        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.4f*k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
+        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
+      }
+      break;
+    case 1: // sharpen a lot
+      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+      {
+        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.5f*k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
+      }
+      break;
+    default: // case 0: // sharpen
+      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+      {
+        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.25f*k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
+      }
+      break;
+  }
+  dt_dev_add_history_item(darktable.develop, self);
+  gtk_widget_queue_draw(self->widget);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
@@ -251,6 +288,19 @@ void gui_init(struct dt_iop_module_t *self)
   // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[2]), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[1]), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 5);
+
+  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  GtkLabel *label = GTK_LABEL(gtk_label_new(_("presets")));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 5);
+  c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sharpen"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sharpen more"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("denoise"));
+  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
+  g_signal_connect (G_OBJECT (c->presets), "changed",
+                    G_CALLBACK (presets_changed),
+                    (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

@@ -29,6 +29,7 @@ typedef struct dt_iop_equalizer_gui_data_t
   dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
+  GtkComboBox *presets;
   GtkRadioButton *channel_button[3];
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
