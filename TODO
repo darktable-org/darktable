@@ -1,4 +1,6 @@
 0.4 lighttable release
+- history: togglebuttons
+- equalizer: presets.
 - lighttable plugins:
   - copy style
   - export
@@ -10,9 +12,8 @@
 - plug-in-template (translatable)
 - cleanup: lib-plugins/, dev-plugins/, view-plugins/
   - /apps/darktable/lib-plugins/export/..
-- new libraw
-- module pick stack instead of export tab
 - write .dt-tags file (stars, keywords, ..?)
+- progress bars
 - dt_dev_process_to_mip: check hash
 - lib: separator thickness
 - install: remove schema installation.

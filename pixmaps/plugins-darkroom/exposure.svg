@@ -41,8 +41,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.959798"
-     inkscape:cx="104.09816"
-     inkscape:cy="95.960886"
+     inkscape:cx="58.641296"
+     inkscape:cy="111.25611"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -66,7 +66,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -76,7 +76,7 @@
      id="layer1">
     <path
        sodipodi:type="arc"
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:none;fill-rule:evenodd;stroke:#cacac6;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
        id="path2385"
        sodipodi:cx="147.5"
        sodipodi:cy="87.5"
@@ -86,18 +86,18 @@
        transform="translate(-47.5,12.5)" />
     <path
        id="rect3615"
-       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:16;stroke-opacity:1;fill-rule:evenodd"
+       style="fill:#cacac6;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dashoffset:16;stroke-opacity:1;fill-rule:evenodd"
        d="m 50,90 30,0 0,10 -30,0 0,-10 z m 110.18627,45.21409 C 140.61981,168.55692 97.91464,179.93899 64.57181,160.37254 31.308864,140.85297 20.101014,98.105564 39.753861,64.888325 70,65 85,65 100,100 c 15,35 30.18627,35.21409 60.18627,35.21409 z"
        sodipodi:nodetypes="ccccccscsc" />
     <rect
-       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:#cacac6;fill-opacity:1;fill-rule:evenodd;stroke:none"
        id="rect3620"
        width="30"
        height="10"
        x="120"
        y="90" />
     <rect
-       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:#cacac6;fill-opacity:1;fill-rule:evenodd;stroke:none"
        id="rect3622"
        width="10"
        height="30"

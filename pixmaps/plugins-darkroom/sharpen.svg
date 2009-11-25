@@ -16,7 +16,10 @@
    inkscape:version="0.47pre4 r22446"
    version="1.0"
    sodipodi:docname="sharpen.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/local/home/jo/svn/darktable/pixmaps/plugins-darkroom/sharpen.png"
+   inkscape:export-xdpi="10.8"
+   inkscape:export-ydpi="10.8">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -38,8 +41,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="44.84075"
-     inkscape:cy="102.77552"
+     inkscape:cx="-46.072978"
+     inkscape:cy="101.76537"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -63,7 +66,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,7 +76,7 @@
      id="layer1">
     <path
        sodipodi:type="arc"
-       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:none;stroke:#cacac6;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="path2385"
        sodipodi:cx="147.5"
        sodipodi:cy="87.5"
@@ -86,7 +89,7 @@
        sodipodi:open="true" />
     <path
        sodipodi:type="star"
-       style="fill:none;stroke:#000000;stroke-width:7.51233959;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:none;stroke:#cacac6;stroke-width:7.51233958999999984;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="path2913"
        sodipodi:sides="3"
        sodipodi:cx="100"

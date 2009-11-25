@@ -15,8 +15,11 @@
    sodipodi:version="0.32"
    inkscape:version="0.47pre4 r22446"
    version="1.0"
-   sodipodi:docname="template.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   sodipodi:docname="tonecurve.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/local/home/jo/svn/darktable/pixmaps/plugins-darkroom/tonecurve.png"
+   inkscape:export-xdpi="10.8"
+   inkscape:export-ydpi="10.8">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -38,8 +41,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="80.502923"
-     inkscape:cy="92.113005"
+     inkscape:cx="16.217209"
+     inkscape:cy="91.398719"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -73,7 +76,7 @@
      id="layer1">
     <path
        sodipodi:type="arc"
-       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:none;stroke:#cacac6;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="path2385"
        sodipodi:cx="147.5"
        sodipodi:cy="87.5"
@@ -85,7 +88,7 @@
        sodipodi:end="8.2316738"
        sodipodi:open="true" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:none;stroke:#cacac6;stroke-width:10;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
        d="m 25,160 c 35,0 45,0 75,-60 35,-70 75,-70 75,-70"
        id="path8857"
        sodipodi:nodetypes="csc" />
@@ -97,7 +100,7 @@
        sodipodi:cy="87.5"
        sodipodi:cx="147.5"
        id="path8859"
-       style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:none;stroke:#cacac6;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        sodipodi:type="arc"
        sodipodi:start="2.4346846"
        sodipodi:end="5.1356997"

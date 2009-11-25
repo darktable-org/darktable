@@ -661,142 +661,112 @@ physically delete</property>
                                 <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <widget class="GtkButton" id="history_09">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_09">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">0</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_08">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_08">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">1</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_07">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_07">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">2</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_06">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_06">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">3</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_05">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_05">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">4</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_04">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_04">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">5</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_03">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_03">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">6</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_02">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_02">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">7</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_01">
-                                    <property name="label" translatable="yes">button</property>
+                                  <widget class="GtkToggleButton" id="history_01">
+                                    <property name="label" translatable="yes">togglebutton</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">8</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkButton" id="history_00">
+                                  <widget class="GtkToggleButton" id="history_00">
                                     <property name="label" translatable="yes">original</property>
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0.05000000074505806</property>
                                   </widget>
                                   <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
                                     <property name="position">9</property>
                                   </packing>
                                 </child>

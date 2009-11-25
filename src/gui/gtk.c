@@ -128,6 +128,16 @@ film_button_clicked (GtkWidget *widget, gpointer user_data)
 void
 history_button_clicked (GtkWidget *widget, gpointer user_data)
 {
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
+  // toggle all buttons:
+  for(int i=0;i<9;i++)
+  {
+    char wdname[30];
+    snprintf(wdname, 30, "history_%02d", i);
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(glade_xml_get_widget (darktable.gui->main_window, wdname));
+    if(b != GTK_TOGGLE_BUTTON(widget)) gtk_object_set(GTK_OBJECT(b), "active", FALSE, NULL);
+    // else gtk_object_set(GTK_OBJECT(b), "active", TRUE, NULL);
+  }
   // revert to given history item.
   long int num = (long int)user_data;
   if(num != 0) num += darktable.control->history_start;
