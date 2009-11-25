@@ -210,6 +210,7 @@ void enter(dt_view_t *self)
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), 0);
+
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
   // hack: now hide all custom expander widgets again.

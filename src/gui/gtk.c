@@ -462,6 +462,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // GTK_WIDGET_SET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
 
+  // TODO: make this work as: libgnomeui testgnome.c
+  GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+  GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow"));
+  gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
+
   darktable.gui->reset = 0;
   return 0;
 }

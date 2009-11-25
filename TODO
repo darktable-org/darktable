@@ -1,5 +1,5 @@
 0.4 lighttable release
-- equalizer: presets.
+- scroll to opened expander in darkroom mode.
 - lighttable plugins:
   - copy style
   - export
