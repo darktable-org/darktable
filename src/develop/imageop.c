@@ -179,6 +179,8 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
       iop = g_list_next(iop);
     }
 #endif
+    GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+    gtk_container_set_focus_child(box, module->topwidget);
     // redraw gui (in case post expose is set)
     dt_control_gui_queue_draw();
   }
