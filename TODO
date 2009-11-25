@@ -1,5 +1,3 @@
-- PPG openmp upstream libraw
-
 0.4 lighttable release
 - plug-in-template (translatable)
 - cleanup: lib-plugins/, dev-plugins/, view-plugins/
