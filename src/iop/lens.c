@@ -616,10 +616,10 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
   else
     _variant [0] = 0;
 
-  fm = g_strdup_printf (_("Maker:\t\t%s\n"
-        "Model:\t\t%s%s\n"
-        "Mount:\t\t%s\n"
-        "Crop factor:\t%.1f"),
+  fm = g_strdup_printf (_("maker:\t\t%s\n"
+        "model:\t\t%s%s\n"
+        "mount:\t\t%s\n"
+        "crop factor:\t%.1f"),
       maker, model, _variant,
       cam->Mount, cam->CropFactor);
   gtk_object_set(GTK_OBJECT(g->camera_model), "tooltip-text", fm, NULL);

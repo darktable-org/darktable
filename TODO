@@ -1,4 +1,6 @@
 0.4 lighttable release
+- lensfun autoscale
+- re-import dt feedback loop (not broken when importing from scratch)
 - scroll to opened expander in darkroom mode.
 - lighttable plugins:
   - copy style
