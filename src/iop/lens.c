@@ -904,6 +904,8 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
       G_CALLBACK(lens_comboentry_distance_update), self);
 
   gtk_widget_show_all (g->lens_param_box);
+
+  // TODO: autoscale!
 }
 
 static void lens_menu_select (
@@ -1024,7 +1026,7 @@ static void reverse_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void scale_changed(GtkRange *range, gpointer user_data)
+static void scale_changed(GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
@@ -1032,6 +1034,38 @@ void scale_changed(GtkRange *range, gpointer user_data)
   p->scale = gtk_range_get_value(range);
   dt_dev_add_history_item(darktable.develop, self);
 }
+
+#if 0
+static void autoscale_pressed(GtkWidget *button, gpointer user_data)
+{
+  // TODO: create dummy modifier, get scale value, set slider.
+  // TODO: get lens:
+   if(self->dev->image->exif_lens[0] != '\0')
+  {
+    char make [200], model [200];
+    const gchar *txt = gtk_entry_get_text(GTK_ENTRY(g->lens_model));
+    parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
+    const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
+        make [0] ? make : NULL,
+        model [0] ? model : NULL, 0);
+    if(lenslist && !lenslist[1]) lens_set (self, lenslist[0]);
+    lf_free (lenslist);
+  }
+  // TODO: orig_w doesn't matter
+  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
+
+  int modflags = lf_modifier_initialize(
+      modifier, d->lens, LF_PF_F32,
+      d->focal, d->aperture,
+      d->distance, d->scale,
+      d->target_geom, d->modify_flags, d->inverse);
+
+  float lf_modifier_get_auto_scale (
+    lfModifier *modifier, cbool reverse)
+  lf_modifier_destroy(modifier);
+  // TODO: set slider => triggers params => hist update => etc
+}
+#endif
 
 void gui_init(struct dt_iop_module_t *self)
 {

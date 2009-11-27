@@ -1,6 +1,7 @@
 0.4 lighttable release
 - lensfun autoscale
 - re-import dt feedback loop (not broken when importing from scratch)
+  - import hdr and apply lens => all good => mip4=>mipf re-import broken
 - scroll to opened expander in darkroom mode.
 - lighttable plugins:
   - copy style

@@ -317,8 +317,8 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     // img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
     img->width  = /*(img->orientation & 4) ? 2*raw->sizes.iheight :*/ 2*raw->sizes.iwidth;
     img->height = /*(img->orientation & 4) ? 2*raw->sizes.iwidth  :*/ 2*raw->sizes.iheight;
-    if(img->output_width  == 0) img->output_width  = img->width;
-    if(img->output_height == 0) img->output_height = img->height;
+    img->output_width  = img->width;
+    img->output_height = img->height;
     // printf("size: %dx%d\n", img->width, img->height);
     img->exif_iso = raw->other.iso_speed;
     img->exif_exposure = raw->other.shutter;
@@ -586,8 +586,8 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
   img->width  <<= img->shrink;
   img->height <<= img->shrink;
-  if(img->output_width  == 0) img->output_width  = img->width;
-  if(img->output_height == 0) img->output_height = img->height;
+  img->output_width  = img->width;
+  img->output_height = img->height;
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
@@ -837,8 +837,8 @@ error_magick_mip4:
     img->width  = jpg.width;
     img->height = jpg.height;
   }
-  if(img->output_width  == 0) img->output_width  = img->width;
-  if(img->output_height == 0) img->output_height = img->height;
+  img->output_width  = img->width;
+  img->output_height = img->height;
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
   {
@@ -1053,8 +1053,8 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     img->width  = jpg.width;
     img->height = jpg.height;
   }
-  if(img->output_width  == 0) img->output_width  = img->width;
-  if(img->output_height == 0) img->output_height = img->height;
+  img->output_width  = img->width;
+  img->output_height = img->height;
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_FULL))
   {
