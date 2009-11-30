@@ -8,6 +8,7 @@ intltool-update
 po/*.gmo
 po/*.mo
 po/*.pot
+po/.intltool-merge-cache
 po/Makefile
 po/Makefile.in
 po/Makefile.in.in

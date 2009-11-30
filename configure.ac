@@ -58,7 +58,7 @@ AC_ARG_ENABLE(gegl,
              PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
         ]
         )
-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14)
+PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.18)
 PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
 PKG_CHECK_MODULES(CAIRO, [cairo])
 PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
