@@ -1013,7 +1013,7 @@ void dt_control_update_recent_films()
   sqlite3_stmt *stmt;
   int rc, num = 1;
   const char *filename, *cnt;
-  const int label_cnt = 26;
+  const int label_cnt = 256;
   char label[label_cnt];
   // rc = sqlite3_prepare_v2(darktable.db, "select * from (select folder from film_rolls order by datetime_accessed) as dreggn limit 0, 4", -1, &stmt, NULL);
 #if 0
