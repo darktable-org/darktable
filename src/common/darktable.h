@@ -27,6 +27,7 @@ struct dt_control_t;
 struct dt_develop_t;
 struct dt_mipmap_cache_t;
 struct dt_image_cache_t;
+struct dt_lib_t;
 
 typedef enum dt_debug_thread_t
 {
@@ -41,6 +42,7 @@ typedef struct darktable_t
   int32_t unmuted;
   struct dt_develop_t      *develop;
   struct dt_film_t         *film;
+  struct dt_lib_t          *lib;
   struct dt_view_manager_t *view_manager;
   struct dt_control_t      *control;
   struct dt_gui_gtk_t      *gui;

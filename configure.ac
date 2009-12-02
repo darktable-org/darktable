@@ -104,6 +104,7 @@ AC_CONFIG_FILES([
     src/LibRaw/Makefile
     src/iop/Makefile
     src/views/Makefile
+    src/libs/Makefile
     pixmaps/Makefile
     pixmaps/plugins-darkroom/Makefile
     ])

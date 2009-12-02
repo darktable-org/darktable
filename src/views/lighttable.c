@@ -1,5 +1,6 @@
 /** this is the view for the lighttable module.  */
 #include "views/view.h"
+#include "libs/lib.h"
 #include "control/jobs.h"
 #include "control/settings.h"
 #include "control/control.h"
@@ -542,16 +543,56 @@ void enter(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->zoom = 1;
+
+  // add expanders
+  (void)dt_lib_load_modules();
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GList *modules = g_list_last(darktable.lib->plugins);
+  while(modules)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
+    module->gui_init(module);
+    // add the widget created by gui_init to an expander and both to list.
+    GtkWidget *expander = dt_lib_gui_get_expander(module);
+    gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+    modules = g_list_previous(modules);
+  }
+
+  // end marker widget:
+  GtkWidget *endmarker = gtk_drawing_area_new();
+  gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
+  gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
+  g_signal_connect (G_OBJECT (endmarker), "expose-event",
+                    G_CALLBACK (dt_control_expose_endmarker), 0);
+
+  gtk_widget_show_all(GTK_WIDGET(box));
+
+  // close expanders
+  modules = darktable.lib->plugins;
+  while(modules)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
+    gtk_expander_set_expanded (module->expander, FALSE);
+    modules = g_list_next(modules);
+  }
 }
 
-#if 0
+void dt_lib_remove_child(GtkWidget *widget, gpointer data)
+{
+  gtk_container_remove(GTK_CONTAINER(data), widget);
+}
+
 void leave(dt_view_t *self)
 {
-  GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
-  gtk_widget_set_visible(widget, FALSE);
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  while(darktable.lib->plugins)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(darktable.lib->plugins->data);
+    dt_lib_unload_module(module);
+    darktable.lib->plugins = g_list_delete_link(darktable.lib->plugins, darktable.lib->plugins);
+  }
+  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
-#endif
 
 void reset(dt_view_t *self)
 {

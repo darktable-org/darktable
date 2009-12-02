@@ -5,6 +5,7 @@
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -90,6 +91,9 @@ int dt_init(int argc, char *argv[])
   darktable.film = (dt_film_t *)malloc(sizeof(dt_film_t));
   dt_film_init(darktable.film);
 
+  darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
+  dt_lib_init(darktable.lib);
+
   darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
@@ -138,6 +142,8 @@ void dt_cleanup()
   free(darktable.gui);
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
+  dt_lib_cleanup(darktable.lib);
+  free(darktable.lib);
   dt_film_cleanup(darktable.film);
   free(darktable.film);
   dt_image_cache_cleanup(darktable.image_cache);

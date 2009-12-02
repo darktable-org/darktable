@@ -274,40 +274,6 @@ void leave(dt_view_t *self)
 
   // commit updated mipmaps to db
   dt_dev_process_to_mip(dev);
-#if 0
-  if(dev->mipf)
-  {
-    int wd, ht;
-    float fwd, fht;
-    // set processed width to something useful while image is not there yet:
-    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
-
-    dt_image_get_mip_size(dev->image, DT_IMAGE_MIP4, &wd, &ht);
-    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &fwd, &fht);
-    dev->preview_downsampling = 1.0;
-    dt_dev_process_preview_job(dev);
-    if(dt_image_alloc(dev->image, DT_IMAGE_MIP4))
-    {
-      fprintf(stderr, "[dev_leave] could not alloc mip4 to write mipmaps!\n");
-      return;
-    }
-    dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
-    pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
-
-    dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
-                                                             dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
-                       dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
-
-    dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
-    pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
-    if(dt_imageio_preview_write(dev->image, DT_IMAGE_MIP4))
-      fprintf(stderr, "[dev_leave] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, dev->image->filename);
-    dt_image_update_mipmaps(dev->image);
-
-    dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
-    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
-  }
-#endif
 
   // clear gui.
   dev->gui_leaving = 1;
@@ -334,8 +300,6 @@ void leave(dt_view_t *self)
   // release full buffer
   if(dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
-
-  // DT_CTL_SET_GLOBAL_STR(dev_op, "original", 20);
 
   // release image struct with metadata as well.
   dt_image_cache_flush(dev->image);

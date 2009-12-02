@@ -1,4 +1,11 @@
 #include "control/jobs.h"
+#include "common/darktable.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
+#include "gui/gtk.h"
+#include <glade/glade.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 
 void dt_image_load_job_init(dt_job_t *job, dt_image_t *image, dt_image_buffer_t mip)
 {
