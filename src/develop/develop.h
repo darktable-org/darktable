@@ -97,9 +97,6 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int mode);
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x, float *zoom_y);
 
-struct dt_job_t;
-void dt_dev_export(struct dt_job_t *job);
-
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
 

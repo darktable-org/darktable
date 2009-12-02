@@ -98,27 +98,6 @@ selected_action_button_clicked(GtkWidget *widget, gpointer user_data)
 }
 
 void
-export_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  // read "export_format" to global settings
-  GtkWidget *wid = glade_xml_get_widget (darktable.gui->main_window, "export_format");
-  int i = gtk_combo_box_get_active(GTK_COMBO_BOX(wid));
-  if     (i == 0)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_JPG, NULL);
-  else if(i == 1)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_PNG, NULL);
-  else if(i == 2)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_PPM16, NULL);
-  else if(i == 3)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_PFM, NULL);
-  pthread_mutex_lock(&(darktable.film->images_mutex));
-  darktable.film->last_exported = 0;
-  pthread_mutex_unlock(&(darktable.film->images_mutex));
-  for(int k=0;k<MAX(1,dt_ctl_get_num_procs()-1);k++) // keep one proc for the user.
-  {
-    dt_job_t j;
-    dt_dev_export_init(&j);
-    dt_control_add_job(darktable.control, &j);
-  }
-}
-
-void
 film_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   long int num = (long int)user_data;
@@ -249,16 +228,6 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
   oldh = event->height;
 
   return dt_control_configure(da, event, user_data);
-}
-
-static void
-export_quality_changed (GtkRange *range, gpointer user_data)
-{
-  GtkWidget *widget;
-  int quality = (int)gtk_range_get_value(range);
-  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/ui_last/export_quality", quality, NULL);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(widget);
 }
 
 static gboolean
@@ -426,15 +395,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                       (gpointer)k);
   }
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_button");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (export_button_clicked),
-                    (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_quality");
-  g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (export_quality_changed),
-                    (gpointer)0);
-
   // image filtering/sorting
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
   g_signal_connect (G_OBJECT (widget), "changed",
@@ -463,7 +423,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
 
   // TODO: make this work as: libgnomeui testgnome.c
-  GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+  GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow"));
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
 

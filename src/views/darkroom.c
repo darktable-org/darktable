@@ -172,8 +172,8 @@ void enter(dt_view_t *self)
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
   dt_dev_load_image(dev, dt_image_cache_use(selected, 'r'));
-  // get top level vbox containing all expanders, iop_vbox:
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+  // get top level vbox containing all expanders, plugins_vbox:
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GtkTable *module_list = GTK_TABLE(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
   GList *modules = g_list_last(dev->iop);
   int ti = 0, tj = 0;
@@ -312,7 +312,7 @@ void leave(dt_view_t *self)
   // clear gui.
   dev->gui_leaving = 1;
   pthread_mutex_lock(&dev->history_mutex);
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "iop_vbox"));
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   while(dev->history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);

@@ -261,7 +261,7 @@ void dt_control_init(dt_control_t *s)
   s->idle_top = DT_CONTROL_MAX_JOBS;
   s->queued_top = 0;
   // start threads
-  s->num_threads = DT_CTL_WORKER_RESERVED + 6;
+  s->num_threads = DT_CTL_WORKER_RESERVED + dt_ctl_get_num_procs() - 1;
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   s->running = 1;
   for(k=0;k<s->num_threads;k++)
@@ -1100,130 +1100,5 @@ void dt_control_update_recent_films()
   }
   sqlite3_finalize(stmt);
 #endif
-}
-
-typedef struct dt_control_image_enumerator_t
-{
-  GList *index;
-}
-dt_control_image_enumerator_t;
-
-void dt_control_write_dt_files_job_run(dt_job_t *job)
-{
-  long int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
-  while(t)
-  {
-    imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_use(imgid, 'r');
-    char dtfilename[512];
-    dt_image_full_path(img, dtfilename, 512);
-    char *c = dtfilename + strlen(dtfilename);
-    for(;c>dtfilename && *c != '.';c--);
-    sprintf(c, ".dt");
-    dt_imageio_dt_write(imgid, dtfilename);
-    dt_image_cache_release(img, 'r');
-    t = g_list_delete_link(t, t);
-  }
-}
-
-void dt_control_delete_images_job_run(dt_job_t *job)
-{
-  long int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
-  while(t)
-  {
-    imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_use(imgid, 'r');
-    char dtfilename[512];
-    dt_image_full_path(img, dtfilename, 512);
-    int rc;
-    sqlite3_stmt *stmt;
-    // remove from db:
-    rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize (stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize (stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize (stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize (stmt);
-    // remove from disk:
-    (void)g_unlink(dtfilename);
-    char *c = dtfilename + strlen(dtfilename);
-    for(;c>dtfilename && *c != '.';c--);
-    sprintf(c, ".dt");
-    (void)g_unlink(dtfilename);
-    dt_image_cache_release(img, 'r');
-    t = g_list_delete_link(t, t);
-  }
-}
-
-void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
-{
-  t->index = NULL;
-  int rc;
-  sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    long int imgid = sqlite3_column_int(stmt, 0);
-    t->index = g_list_prepend(t->index, (gpointer)imgid);
-  }
-  sqlite3_finalize(stmt);
-}
-
-void dt_control_write_dt_files_job_init(dt_job_t *job)
-{
-  job->execute = &dt_control_write_dt_files_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
-  dt_control_job_init(job, "write dt files");
-}
-
-void dt_control_write_dt_files()
-{
-  dt_job_t j;
-  dt_control_write_dt_files_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
-}
-
-void dt_control_delete_images_job_init(dt_job_t *job)
-{
-  job->execute = &dt_control_delete_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
-  dt_control_job_init(job, "delete images");
-}
-
-void dt_control_delete_images()
-{
-  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/ask_before_delete", NULL))
-  {
-    GtkWidget *dialog;
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        _("do you really want to physically delete all selected images from disk?"));
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES) return;
-  }
-  dt_job_t j;
-  dt_control_delete_images_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
 }
 
