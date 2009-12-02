@@ -58,16 +58,8 @@ typedef struct dt_lib_module_t
 }
 dt_lib_module_t;
 
-void dt_lib_init(dt_lib_t *lib)
-{
-  lib->gui_module = NULL;
-  lib->plugins = NULL;
-}
-
-void dt_lib_cleanup(dt_lib_t *lib)
-{
-  // TODO: remove all plugins
-}
+void dt_lib_init(dt_lib_t *lib);
+void dt_lib_cleanup(dt_lib_t *lib);
 
 /** loads and inits the modules in the libs/ directory. */
 int dt_lib_load_modules();

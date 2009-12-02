@@ -40,7 +40,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_bottom",  0, NULL);
 
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_library",     1<<DT_LIBRARY, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_export",      1<<DT_LIBRARY, NULL);
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_metadata",    0, NULL);
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_navigation", -1, NULL);
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_histogram",  -1, NULL);
@@ -48,8 +47,6 @@ void dt_ctl_settings_default(dt_control_t *c)
 
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_FILENAME, NULL);
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_filter",   DT_LIB_FILTER_STAR_1, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_export",   DT_DEV_EXPORT_JPG, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/export_quality", 97, NULL);
 
   // default [de-]gamma values.
   gconf_client_set_float(c->gconf, DT_GCONF_DIR"/gamma_linear", .1f, NULL);
@@ -752,14 +749,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   dt_lib_sort_t sort = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/combo_sort", NULL);
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_format");
-  dt_dev_export_format_t format = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/combo_export", NULL);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)format);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_quality");
-  int quality = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/export_quality", NULL);
-  gtk_range_set_value(GTK_RANGE(widget), quality);
-
   bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_left", NULL);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
   if(bit & (1<<mode)) gtk_widget_show(widget);
@@ -794,10 +783,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 
   bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_histogram", NULL);
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_export", NULL);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_metadata", NULL);
@@ -858,12 +843,6 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_histogram", bit, NULL);
-
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_export", NULL);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_export", bit, NULL);
 }
 
 int dt_control_key_pressed_override(uint16_t which)

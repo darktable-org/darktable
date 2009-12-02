@@ -4,7 +4,7 @@
 #include <glade/glade.h>
 #include <stdlib.h>
 
-gint sort_plugins(gconstpointer a, gconstpointer b)
+gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_lib_module_t *am = (const dt_lib_module_t *)a;
   const dt_lib_module_t *bm = (const dt_lib_module_t *)b;
@@ -67,7 +67,7 @@ dt_lib_load_modules ()
       continue;
     }
     g_free(libname);
-    res = g_list_insert_sorted(res, module, sort_plugins);
+    res = g_list_insert_sorted(res, module, dt_lib_sort_plugins);
   }
   g_dir_close(dir);
 
@@ -90,7 +90,7 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
   if (gtk_expander_get_expanded (expander))
   {
-    gtk_widget_show(module->widget);
+    gtk_widget_show_all(module->widget);
     // register to receive draw events
     darktable.lib->gui_module = module;
     GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
@@ -105,7 +105,7 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
       darktable.lib->gui_module = NULL;
       dt_control_gui_queue_draw();
     }
-    gtk_widget_hide(module->widget);
+    gtk_widget_hide_all(module->widget);
   }
 }
 
@@ -140,5 +140,24 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   gtk_widget_hide_all(module->widget);
   gtk_expander_set_expanded(module->expander, FALSE);
   return GTK_WIDGET(vbox);
+}
+
+void
+dt_lib_init (dt_lib_t *lib)
+{
+  lib->gui_module = NULL;
+  lib->plugins = NULL;
+  (void)dt_lib_load_modules();
+}
+
+void
+dt_lib_cleanup (dt_lib_t *lib)
+{
+  while(lib->plugins)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(darktable.lib->plugins->data);
+    dt_lib_unload_module(module);
+    lib->plugins = g_list_delete_link(lib->plugins, lib->plugins);
+  }
 }
 

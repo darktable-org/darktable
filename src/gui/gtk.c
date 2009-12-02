@@ -102,6 +102,7 @@ film_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   long int num = (long int)user_data;
   (void)dt_film_open_recent(darktable.film, num);
+  dt_ctl_switch_mode_to(DT_LIBRARY);
 }
 
 void
@@ -139,6 +140,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
     char *filename;
     filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
     dt_film_import(darktable.film, filename);
+    dt_ctl_switch_mode_to(DT_LIBRARY);
     g_free (filename);
   }
   gtk_widget_destroy (filechooser);

@@ -155,8 +155,6 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
-  gtk_widget_set_visible(widget, FALSE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   int selected;
@@ -255,8 +253,6 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "export_expander");
-  gtk_widget_set_visible(widget, TRUE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db

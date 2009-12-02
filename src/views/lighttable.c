@@ -545,13 +545,13 @@ void enter(dt_view_t *self)
   lib->zoom = 1;
 
   // add expanders
-  (void)dt_lib_load_modules();
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GList *modules = g_list_last(darktable.lib->plugins);
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     module->gui_init(module);
+    module->gui_reset(module);
     // add the widget created by gui_init to an expander and both to list.
     GtkWidget *expander = dt_lib_gui_get_expander(module);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
@@ -573,6 +573,7 @@ void enter(dt_view_t *self)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     gtk_expander_set_expanded (module->expander, FALSE);
+    gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
 }
@@ -584,13 +585,14 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
-  while(darktable.lib->plugins)
+  GList *it = darktable.lib->plugins;
+  while(it)
   {
-    dt_lib_module_t *module = (dt_lib_module_t *)(darktable.lib->plugins->data);
-    dt_lib_unload_module(module);
-    darktable.lib->plugins = g_list_delete_link(darktable.lib->plugins, darktable.lib->plugins);
+    dt_lib_module_t *module = (dt_lib_module_t *)(it->data);
+    module->gui_cleanup(module);
+    it = g_list_next(it);
   }
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
 
