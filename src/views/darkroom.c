@@ -128,7 +128,7 @@ void module_show_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   char option[512];
-  snprintf(option, 512, DT_GCONF_DIR"/plugins_darkroom/%s_visible", module->op);
+  snprintf(option, 512, DT_GCONF_DIR"/plugins/darkroom/%s/visible", module->op);
   if(gtk_toggle_button_get_active(togglebutton))
   {
     gtk_widget_show_all(GTK_WIDGET(module->topwidget));
@@ -186,9 +186,9 @@ void enter(dt_view_t *self)
     module->showhide = gtk_toggle_button_new();
     char filename[1024], datadir[1024];
     dt_get_datadir(datadir, 1024);
-    snprintf(filename, 1024, "%s/pixmaps/plugins-darkroom/%s.png", datadir, module->op);
+    snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
     if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-      snprintf(filename, 1024, "%s/pixmaps/plugins-darkroom/template.png", datadir);
+      snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
     GtkWidget *image = gtk_image_new_from_file(filename);
     gtk_button_set_image(GTK_BUTTON(module->showhide), image);
     g_signal_connect(G_OBJECT(module->showhide), "toggled",
@@ -217,7 +217,7 @@ void enter(dt_view_t *self)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     char option[512];
-    snprintf(option, 512, DT_GCONF_DIR"/plugins_darkroom/%s_visible", module->op);
+    snprintf(option, 512, DT_GCONF_DIR"/plugins/darkroom/%s/visible", module->op);
     gboolean active = gconf_client_get_bool  (darktable.control->gconf, option, NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);

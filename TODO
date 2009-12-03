@@ -1,5 +1,5 @@
 0.4 lighttable release
-- lighttable enter/exit: analogous to darkroom mode.
+- cleanup: lib-plugins/, dev-plugins/, view-plugins/
 - progress bars for coresponding widgets (export)?
 - button toggle in history when new history is pushed.
 - lensfun autoscale
@@ -13,8 +13,6 @@
 - magic numbers in header of binary .dt files
 - 2x version in plugin: dt and plugin (=>params)
 - plug-in-template (translatable)
-- cleanup: lib-plugins/, dev-plugins/, view-plugins/
-  - /apps/darktable/lib-plugins/export/..
 - write .dt-tags file (stars, keywords, ..?)
 - progress bars
 - dt_dev_process_to_mip: check hash

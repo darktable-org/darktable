@@ -209,8 +209,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/ui_last/expander_export</key>
-      <applyto>/apps/darktable/ui_last/expander_export</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/export/expanded</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/expanded</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>2</default>
@@ -300,8 +300,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/ui_last/combo_export</key>
-      <applyto>/apps/darktable/ui_last/combo_export</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/export/format</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/expanded</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>0</default>
@@ -313,8 +313,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/ui_last/export_quality</key>
-      <applyto>/apps/darktable/ui_last/export_quality</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/export/quality</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/quality</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>97</default>
@@ -352,8 +352,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/clipping_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/clipping_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/clipping/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/clipping/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
@@ -365,8 +365,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/colorcorrection_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/colorcorrection_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/colorcorrection/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/colorcorrection/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
@@ -378,8 +378,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/colorin_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/colorin_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/colorin/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/colorin/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
@@ -391,8 +391,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/colorout_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/colorout_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/colorout/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/colorout/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
@@ -404,8 +404,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/denoise_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/denoise_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/denoise/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/denoise/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
@@ -417,8 +417,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/equalizer_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/equalizer_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/equalizer/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/equalizer/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
@@ -430,8 +430,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/exposure_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/exposure_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/exposure/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/exposure/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
@@ -443,8 +443,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/gamma_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/gamma_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/gamma/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/gamma/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
@@ -456,8 +456,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/lens_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/lens_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/lens/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/lens/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
@@ -469,8 +469,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/sharpen_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/sharpen_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/sharpen/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/sharpen/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
@@ -482,8 +482,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/temperature_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/temperature_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/temperature/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/temperature/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
@@ -495,8 +495,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins_darkroom/tonecurve_visible</key>
-      <applyto>/apps/darktable/plugins_darkroom/tonecurve_visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/tonecurve/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/tonecurve/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
