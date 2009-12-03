@@ -543,6 +543,7 @@ void enter(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->zoom = 1;
+  lib->center = 1;
 
   // add expanders
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));

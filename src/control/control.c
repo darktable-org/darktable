@@ -246,6 +246,8 @@ void dt_control_init(dt_control_t *s)
   dt_ctl_settings_init(s);
   s->progress = 200.0f;
 
+  gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", DT_MODE_NONE, NULL);
+
   // if config is old, replace with new defaults.
   if(DT_VERSION > gconf_client_get_int(s->gconf, DT_GCONF_DIR"/config_version", NULL))
     dt_ctl_settings_default(s);
@@ -631,7 +633,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 {
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
-  if(selected >= 0)
+  if(mode == DT_LIBRARY || selected >= 0)
   {
     dt_ctl_gui_mode_t oldmode =
       gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/view", NULL);
@@ -655,7 +657,8 @@ void dt_ctl_switch_mode()
 {
   dt_ctl_gui_mode_t mode =
     gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/view", NULL);
-  mode ^= 1;  // FIXME: cycle through more modules!
+  if(mode == DT_LIBRARY) mode = DT_DEVELOP;
+  else mode = DT_LIBRARY;
   dt_ctl_switch_mode_to(mode);
 }
 

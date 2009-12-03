@@ -247,7 +247,7 @@ void dt_control_export_job_run(dt_job_t *job)
 
     // read type from global config.
     dt_dev_export_format_t fmt =
-      gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins_lighttable/export/format", NULL);
+      gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format", NULL);
     switch(fmt)
     {
       case DT_DEV_EXPORT_JPG:
