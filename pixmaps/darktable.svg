@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -13,13 +14,13 @@
    height="520"
    id="svg2826"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.47pre4 r22446"
    version="1.0"
-   sodipodi:docname="icon_glossy3_lens_ink.svg"
+   sodipodi:docname="darktable.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/Users/drquader/DARKTABLE/icon_lens5.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90"
+   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/darktable-16.png"
+   inkscape:export-xdpi="2.77"
+   inkscape:export-ydpi="2.77"
    style="enable-background:new">
   <defs
      id="defs2828">
@@ -271,10 +272,11 @@
      inkscape:document-units="px"
      inkscape:current-layer="layer4"
      showgrid="true"
-     inkscape:window-width="1280"
-     inkscape:window-height="752"
+     inkscape:window-width="1278"
+     inkscape:window-height="746"
      inkscape:window-x="0"
-     inkscape:window-y="22" />
+     inkscape:window-y="26"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata2831">
     <rdf:RDF>
@@ -283,6 +285,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -294,7 +297,7 @@
     <path
        sodipodi:type="inkscape:offset"
        inkscape:radius="0"
-       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61537 516 486 L 516 34 C 516 17.384637 502.7107 4 486.1875 4 L 33.8125 4 z "
+       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61536 516 486 L 516 34 C 516 17.384637 502.71068 4 486.1875 4 L 33.8125 4 z "
        xlink:href="#path2890"
        style="fill:#b3b3b3"
        id="path2892"
@@ -303,7 +306,7 @@
     <path
        sodipodi:type="inkscape:offset"
        inkscape:radius="0"
-       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61537 516 486 L 516 34 C 516 17.384637 502.7107 4 486.1875 4 L 33.8125 4 z "
+       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61536 516 486 L 516 34 C 516 17.384637 502.71068 4 486.1875 4 L 33.8125 4 z "
        xlink:href="#path2888"
        style="fill:#b3b3b3"
        id="path2890"
@@ -312,7 +315,7 @@
     <path
        sodipodi:type="inkscape:offset"
        inkscape:radius="0"
-       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61537 516 486 L 516 34 C 516 17.384637 502.7107 4 486.1875 4 L 33.8125 4 z "
+       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61536 516 486 L 516 34 C 516 17.384637 502.71068 4 486.1875 4 L 33.8125 4 z "
        xlink:href="#path2886"
        style="fill:#b3b3b3"
        id="path2888"
@@ -321,7 +324,7 @@
     <path
        sodipodi:type="inkscape:offset"
        inkscape:radius="0"
-       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61537 516 486 L 516 34 C 516 17.384637 502.7107 4 486.1875 4 L 33.8125 4 z "
+       inkscape:original="M 33.8125 4 C 17.289316 4 4 17.384637 4 34 L 4 486 C 4 502.61536 17.289316 516 33.8125 516 L 486.1875 516 C 502.71068 516 516 502.61536 516 486 L 516 34 C 516 17.384637 502.71068 4 486.1875 4 L 33.8125 4 z "
        xlink:href="#rect2838"
        style="fill:#b3b3b3"
        id="path2886"
@@ -343,15 +346,15 @@
      inkscape:label="gamut"
      style="opacity:0.76991152;display:inline">
     <image
-       y="-433.39328"
-       x="132.55678"
-       id="image2484"
-       height="359.49124"
-       width="240.43399"
-       sodipodi:absref="/Users/drquader/DARKTABLE/CIExy1931.jpeg"
+       sodipodi:absref="/local/home/jo/svn/darktable/pixmaps/CIExy1931.jpeg"
        xlink:href="CIExy1931.jpeg"
+       style="opacity:1;fill:#ffeeaa;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        transform="matrix(0,1,-1,0,0,0)"
-       style="opacity:1;fill:#ffeeaa;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       width="240.43399"
+       height="359.49124"
+       id="image2484"
+       x="132.55678"
+       y="-433.39328" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -359,15 +362,15 @@
      inkscape:label="glow"
      style="display:inline">
     <image
-       style="opacity:1;fill:#ffeeaa;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-       transform="matrix(0,1,-1,0,0,0)"
+       sodipodi:absref="/local/home/jo/svn/darktable/pixmaps/CIExy1931.jpeg"
        xlink:href="CIExy1931.jpeg"
-       sodipodi:absref="/Users/drquader/DARKTABLE/CIExy1931.jpeg"
-       width="240.43399"
-       height="359.49124"
-       id="image3629"
+       y="-433.39328"
        x="132.55678"
-       y="-433.39328" />
+       id="image3629"
+       height="359.49124"
+       width="240.43399"
+       transform="matrix(0,1,-1,0,0,0)"
+       style="opacity:1;fill:#ffeeaa;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -396,15 +399,15 @@
        transform="matrix(1.3894393,0,0,1.3894393,-134.55923,-109.40169)"
        clip-path="url(#clipPath3341)">
       <image
-         style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
-         transform="matrix(0,1,-1,0,0,0)"
+         sodipodi:absref="/local/home/jo/svn/darktable/pixmaps/CIExy1931.jpeg"
          xlink:href="CIExy1931.jpeg"
-         sodipodi:absref="/Users/drquader/DARKTABLE/CIExy1931.jpeg"
-         width="240.43399"
-         height="359.49124"
-         id="image2451"
+         y="-435.39328"
          x="134.55678"
-         y="-435.39328" />
+         id="image2451"
+         height="359.49124"
+         width="240.43399"
+         transform="matrix(0,1,-1,0,0,0)"
+         style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
       <g
          style="opacity:1;fill:#fff0b2;fill-opacity:1;display:inline;filter:url(#filter3522)"
          transform="matrix(27.485239,0,0,27.485239,122.2782,138.05825)"
