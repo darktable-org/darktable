@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-21 06:13+0300\n"
-"PO-Revision-Date: 2009-11-21 14:04+0300\n"
+"POT-Creation-Date: 2009-12-06 11:42+0300\n"
+"PO-Revision-Date: 2009-12-06 12:01+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -17,26 +17,14 @@ msgid "-"
 msgstr "-"
 
 #: ../darktable.glade.h:2
-msgid ""
-"8-bit jpg\n"
-"8-bit png\n"
-"16-bit ppm\n"
-"float pfm"
-msgstr ""
-"8-разрядный JPEG\n"
-"8-разрядный PNG\n"
-"16-разрядный PPM\n"
-"PFM с плавающей точкой"
-
-#: ../darktable.glade.h:6
 msgid "<span color=\"#7f7f7f\"><big><b><i>darktable</i></b></big></span>"
 msgstr "Проявка"
 
-#: ../darktable.glade.h:7
+#: ../darktable.glade.h:3
 msgid "<span color=\"#7f7f7f\"><big><b><i>lighttable mode</i></b></big></span>"
 msgstr "Световой стол"
 
-#: ../darktable.glade.h:8
+#: ../darktable.glade.h:4
 msgid ""
 "all\n"
 "no star\n"
@@ -52,45 +40,37 @@ msgstr ""
 "3 звезды\n"
 "4 звезды"
 
-#: ../darktable.glade.h:14
+#: ../darktable.glade.h:10
 msgid "all selected images"
 msgstr "Все выбранные снимки"
 
-#: ../darktable.glade.h:15
+#: ../darktable.glade.h:11
 msgid "aperture"
 msgstr "Апертура"
 
-#: ../darktable.glade.h:16
+#: ../darktable.glade.h:12
 msgid "button"
 msgstr ""
 
-#: ../darktable.glade.h:17
+#: ../darktable.glade.h:13
 msgid "datetime"
 msgstr "Дата и время"
 
-#: ../darktable.glade.h:18
-msgid "export"
-msgstr "Экспортировать"
-
-#: ../darktable.glade.h:19
-msgid "export selected"
-msgstr "Экспорт выбранного"
-
-#: ../darktable.glade.h:20
+#: ../darktable.glade.h:14
 #: ../src/iop/exposure.c:18
-#: ../src/iop/exposure.c:134
+#: ../src/iop/exposure.c:137
 msgid "exposure"
 msgstr "Экспозиция"
 
-#: ../darktable.glade.h:21
+#: ../darktable.glade.h:15
 msgid "f-length"
 msgstr "Фокусное расстояние"
 
-#: ../darktable.glade.h:22
+#: ../darktable.glade.h:16
 msgid "filename"
 msgstr "Имя файла"
 
-#: ../darktable.glade.h:23
+#: ../darktable.glade.h:17
 msgid ""
 "filename\n"
 "time\n"
@@ -102,84 +82,84 @@ msgstr ""
 "Оценка\n"
 "ID"
 
-#: ../darktable.glade.h:27
+#: ../darktable.glade.h:21
 msgid "go"
 msgstr "Выполнить"
 
-#: ../darktable.glade.h:28
+#: ../darktable.glade.h:22
 msgid "height"
 msgstr "Высота"
 
-#: ../darktable.glade.h:29
+#: ../darktable.glade.h:23
 msgid "histogram"
 msgstr "Гистограмма"
 
-#: ../darktable.glade.h:30
+#: ../darktable.glade.h:24
 msgid "history"
 msgstr "История изменений"
 
-#: ../darktable.glade.h:31
+#: ../darktable.glade.h:25
 msgid "images sorted by"
 msgstr "Критерий сортировки:"
 
-#: ../darktable.glade.h:32
+#: ../darktable.glade.h:26
 msgid "import film roll"
 msgstr "Импортировать съёмку"
 
-#: ../darktable.glade.h:33
+#: ../darktable.glade.h:27
 msgid "import single image"
 msgstr "Импортировать отдельный снимок"
 
-#: ../darktable.glade.h:34
+#: ../darktable.glade.h:28
 msgid "iso"
 msgstr "ISO"
 
-#: ../darktable.glade.h:35
-#: ../src/iop/lens.c:1077
+#: ../darktable.glade.h:29
+#: ../src/iop/lens.c:1111
 msgid "lens"
 msgstr "Объектив"
 
-#: ../darktable.glade.h:36
+#: ../darktable.glade.h:30
 msgid "library"
 msgstr "Библиотека"
 
-#: ../darktable.glade.h:37
+#: ../darktable.glade.h:31
 msgid "list"
 msgstr "Перечислять:"
 
-#: ../darktable.glade.h:38
+#: ../darktable.glade.h:32
 msgid "maker"
 msgstr "Производитель"
 
-#: ../darktable.glade.h:39
+#: ../darktable.glade.h:33
 msgid "metadata"
 msgstr "Метаданные"
 
-#: ../darktable.glade.h:40
+#: ../darktable.glade.h:34
 msgid "model"
 msgstr "Модель"
 
-#: ../darktable.glade.h:41
+#: ../darktable.glade.h:35
 msgid "navigation"
 msgstr "Навигация"
 
-#: ../darktable.glade.h:42
+#: ../darktable.glade.h:36
 msgid "original"
 msgstr "Исходный вариант"
 
-#: ../darktable.glade.h:43
-msgid "quality"
-msgstr "Качество"
-
-#: ../darktable.glade.h:44
+#: ../darktable.glade.h:37
 msgid "switch to darkroom mode"
 msgstr "Переключиться в режим проявки"
 
-#: ../darktable.glade.h:45
+#: ../darktable.glade.h:38
+msgid "togglebutton"
+msgstr ""
+
+#: ../darktable.glade.h:39
 msgid "width"
 msgstr "Ширина"
 
-#: ../darktable.glade.h:46
+#: ../darktable.glade.h:40
 msgid ""
 "write a history file for\n"
 "physically delete"
@@ -187,41 +167,65 @@ msgstr ""
 "Записать файл истории во\n"
 "Физически удалить"
 
-#: ../src/control/control.c:648
+#: ../darktable.schemas.in.h:1
+msgid "always ask the user before any image file is deleted."
+msgstr "Всегда спрашивать пользователя перед удалением любого снимка"
+
+#: ../darktable.schemas.in.h:2
+msgid "ask before deleting images"
+msgstr "Спрашивать подтверждение перед удалением снимков"
+
+#: ../darktable.schemas.in.h:3
+msgid "downsample the preview pixels"
+msgstr ""
+
+#: ../darktable.schemas.in.h:4
+msgid "if this number is smaller than the darktable internal version number, the values here will be syched with the new defaults."
+msgstr ""
+
+#: ../darktable.schemas.in.h:5
+msgid "these files can later be re-imported into a different database, preserving your changes to the image."
+msgstr "Эти файлы с описанием внесённых изменений может будет позднее импортировать в другую базу данных."
+
+#: ../darktable.schemas.in.h:6
+msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
+msgstr ""
+
+#: ../darktable.schemas.in.h:7
+msgid "version of these dt-gconf entries"
+msgstr "Версия этих записей DT в GConf"
+
+#: ../darktable.schemas.in.h:8
+msgid "write a redundant file for each image"
+msgstr "Записывать файлы .dt для каждого снимка"
+
+#: ../src/control/control.c:647
 #, c-format
 msgid "switch to %s mode"
 msgstr "Переключиться в режим «%s»"
 
-#: ../src/control/control.c:651
+#: ../src/control/control.c:650
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b><i>Режим «%s»</i></b></big></span>"
 
-#: ../src/control/control.c:987
+#: ../src/control/control.c:969
 msgid "0 - original"
 msgstr "0 - Исходный вариант"
 
-#: ../src/control/control.c:1047
+#: ../src/control/control.c:1029
 #, c-format
 msgid "single images"
 msgstr "Отдельные снимки"
 
-#: ../src/control/control.c:1219
-msgid "do you really want to physically delete all selected images from disk?"
-msgstr "Вы действительно хотите физически удалить все выбранные снимки с диска?"
-
-#: ../src/control/control.c:1220
-msgid "delete images?"
-msgstr "Удалить снимки?"
-
 #: ../src/develop/imageop.c:159
-#: ../src/develop/imageop.c:219
+#: ../src/develop/imageop.c:221
 #, c-format
 msgid "%s is switched on"
 msgstr ""
 
 #: ../src/develop/imageop.c:159
-#: ../src/develop/imageop.c:219
+#: ../src/develop/imageop.c:221
 #, c-format
 msgid "%s is switched off"
 msgstr ""
@@ -233,10 +237,10 @@ msgstr "Искажения объектива"
 #: ../src/iop/lens.c:619
 #, c-format
 msgid ""
-"Maker:\t\t%s\n"
-"Model:\t\t%s%s\n"
-"Mount:\t\t%s\n"
-"Crop factor:\t%.1f"
+"maker:\t\t%s\n"
+"model:\t\t%s%s\n"
+"mount:\t\t%s\n"
+"crop factor:\t%.1f"
 msgstr ""
 "Производитель:\t\t%s\n"
 "Модель:\t\t%s%s\n"
@@ -286,11 +290,11 @@ msgstr ""
 msgid "distance to subject"
 msgstr "Расстояние до объекта"
 
-#: ../src/iop/lens.c:1064
+#: ../src/iop/lens.c:1098
 msgid "cam"
 msgstr "Камера"
 
-#: ../src/iop/lens.c:1065
+#: ../src/iop/lens.c:1099
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -298,7 +302,7 @@ msgstr ""
 "Поиск камеры по шаблону:\n"
 "[производитель, ][модель]"
 
-#: ../src/iop/lens.c:1079
+#: ../src/iop/lens.c:1113
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -306,40 +310,40 @@ msgstr ""
 "Поиск объектива по шаблону:\n"
 "[производитель, ][модель]"
 
-#: ../src/iop/lens.c:1112
+#: ../src/iop/lens.c:1146
 msgid "target geometry"
 msgstr "Целевая геометрия объектива"
 
-#: ../src/iop/lens.c:1113
+#: ../src/iop/lens.c:1147
 msgid "rectilinear"
 msgstr "Прямолинейная"
 
-#: ../src/iop/lens.c:1114
+#: ../src/iop/lens.c:1148
 msgid "fisheye"
 msgstr "Рыбий глаз"
 
-#: ../src/iop/lens.c:1115
+#: ../src/iop/lens.c:1149
 msgid "panoramic"
 msgstr "Панорамная"
 
-#: ../src/iop/lens.c:1116
+#: ../src/iop/lens.c:1150
 msgid "equirectangular"
 msgstr "Эквидистантная"
 
-#: ../src/iop/lens.c:1122
+#: ../src/iop/lens.c:1156
 msgid "geometry"
 msgstr "Геометрия:"
 
-#: ../src/iop/lens.c:1134
+#: ../src/iop/lens.c:1168
 msgid "scale"
 msgstr "Масштаб:"
 
 #. reverse direction
-#: ../src/iop/lens.c:1139
+#: ../src/iop/lens.c:1173
 msgid "reverse"
 msgstr "Развернуть направление"
 
-#: ../src/iop/lens.c:1140
+#: ../src/iop/lens.c:1174
 msgid "apply distortions instead of correcting them"
 msgstr "Добавить искажения вместо того чтобы их исправить"
 
@@ -348,13 +352,14 @@ msgid "tonecurve"
 msgstr "Кривая тонкоррекции"
 
 #: ../src/iop/tonecurve.c:195
+#: ../src/iop/equalizer.c:294
 msgid "presets"
 msgstr "Профили"
 
 #: ../src/iop/tonecurve.c:198
 #: ../src/iop/gamma.c:132
 msgid "linear"
-msgstr "Линейная"
+msgstr "Линейная кривая"
 
 #: ../src/iop/tonecurve.c:199
 msgid "med contrast"
@@ -413,17 +418,27 @@ msgstr "Цветовые профили из %s/color/out"
 msgid "equalizer"
 msgstr "Эквалайзер"
 
-#: ../src/iop/exposure.c:133
-msgid "black"
-msgstr "Тёмные области"
+#: ../src/iop/equalizer.c:297
+#: ../src/iop/sharpen.c:62
+msgid "sharpen"
+msgstr "Повышение резкости"
 
-#: ../src/iop/exposure.c:135
-msgid "gain"
-msgstr "Усиление"
+#: ../src/iop/equalizer.c:298
+msgid "sharpen more"
+msgstr "Усиленное повышение резкости"
 
+#: ../src/iop/equalizer.c:299
 #: ../src/iop/denoise.c:20
 msgid "denoise"
 msgstr "Подавление шума"
+
+#: ../src/iop/exposure.c:136
+msgid "black"
+msgstr "Тёмные области"
+
+#: ../src/iop/exposure.c:138
+msgid "gain"
+msgstr "Усиление"
 
 #: ../src/iop/denoise.c:178
 msgid "luma"
@@ -446,10 +461,6 @@ msgstr "Цветовые профили из %s/color/in"
 #: ../src/iop/gamma.c:133
 msgid "gamma"
 msgstr "Гамма"
-
-#: ../src/iop/sharpen.c:62
-msgid "sharpen"
-msgstr "Повышение резкости"
 
 #: ../src/iop/sharpen.c:241
 msgid "radius"
@@ -503,15 +514,15 @@ msgstr "В:"
 msgid "angle"
 msgstr "Угол"
 
-#: ../src/gui/gtk.c:141
+#: ../src/gui/gtk.c:131
 msgid "import film"
 msgstr "Импортировать съёмку"
 
-#: ../src/gui/gtk.c:164
+#: ../src/gui/gtk.c:155
 msgid "import image"
 msgstr "Импортировать снимок"
 
-#: ../src/gui/gtk.c:188
+#: ../src/gui/gtk.c:179
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Ошибка при загрузке файла '%s'"
@@ -532,7 +543,7 @@ msgstr "вкл"
 msgid "off"
 msgstr "выкл"
 
-#: ../src/views/lighttable.c:55
+#: ../src/views/lighttable.c:57
 msgid "lighttable"
 msgstr "Световой стол"
 
@@ -540,6 +551,38 @@ msgstr "Световой стол"
 msgid "darkroom"
 msgstr "Проявка"
 
+#: ../src/views/darkroom.c:137
+#, c-format
+msgid "hide %s"
+msgstr "Скрыть модуль «%s»"
+
+#: ../src/views/darkroom.c:144
+#, c-format
+msgid "show %s"
+msgstr "Показать модуль «%s»"
+
+#~ msgid ""
+#~ "8-bit jpg\n"
+#~ "8-bit png\n"
+#~ "16-bit ppm\n"
+#~ "float pfm"
+#~ msgstr ""
+#~ "8-разрядный JPEG\n"
+#~ "8-разрядный PNG\n"
+#~ "16-разрядный PPM\n"
+#~ "PFM с плавающей точкой"
+#~ msgid "export"
+#~ msgstr "Экспортировать"
+#~ msgid "export selected"
+#~ msgstr "Экспорт выбранного"
+#~ msgid "quality"
+#~ msgstr "Качество"
+#~ msgid ""
+#~ "do you really want to physically delete all selected images from disk?"
+#~ msgstr ""
+#~ "Вы действительно хотите физически удалить все выбранные снимки с диска?"
+#~ msgid "delete images?"
+#~ msgstr "Удалить снимки?"
 #~ msgid "mode"
 #~ msgstr "Режим"
 

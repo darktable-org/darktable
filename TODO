@@ -1,5 +1,4 @@
 0.4 lighttable release
-- cleanup: lib-plugins/, dev-plugins/, view-plugins/
 - progress bars for coresponding widgets (export)?
 - button toggle in history when new history is pushed.
 - lensfun autoscale
