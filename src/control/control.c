@@ -995,27 +995,8 @@ void dt_control_update_recent_films()
   sqlite3_stmt *stmt;
   int rc, num = 1;
   const char *filename, *cnt;
-  const int label_cnt = 256;
-  char label[label_cnt];
-  // rc = sqlite3_prepare_v2(darktable.db, "select * from (select folder from film_rolls order by datetime_accessed) as dreggn limit 0, 4", -1, &stmt, NULL);
-#if 0
-  rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls order by datetime_accessed desc limit 0,4", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    filename = (char *)sqlite3_column_text(stmt, 0);
-    cnt = filename + MIN(512,strlen(filename));
-    int i;
-    for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
-    if(i == label_cnt-1) snprintf(label, label_cnt, "...%s", cnt+3);
-    else snprintf(label, label_cnt, "%s", cnt);
-    snprintf(wdname, 20, "recent_film_%d", num);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_button_set_label(GTK_BUTTON(widget), label);
-    gtk_widget_show(widget);
-    num++;
-  }
-  sqlite3_finalize(stmt);
-#else
+  const int label_cnt = 25;
+  char label[256];
   // FIXME: this is a temporary hack to keep the database low:
   // remove all data from db from all other films.
   rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc", -1, &stmt, NULL);
@@ -1026,7 +1007,7 @@ void dt_control_update_recent_films()
       const int id = sqlite3_column_int(stmt, 1);
       if(id == 1)
       {
-        snprintf(label, label_cnt, _("single images"));
+        snprintf(label, 256, _("single images"));
       }
       else
       {
@@ -1081,6 +1062,5 @@ void dt_control_update_recent_films()
     num++;
   }
   sqlite3_finalize(stmt);
-#endif
 }
 

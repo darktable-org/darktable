@@ -1,6 +1,7 @@
 #include <string.h>
 #include "gui/histogram.h"
 #include "gui/draw.h"
+#include "gui/gtk.h"
 #include "develop/develop.h"
 
 #define DT_HIST_INSET 5
@@ -31,7 +32,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+  cairo_set_source_rgb(cr, darktable.gui->bgcolor[0], darktable.gui->bgcolor[1], darktable.gui->bgcolor[2]);
   cairo_paint(cr);
 
   cairo_translate(cr, 4*inset, inset);

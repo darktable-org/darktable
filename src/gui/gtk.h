@@ -14,6 +14,7 @@ typedef struct dt_gui_gtk_t
   dt_gui_navigation_t navigation;
   dt_gui_histogram_t histogram;
   int32_t reset;
+  float bgcolor[3];
 }
 dt_gui_gtk_t;
 

@@ -430,6 +430,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
 
   darktable.gui->reset = 0;
+  for(int i=0;i<3;i++) darktable.gui->bgcolor[i] = 0.1333;
   return 0;
 }
 

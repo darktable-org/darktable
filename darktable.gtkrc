@@ -26,7 +26,7 @@ style "clearlooks-default"
 	fg[SELECTED]      = "#E2E2E2"
 
 	bg[ACTIVE]        = "#484949"
-	bg[NORMAL]        = "#333333" # "#5A5C5F"
+	bg[NORMAL]        = "#222222" # "#333333" # "#5A5C5F"
 	bg[INSENSITIVE]   = "#505050"
 	bg[PRELIGHT]      = "#6A6C6F"
 	bg[SELECTED]      = "#424446"
