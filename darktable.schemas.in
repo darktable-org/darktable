@@ -404,8 +404,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/plugins/darkroom/denoise/visible</key>
-      <applyto>/apps/darktable/plugins/darkroom/denoise/visible</applyto>
+      <key>/schemas/apps/darktable/plugins/darkroom/monochrome/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/monochrome/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
