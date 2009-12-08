@@ -248,7 +248,7 @@ gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-  if(event->direction == GDK_SCROLL_UP   && p->size >   .1) p->size -= 0.1;
+  if(event->direction == GDK_SCROLL_UP   && p->size >   .5) p->size -= 0.1;
   if(event->direction == GDK_SCROLL_DOWN && p->size <  1.0) p->size += 0.1;
   gtk_range_set_value(GTK_RANGE(g->scale), p->size);
   gtk_widget_queue_draw(widget);
@@ -294,7 +294,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->label = GTK_LABEL(gtk_label_new(_("filter size")));
   gtk_misc_set_alignment(GTK_MISC(g->label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label), TRUE, TRUE, 0);
-  g->scale = GTK_HSCALE(gtk_hscale_new_with_range(.1, 1.0, 0.01));
+  g->scale = GTK_HSCALE(gtk_hscale_new_with_range(.5, 1.0, 0.01));
   gtk_scale_set_digits(GTK_SCALE(g->scale), 2);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale), GTK_POS_LEFT);
   gtk_range_set_value(GTK_RANGE(g->scale), p->size);
