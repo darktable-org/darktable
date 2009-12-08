@@ -32,9 +32,6 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   else if(i == 1)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format",   DT_DEV_EXPORT_PNG, NULL);
   else if(i == 2)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format",   DT_DEV_EXPORT_PPM16, NULL);
   else if(i == 3)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format",   DT_DEV_EXPORT_PFM, NULL);
-  pthread_mutex_lock(&(darktable.film->images_mutex));
-  darktable.film->last_exported = 0;
-  pthread_mutex_unlock(&(darktable.film->images_mutex));
   dt_control_export();
 }
 

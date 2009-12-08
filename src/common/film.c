@@ -17,7 +17,7 @@
 void dt_film_init(dt_film_t *film)
 {
   pthread_mutex_init(&film->images_mutex, NULL);
-  film->last_loaded = film->num_images = film->last_exported = 0;
+  film->last_loaded = film->num_images = 0;
   film->dirname[0] = '\0';
   film->dir = NULL;
   film->id = -1;

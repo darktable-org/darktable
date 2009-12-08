@@ -240,13 +240,21 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
   }
 
+  // already some db entry there?
+  int rc, altered;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, img->id);
+  if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
+  sqlite3_finalize(stmt);
+
   // try loading a .dt file
   char dtfilename[1024];
   strncpy(dtfilename, filename, 1024);
   char *c = dtfilename + strlen(dtfilename);
   for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dt");
-  if(!dt_imageio_dt_read(img->id, dtfilename))
+  if(altered || !dt_imageio_dt_read(img->id, dtfilename))
   {
     dt_develop_t dev;
     dt_dev_init(&dev, 0);

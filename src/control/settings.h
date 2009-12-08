@@ -91,33 +91,12 @@ typedef struct dt_ctl_settings_t
   int32_t version;
   char dbname[512];
 
-  // develop
-  // float dev_gamma_linear, dev_gamma_gamma;
-  // dt_dev_operation_t dev_op_dreggn; // TODO: remove
-  // dt_dev_operation_params_t dev_op_params_dreggn; // TODO: remove
-  // dt_dev_export_format_t dev_export_format;
-  // int dev_export_quality;
-
-  // library
-  // float lib_zoom, lib_zoom_x, lib_zoom_y;
-  // int32_t lib_center, lib_pan, lib_track;
   int32_t lib_image_mouse_over_id;
-  // dt_lib_filter_t lib_filter;
-  // dt_lib_sort_t lib_sort;
-
+ 
   // synchronized navigation
   float dev_zoom_x, dev_zoom_y, dev_zoom_scale;
   dt_dev_zoom_t dev_zoom;
   int dev_closeup;
-
-  // gui
-  // widget settings for lib/dev view, fullscreen, window geometry
-  // dt_ctl_gui_mode_t gui;
-  // int32_t gui_x, gui_y, gui_w, gui_h;
-  // uint8_t gui_fullscreen;
-  // uint8_t gui_left, gui_right, gui_bottom, gui_top;
-  // uint8_t gui_navigation, gui_library, gui_history;
-  // uint8_t gui_histogram, gui_tonecurve, gui_gamma, gui_hsb, gui_export;
 }
 dt_ctl_settings_t;
 

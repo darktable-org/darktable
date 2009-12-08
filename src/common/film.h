@@ -16,7 +16,7 @@ typedef struct dt_film_t
   char dirname[512];
   pthread_mutex_t images_mutex;
   GDir *dir;
-  int32_t num_images, last_loaded, last_exported;
+  int32_t num_images, last_loaded;
 }
 dt_film_t;
 
