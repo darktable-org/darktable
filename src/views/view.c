@@ -19,6 +19,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   // FIXME: this is global for plugins etc.
   if(k >= 0) darktable.develop = (dt_develop_t *)vm->view[k].data;
   vm->current_view = dt_view_manager_load_module(vm, "lighttable");
+  vm->current_view = -1;
 }
 
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
@@ -89,7 +90,7 @@ void dt_view_manager_switch (dt_view_manager_t *vm, int k)
   gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
 
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->leave) v->leave(v);
+  if(vm->current_view >= 0 && v->leave) v->leave(v);
   if(k < DT_VIEW_MAX_MODULES && k >= 0) vm->current_view = k;
   v = vm->view + vm->current_view;
   if(v->enter) v->enter(v);
@@ -97,6 +98,7 @@ void dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
 const char *dt_view_manager_name (dt_view_manager_t *vm)
 {
+  if(vm->current_view < 0) return "";
   dt_view_t *v = vm->view + vm->current_view;
   if(v->name) return v->name(v);
   else return v->module_name;
@@ -104,42 +106,54 @@ const char *dt_view_manager_name (dt_view_manager_t *vm)
 
 void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  if(vm->current_view < 0)
+  {
+    cairo_set_source_rgb(cr, darktable.gui->bgcolor[0], darktable.gui->bgcolor[1], darktable.gui->bgcolor[2]);
+    cairo_paint(cr);
+    return;
+  }
   dt_view_t *v = vm->view + vm->current_view;
   if(v->expose) v->expose(v, cr, width, height, pointerx, pointery);
 }
 
 void dt_view_manager_reset (dt_view_manager_t *vm)
 {
+  if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->reset) v->reset(v);
 }
 
 void dt_view_manager_mouse_leave (dt_view_manager_t *vm)
 {
+  if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->mouse_leave) v->mouse_leave(v);
 }
 
 void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
 {
+  if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->mouse_moved) v->mouse_moved(v, x, y, which);
 }
 
 void dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, int which, uint32_t state)
 {
+  if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->button_released) v->button_released(v, x, y, which, state);
 }
 
 void dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state)
 {
+  if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->button_pressed) v->button_pressed(v, x, y, which, type, state);
 }
 
 void dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
 {
+  if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->key_pressed) v->key_pressed(v, which);
 }
@@ -155,6 +169,7 @@ void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
 
 void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up)
 {
+  if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->scrolled) v->scrolled(v, x, y, up);
 }
