@@ -1,5 +1,5 @@
 0.4 lighttable release
-- invalidate mipmaps in mem!
+- bug for clipped mip maps and low resolutions.
 - color picker for tonecurve/color correction/monochrome?
 - strange export delays..?
 - progress bars for coresponding widgets (export)?

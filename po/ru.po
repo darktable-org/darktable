@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-06 11:42+0300\n"
-"PO-Revision-Date: 2009-12-06 12:01+0300\n"
+"POT-Creation-Date: 2009-12-08 23:15+0300\n"
+"PO-Revision-Date: 2009-12-08 23:17+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -213,10 +213,18 @@ msgstr "<span color=\"#7f7f7f\"><big><b><i>Режим «%s»</i></b></big></span
 msgid "0 - original"
 msgstr "0 - Исходный вариант"
 
-#: ../src/control/control.c:1029
+#: ../src/control/control.c:1010
 #, c-format
 msgid "single images"
 msgstr "Отдельные снимки"
+
+#: ../src/develop/develop.c:761
+msgid "on"
+msgstr "вкл"
+
+#: ../src/develop/develop.c:761
+msgid "off"
+msgstr "выкл"
 
 #: ../src/develop/imageop.c:159
 #: ../src/develop/imageop.c:221
@@ -229,6 +237,184 @@ msgstr ""
 #, c-format
 msgid "%s is switched off"
 msgstr ""
+
+#: ../src/libs/copy_history.c:22
+msgid "copy history stack"
+msgstr "Копирование параметров обработки"
+
+#: ../src/libs/copy_history.c:94
+msgid "copy"
+msgstr "Скопировать"
+
+#: ../src/libs/copy_history.c:95
+msgid ""
+"copy history stack of\n"
+"first selected image"
+msgstr ""
+"Скопировать параметры обработки\n"
+"первого выделенного снимка"
+
+#: ../src/libs/copy_history.c:96
+msgid "paste"
+msgstr "Вставить"
+
+#: ../src/libs/copy_history.c:97
+msgid ""
+"paste history stack to\n"
+"all selected images"
+msgstr ""
+"Вставить параметры обработки\n"
+"во все выделенные снимки"
+
+#: ../src/libs/export.c:21
+msgid "export selected"
+msgstr "Экспорт выбранного"
+
+#: ../src/libs/export.c:71
+msgid "quality"
+msgstr "Качество"
+
+#: ../src/libs/export.c:77
+msgid "8-bit jpg"
+msgstr "8-разрядный JPEG"
+
+#: ../src/libs/export.c:78
+msgid "8-bit png"
+msgstr "8-разрядный PNG"
+
+#: ../src/libs/export.c:79
+msgid "16-bit ppm"
+msgstr "8-разрядный PPM"
+
+#: ../src/libs/export.c:80
+msgid "float pfm"
+msgstr "PFM с плавающей точкой"
+
+#: ../src/libs/export.c:81
+msgid "export"
+msgstr "Экспортировать"
+
+#: ../src/iop/clipping.c:68
+msgid "clipping"
+msgstr "Кадрирование и вращение"
+
+#: ../src/iop/clipping.c:347
+msgid "crop x"
+msgstr "X:"
+
+#: ../src/iop/clipping.c:348
+msgid "crop y"
+msgstr "Y:"
+
+#: ../src/iop/clipping.c:349
+msgid "crop w"
+msgstr "Ш:"
+
+#: ../src/iop/clipping.c:350
+msgid "crop h"
+msgstr "В:"
+
+#: ../src/iop/clipping.c:351
+msgid "angle"
+msgstr "Угол"
+
+#: ../src/iop/colorcorrection.c:25
+msgid "color correction"
+msgstr "Цветокоррекция"
+
+#: ../src/iop/colorcorrection.c:150
+#: ../src/iop/colorin.c:232
+#: ../src/iop/colorout.c:222
+msgid "saturation"
+msgstr "Насыщенность"
+
+#: ../src/iop/colorin.c:16
+msgid "input color profile"
+msgstr "Цветовой профиль камеры"
+
+#: ../src/iop/colorin.c:223
+#: ../src/iop/colorout.c:213
+msgid "intent"
+msgstr "Цветопередача"
+
+#: ../src/iop/colorin.c:224
+#: ../src/iop/colorout.c:214
+msgid "profile"
+msgstr "Профиль"
+
+#: ../src/iop/colorin.c:230
+#: ../src/iop/colorout.c:220
+msgid "perceptual"
+msgstr "Воспринимаемая"
+
+#: ../src/iop/colorin.c:231
+#: ../src/iop/colorout.c:221
+msgid "relative colorimetric"
+msgstr "Относительная колориметрическая"
+
+#: ../src/iop/colorin.c:233
+#: ../src/iop/colorout.c:223
+msgid "absolute colorimetric"
+msgstr "Абсолютная колориметрическая"
+
+#: ../src/iop/colorin.c:248
+#: ../src/iop/colorout.c:238
+msgid "rendering intent"
+msgstr "Цветопередача"
+
+#: ../src/iop/colorin.c:249
+#, c-format
+msgid "icc profiles in %s/color/in"
+msgstr "Цветовые профили из %s/color/in"
+
+#: ../src/iop/colorout.c:16
+msgid "output color profile"
+msgstr "Цветовой профиль вывода"
+
+#: ../src/iop/colorout.c:239
+#, c-format
+msgid "icc profiles in %s/color/out"
+msgstr "Цветовые профили из %s/color/out"
+
+#: ../src/iop/equalizer.c:25
+msgid "equalizer"
+msgstr "Эквалайзер"
+
+#: ../src/iop/equalizer.c:294
+#: ../src/iop/tonecurve.c:195
+msgid "presets"
+msgstr "Профили"
+
+#: ../src/iop/equalizer.c:297
+#: ../src/iop/sharpen.c:62
+msgid "sharpen"
+msgstr "Повышение резкости"
+
+#: ../src/iop/equalizer.c:298
+msgid "sharpen more"
+msgstr "Усиленное повышение резкости"
+
+#: ../src/iop/equalizer.c:299
+msgid "denoise"
+msgstr "Подавление шума"
+
+#: ../src/iop/exposure.c:136
+msgid "black"
+msgstr "Тёмные области"
+
+#: ../src/iop/exposure.c:138
+msgid "gain"
+msgstr "Усиление"
+
+#: ../src/iop/gamma.c:18
+#: ../src/iop/gamma.c:133
+msgid "gamma"
+msgstr "Гамма"
+
+#: ../src/iop/gamma.c:132
+#: ../src/iop/tonecurve.c:198
+msgid "linear"
+msgstr "Линейная кривая"
 
 #: ../src/iop/lens.c:23
 msgid "lens distortions"
@@ -347,120 +533,23 @@ msgstr "Развернуть направление"
 msgid "apply distortions instead of correcting them"
 msgstr "Добавить искажения вместо того чтобы их исправить"
 
-#: ../src/iop/tonecurve.c:23
-msgid "tonecurve"
-msgstr "Кривая тонкоррекции"
+#: ../src/iop/monochrome.c:49
+msgid "monochrome"
+msgstr "Обесцвечивание"
 
-#: ../src/iop/tonecurve.c:195
-#: ../src/iop/equalizer.c:294
-msgid "presets"
-msgstr "Профили"
+#: ../src/iop/monochrome.c:272
+msgid ""
+"drag and scroll\n"
+"to adjust the virtual\n"
+"color filter"
+msgstr ""
+"Размер и положение цветного фильтра\n"
+"меняется прокручиванием колеса мыши\n"
+"и перетаскиванием её указателя"
 
-#: ../src/iop/tonecurve.c:198
-#: ../src/iop/gamma.c:132
-msgid "linear"
-msgstr "Линейная кривая"
-
-#: ../src/iop/tonecurve.c:199
-msgid "med contrast"
-msgstr "Средний контраст"
-
-#: ../src/iop/tonecurve.c:200
-msgid "high contrast"
-msgstr "Высокий контраст"
-
-#: ../src/iop/colorout.c:16
-msgid "output color profile"
-msgstr "Цветовой профиль вывода"
-
-#: ../src/iop/colorout.c:213
-#: ../src/iop/colorin.c:223
-msgid "intent"
-msgstr "Цветопередача"
-
-#: ../src/iop/colorout.c:214
-#: ../src/iop/colorin.c:224
-msgid "profile"
-msgstr "Профиль"
-
-#: ../src/iop/colorout.c:220
-#: ../src/iop/colorin.c:230
-msgid "perceptual"
-msgstr "Воспринимаемая"
-
-#: ../src/iop/colorout.c:221
-#: ../src/iop/colorin.c:231
-msgid "relative colorimetric"
-msgstr "Относительная колориметрическая"
-
-#: ../src/iop/colorout.c:222
-#: ../src/iop/colorin.c:232
-#: ../src/iop/colorcorrection.c:150
-msgid "saturation"
-msgstr "Насыщенность"
-
-#: ../src/iop/colorout.c:223
-#: ../src/iop/colorin.c:233
-msgid "absolute colorimetric"
-msgstr "Абсолютная колориметрическая"
-
-#: ../src/iop/colorout.c:238
-#: ../src/iop/colorin.c:248
-msgid "rendering intent"
-msgstr "Цветопередача"
-
-#: ../src/iop/colorout.c:239
-#, c-format
-msgid "icc profiles in %s/color/out"
-msgstr "Цветовые профили из %s/color/out"
-
-#: ../src/iop/equalizer.c:25
-msgid "equalizer"
-msgstr "Эквалайзер"
-
-#: ../src/iop/equalizer.c:297
-#: ../src/iop/sharpen.c:62
-msgid "sharpen"
-msgstr "Повышение резкости"
-
-#: ../src/iop/equalizer.c:298
-msgid "sharpen more"
-msgstr "Усиленное повышение резкости"
-
-#: ../src/iop/equalizer.c:299
-#: ../src/iop/denoise.c:20
-msgid "denoise"
-msgstr "Подавление шума"
-
-#: ../src/iop/exposure.c:136
-msgid "black"
-msgstr "Тёмные области"
-
-#: ../src/iop/exposure.c:138
-msgid "gain"
-msgstr "Усиление"
-
-#: ../src/iop/denoise.c:178
-msgid "luma"
-msgstr "Яркостный канал"
-
-#: ../src/iop/denoise.c:179
-msgid "chroma"
-msgstr "Хроматический канал"
-
-#: ../src/iop/colorin.c:16
-msgid "input color profile"
-msgstr "Цветовой профиль камеры"
-
-#: ../src/iop/colorin.c:249
-#, c-format
-msgid "icc profiles in %s/color/in"
-msgstr "Цветовые профили из %s/color/in"
-
-#: ../src/iop/gamma.c:18
-#: ../src/iop/gamma.c:133
-msgid "gamma"
-msgstr "Гамма"
+#: ../src/iop/monochrome.c:294
+msgid "filter size"
+msgstr "Размер фильтра"
 
 #: ../src/iop/sharpen.c:241
 msgid "radius"
@@ -474,10 +563,6 @@ msgstr "Сила"
 msgid "threshold"
 msgstr "Порог"
 
-#: ../src/iop/colorcorrection.c:25
-msgid "color correction"
-msgstr "Цветокоррекция"
-
 #: ../src/iop/temperature.c:55
 msgid "temperature"
 msgstr "Температура цвета"
@@ -490,29 +575,17 @@ msgstr "Исходная"
 msgid "intended temperature"
 msgstr "Конечная"
 
-#: ../src/iop/clipping.c:68
-msgid "clipping"
-msgstr "Кадрирование и вращение"
+#: ../src/iop/tonecurve.c:23
+msgid "tonecurve"
+msgstr "Кривая тонкоррекции"
 
-#: ../src/iop/clipping.c:347
-msgid "crop x"
-msgstr "X:"
+#: ../src/iop/tonecurve.c:199
+msgid "med contrast"
+msgstr "Средний контраст"
 
-#: ../src/iop/clipping.c:348
-msgid "crop y"
-msgstr "Y:"
-
-#: ../src/iop/clipping.c:349
-msgid "crop w"
-msgstr "Ш:"
-
-#: ../src/iop/clipping.c:350
-msgid "crop h"
-msgstr "В:"
-
-#: ../src/iop/clipping.c:351
-msgid "angle"
-msgstr "Угол"
+#: ../src/iop/tonecurve.c:200
+msgid "high contrast"
+msgstr "Высокий контраст"
 
 #: ../src/gui/gtk.c:131
 msgid "import film"
@@ -527,25 +600,13 @@ msgstr "Импортировать снимок"
 msgid "error loading file '%s'"
 msgstr "Ошибка при загрузке файла '%s'"
 
-#: ../src/gui/histogram.c:13
+#: ../src/gui/histogram.c:14
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
 msgstr ""
 "Перетаскивание меняет экспозицию,\n"
 "двойной щелчок обнуляет изменения"
-
-#: ../src/develop/develop.c:761
-msgid "on"
-msgstr "вкл"
-
-#: ../src/develop/develop.c:761
-msgid "off"
-msgstr "выкл"
-
-#: ../src/views/lighttable.c:57
-msgid "lighttable"
-msgstr "Световой стол"
 
 #: ../src/views/darkroom.c:18
 msgid "darkroom"
@@ -561,6 +622,12 @@ msgstr "Скрыть модуль «%s»"
 msgid "show %s"
 msgstr "Показать модуль «%s»"
 
+#: ../src/views/lighttable.c:57
+msgid "lighttable"
+msgstr "Световой стол"
+
+#~ msgid "luma"
+#~ msgstr "Яркостный канал"
 #~ msgid ""
 #~ "8-bit jpg\n"
 #~ "8-bit png\n"
@@ -571,12 +638,6 @@ msgstr "Показать модуль «%s»"
 #~ "8-разрядный PNG\n"
 #~ "16-разрядный PPM\n"
 #~ "PFM с плавающей точкой"
-#~ msgid "export"
-#~ msgstr "Экспортировать"
-#~ msgid "export selected"
-#~ msgstr "Экспорт выбранного"
-#~ msgid "quality"
-#~ msgstr "Качество"
 #~ msgid ""
 #~ "do you really want to physically delete all selected images from disk?"
 #~ msgstr ""
