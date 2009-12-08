@@ -1,17 +1,15 @@
 0.4 lighttable release
-- color mixer => monochrome widget.
-- remove denoise
+- strange export delays..?
 - progress bars for coresponding widgets (export)?
 - button toggle in history when new history is pushed.
 - lensfun autoscale
 - scroll to opened expander in darkroom mode.
 - lighttable plugins:
   - copy style
-  - export
+  - select handling
 - libraw options plugin-dev: reload raw image.
   - image.h struct
   - table in image lib
-- magic numbers in header of binary .dt files
 - 2x version in plugin: dt and plugin (=>params)
 - plug-in-template (translatable)
 - write .dt-tags file (stars, keywords, ..?)
@@ -21,24 +19,14 @@
 - lib: separator thickness
 - install: remove schema installation.
 - show which images have been modified in lighttable mode.
-- demosaic: patch libraw => green1/2 histograms, denoise l/c.
-  - have demosaic input widget with reload button (will be slow)
 - histogram fill light mouse gesture
 - preview blacklist modules
 - exposure: highlight clipped parts
 - exr import
 - tonemapping widget?
 - clipping event hooks: crop
-- document mode rg1g2b noise histogram profiling tool
-  - then subtract noise (wavelet shrinkage based on var estimate
-    or measured noise statistics)
-  - and normalise two greens (using histogram matching)
-    not for 5d, but for 400d for example.
-  - then demosaic using float-ahd optimized code.
-- need plug-in versioning
 - user preferences
   - default processing stack, if exif matches
-  - libraw settings (have to restart)
 
 bugs:
 - img unlock => flicker in library mode? (due to mipf trigger?)

@@ -11,13 +11,28 @@
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/5.png" alt="5" width="142px" /></span><div class="headline"><img src="documentation.png" alt="documentation" width="324px"/></div>
     	<div class="starterText">
+      on this page, there are a few demonstrations of darktable's tools, as well as hack-level tricks.
+      </div>
+
+      <div class="text">
+    	<a href="images/monochrome_original.jpg"><img src="images/monochrome_original_small.jpg" class="bigimg" alt="dreggn" /></a><h1>monochrome tool</h1>
+      this is the original color image.
+      </div>
+      <div class="text">
+    	<a href="images/monochrome_bw.jpg"><img src="images/monochrome_bw_small.jpg" class="bigimg" alt="dreggn" /></a>
+      this image has been modified using the <em>monochrome</em> tool, with a red color filter applied before conversion. effectively,
+      the blue sky gets attenuated, resulting in high-contrast and very plastic clouds. use the mouse wheel or the slider to adjust
+      the bandwidth of the filter.
+      </div>
+
+      <div class="text"><h1>equalizer tool: detail smoothing/enhancement</h1>
       only a small doc about the new <em>equalizer</em> tool, as it is a bit exotic. you can use it to smooth your images
       in an edge-aware way (similar to a bilateral filter, but a lot faster), do this on the color channels (i.e. remove high iso sensor noise),
       or do the inverse and selectively accentuate a particular frequency range (enhance detail, sharpen). algorithmically, it is based on
       <em>edge-avoiding wavelets</em>.
     	</div>
       <div class="text">
-    	<a href="images/eaw_original.jpg"><img src="images/eaw_original_small.jpg" class="bigimg" alt="dreggn" /></a><h1>equalizer example: detail smoothing/enhancement</h1>
+    	<a href="images/eaw_original.jpg"><img src="images/eaw_original_small.jpg" class="bigimg" alt="dreggn" /></a>
       this is the original image, the button with <em>original</em> on it (in the history expander) has just been pressed. so the equalizer tool is
       switched off and all curves are a straight line const = 1. left are the lowest frequencies (big holes), right are the highest (tiny holds).
       the curve gives the number with which the frequency band is multiplied. lower half (smaller than one) attenuates, upper half will increase
