@@ -183,6 +183,13 @@ h1:before {
   clear:both;
 }
 
+.headingtext{
+  line-height:12pt;
+  padding-top:30pt;
+  margin-bottom:20pt;
+  clear:both;
+}
+
 ul{
   position:relative;
   list-style:  disc;

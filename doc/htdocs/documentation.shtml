@@ -14,18 +14,31 @@
       on this page, there are a few demonstrations of darktable's tools, as well as hack-level tricks.
       </div>
 
+      <div class="headingtext"><h1>monochrome tool: convert an image to black and white</h1>
+      this section briefly shows how to convert an image to black and white using the <em>monochrome</em> tool in darktable.
+      </div>
       <div class="text">
-    	<a href="images/monochrome_original.jpg"><img src="images/monochrome_original_small.jpg" class="bigimg" alt="dreggn" /></a><h1>monochrome tool</h1>
+    	<a href="images/monochrome_original.jpg"><img src="images/monochrome_original_small.jpg" class="bigimg" alt="dreggn" /></a>
       this is the original color image.
       </div>
       <div class="text">
     	<a href="images/monochrome_bw.jpg"><img src="images/monochrome_bw_small.jpg" class="bigimg" alt="dreggn" /></a>
-      this image has been modified using the <em>monochrome</em> tool, with a red color filter applied before conversion. effectively,
+      this image has been modified with a red color filter applied before conversion. effectively,
       the blue sky gets attenuated, resulting in high-contrast and very plastic clouds. use the mouse wheel or the slider to adjust
       the bandwidth of the filter.
       </div>
+      <div class="text">
+    	<a href="images/monochrome_skin_green.jpg"><img src="images/monochrome_skin_green_small.jpg" class="bigimg" alt="dreggn" /></a>
+      this example shows the impact of color filters on skin tones and detail. the green filter used here enhances skin details such as
+      freckles.
+      </div>
+      <div class="text">
+    	<a href="images/monochrome_skin_red.jpg"><img src="images/monochrome_skin_red_small.jpg" class="bigimg" alt="dreggn" /></a>
+      adjusting the filter more towards red tones results in smoother appearance.
+      the sepia toning is achieved by an offset in the <em>color correction</em> tool.
+      </div>
 
-      <div class="text"><h1>equalizer tool: detail smoothing/enhancement</h1>
+      <div class="headingtext"><h1>equalizer tool: detail smoothing/enhancement</h1>
       only a small doc about the new <em>equalizer</em> tool, as it is a bit exotic. you can use it to smooth your images
       in an edge-aware way (similar to a bilateral filter, but a lot faster), do this on the color channels (i.e. remove high iso sensor noise),
       or do the inverse and selectively accentuate a particular frequency range (enhance detail, sharpen). algorithmically, it is based on
