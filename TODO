@@ -1,10 +1,11 @@
 0.4 lighttable release
+- _ICC_PROFILE x atom
+- lensfun auto scale
 - bug for clipped mip maps and low resolutions.
 - color picker for tonecurve/color correction/monochrome?
 - strange export delays..?
 - progress bars for coresponding widgets (export)?
 - button toggle in history when new history is pushed.
-- lensfun autoscale
 - scroll to opened expander in darkroom mode.
 - lighttable plugins:
   - copy style

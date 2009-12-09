@@ -16,6 +16,45 @@ const char *name()
   return _("output color profile");
 }
 
+#if 0
+static cmsHPROFILE *
+get_screen_profile (GdkScreen *screen)
+{ // some old gimp code to get the screen profile via _ICC_PROFILE
+  Display *dpy;
+  Atom icc_atom, type;
+  int format;
+  gulong nitems;
+  gulong bytes_after;
+  guchar *str;
+  int result;
+  cmsHPROFILE *profile;
+
+  g_return_val_if_fail (screen != NULL, NULL);
+
+  dpy = GDK_DISPLAY_XDISPLAY (gdk_screen_get_display (screen));
+  icc_atom = gdk_x11_get_xatom_by_name_for_display(gdk_screen_get_display 
+    (screen), "_ICC_PROFILE");
+
+  result = XGetWindowProperty (dpy, GDK_WINDOW_XID 	
+      (gdk_screen_get_root_window (screen)),
+      icc_atom, 0, G_MAXLONG,
+      False, XA_CARDINAL, &type, &format, 
+      &nitems, &bytes_after, (guchar **)&str);
+
+  if (nitems)
+  {
+    profile = cmsOpenProfileFromMem(str, nitems);
+    XFree (str);
+    return profile;
+  }
+  else
+  {
+    // g_printerr("[colorout] no display profile found.\n");
+    return NULL;
+  }
+}
+#endif
+
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -46,7 +85,7 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   }
   // should really never happen.
   gchar *text = gtk_combo_box_get_active_text(widget);
-  fprintf(stderr, "[iop_color] color profile %s seems to have disappeared!\n", text);
+  fprintf(stderr, "[colorout] color profile %s seems to have disappeared!\n", text);
   g_free(text);
 }
 
@@ -141,7 +180,7 @@ void gui_update(struct dt_iop_module_t *self)
     }
     prof = g_list_next(prof);
   }
-  fprintf(stderr, "[iop_color] could not find requested profile `%s'!\n", p->iccprofile);
+  fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
 void init(dt_iop_module_t *module)
