@@ -84,9 +84,7 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
     prof = g_list_next(prof);
   }
   // should really never happen.
-  gchar *text = gtk_combo_box_get_active_text(widget);
-  fprintf(stderr, "[colorout] color profile %s seems to have disappeared!\n", text);
-  g_free(text);
+  fprintf(stderr, "[colorout] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -120,6 +118,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) cmsCloseProfile(d->output);
+
+  // TODO: if export pipeline, apply iccprofile, else apply display profile
   if(!strcmp(p->iccprofile, "sRGB"))
   { // default: sRGB
     d->output = NULL;
@@ -134,7 +134,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     snprintf(filename, 1024, "%s/color/out/%s", datadir, p->iccprofile);
     d->output = cmsOpenProfileFromFile(filename, "r");
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    if(d->output)
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    else
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->intent, 0);
   }
 #endif
 }
@@ -180,6 +183,7 @@ void gui_update(struct dt_iop_module_t *self)
     }
     prof = g_list_next(prof);
   }
+  gtk_combo_box_set_active(g->cbox2, 0);
   fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
 }
 

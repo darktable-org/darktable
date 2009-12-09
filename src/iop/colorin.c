@@ -45,9 +45,7 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
     prof = g_list_next(prof);
   }
   // should really never happen.
-  gchar *text = gtk_combo_box_get_active_text(widget);
-  fprintf(stderr, "[iop_color] color profile %s seems to have disappeared!\n", text);
-  g_free(text);
+  fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -104,7 +102,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     snprintf(filename, 1024, "%s/color/in/%s", datadir, p->iccprofile);
     d->input = cmsOpenProfileFromFile(filename, "r");
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    if(d->input)
+      d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    else
+      d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   }
 #endif
 }
@@ -150,7 +151,8 @@ void gui_update(struct dt_iop_module_t *self)
     }
     prof = g_list_next(prof);
   }
-  fprintf(stderr, "[iop_color] could not find requested profile `%s'!\n", p->iccprofile);
+  gtk_combo_box_set_active(g->cbox2, 0);
+  fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
 void init(dt_iop_module_t *module)
