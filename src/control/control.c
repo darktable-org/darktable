@@ -260,7 +260,7 @@ void dt_control_init(dt_control_t *s)
   s->idle_top = DT_CONTROL_MAX_JOBS;
   s->queued_top = 0;
   // start threads
-  s->num_threads = DT_CTL_WORKER_RESERVED + dt_ctl_get_num_procs() - 1;
+  s->num_threads = DT_CTL_WORKER_RESERVED + dt_ctl_get_num_procs();
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   s->running = 1;
   for(k=0;k<s->num_threads;k++)
