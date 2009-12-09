@@ -143,8 +143,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .001));
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
   g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(-3.0, 6.0, .02));
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the white level"), NULL);
   g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .005));
+  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("leave black and white,\nbut compress brighter\nvalues (non-linear)"), NULL);
   gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale2), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale3), 3);
