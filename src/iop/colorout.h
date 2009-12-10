@@ -7,18 +7,27 @@
 #include <inttypes.h>
 #include <lcms.h>
 
+typedef struct dt_iop_colorout_global_data_t
+{
+  guint8 *data;
+  gint data_size;
+}
+dt_iop_colorout_global_data_t;
+
 typedef struct dt_iop_colorout_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  char displayprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
+  dt_iop_color_intent_t displayintent;
 }
 dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2;
-  GtkComboBox *cbox1, *cbox2;
+  GtkLabel *label1, *label2, *label3, *label4;
+  GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4;
   GList *profiles;
 }
 dt_iop_colorout_gui_data_t;

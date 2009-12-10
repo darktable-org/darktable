@@ -16,51 +16,21 @@ const char *name()
   return _("output color profile");
 }
 
-#if 0
-static cmsHPROFILE *
-get_screen_profile (GdkScreen *screen)
-{ // some old gimp code to get the screen profile via _ICC_PROFILE
-  Display *dpy;
-  Atom icc_atom, type;
-  int format;
-  gulong nitems;
-  gulong bytes_after;
-  guchar *str;
-  int result;
-  cmsHPROFILE *profile;
-
-  g_return_val_if_fail (screen != NULL, NULL);
-
-  dpy = GDK_DISPLAY_XDISPLAY (gdk_screen_get_display (screen));
-  icc_atom = gdk_x11_get_xatom_by_name_for_display(gdk_screen_get_display 
-    (screen), "_ICC_PROFILE");
-
-  result = XGetWindowProperty (dpy, GDK_WINDOW_XID 	
-      (gdk_screen_get_root_window (screen)),
-      icc_atom, 0, G_MAXLONG,
-      False, XA_CARDINAL, &type, &format, 
-      &nitems, &bytes_after, (guchar **)&str);
-
-  if (nitems)
-  {
-    profile = cmsOpenProfileFromMem(str, nitems);
-    XFree (str);
-    return profile;
-  }
-  else
-  {
-    // g_printerr("[colorout] no display profile found.\n");
-    return NULL;
-  }
-}
-#endif
-
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void display_intent_changed (GtkComboBox *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  p->displayintent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -85,6 +55,29 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   }
   // should really never happen.
   fprintf(stderr, "[colorout] color profile %s seems to have disappeared!\n", p->iccprofile);
+}
+
+static void display_profile_changed (GtkComboBox *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  int pos = gtk_combo_box_get_active(widget);
+  GList *prof = g->profiles;
+  while(prof)
+  { // could use g_list_nth. this seems safer?
+    dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
+    if(pp->pos == pos)
+    {
+      strcpy(p->displayprofile, pp->filename);
+      dt_dev_add_history_item(darktable.develop, self);
+      return;
+    }
+    prof = g_list_next(prof);
+  }
+  // should really never happen.
+  fprintf(stderr, "[colorout] display color profile %s seems to have disappeared!\n", p->displayprofile);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -117,27 +110,58 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   #error "gegl version needs some more care!"
 #else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
   if(d->output) cmsCloseProfile(d->output);
 
-  // TODO: if export pipeline, apply iccprofile, else apply display profile
-  if(!strcmp(p->iccprofile, "sRGB"))
-  { // default: sRGB
-    d->output = NULL;
-    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->intent, 0);
-  }
-  else
-  { // else: load file name
-    char datadir[1024];
-    char filename[1024];
-    dt_get_datadir(datadir, 1024);
-    snprintf(filename, 1024, "%s/color/out/%s", datadir, p->iccprofile);
-    d->output = cmsOpenProfileFromFile(filename, "r");
-    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+  if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+  {
+    if(!strcmp(p->iccprofile, "sRGB"))
+    { // default: sRGB
+      d->output = NULL;
+    }
+    else if(!strcmp(p->displayprofile, _("X profile")))
+    { // x default
+      if(gd->data) d->output = cmsOpenProfileFromMem(gd->data, gd->data_size);
+      else         d->output = NULL;
+    }
+    else
+    { // else: load file name
+      char datadir[1024];
+      char filename[1024];
+      dt_get_datadir(datadir, 1024);
+      snprintf(filename, 1024, "%s/color/out/%s", datadir, p->iccprofile);
+      d->output = cmsOpenProfileFromFile(filename, "r");
+      d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+    }
     if(d->output)
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
     else
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->intent, 0);
+  }
+  else
+  {
+    if(!strcmp(p->displayprofile, "sRGB"))
+    { // default: sRGB
+      d->output = NULL;
+    }
+    else if(!strcmp(p->displayprofile, _("X profile")))
+    { // x default
+      if(gd->data) d->output = cmsOpenProfileFromMem(gd->data, gd->data_size);
+      else         d->output = NULL;
+    }
+    else
+    { // else: load file name
+      char datadir[1024];
+      char filename[1024];
+      dt_get_datadir(datadir, 1024);
+      snprintf(filename, 1024, "%s/color/out/%s", datadir, p->displayprofile);
+      d->output = cmsOpenProfileFromFile(filename, "r");
+    }
+    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+    if(d->output)
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
+    else
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->displayintent, 0);
   }
 #endif
 }
@@ -172,6 +196,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
   gtk_combo_box_set_active(g->cbox1, (int)p->intent);
+  int iccfound = 0, displayfound = 0;
   GList *prof = g->profiles;
   while(prof)
   {
@@ -179,29 +204,107 @@ void gui_update(struct dt_iop_module_t *self)
     if(!strcmp(pp->filename, p->iccprofile))
     {
       gtk_combo_box_set_active(g->cbox2, pp->pos);
-      return;
+      iccfound = 1;
     }
+    if(!strcmp(pp->filename, p->displayprofile))
+    {
+      gtk_combo_box_set_active(g->cbox3, pp->pos);
+      displayfound = 1;
+    }
+    if(iccfound && displayfound) break;
     prof = g_list_next(prof);
   }
   gtk_combo_box_set_active(g->cbox2, 0);
-  fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
+  if(!iccfound)     fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
+  if(!displayfound) fprintf(stderr, "[colorout] could not find requested display profile `%s'!\n", p->displayprofile);
+}
+
+void get_display_profile(GtkWidget *widget,
+    guint8 **buffer, gint *buffer_size)
+{ // thanks to ufraw for this!
+  *buffer = NULL;
+  *buffer_size = 0;
+#if defined GDK_WINDOWING_X11
+  GdkScreen *screen = gtk_widget_get_screen(widget);
+  if ( screen==NULL )
+    screen = gdk_screen_get_default();
+  int monitor = gdk_screen_get_monitor_at_window (screen, widget->window);
+  char *atom_name;
+  if (monitor > 0)
+    atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
+  else
+    atom_name = g_strdup("_ICC_PROFILE");
+
+  GdkAtom type = GDK_NONE;
+  gint format = 0;
+  gdk_property_get(gdk_screen_get_root_window(screen),
+      gdk_atom_intern(atom_name, FALSE), GDK_NONE,
+      0, 64 * 1024 * 1024, FALSE,
+      &type, &format, buffer_size, buffer);
+  g_free(atom_name);
+
+#elif defined GDK_WINDOWING_QUARTZ
+  GdkScreen *screen = gtk_widget_get_screen(widget);
+  if ( screen==NULL )
+    screen = gdk_screen_get_default();
+  int monitor = gdk_screen_get_monitor_at_window(screen, widget->window);
+
+  CMProfileRef prof = NULL;
+  CMGetProfileByAVID(monitor, &prof);
+  if ( prof==NULL )
+    return;
+
+  ProfileTransfer transfer = { NULL, 0 };
+  Boolean foo;
+  CMFlattenProfile(prof, 0, _uf_lcms_flatten_profile, &transfer, &foo);
+  CMCloseProfile(prof);
+
+  *buffer = transfer.data;
+  *buffer_size = transfer.len;
+
+#elif defined G_OS_WIN32
+  (void)widget;
+  HDC hdc = GetDC (NULL);
+  if ( hdc==NULL )
+    return;
+
+  DWORD len = 0;
+  GetICMProfile (hdc, &len, NULL);
+  gchar *path = g_new (gchar, len);
+
+  if (GetICMProfile (hdc, &len, path)) {
+    gsize size;
+    g_file_get_contents(path, (gchar**)buffer, &size, NULL);
+    *buffer_size = size;
+  }
+  g_free (path);
+  ReleaseDC (NULL, hdc);
+#endif
 }
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_colorout_data_t));
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  module->data = malloc(sizeof(dt_iop_colorout_global_data_t));
+  dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
+  get_display_profile(widget, &d->data, &d->data_size);
   module->params = malloc(sizeof(dt_iop_colorout_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
   module->priority = 900;
-  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){"sRGB", DT_INTENT_PERCEPTUAL};
+  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){"sRGB", "sRGB", DT_INTENT_PERCEPTUAL};
   memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
 {
+  dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
+  g_free(d->data);
+  d->data = NULL;
+  free(module->data);
+  module->data = NULL;
   free(module->gui_data);
   module->gui_data = NULL;
   free(module->params);
@@ -219,6 +322,11 @@ void gui_init(struct dt_iop_module_t *self)
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
   int pos = prof->pos = 0;
+  g->profiles = g_list_append(g->profiles, prof);
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, _("X profile"));
+  strcpy(prof->name, _("X profile"));
+  pos = prof->pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/out/*.icc
@@ -253,40 +361,65 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("profile")));
+  g->label1 = GTK_LABEL(gtk_label_new(_("output intent")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("output profile")));
+  g->label4 = GTK_LABEL(gtk_label_new(_("display intent")));
+  g->label3 = GTK_LABEL(gtk_label_new(_("display profile")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->cbox1, _("perceptual"));
   gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
   gtk_combo_box_append_text(g->cbox1, _("saturation"));
   gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
+  g->cbox4 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->cbox4, _("perceptual"));
+  gtk_combo_box_append_text(g->cbox4, _("relative colorimetric"));
+  gtk_combo_box_append_text(g->cbox4, _("saturation"));
+  gtk_combo_box_append_text(g->cbox4, _("absolute colorimetric"));
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->cbox3 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *l = g->profiles;
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     gtk_combo_box_append_text(g->cbox2, prof->name);
+    gtk_combo_box_append_text(g->cbox3, prof->name);
     l = g_list_next(l);
   }
   gtk_combo_box_set_active(g->cbox1, 0);
   gtk_combo_box_set_active(g->cbox2, 0);
+  gtk_combo_box_set_active(g->cbox3, 0);
+  gtk_combo_box_set_active(g->cbox4, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox4), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox3), TRUE, TRUE, 0);
 
   char tooltip[1024];
   gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), NULL);
   snprintf(tooltip, 1024, _("icc profiles in %s/color/out"), datadir);
   gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, NULL);
+  snprintf(tooltip, 1024, _("display icc profiles in %s/color/out"), datadir);
+  gtk_object_set(GTK_OBJECT(g->cbox3), "tooltip-text", tooltip, NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "changed",
                     G_CALLBACK (intent_changed),
                     (gpointer)self);
+  g_signal_connect (G_OBJECT (g->cbox4), "changed",
+                    G_CALLBACK (display_intent_changed),
+                    (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox2), "changed",
                     G_CALLBACK (profile_changed),
+                    (gpointer)self);
+  g_signal_connect (G_OBJECT (g->cbox3), "changed",
+                    G_CALLBACK (display_profile_changed),
                     (gpointer)self);
 }
 

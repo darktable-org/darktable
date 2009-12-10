@@ -400,7 +400,13 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   dev->iop = dt_iop_load_modules(dev);
 
   dt_dev_read_history(dev);
-  if(!dev->gui_attached) dt_dev_raw_load(dev, dev->image);
+  if(!dev->gui_attached)
+  {
+    // FIXME: raw load should really decide if it is re-import or first import and only then overwrite output size.
+    const int ow = dev->image->output_width, oh = dev->image->output_height;
+    dt_dev_raw_load(dev, dev->image);
+    dev->image->output_width = ow; dev->image->output_height = oh;
+  }
 }
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht)
@@ -668,9 +674,14 @@ void dt_dev_read_history(dt_develop_t *dev)
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
 #endif
 
+    if(hist->module->params_size != sqlite3_column_bytes(stmt, 4))
+    {
+      fprintf(stderr, "[dev_read_history] parameter size of module `%s' seem to have changed!\n", hist->module->op);
+      free(hist);
+      continue;
+    }
     hist->params = malloc(hist->module->params_size);
     memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
-    assert(hist->module->params_size == sqlite3_column_bytes(stmt, 4));
     // memcpy(hist->module->params, hist->params, hist->module->params_size);
     // hist->module->enabled = hist->enabled;
     // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));

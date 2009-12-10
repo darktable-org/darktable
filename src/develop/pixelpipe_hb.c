@@ -14,12 +14,14 @@
 void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
   dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*width*height, 1);
+  pipe->type = DT_DEV_PIXELPIPE_EXPORT;
 }
 
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   // TODO: this is definitely a waste of memory (165 MB for the screen cache for both pipes) :)
   dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*DT_IMAGE_WINDOW_SIZE*DT_IMAGE_WINDOW_SIZE, 5);
+  pipe->type = DT_DEV_PIXELPIPE_FULL;
 }
 
 void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries)

@@ -1,9 +1,11 @@
 0.4 lighttable release
-- _ICC_PROFILE x atom
+- 2x version in plugin: dt and plugin (=>params)
+ - .dt file starts with plugin version
+ - plugin refuses to load for newer dt version
+- _ICC_PROFILE x atom colorout.c
 - lensfun auto scale
 - bug for clipped mip maps and low resolutions.
 - color picker for tonecurve/color correction/monochrome?
-- strange export delays..?
 - progress bars for coresponding widgets (export)?
 - button toggle in history when new history is pushed.
 - scroll to opened expander in darkroom mode.
@@ -13,7 +15,6 @@
 - libraw options plugin-dev: reload raw image.
   - image.h struct
   - table in image lib
-- 2x version in plugin: dt and plugin (=>params)
 - plug-in-template (translatable)
 - write .dt-tags file (stars, keywords, ..?)
 - progress bars
