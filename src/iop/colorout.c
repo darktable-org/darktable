@@ -119,7 +119,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     { // default: sRGB
       d->output = NULL;
     }
-    else if(!strcmp(p->displayprofile, _("X profile")))
+    else if(!strcmp(p->displayprofile, "X profile"))
     { // x default
       if(gd->data) d->output = cmsOpenProfileFromMem(gd->data, gd->data_size);
       else         d->output = NULL;
@@ -144,7 +144,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     { // default: sRGB
       d->output = NULL;
     }
-    else if(!strcmp(p->displayprofile, _("X profile")))
+    else if(!strcmp(p->displayprofile, "X profile"))
     { // x default
       if(gd->data) d->output = cmsOpenProfileFromMem(gd->data, gd->data_size);
       else         d->output = NULL;
@@ -293,7 +293,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
   module->priority = 900;
-  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){"sRGB", "sRGB", DT_INTENT_PERCEPTUAL};
+  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){"sRGB", "X profile", DT_INTENT_PERCEPTUAL};
   memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
 }
@@ -324,8 +324,8 @@ void gui_init(struct dt_iop_module_t *self)
   int pos = prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, _("X profile"));
-  strcpy(prof->name, _("X profile"));
+  strcpy(prof->filename, "X profile");
+  strcpy(prof->name, "X profile");
   pos = prof->pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
@@ -389,8 +389,16 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    gtk_combo_box_append_text(g->cbox2, prof->name);
-    gtk_combo_box_append_text(g->cbox3, prof->name);
+    if(!strcmp(prof->name, "X profile"))
+    {
+      gtk_combo_box_append_text(g->cbox2, _("X profile"));
+      gtk_combo_box_append_text(g->cbox3, _("X profile"));
+    }
+    else
+    {
+      gtk_combo_box_append_text(g->cbox2, prof->name);
+      gtk_combo_box_append_text(g->cbox3, prof->name);
+    }
     l = g_list_next(l);
   }
   gtk_combo_box_set_active(g->cbox1, 0);
