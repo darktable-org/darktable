@@ -156,6 +156,10 @@ typedef struct dt_control_t
   pthread_mutex_t global_mutex, image_mutex;
   GConfClient *gconf;
 
+  // xatom color profile:
+  uint8_t *xprofile_data;
+  int xprofile_size;
+
   // job management
   int32_t running;
   pthread_mutex_t queue_mutex, cond_mutex;

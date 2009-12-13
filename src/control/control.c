@@ -241,9 +241,74 @@ int dt_control_write_config(dt_control_t *c)
   return 0;
 }
 
+void dt_ctl_get_display_profile(GtkWidget *widget,
+    guint8 **buffer, gint *buffer_size)
+{ // thanks to ufraw for this!
+  *buffer = NULL;
+  *buffer_size = 0;
+#if defined GDK_WINDOWING_X11
+  GdkScreen *screen = gtk_widget_get_screen(widget);
+  if ( screen==NULL )
+    screen = gdk_screen_get_default();
+  int monitor = gdk_screen_get_monitor_at_window (screen, widget->window);
+  char *atom_name;
+  if (monitor > 0)
+    atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
+  else
+    atom_name = g_strdup("_ICC_PROFILE");
+
+  GdkAtom type = GDK_NONE;
+  gint format = 0;
+  gdk_property_get(gdk_screen_get_root_window(screen),
+      gdk_atom_intern(atom_name, FALSE), GDK_NONE,
+      0, 64 * 1024 * 1024, FALSE,
+      &type, &format, buffer_size, buffer);
+  g_free(atom_name);
+
+#elif defined GDK_WINDOWING_QUARTZ
+  GdkScreen *screen = gtk_widget_get_screen(widget);
+  if ( screen==NULL )
+    screen = gdk_screen_get_default();
+  int monitor = gdk_screen_get_monitor_at_window(screen, widget->window);
+
+  CMProfileRef prof = NULL;
+  CMGetProfileByAVID(monitor, &prof);
+  if ( prof==NULL )
+    return;
+
+  ProfileTransfer transfer = { NULL, 0 };
+  Boolean foo;
+  CMFlattenProfile(prof, 0, _uf_lcms_flatten_profile, &transfer, &foo);
+  CMCloseProfile(prof);
+
+  *buffer = transfer.data;
+  *buffer_size = transfer.len;
+
+#elif defined G_OS_WIN32
+  (void)widget;
+  HDC hdc = GetDC (NULL);
+  if ( hdc==NULL )
+    return;
+
+  DWORD len = 0;
+  GetICMProfile (hdc, &len, NULL);
+  gchar *path = g_new (gchar, len);
+
+  if (GetICMProfile (hdc, &len, path)) {
+    gsize size;
+    g_file_get_contents(path, (gchar**)buffer, &size, NULL);
+    *buffer_size = size;
+  }
+  g_free (path);
+  ReleaseDC (NULL, hdc);
+#endif
+}
+
 void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
+  dt_ctl_get_display_profile(NULL, &s->xprofile_data, &s->xprofile_size);
+
   s->progress = 200.0f;
 
   gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", DT_MODE_NONE, NULL);

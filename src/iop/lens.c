@@ -1035,34 +1035,42 @@ static void scale_changed(GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-#if 0
-static void autoscale_pressed(GtkWidget *button, gpointer user_data)
+#if 1
+static float get_autoscale(dt_iop_module_t *self)
 {
-  // TODO: create dummy modifier, get scale value, set slider.
-  // TODO: get lens:
-   if(self->dev->image->exif_lens[0] != '\0')
+  dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
+  float scale = 1.0;
+  if(p->lens[0] != '\0')
   {
     char make [200], model [200];
     const gchar *txt = gtk_entry_get_text(GTK_ENTRY(g->lens_model));
     parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
-    const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
-        make [0] ? make : NULL,
-        model [0] ? model : NULL, 0);
-    if(lenslist && !lenslist[1]) lens_set (self, lenslist[0]);
+    const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera, NULL, p->lens, 0);
+    if(lenslist && !lenslist[1]) 
+    {
+      // create dummy modifier
+      lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, self->dev->image->width, self->dev->image->height);
+      (void)lf_modifier_initialize(
+          modifier, lenslist[0], LF_PF_F32,
+          p->focal, p->aperture,
+          p->distance, p->scale,
+          p->target_geom, p->modify_flags, p->inverse);
+      scale = lf_modifier_get_auto_scale (modifier, p->inverse);
+      lf_modifier_destroy(modifier);
+    }
     lf_free (lenslist);
   }
-  // TODO: orig_w doesn't matter
-  lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
+  return scale;
+}
 
-  int modflags = lf_modifier_initialize(
-      modifier, d->lens, LF_PF_F32,
-      d->focal, d->aperture,
-      d->distance, d->scale,
-      d->target_geom, d->modify_flags, d->inverse);
-
-  float lf_modifier_get_auto_scale (
-    lfModifier *modifier, cbool reverse)
-  lf_modifier_destroy(modifier);
+static void autoscale_pressed(GtkWidget *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  const float scale = get_autoscale(self);
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  gtk_range_set_value(GTK_RANGE(g->scale), scale);
   // TODO: set slider => triggers params => hist update => etc
 }
 #endif
@@ -1164,7 +1172,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_range_set_value(GTK_RANGE(g->scale), p->scale);
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+  hbox = gtk_hbox_new(FALSE, 0);
+  button = gtk_button_new_with_label(_("auto"));
+  g_signal_connect (G_OBJECT (button), "clicked",
+                    G_CALLBACK (autoscale_pressed), self);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), hbox, TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
   label = gtk_label_new(_("scale"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);

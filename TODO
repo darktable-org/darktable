@@ -1,8 +1,10 @@
 0.4 lighttable release
+- colorout get xatom has to be done in main thread!!!
+- white balance by adjusting white point of color input profile.
+- webpage: about image with lens, screenshot, photograph or so.
 - 2x version in plugin: dt and plugin (=>params)
  - .dt file starts with plugin version
  - plugin refuses to load for newer dt version
-- _ICC_PROFILE x atom colorout.c
 - lensfun auto scale
 - bug for clipped mip maps and low resolutions.
 - color picker for tonecurve/color correction/monochrome?

@@ -110,7 +110,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   #error "gegl version needs some more care!"
 #else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
-  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
+  // dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
   if(d->output) cmsCloseProfile(d->output);
 
   if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
@@ -121,8 +121,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     else if(!strcmp(p->displayprofile, "X profile"))
     { // x default
-      if(gd->data) d->output = cmsOpenProfileFromMem(gd->data, gd->data_size);
-      else         d->output = NULL;
+      if(darktable.control->xprofile_data) d->output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
+      else d->output = NULL;
     }
     else
     { // else: load file name
@@ -146,8 +146,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     else if(!strcmp(p->displayprofile, "X profile"))
     { // x default
-      if(gd->data) d->output = cmsOpenProfileFromMem(gd->data, gd->data_size);
-      else         d->output = NULL;
+      if(darktable.control->xprofile_data) d->output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
+      else d->output = NULL;
     }
     else
     { // else: load file name
@@ -219,75 +219,12 @@ void gui_update(struct dt_iop_module_t *self)
   if(!displayfound) fprintf(stderr, "[colorout] could not find requested display profile `%s'!\n", p->displayprofile);
 }
 
-void get_display_profile(GtkWidget *widget,
-    guint8 **buffer, gint *buffer_size)
-{ // thanks to ufraw for this!
-  *buffer = NULL;
-  *buffer_size = 0;
-#if defined GDK_WINDOWING_X11
-  GdkScreen *screen = gtk_widget_get_screen(widget);
-  if ( screen==NULL )
-    screen = gdk_screen_get_default();
-  int monitor = gdk_screen_get_monitor_at_window (screen, widget->window);
-  char *atom_name;
-  if (monitor > 0)
-    atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
-  else
-    atom_name = g_strdup("_ICC_PROFILE");
-
-  GdkAtom type = GDK_NONE;
-  gint format = 0;
-  gdk_property_get(gdk_screen_get_root_window(screen),
-      gdk_atom_intern(atom_name, FALSE), GDK_NONE,
-      0, 64 * 1024 * 1024, FALSE,
-      &type, &format, buffer_size, buffer);
-  g_free(atom_name);
-
-#elif defined GDK_WINDOWING_QUARTZ
-  GdkScreen *screen = gtk_widget_get_screen(widget);
-  if ( screen==NULL )
-    screen = gdk_screen_get_default();
-  int monitor = gdk_screen_get_monitor_at_window(screen, widget->window);
-
-  CMProfileRef prof = NULL;
-  CMGetProfileByAVID(monitor, &prof);
-  if ( prof==NULL )
-    return;
-
-  ProfileTransfer transfer = { NULL, 0 };
-  Boolean foo;
-  CMFlattenProfile(prof, 0, _uf_lcms_flatten_profile, &transfer, &foo);
-  CMCloseProfile(prof);
-
-  *buffer = transfer.data;
-  *buffer_size = transfer.len;
-
-#elif defined G_OS_WIN32
-  (void)widget;
-  HDC hdc = GetDC (NULL);
-  if ( hdc==NULL )
-    return;
-
-  DWORD len = 0;
-  GetICMProfile (hdc, &len, NULL);
-  gchar *path = g_new (gchar, len);
-
-  if (GetICMProfile (hdc, &len, path)) {
-    gsize size;
-    g_file_get_contents(path, (gchar**)buffer, &size, NULL);
-    *buffer_size = size;
-  }
-  g_free (path);
-  ReleaseDC (NULL, hdc);
-#endif
-}
-
 void init(dt_iop_module_t *module)
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-  module->data = malloc(sizeof(dt_iop_colorout_global_data_t));
-  dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
-  get_display_profile(widget, &d->data, &d->data_size);
+  // GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  // module->data = malloc(sizeof(dt_iop_colorout_global_data_t));
+  // dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
+  // get_display_profile(widget, &d->data, &d->data_size);
   module->params = malloc(sizeof(dt_iop_colorout_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
@@ -300,11 +237,11 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
-  g_free(d->data);
-  d->data = NULL;
-  free(module->data);
-  module->data = NULL;
+  // dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
+  // g_free(d->data);
+  // d->data = NULL;
+  // free(module->data);
+  // module->data = NULL;
   free(module->gui_data);
   module->gui_data = NULL;
   free(module->params);
