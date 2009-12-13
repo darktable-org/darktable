@@ -1,5 +1,5 @@
 0.4 lighttable release
-- colorout get xatom has to be done in main thread!!!
+- togglebuttons in history: toggle up if entered.
 - white balance by adjusting white point of color input profile.
 - webpage: about image with lens, screenshot, photograph or so.
 - 2x version in plugin: dt and plugin (=>params)

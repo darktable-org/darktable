@@ -429,6 +429,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow"));
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
 
+  dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
+
   darktable.gui->reset = 0;
   for(int i=0;i<3;i++) darktable.gui->bgcolor[i] = 0.1333;
   return 0;
@@ -436,6 +438,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
+  g_free(darktable.control->xprofile_data);
+  darktable.control->xprofile_size = 0;
   dt_gui_navigation_cleanup(&gui->navigation);
   dt_gui_histogram_cleanup(&gui->histogram);
 }

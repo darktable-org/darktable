@@ -102,6 +102,7 @@ void dt_control_gui_queue_draw();
 void dt_control_change_cursor(dt_cursor_t cursor);
 void dt_control_write_dt_files();
 void dt_control_delete_images();
+void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 
 // called from core
 void dt_control_queue_draw_all();

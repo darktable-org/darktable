@@ -307,7 +307,6 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
 void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
-  dt_ctl_get_display_profile(NULL, &s->xprofile_data, &s->xprofile_size);
 
   s->progress = 200.0f;
 
