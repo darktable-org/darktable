@@ -61,7 +61,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     double RGB[3];
     cmsCIELab Lab;
 
-    // convert to La/Lb/L to be able to change L without changing saturation.
+    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     for(int c=0;c<3;c++) RGB[c] = in[3*k + c];
     cmsDoTransform(d->xform, RGB, &Lab, 1);
     // Lab.L = RGB[0]; Lab.a = RGB[1]; Lab.b = RGB[2];
@@ -218,8 +218,8 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
@@ -257,7 +257,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->cbox2), "changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);
-}
+ }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {

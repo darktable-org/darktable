@@ -1,4 +1,6 @@
 0.4 lighttable release
+- whitebalance to replace temperature
+  - how to use presets from ufraw?
 - togglebuttons in history: toggle up if entered.
 - white balance by adjusting white point of color input profile.
 - webpage: about image with lens, screenshot, photograph or so.

@@ -1013,6 +1013,9 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
   widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
   gtk_widget_show(widget);
   gtk_button_set_label(GTK_BUTTON(widget), numlabel);
+  darktable.gui->reset = 1;
+  gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
+  darktable.gui->reset = 0;
 }
 
 void dt_control_clear_history_items(int32_t num)
@@ -1043,6 +1046,12 @@ void dt_control_clear_history_items(int32_t num)
     dt_dev_get_history_item_label(hist, numlabel2, 256);
     snprintf(numlabel, 256, "%d - %s", curr, numlabel2);
     gtk_button_set_label(GTK_BUTTON(widget), numlabel);
+    if(curr == num+1)
+    {
+      darktable.gui->reset = 1;
+      gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
+      darktable.gui->reset = 0;
+    }
     history = g_list_next(history);
   }
 }
