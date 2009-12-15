@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-08 23:15+0300\n"
-"PO-Revision-Date: 2009-12-08 23:17+0300\n"
+"POT-Creation-Date: 2009-12-15 03:33+0300\n"
+"PO-Revision-Date: 2009-12-15 03:44+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -50,7 +50,7 @@ msgstr "Апертура"
 
 #: ../darktable.glade.h:12
 msgid "button"
-msgstr ""
+msgstr "button"
 
 #: ../darktable.glade.h:13
 msgid "datetime"
@@ -115,7 +115,7 @@ msgid "iso"
 msgstr "ISO"
 
 #: ../darktable.glade.h:29
-#: ../src/iop/lens.c:1111
+#: ../src/iop/lens.c:1119
 msgid "lens"
 msgstr "Объектив"
 
@@ -153,7 +153,7 @@ msgstr "Переключиться в режим проявки"
 
 #: ../darktable.glade.h:38
 msgid "togglebutton"
-msgstr ""
+msgstr "togglebutton"
 
 #: ../darktable.glade.h:39
 msgid "width"
@@ -199,30 +199,30 @@ msgstr "Версия этих записей DT в GConf"
 msgid "write a redundant file for each image"
 msgstr "Записывать файлы .dt для каждого снимка"
 
-#: ../src/control/control.c:647
+#: ../src/control/control.c:711
 #, c-format
 msgid "switch to %s mode"
 msgstr "Переключиться в режим «%s»"
 
-#: ../src/control/control.c:650
+#: ../src/control/control.c:714
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b><i>Режим «%s»</i></b></big></span>"
 
-#: ../src/control/control.c:969
+#: ../src/control/control.c:1036
 msgid "0 - original"
 msgstr "0 - Исходный вариант"
 
-#: ../src/control/control.c:1010
+#: ../src/control/control.c:1083
 #, c-format
 msgid "single images"
 msgstr "Отдельные снимки"
 
-#: ../src/develop/develop.c:761
+#: ../src/develop/develop.c:772
 msgid "on"
 msgstr "вкл"
 
-#: ../src/develop/develop.c:761
+#: ../src/develop/develop.c:772
 msgid "off"
 msgstr "выкл"
 
@@ -230,13 +230,13 @@ msgstr "выкл"
 #: ../src/develop/imageop.c:221
 #, c-format
 msgid "%s is switched on"
-msgstr ""
+msgstr "%s включен"
 
 #: ../src/develop/imageop.c:159
 #: ../src/develop/imageop.c:221
 #, c-format
 msgid "%s is switched off"
-msgstr ""
+msgstr "%s выключен"
 
 #: ../src/libs/copy_history.c:22
 msgid "copy history stack"
@@ -323,8 +323,9 @@ msgid "color correction"
 msgstr "Цветокоррекция"
 
 #: ../src/iop/colorcorrection.c:150
-#: ../src/iop/colorin.c:232
-#: ../src/iop/colorout.c:222
+#: ../src/iop/colorin.c:234
+#: ../src/iop/colorout.c:316
+#: ../src/iop/colorout.c:321
 msgid "saturation"
 msgstr "Насыщенность"
 
@@ -332,37 +333,38 @@ msgstr "Насыщенность"
 msgid "input color profile"
 msgstr "Цветовой профиль камеры"
 
-#: ../src/iop/colorin.c:223
-#: ../src/iop/colorout.c:213
+#: ../src/iop/colorin.c:225
 msgid "intent"
 msgstr "Цветопередача"
 
-#: ../src/iop/colorin.c:224
-#: ../src/iop/colorout.c:214
+#: ../src/iop/colorin.c:226
 msgid "profile"
 msgstr "Профиль"
 
-#: ../src/iop/colorin.c:230
-#: ../src/iop/colorout.c:220
+#: ../src/iop/colorin.c:232
+#: ../src/iop/colorout.c:314
+#: ../src/iop/colorout.c:319
 msgid "perceptual"
 msgstr "Воспринимаемая"
 
-#: ../src/iop/colorin.c:231
-#: ../src/iop/colorout.c:221
+#: ../src/iop/colorin.c:233
+#: ../src/iop/colorout.c:315
+#: ../src/iop/colorout.c:320
 msgid "relative colorimetric"
 msgstr "Относительная колориметрическая"
 
-#: ../src/iop/colorin.c:233
-#: ../src/iop/colorout.c:223
+#: ../src/iop/colorin.c:235
+#: ../src/iop/colorout.c:317
+#: ../src/iop/colorout.c:322
 msgid "absolute colorimetric"
 msgstr "Абсолютная колориметрическая"
 
-#: ../src/iop/colorin.c:248
-#: ../src/iop/colorout.c:238
+#: ../src/iop/colorin.c:250
+#: ../src/iop/colorout.c:351
 msgid "rendering intent"
 msgstr "Цветопередача"
 
-#: ../src/iop/colorin.c:249
+#: ../src/iop/colorin.c:251
 #, c-format
 msgid "icc profiles in %s/color/in"
 msgstr "Цветовые профили из %s/color/in"
@@ -371,14 +373,48 @@ msgstr "Цветовые профили из %s/color/in"
 msgid "output color profile"
 msgstr "Цветовой профиль вывода"
 
-#: ../src/iop/colorout.c:239
+#: ../src/iop/colorout.c:301
+msgid "output intent"
+msgstr "Цветопередача вывода:"
+
+#: ../src/iop/colorout.c:302
+msgid "output profile"
+msgstr "Профиль вывода:"
+
+#: ../src/iop/colorout.c:303
+msgid "display intent"
+msgstr "Цветопередача монитора:"
+
+#: ../src/iop/colorout.c:304
+msgid "display profile"
+msgstr "Профиль монитора:"
+
+#: ../src/iop/colorout.c:331
+#: ../src/iop/colorout.c:332
+msgid "X profile"
+msgstr "Взятый от X"
+
+#: ../src/iop/colorout.c:352
 #, c-format
 msgid "icc profiles in %s/color/out"
 msgstr "Цветовые профили из %s/color/out"
 
+#: ../src/iop/colorout.c:354
+#, c-format
+msgid "display icc profiles in %s/color/out"
+msgstr "Цветовые профили мониторов из %s/color/out"
+
 #: ../src/iop/equalizer.c:25
 msgid "equalizer"
 msgstr "Эквалайзер"
+
+#: ../src/iop/equalizer.c:277
+msgid "luma"
+msgstr "Яркостный канал"
+
+#: ../src/iop/equalizer.c:278
+msgid "chroma"
+msgstr "Цветностный канал"
 
 #: ../src/iop/equalizer.c:294
 #: ../src/iop/tonecurve.c:195
@@ -405,6 +441,24 @@ msgstr "Тёмные области"
 #: ../src/iop/exposure.c:138
 msgid "gain"
 msgstr "Усиление"
+
+#: ../src/iop/exposure.c:146
+msgid "adjust the black level"
+msgstr "Изменить уровень чёрного"
+
+#: ../src/iop/exposure.c:148
+msgid "adjust the white level"
+msgstr "Изменить уровень белого"
+
+#: ../src/iop/exposure.c:150
+msgid ""
+"leave black and white,\n"
+"but compress brighter\n"
+"values (non-linear)"
+msgstr ""
+"Не трогать чёрный и белый,\n"
+"но нелинейно сжать\n"
+"более яркие участки"
 
 #: ../src/iop/gamma.c:18
 #: ../src/iop/gamma.c:133
@@ -476,11 +530,11 @@ msgstr ""
 msgid "distance to subject"
 msgstr "Расстояние до объекта"
 
-#: ../src/iop/lens.c:1098
+#: ../src/iop/lens.c:1106
 msgid "cam"
 msgstr "Камера"
 
-#: ../src/iop/lens.c:1099
+#: ../src/iop/lens.c:1107
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -488,7 +542,7 @@ msgstr ""
 "Поиск камеры по шаблону:\n"
 "[производитель, ][модель]"
 
-#: ../src/iop/lens.c:1113
+#: ../src/iop/lens.c:1121
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -496,40 +550,45 @@ msgstr ""
 "Поиск объектива по шаблону:\n"
 "[производитель, ][модель]"
 
-#: ../src/iop/lens.c:1146
+#: ../src/iop/lens.c:1154
 msgid "target geometry"
 msgstr "Целевая геометрия объектива"
 
-#: ../src/iop/lens.c:1147
+#: ../src/iop/lens.c:1155
 msgid "rectilinear"
 msgstr "Прямолинейная"
 
-#: ../src/iop/lens.c:1148
+#: ../src/iop/lens.c:1156
 msgid "fisheye"
 msgstr "Рыбий глаз"
 
-#: ../src/iop/lens.c:1149
+#: ../src/iop/lens.c:1157
 msgid "panoramic"
 msgstr "Панорамная"
 
-#: ../src/iop/lens.c:1150
+#: ../src/iop/lens.c:1158
 msgid "equirectangular"
 msgstr "Эквидистантная"
 
-#: ../src/iop/lens.c:1156
+#: ../src/iop/lens.c:1164
 msgid "geometry"
 msgstr "Геометрия:"
 
-#: ../src/iop/lens.c:1168
+#: ../src/iop/lens.c:1176
+msgid "auto"
+msgstr "Авто"
+
+#. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+#: ../src/iop/lens.c:1183
 msgid "scale"
 msgstr "Масштаб:"
 
 #. reverse direction
-#: ../src/iop/lens.c:1173
+#: ../src/iop/lens.c:1188
 msgid "reverse"
 msgstr "Развернуть направление"
 
-#: ../src/iop/lens.c:1174
+#: ../src/iop/lens.c:1189
 msgid "apply distortions instead of correcting them"
 msgstr "Добавить искажения вместо того чтобы их исправить"
 
@@ -537,7 +596,7 @@ msgstr "Добавить искажения вместо того чтобы и�
 msgid "monochrome"
 msgstr "Обесцвечивание"
 
-#: ../src/iop/monochrome.c:272
+#: ../src/iop/monochrome.c:275
 msgid ""
 "drag and scroll\n"
 "to adjust the virtual\n"
@@ -547,7 +606,7 @@ msgstr ""
 "меняется прокручиванием колеса мыши\n"
 "и перетаскиванием её указателя"
 
-#: ../src/iop/monochrome.c:294
+#: ../src/iop/monochrome.c:297
 msgid "filter size"
 msgstr "Размер фильтра"
 
@@ -587,15 +646,15 @@ msgstr "Средний контраст"
 msgid "high contrast"
 msgstr "Высокий контраст"
 
-#: ../src/gui/gtk.c:131
+#: ../src/gui/gtk.c:136
 msgid "import film"
 msgstr "Импортировать съёмку"
 
-#: ../src/gui/gtk.c:155
+#: ../src/gui/gtk.c:160
 msgid "import image"
 msgstr "Импортировать снимок"
 
-#: ../src/gui/gtk.c:179
+#: ../src/gui/gtk.c:184
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Ошибка при загрузке файла '%s'"
@@ -626,8 +685,6 @@ msgstr "Показать модуль «%s»"
 msgid "lighttable"
 msgstr "Световой стол"
 
-#~ msgid "luma"
-#~ msgstr "Яркостный канал"
 #~ msgid ""
 #~ "8-bit jpg\n"
 #~ "8-bit png\n"
