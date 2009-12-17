@@ -34,6 +34,7 @@ typedef struct dt_iop_rawimport_gui_data_t
 {
   GtkCheckButton *wb_auto, *wb_cam, *cmatrix, *auto_bright, *four_color_rgb;
   GtkComboBox *demosaic_method, *highlight;
+  GtkScale *auto_bright_threshold, *denoise_threshold;
   GtkSpinButton *med_passes;
 }
 dt_iop_rawimport_gui_data_t;
@@ -165,6 +166,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->auto_bright), TRUE, TRUE, 0);
 
 
+  GtkWidget *label;
   GtkWidget *hbox   = gtk_hbox_new(FALSE, 0);
   GtkWidget *vbox1  = gtk_vbox_new(TRUE, 0);
   GtkWidget *vbox2  = gtk_vbox_new(TRUE, 0);
@@ -172,7 +174,23 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 5);
 
-  GtkWidget *label = gtk_label_new(_("median passes"));
+  label = gtk_label_new(_("denoise threshold"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
+  g->denoise_threshold = GTK_SCALE(gtk_hscale_new_with_range(0, 1000, 1));
+  gtk_scale_set_digits(g->denoise_threshold, 0);
+  gtk_scale_set_value_pos(g->denoise_threshold, GTK_POS_LEFT);
+  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->denoise_threshold), TRUE, TRUE, 0);
+
+  label = gtk_label_new(_("exposure threshold"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
+  g->auto_bright_threshold = GTK_SCALE(gtk_hscale_new_with_range(0, 0.02, 0.0001));
+  gtk_scale_set_digits(g->auto_bright_threshold, 4);
+  gtk_scale_set_value_pos(g->auto_bright_threshold, GTK_POS_LEFT);
+  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->auto_bright_threshold), TRUE, TRUE, 0);
+
+  label = gtk_label_new(_("median passes"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->med_passes     = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1));
@@ -206,6 +224,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(reload), TRUE, TRUE, 0);
   
+  gui_update(self);
 #if 0
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (cx_callback), self);

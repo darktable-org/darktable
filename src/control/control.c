@@ -64,8 +64,7 @@ void dt_ctl_settings_init(dt_control_t *s)
   pthread_mutex_init(&(s->global_mutex), NULL);
   pthread_mutex_init(&(s->image_mutex), NULL);
 
-  // TODO: remove (gconf already exists)
-  // s->global_settings.version = DT_VERSION;
+  s->global_settings.version = DT_VERSION;
 
   // TODO: => gconf
   // s->global_settings.gui = DT_LIBRARY;
