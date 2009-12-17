@@ -238,7 +238,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 5, 10, 5, 5);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
   gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(al), module->widget);
 

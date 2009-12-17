@@ -13,9 +13,10 @@ libcolorout_la_SOURCES=colorout.c
 libclipping_la_SOURCES=clipping.c
 libsharpen_la_SOURCES=sharpen.c
 libmonochrome_la_SOURCES=monochrome.c
+librawimport_la_SOURCES=rawimport.c
 noinst_HEADERS=tonecurve.h gamma.h temperature.h colorcorrection.h exposure.h equalizer.h equalizer_eaw.h colorin.h colorout.h lens.h
 dtpluginsdir=$(datarootdir)/darktable/plugins
-dtplugins_LTLIBRARIES=libtonecurve.la libgamma.la libtemperature.la libcolorcorrection.la libexposure.la libequalizer.la libcolorin.la libcolorout.la libclipping.la libsharpen.la libmonochrome.la
+dtplugins_LTLIBRARIES=libtonecurve.la libgamma.la libtemperature.la libcolorcorrection.la libexposure.la libequalizer.la libcolorin.la libcolorout.la libclipping.la libsharpen.la libmonochrome.la librawimport.la
 if HAVE_LENSFUN
   liblens_la_SOURCES=lens.c
   liblens_la_CFLAGS=$(LENSFUN_CFLAGS)
