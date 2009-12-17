@@ -62,16 +62,14 @@ typedef struct dt_image_t
   float *mipf;
   dt_image_lock_t lock[DT_IMAGE_NONE];
 
-  // raw image
-  // TODO: replace these with meaningful libraw options:
-  // TODO: denoise_threshold, auto_bright_thrs, (2x float)
-  // TODO: wb_auto, wb_cam, cmatrix, no_auto_bright, highlight[2], demosaic_method[2], (8-bits)
-  // TODO: med_passes, (1 char)
-
-  // TODO: user_flip?, grey_box? (3-bit + 4x int) (or better: wb and user flip somewhere else)
-  // TODO: user_mul?, aber? (6x float) (or better: have white balance and lensfun C/A correction)
-  int32_t shrink, wb_auto, wb_cam;
-  float exposure;
+  // raw image parameters
+  float raw_denoise_threshold, raw_auto_bright_threshold;
+  unsigned raw_wb_auto : 1, raw_wb_cam : 1, raw_cmatrix : 1,
+           raw_no_auto_bright : 1, raw_demosaic_method : 2,
+           raw_med_passes : 4, raw_four_color_rgb : 1,
+           raw_highlight : 4,
+           fill1 : 9;
+  int8_t raw_user_flip;
 
   float *pixels;
 #ifdef _DEBUG

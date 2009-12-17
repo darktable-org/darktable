@@ -190,8 +190,8 @@ int dt_image_preview_to_raw(dt_image_t *img)
 
 int dt_image_raw_to_preview(dt_image_t *img)
 {
-  const int raw_wd = img->width >> img->shrink;
-  const int raw_ht = img->height >> img->shrink;
+  const int raw_wd = img->width;
+  const int raw_ht = img->height;
   int p_wd, p_ht;
   float f_wd, f_ht;
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
@@ -318,7 +318,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
   strncpy(img->filename, imgfname, 256);
   g_free(imgfname);
 
-  img->shrink = 0;
   if(dt_imageio_open_preview(img, filename))
   {
     dt_image_cleanup(img);
@@ -396,9 +395,18 @@ void dt_image_init(dt_image_t *img)
   img->mipf = NULL;
   img->pixels = NULL;
   img->orientation = -1; // not inited.
-  img->exposure = 0;
-  img->wb_auto = img->wb_cam = 1;
-  img->shrink = 0;
+  img->raw_user_flip = -1;
+  img->raw_med_passes = 0;
+  img->raw_wb_auto = 0;
+  img->raw_wb_cam = 1;
+  img->raw_cmatrix = 1;
+  img->raw_no_auto_bright = 0;
+  img->raw_highlight = 0;
+  img->raw_demosaic_method = 2;
+  img->raw_med_passes = 0;
+  img->raw_denoise_threshold = 0.f;
+  img->raw_auto_bright_threshold = 0.01f;
+  img->raw_four_color_rgb = 0;
   img->film_id = -1;
   img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;

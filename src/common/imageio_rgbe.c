@@ -442,7 +442,6 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width,
 
 int dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
 {
-  img->shrink = 0;
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
   if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4)) return 1;

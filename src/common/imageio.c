@@ -281,26 +281,27 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
-  raw->params.half_size = img->shrink = 1; /* dcraw -h */
-  raw->params.use_camera_wb = img->wb_cam;
-  raw->params.use_auto_wb = img->wb_auto;
-  // raw->params.med_passes; // median filter TODO
-  // raw->params.no_auto_bright = 1;
+  raw->params.half_size = 0; /* dcraw -h */
+  raw->params.use_camera_wb = img->raw_wb_cam;
+  raw->params.use_auto_wb = img->raw_wb_auto;
+  raw->params.med_passes = img->raw_med_passes;
+  raw->params.no_auto_bright = img->raw_no_auto_bright;
   raw->params.output_bps = 16;
-  raw->params.user_flip = -1;
+  raw->params.user_flip = img->raw_user_flip;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   raw->params.user_qual = 0; // linear
-  // img->raw->params.output_color = 1;
-  raw->params.use_camera_matrix = 1;
-  // TODO: let this unclipped for develop, clip for preview.
-  raw->params.highlight = 0; //0 clip, 1 unclip, 2 blend, 3+ rebuild
+  raw->params.four_color_rgb = img->raw_four_color_rgb;
+  raw->params.use_camera_matrix = img->raw_cmatrix;
+  raw->params.highlight = img->raw_highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
+  raw->params.threshold = img->raw_denoise_threshold;
+  raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
   if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
   { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
     raw->params.user_qual = 0;
-    raw->params.half_size = img->shrink = 0;
+    raw->params.half_size = 0;
   }
 
   // get thumbnail
@@ -311,7 +312,6 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   {
     ret = libraw_adjust_sizes_info_only(raw);
     ret = 0;
-    img->shrink = raw->params.half_size;
     img->orientation = raw->sizes.flip;
     // img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
     // img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
@@ -546,31 +546,27 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
-  raw->params.half_size = img->shrink; /* dcraw -h */
-  raw->params.use_camera_wb = img->wb_cam;
-  raw->params.use_auto_wb = img->wb_auto;
-  // raw->params.no_auto_bright = 1;
+  raw->params.half_size = 0; /* dcraw -h */
+  raw->params.use_camera_wb = img->raw_wb_cam;
+  raw->params.use_auto_wb = img->raw_wb_auto;
+  raw->params.med_passes = img->raw_med_passes;
+  raw->params.no_auto_bright = img->raw_no_auto_bright;
   raw->params.output_bps = 16;
-  raw->params.user_flip = -1;
+  raw->params.user_flip = img->raw_user_flip;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
-  // TODO: make this user choosable.
-  if(img->shrink) raw->params.user_qual = 0; // linear
-  else            raw->params.user_qual = 2; // 3: AHD, 2: PPG, 1: VNG
-  if(!strcmp(img->exif_model, "EOS 400D DIGITAL"))
-    raw->params.four_color_rgb = 1;
-  raw->params.med_passes = 0;
-  // img->raw->params.output_color = 1;
-  raw->params.use_camera_matrix = 1;
-  // TODO: let this unclipped for develop, clip for preview.
-  raw->params.highlight = 0; //0 clip, 1 unclip, 2 blend, 3+ rebuild
-  // img->raw->params.user_flip = img->raw->sizes.flip;
+  raw->params.user_qual = img->raw_demosaic_method; // 3: AHD, 2: PPG, 1: VNG
+  raw->params.four_color_rgb = img->raw_four_color_rgb;
+  raw->params.use_camera_matrix = img->raw_cmatrix;
+  raw->params.highlight = img->raw_highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
+  raw->params.threshold = img->raw_denoise_threshold;
+  raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
   if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
   { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
     raw->params.user_qual = 0;
-    raw->params.half_size = img->shrink = 0;
+    raw->params.half_size = 0;
   }
 
   ret = libraw_unpack(raw);
@@ -580,12 +576,9 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
-  img->shrink = raw->params.half_size;
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-  img->width  <<= img->shrink;
-  img->height <<= img->shrink;
   img->output_width  = img->width;
   img->output_height = img->height;
   img->exif_iso = raw->other.iso_speed;
@@ -604,10 +597,10 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     // dt_image_cache_release(img, 'r');
     return 1;
   }
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width>>img->shrink)*(img->height>>img->shrink)*sizeof(float));
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width)*(img->height)*sizeof(float));
   const float m = 1./0xffff;
 // #pragma omp parallel for schedule(static) shared(img, image)
-  for(int k=0;k<3*(img->width>>img->shrink)*(img->height>>img->shrink);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
+  for(int k=0;k<3*(img->width)*(img->height);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
@@ -822,7 +815,6 @@ error_magick_mip4:
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return 1;
 #else
-  img->shrink = 0;
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
@@ -892,8 +884,6 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
 #if 0//def HAVE_MAGICK
-  // TODO: shrink!!
-  img->shrink = 0;
   img->orientation = 0;
 
   ImageInfo *image_info;
@@ -1038,7 +1028,6 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return 0;
 #else
-  img->shrink = 0;
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;

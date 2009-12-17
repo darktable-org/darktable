@@ -303,13 +303,12 @@ restart:
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
   // only load if not already there.
-  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image->shrink)
+  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r'))
   {
     int err;
 restart:
     dev->image_loading = 1;
-    dev->image->shrink = 0;
-    // not loaded from cache because it is obviously not there yet. so load unshrinked version:
+    // not loaded from cache because it is obviously not there yet.
     err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
     if(err)
     {

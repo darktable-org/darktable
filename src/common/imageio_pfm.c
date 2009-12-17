@@ -10,8 +10,6 @@
 
 int dt_imageio_open_pfm(dt_image_t *img, const char *filename)
 {
-  img->shrink = 0;
-
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
   if(strncmp(ext, ".pfm", 4) && strncmp(ext, ".PFM", 4) && strncmp(ext, ".Pfm", 4)) return 1;
