@@ -16,7 +16,7 @@ static const float dt_iop_temperature_rgb_r55[][12];
 
 typedef struct dt_iop_temperature_params_t
 {
-  float temperature_in, temperature_out;
+  float tint, temperature;
 }
 dt_iop_temperature_params_t;
 
@@ -48,7 +48,7 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
-void temperature_in_callback  (GtkRange *range, gpointer user_data);
-void temperature_out_callback (GtkRange *range, gpointer user_data);
+void tint_callback  (GtkRange *range, gpointer user_data);
+void temp_callback (GtkRange *range, gpointer user_data);
 
 #endif

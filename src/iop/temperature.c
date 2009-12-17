@@ -84,22 +84,6 @@ static void convert_k_to_rgb (float temperature, float *rgb)
   }
 }
 
-#if 0
-  convert_k_to_rgb (o->original_temperature, original_temperature_rgb);
-  convert_k_to_rgb (o->intended_temperature, intended_temperature_rgb);
-
-  coeffs[0] = original_temperature_rgb[0] / intended_temperature_rgb[0];
-  coeffs[1] = original_temperature_rgb[1] / intended_temperature_rgb[1];
-  coeffs[2] = original_temperature_rgb[2] / intended_temperature_rgb[2];
-
-
-
-  out_pixel[0] = in_pixel[0] * coeffs[0];
-      out_pixel[1] = in_pixel[1] * coeffs[1];
-      out_pixel[2] = in_pixel[2] * coeffs[2];
-
-#endif
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
@@ -117,17 +101,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
 #ifdef HAVE_GEGL
   // pull in new params to gegl
-  gegl_node_set(piece->input, "original_temperature", p->temperature_in, "intended_temperature", p->temperature_out, NULL);
+  gegl_node_set(piece->input, "original_temperature", 6500.0, "intended_temperature", p->temperature, NULL);
 #else
   // build gamma table in pipeline piece from committed params:
   float original_temperature_rgb[3], intended_temperature_rgb[3];
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  convert_k_to_rgb (p->temperature_in,  original_temperature_rgb);
-  convert_k_to_rgb (p->temperature_out, intended_temperature_rgb);
+  convert_k_to_rgb (6500.0,         original_temperature_rgb);
+  convert_k_to_rgb (p->temperature, intended_temperature_rgb);
 
-  d->coeffs[0] = original_temperature_rgb[0] / intended_temperature_rgb[0];
-  d->coeffs[1] = original_temperature_rgb[1] / intended_temperature_rgb[1];
-  d->coeffs[2] = original_temperature_rgb[2] / intended_temperature_rgb[2];
+  d->coeffs[0] =           original_temperature_rgb[0] / intended_temperature_rgb[0];
+  d->coeffs[1] = p->tint * original_temperature_rgb[1] / intended_temperature_rgb[1];
+  d->coeffs[2] =           original_temperature_rgb[2] / intended_temperature_rgb[2];
 #endif
 }
 
@@ -137,7 +121,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
   dt_iop_temperature_params_t *default_params = (dt_iop_temperature_params_t *)self->default_params;
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:color-temperature", "original_temperature", default_params->temperature_in, "intended_temperature", default_params->temperature_out, NULL);
+  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:color-temperature", "original_temperature", 6500.0, "intended_temperature", default_params->temperature, NULL);
 #else
   piece->data = malloc(sizeof(dt_iop_temperature_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
@@ -161,8 +145,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)module->params;
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->temperature_in);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->temperature_out);
+  gtk_range_set_value(GTK_RANGE(g->scale1), p->tint);
+  gtk_range_set_value(GTK_RANGE(g->scale2), p->temperature);
 }
 
 void init(dt_iop_module_t *module)
@@ -174,7 +158,7 @@ void init(dt_iop_module_t *module)
   module->priority = 200;
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
-  dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t){6500.0, 6500.0};
+  dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t){1.0, 6500.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
 }
@@ -193,28 +177,32 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-  g->label1 = GTK_LABEL(gtk_label_new(_("original temperature")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("intended temperature")));
+  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  g->label1 = GTK_LABEL(gtk_label_new(_("tint")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("temperature")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.));
+  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.1, 3.0, .01));
   g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 0);
+  gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale2), 0);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->temperature_in);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->temperature_out);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_range_set_value(GTK_RANGE(g->scale1), p->tint);
+  gtk_range_set_value(GTK_RANGE(g->scale2), p->temperature);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  gtk_box_pack_start(vbox1, GTK_WIDGET(g->label1), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale1), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox1, GTK_WIDGET(g->label2), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale2), FALSE, FALSE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (temperature_in_callback), self);
+                    G_CALLBACK (tint_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (temperature_out_callback), self);
+                    G_CALLBACK (temp_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -223,20 +211,20 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-void temperature_in_callback (GtkRange *range, gpointer user_data)
+void tint_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  p->temperature_in = gtk_range_get_value(range);
+  p->tint = gtk_range_get_value(range);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void temperature_out_callback (GtkRange *range, gpointer user_data)
+void temp_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  p->temperature_out = gtk_range_get_value(range);
+  p->temperature = gtk_range_get_value(range);
   dt_dev_add_history_item(darktable.develop, self);
 }

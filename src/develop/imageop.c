@@ -234,6 +234,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   // gtk_button_set_image(GTK_BUTTON(button), image);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkButton *resetbutton = GTK_BUTTON(gtk_button_new());
+  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);

@@ -65,11 +65,11 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->quality = GTK_SCALE(gtk_hscale_new_with_range(0, 100, 1));
-  gtk_scale_set_value_pos(d->quality, GTK_POS_RIGHT);
+  gtk_scale_set_value_pos(d->quality, GTK_POS_LEFT);
   gtk_range_set_value(GTK_RANGE(d->quality), 97);
   gtk_scale_set_digits(d->quality, 0);
-  gtk_box_pack_start(hbox, gtk_label_new(_("quality")), FALSE, FALSE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->quality), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, gtk_label_new(_("quality")), FALSE, FALSE, 5);
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->quality), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
