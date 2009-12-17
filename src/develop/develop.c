@@ -62,6 +62,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->image = NULL;
   dev->image_dirty = dev->preview_dirty = 1;
   dev->image_loading = dev->preview_loading = 0;
+  dev->image_force_reload = 0;
   dev->preview_input_changed = 0;
 
   dev->pipe = dev->preview_pipe = NULL;
@@ -303,7 +304,7 @@ restart:
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
   // only load if not already there.
-  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r'))
+  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image_force_reload)
   {
     int err;
 restart:
@@ -332,6 +333,7 @@ restart:
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     dev->image_loading = 0;
     dev->image_dirty = 1;
+    dev->image_force_reload = 0;
     // during load, a mipf update could have been issued.
     dev->preview_input_changed = 1;
     dev->preview_dirty = 1;

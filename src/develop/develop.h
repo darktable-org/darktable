@@ -30,6 +30,7 @@ typedef struct dt_develop_t
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t image_loading, image_dirty;
+  int32_t image_force_reload;
   int32_t preview_loading, preview_dirty, preview_input_changed;
   uint32_t timestamp;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.

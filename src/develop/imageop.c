@@ -201,7 +201,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, gpointer user_data)
   // module->enabled = module->default_enabled; // will not propagate correctly anyways ;)
   memcpy(module->params, module->default_params, module->params_size);
   module->gui_update(module);
-  dt_dev_add_history_item(module->dev, module);
+  if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module);
 }
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
@@ -211,8 +211,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
   // gamma is always needed for display (down to uint8_t)
   // colorin/colorout are essential for La/Lb/L conversion.
-  if(!(!strcmp(module->op, "gamma") || 
-     !strcmp(module->op, "colorin") ||
+  if(!(!strcmp(module->op, "gamma")   || 
+     !strcmp(module->op, "rawimport") ||
+     !strcmp(module->op, "colorin")   ||
      !strcmp(module->op, "colorout")))
   {
     // GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
