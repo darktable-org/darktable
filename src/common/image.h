@@ -37,6 +37,17 @@ typedef struct dt_image_lock_t
 }
 dt_image_lock_t;
 
+typedef struct dt_image_raw_parameters_t
+{
+  unsigned wb_auto : 1, wb_cam : 1, cmatrix : 1,
+           no_auto_bright : 1, demosaic_method : 2,
+           med_passes : 4, four_color_rgb : 1,
+           highlight : 4,
+           fill0 : 9; // 24 bits
+  int8_t user_flip; // +8 = 32 bits.
+}
+dt_image_raw_parameters_t;
+
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {
@@ -64,13 +75,7 @@ typedef struct dt_image_t
 
   // raw image parameters
   float raw_denoise_threshold, raw_auto_bright_threshold;
-  unsigned raw_wb_auto : 1, raw_wb_cam : 1, raw_cmatrix : 1,
-           raw_no_auto_bright : 1, raw_demosaic_method : 2,
-           raw_med_passes : 4, raw_four_color_rgb : 1,
-           raw_highlight : 4,
-           fill1 : 9;
-  int8_t raw_user_flip;
-
+  dt_image_raw_parameters_t raw_params;
   float *pixels;
 #ifdef _DEBUG
   int32_t mip_buf_size[DT_IMAGE_NONE];

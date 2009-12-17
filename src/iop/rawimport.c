@@ -153,10 +153,9 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
 
   self->widget = gtk_vbox_new(FALSE, 0);
-  // g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  // g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), TRUE, TRUE, 5);
-  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+
+  // TODO: float denoise thrs
+  // TODO: float auto bright thrs
 
   g->wb_auto        = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto white balance")));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->wb_auto), TRUE, TRUE, 0);
@@ -203,7 +202,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->four_color_rgb), TRUE, TRUE, 0);
 
-  GtkWidget *reload = gtk_button_new_with_label(_("reload"));
+  GtkWidget *reload = gtk_button_new_with_label(_("re-import"));
   gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(reload), TRUE, TRUE, 0);
   

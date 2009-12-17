@@ -1,7 +1,9 @@
 0.4 lighttable release
-- whitebalance to replace temperature
-  - how to use presets from ufraw?
-- togglebuttons in history: toggle up if entered.
+- 2x more floats in rawimport gui
+  - store image params in database
+  - if these params are changed (pasted, re-import?),
+    flush image to database.
+- whitebalance presets
 - webpage: about image with lens, screenshot, photograph or so.
 - 2x version in plugin: dt and plugin (=>params)
  - .dt file starts with plugin version

@@ -138,7 +138,7 @@ int dt_control_load_config(dt_control_t *c)
   rc = sqlite3_prepare_v2(darktable.db, "select settings from settings", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
-#if 0 // global settings not needed anymore
+#if 1 // global settings not needed anymore
     pthread_mutex_lock(&(darktable.control->global_mutex));
     darktable.control->global_settings.version = -1;
     const void *set = sqlite3_column_blob(stmt, 0);
@@ -146,7 +146,7 @@ int dt_control_load_config(dt_control_t *c)
     if(len == sizeof(dt_ctl_settings_t)) memcpy(&(darktable.control->global_settings), set, len);
 #endif
     rc = sqlite3_finalize(stmt);
-#if 0
+#if 1
     if(darktable.control->global_settings.version != DT_VERSION)
     {
       fprintf(stderr, "[load_config] wrong version %d (should be %d), substituting defaults.\n", darktable.control->global_settings.version, DT_VERSION);
@@ -178,7 +178,7 @@ int dt_control_load_config(dt_control_t *c)
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar(256), maker varchar(30), model varchar(30), lens varchar(30), exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, foreign key(film_id) references film_rolls(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar(256), maker varchar(30), model varchar(30), lens varchar(30), exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, foreign key(film_id) references film_rolls(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table mipmaps (imgid int, level int, data blob, primary key(imgid, level), foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);

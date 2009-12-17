@@ -395,18 +395,18 @@ void dt_image_init(dt_image_t *img)
   img->mipf = NULL;
   img->pixels = NULL;
   img->orientation = -1; // not inited.
-  img->raw_user_flip = -1;
-  img->raw_med_passes = 0;
-  img->raw_wb_auto = 0;
-  img->raw_wb_cam = 1;
-  img->raw_cmatrix = 1;
-  img->raw_no_auto_bright = 0;
-  img->raw_highlight = 0;
-  img->raw_demosaic_method = 2;
-  img->raw_med_passes = 0;
+  img->raw_params.user_flip = -1;
+  img->raw_params.med_passes = 0;
+  img->raw_params.wb_auto = 0;
+  img->raw_params.wb_cam = 1;
+  img->raw_params.cmatrix = 1;
+  img->raw_params.no_auto_bright = 0;
+  img->raw_params.highlight = 0;
+  img->raw_params.demosaic_method = 2;
+  img->raw_params.med_passes = 0;
+  img->raw_params.four_color_rgb = 0;
   img->raw_denoise_threshold = 0.f;
   img->raw_auto_bright_threshold = 0.01f;
-  img->raw_four_color_rgb = 0;
   img->film_id = -1;
   img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;
@@ -432,7 +432,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
   int rc, ret = 1;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -454,6 +454,9 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->output_width  = sqlite3_column_int(stmt, 14);
     img->output_height = sqlite3_column_int(stmt, 15);
     img->exif_crop = sqlite3_column_double(stmt, 16);
+    *(int *)&img->raw_params = sqlite3_column_int(stmt, 17);
+    img->raw_denoise_threshold = sqlite3_column_double(stmt, 18);
+    img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
     
     ret = 0;
   }
