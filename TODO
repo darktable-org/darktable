@@ -1,8 +1,4 @@
 0.4 lighttable release
-- 2x more floats in rawimport gui
-  - store image params in database
-  - if these params are changed (pasted, re-import?),
-    flush image to database.
 - whitebalance presets
 - webpage: about image with lens, screenshot, photograph or so.
 - 2x version in plugin: dt and plugin (=>params)
@@ -12,24 +8,17 @@
 - bug for clipped mip maps and low resolutions.
 - color picker for tonecurve/color correction/monochrome?
 - progress bars for coresponding widgets (export)?
-- button toggle in history when new history is pushed.
 - scroll to opened expander in darkroom mode.
 - lighttable plugins:
   - copy style
   - select handling
-- libraw options plugin-dev: reload raw image.
-  - image.h struct
-  - table in image lib
 - plug-in-template (translatable)
 - write .dt-tags file (stars, keywords, ..?)
-- progress bars
 - dt_dev_process_to_mip: check hash
 - dt_image_expose: check history cached in flags
 - lib: separator thickness
-- install: remove schema installation.
-- show which images have been modified in lighttable mode.
+- deb install: remove schema installation.
 - histogram fill light mouse gesture
-- preview blacklist modules
 - exposure: highlight clipped parts
 - exr import
 - tonemapping widget?
@@ -41,18 +30,13 @@ bugs:
 - img unlock => flicker in library mode? (due to mipf trigger?)
 - can't create export folder=>crash
 - check for deleted images when opening a film roll!
-- import very slow (hdd lock with gui??) on nfs homes
-- import starts 3 threads but seems to be mono-core?
 - open_raw has img cleaned up before finished during dt_exit
 - zoom to wrong image bug: resize window helps (???)
-- glist instead of sql query in export (or else altering selection after pressing export will change the behavior)
 
 cleanup:
 - remove most iop/*.h 
 - colorin: use color matrix?
 - sequentially work on preview/full?
-- libraw autoexposure etc off?
-- ahd,wb,autoexp,color_matrix in dt (use document mode proc)
 - keep stdout clean! (shut up exiv2 and jpg)
 - add some user guide documentation.
 - progress bars for image folder import and image export
@@ -61,7 +45,6 @@ cleanup:
 
 - copy function in lib:
   - flags, tags
-  - history stack
   - histogram :)
 - write/re-import small xml file for images to backup sql
 - translations (de, etc)
@@ -69,16 +52,11 @@ cleanup:
 - small 1:1 preview for sharpen etc.
 - write back images to db after cache drop!
 - quality parameter for pixelpipe init callbacks in modules?
-- if kicking out mip maps from db: need to re-generate history pipeline mipf->mip4!
 - new strategy to add images: add empty dia (with icon and filename)
   ordered by filename. then launch jobs in bg to load images, priority
   by visibility in lib
-- add/removable modules in module stack (replace fixed stack)
 - try gegl raw-load and openraw-load nodes
 - reduce db size by kicking out float/mip thumbnail images
-- check libraw speed
-- insert more gegl:operations and modules
-- harden db format
 - import image: create dummy entry with this filename, create imgid and cache entry.
   - then load image mip on demand, using image_get cache requests.
   - image_import: no dummy entries for mipmaps!
@@ -86,50 +64,33 @@ cleanup:
 
 1.0 roadmap:
 - better demosaicing
-- edge-avoiding wavelets with easy preset sliders for bayesshrink denoise.
-- remove sharpen/denoise in favour of wavelet ops.
 - quickly template for dt plugins
-- remove libraw in favour of native gegl loading?
 
 bugs:
  - import while still importing crashes.
- - check mipmap decisions (seem very lo-res)
  - image_load_job should take img id and get it from cache himself!
    (this is a serious problem if not all images fit into cache)
- - import folder file chooser sometimes not sized appropriately
 
 feature requests:
- - physically delete raw from disk (selected)
  - gphoto2 import (views/acquire)
  - step to next image in darkroom mode (precache:)
  - rescale during export (email etc)
  - bzip2 compressed content
  - offline media reference in db
  - image variants (different history etc, new image with same source)
- - pizza button.
  - import: interrupt, continue, watch dir (all more robust)
  - clustered image view by similar tag/flag
  - user orient rotation
  - linear/gamma from database for camera models.
  - spot removal brush
- - ufraw style highlight reconstruction
  - images of expensive cameras for webpage.
- - clean up db for mem optimizations: keep only image+history, re-import mips.
  - remove dead links in library automatically?
- - cache auf platte, echte bilder irgendwo auf dvd/platte extern/kamera chip etc
-   - moeglicherweise ECHTE bilder (dias im schrank)
- - bilder sortieren, evtl manuell (mehrere kameras in einen film usw)
  - tags and some tag search facility (expander in lighttable mode)
- - bottom control panel with buttons for lib->dev->lib
  - libglade => gtkbuilder.
 
 usability:
- - navigation: buttons for zoom levels
  - closeup in 3:1 5:1 or 2:1 ?
- - disable dev controls/make invisible in lib?
- - make directory loading interruptible
  - navigation widget for lib?
- - all functions mouse-accessible
 
 cache:
  - user profile guided prefetching for full raw load!

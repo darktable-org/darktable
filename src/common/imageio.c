@@ -1353,7 +1353,7 @@ int dt_imageio_open_preview(dt_image_t *img, const char *filename)
 //   dt-file synching
 // =================================================
 
-int dt_imageio_dt_write(const int imgid, const char *filename)
+int dt_imageio_dt_write (const int imgid, const char *filename)
 {
   FILE *f = NULL;
   // read history from db
@@ -1433,5 +1433,81 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   }
   return 0;
   fclose(f);
+}
+
+
+// =================================================
+// tags synching
+// =================================================
+
+int dt_imageio_dttags_write (const int imgid, const char *filename)
+{ // write out human-readable file containing images stars and tags.
+  FILE *f = fopen(filename, "wb");
+  if(!f) return 1;
+  int stars = 1, rc = 1;
+  // get stars from db
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select flags from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    stars = sqlite3_column_int(stmt, 0);
+  rc = sqlite3_finalize(stmt);
+  fprintf(f, "stars: %d\n", stars & 0x7);
+  fprintf(f, "tags:\n");
+  // print each tag in one line.
+  rc = sqlite3_prepare_v2(darktable.db, "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    fprintf(f, "%s\n", (char *)sqlite3_column_text(stmt, 0));
+  rc = sqlite3_finalize(stmt);
+  fclose(f);
+  return 0;
+}
+
+int dt_imageio_dttags_read (const int imgid, const char *filename)
+{
+  int stars = 1, rd = -1;
+  char line[512];
+  FILE *f = fopen(filename, "rb");
+  if(!f) return 1;
+  rd = fscanf(f, "stars: %d\n", &stars);
+  if(rd != 1) return 2;
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  img->flags |= 0x7 & stars;
+  dt_image_cache_flush(img);
+  dt_image_cache_release(img, 'r');
+  rd = fscanf(f, "%[^\n]\n", line);
+  if(!strcmp(line, "tags:"))
+  {
+    // while read line, add tag to db.
+    while(fscanf(f, "%[^\n]\n", line) != EOF)
+    {
+      sqlite3_stmt *stmt;
+      int rc, tagid = -1;
+      // check if tag is available, get its id:
+      for(int k=0;k<2;k++)
+      {
+        rc = sqlite3_prepare_v2(darktable.db, "select id from tags where name = ?1", -1, &stmt, NULL);
+        rc = sqlite3_bind_text (stmt, 1, line, 512, SQLITE_TRANSIENT);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+          tagid = sqlite3_column_int(stmt, 0);
+        rc = sqlite3_finalize(stmt);
+        if(tagid > 0) break;
+        // create this tag (increment id, leave icon empty), retry.
+        rc = sqlite3_prepare_v2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
+        rc = sqlite3_bind_text (stmt, 1, line, 512, SQLITE_TRANSIENT);
+        rc = sqlite3_step(stmt);
+        rc = sqlite3_finalize(stmt);
+      }
+      // associate image and tag.
+      rc = sqlite3_prepare_v2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
+      rc = sqlite3_bind_int (stmt, 1, tagid);
+      rc = sqlite3_bind_int (stmt, 2, imgid);
+      rc = sqlite3_step(stmt);
+      rc = sqlite3_finalize(stmt);
+    }
+  }
+  fclose(f);
+  return 0;
 }
 

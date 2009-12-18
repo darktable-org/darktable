@@ -198,7 +198,7 @@ void dt_image_cache_flush(dt_image_t *img)
 {
   int rc;
   sqlite3_stmt *stmt;
-   rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18 where id = ?19", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18 where id = ?19", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->width);
   rc = sqlite3_bind_int (stmt, 2, img->height);
   rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);

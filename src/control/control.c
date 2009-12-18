@@ -158,6 +158,8 @@ int dt_control_load_config(dt_control_t *c)
       rc = sqlite3_prepare_v2(darktable.db, "drop table selected_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table mipmaps", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table history", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table tags", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table tagged_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       return dt_control_load_config(c);
     }
     else
@@ -184,6 +186,10 @@ int dt_control_load_config(dt_control_t *c)
     rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_exec(darktable.db, "create table tags (id integer primary key, name varchar, icon blob)", NULL, NULL, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, foreign key(imgid) references images(id) foreign key(tagid) references tags(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
 
     // add dummy film roll for single images
