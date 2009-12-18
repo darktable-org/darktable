@@ -181,7 +181,7 @@ int dt_control_load_config(dt_control_t *c)
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar(256), maker varchar(30), model varchar(30), lens varchar(30), exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, foreign key(film_id) references film_rolls(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table mipmaps (imgid int, level int, data blob, primary key(imgid, level), foreign key(imgid) references images(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table mipmaps (imgid int, level int, timestamp integer, data blob, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
@@ -370,6 +370,24 @@ void dt_control_shutdown(dt_control_t *s)
 
 void dt_control_cleanup(dt_control_t *s)
 {
+  int rc, timelimit = 2500;
+  // delete mipmaps
+  // ubuntu compiles a lame sqlite3, else we could simply:
+  // rc = sqlite3_exec(darktable.db, "delete from mipmaps order by imgid desc limit 2500,-1)", NULL, NULL, NULL);
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select timestamp from mipmaps order by timestamp desc limit ?1,1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, 2500); // TODO: gconf?
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    timelimit = sqlite3_column_int (stmt, 0);
+  rc = sqlite3_finalize(stmt);
+
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where timestamp < ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, timelimit);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
+
+  // vacuum TODO: optional?
+  // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);
   g_object_unref(s->gconf);

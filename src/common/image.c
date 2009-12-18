@@ -306,6 +306,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   pthread_mutex_unlock(&(darktable.db_insert));
   rc = sqlite3_finalize(stmt);
 
+#if 0
   // insert dummy entries in database
   for(dt_image_buffer_t mip=DT_IMAGE_MIP0;(int)mip<=(int)DT_IMAGE_MIPF;mip++)
   {
@@ -316,6 +317,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
     if (rc != SQLITE_DONE) fprintf(stderr, "[image_import] could not insert mipmap %d for image %d: %s\n", mip, id, sqlite3_errmsg(darktable.db));
     rc = sqlite3_finalize(stmt);
   }
+#endif
 
   dt_image_t *img = dt_image_cache_use(id, 'w');
   strncpy(img->filename, imgfname, 256);

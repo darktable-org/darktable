@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <string.h>
 #include <strings.h>
+#include <time.h>
 
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
@@ -30,6 +31,11 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1; 
   sqlite3_stmt *stmt;
   int rc, wd, ht;
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1, level = ?2", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, img->id);
+  rc = sqlite3_bind_int (stmt, 2, mip);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
   rc = sqlite3_prepare_v2(darktable.db, "insert into mipmaps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->id);
   rc = sqlite3_bind_int (stmt, 2, mip);
@@ -41,10 +47,12 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
     uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
     dt_image_compress(img->mipf, buf, wd, ht);
-    rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
+    time_t t = time(NULL);
+    rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1, timestamp = ?2 where imgid = ?3 and level = ?4", -1, &stmt, NULL);
     rc = sqlite3_bind_blob(stmt, 1, buf, sizeof(uint8_t)*wd*ht, free);
-    rc = sqlite3_bind_int (stmt, 2, img->id);
-    rc = sqlite3_bind_int (stmt, 3, mip);
+    rc = sqlite3_bind_int (stmt, 2, t);
+    rc = sqlite3_bind_int (stmt, 3, img->id);
+    rc = sqlite3_bind_int (stmt, 4, mip);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
     return 0;
@@ -75,14 +83,16 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   size_t length = 4*wd*ht*sizeof(uint8_t);*/
   uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
   int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, 97);
-  rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
+  time_t t = time(NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1, timestamp = ?2 where imgid = ?3 and level = ?4", -1, &stmt, NULL);
   HANDLE_SQLITE_ERR(rc);
   //rc = sqlite3_bind_blob(stmt, 1, blob, sizeof(uint8_t)*length, SQLITE_STATIC);
   rc = sqlite3_bind_blob(stmt, 1, blob, length, free);
 #endif
   HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_int (stmt, 2, img->id);
-  rc = sqlite3_bind_int (stmt, 3, mip);
+  rc = sqlite3_bind_int (stmt, 2, t);
+  rc = sqlite3_bind_int (stmt, 3, img->id);
+  rc = sqlite3_bind_int (stmt, 4, mip);
   rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "[preview_write] update mipmap failed: %s\n", sqlite3_errmsg(darktable.db));
   rc = sqlite3_finalize(stmt);
@@ -124,6 +134,15 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     rc = sqlite3_finalize(stmt);
     return 1;
   }
+
+  sqlite3_stmt *stmt2;
+  time_t t = time(NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set timestamp = ?1 where imgid = ?2 and level = ?3", -1, &stmt2, NULL);
+  rc = sqlite3_bind_int (stmt2, 1, t);
+  rc = sqlite3_bind_int (stmt2, 2, img->id);
+  rc = sqlite3_bind_int (stmt2, 3, mip);
+  rc = sqlite3_step(stmt2);
+  rc = sqlite3_finalize(stmt2);
 
   if(mip == DT_IMAGE_MIPF)
   {
