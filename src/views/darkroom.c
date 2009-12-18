@@ -260,12 +260,14 @@ void leave(dt_view_t *self)
   // write .dt file
   if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/write_dt_files", NULL))
   {
-    char filename[512];
+    char filename[520];
     dt_image_full_path(dev->image, filename, 512);
     char *c = filename + strlen(filename);
     for(;c>filename && *c != '.';c--);
     sprintf(c, ".dt");
     dt_imageio_dt_write(dev->image->id, filename);
+    sprintf(c, ".dttags");
+    dt_imageio_dttags_write(dev->image->id, filename);
   }
 
   // commit updated mipmaps to db

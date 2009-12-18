@@ -541,8 +541,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
       // if the user changed stuff and the module is still not enabled, do it:
-      if(!hist->enabled && !module->enabled)
-      {
+      if(strcmp(module->op, "rawimport") && !hist->enabled && !module->enabled)
+      { // only if not rawimport. this always stays off.
         module->enabled = 1;
         darktable.gui->reset = 1; gtk_toggle_button_set_active(module->off, module->enabled); darktable.gui->reset = 0;
       }

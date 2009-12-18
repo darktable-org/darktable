@@ -248,11 +248,13 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
   if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
   sqlite3_finalize(stmt);
 
-  // try loading a .dt file
-  char dtfilename[1024];
+  // try loading a .dt[tags] file
+  char dtfilename[1031];
   strncpy(dtfilename, filename, 1024);
   char *c = dtfilename + strlen(dtfilename);
   for(;c>dtfilename && *c != '.';c--);
+  sprintf(c, ".dttags");
+  (void)dt_imageio_dttags_read(img, dtfilename);
   sprintf(c, ".dt");
   if(altered || !dt_imageio_dt_read(img->id, dtfilename))
   {
@@ -271,6 +273,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   const char *cc = filename + strlen(filename);
   for(;*cc!='.'&&cc>filename;cc--);
   if(!strcmp(cc, ".dt")) return 1;
+  if(!strcmp(cc, ".dttags")) return 1;
   int rc;
   int ret = 0, id = -1;
   // select from images; if found => return
@@ -318,6 +321,14 @@ int dt_image_import(const int32_t film_id, const char *filename)
   strncpy(img->filename, imgfname, 256);
   g_free(imgfname);
 
+  char dtfilename[512];
+  // dt_image_full_path(img, dtfilename, 512);
+  strncpy(dtfilename, filename, 512);
+  char *c = dtfilename + strlen(dtfilename);
+  for(;c>dtfilename && *c != '.';c--);
+  sprintf(c, ".dttags");
+  (void)dt_imageio_dttags_read(img, dtfilename);
+
   if(dt_imageio_open_preview(img, filename))
   {
     dt_image_cleanup(img);
@@ -329,6 +340,9 @@ int dt_image_import(const int32_t film_id, const char *filename)
     rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
     rc = sqlite3_bind_int (stmt, 1, id);
     rc = sqlite3_step(stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, id);
+    rc = sqlite3_step(stmt);
     return 0;
   }
 
@@ -338,10 +352,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
   dt_image_cache_flush(img);
 
   // try loading a .dt file
-  char dtfilename[512];
-  dt_image_full_path(img, dtfilename, 512);
-  char *c = dtfilename + strlen(dtfilename);
-  for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dt");
   if(!dt_imageio_dt_read(img->id, dtfilename))
   {

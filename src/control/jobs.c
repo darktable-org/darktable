@@ -108,12 +108,14 @@ void dt_control_write_dt_files_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     dt_image_t *img = dt_image_cache_use(imgid, 'r');
-    char dtfilename[512];
+    char dtfilename[520];
     dt_image_full_path(img, dtfilename, 512);
     char *c = dtfilename + strlen(dtfilename);
     for(;c>dtfilename && *c != '.';c--);
     sprintf(c, ".dt");
     dt_imageio_dt_write(imgid, dtfilename);
+    sprintf(c, ".dttags");
+    dt_imageio_dttags_write(imgid, dtfilename);
     dt_image_cache_release(img, 'r');
     t = g_list_delete_link(t, t);
   }

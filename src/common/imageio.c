@@ -1444,15 +1444,22 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
 { // write out human-readable file containing images stars and tags.
   FILE *f = fopen(filename, "wb");
   if(!f) return 1;
-  int stars = 1, rc = 1;
+  int stars = 1, rc = 1, raw_params = 0;
+  float denoise = 0.0f, bright = 0.01f;
   // get stars from db
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select flags from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select flags, raw_denoise_threshold, raw_auto_bright_threshold, raw_parameters from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    stars = sqlite3_column_int(stmt, 0);
+  {
+    stars      = sqlite3_column_int(stmt, 0);
+    denoise    = sqlite3_column_int(stmt, 1);
+    bright     = sqlite3_column_int(stmt, 2);
+    raw_params = sqlite3_column_int(stmt, 3);
+  }
   rc = sqlite3_finalize(stmt);
   fprintf(f, "stars: %d\n", stars & 0x7);
+  fprintf(f, "rawimport: %f %f %d\n", denoise, bright, raw_params);
   fprintf(f, "tags:\n");
   // print each tag in one line.
   rc = sqlite3_prepare_v2(darktable.db, "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
@@ -1464,7 +1471,7 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
   return 0;
 }
 
-int dt_imageio_dttags_read (const int imgid, const char *filename)
+int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
 {
   int stars = 1, rd = -1;
   char line[512];
@@ -1472,10 +1479,9 @@ int dt_imageio_dttags_read (const int imgid, const char *filename)
   if(!f) return 1;
   rd = fscanf(f, "stars: %d\n", &stars);
   if(rd != 1) return 2;
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  // dt_image_t *img = dt_image_cache_get(imgid, 'w');
   img->flags |= 0x7 & stars;
-  dt_image_cache_flush(img);
-  dt_image_cache_release(img, 'r');
+  rd = fscanf(f, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
   rd = fscanf(f, "%[^\n]\n", line);
   if(!strcmp(line, "tags:"))
   {
@@ -1502,12 +1508,14 @@ int dt_imageio_dttags_read (const int imgid, const char *filename)
       // associate image and tag.
       rc = sqlite3_prepare_v2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
       rc = sqlite3_bind_int (stmt, 1, tagid);
-      rc = sqlite3_bind_int (stmt, 2, imgid);
+      rc = sqlite3_bind_int (stmt, 2, img->id);
       rc = sqlite3_step(stmt);
       rc = sqlite3_finalize(stmt);
     }
   }
   fclose(f);
+  dt_image_cache_flush(img);
+  // dt_image_cache_release(img, 'w');
   return 0;
 }
 

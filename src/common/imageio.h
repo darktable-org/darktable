@@ -37,8 +37,8 @@ int dt_imageio_dt_read (const int imgid, const char *filename);
 
 // writes out human-readable .dttags file containing stars and tags.
 int dt_imageio_dttags_write (const int imgid, const char *filename);
-// reads .dttags file to database.
-int dt_imageio_dttags_read (const int imgid, const char *filename);
+// reads .dttags file to database. requires a locked img as argument.
+int dt_imageio_dttags_read (dt_image_t *img, const char *filename);
 
 int dt_imageio_export_8 (dt_image_t *img, const char *filename);
 int dt_imageio_export_16(dt_image_t *img, const char *filename);
