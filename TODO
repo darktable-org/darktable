@@ -1,4 +1,6 @@
 0.4 lighttable release
+- select timestamp in separate table => faster?
+- quitting dialog/progress?
 - whitebalance presets
 - webpage: about image with lens, screenshot, photograph or so.
 - 2x version in plugin: dt and plugin (=>params)

@@ -329,7 +329,7 @@ void dt_control_init(dt_control_t *s)
   s->idle_top = DT_CONTROL_MAX_JOBS;
   s->queued_top = 0;
   // start threads
-  s->num_threads = DT_CTL_WORKER_RESERVED + dt_ctl_get_num_procs();
+  s->num_threads = dt_ctl_get_num_procs();
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   s->running = 1;
   for(k=0;k<s->num_threads;k++)
@@ -376,12 +376,24 @@ void dt_control_cleanup(dt_control_t *s)
   // rc = sqlite3_exec(darktable.db, "delete from mipmaps order by imgid desc limit 2500,-1)", NULL, NULL, NULL);
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select timestamp from mipmaps order by timestamp desc limit ?1,1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, 2500); // TODO: gconf?
+  rc = sqlite3_bind_int (stmt, 1, 2500); // TODO: gconf, level dependent?
   if(sqlite3_step(stmt) == SQLITE_ROW)
     timelimit = sqlite3_column_int (stmt, 0);
   rc = sqlite3_finalize(stmt);
 
-  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where timestamp < ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where level > 0 and timestamp < ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, timelimit);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
+
+  timelimit = 10000;
+  rc = sqlite3_prepare_v2(darktable.db, "select timestamp from mipmaps order by timestamp desc limit ?1,1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, 10000); // TODO: gconf, level dependent?
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    timelimit = sqlite3_column_int (stmt, 0);
+  rc = sqlite3_finalize(stmt);
+
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where level = 0 and timestamp < ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, timelimit);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
