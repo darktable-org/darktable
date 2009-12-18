@@ -778,6 +778,9 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt)
 {
-  g_snprintf(label, cnt, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
+  if(strcmp(hist->module->op, "rawimport"))
+    g_snprintf(label, cnt, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
+  else
+    g_snprintf(label, cnt, "%s", hist->module->name());
 }
 

@@ -216,6 +216,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, 0);
 
+  GtkWidget *label;
+  label = gtk_label_new(_("warning: these are cryptic low level\nsettings! you probably don't have to\nchange them."));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 5);
+
   g->wb_auto        = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto white balance")));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->wb_auto), TRUE, TRUE, 0);
   g->wb_cam         = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("camera white balance")));
@@ -225,7 +230,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->cmatrix        = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("use color matrix")));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->cmatrix), TRUE, TRUE, 0);
 
-  GtkWidget *label;
   GtkWidget *hbox   = gtk_hbox_new(FALSE, 0);
   GtkWidget *vbox1  = gtk_vbox_new(TRUE, 0);
   GtkWidget *vbox2  = gtk_vbox_new(TRUE, 0);
