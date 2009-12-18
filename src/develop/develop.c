@@ -301,6 +301,14 @@ restart:
   dt_control_queue_draw_all();
 }
 
+void dt_dev_raw_reload(dt_develop_t *dev)
+{
+  dev->image_force_reload = dev->image_loading = 1;
+  dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
+  dt_dev_pixelpipe_flush_caches(dev->pipe);
+}
+
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
   // only load if not already there.

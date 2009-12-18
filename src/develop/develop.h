@@ -67,7 +67,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img);
-// TODO: replace these by setting `loading' flag and trigering gegl_process 
+void dt_dev_raw_reload(dt_develop_t *dev);
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 // launch jobs above

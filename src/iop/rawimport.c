@@ -85,9 +85,7 @@ void button_callback (GtkButton *button, gpointer user_data)
   // also write to db
   dt_image_cache_flush(module->dev->image);
   // force reloading raw image using the params.
-  module->dev->image_force_reload = module->dev->image_loading = 1;
-  module->dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dt_dev_invalidate(module->dev); // only invalidate image, preview will follow once it's loaded.
+  dt_dev_raw_reload(module->dev);
   pthread_mutex_unlock(&module->dev->history_mutex);
   dt_control_gui_queue_draw();
 }
@@ -157,6 +155,28 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
 
+void resetbutton_callback (GtkButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_rawimport_params_t tmp = (dt_iop_rawimport_params_t)
+     {0.0, 0.01, 0, 1, 1, 0, 2, 0, 0, 0, 0, -1};
+  memcpy(self->params, &tmp, sizeof(dt_iop_rawimport_params_t));
+  dt_iop_rawimport_gui_data_t *g = (dt_iop_rawimport_gui_data_t *)self->gui_data;
+  dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
+  gtk_range_set_value(GTK_RANGE(g->denoise_threshold), p->raw_denoise_threshold);
+  gtk_range_set_value(GTK_RANGE(g->auto_bright_threshold), p->raw_auto_bright_threshold*100.0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_auto), p->raw_wb_auto);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), p->raw_wb_cam);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cmatrix), p->raw_cmatrix);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_bright), !p->raw_no_auto_bright);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
+  gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
+  gtk_combo_box_set_active(g->highlight, p->raw_highlight);
+  gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
+  // gui_update(self);
+}
+
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_rawimport_params_t));
@@ -166,9 +186,6 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_rawimport_params_t);
   module->gui_data = NULL;
   module->priority = 100;
-  dt_iop_rawimport_params_t tmp = (dt_iop_rawimport_params_t)
-    {0.0, 0.01, 0, 1, 1, 0, 2, 0, 0, 0, 0, -1};
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawimport_params_t));
   p->raw_denoise_threshold     = module->dev->image->raw_denoise_threshold;
   p->raw_auto_bright_threshold = module->dev->image->raw_auto_bright_threshold;
   p->raw_wb_auto               = module->dev->image->raw_params.wb_auto;
@@ -180,6 +197,7 @@ void init(dt_iop_module_t *module)
   p->raw_four_color_rgb        = module->dev->image->raw_params.four_color_rgb;
   p->raw_highlight             = module->dev->image->raw_params.highlight;
   p->raw_user_flip             = module->dev->image->raw_params.user_flip;
+  memcpy(module->default_params, p, sizeof(dt_iop_rawimport_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -264,8 +282,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->four_color_rgb), TRUE, TRUE, 0);
 
+  GtkWidget *reset = gtk_button_new_with_label(_("reset"));
+  gtk_object_set(GTK_OBJECT(reset), "tooltip-text", _("reset raw loading parameters\nto darktable's defaults"), NULL);
+  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(reset), TRUE, TRUE, 0);
   GtkWidget *reload = gtk_button_new_with_label(_("re-import"));
-  gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
+  gtk_object_set(GTK_OBJECT(reload), "tooltip-text", _("trigger re-import of the raw image"), NULL);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(reload), TRUE, TRUE, 0);
   
   // gui_update(self);
@@ -292,6 +313,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->auto_bright_threshold), "value-changed", G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (g->denoise_threshold),     "value-changed", G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (reload),     "clicked", G_CALLBACK (button_callback), self);
+  g_signal_connect (G_OBJECT (reset),      "clicked", G_CALLBACK (resetbutton_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
