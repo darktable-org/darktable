@@ -196,7 +196,6 @@ void enter(dt_view_t *self)
     gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
         GTK_FILL | GTK_EXPAND | GTK_SHRINK,
         GTK_SHRINK,
-        // GTK_FILL | GTK_EXPAND | GTK_SHRINK,
         0, 0);
     if(ti < 5) ti++;
     else { ti = 0; tj ++; }
