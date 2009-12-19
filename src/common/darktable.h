@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <glib/gi18n.h>
 
-#define DT_VERSION 30
+#define DT_VERSION 31
 
 #ifndef M_PI
   #define M_PI 3.14159265358979323846
@@ -50,6 +50,7 @@ typedef struct darktable_t
   struct dt_image_cache_t  *image_cache;
   sqlite3                  *db;
   pthread_mutex_t db_insert;
+  pthread_mutex_t plugin_threadsafe;
   char *progname;
 }
 darktable_t;

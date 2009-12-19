@@ -314,6 +314,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void init(dt_iop_module_t *module)
 {
+  pthread_mutex_lock(&darktable.plugin_threadsafe);
   lfDatabase *dt_iop_lensfun_db = lf_db_new();
   module->data = (void *)dt_iop_lensfun_db;
   if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
@@ -329,6 +330,7 @@ void init(dt_iop_module_t *module)
       fprintf(stderr, "[iop_lens]: could not load lensfun database!\n");
     }
   }
+  pthread_mutex_unlock(&darktable.plugin_threadsafe);
   module->params = malloc(sizeof(dt_iop_lensfun_params_t));
   module->default_params = malloc(sizeof(dt_iop_lensfun_params_t));
   module->default_enabled = 0;

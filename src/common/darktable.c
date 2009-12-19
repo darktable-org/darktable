@@ -77,6 +77,7 @@ int dt_init(int argc, char *argv[])
     exit(1);
   }
   pthread_mutex_init(&(darktable.db_insert), NULL);
+  pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
   // has to go first for settings needed by all the others.
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
@@ -155,6 +156,7 @@ void dt_cleanup()
 
   sqlite3_close(darktable.db);
   pthread_mutex_destroy(&(darktable.db_insert));
+  pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 
 #ifdef HAVE_MAGICK
   MagickCoreTerminus();

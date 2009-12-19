@@ -1,5 +1,8 @@
 0.4 lighttable release
-- select timestamp in separate table => faster?
+- check lcms thread safety, have to lock colorin/out globally?
+- develop left without mipf loaded => output_width messed up.
+- remove complete lock for reimport (only separated bufs)
+  - needs a job queue duplicate removal facility (+priority queue)?
 - quitting dialog/progress?
 - whitebalance presets
 - webpage: about image with lens, screenshot, photograph or so.
