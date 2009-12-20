@@ -50,6 +50,7 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
@@ -77,10 +78,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[3*k + 2] = Lab.b;
     }
   }
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
 #ifdef HAVE_GEGL
   // pull in new params to gegl
@@ -107,6 +110,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     else
       d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   }
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
 }
 
@@ -128,9 +132,11 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // clean up everything again.
   // (void)gegl_node_remove_child(pipe->gegl, piece->input);
 #else
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
   free(piece->data);
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
 }
 
@@ -178,6 +184,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   // dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
@@ -257,7 +264,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->cbox2), "changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);
- }
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
+}
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {

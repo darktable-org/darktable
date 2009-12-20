@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include <lcms.h>
 #ifdef HAVE_MAGICK
   #include <magick/MagickCore.h>
 #endif
@@ -59,6 +60,7 @@ int dt_init(int argc, char *argv[])
   (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
+  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
   char *homedir = getenv("HOME");
   char filename[512], *c = NULL;
   snprintf(filename, 512, "%s/.darktablerc", homedir);

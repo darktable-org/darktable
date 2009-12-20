@@ -82,6 +82,7 @@ static void display_profile_changed (GtkComboBox *widget, gpointer user_data)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
@@ -100,10 +101,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // RGB[0] = Lab.L; RGB[1] = Lab.a; RGB[2] = Lab.b;
     for(int c=0;c<3;c++) out[3*k + c] = RGB[c];
   }
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
 #ifdef HAVE_GEGL
   // pull in new params to gegl
@@ -131,8 +134,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       dt_get_datadir(datadir, 1024);
       snprintf(filename, 1024, "%s/color/out/%s", datadir, p->iccprofile);
       d->output = cmsOpenProfileFromFile(filename, "r");
-      d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
     }
+    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
     if(d->output)
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
     else
@@ -164,6 +167,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->displayintent, 0);
   }
 #endif
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -184,9 +188,11 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // clean up everything again.
   // (void)gegl_node_remove_child(pipe->gegl, piece->input);
 #else
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) cmsCloseProfile(d->output);
   free(piece->data);
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
 }
 
@@ -250,6 +256,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   // dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
@@ -366,6 +373,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->cbox3), "changed",
                     G_CALLBACK (display_profile_changed),
                     (gpointer)self);
+  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

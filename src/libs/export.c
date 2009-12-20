@@ -9,6 +9,7 @@
 
 typedef struct dt_lib_export_t
 {
+  GtkSpinButton *width, *height;
   GtkComboBox *format;
   GtkScale *quality;
 }
@@ -45,15 +46,26 @@ export_quality_changed (GtkRange *range, gpointer user_data)
   gtk_widget_queue_draw(widget);
 }
 
+static void
+width_changed (GtkSpinButton *spin, gpointer user_data)
+{
+  int value = gtk_spin_button_get_value(spin);
+  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", value, NULL);
+}
+
+static void
+height_changed (GtkSpinButton *spin, gpointer user_data)
+{
+  int value = gtk_spin_button_get_value(spin);
+  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", value, NULL);
+}
+
 void
 gui_reset (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  // TODO: slider 97, jpeg
   gtk_range_set_value(GTK_RANGE(d->quality), 97);
   gtk_combo_box_set_active(d->format, 0);
-  // TODO: also set gconf variables.
-  // TODO: move gconf to ui_last/plugins_lighttable/* ?
 }
 
 void
@@ -61,9 +73,24 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_vbox_new(TRUE, 5);
+  
+  GtkBox *hbox;
+  GtkWidget *label;
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  d->width  = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
+  gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
+  d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
+  gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
+  label = gtk_label_new(_("maximum size"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->width), FALSE, FALSE, 5);
+  gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 5);
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->height), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->quality = GTK_SCALE(gtk_hscale_new_with_range(0, 100, 1));
   gtk_scale_set_value_pos(d->quality, GTK_POS_LEFT);
   gtk_range_set_value(GTK_RANGE(d->quality), 97);
@@ -88,6 +115,12 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)self);
   g_signal_connect (G_OBJECT (d->quality), "value-changed",
                     G_CALLBACK (export_quality_changed),
+                    (gpointer)0);
+  g_signal_connect (G_OBJECT (d->width), "value-changed",
+                    G_CALLBACK (width_changed),
+                    (gpointer)0);
+  g_signal_connect (G_OBJECT (d->height), "value-changed",
+                    G_CALLBACK (height_changed),
                     (gpointer)0);
 }
 

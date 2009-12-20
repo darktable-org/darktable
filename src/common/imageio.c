@@ -1106,17 +1106,22 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, pipe.processed_width, pipe.processed_height, 1.0);
+  const int width = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", NULL);
+  const int height = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", NULL);
+  const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
+  const int processed_width  = scale*pipe.processed_width;
+  const int processed_height = scale*pipe.processed_height;
+  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
-    (void)fprintf(f, "PF\n%d %d\n-1.0\n", pipe.processed_width, pipe.processed_height);
-    int cnt = fwrite(buf, sizeof(float)*3, pipe.processed_width*pipe.processed_height, f);
+    (void)fprintf(f, "PF\n%d %d\n-1.0\n", processed_width, processed_height);
+    int cnt = fwrite(buf, sizeof(float)*3, processed_width*processed_height, f);
     fclose(f);
-    if(cnt != pipe.processed_width*pipe.processed_height) status = 1;
+    if(cnt != processed_width*processed_height) status = 1;
     else status = 0;
   }
 
@@ -1140,18 +1145,23 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, pipe.processed_width, pipe.processed_height, 1.0);
+  const int width = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", NULL);
+  const int height = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", NULL);
+  const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
+  const int processed_width  = scale*pipe.processed_width;
+  const int processed_height = scale*pipe.processed_height;
+  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
   int status = 1;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
-    (void)fprintf(f, "P6\n%d %d\n65535\n", pipe.processed_width, pipe.processed_height);
-    for(int y=0;y<pipe.processed_height;y++)
-    for(int x=0;x<pipe.processed_width ;x++)
+    (void)fprintf(f, "P6\n%d %d\n65535\n", processed_width, processed_height);
+    for(int y=0;y<processed_height;y++)
+    for(int x=0;x<processed_width ;x++)
     {
-      const int k = x + pipe.processed_width*y;
+      const int k = x + processed_width*y;
       uint16_t tmp[3];
       for(int i=0;i<3;i++) tmp[i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
       for(int i=0;i<3;i++) tmp[i] = (0xff00 & (tmp[i]<<8))|(tmp[i]>>8);
@@ -1319,17 +1329,23 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, pipe.processed_width, pipe.processed_height, 1.0);
+
+  const int width = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", NULL);
+  const int height = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", NULL);
+  const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
+  const int processed_width  = scale*pipe.processed_width;
+  const int processed_height = scale*pipe.processed_height;
+  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
   char pathname[1024];
   dt_image_full_path(img, pathname, 1024);
   const char *suffix = filename + strlen(filename) - 3;
   int export_png = 0;
   if(suffix > filename && strncmp(suffix, "png", 3) == 0) export_png = 1;
   uint8_t *buf8 = pipe.backbuf;
-  for(int y=0;y<pipe.processed_height;y++)
-  for(int x=0;x<pipe.processed_width ;x++)
+  for(int y=0;y<processed_height;y++)
+  for(int x=0;x<processed_width ;x++)
   {
-    const int k = x + pipe.processed_width*y;
+    const int k = x + processed_width*y;
     uint8_t tmp = buf8[4*k+0];
     buf8[4*k+0] = buf8[4*k+2];
     buf8[4*k+2] = tmp;
@@ -1341,8 +1357,8 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   int quality = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/quality", NULL);
   if(quality <= 0 || quality > 100) quality = 100;
-  if((!export_png && dt_imageio_jpeg_write(filename, buf8, pipe.processed_width, pipe.processed_height, quality, exif_profile, length)) ||
-     ( export_png && dt_imageio_png_write (filename, buf8, pipe.processed_width, pipe.processed_height)))
+  if((!export_png && dt_imageio_jpeg_write(filename, buf8,             processed_width, processed_height, quality, exif_profile, length)) ||
+     ( export_png && dt_imageio_png_write (filename, buf8,             processed_width, processed_height)))
   {
     dt_dev_pixelpipe_cleanup(&pipe);
     dt_dev_cleanup(&dev);

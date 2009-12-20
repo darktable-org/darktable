@@ -298,10 +298,36 @@
         <long></long>
       </locale>
     </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/export/width</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/width</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>width of the exported image</short>
+        <long>width of the exported image, or 0 if no scaling should be done.</long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/export/height</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/height</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>height of the exported image</short>
+        <long>height of the exported image, or 0 if no scaling should be done.</long>
+      </locale>
+    </schema>
     
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/export/format</key>
-      <applyto>/apps/darktable/plugins/lighttable/export/expanded</applyto>
+      <applyto>/apps/darktable/plugins/lighttable/export/format</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>0</default>
