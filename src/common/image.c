@@ -229,12 +229,14 @@ int dt_image_raw_to_preview(dt_image_t *img)
 int dt_image_reimport(dt_image_t *img, const char *filename)
 {
   // FIXME: this brute-force lock might be a bit too much:
-  dt_image_t *imgl = dt_image_cache_use(img->id, 'w');
-  if(!imgl)
+  // dt_image_t *imgl = dt_image_cache_use(img->id, 'w');
+  // if(!imgl)
+  if(img->import_lock)
   {
     // fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
     return 1;
   }
+  img->import_lock = 1;
   if(dt_imageio_open_preview(img, filename))
   {
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
@@ -264,7 +266,8 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     dt_dev_process_to_mip(&dev);
     dt_dev_cleanup(&dev);
   }
-  dt_image_cache_release(imgl, 'w');
+  img->import_lock = 0;
+  // dt_image_cache_release(imgl, 'w');
   return 0;
 }
 
@@ -305,19 +308,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
   id = sqlite3_last_insert_rowid(darktable.db);
   pthread_mutex_unlock(&(darktable.db_insert));
   rc = sqlite3_finalize(stmt);
-
-#if 0
-  // insert dummy entries in database
-  for(dt_image_buffer_t mip=DT_IMAGE_MIP0;(int)mip<=(int)DT_IMAGE_MIPF;mip++)
-  {
-    rc = sqlite3_prepare_v2(darktable.db, "insert into mipmaps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
-    rc = sqlite3_bind_int(stmt, 1, id);
-    rc = sqlite3_bind_int(stmt, 2, mip);
-    rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE) fprintf(stderr, "[image_import] could not insert mipmap %d for image %d: %s\n", mip, id, sqlite3_errmsg(darktable.db));
-    rc = sqlite3_finalize(stmt);
-  }
-#endif
 
   dt_image_t *img = dt_image_cache_use(id, 'w');
   strncpy(img->filename, imgfname, 256);
@@ -403,6 +393,7 @@ void dt_image_init(dt_image_t *img)
 {
   for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) img->mip[k] = NULL;
   bzero(img->lock, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
+  img->import_lock = 0;
   img->output_width = img->output_height = img->width = img->height = 0;
   img->mipf = NULL;
   img->pixels = NULL;

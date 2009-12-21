@@ -72,6 +72,7 @@ typedef struct dt_image_t
   uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
   float *mipf;
   dt_image_lock_t lock[DT_IMAGE_NONE];
+  int32_t import_lock;
 
   // raw image parameters
   float raw_denoise_threshold, raw_auto_bright_threshold;
