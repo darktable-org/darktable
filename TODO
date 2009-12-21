@@ -1,5 +1,10 @@
 0.4 lighttable release
-- check lcms thread safety, have to lock colorin/out globally?
+- tagging plugin in lighttable mode:
+  - film.h: sql query string
+  - small gui to view tags (next to metadata?)
+  - small gui to organise tags (create, mod, delete)
+  - small gui to query images by tags
+- remove mipmap from db on new mipmap write?
 - develop left without mipf loaded => output_width messed up.
 - remove complete lock for reimport (only separated bufs)
   - needs a job queue duplicate removal facility (+priority queue)?

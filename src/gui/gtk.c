@@ -204,6 +204,9 @@ scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 void quit()
 {
   // thread safe quit, 1st pass:
+  GtkWindow *win = GTK_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "main_window"));
+  gtk_window_iconify(win);
+
   pthread_mutex_lock(&darktable.control->cond_mutex);
   darktable.control->running = 0;
   pthread_mutex_unlock(&darktable.control->cond_mutex);
