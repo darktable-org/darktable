@@ -1,4 +1,12 @@
+- side by side comparison view
+
 0.4 lighttable release
+- 1200 limit in image expose?
+- import progress bars or dummy images..?
+- r,g,b slider whitebalance
+- greybox/known color spot whitebalance
+- input: 6500 k temperature adjustable.
+- cam/auto white bl in radiobuttons?
 - tagging plugin in lighttable mode:
   - film.h: sql query string
   - small gui to view tags (next to metadata?)
@@ -6,8 +14,6 @@
   - small gui to query images by tags
 - remove mipmap from db on new mipmap write?
 - develop left without mipf loaded => output_width messed up.
-- remove complete lock for reimport (only separated bufs)
-  - needs a job queue duplicate removal facility (+priority queue)?
 - quitting dialog/progress?
 - whitebalance presets
 - webpage: about image with lens, screenshot, photograph or so.

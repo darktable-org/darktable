@@ -16,6 +16,7 @@ src/iop/exposure.c
 src/iop/gamma.c
 src/iop/lens.c
 src/iop/monochrome.c
+src/iop/rawimport.c
 src/iop/sharpen.c
 src/iop/temperature.c
 src/iop/tonecurve.c

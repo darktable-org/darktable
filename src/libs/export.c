@@ -81,7 +81,7 @@ gui_init (dt_lib_module_t *self)
   d->width  = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
-  gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
+  gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
   label = gtk_label_new(_("maximum size"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
