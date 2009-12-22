@@ -1376,18 +1376,22 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
 int dt_imageio_open(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
-  if(!dt_imageio_open_hdr(img, filename)) return 0;
-  if(!dt_imageio_open_raw(img, filename)) return 0;
-  if(!dt_imageio_open_ldr(img, filename)) return 0;
-  return 1;
+  int ret = 1;
+  if     (!dt_imageio_open_hdr(img, filename)) ret = 0;
+  else if(!dt_imageio_open_raw(img, filename)) ret = 0;
+  else if(!dt_imageio_open_ldr(img, filename)) ret = 0;
+  if(!ret) dt_image_cache_flush(img);
+  return ret;
 }
 
 int dt_imageio_open_preview(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
-  if(!dt_imageio_open_hdr_preview(img, filename)) return 0;
-  if(!dt_imageio_open_raw_preview(img, filename)) return 0;
-  if(!dt_imageio_open_ldr_preview(img, filename)) return 0;
-  return 1;
+  int ret = 1;
+  if     (!dt_imageio_open_hdr_preview(img, filename)) ret = 0;
+  else if(!dt_imageio_open_raw_preview(img, filename)) ret = 0;
+  else if(!dt_imageio_open_ldr_preview(img, filename)) ret = 0;
+  if(!ret) dt_image_cache_flush(img);
+  return ret;
 }
 
 // =================================================

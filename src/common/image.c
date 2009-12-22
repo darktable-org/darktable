@@ -228,7 +228,7 @@ int dt_image_raw_to_preview(dt_image_t *img)
 
 int dt_image_reimport(dt_image_t *img, const char *filename)
 {
-  // FIXME: this brute-force lock might be a bit too much:
+  // this brute-force lock might be a bit too much:
   // dt_image_t *imgl = dt_image_cache_use(img->id, 'w');
   // if(!imgl)
   if(img->import_lock)
@@ -240,10 +240,26 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
   if(dt_imageio_open_preview(img, filename))
   {
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
+    dt_image_cleanup(img);
+    // dt_image_cache_release(img, 'w');
+    int rc;
+    sqlite3_stmt *stmt;
+    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, img->id);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, img->id);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, img->id);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, img->id);
+    rc = sqlite3_step(stmt);
   }
 
   // already some db entry there?
-  int rc, altered;
+  int rc, altered = 0;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->id);
@@ -273,6 +289,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
 
 int dt_image_import(const int32_t film_id, const char *filename)
 {
+  // TODO: add more exclusion categories: not a regular file, etc.
   const char *cc = filename + strlen(filename);
   for(;*cc!='.'&&cc>filename;cc--);
   if(!strcmp(cc, ".dt")) return 1;
@@ -298,17 +315,26 @@ int dt_image_import(const int32_t film_id, const char *filename)
   }
   rc = sqlite3_finalize(stmt);
 
+  dt_image_t *img = dt_image_cache_use(id, 'w');
+  strncpy(img->filename, imgfname, 256);
+  img->film_id = film_id;
+
   // insert dummy image entry in database
-  rc = sqlite3_prepare_v2(darktable.db, "insert into images (id, film_id, filename) values (null, -1, ?1)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "insert into images (id, film_id, filename) values (null, ?1, ?2)", -1, &stmt, NULL);
   HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_text(stmt, 1, imgfname, strlen(imgfname), SQLITE_STATIC);
+  rc = sqlite3_bind_int (stmt, 1, img->film_id);
+  rc = sqlite3_bind_text(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
   pthread_mutex_lock(&(darktable.db_insert));
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
-  id = sqlite3_last_insert_rowid(darktable.db);
+  img->id = id = sqlite3_last_insert_rowid(darktable.db);
   pthread_mutex_unlock(&(darktable.db_insert));
   rc = sqlite3_finalize(stmt);
 
+  dt_image_cache_flush(img);
+
+  g_free(imgfname);
+#if 0
   dt_image_t *img = dt_image_cache_use(id, 'w');
   strncpy(img->filename, imgfname, 256);
   g_free(imgfname);
@@ -353,8 +379,9 @@ int dt_image_import(const int32_t film_id, const char *filename)
     dt_dev_process_to_mip(&dev);
     dt_dev_cleanup(&dev);
   }
-
   dt_image_release(img, DT_IMAGE_FULL, 'r');
+#endif
+
   dt_image_cache_release(img, 'w');
   return id;
 }

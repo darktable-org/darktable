@@ -1,6 +1,9 @@
 - side by side comparison view
 
 0.4 lighttable release
+- additional checks on files BEFORE loading
+- job priority rescheduling (search for same string and level up, or push out
+  outdated jobs..?)
 - 1200 limit in image expose?
 - import progress bars or dummy images..?
 - r,g,b slider whitebalance
