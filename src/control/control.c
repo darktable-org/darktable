@@ -418,6 +418,7 @@ void dt_control_cleanup(dt_control_t *s)
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
 {
+  bzero(j, sizeof(dt_job_t));
 #ifdef DT_CONTROL_JOB_DEBUG
   va_list ap;
   va_start(ap, msg);
@@ -514,6 +515,32 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
     pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
+
+  // notify workers
+  pthread_mutex_lock(&s->cond_mutex);
+  pthread_cond_broadcast(&s->cond);
+  pthread_mutex_unlock(&s->cond_mutex);
+  return 0;
+}
+
+int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
+{
+  int32_t i;
+  pthread_mutex_lock(&s->queue_mutex);
+  dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
+  dt_control_job_print(job);
+  dt_print(DT_DEBUG_CONTROL, "\n");
+  for(i=0;i<s->queued_top;i++)
+  { // find equivalent job and push it up on top of the stack.
+    const int j = s->queued[i];
+    if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
+    {
+      dt_print(DT_DEBUG_CONTROL, "[revive_job] found job in queue at position %d, moving to %d\n", i, s->queued_top);
+      memmove(s->queued + i, s->queued + i + 1, sizeof(int32_t) * (s->queued_top - i - 1));
+      s->queued[s->queued_top-1] = j;
+    }
+  }
+  pthread_mutex_unlock(&s->queue_mutex);
 
   // notify workers
   pthread_mutex_lock(&s->cond_mutex);

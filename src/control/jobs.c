@@ -7,29 +7,31 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-void dt_image_load_job_init(dt_job_t *job, dt_image_t *image, dt_image_buffer_t mip)
+void dt_image_load_job_init(dt_job_t *job, int32_t id, dt_image_buffer_t mip)
 {
+  dt_control_job_init(job, "load image %d mip %d", id, mip);
   job->execute = &dt_image_load_job_run;
   dt_image_load_t *t = (dt_image_load_t *)job->param;
-  t->image = image;
+  t->imgid = id;
   t->mip = mip;
-  dt_control_job_init(job, "load image %d mip %d", image->id, mip);
 }
 
 void dt_image_load_job_run(dt_job_t *job)
 {
   dt_image_load_t *t = (dt_image_load_t *)job->param;
-  int ret = dt_image_load(t->image, t->mip);
+  dt_image_t *img = dt_image_cache_get(t->imgid, 'r');
+  int ret = dt_image_load(img, t->mip);
   // drop read lock, as this is only speculative async loading.
-  if(!ret) dt_image_release(t->image, t->mip, 'r');
+  if(!ret) dt_image_release(img, t->mip, 'r');
+  dt_image_cache_release(img, 'r');
 }
 
 void dt_film_import1_init(dt_job_t *job, dt_film_t *film)
 {
+  dt_control_job_init(job, "cache load raw images for preview");
   job->execute = &dt_film_import1_run;
   dt_film_import1_t *t = (dt_film_import1_t *)job->param;
   t->film = film;
-  dt_control_job_init(job, "cache load raw images for preview");
 }
 
 void dt_film_import1_run(dt_job_t *job)
@@ -50,11 +52,11 @@ void dt_dev_raw_load_job_run(dt_job_t *job)
 
 void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *image)
 {
+  dt_control_job_init(job, "develop load raw image %s", image->filename);
   job->execute =&dt_dev_raw_load_job_run;
   dt_dev_raw_load_t *t = (dt_dev_raw_load_t *)job->param;
   t->dev = dev;
   t->image = image;
-  dt_control_job_init(job, "develop load raw image %s", image->filename);
 }
 
 void dt_dev_process_preview_job_run(dt_job_t *job)
@@ -65,10 +67,10 @@ void dt_dev_process_preview_job_run(dt_job_t *job)
 
 void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev)
 {
+  dt_control_job_init(job, "develop process preview");
   job->execute = &dt_dev_process_preview_job_run;
   dt_dev_process_t *t = (dt_dev_process_t *)job->param;
   t->dev = dev;
-  dt_control_job_init(job, "develop process preview");
 }
 
 void dt_dev_process_image_job_run(dt_job_t *job)
@@ -79,19 +81,11 @@ void dt_dev_process_image_job_run(dt_job_t *job)
 
 void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev)
 {
+  dt_control_job_init(job, "develop image preview");
   job->execute = &dt_dev_process_image_job_run;
   dt_dev_process_t *t = (dt_dev_process_t *)job->param;
   t->dev = dev;
-  dt_control_job_init(job, "develop image preview");
 }
-
-#if 0
-void dt_dev_export_init(dt_job_t *job)
-{
-  job->execute = &dt_dev_export;
-  dt_control_job_init(job, "develop export selected");
-}
-#endif
 
 typedef struct dt_control_image_enumerator_t
 {
@@ -178,10 +172,10 @@ void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
 
 void dt_control_write_dt_files_job_init(dt_job_t *job)
 {
+  dt_control_job_init(job, "write dt files");
   job->execute = &dt_control_write_dt_files_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   dt_control_image_enumerator_job_init(t);
-  dt_control_job_init(job, "write dt files");
 }
 
 void dt_control_write_dt_files()
@@ -193,10 +187,10 @@ void dt_control_write_dt_files()
 
 void dt_control_delete_images_job_init(dt_job_t *job)
 {
+  dt_control_job_init(job, "delete images");
   job->execute = &dt_control_delete_images_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   dt_control_image_enumerator_job_init(t);
-  dt_control_job_init(job, "delete images");
 }
 
 void dt_control_delete_images()
@@ -280,10 +274,10 @@ void dt_control_export_job_run(dt_job_t *job)
 
 void dt_control_export_job_init(dt_job_t *job)
 {
+  dt_control_job_init(job, "export");
   job->execute = &dt_control_export_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   dt_control_image_enumerator_job_init(t);
-  dt_control_job_init(job, "export");
 }
 
 void dt_control_export()

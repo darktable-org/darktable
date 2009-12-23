@@ -811,21 +811,29 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   // dt_print(DT_DEBUG_CACHE, "[image_get] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
 
 #if 1
-  if(mip != mip_in && !img->lock[mip_in].write)
+  if(mip != mip_in) // && !img->lock[mip_in].write)
   { // start job to load this buf in bg.
     dt_print(DT_DEBUG_CACHE, "[image_get] reloading mip %d for image %d\n", mip_in, img->id);
-    img->lock[mip_in].write = 1;
     dt_job_t j;
-    dt_image_load_job_init(&j, img, mip_in);
-    dt_control_add_job(darktable.control, &j);
+    dt_image_load_job_init(&j, img->id, mip_in);
+    // if the job already exists, make it high-priority:
+    dt_control_revive_job(darktable.control, &j);
+    if(!img->lock[mip_in].write)
+    {
+      img->lock[mip_in].write = 1;
+      if(dt_control_add_job(darktable.control, &j))
+        img->lock[mip_in].write = 0;
+    }
     if(mip_in == DT_IMAGE_MIP4)
     {
+      dt_job_t j;
+      dt_image_load_job_init(&j, img->id, DT_IMAGE_MIPF);
+      dt_control_revive_job(darktable.control, &j);
       if(!img->lock[DT_IMAGE_MIPF].write)
       { // start job to load this buf in bg.
         img->lock[DT_IMAGE_MIPF].write = 1;
-        dt_job_t j;
-        dt_image_load_job_init(&j, img, DT_IMAGE_MIPF);
-        dt_control_add_job(darktable.control, &j);
+        if(dt_control_add_job(darktable.control, &j))
+          img->lock[DT_IMAGE_MIPF].write = 0;
       }
     }
   }

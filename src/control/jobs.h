@@ -8,13 +8,13 @@
 
 typedef struct dt_image_load_t
 {
-  dt_image_t *image;
+  int32_t imgid;
   dt_image_buffer_t mip;
 }
 dt_image_load_t;
 
 void dt_image_load_job_run(dt_job_t *job);
-void dt_image_load_job_init(dt_job_t *job, dt_image_t *image, dt_image_buffer_t mip);
+void dt_image_load_job_init(dt_job_t *job, int32_t imgid, dt_image_buffer_t mip);
 
 typedef struct dt_film_import1_t
 {

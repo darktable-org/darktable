@@ -187,6 +187,7 @@ int dt_control_write_config(dt_control_t *c);
 
 int32_t dt_control_run_job(dt_control_t *s);
 int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job);
+int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job);
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res);
 int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res);
 

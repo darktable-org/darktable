@@ -1,11 +1,9 @@
 - side by side comparison view
+- gconf option for maximum number of jobs?
 
 0.4 lighttable release
 - additional checks on files BEFORE loading
-- job priority rescheduling (search for same string and level up, or push out
-  outdated jobs..?)
 - 1200 limit in image expose?
-- import progress bars or dummy images..?
 - r,g,b slider whitebalance
 - greybox/known color spot whitebalance
 - input: 6500 k temperature adjustable.
@@ -87,8 +85,6 @@ cleanup:
 
 bugs:
  - import while still importing crashes.
- - image_load_job should take img id and get it from cache himself!
-   (this is a serious problem if not all images fit into cache)
 
 feature requests:
  - gphoto2 import (views/acquire)
