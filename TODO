@@ -1,40 +1,13 @@
 - side by side comparison view
 - gconf option for maximum number of jobs?
-
-0.4 lighttable release
-- additional checks on files BEFORE loading
-- 1200 limit in image expose?
-- r,g,b slider whitebalance
-- greybox/known color spot whitebalance
-- input: 6500 k temperature adjustable.
-- cam/auto white bl in radiobuttons?
 - tagging plugin in lighttable mode:
   - film.h: sql query string
   - small gui to view tags (next to metadata?)
   - small gui to organise tags (create, mod, delete)
   - small gui to query images by tags
 - remove mipmap from db on new mipmap write?
-- develop left without mipf loaded => output_width messed up.
-- quitting dialog/progress?
 - whitebalance presets
-- webpage: about image with lens, screenshot, photograph or so.
-- 2x version in plugin: dt and plugin (=>params)
- - .dt file starts with plugin version
- - plugin refuses to load for newer dt version
-- lensfun auto scale
-- bug for clipped mip maps and low resolutions.
-- color picker for tonecurve/color correction/monochrome?
-- progress bars for coresponding widgets (export)?
-- scroll to opened expander in darkroom mode.
-- lighttable plugins:
-  - copy style
-  - select handling
-- plug-in-template (translatable)
-- write .dt-tags file (stars, keywords, ..?)
-- dt_dev_process_to_mip: check hash
-- dt_image_expose: check history cached in flags
-- lib: separator thickness
-- deb install: remove schema installation.
+- quitting dialog/progress?
 - histogram fill light mouse gesture
 - exposure: highlight clipped parts
 - exr import
@@ -42,22 +15,35 @@
 - clipping event hooks: crop
 - user preferences
   - default processing stack, if exif matches
+- lighttable plugins:
+  - copy style
+- color picker for tonecurve/color correction/monochrome?
+- progress bars for coresponding widgets (export)?
+- efficiency:
+  - dt_image_expose: check history cached in flags?
+  - dt_dev_process_to_mip: check hash?
+
+0.4 lighttable release
+- image file operations: remove from db, delete from disk, write dt[tags], duplicate in db.
+- additional checks on files BEFORE loading
+- 1200 limit in image expose?
+- cam/auto white bl in radiobuttons?
+- lensfun auto scale
+- scroll to opened expander in darkroom mode.
+- write .dt-tags file (stars, keywords, ..?)
+- deb install: remove schema installation.
 
 bugs:
-- img unlock => flicker in library mode? (due to mipf trigger?)
-- can't create export folder=>crash
-- check for deleted images when opening a film roll!
+- bug for clipped mip maps and low resolutions.
+- develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit
 - zoom to wrong image bug: resize window helps (???)
 
 cleanup:
 - remove most iop/*.h 
-- colorin: use color matrix?
-- sequentially work on preview/full?
 - keep stdout clean! (shut up exiv2 and jpg)
 - add some user guide documentation.
 - progress bars for image folder import and image export
-- mip0 broken for very lo-res images.
 - print GPLv3 notice on top of all files
 
 - copy function in lib:
@@ -81,7 +67,7 @@ cleanup:
 
 1.0 roadmap:
 - better demosaicing
-- quickly template for dt plugins
+- quickly template for dt plugins (translatable)
 
 bugs:
  - import while still importing crashes.
@@ -89,18 +75,13 @@ bugs:
 feature requests:
  - gphoto2 import (views/acquire)
  - step to next image in darkroom mode (precache:)
- - rescale during export (email etc)
  - bzip2 compressed content
  - offline media reference in db
- - image variants (different history etc, new image with same source)
- - import: interrupt, continue, watch dir (all more robust)
  - clustered image view by similar tag/flag
  - user orient rotation
  - linear/gamma from database for camera models.
  - spot removal brush
  - images of expensive cameras for webpage.
- - remove dead links in library automatically?
- - tags and some tag search facility (expander in lighttable mode)
  - libglade => gtkbuilder.
 
 usability:
