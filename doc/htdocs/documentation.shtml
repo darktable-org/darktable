@@ -84,6 +84,7 @@
       <ul>
         <li> $ sqlite3 ~/.darktabledb</li>
         <li> &gt; delete from mipmaps;</li>
+        <li> &gt; delete from mipmap_timestamps;</li>
         <li> &gt; vacuum;</li>
         <li> darktable will re-generate cached mipmaps in db on demand.</li>
       </ul>
