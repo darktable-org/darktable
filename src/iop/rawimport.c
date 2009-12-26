@@ -97,8 +97,18 @@ void togglebutton_callback (GtkToggleButton *toggle, gpointer user_data)
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   dt_iop_rawimport_gui_data_t *g = (dt_iop_rawimport_gui_data_t *)self->gui_data;
   int active = gtk_toggle_button_get_active(toggle);
-  if      (toggle == GTK_TOGGLE_BUTTON(g->wb_auto))        p->raw_wb_auto = active;
-  else if (toggle == GTK_TOGGLE_BUTTON(g->wb_cam))         p->raw_wb_cam  = active;
+  if      (toggle == GTK_TOGGLE_BUTTON(g->wb_auto))
+  {
+    p->raw_wb_auto = active;
+    p->raw_wb_cam  = !active;
+    darktable.gui->reset = 1; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), !active); darktable.gui->reset = 0;
+  }
+  else if (toggle == GTK_TOGGLE_BUTTON(g->wb_cam))
+  {
+    p->raw_wb_cam  = active;
+    p->raw_wb_auto = !active;
+    darktable.gui->reset = 1; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_auto), !active); darktable.gui->reset = 0;
+  }
   else if (toggle == GTK_TOGGLE_BUTTON(g->cmatrix))        p->raw_cmatrix = active;
   else if (toggle == GTK_TOGGLE_BUTTON(g->auto_bright))    p->raw_no_auto_bright = !active;
   else if (toggle == GTK_TOGGLE_BUTTON(g->four_color_rgb)) p->raw_four_color_rgb = active;
