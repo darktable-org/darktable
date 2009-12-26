@@ -259,7 +259,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->auto_bright_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.1, 2., 0.05));
-  gtk_object_set(GTK_OBJECT(g->auto_bright_threshold), "tooltip-text", "percentage of bright values\nto be clipped out", NULL);
+  gtk_object_set(GTK_OBJECT(g->auto_bright_threshold), "tooltip-text", _("percentage of bright values\nto be clipped out"), NULL);
   gtk_scale_set_digits(g->auto_bright_threshold, 1);
   gtk_scale_set_value_pos(g->auto_bright_threshold, GTK_POS_LEFT);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->auto_bright_threshold), TRUE, TRUE, 0);
@@ -268,7 +268,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->med_passes = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1));
-  gtk_object_set(GTK_OBJECT(g->med_passes), "tooltip-text", "number of 3x3 median filter passes\non R-G and B-G after demosaicing", NULL);
+  gtk_object_set(GTK_OBJECT(g->med_passes), "tooltip-text", _("number of 3x3 median filter passes\non R-G and B-G after demosaicing"), NULL);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->med_passes), TRUE, TRUE, 0);
 
   label = gtk_label_new(_("highlight handling"));
@@ -292,7 +292,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->demosaic_method), TRUE, TRUE, 0);
 
   g->four_color_rgb = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("four color rgb")));
-  gtk_object_set(GTK_OBJECT(g->four_color_rgb), "tooltip-text", _("demosaic treating RGGB as\nfour distinct colors"), NULL);
+  gtk_object_set(GTK_OBJECT(g->four_color_rgb), "tooltip-text", _("demosaic treating RGGB as\nfour distinct colors,\nuse if you get mazing artifacts"), NULL);
   gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->four_color_rgb), TRUE, TRUE, 0);
 
