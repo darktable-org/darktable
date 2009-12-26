@@ -21,6 +21,7 @@ set -e
 
 case "$1" in
     purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        /usr/bin/gconftool-2 --makefile-uninstall-rule darktable.schemas 1>/dev/null
     ;;
 
     *)

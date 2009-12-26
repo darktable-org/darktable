@@ -17,29 +17,23 @@
     	<img src="images/gold.jpg" alt="done" class="img" /><h1>current features</h1>
       <ul>
         <li>runs on gnu linux/gnome and mac osx/macports</li>
-        <li>import a variety of image formats (e.g. cr2, jpg, .. through LibRaw and libjpeg)</li>
+        <li>import a variety of image formats (e.g. cr2, jpg, hdr, pfm, .. through LibRaw, libjpeg and custom code)</li>
         <li>zero-latency user interface through multi-level software caches</li>
         <li>zoomable user interface</li>
         <li>all data is stored in an sql database for arbitrary access</li>
         <li>fully non-destructive editing</li>
-        <li>core functions operate on floating point buffers</li>
+        <li>core functions operate on 3x32-bit floating point pixel buffers</li>
         <li>modular image operations (plug-in interface)</li>
-        <li>some image operations are implemented: color correction/temperature, contrast curve, denoise, denoise/enhance using edge-avoiding wavelets (equalizer), sharpen, crop, rotate</li>
+        <li>image operations: rotate/crop, color correction, input/output/display color profile management, edge-avoiding wavelet domain editing (e.g. denoise, sharpen), exposure controls, gamma correction, lens defect correction (lensfun), color filter based monochrome conversion, unsharp mask sharpen, white balancing and contrast curve</li>
         <li>export to low dynamic range (jpg, png), 16-bit (ppm), or linear high dynamic range (pfm)</li>
         <li>image rating (stars), filtering and sorting within the film roll</li>
-        <li>equalizer operation selectively enhances/attenuates frequencies in an edge-preserving way
-            (used for sharpen and denoising at the same time)</li>
         <li>exif data read using libexiv2</li>
-        <li>color profile management (input/output) using lcms</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/moon.jpg" alt="todo" class="img" /><h1>scheduled features</h1>
       <ul>
-        <li>lensfun support</li>
-        <li>xml file dump/load on re-import (in case db is corrupted/deleted/format changed)</li>
         <li>image tagging, sorting and filtering by tag system</li>
-        <li>database format freeze for future compatibility of tag data</li>
         <li>...?</li>
         <li>windoos port</li>
       </ul>

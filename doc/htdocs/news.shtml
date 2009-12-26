@@ -10,6 +10,25 @@
     <div class="page">
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
+
+      <div class="listtext">
+    	<img src="images/rock1.jpg" class="img" alt="dreggn" /><h1>0.4 released</h1>
+      <em>(2009-12-26)</em>as usual, the new release comes with lots of new features:
+      <ul>
+        <li>lens defect correction (lensfun)</li>
+        <li>internationalization (russian translation)</li>
+        <li>backup files for image editing history and tagging (.dt and .dttags) apart from database</li>
+        <li>gconf preferences handling</li>
+        <li>lighttable mode plugins</li>
+        <li>libraw 0.8.4 and low-level option interface from dt</li>
+        <li>color filter-based monochrome conversion</li>
+        <li>dt now reads _ICC_PROFILE atom from X server</li>
+        <li>more sophisticated white balance</li>
+        <li>core database layout prepared for tagging system (to come in 0.5)</li>
+        <li>lots of bugfixes</li>
+        <li>lots of gui tweaks and presets</li>
+      </ul>
+      </div>
     	
       <div class="listtext">
     	<img src="images/crowrock.jpg" class="img" alt="dreggn" /><h1>0.3 beta released</h1>
@@ -25,7 +44,6 @@
         <li>the lighttable view can filter and sort by rating.</li>
         <li>color management using lcms.</li>
       </ul>
-
       </div>
 
       <div class="text">
