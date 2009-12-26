@@ -1,8 +1,9 @@
 darktable (0.4) karmic; urgency=low
 
-  * 0.4 ubuntu package.
+  [ johannes hanika ]
+  * 0.4 ubuntu package. 
 
- -- Johannes Hanika <hanatos@gmail.com>  Sat, 26 Dec 2009 09:00:00 +0200
+ -- johannes hanika <hanatos@gmail.com>  Sat, 26 Dec 2009 17:55:52 +0100
 
 darktable (0.3) karmic; urgency=low
 

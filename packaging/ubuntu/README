@@ -1,3 +1,4 @@
+# DEBEMAIL="johannes hanika <hanatos@gmail.com>" dch
 make dist
 cp darktable-*.tar.bz2 /tmp
 cd /tmp; tar xvjf darktable-*.tar.bz2; cd -
