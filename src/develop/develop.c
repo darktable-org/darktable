@@ -420,6 +420,8 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht)
 {
+  wd = MIN(DT_IMAGE_WINDOW_SIZE, wd);
+  ht = MIN(DT_IMAGE_WINDOW_SIZE, ht);
   if(dev->width != wd || dev->height != ht)
   {
     dev->width  = wd;

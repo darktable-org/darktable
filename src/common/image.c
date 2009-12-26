@@ -289,7 +289,8 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
 
 int dt_image_import(const int32_t film_id, const char *filename)
 {
-  // TODO: add more exclusion categories: not a regular file, etc.
+  // TODO: add more exclusion categories (by extension..?)
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
   const char *cc = filename + strlen(filename);
   for(;*cc!='.'&&cc>filename;cc--);
   if(!strcmp(cc, ".dt")) return 1;

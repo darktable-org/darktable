@@ -35,6 +35,11 @@ void cleanup(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  // if width or height > max pipeline pixels: center the view and clamp.
+  if(width  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cr, -(DT_IMAGE_WINDOW_SIZE-width) *.5f, 0.0f);
+  if(height > DT_IMAGE_WINDOW_SIZE) cairo_translate(cr, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height)*.5f);
+  width  = MIN(width,  DT_IMAGE_WINDOW_SIZE);
+  height = MIN(height, DT_IMAGE_WINDOW_SIZE);
   cairo_save(cr);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -95,6 +100,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
     cairo_set_source_rgb (cr, .2, .2, .2);
     cairo_paint(cr);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_clip(cr);
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
     cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
     cairo_translate(cr, width/2.0, height/2.0f);

@@ -1053,7 +1053,6 @@ static void scale_changed(GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-#if 1
 static float get_autoscale(dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
@@ -1091,9 +1090,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   const float scale = get_autoscale(self);
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   gtk_range_set_value(GTK_RANGE(g->scale), scale);
-  // TODO: set slider => triggers params => hist update => etc
 }
-#endif
 
 void gui_init(struct dt_iop_module_t *self)
 {
