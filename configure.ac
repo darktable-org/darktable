@@ -2,6 +2,7 @@ AC_INIT([darktable], [0.4], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_CONFIG_MACRO_DIR([m4])
+AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_CXX
 IT_PROG_INTLTOOL([0.40])
@@ -95,6 +96,41 @@ AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
    [AC_DEFINE(HAVE_LCMS, 1, [whether the LittleCMS development environment is available])
     LCMS_LIBS="-llcms"])
 AC_SUBST(LCMS_LIBS)
+
+dnl *** mac os troubles ***
+case $host_os in
+  *mingw* )
+    win32=yes
+    darwin=no
+    ;;
+  *darwin* )
+    win32=no
+    darwin=yes
+    ;;
+  * )
+    win32=no
+    darwin=no
+    ;;
+esac
+
+dnl *** Check for the Apple Carbon framework (needed for GDK_WINDOWING_QUARTZ). 
+CARBON_LIBS=
+if test $darwin = yes; then
+  carbon_ok=no
+  AC_MSG_CHECKING([for Mac OS X Carbon support])
+  AC_TRY_CPP([
+  #include <Carbon/Carbon.h>
+  #include <ApplicationServices/ApplicationServices.h>
+  #include <CoreServices/CoreServices.h>
+  ], carbon_ok=yes)
+  AC_MSG_RESULT($carbon_ok)
+  if test "x$carbon_ok" = "xyes"; then
+    CARBON_LIBS="-framework Carbon -framework Cocoa"
+  fi
+fi
+AC_SUBST(CARBON_LIBS)
+
+
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
