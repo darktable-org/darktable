@@ -1,6 +1,6 @@
 SUBDIRS=LibRaw iop views libs # gegl-operations
 include shared.am
-AM_CFLAGS+=-Werror -rdynamic
+AM_CFLAGS+=-Werror -rdynamic -Wno-deprecated-declarations
 noinst_LIBRARIES=libdarktable.a
 libdarktable_a_SOURCES=control/jobs.c gui/gtk.c gui/navigation.c gui/histogram.c develop/develop.c develop/imageop.c common/imageio.c common/darktable.c control/control.c common/film.c common/image.c common/image_cache.c common/image_compression.c gui/metadata.c develop/pixelpipe.c common/exif.cc common/imageio_jpeg.c common/imageio_png.c common/imageio_pfm.c common/imageio_rgbe.c views/view.c libs/lib.c
 bin_PROGRAMS=darktable
