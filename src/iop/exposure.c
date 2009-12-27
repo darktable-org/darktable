@@ -117,6 +117,39 @@ float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
   return p->white;
 }
 
+static void white_callback (GtkRange *range, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  p->white = exp2f(-gtk_range_get_value(range));
+  float black = gtk_range_get_value(GTK_RANGE(g->scale1));
+  if(p->white < black) gtk_range_set_value(GTK_RANGE(g->scale1), p->white);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void black_callback (GtkRange *range, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  p->black = gtk_range_get_value(range);
+  float white = exp2f(-gtk_range_get_value(GTK_RANGE(g->scale2)));
+  if(white < p->black) gtk_range_set_value(GTK_RANGE(g->scale2), - log2f(p->black));
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void gain_callback (GtkRange *range, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  p->gain = gtk_range_get_value(range);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_exposure_gui_data_t));
@@ -178,35 +211,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-void white_callback (GtkRange *range, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->white = exp2f(-gtk_range_get_value(range));
-  float black = gtk_range_get_value(GTK_RANGE(g->scale1));
-  if(p->white < black) gtk_range_set_value(GTK_RANGE(g->scale1), p->white);
-  dt_dev_add_history_item(darktable.develop, self);
-}
-
-void black_callback (GtkRange *range, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->black = gtk_range_get_value(range);
-  float white = exp2f(-gtk_range_get_value(GTK_RANGE(g->scale2)));
-  if(white < p->black) gtk_range_set_value(GTK_RANGE(g->scale2), - log2f(p->black));
-  dt_dev_add_history_item(darktable.develop, self);
-}
-
-void gain_callback (GtkRange *range, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->gain = gtk_range_get_value(range);
-  dt_dev_add_history_item(darktable.develop, self);
-}

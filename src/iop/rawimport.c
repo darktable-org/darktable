@@ -64,7 +64,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 {
 }
 
-void reimport_button_callback (GtkButton *button, gpointer user_data)
+static void reimport_button_callback (GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->dt->gui->reset) return;
@@ -90,7 +90,7 @@ void reimport_button_callback (GtkButton *button, gpointer user_data)
   dt_control_gui_queue_draw();
 }
 
-void togglebutton_callback (GtkToggleButton *toggle, gpointer user_data)
+static void togglebutton_callback (GtkToggleButton *toggle, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -114,7 +114,7 @@ void togglebutton_callback (GtkToggleButton *toggle, gpointer user_data)
   else if (toggle == GTK_TOGGLE_BUTTON(g->four_color_rgb)) p->raw_four_color_rgb = active;
 }
 
-void highlight_callback (GtkComboBox *box, gpointer user_data)
+static void highlight_callback (GtkComboBox *box, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -122,7 +122,7 @@ void highlight_callback (GtkComboBox *box, gpointer user_data)
   p->raw_highlight = gtk_combo_box_get_active(box);
 }
 
-void demosaic_callback (GtkComboBox *box, gpointer user_data)
+static void demosaic_callback (GtkComboBox *box, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -130,7 +130,7 @@ void demosaic_callback (GtkComboBox *box, gpointer user_data)
   p->raw_demosaic_method = gtk_combo_box_get_active(box);
 }
 
-void median_callback (GtkSpinButton *spin, gpointer user_data)
+static void median_callback (GtkSpinButton *spin, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -138,7 +138,7 @@ void median_callback (GtkSpinButton *spin, gpointer user_data)
   p->raw_med_passes = gtk_spin_button_get_value(spin);
 }
 
-void scale_callback (GtkRange *range, gpointer user_data)
+static void scale_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -165,7 +165,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
 
-void resetbutton_callback (GtkButton *button, gpointer user_data)
+static void resetbutton_callback (GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -184,7 +184,6 @@ void resetbutton_callback (GtkButton *button, gpointer user_data)
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_combo_box_set_active(g->highlight, p->raw_highlight);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
-  // gui_update(self);
 }
 
 void init(dt_iop_module_t *module)

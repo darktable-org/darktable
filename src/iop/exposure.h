@@ -39,8 +39,4 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
-void black_callback  (GtkRange *range, gpointer user_data);
-void white_callback (GtkRange *range, gpointer user_data);
-void gain_callback (GtkRange *range, gpointer user_data);
-
 #endif

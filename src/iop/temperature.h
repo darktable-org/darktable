@@ -55,10 +55,10 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
-void tint_callback    (GtkRange *range, gpointer user_data);
-void temp_callback    (GtkRange *range, gpointer user_data);
-void temp_in_callback (GtkRange *range, gpointer user_data);
-void rgb_callback     (GtkRange *range, gpointer user_data);
-void button_callback  (GtkButton *button, gpointer user_data);
+static void tint_callback    (GtkRange *range, gpointer user_data);
+static void temp_callback    (GtkRange *range, gpointer user_data);
+static void temp_in_callback (GtkRange *range, gpointer user_data);
+static void rgb_callback     (GtkRange *range, gpointer user_data);
+static void button_callback  (GtkButton *button, gpointer user_data);
 
 #endif

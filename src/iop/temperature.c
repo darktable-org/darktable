@@ -87,7 +87,7 @@ static void convert_k_to_rgb (float temperature, float *rgb)
 }
 
 // binary search inversion inspired by ufraw's RGB_to_Temperature:
-void convert_rgb_to_k(float rgb[3], const float temp_in, float *temp, float *tint)
+static void convert_rgb_to_k(float rgb[3], const float temp_in, float *temp, float *tint)
 {
   float tmin, tmax, tmp[3], original_temperature_rgb[3], intended_temperature_rgb[3];
   tmin = DT_IOP_LOWEST_TEMPERATURE;
@@ -333,7 +333,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-void temp_changed(dt_iop_module_t *self)
+static void temp_changed(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
@@ -359,28 +359,28 @@ void temp_changed(dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void tint_callback (GtkRange *range, gpointer user_data)
+static void tint_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
 }
 
-void temp_callback (GtkRange *range, gpointer user_data)
+static void temp_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
 }
 
-void temp_in_callback (GtkRange *range, gpointer user_data)
+static void temp_in_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
 }
 
-void gui_update_from_coeffs(dt_iop_module_t *self)
+static void gui_update_from_coeffs(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
@@ -398,7 +398,7 @@ void gui_update_from_coeffs(dt_iop_module_t *self)
   darktable.gui->reset = 0;
 }
 
-void rgb_callback (GtkRange *range, gpointer user_data)
+static void rgb_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -414,7 +414,7 @@ void rgb_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void button_callback (GtkButton *button, gpointer user_data)
+static void button_callback (GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;

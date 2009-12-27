@@ -506,7 +506,7 @@ static GtkComboBoxEntry *combo_entry_numeric_log (
 
 /* -- ufraw ptr array functions -- */
 
-int ptr_array_insert_sorted (
+static int ptr_array_insert_sorted (
     GPtrArray *array, const void *item, GCompareFunc compare)
 {
   int length = array->len;
@@ -543,7 +543,7 @@ done:
   return m;
 }
 
-int ptr_array_find_sorted (
+static int ptr_array_find_sorted (
     const GPtrArray *array, const void *item, GCompareFunc compare)
 {
   int length = array->len;
@@ -575,7 +575,7 @@ int ptr_array_find_sorted (
   return -1;
 }
 
-void ptr_array_insert_index (
+static void ptr_array_insert_index (
     GPtrArray *array, const void *item, int index)
 {
   const void **root;
