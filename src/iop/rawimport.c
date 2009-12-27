@@ -64,7 +64,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 {
 }
 
-void button_callback (GtkButton *button, gpointer user_data)
+void reimport_button_callback (GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->dt->gui->reset) return;
@@ -326,7 +326,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->med_passes), "value-changed", G_CALLBACK (median_callback), self);
   g_signal_connect (G_OBJECT (g->auto_bright_threshold), "value-changed", G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (g->denoise_threshold),     "value-changed", G_CALLBACK (scale_callback), self);
-  g_signal_connect (G_OBJECT (reload),     "clicked", G_CALLBACK (button_callback), self);
+  g_signal_connect (G_OBJECT (reload),     "clicked", G_CALLBACK (reimport_button_callback), self);
   g_signal_connect (G_OBJECT (reset),      "clicked", G_CALLBACK (resetbutton_callback), self);
 }
 
