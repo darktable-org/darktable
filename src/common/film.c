@@ -159,7 +159,7 @@ int dt_film_import(dt_film_t *film, const char *dirname)
 
   // TODO: set film->num_images for progress bar!
 
-  darktable.control->progress = .001f;
+  // darktable.control->progress = .001f;
   for(int k=0;k<MAX(1,dt_ctl_get_num_procs()-1);k++) // keep one proc for the user.
   {
     dt_job_t j;

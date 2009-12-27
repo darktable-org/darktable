@@ -222,7 +222,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  // dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
   g->grayboxmode = 0;
   g->graybox[0] = g->graybox[1] = -0.1;
@@ -301,7 +301,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(vbox1, gtk_label_new(""), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox2, button, FALSE, FALSE, 0);
 
-  gui_update(self);
+  // gui_update(self); <= crash :(
+  float temp, tint;
+  convert_rgb_to_k(p->coeffs, p->temp_in, &temp, &tint);
+  gtk_range_set_value(GTK_RANGE(g->scale_k_in), p->temp_in);
+  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]);
+  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]);
+  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]);
+  gtk_range_set_value(GTK_RANGE(g->scale_k), temp);
+  gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
 
   g_signal_connect (G_OBJECT (g->scale_tint), "value-changed",
                     G_CALLBACK (tint_callback), self);
