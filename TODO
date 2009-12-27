@@ -1,6 +1,5 @@
 0.5 release:
 - mac bitch: gegl.h and Carbon.h are not friends.
-- image import: load exif and dttags!
 - side by side comparison view
 - gconf option for maximum number of jobs?
 - tagging plugin in lighttable mode:

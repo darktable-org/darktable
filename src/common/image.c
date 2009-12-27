@@ -3,6 +3,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/exif.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include <math.h>
@@ -319,6 +320,15 @@ int dt_image_import(const int32_t film_id, const char *filename)
   dt_image_t *img = dt_image_cache_use(id, 'w');
   strncpy(img->filename, imgfname, 256);
   img->film_id = film_id;
+
+  // read dttags and exif for database queries!
+  (void) dt_exif_read(img, filename);
+  char dtfilename[512];
+  strncpy(dtfilename, filename, 512);
+  char *c = dtfilename + strlen(dtfilename);
+  for(;c>dtfilename && *c != '.';c--);
+  sprintf(c, ".dttags");
+  (void)dt_imageio_dttags_read(img, dtfilename);
 
   // insert dummy image entry in database
   rc = sqlite3_prepare_v2(darktable.db, "insert into images (id, film_id, filename) values (null, ?1, ?2)", -1, &stmt, NULL);
