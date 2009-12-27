@@ -1,3 +1,6 @@
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
 #include "control/control.h"
 #include "develop/develop.h"
 #include "common/darktable.h"
@@ -7,20 +10,18 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
+#ifdef GDK_WINDOWING_QUARTZ
+#  include <Carbon/Carbon.h>
+#  include <ApplicationServices/ApplicationServices.h>
+#  include <CoreServices/CoreServices.h>
+#endif
+
 #include <stdlib.h>
 #include <strings.h>
 #include <assert.h>
 #include <math.h>
 #include <string.h>
 #include <glib/gstdio.h>
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#endif
-#ifdef GDK_WINDOWING_QUARTZ
-#  include <Carbon/Carbon.h>
-#  include <ApplicationServices/ApplicationServices.h>
-#  include <CoreServices/CoreServices.h>
-#endif
 
 
 void dt_ctl_settings_default(dt_control_t *c)

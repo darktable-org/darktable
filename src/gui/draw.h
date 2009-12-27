@@ -16,7 +16,11 @@
 #ifdef USE_GEGL_CURVE
   #include <gegl.h>
 #else // this is a dirty hack, this way nikon_curve will not even be compiled if we don't need it:
-  #include "common/nikon_curve.c"
+  #ifdef DT_CONTROL_H
+    #include "common/nikon_curve.c"
+  #else
+    #include "common/nikon_curve.h"
+  #endif
 #endif
 #include <cairo.h>
 

@@ -1,3 +1,5 @@
+#ifndef DT_NIKON_CURVE_C
+#define DT_NIKON_CURVE_C
 /***************************************************
  nikon_curve.c - read Nikon NTC/NCV files
 
@@ -2182,3 +2184,4 @@ int main(int argc, char* argv[])
 }
 #endif
 #undef g_fopen
+#endif
