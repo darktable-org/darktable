@@ -240,7 +240,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
   if(dt_imageio_open_preview(img, filename))
   {
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
-    dt_image_cleanup(img);
+    // dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
     // dt_image_cache_release(img, 'w');
     int rc;
     sqlite3_stmt *stmt;

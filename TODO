@@ -27,6 +27,7 @@
 - scroll to opened expander in darkroom mode.
 
 bugs:
+- possible to only compile dt with visible symbols, not plugins?
 - bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit
