@@ -120,6 +120,7 @@ static void highlight_callback (GtkComboBox *box, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   p->raw_highlight = gtk_combo_box_get_active(box);
+  if(p->raw_highlight == 3) p->raw_highlight = 5;
 }
 
 static void demosaic_callback (GtkComboBox *box, gpointer user_data)
@@ -161,7 +162,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_bright), !p->raw_no_auto_bright);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
-  gtk_combo_box_set_active(g->highlight, p->raw_highlight);
+  gtk_combo_box_set_active(g->highlight, p->raw_highlight < 3 ? p->raw_highlight : 3);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
 
@@ -182,7 +183,7 @@ static void resetbutton_callback (GtkButton *button, gpointer user_data)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_bright), !p->raw_no_auto_bright);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
-  gtk_combo_box_set_active(g->highlight, p->raw_highlight);
+  gtk_combo_box_set_active(g->highlight, p->raw_highlight < 3 ? p->raw_highlight : 3);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
 
@@ -312,7 +313,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_bright), !p->raw_no_auto_bright);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
-  gtk_combo_box_set_active(g->highlight, p->raw_highlight);
+  gtk_combo_box_set_active(g->highlight, p->raw_highlight < 3 ? p->raw_highlight : 3);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 
   g_signal_connect (G_OBJECT (g->wb_auto),        "toggled", G_CALLBACK (togglebutton_callback), self);
