@@ -1,4 +1,9 @@
 0.5 release:
+- auto center if new film is loaded
+  - or: presets for every film in separate db.
+- library management in develop mode?
+- film strip in develop mode to switch to next image.
+- plugin focus (doubleclick header?)
 - mac bitch: gegl.h and Carbon.h are not friends.
 - side by side comparison view
 - gconf option for maximum number of jobs?

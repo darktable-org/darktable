@@ -176,7 +176,8 @@ void enter(dt_view_t *self)
 
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
-  dt_dev_load_image(dev, dt_image_cache_use(selected, 'r'));
+  // dt_dev_load_image(dev, dt_image_cache_use(selected, 'r'));
+  dt_dev_load_image(dev, dt_image_cache_get(selected, 'r'));
   // get top level vbox containing all expanders, plugins_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GtkTable *module_list = GTK_TABLE(glade_xml_get_widget (darktable.gui->main_window, "module_list"));

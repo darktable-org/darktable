@@ -345,6 +345,21 @@ int dt_image_import(const int32_t film_id, const char *filename)
   dt_image_cache_flush(img);
 
   g_free(imgfname);
+
+  if(img->film_id == 1)
+  { // single images will probably want to load immediately.
+    // img = dt_image_cache_use(id, 'r');
+    (void)dt_image_reimport(img, filename);
+    // dt_image_cache_release(img, 'r');
+    dt_image_cache_release(img, 'w');
+    return id;
+  }
+  else
+  {
+    dt_image_cache_release(img, 'w');
+    return id;
+  }
+
 #if 0
   dt_image_t *img = dt_image_cache_use(id, 'w');
   strncpy(img->filename, imgfname, 256);
@@ -393,8 +408,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
   dt_image_release(img, DT_IMAGE_FULL, 'r');
 #endif
 
-  dt_image_cache_release(img, 'w');
-  return id;
 }
 
 int dt_image_update_mipmaps(dt_image_t *img)
