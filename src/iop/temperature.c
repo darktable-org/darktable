@@ -54,7 +54,7 @@ static const float dt_iop_temperature_rgb_r55[][12] =
 
 const char *name()
 {
-  return _("temperature");
+  return C_("modulename", "temperature");
 }
 
 static void convert_k_to_rgb (float temperature, float *rgb)
@@ -233,7 +233,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
   GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
   g->label1 = GTK_LABEL(gtk_label_new(_("tint")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("temperature")));
+  g->label2 = GTK_LABEL(gtk_label_new(C_("slider", "temperature")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   g->scale_tint = GTK_HSCALE(gtk_hscale_new_with_range(0.1, 3.0, .001));

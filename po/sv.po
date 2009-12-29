@@ -1,0 +1,902 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: DarkTable 0.4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-12-28 23:10+0100\n"
+"PO-Revision-Date: 2009-12-28 22:38+0100\n"
+"Last-Translator: \n"
+"Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-Country: RUSSIAN FEDERATION\n"
+
+#: ../darktable.glade.h:1
+msgid "-"
+msgstr "-"
+
+#: ../darktable.glade.h:2
+msgid "<span color=\"#7f7f7f\"><big><b><i>darktable</i></b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b><i>darktable</i></b></big></span>"
+
+#: ../darktable.glade.h:3
+msgid "<span color=\"#7f7f7f\"><big><b><i>lighttable mode</i></b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b><i>Ljusbordsläge</i></b></big></span>"
+
+#: ../darktable.glade.h:4
+msgid ""
+"all\n"
+"no star\n"
+"1 star\n"
+"2 star\n"
+"3 star\n"
+"4 star"
+msgstr ""
+"Alla\n"
+"Inga stjärnor\n"
+"1 stjärna\n"
+"2 stjärnor\n"
+"3 stjärnor\n"
+"4 stjärnor"
+
+#: ../darktable.glade.h:10
+msgid "all selected images"
+msgstr "Alla markerade bilder"
+
+#: ../darktable.glade.h:11
+msgid "aperture"
+msgstr "Bländare"
+
+#: ../darktable.glade.h:12
+msgid "button"
+msgstr "knapp"
+
+#: ../darktable.glade.h:13
+msgid "datetime"
+msgstr "Tidsstämpel"
+
+#: ../darktable.glade.h:14 ../src/iop/exposure.c:18 ../src/iop/exposure.c:170
+#: ../src/iop/rawimport.c:258
+msgid "exposure"
+msgstr "Slutartid"
+
+#: ../darktable.glade.h:15
+msgid "f-length"
+msgstr "Brännvidd"
+
+#: ../darktable.glade.h:16
+msgid "filename"
+msgstr "Filnamn"
+
+#: ../darktable.glade.h:17
+msgid ""
+"filename\n"
+"time\n"
+"rating\n"
+"id"
+msgstr ""
+"Filnamn\n"
+"Tidsstämpel\n"
+"Stjärnor\n"
+"ID"
+
+#: ../darktable.glade.h:21
+msgid "go"
+msgstr "starta"
+
+#: ../darktable.glade.h:22
+msgid "height"
+msgstr "Höjd"
+
+#: ../darktable.glade.h:23
+msgid "histogram"
+msgstr "Histogram"
+
+#: ../darktable.glade.h:24
+msgid "history"
+msgstr "Historik"
+
+#: ../darktable.glade.h:25
+msgid "images sorted by"
+msgstr "Sortera bilder på"
+
+#: ../darktable.glade.h:26
+msgid "import film roll"
+msgstr "Importera filmrulle"
+
+#: ../darktable.glade.h:27
+msgid "import single image"
+msgstr "Importera en bild"
+
+#: ../darktable.glade.h:28
+msgid "iso"
+msgstr "ISO"
+
+#: ../darktable.glade.h:29 ../src/iop/lens.c:1136
+msgid "lens"
+msgstr "Objektiv"
+
+#: ../darktable.glade.h:30
+msgid "library"
+msgstr "Bibliotek"
+
+#: ../darktable.glade.h:31
+msgid "list"
+msgstr "lista"
+
+#: ../darktable.glade.h:32
+msgid "maker"
+msgstr "Tillverkare"
+
+#: ../darktable.glade.h:33
+msgid "metadata"
+msgstr "Metadata"
+
+#: ../darktable.glade.h:34
+msgid "model"
+msgstr "Modell"
+
+#: ../darktable.glade.h:35
+msgid "more plugins"
+msgstr "Fler plug-ins"
+
+#: ../darktable.glade.h:36
+msgid "navigation"
+msgstr "Navigera"
+
+#: ../darktable.glade.h:37
+msgid "original"
+msgstr "Orginal"
+
+#: ../darktable.glade.h:38
+msgid "switch to darkroom mode"
+msgstr "Byt till mörkerrumsläge"
+
+#: ../darktable.glade.h:39
+msgid "togglebutton"
+msgstr "Knappval"
+
+#: ../darktable.glade.h:40
+msgid "width"
+msgstr "Bredd"
+
+#: ../darktable.glade.h:41
+msgid ""
+"write a history file for\n"
+"physically delete"
+msgstr ""
+"Skapa en historikfil för\n"
+"borttagna"
+
+#: ../darktable.schemas.in.h:1
+msgid "always ask the user before any image file is deleted."
+msgstr "Fråga alltid användaren innan en bild raderas"
+
+#: ../darktable.schemas.in.h:2
+msgid "ask before deleting images"
+msgstr "Fråga innan en bild raderas"
+
+#: ../darktable.schemas.in.h:3
+msgid "downsample the preview pixels"
+msgstr "Nedsampla förhandsvisade pixlar"
+
+#: ../darktable.schemas.in.h:4
+msgid "height of the exported image"
+msgstr "Höjd av exporterad bild"
+
+#: ../darktable.schemas.in.h:5
+msgid "height of the exported image, or 0 if no scaling should be done."
+msgstr "Höjd av exporterad bild, eller 0 för att utesluta skalning"
+
+#: ../darktable.schemas.in.h:6
+msgid ""
+"if this number is smaller than the darktable internal version number, the "
+"values here will be syched with the new defaults."
+msgstr ""
+"Om detta nummer är mindre än darktable interna versionsnummer kommer desa "
+"värden att synkroniseras med nya standardvärden"
+
+#: ../darktable.schemas.in.h:7
+msgid ""
+"these files can later be re-imported into a different database, preserving "
+"your changes to the image."
+msgstr ""
+"Dessa filer kan senare importeras i en annan databas, utan att skapa "
+"ändringa i orginalbilden"
+
+#: ../darktable.schemas.in.h:8
+msgid ""
+"this value smaller than 1.0 downsamples the preview pixels for faster "
+"feedback."
+msgstr ""
+"Om detta värde är mindre än 1.0 nedsamplingar så kommer förhandsvisningen "
+"att vara snabbare."
+
+#: ../darktable.schemas.in.h:9
+msgid "version of these dt-gconf entries"
+msgstr "Version av DT och GConf"
+
+#: ../darktable.schemas.in.h:10
+msgid "width of the exported image"
+msgstr "Bredd av den exporterade bilden"
+
+#: ../darktable.schemas.in.h:11
+msgid "width of the exported image, or 0 if no scaling should be done."
+msgstr "Bredd av den exporterade bilden, eller 0 för att utesluta skalning."
+
+#: ../darktable.schemas.in.h:12
+msgid "write a redundant file for each image"
+msgstr "Skapa en kopia av varje orginal"
+
+#: ../src/control/control.c:838
+#, c-format
+msgid "switch to %s mode"
+msgstr "Byt till %s läge"
+
+#: ../src/control/control.c:841
+#, c-format
+msgid "<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b><i>%s läge</i></b></big></span>"
+
+#: ../src/control/control.c:1163
+msgid "0 - original"
+msgstr "0 - Orginal"
+
+#: ../src/control/control.c:1210
+#, c-format
+msgid "single images"
+msgstr "Enstaka bilder"
+
+#: ../src/develop/develop.c:784
+msgid "on"
+msgstr "På"
+
+#: ../src/develop/develop.c:784
+msgid "off"
+msgstr "Av"
+
+#: ../src/develop/imageop.c:159 ../src/develop/imageop.c:222
+#, c-format
+msgid "%s is switched on"
+msgstr "%s är påslagen"
+
+#: ../src/develop/imageop.c:159 ../src/develop/imageop.c:222
+#, c-format
+msgid "%s is switched off"
+msgstr "%s är avslagen"
+
+#: ../src/develop/imageop.c:238
+msgid "reset parameters"
+msgstr "Återställ parametrar"
+
+#: ../src/libs/copy_history.c:22
+msgid "copy history stack"
+msgstr "Kopiera historiken"
+
+#: ../src/libs/copy_history.c:94
+msgid "copy"
+msgstr "Kopiera"
+
+#: ../src/libs/copy_history.c:95
+msgid ""
+"copy history stack of\n"
+"first selected image"
+msgstr ""
+"Kopiera historiken av\n"
+"den första markerade bilden"
+
+#: ../src/libs/copy_history.c:96
+msgid "paste"
+msgstr "Klistra in"
+
+#: ../src/libs/copy_history.c:97
+msgid ""
+"paste history stack to\n"
+"all selected images"
+msgstr ""
+"Klistra in historiken till\n"
+"alla markerade bilder"
+
+#: ../src/libs/export.c:22
+msgid "export selected"
+msgstr "Exportera markerade"
+
+#: ../src/libs/export.c:82
+msgid ""
+"maximum output width\n"
+"set to 0 for no scaling"
+msgstr ""
+"Största bredden,\n"
+"ange 0 för att utesluta skalning"
+
+#: ../src/libs/export.c:84
+msgid ""
+"maximum output height\n"
+"set to 0 for no scaling"
+msgstr ""
+"Största höjden,\n"
+"ange 0 för att utesluta skalning"
+
+#: ../src/libs/export.c:85
+msgid "maximum size"
+msgstr "Största storlek:"
+
+#: ../src/libs/export.c:89
+msgid "x"
+msgstr "×"
+
+#: ../src/libs/export.c:98
+msgid "quality"
+msgstr "Kvalitet"
+
+#: ../src/libs/export.c:104
+msgid "8-bit jpg"
+msgstr "JPEG (8-Bit)"
+
+#: ../src/libs/export.c:105
+msgid "8-bit png"
+msgstr "PNG (8-Bit)"
+
+#: ../src/libs/export.c:106
+msgid "16-bit ppm"
+msgstr "PPM (16-Bit)"
+
+#: ../src/libs/export.c:107
+msgid "float pfm"
+msgstr "PFM (Float) "
+
+#: ../src/libs/export.c:108
+msgid "export"
+msgstr "Exportera"
+
+#: ../src/iop/clipping.c:68
+msgid "clipping"
+msgstr "Beskära"
+
+#: ../src/iop/clipping.c:347
+msgid "crop x"
+msgstr "X:"
+
+#: ../src/iop/clipping.c:348
+msgid "crop y"
+msgstr "Y:"
+
+#: ../src/iop/clipping.c:349
+msgid "crop w"
+msgstr "b:"
+
+#: ../src/iop/clipping.c:350
+msgid "crop h"
+msgstr "h:"
+
+#: ../src/iop/clipping.c:351
+msgid "angle"
+msgstr "Vinkel"
+
+#: ../src/iop/colorcorrection.c:25
+msgid "color correction"
+msgstr "Färgkorregering"
+
+#: ../src/iop/colorcorrection.c:158 ../src/iop/colorin.c:241
+#: ../src/iop/colorout.c:323 ../src/iop/colorout.c:328
+msgid "saturation"
+msgstr "Mättning"
+
+#: ../src/iop/colorin.c:16
+msgid "input color profile"
+msgstr "Ingående färgprofil"
+
+#: ../src/iop/colorin.c:232
+msgid "intent"
+msgstr "Avsikt"
+
+#: ../src/iop/colorin.c:233
+msgid "profile"
+msgstr "Profil"
+
+#: ../src/iop/colorin.c:239 ../src/iop/colorout.c:321
+#: ../src/iop/colorout.c:326
+msgid "perceptual"
+msgstr "perceptual"
+
+#: ../src/iop/colorin.c:240 ../src/iop/colorout.c:322
+#: ../src/iop/colorout.c:327
+msgid "relative colorimetric"
+msgstr "Relativ färgmetri"
+
+#: ../src/iop/colorin.c:242 ../src/iop/colorout.c:324
+#: ../src/iop/colorout.c:329
+msgid "absolute colorimetric"
+msgstr "Absolut färgmetri"
+
+#: ../src/iop/colorin.c:257 ../src/iop/colorout.c:358
+msgid "rendering intent"
+msgstr "Renderar avsikt"
+
+#: ../src/iop/colorin.c:258
+#, c-format
+msgid "icc profiles in %s/color/in"
+msgstr "ICC profil i %s/color/in"
+
+#: ../src/iop/colorout.c:16
+msgid "output color profile"
+msgstr "Utgående färgprofil"
+
+#: ../src/iop/colorout.c:308
+msgid "output intent"
+msgstr "Utgående avsikt"
+
+#: ../src/iop/colorout.c:309
+msgid "output profile"
+msgstr "Utgående profil"
+
+#: ../src/iop/colorout.c:310
+msgid "display intent"
+msgstr "Visa avsikt"
+
+#: ../src/iop/colorout.c:311
+msgid "display profile"
+msgstr "Visa profil"
+
+#: ../src/iop/colorout.c:338 ../src/iop/colorout.c:339
+msgid "X profile"
+msgstr "Profil X"
+
+#: ../src/iop/colorout.c:359
+#, c-format
+msgid "icc profiles in %s/color/out"
+msgstr "ICC profil i %s/color/out"
+
+#: ../src/iop/colorout.c:361
+#, c-format
+msgid "display icc profiles in %s/color/out"
+msgstr "Visa ICC Profil i %s/color/out"
+
+#: ../src/iop/equalizer.c:25
+msgid "equalizer"
+msgstr "Equalizer"
+
+#: ../src/iop/equalizer.c:277
+msgid "luma"
+msgstr "luma"
+
+#: ../src/iop/equalizer.c:278
+msgid "chroma"
+msgstr "chroma"
+
+#: ../src/iop/equalizer.c:294 ../src/iop/tonecurve.c:195
+msgid "presets"
+msgstr "Fördefinerade"
+
+#: ../src/iop/equalizer.c:297 ../src/iop/sharpen.c:62
+msgid "sharpen"
+msgstr "Skärpa"
+
+#: ../src/iop/equalizer.c:298
+msgid "sharpen more"
+msgstr "Mer skärpa"
+
+#: ../src/iop/equalizer.c:299 ../src/iop/rawimport.c:250
+msgid "denoise"
+msgstr "brusreducering"
+
+#: ../src/iop/exposure.c:169
+msgid "black"
+msgstr "Svärta"
+
+#: ../src/iop/exposure.c:171
+msgid "gain"
+msgstr "gain"
+
+#: ../src/iop/exposure.c:179
+msgid "adjust the black level"
+msgstr "Ljustera svärtan"
+
+#: ../src/iop/exposure.c:181
+msgid "adjust the white level"
+msgstr "Ljustera vitnivån"
+
+#: ../src/iop/exposure.c:183
+msgid ""
+"leave black and white,\n"
+"but compress brighter\n"
+"values (non-linear)"
+msgstr ""
+"Lämna svart och vit,\n"
+"men komprimera ljusare\n"
+"värden (icke-linjärt)"
+
+#: ../src/iop/gamma.c:18 ../src/iop/gamma.c:133
+msgid "gamma"
+msgstr "Gamma"
+
+#: ../src/iop/gamma.c:132 ../src/iop/rawimport.c:288
+#: ../src/iop/tonecurve.c:198
+msgid "linear"
+msgstr "Linjär"
+
+#: ../src/iop/lens.c:23
+msgid "lens distortions"
+msgstr "Linsdistortioner"
+
+#: ../src/iop/lens.c:629
+#, c-format
+msgid ""
+"maker:\t\t%s\n"
+"model:\t\t%s%s\n"
+"mount:\t\t%s\n"
+"crop factor:\t%.1f"
+msgstr ""
+"Tillverkare:\t\t%s\n"
+"Modell:\t\t%s%s\n"
+"Montering:\t\t%s\n"
+"Beskärningsfaktor:\t%.1f"
+
+#: ../src/iop/lens.c:869
+#, c-format
+msgid ""
+"maker:\t\t%s\n"
+"model:\t\t%s\n"
+"focal range:\t%s\n"
+"aperture:\t\t%s\n"
+"crop factor:\t%.1f\n"
+"type:\t\t%s\n"
+"mounts:\t\t%s"
+msgstr ""
+"Tillverkare:\t\t%s\n"
+"Modell:\t\t\t\t%s\n"
+"Brännvidd:\t%s\n"
+"Bländare:\t\t\t%s\n"
+"Beskärningsfaktor:\t\t%.1f\n"
+"Typ:\t\t\t\t%s\n"
+"Monteringar:\t\t\t%s"
+
+#: ../src/iop/lens.c:899
+msgid "mm"
+msgstr "mm"
+
+#: ../src/iop/lens.c:899
+msgid "focal length (mm)"
+msgstr "Brännvidd (mm)"
+
+#: ../src/iop/lens.c:909
+msgid "f/"
+msgstr "f/"
+
+#: ../src/iop/lens.c:909
+msgid "f-number (aperture)"
+msgstr "Bländartal"
+
+#: ../src/iop/lens.c:915
+msgid "d"
+msgstr "d"
+
+#: ../src/iop/lens.c:915
+msgid "distance to subject"
+msgstr "Distans till motivet"
+
+#: ../src/iop/lens.c:1123
+msgid "cam"
+msgstr "Kamera"
+
+#: ../src/iop/lens.c:1124
+msgid ""
+"search for camera using a pattern\n"
+"format: [maker, ][model]"
+msgstr ""
+"Sök efter kamera, formatering:\n"
+"[tillverkare, ][modell]"
+
+#: ../src/iop/lens.c:1138
+msgid ""
+"search for lens using a pattern\n"
+"format: [maker, ][model]"
+msgstr ""
+"Sök efter objektiv, formatering:\n"
+"[tillverkare, ][modell]"
+
+#: ../src/iop/lens.c:1173
+msgid "target geometry"
+msgstr "Målgeometri"
+
+#: ../src/iop/lens.c:1174
+msgid "rectilinear"
+msgstr "Rätlinjig"
+
+#: ../src/iop/lens.c:1175
+msgid "fisheye"
+msgstr "Fisköga"
+
+#: ../src/iop/lens.c:1176
+msgid "panoramic"
+msgstr "Panorama"
+
+#: ../src/iop/lens.c:1177
+msgid "equirectangular"
+msgstr "equirectangular"
+
+#: ../src/iop/lens.c:1183
+msgid "geometry"
+msgstr "Geometrisk"
+
+#: ../src/iop/lens.c:1195
+msgid "auto"
+msgstr "Automatisk"
+
+#. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+#: ../src/iop/lens.c:1202
+msgid "scale"
+msgstr "Skala"
+
+#. reverse direction
+#: ../src/iop/lens.c:1207
+msgid "reverse"
+msgstr "Omvänd"
+
+#: ../src/iop/lens.c:1208
+msgid "apply distortions instead of correcting them"
+msgstr "Skapa distortion istället för att fixa dem"
+
+#: ../src/iop/monochrome.c:49
+msgid "monochrome"
+msgstr "Svart-Vit"
+
+#: ../src/iop/monochrome.c:275
+msgid ""
+"drag and scroll\n"
+"to adjust the virtual\n"
+"color filter"
+msgstr ""
+"Drag och scrolla med musen\n"
+"för att tjustera\n"
+"färgfiltret"
+
+#: ../src/iop/monochrome.c:297
+msgid "filter size"
+msgstr "Filterstorlek"
+
+#: ../src/iop/rawimport.c:45
+msgid "raw import"
+msgstr "Importera RAW"
+
+#: ../src/iop/rawimport.c:230
+msgid ""
+"warning: these are cryptic low level\n"
+"settings! you probably don't have to\n"
+"change them."
+msgstr ""
+"Varning: dessa inställningar är avancerade.\n"
+"Du behöver förmodligen inte ändra dem."
+
+#: ../src/iop/rawimport.c:234
+msgid "auto white balance"
+msgstr "Automatisk vitbalans"
+
+#: ../src/iop/rawimport.c:236
+msgid "camera white balance"
+msgstr "Kamerans vitbalans"
+
+#: ../src/iop/rawimport.c:238
+msgid "auto exposure"
+msgstr "Automatisk exponering"
+
+#: ../src/iop/rawimport.c:240
+msgid "use color matrix"
+msgstr "Använd färgmatris"
+
+#: ../src/iop/rawimport.c:262
+msgid ""
+"percentage of bright values\n"
+"to be clipped out"
+msgstr ""
+"Procentdel av ljusa värden\n"
+"som ska klippas bort."
+
+#: ../src/iop/rawimport.c:267
+msgid "median passes"
+msgstr "median passes"
+
+#: ../src/iop/rawimport.c:271
+msgid ""
+"number of 3x3 median filter passes\n"
+"on R-G and B-G after demosaicing"
+msgstr ""
+"Antal 3x3 median filter passes\n"
+"på Röd-Grön och Blå-Grön efter demosaicing."
+
+#: ../src/iop/rawimport.c:274
+msgid "highlight handling"
+msgstr "Bhandla högdagrar"
+
+#: ../src/iop/rawimport.c:278
+msgid "clip"
+msgstr "Beskära"
+
+#: ../src/iop/rawimport.c:279
+msgid "unclip"
+msgstr "Återställ beskärning"
+
+#: ../src/iop/rawimport.c:280
+msgid "blend"
+msgstr "Blanda"
+
+#: ../src/iop/rawimport.c:281
+msgid "rebuild"
+msgstr "Återskapa"
+
+#: ../src/iop/rawimport.c:284
+msgid "demosaic method"
+msgstr "Demosaic metod"
+
+#: ../src/iop/rawimport.c:289
+msgid "VNG"
+msgstr "VNG"
+
+#: ../src/iop/rawimport.c:290
+msgid "PPG"
+msgstr "PPG"
+
+#: ../src/iop/rawimport.c:291
+msgid "AHD"
+msgstr "AHD"
+
+#: ../src/iop/rawimport.c:294
+msgid "four color rgb"
+msgstr "Fyrfärgers RGB"
+
+#: ../src/iop/rawimport.c:295
+msgid ""
+"demosaic treating RGGB as\n"
+"four distinct colors,\n"
+"use if you get mazing artifacts"
+msgstr ""
+"Demosaic hanterar RGGB som\n"
+"fyra distinkta färger."
+
+#: ../src/iop/rawimport.c:299
+msgid "reset"
+msgstr "Återställ"
+
+#: ../src/iop/rawimport.c:300
+msgid ""
+"reset raw loading parameters\n"
+"to darktable's defaults"
+msgstr ""
+"Återställ avancerade RAW instllningar\n"
+"till standardvärden."
+
+#: ../src/iop/rawimport.c:302
+msgid "re-import"
+msgstr "Återimportera"
+
+#: ../src/iop/rawimport.c:303
+msgid "trigger re-import of the raw image"
+msgstr "Utlös återimportering av RAW bilder"
+
+#: ../src/iop/sharpen.c:241
+msgid "radius"
+msgstr "Radie"
+
+#: ../src/iop/sharpen.c:242
+msgid "amount"
+msgstr "Mängd"
+
+#: ../src/iop/sharpen.c:243
+msgid "threshold"
+msgstr "Tröskel"
+
+#: ../src/iop/temperature.c:57 ../src/iop/temperature.c:236
+msgid "temperature"
+msgstr "Temperatur"
+
+#: ../src/iop/temperature.c:235
+msgid "tint"
+msgstr "Ton"
+
+#: ../src/iop/temperature.c:263
+msgid "temperature in"
+msgstr "Temperatur in"
+
+#: ../src/iop/temperature.c:278
+msgid "red"
+msgstr "Röd"
+
+#: ../src/iop/temperature.c:282
+msgid "green"
+msgstr "Grön"
+
+#: ../src/iop/temperature.c:286
+msgid "blue"
+msgstr "Blå"
+
+#: ../src/iop/temperature.c:299
+msgid "gray box"
+msgstr "Grå box"
+
+#: ../src/iop/temperature.c:300
+msgid ""
+"select a gray box\n"
+"in the image"
+msgstr ""
+"Markera en grå box\n"
+"i bilden"
+
+#: ../src/iop/tonecurve.c:23
+msgid "tonecurve"
+msgstr "Nyanskurva"
+
+#: ../src/iop/tonecurve.c:199
+msgid "med contrast"
+msgstr "Medel kontrast"
+
+#: ../src/iop/tonecurve.c:200
+msgid "high contrast"
+msgstr "Hög kontrast"
+
+#: ../src/gui/gtk.c:136
+msgid "import film"
+msgstr "Importera filmrulle"
+
+#: ../src/gui/gtk.c:160
+msgid "import image"
+msgstr "Importera bild"
+
+#: ../src/gui/gtk.c:184
+#, c-format
+msgid "error loading file '%s'"
+msgstr "Fel uppstod vid inläsning av fil '%s'"
+
+#: ../src/gui/histogram.c:14
+msgid ""
+"drag to change exposure,\n"
+"doubleclick resets"
+msgstr ""
+"Dra musen för att ändra exponeringen,\n"
+"dubbelklicka för att återställa."
+
+#: ../src/views/darkroom.c:18
+msgid "darkroom"
+msgstr "Mörkerrum"
+
+#: ../src/views/darkroom.c:144
+#, c-format
+msgid "hide %s"
+msgstr "Göm %s"
+
+#: ../src/views/darkroom.c:151
+#, c-format
+msgid "show %s"
+msgstr "Visa %s"
+
+#: ../src/views/lighttable.c:57
+msgid "lighttable"
+msgstr "Ljusbord"
+
+#~ msgid "original temperature"
+#~ msgstr "Исходная"
+
+#~ msgid "intended temperature"
+#~ msgstr "Конечная"
+
+#~ msgid ""
+#~ "8-bit jpg\n"
+#~ "8-bit png\n"
+#~ "16-bit ppm\n"
+#~ "float pfm"
+#~ msgstr ""
+#~ "8-разрядный JPEG\n"
+#~ "8-разрядный PNG\n"
+#~ "16-разрядный PPM\n"
+#~ "PFM с плавающей точкой"
+
+#~ msgid ""
+#~ "do you really want to physically delete all selected images from disk?"
+#~ msgstr ""
+#~ "Вы действительно хотите физически удалить все выбранные снимки с диска?"
+
+#~ msgid "delete images?"
+#~ msgstr "Удалить снимки?"
+
+#~ msgid "mode"
+#~ msgstr "Режим"

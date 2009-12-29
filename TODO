@@ -1,5 +1,6 @@
 0.5 release:
-- auto center if new film is loaded
+- crop/rotate angle == 0 bypass
+- auto center/filter to 1 star/filename if new film is loaded
   - or: presets for every film in separate db.
 - library management in develop mode?
 - film strip in develop mode to switch to next image.

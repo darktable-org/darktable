@@ -72,6 +72,7 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
       for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
       break;
   }
+  self->enabled = 1;
   dt_dev_add_history_item(darktable.develop, self);
   gtk_widget_queue_draw(self->widget);
 }

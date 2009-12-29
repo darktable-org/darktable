@@ -70,6 +70,8 @@
         <li>pull the darktable icon into your applications folder</li>
         <li>it worked on a few macs (100%) so far, good luck :)</li>
         <li>thx to u3dreal for going through all the pain for this mac bundle!</li>
+        <li>problems with gconf? try:<br/>
+        sudo launchctl load -w /Library/LaunchAgents/org.freedesktop.dbus-session.plist</li>
       </ul>
       </div>
     	<div class="listtext">

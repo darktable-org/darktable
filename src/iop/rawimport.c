@@ -285,7 +285,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->demosaic_method = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->demosaic_method, _("linear"));
+  gtk_combo_box_append_text(g->demosaic_method, C_("demosaic", "linear"));
   gtk_combo_box_append_text(g->demosaic_method, _("VNG"));
   gtk_combo_box_append_text(g->demosaic_method, _("PPG"));
   gtk_combo_box_append_text(g->demosaic_method, _("AHD"));

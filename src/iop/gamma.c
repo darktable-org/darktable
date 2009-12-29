@@ -15,7 +15,7 @@
 
 const char *name()
 {
-  return _("gamma");
+  return C_("modulename", "gamma");
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -129,8 +129,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("linear")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("gamma")));
+  g->label1 = GTK_LABEL(gtk_label_new(C_("gammaslider", "linear")));
+  g->label2 = GTK_LABEL(gtk_label_new(C_("gammaslider", "gamma")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
