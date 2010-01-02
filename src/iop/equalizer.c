@@ -235,7 +235,7 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
       }
       break;
   }
-  self->enabled = 1;
+  if(self->off) gtk_toggle_button_set_active(self->off, 1);
   dt_dev_add_history_item(darktable.develop, self);
   gtk_widget_queue_draw(self->widget);
 }

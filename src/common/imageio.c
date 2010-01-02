@@ -1111,7 +1111,7 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
   const int processed_width  = scale*pipe.processed_width;
   const int processed_height = scale*pipe.processed_height;
-  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
+  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
   int status = 1;
@@ -1119,10 +1119,13 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   if(f)
   {
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", processed_width, processed_height);
-    int cnt = fwrite(buf, sizeof(float)*3, processed_width*processed_height, f);
+    for(int j=processed_height-1;j>=0;j--)
+    {
+      int cnt = fwrite(buf + 3*processed_width*j, sizeof(float)*3, processed_width, f);
+      if(cnt != processed_width) status = 1;
+      else status = 0;
+    }
     fclose(f);
-    if(cnt != processed_width*processed_height) status = 1;
-    else status = 0;
   }
 
   dt_dev_pixelpipe_cleanup(&pipe);
