@@ -498,7 +498,7 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   pthread_mutex_unlock(&s->queue_mutex);
   if(!j) return -1;
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job_res %d] ", (int)pthread_self());
+  dt_print(DT_DEBUG_CONTROL, "[run_job_res %d] ", (size_t)pthread_self());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
 
