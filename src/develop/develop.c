@@ -747,6 +747,8 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
   if(*zoom_x > .5 - boxw/2) *zoom_x = .5 - boxw/2;
   if(*zoom_y < boxh/2 - .5) *zoom_y = boxh/2 - .5;
   if(*zoom_y > .5 - boxh/2) *zoom_y = .5 - boxh/2;
+  if(boxw > 1.0) *zoom_x = 0.f;
+  if(boxh > 1.0) *zoom_y = 0.f;
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;

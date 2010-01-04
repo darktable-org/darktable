@@ -95,10 +95,12 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->ciw = cropscale * (d->cw-cx) * sw*s;
   d->cih = cropscale * (d->ch-cy) * sh*s;
   int clipx = d->cix, clipy = d->ciy, clipw = d->ciw, cliph = d->cih;
-  if(roi_out->x < clipx) roi_out->x = clipx;
-  if(roi_out->width > clipw) roi_out->width = clipw;
-  if(roi_out->y < clipy) roi_out->y = clipy;
+  if(roi_out->x      < clipx) roi_out->x      = clipx;
+  if(roi_out->width  > clipw) roi_out->width  = clipw;
+  if(roi_out->y      < clipy) roi_out->y      = clipy;
   if(roi_out->height > cliph) roi_out->height = cliph;
+  if(roi_out->width  < 1) roi_out->width  = 1;
+  if(roi_out->height < 1) roi_out->height = 1;
 
   rt[1] = - rt[1];
   rt[2] = - rt[2];
