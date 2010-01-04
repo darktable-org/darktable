@@ -2,15 +2,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-28 23:10+0100\n"
-"PO-Revision-Date: 2009-12-28 22:38+0100\n"
-"Last-Translator: \n"
-"Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
+"POT-Creation-Date: 2010-01-02 23:00+0100\n"
+"PO-Revision-Date: 2010-01-02 23:03+0100\n"
+"Last-Translator: Henrik Andersson\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: Russian\n"
-"X-Poedit-Country: RUSSIAN FEDERATION\n"
+"X-Poedit-Language: Swedish\n"
+"X-Poedit-Country: SWEDEN\n"
 
 #: ../darktable.glade.h:1
 msgid "-"
@@ -56,7 +56,9 @@ msgstr "knapp"
 msgid "datetime"
 msgstr "Tidsstämpel"
 
-#: ../darktable.glade.h:14 ../src/iop/exposure.c:18 ../src/iop/exposure.c:170
+#: ../darktable.glade.h:14
+#: ../src/iop/exposure.c:18
+#: ../src/iop/exposure.c:170
 #: ../src/iop/rawimport.c:258
 msgid "exposure"
 msgstr "Slutartid"
@@ -113,7 +115,8 @@ msgstr "Importera en bild"
 msgid "iso"
 msgstr "ISO"
 
-#: ../darktable.glade.h:29 ../src/iop/lens.c:1136
+#: ../darktable.glade.h:29
+#: ../src/iop/lens.c:1136
 msgid "lens"
 msgstr "Objektiv"
 
@@ -190,28 +193,16 @@ msgid "height of the exported image, or 0 if no scaling should be done."
 msgstr "Höjd av exporterad bild, eller 0 för att utesluta skalning"
 
 #: ../darktable.schemas.in.h:6
-msgid ""
-"if this number is smaller than the darktable internal version number, the "
-"values here will be syched with the new defaults."
-msgstr ""
-"Om detta nummer är mindre än darktable interna versionsnummer kommer desa "
-"värden att synkroniseras med nya standardvärden"
+msgid "if this number is smaller than the darktable internal version number, the values here will be syched with the new defaults."
+msgstr "Om detta nummer är mindre än darktable interna versionsnummer kommer desa värden att synkroniseras med nya standardvärden"
 
 #: ../darktable.schemas.in.h:7
-msgid ""
-"these files can later be re-imported into a different database, preserving "
-"your changes to the image."
-msgstr ""
-"Dessa filer kan senare importeras i en annan databas, utan att skapa "
-"ändringa i orginalbilden"
+msgid "these files can later be re-imported into a different database, preserving your changes to the image."
+msgstr "Dessa filer kan senare importeras i en annan databas, utan att skapa ändringa i orginalbilden"
 
 #: ../darktable.schemas.in.h:8
-msgid ""
-"this value smaller than 1.0 downsamples the preview pixels for faster "
-"feedback."
-msgstr ""
-"Om detta värde är mindre än 1.0 nedsamplingar så kommer förhandsvisningen "
-"att vara snabbare."
+msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
+msgstr "Om detta värde är mindre än 1.0 nedsamplingar så kommer förhandsvisningen att vara snabbare."
 
 #: ../darktable.schemas.in.h:9
 msgid "version of these dt-gconf entries"
@@ -256,12 +247,14 @@ msgstr "På"
 msgid "off"
 msgstr "Av"
 
-#: ../src/develop/imageop.c:159 ../src/develop/imageop.c:222
+#: ../src/develop/imageop.c:159
+#: ../src/develop/imageop.c:222
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:159 ../src/develop/imageop.c:222
+#: ../src/develop/imageop.c:159
+#: ../src/develop/imageop.c:222
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
@@ -332,15 +325,15 @@ msgstr "Kvalitet"
 
 #: ../src/libs/export.c:104
 msgid "8-bit jpg"
-msgstr "JPEG (8-Bit)"
+msgstr "JPEG (8-bit)"
 
 #: ../src/libs/export.c:105
 msgid "8-bit png"
-msgstr "PNG (8-Bit)"
+msgstr "PNG (8-bit)"
 
 #: ../src/libs/export.c:106
 msgid "16-bit ppm"
-msgstr "PPM (16-Bit)"
+msgstr "PPM (16-bit)"
 
 #: ../src/libs/export.c:107
 msgid "float pfm"
@@ -364,11 +357,11 @@ msgstr "Y:"
 
 #: ../src/iop/clipping.c:349
 msgid "crop w"
-msgstr "b:"
+msgstr "B:"
 
 #: ../src/iop/clipping.c:350
 msgid "crop h"
-msgstr "h:"
+msgstr "H:"
 
 #: ../src/iop/clipping.c:351
 msgid "angle"
@@ -378,8 +371,10 @@ msgstr "Vinkel"
 msgid "color correction"
 msgstr "Färgkorregering"
 
-#: ../src/iop/colorcorrection.c:158 ../src/iop/colorin.c:241
-#: ../src/iop/colorout.c:323 ../src/iop/colorout.c:328
+#: ../src/iop/colorcorrection.c:158
+#: ../src/iop/colorin.c:241
+#: ../src/iop/colorout.c:323
+#: ../src/iop/colorout.c:328
 msgid "saturation"
 msgstr "Mättning"
 
@@ -395,22 +390,26 @@ msgstr "Avsikt"
 msgid "profile"
 msgstr "Profil"
 
-#: ../src/iop/colorin.c:239 ../src/iop/colorout.c:321
+#: ../src/iop/colorin.c:239
+#: ../src/iop/colorout.c:321
 #: ../src/iop/colorout.c:326
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorin.c:240 ../src/iop/colorout.c:322
+#: ../src/iop/colorin.c:240
+#: ../src/iop/colorout.c:322
 #: ../src/iop/colorout.c:327
 msgid "relative colorimetric"
 msgstr "Relativ färgmetri"
 
-#: ../src/iop/colorin.c:242 ../src/iop/colorout.c:324
+#: ../src/iop/colorin.c:242
+#: ../src/iop/colorout.c:324
 #: ../src/iop/colorout.c:329
 msgid "absolute colorimetric"
 msgstr "Absolut färgmetri"
 
-#: ../src/iop/colorin.c:257 ../src/iop/colorout.c:358
+#: ../src/iop/colorin.c:257
+#: ../src/iop/colorout.c:358
 msgid "rendering intent"
 msgstr "Renderar avsikt"
 
@@ -439,7 +438,8 @@ msgstr "Visa avsikt"
 msgid "display profile"
 msgstr "Visa profil"
 
-#: ../src/iop/colorout.c:338 ../src/iop/colorout.c:339
+#: ../src/iop/colorout.c:338
+#: ../src/iop/colorout.c:339
 msgid "X profile"
 msgstr "Profil X"
 
@@ -457,29 +457,32 @@ msgstr "Visa ICC Profil i %s/color/out"
 msgid "equalizer"
 msgstr "Equalizer"
 
-#: ../src/iop/equalizer.c:277
+#: ../src/iop/equalizer.c:278
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/equalizer.c:278
+#: ../src/iop/equalizer.c:279
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/iop/equalizer.c:294 ../src/iop/tonecurve.c:195
+#: ../src/iop/equalizer.c:295
+#: ../src/iop/tonecurve.c:196
 msgid "presets"
 msgstr "Fördefinerade"
 
-#: ../src/iop/equalizer.c:297 ../src/iop/sharpen.c:62
+#: ../src/iop/equalizer.c:298
+#: ../src/iop/sharpen.c:62
 msgid "sharpen"
 msgstr "Skärpa"
 
-#: ../src/iop/equalizer.c:298
+#: ../src/iop/equalizer.c:299
 msgid "sharpen more"
 msgstr "Mer skärpa"
 
-#: ../src/iop/equalizer.c:299 ../src/iop/rawimport.c:250
+#: ../src/iop/equalizer.c:300
+#: ../src/iop/rawimport.c:250
 msgid "denoise"
-msgstr "brusreducering"
+msgstr "Brusreducering"
 
 #: ../src/iop/exposure.c:169
 msgid "black"
@@ -507,14 +510,20 @@ msgstr ""
 "men komprimera ljusare\n"
 "värden (icke-linjärt)"
 
-#: ../src/iop/gamma.c:18 ../src/iop/gamma.c:133
+#: ../src/iop/gamma.c:18
+msgctxt "modulename"
 msgid "gamma"
 msgstr "Gamma"
 
-#: ../src/iop/gamma.c:132 ../src/iop/rawimport.c:288
-#: ../src/iop/tonecurve.c:198
+#: ../src/iop/gamma.c:132
+msgctxt "gammaslider"
 msgid "linear"
 msgstr "Linjär"
+
+#: ../src/iop/gamma.c:133
+msgctxt "gammaslider"
+msgid "gamma"
+msgstr "Gamma"
 
 #: ../src/iop/lens.c:23
 msgid "lens distortions"
@@ -707,7 +716,7 @@ msgstr ""
 
 #: ../src/iop/rawimport.c:274
 msgid "highlight handling"
-msgstr "Bhandla högdagrar"
+msgstr "Behandla högdagrar"
 
 #: ../src/iop/rawimport.c:278
 msgid "clip"
@@ -728,6 +737,11 @@ msgstr "Återskapa"
 #: ../src/iop/rawimport.c:284
 msgid "demosaic method"
 msgstr "Demosaic metod"
+
+#: ../src/iop/rawimport.c:288
+msgctxt "demosaic"
+msgid "linear"
+msgstr "Linjär"
 
 #: ../src/iop/rawimport.c:289
 msgid "VNG"
@@ -786,13 +800,19 @@ msgstr "Mängd"
 msgid "threshold"
 msgstr "Tröskel"
 
-#: ../src/iop/temperature.c:57 ../src/iop/temperature.c:236
+#: ../src/iop/temperature.c:57
+msgctxt "modulename"
 msgid "temperature"
 msgstr "Temperatur"
 
 #: ../src/iop/temperature.c:235
 msgid "tint"
 msgstr "Ton"
+
+#: ../src/iop/temperature.c:236
+msgctxt "slider"
+msgid "temperature"
+msgstr "Temperatur"
 
 #: ../src/iop/temperature.c:263
 msgid "temperature in"
@@ -827,10 +847,14 @@ msgid "tonecurve"
 msgstr "Nyanskurva"
 
 #: ../src/iop/tonecurve.c:199
+msgid "linear"
+msgstr "Linjär"
+
+#: ../src/iop/tonecurve.c:200
 msgid "med contrast"
 msgstr "Medel kontrast"
 
-#: ../src/iop/tonecurve.c:200
+#: ../src/iop/tonecurve.c:201
 msgid "high contrast"
 msgstr "Hög kontrast"
 
@@ -875,10 +899,8 @@ msgstr "Ljusbord"
 
 #~ msgid "original temperature"
 #~ msgstr "Исходная"
-
 #~ msgid "intended temperature"
 #~ msgstr "Конечная"
-
 #~ msgid ""
 #~ "8-bit jpg\n"
 #~ "8-bit png\n"
@@ -889,14 +911,12 @@ msgstr "Ljusbord"
 #~ "8-разрядный PNG\n"
 #~ "16-разрядный PPM\n"
 #~ "PFM с плавающей точкой"
-
 #~ msgid ""
 #~ "do you really want to physically delete all selected images from disk?"
 #~ msgstr ""
 #~ "Вы действительно хотите физически удалить все выбранные снимки с диска?"
-
 #~ msgid "delete images?"
 #~ msgstr "Удалить снимки?"
-
 #~ msgid "mode"
 #~ msgstr "Режим"
+
