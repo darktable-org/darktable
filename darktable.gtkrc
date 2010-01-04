@@ -130,6 +130,11 @@ style "clearlooks-checkbutton" = "clearlooks-default"
   text[NORMAL] = "#202020"
 }
 
+style "scale-fixed-font" = "clearlooks-default"
+{
+  font_name = "Monospace 10"
+}
+
 style "metacity-frame"
 {
   # Normal base color
@@ -152,10 +157,12 @@ style "metacity-frame"
   # Focused title text color
 	fg[SELECTED]      = "#E2E2E2"
 }
+
 class "GtkWidget" style "clearlooks-default"
 class "GtkButton" style "clearlooks-wide"
 class "GtkCheckButton" style "clearlooks-checkbutton"
 class "GtkRange" style "clearlooks-wide"
+class "GtkScale" style "scale-fixed-font"
 class "GtkFrame" style "clearlooks-wide"
 class "GtkStatusbar" style "clearlooks-wide"
 class "GtkMenu" style "clearlooks-menu"

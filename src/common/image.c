@@ -455,7 +455,7 @@ void dt_image_init(dt_image_t *img)
   img->raw_params.wb_cam = 1;
   img->raw_params.cmatrix = 1;
   img->raw_params.no_auto_bright = 0;
-  img->raw_params.highlight = 0;
+  img->raw_params.highlight = 2;
   img->raw_params.demosaic_method = 2;
   img->raw_params.med_passes = 0;
   img->raw_params.four_color_rgb = 0;

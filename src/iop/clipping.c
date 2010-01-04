@@ -333,6 +333,12 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static gchar *fv_callback(GtkScale *scale, gdouble value)
+{
+  int digits = gtk_scale_get_digits(scale);
+  return g_strdup_printf("%# *.*f", 4+1+digits, digits, value);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_clipping_gui_data_t));
@@ -385,6 +391,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
+  g_signal_connect (G_OBJECT (g->scale1), "format-value",
+                    G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->scale2), "format-value",
+                    G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->scale3), "format-value",
+                    G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->scale4), "format-value",
+                    G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->scale5), "format-value",
+                    G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (cx_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",

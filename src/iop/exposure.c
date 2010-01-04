@@ -150,6 +150,12 @@ static void gain_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+static gchar *fv_callback(GtkScale *scale, gdouble value)
+{
+  int digits = gtk_scale_get_digits(scale);
+  return g_strdup_printf("%# *.*f", 4+1+digits, digits, value);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_exposure_gui_data_t));
@@ -193,6 +199,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+
+  g_signal_connect (G_OBJECT (g->scale1), "format-value",
+                    G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->scale2), "format-value",
+                    G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->scale3), "format-value",
+                    G_CALLBACK (fv_callback), self);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (black_callback), self);
