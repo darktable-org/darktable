@@ -47,6 +47,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if(d->imageid < 0) return;
 
+  dt_image_t *oimg = dt_image_cache_use(d->imageid, 'r');
   int rc;
   sqlite3_stmt *stmt, *stmt2;
   rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
@@ -67,11 +68,16 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
     rc = sqlite3_step(stmt2);
     rc = sqlite3_finalize(stmt2);
     dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    img->raw_params = oimg->raw_params;
+    img->raw_denoise_threshold = oimg->raw_denoise_threshold;
+    img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;
+    dt_image_cache_flush(img);
     pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
     for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) dt_image_free(img, k);
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
     dt_image_cache_release(img, 'r');
   }
+  dt_image_cache_release(oimg, 'r');
   sqlite3_finalize(stmt);
 }
 
