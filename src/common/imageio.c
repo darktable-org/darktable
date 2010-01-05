@@ -341,8 +341,8 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     img->orientation = raw->sizes.flip;
     // img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
     // img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-    img->width  = /*(img->orientation & 4) ? 2*raw->sizes.iheight :*/ 2*raw->sizes.iwidth;
-    img->height = /*(img->orientation & 4) ? 2*raw->sizes.iwidth  :*/ 2*raw->sizes.iheight;
+    img->width  = /*(img->orientation & 4) ? 2*raw->sizes.iheight :*/ raw->sizes.iwidth;
+    img->height = /*(img->orientation & 4) ? 2*raw->sizes.iwidth  :*/ raw->sizes.iheight;
     img->output_width  = img->width;
     img->output_height = img->height;
     // printf("size: %dx%d\n", img->width, img->height);

@@ -10,6 +10,8 @@
 void dt_gui_navigation_init(dt_gui_navigation_t *n, GtkWidget *widget)
 {
   n->dragging = 0;
+  GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
+  GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_gui_navigation_expose), n);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
@@ -30,8 +32,7 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   int width = widget->allocation.width, height = widget->allocation.height;
 
   dt_develop_t *dev = darktable.develop;
-  // if(!dev->preview_dirty)
-  if(dev->image && dev->preview_pipe->backbuf)
+  if(dev->image && dev->preview_pipe->backbuf && !dev->preview_dirty)
   {
     cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cairo_t *cr = cairo_create(cst);

@@ -115,6 +115,8 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
 void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, float *w, float *h);
 /** writes mip4 through to all smaller levels. */
 int dt_image_update_mipmaps(dt_image_t *img);
+/** this writes a .dt and a .dttags file for this image. */
+void dt_image_write_dt_files(dt_image_t *img);
 
 // memory management interface
 typedef struct dt_mipmap_cache_t

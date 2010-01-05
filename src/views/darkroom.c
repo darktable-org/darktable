@@ -18,6 +18,7 @@ const char *name(dt_view_t *self)
   return _("darkroom");
 }
 
+
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
@@ -89,8 +90,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_surface_destroy (surface);
     pthread_mutex_unlock(mutex);
   }
-  // else // if(!dev->preview_dirty)
-  else if(!dev->preview_loading)
+  else if(!dev->preview_dirty)
+  // else if(!dev->preview_loading)
   { // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
     pthread_mutex_lock(mutex);
@@ -131,7 +132,8 @@ void reset(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 }
 
-void module_show_callback(GtkToggleButton *togglebutton, gpointer user_data)
+
+static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   char option[512];
@@ -152,6 +154,7 @@ void module_show_callback(GtkToggleButton *togglebutton, gpointer user_data)
   }
   gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, NULL);
 }
+
 
 void enter(dt_view_t *self)
 {
@@ -246,10 +249,11 @@ void enter(dt_view_t *self)
 }
 
 
-void dt_dev_remove_child(GtkWidget *widget, gpointer data)
+static void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 {
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
+
 
 void leave(dt_view_t *self)
 {
@@ -265,17 +269,7 @@ void leave(dt_view_t *self)
   // commit image ops to db
   dt_dev_write_history(dev);
   // write .dt file
-  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/write_dt_files", NULL))
-  {
-    char filename[520];
-    dt_image_full_path(dev->image, filename, 512);
-    char *c = filename + strlen(filename);
-    for(;c>filename && *c != '.';c--);
-    sprintf(c, ".dt");
-    dt_imageio_dt_write(dev->image->id, filename);
-    sprintf(c, ".dttags");
-    dt_imageio_dttags_write(dev->image->id, filename);
-  }
+  dt_image_write_dt_files(dev->image);
 
   // commit updated mipmaps to db
   dt_dev_process_to_mip(dev);
@@ -345,10 +339,12 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   }
 }
 
+
 void button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   if(which == 1) dt_control_change_cursor(GDK_ARROW);
 }
+
 
 void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
@@ -392,6 +388,7 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
   }
 }
 
+
 void scrolled(dt_view_t *self, double x, double y, int up)
 { // free zoom
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -425,6 +422,7 @@ void scrolled(dt_view_t *self, double x, double y, int up)
   DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
   dt_dev_invalidate(dev);
 }
+
 
 void key_pressed(dt_view_t *self, uint16_t which)
 {
@@ -460,6 +458,7 @@ void key_pressed(dt_view_t *self, uint16_t which)
       break;
   }
 }
+
 
 void configure(dt_view_t *self, int wd, int ht)
 {

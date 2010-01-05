@@ -13,6 +13,22 @@
 #include <stdlib.h>
 #include <assert.h>
 
+void dt_image_write_dt_files(dt_image_t *img)
+{
+  // write .dt file
+  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/write_dt_files", NULL))
+  {
+    char filename[520];
+    dt_image_full_path(img, filename, 512);
+    char *c = filename + strlen(filename);
+    for(;c>filename && *c != '.';c--);
+    sprintf(c, ".dt");
+    dt_imageio_dt_write(img->id, filename);
+    sprintf(c, ".dttags");
+    dt_imageio_dttags_write(img->id, filename);
+  }
+}
+
 void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 {
   if(img->film_id == 1)

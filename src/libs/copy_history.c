@@ -72,6 +72,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
     img->raw_denoise_threshold = oimg->raw_denoise_threshold;
     img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;
     dt_image_cache_flush(img);
+    dt_image_write_dt_files(img);
     pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
     for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) dt_image_free(img, k);
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));

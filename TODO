@@ -38,11 +38,9 @@
 - scroll to opened expander in darkroom mode.
 
 bugs:
-- preview render hash checking (previous image shows up, writethrough of garbled pixels etc..)
 - temperature to match other apps.
-- remember lib plugin expanded states.
 - output sizes destroyed on export?
-- preview not finished and writethrough nevertheless?
+  - adjust output size only during develop, not during import?
 - bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit
