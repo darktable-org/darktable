@@ -88,6 +88,11 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
 {
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
+
+  char var[1024];
+  snprintf(var, 1024, DT_GCONF_DIR"/plugins/lighttable/%s/expanded", module->plugin_name);
+  gconf_client_set_bool(darktable.control->gconf, var, gtk_expander_get_expanded (expander), NULL);
+
   if (gtk_expander_get_expanded (expander))
   {
     gtk_widget_show_all(module->widget);

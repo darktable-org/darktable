@@ -536,7 +536,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
 #endif
-  
 }
 
 void enter(dt_view_t *self)
@@ -573,8 +572,12 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    gtk_expander_set_expanded (module->expander, FALSE);
-    gtk_widget_hide_all(module->widget);
+    char var[1024];
+    snprintf(var, 1024, DT_GCONF_DIR"/plugins/lighttable/%s/expanded", module->plugin_name);
+    gboolean expanded = gconf_client_get_bool(darktable.control->gconf, var, NULL);
+    gtk_expander_set_expanded (module->expander, expanded);
+    if(expanded) gtk_widget_show_all(module->widget);
+    else         gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
 }
