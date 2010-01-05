@@ -5,7 +5,8 @@
 #include <pthread.h>
 
 // how large would the average screen be (largest mip map size) ?
-#define DT_IMAGE_WINDOW_SIZE 1200
+// this is able to develop images on a 1920 monitor (-2*300 - 20 for the panels).
+#define DT_IMAGE_WINDOW_SIZE 1300
 
 typedef enum
 {

@@ -254,16 +254,17 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
   }                                                       \
 }
 
-int dt_imageio_write_pos(int i, int j, int wd, int ht, int orientation)
+int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
 {
-  int ii = i, jj = j, w = wd, h = ht;
+  int ii = i, jj = j, w = wd, h = ht, fw = fwd, fh = fht;
   if(orientation & 4)
   {
     w = ht; h = wd;
     ii = j; jj = i;
+    fw = fht; fh = fwd;
   }
-  if(orientation & 2) ii = w - ii - 1;
-  if(orientation & 1) jj = h - jj - 1;
+  if(orientation & 2) ii = (int)fw - ii - 1;
+  if(orientation & 1) jj = (int)fh - jj - 1;
   return jj*w + ii;
 }
 
@@ -457,12 +458,14 @@ error_raw_magick:// clean up libraw and magick only
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
       const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
       const int p_wd2 = orientation & 4 ? p_ht : p_wd;
+      const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
+      const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
 
       if(image->width == p_wd && image->height == p_ht)
       { // use 1:1
         for (int j=0; j < jpg.height; j++)
           for (int i=0; i < jpg.width; i++)
-            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
       }
       else
       { // scale to fit
@@ -471,7 +474,7 @@ error_raw_magick:// clean up libraw and magick only
         for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
         {
           uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
         }
       }
       free(tmp);
@@ -497,12 +500,14 @@ error_raw_magick:// clean up libraw and magick only
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
       const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
       const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
+      const int f_ht2 = MIN(p_ht2, (raw->sizes.flip & 4 ? f_wd : f_ht) + 1.0);
+      const int f_wd2 = MIN(p_wd2, (raw->sizes.flip & 4 ? f_ht : f_wd) + 1.0);
       if(image->width == p_wd2 && image->height == p_ht2)
       { // use 1:1
         for(int j=0;j<image->height;j++) for(int i=0;i<image->width;i++)
         {
           uint8_t *cam = image->data + 3*(j*image->width + i);
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip) + 2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
       else
@@ -512,7 +517,7 @@ error_raw_magick:// clean up libraw and magick only
         for(int j=0;j<p_ht2 && scale*j<image->height;j++) for(int i=0;i<p_wd2 && scale*i < image->width;i++)
         {
           uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip) + 2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
       (void)dt_image_preview_to_raw(img);
@@ -874,12 +879,14 @@ error_magick_mip4:
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
   const int p_wd2 = orientation & 4 ? p_ht : p_wd;
+  const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
+  const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
 
   if(img->width == p_wd && img->height == p_ht)
   { // use 1:1
     for (int j=0; j < jpg.height; j++)
       for (int i=0; i < jpg.width; i++)
-        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
   }
   else
   { // scale to fit
@@ -888,7 +895,7 @@ error_magick_mip4:
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
     {
       uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, orientation)+2-k] = cam[k];
+      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
     }
   }
   free(tmp);
@@ -1082,7 +1089,7 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 
   for(int j=0; j < jpg.height; j++)
     for(int i=0; i < jpg.width; i++)
-      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+k]];
+      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+k]];
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
