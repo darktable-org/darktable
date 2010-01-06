@@ -154,7 +154,7 @@ static void gain_callback (GtkRange *range, gpointer user_data)
 static gchar *fv_callback(GtkScale *scale, gdouble value)
 {
   int digits = gtk_scale_get_digits(scale);
-  return g_strdup_printf("%# *.*f", 4+1+digits, digits, value);
+  return g_strdup_printf("%# *.*f", 2+1+digits, digits, value);
 }
 
 void gui_init(struct dt_iop_module_t *self)

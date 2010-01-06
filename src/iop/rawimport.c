@@ -218,6 +218,12 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static gchar *fv_callback(GtkScale *scale, gdouble value)
+{
+  int digits = gtk_scale_get_digits(scale);
+  return g_strdup_printf("%#*.*f", 4+1+digits, digits, value);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_rawimport_gui_data_t));
@@ -250,8 +256,8 @@ void gui_init(struct dt_iop_module_t *self)
   label = gtk_label_new(_("denoise"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
-  g->denoise_threshold = GTK_SCALE(gtk_hscale_new_with_range(0, 1000, 1));
-  gtk_scale_set_digits(g->denoise_threshold, 0);
+  g->denoise_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.0, 1000.0, 1.0));
+  gtk_scale_set_digits(g->denoise_threshold, 2);
   gtk_scale_set_value_pos(g->denoise_threshold, GTK_POS_LEFT);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->denoise_threshold), TRUE, TRUE, 0);
 
@@ -260,7 +266,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->auto_bright_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.1, 2., 0.05));
   gtk_object_set(GTK_OBJECT(g->auto_bright_threshold), "tooltip-text", _("percentage of bright values\nto be clipped out"), NULL);
-  gtk_scale_set_digits(g->auto_bright_threshold, 1);
+  gtk_scale_set_digits(g->auto_bright_threshold, 2);
   gtk_scale_set_value_pos(g->auto_bright_threshold, GTK_POS_LEFT);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->auto_bright_threshold), TRUE, TRUE, 0);
 
@@ -326,6 +332,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->med_passes), "value-changed", G_CALLBACK (median_callback), self);
   g_signal_connect (G_OBJECT (g->auto_bright_threshold), "value-changed", G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (g->denoise_threshold),     "value-changed", G_CALLBACK (scale_callback), self);
+  g_signal_connect (G_OBJECT (g->auto_bright_threshold), "format-value", G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->denoise_threshold),     "format-value", G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (reload),     "clicked", G_CALLBACK (reimport_button_callback), self);
   g_signal_connect (G_OBJECT (reset),      "clicked", G_CALLBACK (resetbutton_callback), self);
 }
