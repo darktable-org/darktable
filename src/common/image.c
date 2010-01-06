@@ -89,8 +89,6 @@ void dt_image_print_exif(dt_image_t *img, char *line, int len)
 
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
-  // const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->output_width), DT_IMAGE_WINDOW_SIZE/(float)(img->output_height));
-  // int32_t wd = MIN(img->output_width, (int)(scale*img->output_width)), ht = MIN(img->output_height, (int)(scale*img->output_height));
   const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->width), DT_IMAGE_WINDOW_SIZE/(float)(img->height));
   int32_t wd = MIN(img->width, (int)(scale*img->width)), ht = MIN(img->height, (int)(scale*img->height));
   if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
@@ -114,7 +112,8 @@ dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const in
 
 void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, float *w, float *h)
 {
-  float wd = img->output_width, ht = img->output_height;
+  float wd = img->output_width  ? img->output_width  : img->width,
+        ht = img->output_height ? img->output_height : img->height;
   if(mip == DT_IMAGE_MIPF)
   { // use input width, mipf is before processing
     wd = img->width;
@@ -135,31 +134,14 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
   { // full image is full size, rest downscaled by output size
     int mwd, mht;
     dt_image_get_mip_size(img, mip, &mwd, &mht);
-    const float scale = fminf(1.0, fminf(mwd/(float)img->output_width, mht/(float)img->output_height));
-    wd = img->output_width*scale;
-    ht = img->output_height*scale;
+    const int owd = img->output_width  ? img->output_width  : img->width,
+              oht = img->output_height ? img->output_height : img->height;
+    const float scale = fminf(1.0, fminf(mwd/(float)owd, mht/(float)oht));
+    wd = owd*scale;
+    ht = oht*scale;
   }
   *w = wd;
   *h = ht;
-  /*
-  float wd = img->output_width, ht = img->output_height;
-  if((int)mip < (int)DT_IMAGE_FULL)
-  {
-    const float scale = fminf(1.0, fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height));
-    wd *= scale; ht *= scale;
-    while((int)mip < (int)DT_IMAGE_MIP4)
-    {
-      mip++;
-      if(wd > 32 || ht > 32)
-      { // only if it's not vanishing completely :)
-        wd *= .5;
-        ht *= .5;
-      }
-    }
-  }
-  *w = wd;
-  *h = ht;
-  */
 }
 
 void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t *w, int32_t *h)

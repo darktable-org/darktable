@@ -410,12 +410,7 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
 
   dt_dev_read_history(dev);
   if(!dev->gui_attached)
-  {
-    // FIXME: raw load should really decide if it is re-import or first import and only then overwrite output size.
-    const int ow = dev->image->output_width, oh = dev->image->output_height;
     dt_dev_raw_load(dev, dev->image);
-    dev->image->output_width = ow; dev->image->output_height = oh;
-  }
 }
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht)

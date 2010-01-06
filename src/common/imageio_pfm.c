@@ -26,9 +26,6 @@ int dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   ret = fscanf(f, "%d %d\n%*[^\n]\n", &img->width, &img->height);
   if(ret != 2) goto error;
 
-  if(img->output_width  == 0) img->output_width  = img->width;
-  if(img->output_height == 0) img->output_height = img->height;
-
   if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
   if(cols == 3) ret = fread(img->pixels, 3*sizeof(float), img->width*img->height, f);

@@ -339,13 +339,8 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
     ret = libraw_adjust_sizes_info_only(raw);
     ret = 0;
     img->orientation = raw->sizes.flip;
-    // img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
-    // img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-    img->width  = /*(img->orientation & 4) ? 2*raw->sizes.iheight :*/ raw->sizes.iwidth;
-    img->height = /*(img->orientation & 4) ? 2*raw->sizes.iwidth  :*/ raw->sizes.iheight;
-    img->output_width  = img->width;
-    img->output_height = img->height;
-    // printf("size: %dx%d\n", img->width, img->height);
+    img->width  = raw->sizes.iwidth;
+    img->height = raw->sizes.iheight;
     img->exif_iso = raw->other.iso_speed;
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
@@ -609,8 +604,6 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-  img->output_width  = img->width;
-  img->output_height = img->height;
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
@@ -859,8 +852,6 @@ error_magick_mip4:
     img->width  = jpg.width;
     img->height = jpg.height;
   }
-  img->output_width  = img->width;
-  img->output_height = img->height;
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
   {
@@ -1074,8 +1065,6 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     img->width  = jpg.width;
     img->height = jpg.height;
   }
-  img->output_width  = img->width;
-  img->output_height = img->height;
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_FULL))
   {

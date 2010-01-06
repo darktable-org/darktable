@@ -449,8 +449,6 @@ int dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
   if(!f) return 1;
 
   if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error;
-  if(img->output_width  == 0) img->output_width  = img->width;
-  if(img->output_height == 0) img->output_height = img->height;
 
   if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));

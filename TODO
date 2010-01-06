@@ -39,10 +39,18 @@
 
 bugs:
 - folder import crashes in strncpy??
-- double buffering for center expose?
-- temperature to match other apps.
 - output sizes destroyed on export?
   - adjust output size only during develop, not during import?
+  - output size is needed:
+    - exact mip size
+    - conditionally during export (calculates processed width itself)
+    - image.c
+  - output size is adjusted:
+    - 1st import (was 0)
+    - reimport if .dt file is read
+    - paste history settings?
+    - develop after import??
+- temperature to match other apps.
 - bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit
