@@ -34,14 +34,14 @@ void cleanup(dt_view_t *self)
 }
 
 
-void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   // if width or height > max pipeline pixels: center the view and clamp.
-  if(width  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cr, -(DT_IMAGE_WINDOW_SIZE-width) *.5f, 0.0f);
-  if(height > DT_IMAGE_WINDOW_SIZE) cairo_translate(cr, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height)*.5f);
+  if(width  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width) *.5f, 0.0f);
+  if(height > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height)*.5f);
   width  = MIN(width,  DT_IMAGE_WINDOW_SIZE);
   height = MIN(height, DT_IMAGE_WINDOW_SIZE);
-  cairo_save(cr);
+  cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   
@@ -56,8 +56,17 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  cairo_surface_t *surface = NULL;
-   
+  static cairo_surface_t *image_surface = NULL;
+  static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
+  if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
+  { // create double-buffered image to draw on, to make modules draw more fluently.
+    image_surface_width = width; image_surface_height = height;
+    if(image_surface) cairo_surface_destroy(image_surface);
+    image_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+  }
+  cairo_surface_t *surface;
+  cairo_t *cr = cairo_create(image_surface);
+
   if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
     mutex = &dev->pipe->backbuf_mutex;
@@ -89,6 +98,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_stroke(cr);
     cairo_surface_destroy (surface);
     pthread_mutex_unlock(mutex);
+    image_surface_imgid = dev->image->id;
   }
   else if(!dev->preview_dirty)
   // else if(!dev->preview_loading)
@@ -104,7 +114,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_clip(cr);
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
     cairo_translate(cr, width/2.0, height/2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
@@ -113,14 +123,21 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
-
     pthread_mutex_unlock(mutex);
+    image_surface_imgid = dev->image->id;
   }
-  cairo_restore(cr);
+  cairo_restore(cri);
+
+  if(image_surface_imgid == dev->image->id)
+  {
+    cairo_destroy(cr);
+    cairo_set_source_surface(cri, image_surface, 0, 0);
+    cairo_paint(cri);
+  }
 
   // execute module callback hook.
   if(dev->gui_module && dev->gui_module->gui_post_expose)
-    dev->gui_module->gui_post_expose(dev->gui_module, cr, width, height, pointerx, pointery);
+    dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
 }
 
 

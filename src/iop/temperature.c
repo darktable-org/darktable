@@ -497,6 +497,11 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
     for(int k=0;k<3;k++) lenc += g->grayrgb[k]*g->grayrgb[k]*p->coeffs[k]*p->coeffs[k];
     if(len > 0.0001f) for(int k=0;k<3;k++) g->grayrgb[k] *= sqrtf(lenc/len);
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
+    g->graybox[0] = .5f+g->button_down_zoom_x;
+    g->graybox[1] = .5f+g->button_down_zoom_y;
+    g->graybox[2] = .5f+g->button_down_zoom_x;
+    g->graybox[3] = .5f+g->button_down_zoom_y;
+    dt_control_gui_queue_draw();
     return 1;
   }
   else return 0;

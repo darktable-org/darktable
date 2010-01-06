@@ -156,7 +156,7 @@ void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     gtk_expander_set_expanded(module->expander, module->enabled);
   }
   char tooltip[512];
-  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->op);
+  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
   gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, NULL);
 }
 

@@ -38,6 +38,8 @@
 - scroll to opened expander in darkroom mode.
 
 bugs:
+- folder import crashes in strncpy??
+- double buffering for center expose?
 - temperature to match other apps.
 - output sizes destroyed on export?
   - adjust output size only during develop, not during import?

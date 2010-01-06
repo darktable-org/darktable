@@ -257,7 +257,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->denoise_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.0, 1000.0, 1.0));
-  gtk_scale_set_digits(g->denoise_threshold, 2);
+  gtk_scale_set_digits(g->denoise_threshold, 1);
   gtk_scale_set_value_pos(g->denoise_threshold, GTK_POS_LEFT);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->denoise_threshold), TRUE, TRUE, 0);
 
@@ -266,7 +266,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->auto_bright_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.1, 2., 0.05));
   gtk_object_set(GTK_OBJECT(g->auto_bright_threshold), "tooltip-text", _("percentage of bright values\nto be clipped out"), NULL);
-  gtk_scale_set_digits(g->auto_bright_threshold, 2);
+  gtk_scale_set_digits(g->auto_bright_threshold, 1);
   gtk_scale_set_value_pos(g->auto_bright_threshold, GTK_POS_LEFT);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->auto_bright_threshold), TRUE, TRUE, 0);
 
