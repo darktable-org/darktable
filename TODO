@@ -41,7 +41,6 @@
 
 bugs:
 - folder import crashes in strncpy??
-- buffer is processed but doesn't show in lighttable => double image cache alloc??
 - temperature to match other apps.
 - bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.
