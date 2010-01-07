@@ -68,11 +68,13 @@ dt_image_t *dt_image_cache_get(int32_t id, const char mode)
     dt_image_cache_release(img, mode);
     return NULL;
   }
+  // printf("[image_cache_get] %ld id %d\n", (long int)img, img->id);
   return img;
 }
 
 dt_image_t *dt_image_cache_use(int32_t id, const char mode)
 {
+  // printf("[image_cache_use] locking image %d %s\n", id, mode == 'w' ? "for writing" : "");
   dt_image_cache_t *cache = darktable.image_cache;
   pthread_mutex_lock(&(cache->mutex));
   // int16_t *res = bsearch(&id, cache->by_id, cache->num_lines, sizeof(int16_t), (int(*)(const void *, const void *))&dt_image_cache_compare_id);

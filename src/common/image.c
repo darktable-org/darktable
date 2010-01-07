@@ -315,8 +315,21 @@ int dt_image_import(const int32_t film_id, const char *filename)
   }
   rc = sqlite3_finalize(stmt);
 
+  // insert dummy image entry in database
+  rc = sqlite3_prepare_v2(darktable.db, "insert into images (id, film_id, filename) values (null, ?1, ?2)", -1, &stmt, NULL);
+  HANDLE_SQLITE_ERR(rc);
+  rc = sqlite3_bind_int (stmt, 1, film_id);
+  rc = sqlite3_bind_text(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
+  pthread_mutex_lock(&(darktable.db_insert));
+  rc = sqlite3_step(stmt);
+  if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
+  id = sqlite3_last_insert_rowid(darktable.db);
+  pthread_mutex_unlock(&(darktable.db_insert));
+  rc = sqlite3_finalize(stmt);
+
   dt_image_t *img = dt_image_cache_use(id, 'w');
   strncpy(img->filename, imgfname, 256);
+  img->id = id;
   img->film_id = film_id;
 
   // read dttags and exif for database queries!
@@ -327,18 +340,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
   for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dttags");
   (void)dt_imageio_dttags_read(img, dtfilename);
-
-  // insert dummy image entry in database
-  rc = sqlite3_prepare_v2(darktable.db, "insert into images (id, film_id, filename) values (null, ?1, ?2)", -1, &stmt, NULL);
-  HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_int (stmt, 1, img->film_id);
-  rc = sqlite3_bind_text(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
-  pthread_mutex_lock(&(darktable.db_insert));
-  rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
-  img->id = id = sqlite3_last_insert_rowid(darktable.db);
-  pthread_mutex_unlock(&(darktable.db_insert));
-  rc = sqlite3_finalize(stmt);
 
   dt_image_cache_flush(img);
 
@@ -357,55 +358,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
     dt_image_cache_release(img, 'w');
     return id;
   }
-
-#if 0
-  dt_image_t *img = dt_image_cache_use(id, 'w');
-  strncpy(img->filename, imgfname, 256);
-  g_free(imgfname);
-
-  char dtfilename[512];
-  // dt_image_full_path(img, dtfilename, 512);
-  strncpy(dtfilename, filename, 512);
-  char *c = dtfilename + strlen(dtfilename);
-  for(;c>dtfilename && *c != '.';c--);
-  sprintf(c, ".dttags");
-  (void)dt_imageio_dttags_read(img, dtfilename);
-
-  if(dt_imageio_open_preview(img, filename))
-  {
-    dt_image_cleanup(img);
-    fprintf(stderr, "[image_import] could not open %s\n", filename);
-    dt_image_cache_release(img, 'w');
-    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, id);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, id);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, id);
-    rc = sqlite3_step(stmt);
-    return 0;
-  }
-
-  // update image data
-  img->film_id = film_id;
-  img->id = id;
-  dt_image_cache_flush(img);
-
-  // try loading a .dt file
-  sprintf(c, ".dt");
-  if(!dt_imageio_dt_read(img->id, dtfilename))
-  {
-    dt_develop_t dev;
-    dt_dev_init(&dev, 0);
-    dt_dev_load_preview(&dev, img);
-    dt_dev_process_to_mip(&dev);
-    dt_dev_cleanup(&dev);
-  }
-  dt_image_release(img, DT_IMAGE_FULL, 'r');
-#endif
-
 }
 
 int dt_image_update_mipmaps(dt_image_t *img)
@@ -474,6 +426,7 @@ void dt_image_init(dt_image_t *img)
 
 int dt_image_open(const int32_t id)
 {
+  if(id < 1) return 1;
   dt_image_t *img = dt_image_cache_use(id, 'w');
   int rc = dt_image_open2(img, id);
   dt_image_cache_release(img, 'w');

@@ -1,4 +1,6 @@
 0.5 release:
+- ctrl + 01234 in lighttable => stars
+- esc -> unfullscreen -> center
 - automatic re-import in raw import on button press?
 - monochrome passthrough mode
 - clipping aspect ratio
@@ -39,17 +41,7 @@
 
 bugs:
 - folder import crashes in strncpy??
-- output sizes destroyed on export?
-  - adjust output size only during develop, not during import?
-  - output size is needed:
-    - exact mip size
-    - conditionally during export (calculates processed width itself)
-    - image.c
-  - output size is adjusted:
-    - 1st import (was 0)
-    - reimport if .dt file is read
-    - paste history settings?
-    - develop after import??
+- buffer is processed but doesn't show in lighttable => double image cache alloc??
 - temperature to match other apps.
 - bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.
