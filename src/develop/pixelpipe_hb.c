@@ -232,11 +232,12 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output
-    // if(module) printf("reserving new buf in cache for module %s %s\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "");
-    if(strcmp(module->op, "gamma"))
+    if(!strcmp(module->op, "gamma"))
       (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
     else
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+
+    // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);
     
     // tonecurve histogram (collect luminance only):
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))

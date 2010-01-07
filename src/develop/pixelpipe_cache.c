@@ -52,7 +52,7 @@ int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint
 
 int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)
 {
-  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, 5);
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, -5);
 }
 
 int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)
@@ -81,6 +81,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
 
   if(!*data)
   { // kill LRU entry
+    // printf("[pixelpipe_cache_get] hash not found, returning slot %d/%d age %d\n", max, cache->entries, weight);
     *data = cache->data[max];
     cache->hash[max] = hash;
     cache->used[max] = weight;

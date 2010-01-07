@@ -327,6 +327,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   pthread_mutex_unlock(&(darktable.db_insert));
   rc = sqlite3_finalize(stmt);
 
+  // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
   dt_image_t *img = dt_image_cache_use(id, 'w');
   strncpy(img->filename, imgfname, 256);
   img->id = id;
@@ -334,8 +335,8 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
-  char dtfilename[512];
-  strncpy(dtfilename, filename, 512);
+  char dtfilename[1024];
+  strncpy(dtfilename, filename, 1024);
   char *c = dtfilename + strlen(dtfilename);
   for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dttags");
@@ -345,19 +346,11 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   g_free(imgfname);
 
-  if(img->film_id == 1)
-  { // single images will probably want to load immediately.
-    // img = dt_image_cache_use(id, 'r');
-    (void)dt_image_reimport(img, filename);
-    // dt_image_cache_release(img, 'r');
-    dt_image_cache_release(img, 'w');
-    return id;
-  }
-  else
-  {
-    dt_image_cache_release(img, 'w');
-    return id;
-  }
+  // single images will probably want to load immediately.
+  if(img->film_id == 1) (void)dt_image_reimport(img, filename);
+
+  dt_image_cache_release(img, 'w');
+  return id;
 }
 
 int dt_image_update_mipmaps(dt_image_t *img)
@@ -409,12 +402,18 @@ void dt_image_init(dt_image_t *img)
   img->raw_params.demosaic_method = 2;
   img->raw_params.med_passes = 0;
   img->raw_params.four_color_rgb = 0;
+  img->raw_params.fill0 = 0;
   img->raw_denoise_threshold = 0.f;
   img->raw_auto_bright_threshold = 0.01f;
   img->film_id = -1;
   img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;
   img->cacheline = -1;
+  bzero(img->exif_maker, sizeof(img->exif_maker));
+  bzero(img->exif_model, sizeof(img->exif_model));
+  bzero(img->exif_lens, sizeof(img->exif_lens));
+  bzero(img->filename, sizeof(img->filename));
+  strncpy(img->filename, "(unknown)", 10);
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
   strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
   img->exif_crop = 1.0;
