@@ -198,7 +198,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   if(!d->lens->Maker) return;
 
-  // TODO: subsample:
   const float orig_w = roi_in->scale*piece->iwidth,
               orig_h = roi_in->scale*piece->iheight;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
@@ -221,7 +220,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       d->tmpbuf2_len = req2;
       d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2);
     }
-    // TODO: openmp this?
     for (int y = 0; y < roi_out->height; y++)
     {
       if (!lf_modifier_apply_subpixel_geometry_distortion (
@@ -239,7 +237,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       }
     }
     roi_in->x = fmaxf(0.0f, xm); roi_in->y = fmaxf(0.0f, ym);
-    roi_in->width = fminf(orig_w-roi_in->x, xM - xm); roi_in->height = fminf(orig_h-roi_in->y, yM - ym);
+    roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + 10); roi_in->height = fminf(orig_h-roi_in->y, yM - roi_in->y + 10);
   }
   lf_modifier_destroy(modifier);
 }

@@ -1,6 +1,6 @@
 0.5 release:
 - highlight reconstruction/tonemapping
-- save history stack list, make them stackable
+- save history stack list, make them stackable, clear history stack button.
 - automatic application of history stacks due to pattern matching.
 - remember expansion state for metadata and darkroom plugins.
 - write dttags on image_cache_flush?
