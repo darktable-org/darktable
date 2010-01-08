@@ -164,6 +164,26 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
 				      NULL);
 
+  char *cp, **extensions, ext[1024];
+  GtkFileFilter *filter;
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  extensions = g_strsplit(dt_supported_extensions, ",", 100);
+  for(char **i=extensions;*i!=NULL;i++)
+  {
+    snprintf(ext, 1024, "*.%s", *i);
+    gtk_file_filter_add_pattern(filter, ext);
+    gtk_file_filter_add_pattern(filter, cp=g_ascii_strup(ext, -1));
+    g_free(cp);
+  }
+  g_strfreev(extensions);
+  gtk_file_filter_set_name(filter, _("supported images"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*");
+  gtk_file_filter_set_name(filter, _("all files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filename;

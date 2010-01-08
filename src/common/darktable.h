@@ -56,6 +56,7 @@ typedef struct darktable_t
 darktable_t;
 
 extern darktable_t darktable;
+extern const char dt_supported_extensions[];
 
 int dt_init(int argc, char *argv[]);
 void dt_cleanup();

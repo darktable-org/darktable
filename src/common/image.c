@@ -288,12 +288,19 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
 
 int dt_image_import(const int32_t film_id, const char *filename)
 {
-  // TODO: add more exclusion categories (by extension..?)
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 0;
   const char *cc = filename + strlen(filename);
   for(;*cc!='.'&&cc>filename;cc--);
-  if(!strcmp(cc, ".dt")) return 1;
-  if(!strcmp(cc, ".dttags")) return 1;
+  if(!strcmp(cc, ".dt")) return 0;
+  if(!strcmp(cc, ".dttags")) return 0;
+  char *ext = g_ascii_strdown(cc+1, -1);
+  int supported = 0;
+  char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
+  for(char **i=extensions;*i!=NULL;i++)
+    if(!strcmp(ext, *i)) { supported = 1; break; }
+  g_strfreev(extensions);
+  g_free(ext);
+  if(!supported) return 0;
   int rc;
   int ret = 0, id = -1;
   // select from images; if found => return
