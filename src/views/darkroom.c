@@ -253,8 +253,6 @@ void enter(dt_view_t *self)
     snprintf(option, 1024, DT_GCONF_DIR"/plugins/darkroom/%s/expanded", module->op);
     active = gconf_client_get_bool(darktable.control->gconf, option, NULL);
     gtk_expander_set_expanded (module->expander, active);
-    if(active) gtk_widget_show_all(module->widget);
-    else         gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
   // synch gui and flag gegl pipe as dirty

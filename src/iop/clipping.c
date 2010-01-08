@@ -134,8 +134,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // adjust roi_in to maximally needed region
   roi_in->x      = aabb_in[0];
   roi_in->y      = aabb_in[1];
-  roi_in->width  = aabb_in[2]-aabb_in[0];
-  roi_in->height = aabb_in[3]-aabb_in[1];
+  roi_in->width  = aabb_in[2]-aabb_in[0]+10;
+  roi_in->height = aabb_in[3]-aabb_in[1]+10;
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
