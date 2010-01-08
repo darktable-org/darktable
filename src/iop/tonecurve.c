@@ -55,6 +55,10 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
   int pos = gtk_combo_box_get_active(widget);
   switch(pos)
   {
+    case 0: // linear
+      for(int k=0;k<6;k++) p->tonecurve_x[k] = linear[k];
+      for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
+      break;
     case 1: // med contrast
       for(int k=0;k<6;k++) p->tonecurve_x[k] = linear[k];
       for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
@@ -67,10 +71,8 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
       p->tonecurve_y[1] -= 0.06; p->tonecurve_y[4] += 0.06;
       p->tonecurve_y[2] -= 0.10; p->tonecurve_y[3] += 0.10;
       break;
-    default: // case 0: // linear
-      for(int k=0;k<6;k++) p->tonecurve_x[k] = linear[k];
-      for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
-      break;
+    default:
+      return;
   }
   if(self->off) gtk_toggle_button_set_active(self->off, 1);
   dt_dev_add_history_item(darktable.develop, self);
@@ -125,7 +127,11 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update(struct dt_iop_module_t *self)
 {
   // nothing to do, gui curve is read directly from params during expose event.
-  // TODO: reset combobox on preset changed event ?
+  if(!memcmp(self->params, self->default_params, self->params_size))
+  {
+    dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+    gtk_combo_box_set_active(g->presets, -1);
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -359,6 +365,7 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
     if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
     p->tonecurve_y[c->selected] = f;
+    gtk_combo_box_set_active(c->presets, -1);
     dt_dev_add_history_item(darktable.develop, self);
   }
   else
