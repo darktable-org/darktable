@@ -164,6 +164,7 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
 {
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+
   if (gtk_expander_get_expanded (expander))
   {
     gtk_widget_show(module->widget);

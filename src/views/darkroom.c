@@ -244,14 +244,17 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    char option[512];
-    snprintf(option, 512, DT_GCONF_DIR"/plugins/darkroom/%s/visible", module->op);
+    char option[1024];
+    snprintf(option, 1024, DT_GCONF_DIR"/plugins/darkroom/%s/visible", module->op);
     gboolean active = gconf_client_get_bool  (darktable.control->gconf, option, NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
 
-    gtk_expander_set_expanded (module->expander, FALSE);
-    // if(!gtk_expander_get_expanded (module->expander)) gtk_widget_hide_all(module->widget);
+    snprintf(option, 1024, DT_GCONF_DIR"/plugins/darkroom/%s/expanded", module->op);
+    active = gconf_client_get_bool(darktable.control->gconf, option, NULL);
+    gtk_expander_set_expanded (module->expander, active);
+    if(active) gtk_widget_show_all(module->widget);
+    else         gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
   // synch gui and flag gegl pipe as dirty
@@ -307,6 +310,10 @@ void leave(dt_view_t *self)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     // printf("removing module %d - %s\n", module->instance, module->op);
+    char var[1024];
+    snprintf(var, 1024, DT_GCONF_DIR"/plugins/darkroom/%s/expanded", module->op);
+    gconf_client_set_bool(darktable.control->gconf, var, gtk_expander_get_expanded (module->expander), NULL);
+
     module->gui_cleanup(module);
     module->cleanup(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);

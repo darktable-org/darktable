@@ -1037,6 +1037,12 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_histogram", bit, NULL);
+
+  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_metadata", NULL);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
+  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_metadata", bit, NULL);
 }
 
 int dt_control_key_pressed_override(uint16_t which)
