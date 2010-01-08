@@ -204,7 +204,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path)
       error += path;
       throw Exiv2::Error(1, error);
     }
-    exifData["Exif.Image.Orientation"] = uint16_t(0);
+    exifData["Exif.Image.Orientation"] = uint16_t(1);
     exifData["Exif.Photo.UserComment"]
         = "developed using "PACKAGE_NAME"-"PACKAGE_VERSION;
 #if 1//EXIV2_TEST_VERSION(0,17,91)		/* Exiv2 0.18-pre1 */

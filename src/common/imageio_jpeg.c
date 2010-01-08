@@ -230,7 +230,6 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
   uint8_t *tmp = out;
 	while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
 	{
-    tmp = out + 4*jpg->width*(jpg->dinfo.image_height - 1 - jpg->dinfo.output_scanline);
 		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
     if(jpg->dinfo.num_components < 3)
 		  for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
@@ -238,7 +237,7 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
     else
 		  for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
 		  	tmp[4*i+k] = row_pointer[0][3*i+k];
-    // tmp += 4*jpg->width;
+    tmp += 4*jpg->width;
 	}
 	// (void)jpeg_finish_decompress(&(jpg->dinfo));
 	jpeg_destroy_decompress(&(jpg->dinfo));
