@@ -36,6 +36,8 @@ void cleanup(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  cairo_set_source_rgb (cri, .2, .2, .2);
+  cairo_paint(cri);
   // if width or height > max pipeline pixels: center the view and clamp.
   if(width  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width) *.5f, 0.0f);
   if(height > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height)*.5f);
