@@ -1,4 +1,9 @@
 0.5 release:
+- highlight reconstruction/tonemapping
+- save history stack list, make them stackable
+- automatic application of history stacks due to pattern matching.
+- remember expansion state for metadata and darkroom plugins.
+- write dttags on image_cache_flush?
 - ctrl + 01234 in lighttable => stars
 - esc -> unfullscreen -> center
 - automatic re-import in raw import on button press?

@@ -28,9 +28,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // clip out colors to white if L > 100?
     const float L = 100.0*powf(fmaxf(0.0, (in[0]-d->black))*d->scale, d->gain);
     const float Lwhite = 100.0f, Lclip = 20.0f;
-    const float clip  = 1.0 - fminf(Lwhite-Lclip, fmaxf(0.0, L - Lclip))/(Lwhite-Lclip);
+    const float Lcap  = fminf(100.0, L);
+    const float clip  = 1.0 - (Lcap - in[0])*(1.0/100.0)*fminf(Lwhite-Lclip, fmaxf(0.0, L - Lclip))/(Lwhite-Lclip);
     const float clip2 = clip*clip*clip;
-    out[0] = fminf(100.0, L);
+    out[0] = Lcap;
     out[1] = in[1] * clip2;
     out[2] = in[2] * clip2;
     out += 3; in += 3;
