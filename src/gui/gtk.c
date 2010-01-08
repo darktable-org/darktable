@@ -113,7 +113,7 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
   // toggle all buttons:
   reset = 1;
-  for(int i=0;i<9;i++)
+  for(int i=0;i<10;i++)
   {
     char wdname[30];
     snprintf(wdname, 30, "history_%02d", i);
