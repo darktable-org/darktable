@@ -3,6 +3,7 @@ darktable.schemas.in
 src/common/film.c
 src/common/image.c
 src/control/control.c
+src/control/jobs.c
 src/develop/develop.c
 src/develop/imageop.c
 src/libs/copy_history.c
