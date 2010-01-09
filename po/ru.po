@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-05 01:53+0300\n"
-"PO-Revision-Date: 2010-01-07 04:21+0300\n"
+"POT-Creation-Date: 2010-01-09 22:08+0300\n"
+"PO-Revision-Date: 2010-01-09 23:08+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -58,8 +58,8 @@ msgstr "Дата и время"
 
 #: ../darktable.glade.h:14
 #: ../src/iop/exposure.c:18
-#: ../src/iop/exposure.c:176
-#: ../src/iop/rawimport.c:258
+#: ../src/iop/exposure.c:179
+#: ../src/iop/rawimport.c:264
 msgid "exposure"
 msgstr "Экспозиция"
 
@@ -116,7 +116,7 @@ msgid "iso"
 msgstr "ISO"
 
 #: ../darktable.glade.h:29
-#: ../src/iop/lens.c:1136
+#: ../src/iop/lens.c:1134
 msgid "lens"
 msgstr "Объектив"
 
@@ -230,36 +230,44 @@ msgstr "Переключиться в режим «%s»"
 msgid "<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b><i>Режим «%s»</i></b></big></span>"
 
-#: ../src/control/control.c:1163
+#: ../src/control/control.c:1169
 msgid "0 - original"
 msgstr "0 - Исходный вариант"
 
-#: ../src/control/control.c:1210
+#: ../src/control/control.c:1216
 #, c-format
 msgid "single images"
 msgstr "Отдельные снимки"
 
-#: ../src/develop/develop.c:786
+#: ../src/control/jobs.c:206
+msgid "do you really want to physically delete all selected images from disk?"
+msgstr "Вы действительно хотите физически удалить все выбранные снимки с диска?"
+
+#: ../src/control/jobs.c:207
+msgid "delete images?"
+msgstr "Удалить снимки?"
+
+#: ../src/develop/develop.c:785
 msgid "on"
 msgstr "вкл"
 
-#: ../src/develop/develop.c:786
+#: ../src/develop/develop.c:785
 msgid "off"
 msgstr "выкл"
 
 #: ../src/develop/imageop.c:159
-#: ../src/develop/imageop.c:222
+#: ../src/develop/imageop.c:223
 #, c-format
 msgid "%s is switched on"
 msgstr "%s включен"
 
 #: ../src/develop/imageop.c:159
-#: ../src/develop/imageop.c:222
+#: ../src/develop/imageop.c:223
 #, c-format
 msgid "%s is switched off"
 msgstr "%s выключен"
 
-#: ../src/develop/imageop.c:238
+#: ../src/develop/imageop.c:239
 msgid "reset parameters"
 msgstr "Сбросить параметры"
 
@@ -267,11 +275,11 @@ msgstr "Сбросить параметры"
 msgid "copy history stack"
 msgstr "Копирование параметров обработки"
 
-#: ../src/libs/copy_history.c:100
+#: ../src/libs/copy_history.c:101
 msgid "copy"
 msgstr "Скопировать"
 
-#: ../src/libs/copy_history.c:101
+#: ../src/libs/copy_history.c:102
 msgid ""
 "copy history stack of\n"
 "first selected image"
@@ -279,11 +287,11 @@ msgstr ""
 "Скопировать параметры обработки\n"
 "первого выделенного снимка"
 
-#: ../src/libs/copy_history.c:102
+#: ../src/libs/copy_history.c:103
 msgid "paste"
 msgstr "Вставить"
 
-#: ../src/libs/copy_history.c:103
+#: ../src/libs/copy_history.c:104
 msgid ""
 "paste history stack to\n"
 "all selected images"
@@ -457,50 +465,50 @@ msgstr "Цветовые профили мониторов из %s/color/out"
 msgid "equalizer"
 msgstr "Эквалайзер"
 
-#: ../src/iop/equalizer.c:278
+#: ../src/iop/equalizer.c:285
 msgid "luma"
 msgstr "Яркостный канал"
 
-#: ../src/iop/equalizer.c:279
+#: ../src/iop/equalizer.c:286
 msgid "chroma"
 msgstr "Цветностные каналы"
 
-#: ../src/iop/equalizer.c:295
-#: ../src/iop/tonecurve.c:196
+#: ../src/iop/equalizer.c:302
+#: ../src/iop/tonecurve.c:202
 msgid "presets"
 msgstr "Профили:"
 
-#: ../src/iop/equalizer.c:298
+#: ../src/iop/equalizer.c:305
 #: ../src/iop/sharpen.c:62
 msgid "sharpen"
 msgstr "Повышение резкости"
 
-#: ../src/iop/equalizer.c:299
+#: ../src/iop/equalizer.c:306
 msgid "sharpen more"
 msgstr "Усиленное повышение резкости"
 
-#: ../src/iop/equalizer.c:300
-#: ../src/iop/rawimport.c:250
+#: ../src/iop/equalizer.c:307
+#: ../src/iop/rawimport.c:256
 msgid "denoise"
 msgstr "Подавление шума"
 
-#: ../src/iop/exposure.c:175
+#: ../src/iop/exposure.c:178
 msgid "black"
 msgstr "Тёмные области:"
 
-#: ../src/iop/exposure.c:177
+#: ../src/iop/exposure.c:180
 msgid "gain"
 msgstr "Усиление:"
 
-#: ../src/iop/exposure.c:185
+#: ../src/iop/exposure.c:188
 msgid "adjust the black level"
 msgstr "Изменить уровень чёрного"
 
-#: ../src/iop/exposure.c:187
+#: ../src/iop/exposure.c:190
 msgid "adjust the white level"
 msgstr "Изменить уровень белого"
 
-#: ../src/iop/exposure.c:189
+#: ../src/iop/exposure.c:192
 msgid ""
 "leave black and white,\n"
 "but compress brighter\n"
@@ -529,7 +537,7 @@ msgstr "Гамма:"
 msgid "lens distortions"
 msgstr "Искажения оптики"
 
-#: ../src/iop/lens.c:629
+#: ../src/iop/lens.c:627
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -542,7 +550,7 @@ msgstr ""
 "Байонет:\t\t%s\n"
 "Кроп-фактор:\t%.1f"
 
-#: ../src/iop/lens.c:869
+#: ../src/iop/lens.c:867
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -561,35 +569,35 @@ msgstr ""
 "Тип:\t\t\t\t%s\n"
 "Байонеты:\t\t\t%s"
 
-#: ../src/iop/lens.c:899
+#: ../src/iop/lens.c:897
 msgid "mm"
 msgstr "мм"
 
-#: ../src/iop/lens.c:899
+#: ../src/iop/lens.c:897
 msgid "focal length (mm)"
 msgstr "Фокусное расстояние (мм)"
 
-#: ../src/iop/lens.c:909
+#: ../src/iop/lens.c:907
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:909
+#: ../src/iop/lens.c:907
 msgid "f-number (aperture)"
 msgstr "Число F (диафрагма)"
 
-#: ../src/iop/lens.c:915
+#: ../src/iop/lens.c:913
 msgid "d"
 msgstr ""
 
-#: ../src/iop/lens.c:915
+#: ../src/iop/lens.c:913
 msgid "distance to subject"
 msgstr "Расстояние до объекта"
 
-#: ../src/iop/lens.c:1123
+#: ../src/iop/lens.c:1121
 msgid "cam"
 msgstr "Камера"
 
-#: ../src/iop/lens.c:1124
+#: ../src/iop/lens.c:1122
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -597,7 +605,7 @@ msgstr ""
 "Поиск камеры по шаблону:\n"
 "[производитель, ][модель]"
 
-#: ../src/iop/lens.c:1138
+#: ../src/iop/lens.c:1136
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -605,45 +613,45 @@ msgstr ""
 "Поиск объектива по шаблону:\n"
 "[производитель, ][модель]"
 
-#: ../src/iop/lens.c:1173
+#: ../src/iop/lens.c:1171
 msgid "target geometry"
 msgstr "Целевая геометрия объектива"
 
-#: ../src/iop/lens.c:1174
+#: ../src/iop/lens.c:1172
 msgid "rectilinear"
 msgstr "Прямолинейная"
 
-#: ../src/iop/lens.c:1175
+#: ../src/iop/lens.c:1173
 msgid "fisheye"
 msgstr "Рыбий глаз"
 
-#: ../src/iop/lens.c:1176
+#: ../src/iop/lens.c:1174
 msgid "panoramic"
 msgstr "Панорамная"
 
-#: ../src/iop/lens.c:1177
+#: ../src/iop/lens.c:1175
 msgid "equirectangular"
 msgstr "Эквидистантная"
 
-#: ../src/iop/lens.c:1183
+#: ../src/iop/lens.c:1181
 msgid "geometry"
 msgstr "Геометрия:"
 
-#: ../src/iop/lens.c:1195
+#: ../src/iop/lens.c:1193
 msgid "auto"
 msgstr "Авто"
 
 #. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-#: ../src/iop/lens.c:1202
+#: ../src/iop/lens.c:1200
 msgid "scale"
 msgstr "Масштаб:"
 
 #. reverse direction
-#: ../src/iop/lens.c:1207
+#: ../src/iop/lens.c:1205
 msgid "reverse"
 msgstr "Развернуть направление"
 
-#: ../src/iop/lens.c:1208
+#: ../src/iop/lens.c:1206
 msgid "apply distortions instead of correcting them"
 msgstr "Добавить искажения вместо того чтобы их исправить"
 
@@ -669,7 +677,7 @@ msgstr "Размер фильтра:"
 msgid "raw import"
 msgstr "Импорт цифрового негатива"
 
-#: ../src/iop/rawimport.c:230
+#: ../src/iop/rawimport.c:236
 msgid ""
 "warning: these are cryptic low level\n"
 "settings! you probably don't have to\n"
@@ -679,33 +687,33 @@ msgstr ""
 "низкоуровневые параметры. Скорее всего\n"
 "вам совершенно не нужно их трогать."
 
-#: ../src/iop/rawimport.c:234
+#: ../src/iop/rawimport.c:240
 msgid "auto white balance"
 msgstr "Автоматический баланс белого"
 
-#: ../src/iop/rawimport.c:236
+#: ../src/iop/rawimport.c:242
 msgid "camera white balance"
 msgstr "Баланс белого камеры"
 
-#: ../src/iop/rawimport.c:238
+#: ../src/iop/rawimport.c:244
 msgid "auto exposure"
 msgstr "Автоматическая экспозиция"
 
-#: ../src/iop/rawimport.c:240
+#: ../src/iop/rawimport.c:246
 msgid "use color matrix"
 msgstr "Использовать цветовую матрицу"
 
-#: ../src/iop/rawimport.c:262
+#: ../src/iop/rawimport.c:268
 msgid ""
 "percentage of bright values\n"
 "to be clipped out"
 msgstr "Процент вырезаемых ярких значений"
 
-#: ../src/iop/rawimport.c:267
+#: ../src/iop/rawimport.c:273
 msgid "median passes"
-msgstr "Проходов мед. фильтра:"
+msgstr "Медианный фильтр:"
 
-#: ../src/iop/rawimport.c:271
+#: ../src/iop/rawimport.c:277
 msgid ""
 "number of 3x3 median filter passes\n"
 "on R-G and B-G after demosaicing"
@@ -713,52 +721,52 @@ msgstr ""
 "Количество проходов медианного фильтра\n"
 "3×3 по R-G и B-G после дебайеризации"
 
-#: ../src/iop/rawimport.c:274
+#: ../src/iop/rawimport.c:280
 msgid "highlight handling"
 msgstr "Обработка пересветов:"
 
-#: ../src/iop/rawimport.c:278
+#: ../src/iop/rawimport.c:284
 msgid "clip"
 msgstr "Вырезать"
 
-#: ../src/iop/rawimport.c:279
+#: ../src/iop/rawimport.c:285
 msgid "unclip"
 msgstr "Не вырезать"
 
-#: ../src/iop/rawimport.c:280
+#: ../src/iop/rawimport.c:286
 msgid "blend"
 msgstr "Объединить"
 
-#: ../src/iop/rawimport.c:281
+#: ../src/iop/rawimport.c:287
 msgid "rebuild"
 msgstr "Восстановить"
 
-#: ../src/iop/rawimport.c:284
+#: ../src/iop/rawimport.c:290
 msgid "demosaic method"
 msgstr "Тип дебайеризации:"
 
-#: ../src/iop/rawimport.c:288
+#: ../src/iop/rawimport.c:294
 msgctxt "demosaic"
 msgid "linear"
 msgstr "Линейная"
 
-#: ../src/iop/rawimport.c:289
+#: ../src/iop/rawimport.c:295
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/rawimport.c:290
+#: ../src/iop/rawimport.c:296
 msgid "PPG"
 msgstr "PPG"
 
-#: ../src/iop/rawimport.c:291
+#: ../src/iop/rawimport.c:297
 msgid "AHD"
 msgstr "AHD"
 
-#: ../src/iop/rawimport.c:294
+#: ../src/iop/rawimport.c:300
 msgid "four color rgb"
-msgstr "Четырёхцветный RGB"
+msgstr "4-цветный RGB"
 
-#: ../src/iop/rawimport.c:295
+#: ../src/iop/rawimport.c:301
 msgid ""
 "demosaic treating RGGB as\n"
 "four distinct colors,\n"
@@ -767,11 +775,11 @@ msgstr ""
 "При дебайеризации считать RGGB\n"
 "четырьмя разными цветами.Применяйте при появлении артефактов."
 
-#: ../src/iop/rawimport.c:299
+#: ../src/iop/rawimport.c:305
 msgid "reset"
 msgstr "Сбросить"
 
-#: ../src/iop/rawimport.c:300
+#: ../src/iop/rawimport.c:306
 msgid ""
 "reset raw loading parameters\n"
 "to darktable's defaults"
@@ -779,11 +787,11 @@ msgstr ""
 "Сбросить параметры загрузки\n"
 "цифровых негативов до исходных"
 
-#: ../src/iop/rawimport.c:302
+#: ../src/iop/rawimport.c:308
 msgid "re-import"
 msgstr "Импортировать заново"
 
-#: ../src/iop/rawimport.c:303
+#: ../src/iop/rawimport.c:309
 msgid "trigger re-import of the raw image"
 msgstr "Запустить повторный импорт цифрового негатива"
 
@@ -845,15 +853,15 @@ msgstr ""
 msgid "tonecurve"
 msgstr "Кривая тонкоррекции"
 
-#: ../src/iop/tonecurve.c:199
+#: ../src/iop/tonecurve.c:205
 msgid "linear"
 msgstr "Линейная кривая"
 
-#: ../src/iop/tonecurve.c:200
+#: ../src/iop/tonecurve.c:206
 msgid "med contrast"
 msgstr "Средний контраст"
 
-#: ../src/iop/tonecurve.c:201
+#: ../src/iop/tonecurve.c:207
 msgid "high contrast"
 msgstr "Высокий контраст"
 
@@ -865,7 +873,15 @@ msgstr "Импортировать съёмку"
 msgid "import image"
 msgstr "Импортировать снимок"
 
+#: ../src/gui/gtk.c:179
+msgid "supported images"
+msgstr "Поддерживаемые форматы"
+
 #: ../src/gui/gtk.c:184
+msgid "all files"
+msgstr "Все файлы"
+
+#: ../src/gui/gtk.c:204
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Ошибка при загрузке файла '%s'"
@@ -882,12 +898,12 @@ msgstr ""
 msgid "darkroom"
 msgstr "Проявка"
 
-#: ../src/views/darkroom.c:144
+#: ../src/views/darkroom.c:165
 #, c-format
 msgid "hide %s"
 msgstr "Скрыть модуль «%s»"
 
-#: ../src/views/darkroom.c:151
+#: ../src/views/darkroom.c:172
 #, c-format
 msgid "show %s"
 msgstr "Показать модуль «%s»"
@@ -910,12 +926,6 @@ msgstr "Световой стол"
 #~ "8-разрядный PNG\n"
 #~ "16-разрядный PPM\n"
 #~ "PFM с плавающей точкой"
-#~ msgid ""
-#~ "do you really want to physically delete all selected images from disk?"
-#~ msgstr ""
-#~ "Вы действительно хотите физически удалить все выбранные снимки с диска?"
-#~ msgid "delete images?"
-#~ msgstr "Удалить снимки?"
 #~ msgid "mode"
 #~ msgstr "Режим"
 
