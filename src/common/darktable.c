@@ -23,7 +23,7 @@
 #endif
 
 darktable_t darktable;
-const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,hdr,ia,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,sti,tif,tiff,x3f";
+const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,hdr,ia,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,sti,x3f";
 
 int dt_init(int argc, char *argv[])
 {

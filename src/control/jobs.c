@@ -247,19 +247,19 @@ void dt_control_export_job_run(dt_job_t *job)
     switch(fmt)
     {
       case DT_DEV_EXPORT_JPG:
-        strncpy(c, ".jpg", 4);
+        strncpy(c, "_dt.jpg", 7);
         dt_imageio_export_8(img, filename);
         break;
       case DT_DEV_EXPORT_PNG:
-        strncpy(c, ".png", 4);
+        strncpy(c, "_dt.png", 7);
         dt_imageio_export_8(img, filename);
         break;
       case DT_DEV_EXPORT_PPM16:
-        strncpy(c, ".ppm", 4);
+        strncpy(c, "_dt.ppm", 7);
         dt_imageio_export_16(img, filename);
         break;
       case DT_DEV_EXPORT_PFM:
-        strncpy(c, ".pfm", 4);
+        strncpy(c, "_dt.pfm", 7);
         dt_imageio_export_f(img, filename);
         break;
       default:

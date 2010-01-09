@@ -8,19 +8,21 @@
 #include <stdlib.h>
 #include <math.h>
 
+// cache line resolution
+#define DT_DEV_PIXELPIPE_CACHE_SIZE DT_IMAGE_WINDOW_SIZE
+
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
 
 void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*width*height, 1);
+  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*width*height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
 }
 
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  // TODO: this is definitely a waste of memory (165 MB for the screen cache for both pipes) :)
-  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*DT_IMAGE_WINDOW_SIZE*DT_IMAGE_WINDOW_SIZE, 5);
+  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
 }
 
@@ -229,6 +231,39 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   {
     // recurse and obtain output array in &input
     module->modify_roi_in(module, piece, roi_out, &roi_in);
+    // check roi_in for sanity and clip to maximum alloc'ed area, downscale
+    // input if necessary.
+    roi_in.scale = fabsf(roi_in.scale);
+    if(roi_in.x < 0) roi_in.x = 0;
+    if(roi_in.y < 0) roi_in.y = 0;
+    if(roi_in.width  < 1) roi_in.width  = 1;
+    if(roi_in.height < 1) roi_in.height = 1;
+    int maxwd = DT_DEV_PIXELPIPE_CACHE_SIZE;
+    int maxht = DT_DEV_PIXELPIPE_CACHE_SIZE;
+    if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+    {
+      maxwd = pipe->iwidth;
+      maxht = pipe->iheight;
+    }
+    if(roi_in.width  > maxwd)
+    {
+      const float f = maxwd/(float)roi_in.width;
+      roi_in.scale  *= f;
+      roi_in.height *= f;
+      roi_in.x      *= f;
+      roi_in.y      *= f;
+      roi_in.width   = maxwd;
+    }
+    if(roi_in.height > maxht)
+    {
+      const float f  = maxht/(float)roi_in.height;
+      roi_in.scale  *= f;
+      roi_in.x      *= f;
+      roi_in.y      *= f;
+      roi_in.width  *= f;
+      roi_in.height  = maxht;
+    }
+
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // reserve new cache line: output

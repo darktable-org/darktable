@@ -256,7 +256,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 }
 
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
-                                 uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
+                                  uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
 {
   const float scalex = iw/(float)ow;
   const float scaley = ih/(float)oh;

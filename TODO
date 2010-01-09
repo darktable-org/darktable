@@ -1,4 +1,5 @@
 0.5 release:
+- check for deleted/updated files on film open.
 - list of supported input files and filter.
 - highlight reconstruction/tonemapping
 - save history stack list, make them stackable, clear history stack button.
@@ -42,11 +43,11 @@
 - efficiency:
   - dt_image_expose: check history cached in flags?
   - dt_dev_process_to_mip: check hash?
-- image file operations: remove from db, delete from disk, write dt[tags], duplicate in db.
+- image file operations: remove from db, delete from disk (trash?),
+  write dt[tags], duplicate in db.
 - scroll to opened expander in darkroom mode.
 
 bugs:
-- purple spots out of Lab gamut to colorout..?
 - temperature to match other apps.
 - bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.

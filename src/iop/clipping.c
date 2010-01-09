@@ -68,11 +68,12 @@ const char *name()
   return _("clipping");
 }
 
+// 1st pass: how large would the output be, given this input roi?
+// this is always called with the full buffer before processing.
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
-  float sw = roi_in->width, sh = roi_in->height, s = roi_out->scale/roi_in->scale;
 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle),-sinf(d->angle),
@@ -87,28 +88,30 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     for(int k=0;k<2;k++) if(fabsf(o[k]) > 0.001f) cropscale = fminf(cropscale, aabb[(o[k] > 0 ? 2 : 0) + k]/o[k]);
   }
 
-  // modify roi_out by scaling inside rotated buffer.
-  // modify cx/cy/.. to be on scale of roi out: (0..1) of roi in size
-  const float cx = d->cx + (1.0-cropscale)*.5f, cy = d->cy + (1.0-cropscale)*.5f;
-  d->cix = cx * sw*s;
-  d->ciy = cy * sh*s;
-  d->ciw = cropscale * (d->cw-cx) * sw*s;
-  d->cih = cropscale * (d->ch-cy) * sh*s;
-  int clipx = d->cix, clipy = d->ciy, clipw = d->ciw, cliph = d->cih;
-  if(roi_out->x      < clipx) roi_out->x      = clipx;
-  if(roi_out->width  > clipw) roi_out->width  = clipw;
-  if(roi_out->y      < clipy) roi_out->y      = clipy;
-  if(roi_out->height > cliph) roi_out->height = cliph;
+  // remember rotation center in whole-buffer coordinates:
+  d->tx = roi_in->width  * .5f;
+  d->ty = roi_in->height * .5f;
+
+  // rotate and clip to max extent
+  roi_out->x      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
+  roi_out->y      = d->ty - (.5f - d->cy)*cropscale*roi_in->height;
+  roi_out->width  = (d->cw-d->cx)*cropscale*roi_in->width;
+  roi_out->height = (d->ch-d->cy)*cropscale*roi_in->height;
+  // sanity check.
   if(roi_out->width  < 1) roi_out->width  = 1;
   if(roi_out->height < 1) roi_out->height = 1;
+  // save rotation crop on output buffer in world scale:
+  d->cix = roi_out->x;
+  d->ciy = roi_out->y;
+  d->ciw = roi_out->width;
+  d->cih = roi_out->height;
 
   rt[1] = - rt[1];
   rt[2] = - rt[2];
   for(int k=0;k<4;k++) d->m[k] = rt[k];
-  d->tx = roi_in->width  * .5f;
-  d->ty = roi_in->height * .5f;
 }
 
+// 2nd pass: which roi would this operation need as input to fill the given output region?
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
@@ -134,10 +137,14 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // adjust roi_in to maximally needed region
   roi_in->x      = aabb_in[0];
   roi_in->y      = aabb_in[1];
-  roi_in->width  = aabb_in[2]-aabb_in[0]+10;
-  roi_in->height = aabb_in[3]-aabb_in[1]+10;
+  roi_in->width  = aabb_in[2]-aabb_in[0];
+  roi_in->height = aabb_in[3]-aabb_in[1];
+  roi_in->width  += 100; // add safety border for numeric/rounding errors.
+  roi_in->height += 100;
 }
 
+// 3rd (final) pass: you get this input region (may be different from what was requested above), 
+// do your best to fill the ouput region!
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
@@ -149,9 +156,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // get whole-buffer point from i,j
   pi[0] = roi_out->x + roi_out->scale*d->cix;
   pi[1] = roi_out->y + roi_out->scale*d->ciy;
-  // transform this point from using matrix m
+  // transform this point using matrix m
   pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
+  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
   mul_mat_vec_2(d->m, pi, p0);
+  p0[0] *= roi_in->scale; p0[1] *= roi_in->scale;
   p0[0] += d->tx*roi_in->scale;  p0[1] += d->ty*roi_in->scale;
   // transform this point to roi_in
   p0[0] -= roi_in->x; p0[1] -= roi_in->y;
@@ -159,7 +168,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   pi[0] = roi_out->x + roi_out->scale*d->cix + 1;
   pi[1] = roi_out->y + roi_out->scale*d->ciy;
   pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
+  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
   mul_mat_vec_2(d->m, pi, tmp);
+  tmp[0] *= roi_in->scale; tmp[1] *= roi_in->scale;
   tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
   tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
   dx[0] = tmp[0] - p0[0]; dx[1] = tmp[1] - p0[1];
@@ -167,7 +178,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   pi[0] = roi_out->x + roi_out->scale*d->cix;
   pi[1] = roi_out->y + roi_out->scale*d->ciy + 1;
   pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
+  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
   mul_mat_vec_2(d->m, pi, tmp);
+  tmp[0] *= roi_in->scale; tmp[1] *= roi_in->scale;
   tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
   tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
   dy[0] = tmp[0] - p0[0]; dy[1] = tmp[1] - p0[1];
@@ -194,32 +207,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int k=0;k<2;k++) pi[k] -= roi_out->width*dx[k];
     for(int k=0;k<2;k++) pi[k] += dy[k];
   }
-
-#if 0
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, roi_in, d, in, out) schedule(static)
-#endif
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-  {
-    float p1[2], p2[2];
-    // get whole-buffer point from i,j
-    p1[0] = (roi_out->x + roi_out->scale*d->cix + i);
-    p1[1] = (roi_out->y + roi_out->scale*d->ciy + j);
-    // transform this point from using matrix m
-    p1[0] -= d->tx*roi_out->scale; p1[1] -= d->ty*roi_out->scale;
-    mul_mat_vec_2(d->m, p1, p2);
-    p2[0] += d->tx*roi_in->scale;  p2[1] += d->ty*roi_in->scale;
-    // transform this point to roi_in
-    p2[0] -= roi_in->x; p2[1] -= roi_in->y;
-    const int ii = (int)p2[0], jj = (int)p2[1];
-    const float fi = p2[0] - ii, fj = p2[1] - jj;
-    for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = // in[3*roi_in->width*(int)p2[1] + 3*(int)p2[0] + c];
-          ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-           (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-           (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-           (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
-  }
-#endif
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
