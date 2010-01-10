@@ -124,7 +124,37 @@ int dt_exif_read(dt_image_t *img, const char* path)
     /** read image orientation */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation")))
         != exifData.end() ) {
-      img->orientation = pos->toLong();
+      const int orient = pos->toLong();
+      switch(orient)
+      {
+        case 1:
+          img->orientation = 0 | 0 | 1;
+          break;
+        case 2:
+          img->orientation = 0 | 2 | 1;
+          break;
+        case 3:
+          img->orientation = 0 | 2 | 0;
+          break;
+        case 4:
+          img->orientation = 0 | 0 | 0;
+          break;
+        case 5:
+          img->orientation = 4 | 0 | 0;
+          break;
+        case 6:
+          img->orientation = 4 | 2 | 0;
+          break;
+        case 7:
+          img->orientation = 4 | 2 | 1;
+          break;
+        case 8:
+          img->orientation = 4 | 0 | 1;
+          break;
+        default:
+          img->orientation = 0;
+          break;
+      }
     }
     /* Read lens name */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Lens")))

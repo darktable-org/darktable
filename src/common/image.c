@@ -627,7 +627,8 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   // insert image in node list at newest time
   for(int k=0;k<darktable.mipmap_cache->num_entries[mip];k++)
   {
-    if(darktable.mipmap_cache->mip_lru[mip][k] == NULL || darktable.mipmap_cache->mip_lru[mip][k]->lock[mip].users == 0)
+    if(darktable.mipmap_cache->mip_lru[mip][k] == NULL ||
+      (darktable.mipmap_cache->mip_lru[mip][k]->lock[mip].users == 0 && darktable.mipmap_cache->mip_lru[mip][k]->lock[mip].write == 0))
     {
       dt_image_free(darktable.mipmap_cache->mip_lru[mip][k], mip);
       memmove(darktable.mipmap_cache->mip_lru[mip] + k, darktable.mipmap_cache->mip_lru[mip] + k + 1, (darktable.mipmap_cache->num_entries[mip] - k - 1)*sizeof(dt_image_t*));
