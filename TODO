@@ -1,4 +1,5 @@
 0.5 release:
+- libraw patch: green equilibration
 - check for deleted/updated files on film open.
 - list of supported input files and filter.
 - highlight reconstruction/tonemapping
@@ -9,7 +10,7 @@
 - ctrl + 01234 in lighttable => stars
 - esc -> unfullscreen -> center
 - automatic re-import in raw import on button press?
-- monochrome passthrough mode
+- monochrome passthrough mode (or color channel equalizer tool?)
 - clipping aspect ratio
 - clean build system (kernel like)
 - crop/rotate angle == 0 bypass
