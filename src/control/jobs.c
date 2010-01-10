@@ -241,31 +241,29 @@ void dt_control_export_job_run(dt_job_t *job)
     for(;c>filename && *c != '.';c--);
     if(c <= filename) c = filename + strlen(filename);
 
-    // avoid name clashes for single images:
-    if(img->film_id == 1)
-    {
-      strncpy(c, "_dt", 3);
-      c += 3;
-    }
-
     // read type from global config.
     dt_dev_export_format_t fmt =
       gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format", NULL);
     switch(fmt)
     {
       case DT_DEV_EXPORT_JPG:
+        // avoid name clashes for single images:
+        if(img->film_id == 1 && !strcmp(c, ".jpg")) { strncpy(c, "_dt", 3); c += 3; }
         strncpy(c, ".jpg", 4);
         dt_imageio_export_8(img, filename);
         break;
       case DT_DEV_EXPORT_PNG:
+        if(img->film_id == 1 && !strcmp(c, ".png")) { strncpy(c, "_dt", 3); c += 3; }
         strncpy(c, ".png", 4);
         dt_imageio_export_8(img, filename);
         break;
       case DT_DEV_EXPORT_PPM16:
+        if(img->film_id == 1 && !strcmp(c, ".ppm")) { strncpy(c, "_dt", 3); c += 3; }
         strncpy(c, ".ppm", 4);
         dt_imageio_export_16(img, filename);
         break;
       case DT_DEV_EXPORT_PFM:
+        if(img->film_id == 1 && !strcmp(c, ".pfm")) { strncpy(c, "_dt", 3); c += 3; }
         strncpy(c, ".pfm", 4);
         dt_imageio_export_f(img, filename);
         break;
