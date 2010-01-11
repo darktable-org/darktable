@@ -119,6 +119,7 @@ int dt_init(int argc, char *argv[])
     }
     else
     {
+      // TODO: gtk window!
       fprintf(stderr, "[dt_init] could not open image file `%s'!\n", image_to_load);
     }
   }

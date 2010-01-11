@@ -7,6 +7,7 @@ src/control/jobs.c
 src/develop/develop.c
 src/develop/imageop.c
 src/libs/copy_history.c
+src/libs/lib.c
 src/libs/export.c
 src/iop/clipping.c
 src/iop/colorcorrection.c

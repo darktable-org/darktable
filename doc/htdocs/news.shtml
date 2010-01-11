@@ -12,11 +12,11 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
-    	<img src="images/rock1.jpg" class="img" alt="dreggn" /><h1>0.4 released</h1>
-      <em>(2009-12-26)</em>as usual, the new release comes with lots of new features:
+    	<img src="images/rock1.jpg" class="img" alt="dreggn" /><h1>released 0.4</h1>
+      <em>(2010-01-11)</em>as usual, the new release comes with lots of new features:
       <ul>
         <li>lens defect correction (lensfun)</li>
-        <li>internationalization (russian translation)</li>
+        <li>internationalization (russian and swedish translation)</li>
         <li>backup files for image editing history and tagging (.dt and .dttags) apart from database</li>
         <li>gconf preferences handling</li>
         <li>lighttable mode plugins</li>

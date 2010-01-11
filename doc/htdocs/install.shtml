@@ -18,23 +18,23 @@
     	<img src="images/bee.jpg" alt="prerequisites" class="img" /><h1>prerequisites</h1>
       <ul>
         <li>*nix (tested: ubuntu jaunty+karmic, arch linux, gentoo, fedora, mac osx with macports)</li>
-        <li>required packages: sqlite3, libjpeg, libpng, libraw (supplied), gtk+-2, cairo, libglade2, lcms, gegl (optional), exiv2</li>
+        <li>required packages: sqlite3, libjpeg, libpng, libraw (supplied), gtk+-2, cairo, libglade2, lcms, gegl (optional), exiv2, gconf</li>
         <li>optional: gcc&gt;=4.4 (openmp, earlier versions could not handle openmp statements in non-main threads)</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/firering.jpg" alt="release" class="img" /><h1>current release for ubuntu amd64</h1>
       <ul>
-        <li>get the .deb file <a href="https://sourceforge.net/projects/darktable/files/darktable/0.3/darktable_0.3_amd64.deb/download">darktable_0.3_amd64.deb</a>.
-        <li>dpkg -i darktable_0.3_amd64.deb</li>
+        <li>get the .deb file <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable_0.4_amd64.deb/download">darktable_0.4_amd64.deb</a>.
+        <li>dpkg -i darktable_0.4_amd64.deb</li>
         <li>Applications - Graphics - darktable</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.3/darktable-0.3.tar.bz2/download">0.3 source .bz2</a></li>
-        <li>tar xvjf darktable-0.3.tar.bz2 &amp;&amp; cd darktable-0.3</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.tar.bz2/download">0.4 source .bz2</a></li>
+        <li>tar xvjf darktable-0.4.tar.bz2 &amp;&amp; cd darktable-0.4</li>
         <li>./autogen.sh</li>
         <li>./configure [--enable-debug] [--prefix=$(pwd)/install]</li>
         <li>make all &amp;&amp; make install</li>
@@ -46,7 +46,7 @@
       <ul>
         <li>unfortunately darktable is not in portage, so you have to:</li>
         <li>download this <a href="darktable-9999.ebuild">ebuild for the git version</a></li>
-        <li>or this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.3/darktable-0.3.ebuild/download">ebuild for the 0.3 release</a></li>
+        <li>or this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.ebuild/download">ebuild for the 0.3 release</a></li>
         <li># mkdir -p /usr/portage/media-gfx/darktable/</li>
         <li># cp darktable-*.ebuild /usr/portage/media-gfx/darktable/</li>
         <li># ebuild /usr/portage/media-gfx/darktable/darktable-*.ebuild digest</li>
