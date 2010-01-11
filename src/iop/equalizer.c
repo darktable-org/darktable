@@ -219,16 +219,16 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
       for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
       {
         p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.25f*k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
+        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
       }
       break;
     case 1: // sharpen a lot
       for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
       {
         p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.5f*k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;//k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
+        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
       }
       break;
     case 2: // denoise
@@ -334,7 +334,7 @@ static void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const int 
 {
   for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
   {
-    const float f = powf(fmaxf(0.0, rad*rad - (mouse_x - p->equalizer_x[ch][k])*(mouse_x - p->equalizer_x[ch][k]))/(rad*rad), 0.25);
+    const float f = expf(-(mouse_x - p->equalizer_x[ch][k])*(mouse_x - p->equalizer_x[ch][k])/(rad*rad));
     p->equalizer_y[ch][k] = (1-f)*p->equalizer_y[ch][k] + f*mouse_y;
   }
 }
@@ -514,8 +514,8 @@ static gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *eve
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 1.0/DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.7;
-  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= 1.42;
+  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 1.0/DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.9; //0.7;
+  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0/0.9); //1.42;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
