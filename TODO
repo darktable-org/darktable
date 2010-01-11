@@ -1,4 +1,5 @@
 0.5 release:
+- high quality resampling in clip-and-zoom?
 - equalizer histogram doesn't show anymore??
 - libraw patch: green equilibration
 - check for deleted/updated files on film open.

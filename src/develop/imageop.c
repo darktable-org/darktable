@@ -287,29 +287,47 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
     y += scaley; x = ix2;
   }
 }
+
+void dt_iop_clip_and_zoom_hq_downsample(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
+                                              float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
+{
+  // general case
+  const float fib2 = 34.0f, fib1 = 21.0f;
+  const float scalex = iw/(float)ow;
+  const float scaley = ih/(float)oh;
+  int32_t ix2 = MAX(ix, 0);
+  int32_t iy2 = MAX(iy, 0);
+  int32_t ox2 = MAX(ox, 0);
+  int32_t oy2 = MAX(oy, 0);
+  int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
+  int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
+  assert((int)(ix2 + ow2*scalex) <= ibw);
+  assert((int)(iy2 + oh2*scaley) <= ibh);
+  assert(ox2 + ow2 <= obw);
+  assert(oy2 + oh2 <= obh);
+  assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
+  float x = ix2, y = iy2;
+  for(int s=0;s<oh2;s++)
+  {
+    int idx = ox2 + obw*(oy2+s);
+    for(int t=0;t<ow2;t++)
+    {
+      // rank-1 resampling with fibonacci lattice for 21 points
+      for(int k=0;k<3;k++) o[3*idx + k] = 0.0f;
+      for(int l=0;l<fib2;l++)
+      {
+        float px = l/fib2, py = l*(fib1/fib2); py -= (int)py;
+        for(int k=0;k<3;k++) o[3*idx + k] += (1.0/fib2)*i[(3*(ibw*(int32_t) (y + py*scaley) + (int32_t) (x + px*scalex)) + k)];
+      }
+      x += scalex; idx++;
+    }
+    y += scaley; x = ix2;
+  }
+}
+
 void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
                                 float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
 {
-  /* FIXME: broken:
-  // optimized 1:1 branch:
-  if(iw == ow && ih == oh)
-  {
-    int x = ix, y = iy;
-    const int oh2 = MIN(oh, ih - iy);
-    const int ow2 = MIN(ow, iw - ix);
-    int idx = 0;
-    for(int j=0;j<oh2;j++)
-    {
-      for(int l=0;l<ow2;l++)
-      {
-        for(int k=0;k<3;k++) o[3*idx + k] = i[3*(ibw*y + x) + k];
-        x++; idx++;
-      }
-      y++; x = ix;
-      idx = obw*j;
-    }
-    return;
-  }*/
   // general case
   const float scalex = iw/(float)ow;
   const float scaley = ih/(float)oh;

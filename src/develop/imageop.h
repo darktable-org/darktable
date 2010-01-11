@@ -121,6 +121,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom  (const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
                                   float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
+/** uses more samples for a smoother downsampled preview. */
+void dt_iop_clip_and_zoom_hq_downsample (const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
+                                               float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
+/** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
                                   uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
 /** for homebrew pixel pipe: convert sRGB to Lab, float buffers. */
