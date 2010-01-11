@@ -319,7 +319,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-gboolean dt_iop_equalizer_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean dt_iop_equalizer_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -330,7 +330,7 @@ gboolean dt_iop_equalizer_leave_notify(GtkWidget *widget, GdkEventCrossing *even
 }
 
 // fills in new parameters based on mouse position (in 0,1)
-void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const int ch, const double mouse_x, const double mouse_y, const float rad)
+static void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const int ch, const double mouse_x, const double mouse_y, const float rad)
 {
   for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
   {
@@ -339,7 +339,7 @@ void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const int ch, con
   }
 }
 
-gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -392,12 +392,7 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
 
   // draw frequency histogram in bg.
 #if 1
-  // draw lum h istogram in background
-  dt_develop_t *dev = darktable.develop;
-  float *hist, hist_max;
-  hist = dev->histogram_pre;
-  hist_max = dev->histogram_pre_max;
-  if(hist_max > 0)
+  if(c->band_max > 0)
   {
     cairo_save(cr);
     cairo_scale(cr, width/(DT_IOP_EQUALIZER_BANDS-1.0), -(height-5)/c->band_max);
@@ -472,7 +467,7 @@ gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   return TRUE;
 }
 
-gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -494,7 +489,7 @@ gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion *event
   return TRUE;
 }
 
-gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 { // set active point
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -507,7 +502,7 @@ gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton *event,
   return TRUE;
 }
 
-gboolean dt_iop_equalizer_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean dt_iop_equalizer_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -515,7 +510,7 @@ gboolean dt_iop_equalizer_button_release(GtkWidget *widget, GdkEventButton *even
   return TRUE;
 }
 
-gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -525,7 +520,7 @@ gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *event, gpo
   return TRUE;
 }
 
-void dt_iop_equalizer_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+static void dt_iop_equalizer_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
