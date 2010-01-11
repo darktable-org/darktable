@@ -181,7 +181,7 @@ int dt_control_load_config(dt_control_t *c)
   }
   else
   { // db not yet there, create it
-    dt_ctl_settings_default(darktable.control);
+    // dt_ctl_settings_default(darktable.control);
     rc = sqlite3_finalize(stmt);
     rc = sqlite3_exec(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
