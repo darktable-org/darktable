@@ -937,7 +937,8 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   {
     widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
     if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-    else gtk_widget_show(widget);
+    // bottom has currently no useful controls in it, keep hidden:
+    // else gtk_widget_show(widget);
   }
 }
 
