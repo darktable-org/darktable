@@ -14,6 +14,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/ask_before_remove</key>
+      <applyto>/apps/darktable/ask_before_remove</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>true</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>ask before removing images</short>
+        <long>always ask the user before any image is removed from db.</long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/ask_before_delete</key>
       <applyto>/apps/darktable/ask_before_delete</applyto>
       <owner>darktable</owner>

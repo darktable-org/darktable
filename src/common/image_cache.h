@@ -48,5 +48,7 @@ dt_image_t *dt_image_cache_get(int32_t id, const char mode);
 void dt_image_cache_release(dt_image_t *img, const char mode);
 /** synches this image and the db entry. */
 void dt_image_cache_flush(dt_image_t *img);
+/** invalidates resources occupied by this image. */
+void dt_image_cache_clear(int32_t id);
 
 #endif

@@ -97,7 +97,7 @@ gui_init (dt_lib_module_t *self)
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
 
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
   gtk_object_set(GTK_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image"), NULL);
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));

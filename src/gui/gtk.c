@@ -88,7 +88,7 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
 }
 
 
-void
+static void
 selected_action_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *wid = glade_xml_get_widget (darktable.gui->main_window, "select_action");
@@ -97,7 +97,7 @@ selected_action_button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 1) dt_control_delete_images();
 }
 
-void
+static void
 film_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   long int num = (long int)user_data;

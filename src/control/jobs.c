@@ -115,6 +115,32 @@ void dt_control_write_dt_files_job_run(dt_job_t *job)
   }
 }
 
+void dt_control_duplicate_images_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  while(t)
+  {
+    imgid = (long int)t->data;
+    dt_image_duplicate(imgid);
+    t = g_list_delete_link(t, t);
+  }
+}
+
+void dt_control_remove_images_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  while(t)
+  {
+    imgid = (long int)t->data;
+    dt_image_remove(imgid);
+    t = g_list_delete_link(t, t);
+  }
+}
+
 void dt_control_delete_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -151,6 +177,8 @@ void dt_control_delete_images_job_run(dt_job_t *job)
     for(;c>dtfilename && *c != '.';c--);
     sprintf(c, ".dt");
     (void)g_unlink(dtfilename);
+    sprintf(c, ".dttags");
+    (void)g_unlink(dtfilename);
     dt_image_cache_release(img, 'r');
     t = g_list_delete_link(t, t);
   }
@@ -185,12 +213,56 @@ void dt_control_write_dt_files()
   dt_control_add_job(darktable.control, &j);
 }
 
+void dt_control_duplicate_images_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "duplicate images");
+  job->execute = &dt_control_duplicate_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
+void dt_control_remove_images_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "remove images");
+  job->execute = &dt_control_remove_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
 void dt_control_delete_images_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "delete images");
   job->execute = &dt_control_delete_images_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   dt_control_image_enumerator_job_init(t);
+}
+
+void dt_control_duplicate_images()
+{
+  dt_job_t j;
+  dt_control_duplicate_images_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_remove_images()
+{
+  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/ask_before_remove", NULL))
+  {
+    GtkWidget *dialog;
+    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_YES_NO,
+        _("do you really want to remove all selected images from the collection?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    if(res != GTK_RESPONSE_YES) return;
+  }
+  dt_job_t j;
+  dt_control_remove_images_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
 }
 
 void dt_control_delete_images()

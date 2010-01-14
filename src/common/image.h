@@ -92,6 +92,8 @@ void dt_image_init(dt_image_t *img);
 void dt_image_full_path(dt_image_t *img, char *pathname, int len);
 /** returns the full path where to export the image (file ending remains original). */
 void dt_image_export_path(dt_image_t *img, char *pathname, int len);
+/** appends version numbering for duplicated images. */
+void dt_image_path_append_version(dt_image_t *img, char *pathname, const int len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(dt_image_t *img, char *line, int len);
 /** opens an image with minimal storage from the data base and stores it in image cache. */ 
@@ -103,6 +105,8 @@ int dt_image_import(const int32_t film_id, const char *filename);
 int dt_image_reimport(dt_image_t *img, const char *filename);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
+/** duplicates the given image in the database. */
+void dt_image_duplicate(const int32_t imgid);
 /** cleanup. */
 void dt_image_cleanup(dt_image_t *img);
 /** loads the requested buffer to cache, with read lock set. */

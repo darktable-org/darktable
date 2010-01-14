@@ -50,6 +50,8 @@ void dt_dev_export_init(dt_job_t *job);
 
 void dt_control_write_dt_files();
 void dt_control_delete_images();
+void dt_control_duplicate_images();
+void dt_control_remove_images();
 void dt_control_export();
 
 #endif

@@ -5,9 +5,14 @@
 - sliders numeric input field
 - gnome-color-manager dbus interaction
 - color matrix/gamma vs input profile consistency
+  - move color matrix from libraw to dt
+  - also makes whitebalance presets from ufraw easy
 - library:
+  - processing history
+    - stack stacking
+    - favorites list (custom styles or so)
+    - clear history button
   - more stable image handling:
-    - image lib operations (add, remove, duplicate+robust exp)
     - film db operations: add, search, remove, check deleted, move dir
     - free db image selection 
     - folder watching and image re-import on change event (lib+dev)
