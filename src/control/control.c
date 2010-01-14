@@ -370,6 +370,8 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
 
+  s->log_pos = s->log_ack = 0;
+  pthread_mutex_init(&(s->log_mutex), NULL);
   s->progress = 200.0f;
 
   gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", DT_MODE_NONE, NULL);
@@ -467,6 +469,7 @@ void dt_control_cleanup(dt_control_t *s)
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);
+  pthread_mutex_destroy(&s->log_mutex);
   g_object_unref(s->gconf);
 }
 
@@ -758,6 +761,39 @@ void *dt_control_expose(void *voidptr)
       snprintf(num, 10, "%d%%", (int)darktable.control->progress);
       cairo_show_text (cr, num);
     }
+    // draw log message, if any
+    pthread_mutex_lock(&darktable.control->log_mutex);
+    if(darktable.control->log_ack != darktable.control->log_pos)
+    {
+      tb = fmaxf(20, width/40.0);
+      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      const float fontsize = 14;
+      cairo_set_font_size (cr, fontsize);
+      cairo_text_extents_t ext;
+      cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_pos-1], &ext);
+      const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
+      float rad = 14;
+      cairo_set_line_width(cr, 1.);
+      for(int k=0;k<5;k++)
+      {
+        cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
+        cairo_line_to (cr, xc+wd, yc-rad);
+        cairo_arc (cr, xc+wd, yc, rad, 3.0*M_PI/2.0, M_PI/2.0);
+        cairo_line_to (cr, xc-wd, yc+rad);
+        if(k == 0)
+        {
+          cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+          cairo_fill_preserve (cr);
+        }
+        cairo_set_source_rgba(cr, 0., 0., 0., 1.0/(1+k));
+        cairo_stroke (cr);
+        rad += .5f;
+      }
+      cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+      cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
+      cairo_show_text (cr, darktable.control->log_message[darktable.control->log_pos-1]);
+    }
+    pthread_mutex_unlock(&darktable.control->log_mutex);
 
     cairo_destroy(cr);
 
@@ -822,26 +858,24 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
 
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 {
-  int selected;
-  DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
-  if(mode == DT_LIBRARY || selected >= 0)
-  {
-    dt_ctl_gui_mode_t oldmode =
-      gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/view", NULL);
-    if(oldmode == mode) return;
-    dt_control_save_gui_settings(oldmode);
-    darktable.control->button_down = 0;
-    darktable.control->button_down_which = 0;
-    dt_control_restore_gui_settings(mode);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
-    char buf[512];
-    snprintf(buf, 512, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
-    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, NULL);
-    dt_view_manager_switch(darktable.view_manager, mode);
-    snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"), dt_view_manager_name(darktable.view_manager));
-    gtk_label_set_label(GTK_LABEL(widget), buf);
-    gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", mode, NULL);
-  }
+  dt_ctl_gui_mode_t oldmode =
+    gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/view", NULL);
+  if(oldmode == mode) return;
+  dt_control_save_gui_settings(oldmode);
+  darktable.control->button_down = 0;
+  darktable.control->button_down_which = 0;
+  char buf[512];
+  snprintf(buf, 512, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
+
+  int error = dt_view_manager_switch(darktable.view_manager, mode);
+  if(error) return;
+
+  dt_control_restore_gui_settings(mode);
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, NULL);
+  snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"), dt_view_manager_name(darktable.view_manager));
+  gtk_label_set_label(GTK_LABEL(widget), buf);
+  gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", mode, NULL);
 }
 
 void dt_ctl_switch_mode()
@@ -863,6 +897,18 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   float wd = darktable.control->width;
   float ht = darktable.control->height;
   GtkWidget *widget;
+
+  // ack log message:
+  pthread_mutex_lock(&darktable.control->log_mutex);
+  const float /*xc = wd/4.0-20,*/ yc = ht*0.85+10;
+  if(darktable.control->log_ack != darktable.control->log_pos)
+  if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
+  {
+    darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
+    pthread_mutex_unlock(&darktable.control->log_mutex);
+    return;
+  }
+  pthread_mutex_unlock(&darktable.control->log_mutex);
 
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
   {
@@ -893,6 +939,19 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
     if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
     else gtk_widget_show(widget);
   }
+}
+
+void dt_control_log(const char* msg, ...)
+{
+  pthread_mutex_lock(&darktable.control->log_mutex);
+  va_list ap;
+  va_start(ap, msg);
+  vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
+  va_end(ap);
+  darktable.control->log_ack = darktable.control->log_pos;
+  darktable.control->log_pos = (darktable.control->log_pos+1)%DT_CTL_LOG_SIZE;
+  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_control_queue_draw_all();
 }
 
 void dt_control_gui_queue_draw()

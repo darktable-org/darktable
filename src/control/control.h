@@ -99,19 +99,20 @@ int  dt_control_key_pressed(uint16_t which);
 int  dt_control_key_pressed_override(uint16_t which);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_gui_queue_draw();
+void dt_control_log(const char* msg, ...);
 void dt_control_change_cursor(dt_cursor_t cursor);
 void dt_control_write_dt_files();
 void dt_control_delete_images();
 void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 
 // called from core
-void dt_control_queue_draw_all();
-void dt_control_queue_draw(GtkWidget *widget);
 void dt_control_add_history_item(int32_t num, const char *label);
 void dt_control_clear_history_items(int32_t num);
 void dt_control_update_recent_films();
 
 // could be both
+void dt_control_queue_draw_all();
+void dt_control_queue_draw(GtkWidget *widget);
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 
@@ -136,6 +137,8 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...);
 void dt_control_job_print(dt_job_t *j);
 
 
+#define DT_CTL_LOG_SIZE 10
+#define DT_CTL_LOG_MSG_SIZE 200
 /**
  * this manages everything time-consuming.
  * distributes the jobs on all processors,
@@ -151,6 +154,11 @@ typedef struct dt_control_t
   int button_down, button_down_which;
   double button_x, button_y;
   int history_start;
+
+  // message log
+  int  log_pos, log_ack;
+  char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
+  pthread_mutex_t log_mutex;
   
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;

@@ -1,13 +1,22 @@
 0.5 release:
-- high quality resampling in clip-and-zoom?
-- equalizer histogram doesn't show anymore??
-- libraw patch: green equilibration
+- user adjustable defaults for all iops
+- check font patch
+- sliders numeric input field
+- gnome-color-manager dbus interaction
+- color matrix/gamma vs input profile consistency
+- library:
+  - more stable image handling:
+    - image lib operations (add, remove, check deleted, duplicate+robust exp)
+    - film db operations: add, search, remove, check deleted, move dir
+    - free db image selection 
+    - folder watching and image re-import on change event (lib+dev)
+  - db tag functionality:
+    - image tagging, tag conditional probabilities
+    - related tag browser view
 - check for deleted/updated files on film open.
-- list of supported input files and filter.
 - highlight reconstruction/tonemapping
 - save history stack list, make them stackable, clear history stack button.
 - automatic application of history stacks due to pattern matching.
-- remember expansion state for metadata and darkroom plugins.
 - write dttags on image_cache_flush?
 - ctrl + 01234 in lighttable => stars
 - esc -> unfullscreen -> center

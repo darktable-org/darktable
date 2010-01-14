@@ -175,8 +175,57 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
 }
 
 
+int try_enter(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  int selected;
+  DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
+  if(selected < 0)
+  { // try last selected
+    int rc;
+    sqlite3_stmt *stmt;
+    rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      selected = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
+
+  if(selected < 0)
+  { // fail :(
+    dt_control_log(_("no image selected!"));
+    return 1;
+  }
+
+  // this loads the image from db if needed:
+  dev->image = dt_image_cache_get(selected, 'r');
+  // get image and check if it has been deleted from disk first!
+  char imgfilename[1024];
+  dt_image_full_path(dev->image, imgfilename, 1024);
+  if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+  {
+    dt_control_log(_("image does no longer exist"));
+    dt_image_remove(selected);
+    dt_image_cache_release(dev->image, 'r');
+    dev->image = NULL;
+    return 1;
+  }
+  return 0;
+}
+
+
 void enter(dt_view_t *self)
 {
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+  DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
+  DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
+  DT_CTL_SET_GLOBAL(dev_closeup, 0);
+
+  dev->gui_leaving = 0;
+  dev->gui_module = NULL;
+  dt_dev_load_image(dev, dev->image);
+
+  // adjust gui:
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, TRUE);
@@ -185,22 +234,6 @@ void enter(dt_view_t *self)
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_widget_set_visible(widget, TRUE);
 
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-  int selected;
-  DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
-  if(selected >= 0)
-  {
-    DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-    DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-    DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
-    DT_CTL_SET_GLOBAL(dev_closeup, 0);
-  }
-
-  dev->gui_leaving = 0;
-  dev->gui_module = NULL;
-  // dt_dev_load_image(dev, dt_image_cache_use(selected, 'r'));
-  // this loads the image from db if needed:
-  dt_dev_load_image(dev, dt_image_cache_get(selected, 'r'));
   // get top level vbox containing all expanders, plugins_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GtkTable *module_list = GTK_TABLE(glade_xml_get_widget (darktable.gui->main_window, "module_list"));

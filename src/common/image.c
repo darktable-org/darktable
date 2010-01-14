@@ -225,6 +225,28 @@ int dt_image_raw_to_preview(dt_image_t *img)
   return 0;
 }
 
+void dt_image_remove(const int32_t imgid)
+{
+  int rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 int dt_image_reimport(dt_image_t *img, const char *filename)
 {
   // this brute-force lock might be a bit too much:
@@ -241,20 +263,8 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
     // dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
     // dt_image_cache_release(img, 'w');
-    int rc;
-    sqlite3_stmt *stmt;
-    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, img->id);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, img->id);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, img->id);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, img->id);
-    rc = sqlite3_step(stmt);
+    dt_image_remove(img->id);
+    return 1;
   }
 
   // already some db entry there?

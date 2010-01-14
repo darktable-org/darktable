@@ -78,6 +78,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle),-sinf(d->angle),
                  sinf(d->angle), cosf(d->angle)};
+  if(d->angle == 0.0f) { rt[0] = rt[3] = 1.0; rt[1] = rt[2] = 0.0f; }
   // fwd transform rotated points on corners and scale back inside roi_in bounds.
   float cropscale = 1.0f;
   float p[2], o[2], aabb[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height};
@@ -135,12 +136,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     adjust_aabb(o, aabb_in);
   }
   // adjust roi_in to maximally needed region
-  roi_in->x      = aabb_in[0];
-  roi_in->y      = aabb_in[1];
-  roi_in->width  = aabb_in[2]-aabb_in[0];
-  roi_in->height = aabb_in[3]-aabb_in[1];
-  roi_in->width  += 100; // add safety border for numeric/rounding errors.
-  roi_in->height += 100;
+  roi_in->x      = aabb_in[0]-2;
+  roi_in->y      = aabb_in[1]-2;
+  roi_in->width  = aabb_in[2]-aabb_in[0]+4;
+  roi_in->height = aabb_in[3]-aabb_in[1]+4;
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above), 

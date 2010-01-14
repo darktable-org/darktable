@@ -56,6 +56,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "init",            (gpointer)&(view->init)))            view->init = NULL;
   if(!g_module_symbol(view->module, "cleanup",         (gpointer)&(view->cleanup)))         view->cleanup = NULL;
   if(!g_module_symbol(view->module, "expose",          (gpointer)&(view->expose)))          view->expose = NULL;
+  if(!g_module_symbol(view->module, "try_enter",       (gpointer)&(view->try_enter)))       view->try_enter = NULL;
   if(!g_module_symbol(view->module, "enter",           (gpointer)&(view->enter)))           view->enter = NULL;
   if(!g_module_symbol(view->module, "leave",           (gpointer)&(view->leave)))           view->leave = NULL;
   if(!g_module_symbol(view->module, "reset",           (gpointer)&(view->reset)))           view->reset = NULL;
@@ -83,17 +84,25 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
-void dt_view_manager_switch (dt_view_manager_t *vm, int k)
+int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 {
   // destroy old module list
   GtkContainer *table = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
   gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
 
+  int error = 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->current_view >= 0 && v->leave) v->leave(v);
-  if(k < DT_VIEW_MAX_MODULES && k >= 0) vm->current_view = k;
-  v = vm->view + vm->current_view;
-  if(v->enter) v->enter(v);
+  int newv = vm->current_view;
+  if(k < DT_VIEW_MAX_MODULES && k >= 0) newv = k;
+  dt_view_t *nv = vm->view + newv;
+  if(nv->try_enter) error = nv->try_enter(nv);
+  if(!error)
+  {
+    if(vm->current_view >= 0 && v->leave) v->leave(v);
+    vm->current_view = newv;
+    if(nv->enter) nv->enter(nv);
+  }
+  return error;
 }
 
 const char *dt_view_manager_name (dt_view_manager_t *vm)

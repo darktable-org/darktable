@@ -20,8 +20,9 @@ typedef struct dt_view_t
   void (*init)            (struct dt_view_t *self); // init *data
   void (*cleanup)         (struct dt_view_t *self); // cleanup *data
   void (*expose)          (struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery); // expose the module (gtk callback)
-  void (*enter)           (struct dt_view_t *self); // mode entered, this module got focus
-  void (*leave)           (struct dt_view_t *self); // mode left.
+  int  (*try_enter)       (struct dt_view_t *self); // test if enter can succeed.
+  void (*enter)           (struct dt_view_t *self); // mode entered, this module got focus. return non-null on failure.
+  void (*leave)           (struct dt_view_t *self); // mode left (is called after the new try_enter has succeded).
   void (*reset)           (struct dt_view_t *self); // reset default appearance
 
   // event callbacks:
@@ -52,8 +53,8 @@ void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
 const char *dt_view_manager_name (dt_view_manager_t *vm);
-/** switch to this module. */
-void dt_view_manager_switch(dt_view_manager_t *vm, int k);
+/** switch to this module. returns non-null if the module fails to change. */
+int dt_view_manager_switch(dt_view_manager_t *vm, int k);
 /** expose current module. */
 void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 /** reset current view. */
