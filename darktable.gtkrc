@@ -17,6 +17,9 @@ style "clearlooks-default"
 	#GtkOptionMenu::indicator_spacing = { 4, 5, 2, 2 }
 	GtkTreeView::expander_size = 14
 	GtkExpander::expander_size = 16
+
+	font_name = "DejaVu Sans 8"
+
 	xthickness = 1
 	ythickness = 1
 	fg[NORMAL]        = "#CACAC6"
@@ -132,7 +135,7 @@ style "clearlooks-checkbutton" = "clearlooks-default"
 
 style "scale-fixed-font" = "clearlooks-default"
 {
-  font_name = "Monospace 10"
+  font_name = "DejaVu Sans Mono 8"
 }
 
 style "metacity-frame"

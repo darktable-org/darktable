@@ -1,4 +1,5 @@
 0.5 release:
+- export output file name pattern and editable
 - user adjustable defaults for all iops
 - check font patch
 - sliders numeric input field
@@ -6,7 +7,7 @@
 - color matrix/gamma vs input profile consistency
 - library:
   - more stable image handling:
-    - image lib operations (add, remove, check deleted, duplicate+robust exp)
+    - image lib operations (add, remove, duplicate+robust exp)
     - film db operations: add, search, remove, check deleted, move dir
     - free db image selection 
     - folder watching and image re-import on change event (lib+dev)
