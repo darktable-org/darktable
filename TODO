@@ -1,12 +1,20 @@
 0.5 release:
+- color matrix/gamma vs input profile consistency
+  - move color matrix from libraw to dt
+    - don't re-open, during full raw load, store in image struct!
+      - will be there if needed (raw has been loaded)
+      - what to do with mipf (only gui changes)?
+    - re-open file if color matrix is needed in colorin
+    - re-open file in temperature for pre_mul camera wb
+    - remove color matrix and auto wb options from raw import
+      - and add default to dt_image_init
+  - also makes whitebalance presets from ufraw easy
+- simple db move by changing top-level directory?
 - export output file name pattern and editable
 - user adjustable defaults for all iops
 - check font patch
 - sliders numeric input field
 - gnome-color-manager dbus interaction
-- color matrix/gamma vs input profile consistency
-  - move color matrix from libraw to dt
-  - also makes whitebalance presets from ufraw easy
 - library:
   - processing history
     - stack stacking

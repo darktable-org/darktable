@@ -9,6 +9,7 @@ src/develop/imageop.c
 src/libs/copy_history.c
 src/libs/lib.c
 src/libs/export.c
+src/libs/image.c
 src/iop/clipping.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
