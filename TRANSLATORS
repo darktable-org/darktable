@@ -17,7 +17,7 @@ Copy the checked out source code tree somewhere to work on it or, if you know gi
 $ cd darktable/po/
 $ intltool-update -pot
 
-This will create a translation template woth POT fiel extension. Now start poEdit and in menu choose "File > New catalog from POT file...". Point it to the newly created POT file.
+This will create a translation template woth POT file extension. Now start poEdit and in menu choose "File > New catalog from POT file...". Point it to the newly created POT file.
 
 The next thing that will happen is that you will be asked to define various settings. All of them are pretty much self-explanatory. I only have to note here that you don't have to fill in "Team" and "Team's email address" fields. darktable doesn't currently use plural forms anywhere, but if you use Lokalize instead of poEdit, this field will be automagically filled for you.
 

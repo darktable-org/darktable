@@ -18,7 +18,7 @@ style "clearlooks-default"
 	GtkTreeView::expander_size = 14
 	GtkExpander::expander_size = 16
 
-	font_name = "DejaVu Sans 8"
+	font_name = "Sans"
 
 	xthickness = 1
 	ythickness = 1
@@ -135,7 +135,7 @@ style "clearlooks-checkbutton" = "clearlooks-default"
 
 style "scale-fixed-font" = "clearlooks-default"
 {
-  font_name = "DejaVu Sans Mono 8"
+  font_name = "Monospace"
 }
 
 style "metacity-frame"
