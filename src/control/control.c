@@ -30,6 +30,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/write_dt_files", TRUE, NULL);
   gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/ask_before_delete", TRUE, NULL);
   gconf_client_set_float(c->gconf, DT_GCONF_DIR"/preview_subsample", .5f, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/mipmap_cache_thumbnails", 300, NULL);
+  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/mipmap_cache_full_images", 1, NULL);
 
   // recently used ui configuration
   gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/select_action", 0, NULL);

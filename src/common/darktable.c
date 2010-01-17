@@ -87,11 +87,14 @@ int dt_init(int argc, char *argv[])
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
   dt_control_init(darktable.control);
 
+  int thumbnails = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/mipmap_cache_thumbnails", NULL);
+  thumbnails = MIN(1000, MAX(20, thumbnails));
+
   darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
-  dt_mipmap_cache_init(darktable.mipmap_cache, 500);
+  dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
 
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  dt_image_cache_init(darktable.image_cache, 500);
+  dt_image_cache_init(darktable.image_cache, thumbnails);
 
   darktable.film = (dt_film_t *)malloc(sizeof(dt_film_t));
   dt_film_init(darktable.film);

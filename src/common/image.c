@@ -602,7 +602,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache, int32_t entries)
   pthread_mutex_init(&(cache->mutex), NULL);
   for(int k=0;k<(int)DT_IMAGE_NONE;k++)
   {
-    if(k == DT_IMAGE_FULL) entries = 3;
+    int full_entries = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/mipmap_cache_full_images", NULL);
+    full_entries = MIN(10, MAX(1, full_entries));
+    if(k == DT_IMAGE_FULL) entries = full_entries;
     dt_print(DT_DEBUG_CACHE, "mipmap cache has %d entries for mip %d.\n", entries, k);
     cache->num_entries[k] = entries;
     cache->mip_lru[k] = (dt_image_t **)malloc(sizeof(dt_image_t*)*entries);
