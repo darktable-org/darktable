@@ -71,6 +71,7 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 4)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_3);
   else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  dt_film_set_query(darktable.film->id);
   gtk_widget_queue_draw(win);
 }
 
@@ -84,6 +85,7 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 1)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_DATETIME);
   else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
   else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
+  dt_film_set_query(darktable.film->id);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }

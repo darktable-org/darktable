@@ -314,8 +314,8 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
 #endif
 }
 
-
-void dt_library_toggle_selection(int iid)
+static void
+dt_library_toggle_selection(int iid)
 {
   int rc;
   sqlite3_stmt *stmt;
@@ -345,8 +345,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   static int last_offset = 0x7fffffff;
   float zoom, zoom_x, zoom_y;
   int32_t mouse_over_id, pan, track, center;
-  dt_lib_sort_t sort;
-  dt_lib_filter_t filter;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   zoom   = lib->zoom;
   zoom_x = lib->zoom_x;
@@ -354,8 +352,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   pan    = lib->pan;
   center = lib->center;
   track  = lib->track;
-  sort   = dt_conf_get_int ("ui_last/combo_sort");
-  filter = dt_conf_get_int ("ui_last/combo_filter");
 
   lib->image_over = DT_LIB_DESERT;
 
@@ -447,22 +443,15 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     rc2 = sqlite3_step(stmt2);
     sqlite3_finalize(stmt2);
   }
-  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
-  int sortindex = 3;
-  if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
-  else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
-  else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
-  // else (sort == DT_LIB_SORT_ID)
 
-  char query[512];
-  // order by and where clauses from sort widget.
-  if(filter == DT_LIB_FILTER_STAR_NO)
+  gchar *query = dt_conf_get_string ("lighttable/query");
+  if(query[0] == '\0')
   {
-    snprintf(query, 512, "select * from (select id from images where film_id = ?1 and (flags & 7) < 1 order by %s) as dreggn limit ?2, ?3", sortstring[sortindex]);
+    g_free(query);
+    return;
   }
-  else
-    snprintf(query, 512, "select * from (select id from images where film_id = ?1 and (flags & 7) >= ?4 order by %s) as dreggn limit ?2, ?3", sortstring[sortindex]);
   rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+  g_free(query);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
   for(int row = 0; row < max_rows; row++)
@@ -473,10 +462,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
       offset += DT_LIBRARY_MAX_ZOOM;
       continue;
     }
-    rc = sqlite3_bind_int  (stmt, 1, darktable.film->id);
-    rc = sqlite3_bind_int  (stmt, 2, offset);
-    rc = sqlite3_bind_int  (stmt, 3, max_cols);
-    if(filter != DT_LIB_FILTER_STAR_NO) rc = sqlite3_bind_int  (stmt, 4, filter-1);
+    rc = sqlite3_bind_int  (stmt, 1, offset);
+    rc = sqlite3_bind_int  (stmt, 2, max_cols);
     for(int col = 0; col < max_cols; col++)
     {
       if(sqlite3_step(stmt) == SQLITE_ROW)

@@ -18,6 +18,7 @@ ui_last/panel_right=-1
 ui_last/panel_top=0
 ui_last/panel_bottom=0
 ui_last/expander_library=2
+plugins/lighttable/query=
 plugins/lighttable/export/expanded=FALSE
 plugins/lighttable/copy_history/expanded=FALSE
 plugins/lighttable/copy_history/pastemode=0

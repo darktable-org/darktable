@@ -1,16 +1,14 @@
 0.5 release:
-- film.c sql query string for lighttable mode / dt_conf setting?
-- select plugin: select all, none, invert, by query
-- library:
-  - processing history
-    - favorites list (custom styles or so)
-  - more stable image handling:
-    - film db operations: add, search, remove, check deleted, move dir
-    - free db image selection 
-    - folder watching and image re-import on change event (lib+dev)
-  - db tag functionality:
-    - image tagging, tag conditional probabilities
-    - related tag browser view
+- libs/select plugin: select all, none, invert, by query
+- libs/history
+  - favorites list (custom styles or so)
+- libs/image handling:
+  - film db operations: add, search, remove, check deleted, move dir
+  - free db image selection 
+  - folder watching and image re-import on change event (lib+dev)
+- libs/db tag functionality:
+  - image tagging, tag conditional probabilities
+  - related tag browser view
 - color matrix/gamma vs input profile consistency
   - move color matrix from libraw to dt
     - don't re-open, during full raw load, store in image struct!

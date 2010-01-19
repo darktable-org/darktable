@@ -1,4 +1,5 @@
 #include "control/control.h"
+#include "control/conf.h"
 #include "control/jobs.h"
 #include "common/film.h"
 
@@ -66,6 +67,26 @@ void dt_film_cleanup(dt_film_t *film)
   pthread_mutex_destroy(&film->images_mutex);
 }
 
+void dt_film_set_query(const int32_t id)
+{
+  dt_lib_sort_t   sort   = dt_conf_get_int ("ui_last/combo_sort");
+  dt_lib_filter_t filter = dt_conf_get_int ("ui_last/combo_filter");
+  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
+  int sortindex = 3;
+  if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
+  else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
+  else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
+  // else (sort == DT_LIB_SORT_ID)
+
+  char query[512];
+  // order by and where clauses from sort widget.
+  if(filter == DT_LIB_FILTER_STAR_NO)
+    snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) < 1 order by %s limit ?1, ?2", id, sortstring[sortindex]);
+  else
+    snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
+  dt_conf_set_string ("lighttable/query", query);
+}
+
 int dt_film_open(dt_film_t *film, const int32_t id)
 {
   int rc;
@@ -92,6 +113,7 @@ int dt_film_open(dt_film_t *film, const int32_t id)
   rc = sqlite3_finalize(stmt);
   // TODO: prefetch to cache using image_open
   dt_control_update_recent_films();
+  dt_film_set_query(id);
   dt_control_queue_draw_all();
   return 0;
 }
@@ -166,6 +188,7 @@ int dt_film_import(dt_film_t *film, const char *dirname)
     dt_film_import1_init(&j, film);
     dt_control_add_job(darktable.control, &j);
   }
+  dt_film_set_query(film->id);
   dt_control_update_recent_films();
   return 0;
 }

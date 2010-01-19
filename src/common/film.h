@@ -30,5 +30,7 @@ int dt_film_open_recent(dt_film_t *film, const int32_t num);
 int dt_film_import(dt_film_t *film, const char *dirname);
 /** helper for import threads. */
 void dt_film_import1(dt_film_t *film);
+/** constructs the lighttable/query setting for this film, respecting stars and filters. */
+void dt_film_set_query(const int32_t id);
 
 #endif

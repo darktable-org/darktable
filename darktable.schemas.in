@@ -23,7 +23,7 @@
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
         <long>how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts,
-              these get fewer by size.</long>
+              these get fewer by size. only read at startup.</long>
       </locale>
     </schema>
 
@@ -36,7 +36,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>full resolution image buffers to keep in main memory cache</short>
-        <long>how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum.</long>
+        <long>how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. only read at startup.</long>
       </locale>
     </schema>
 
@@ -143,7 +143,7 @@
         <long></long>
       </locale>
     </schema>
-    
+
     <schema>
       <key>/schemas/apps/darktable/ui_last/window_x</key>
       <applyto>/apps/darktable/ui_last/window_x</applyto>
@@ -257,6 +257,19 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/query</key>
+      <applyto>/apps/darktable/plugins/lighttable/query</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>sql query to select images for current view</short>
         <long></long>
       </locale>
     </schema>
