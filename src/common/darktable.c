@@ -73,9 +73,10 @@ int dt_init(int argc, char *argv[])
   dt_conf_init(darktable.conf, filename);
 
   char dbfilename[1024];
-  const char *dbname = dt_conf_get_string("database");
+  gchar *dbname = dt_conf_get_string("database");
   if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
   else                 snprintf(dbfilename, 512, "%s", dbname);
+  g_free(dbname);
 
   if(sqlite3_open(dbfilename, &(darktable.db)))
   {

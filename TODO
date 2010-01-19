@@ -3,9 +3,7 @@
 - select plugin: select all, none, invert, by query
 - library:
   - processing history
-    - stack stacking
     - favorites list (custom styles or so)
-    - clear history button
   - more stable image handling:
     - film db operations: add, search, remove, check deleted, move dir
     - free db image selection 

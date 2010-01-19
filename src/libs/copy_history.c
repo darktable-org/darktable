@@ -21,7 +21,7 @@ dt_lib_copy_history_t;
 const char*
 name ()
 {
-  return _("copy history stack");
+  return _("history stack");
 }
 
 static void

@@ -151,7 +151,7 @@ static inline int dt_conf_get_bool(const char *name)
 #endif
 }
 
-static inline const char *dt_conf_get_string(const char *name)
+static inline gchar *dt_conf_get_string(const char *name)
 {
 #ifdef HAVE_GCONF
   char var[1024];
@@ -161,7 +161,7 @@ static inline const char *dt_conf_get_string(const char *name)
   pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   pthread_mutex_unlock(&darktable.conf->mutex);
-  return darktable.conf->varval[num];
+  return g_strdup(darktable.conf->varval[num]);
 #endif
 }
 
