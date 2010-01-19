@@ -444,7 +444,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     sqlite3_finalize(stmt2);
   }
 
-  gchar *query = dt_conf_get_string ("lighttable/query");
+  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
   if(query[0] == '\0')
   {
     g_free(query);

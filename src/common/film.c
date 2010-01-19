@@ -84,7 +84,7 @@ void dt_film_set_query(const int32_t id)
     snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) < 1 order by %s limit ?1, ?2", id, sortstring[sortindex]);
   else
     snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
-  dt_conf_set_string ("lighttable/query", query);
+  dt_conf_set_string ("plugins/lighttable/query", query);
 }
 
 int dt_film_open(dt_film_t *film, const int32_t id)
