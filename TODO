@@ -1,26 +1,6 @@
 0.5 release:
-- silly mac osx gconf replacement: dtconf.h:
-  - need to replace all direct calls to gconf
-  - need a mutex
-  - shell script to create default dt conf from schemas.in
-  - init into darktable.conf (remove from control)
-- create share/darktable/color/{in,out}/README
-- color matrix/gamma vs input profile consistency
-  - move color matrix from libraw to dt
-    - don't re-open, during full raw load, store in image struct!
-      - will be there if needed (raw has been loaded)
-      - what to do with mipf (only gui changes)?
-    - re-open file if color matrix is needed in colorin
-    - re-open file in temperature for pre_mul camera wb
-    - remove color matrix and auto wb options from raw import
-      - and add default to dt_image_init
-  - also makes whitebalance presets from ufraw easy
-- simple db move by changing top-level directory?
-- export output file name pattern and editable
-- user adjustable defaults for all iops
-- check font patch
-- sliders numeric input field
-- gnome-color-manager dbus interaction
+- film.c sql query string for lighttable mode / dt_conf setting?
+- select plugin: select all, none, invert, by query
 - library:
   - processing history
     - stack stacking
@@ -33,7 +13,22 @@
   - db tag functionality:
     - image tagging, tag conditional probabilities
     - related tag browser view
-- check for deleted/updated files on film open.
+- color matrix/gamma vs input profile consistency
+  - move color matrix from libraw to dt
+    - don't re-open, during full raw load, store in image struct!
+      - will be there if needed (raw has been loaded)
+      - what to do with mipf (only gui changes)?
+    - re-open file if color matrix is needed in colorin
+    - re-open file in temperature for pre_mul camera wb
+    - remove color matrix and auto wb options from raw import
+      - and add default to dt_image_init
+  - also makes whitebalance presets from ufraw easy
+- create share/darktable/color/{in,out}/README
+- simple db move by changing top-level directory?
+- export output file name pattern and editable
+- user adjustable defaults for all iops
+- sliders numeric input field
+- gnome-color-manager dbus interaction
 - highlight reconstruction/tonemapping
 - save history stack list, make them stackable, clear history stack button.
 - automatic application of history stacks due to pattern matching.

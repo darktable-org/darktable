@@ -320,7 +320,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
   }
 
   // already some db entry there?
-  int rc, altered = 0;
+  int rc, altered = img->force_reimport;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->id);
@@ -343,6 +343,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     dt_dev_load_preview(&dev, img);
     dt_dev_process_to_mip(&dev);
     dt_dev_cleanup(&dev);
+    img->force_reimport = 0;
   }
   img->import_lock = 0;
   // dt_image_cache_release(imgl, 'w');
@@ -480,6 +481,7 @@ void dt_image_init(dt_image_t *img)
   img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;
   img->cacheline = -1;
+  img->force_reimport = 0;
   bzero(img->exif_maker, sizeof(img->exif_maker));
   bzero(img->exif_model, sizeof(img->exif_model));
   bzero(img->exif_lens, sizeof(img->exif_lens));
@@ -554,10 +556,15 @@ void dt_image_cleanup(dt_image_t *img)
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
   int ret = 0;
-  if(dt_imageio_preview_read(img, mip))
+  char filename[1024];
+  dt_image_full_path(img, filename, 1024);
+  if(img->force_reimport)
+  {
+    ret = dt_image_reimport(img, filename);
+    dt_image_release(img, mip, 'w');
+  }
+  else if(dt_imageio_preview_read(img, mip))
   { // img not in database. => mip == FULL or kicked out or corrupt or first time load..
-    char filename[1024];
-    dt_image_full_path(img, filename, 1024);
     if(mip == DT_IMAGE_MIPF)
     {
       ret = 0;
@@ -846,6 +853,8 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   {
     if(img->pixels == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
   }
+  if(mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport)
+    mip = DT_IMAGE_NONE;
   if(mip != DT_IMAGE_NONE)
   {
     if(mode == 'w')

@@ -288,6 +288,19 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/copy_history/pastemode</key>
+      <applyto>/apps/darktable/plugins/lighttable/copy_history/pastemode</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>append or replace history stack if pasted</short>
+        <long>0 -- append on top of stack, 1 -- replace it.</long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/image/expanded</key>
       <applyto>/apps/darktable/plugins/lighttable/image/expanded</applyto>
       <owner>darktable</owner>

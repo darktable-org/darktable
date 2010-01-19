@@ -8,23 +8,23 @@ dtdataroot_DATA=darktable.gtkrc darktable.glade
 dtapprootdir=$(datarootdir)/applications
 dtapproot_DATA=darktable.desktop
 if HAVE_GCONF
-  EXTRA_DIST+=darktablerc
-  dtdataroot_DATA+=darktablerc
-  schemadir=$(GCONF_SCHEMA_FILE_DIR)
-  schema_in_file=darktable.schemas.in
-  schema_DATA=$(schema_in_file:.schemas.in=.schemas)
-  @INTLTOOL_SCHEMAS_RULE@
+EXTRA_DIST+=darktablerc
+dtdataroot_DATA+=darktablerc
+schemadir=$(GCONF_SCHEMA_FILE_DIR)
+schema_in_file=darktable.schemas.in
+schema_DATA=$(schema_in_file:.schemas.in=.schemas)
+@INTLTOOL_SCHEMAS_RULE@
 
-  CLEANFILES=$(schema_DATA)
+CLEANFILES=$(schema_DATA)
 
-  if GCONF_SCHEMAS_INSTALL
-  install-data-local:
-    if test -z "$(DESTDIR)" ; then \
-      for p in $(schema_DATA) ; do \
-        GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $$p ; \
-      done \
-    fi
-  else
-  install-data-local:
-  endif
+if GCONF_SCHEMAS_INSTALL
+install-data-local:
+	if test -z "$(DESTDIR)" ; then \
+		for p in $(schema_DATA) ; do \
+			GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $$p ; \
+		done \
+	fi
+else
+install-data-local:
+endif
 endif
