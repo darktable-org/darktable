@@ -1,5 +1,5 @@
 database=.darktabledb
-mipmap_cache_thumbnails=300
+mipmap_cache_thumbnails=500
 mipmap_cache_full_images=2
 write_dt_files=true
 ask_before_remove=true

@@ -2,7 +2,7 @@
 #define DT_USER_CONFIG_H
 
 #ifdef HAVE_CONFIG_H
-  #include "../config.h"
+  #include "config.h"
 #endif
 
 #include <stdio.h>
@@ -209,7 +209,6 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
 #ifdef HAVE_GCONF
   g_object_unref(cf->gconf);
 #else
-  // TODO:
   FILE *f = fopen(cf->filename, "wb");
   if(!f) return;
   for(int i=0;i<cf->num;i++)

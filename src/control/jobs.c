@@ -315,7 +315,7 @@ void dt_control_export_job_run(dt_job_t *job)
     if(c <= filename) c = filename + strlen(filename);
 
     // read type from global config.
-    dt_dev_export_format_t fmt = dt_conf_get_int ("/plugins/lighttable/export/format");
+    dt_dev_export_format_t fmt = dt_conf_get_int ("plugins/lighttable/export/format");
     switch(fmt)
     {
       case DT_DEV_EXPORT_JPG:
@@ -345,6 +345,9 @@ void dt_control_export_job_run(dt_job_t *job)
 
     dt_image_cache_release(img, 'r');
     printf("[export_job] exported to `%s'\n", filename);
+    char *trunc = filename + strlen(filename) - 32;
+    if(trunc < filename) trunc = filename;
+    dt_control_log("exported to `%s%s'", trunc != filename ? ".." : "", trunc);
     t = g_list_delete_link(t, t);
   }
 }

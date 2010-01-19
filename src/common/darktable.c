@@ -76,14 +76,18 @@ int dt_init(int argc, char *argv[])
   gchar *dbname = dt_conf_get_string("database");
   if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
   else                 snprintf(dbfilename, 512, "%s", dbname);
-  g_free(dbname);
 
   if(sqlite3_open(dbfilename, &(darktable.db)))
   {
     fprintf(stderr, "[init] could not open database %s!\n", dbname);
+    fprintf(stderr, "[init] maybe your ~/.darktablerc is corrupt?\n");
+    dt_get_datadir(dbfilename, 512);
+    fprintf(stderr, "[init] try `cp %s/darktablerc ~/.darktablerc!\n", dbfilename);
     sqlite3_close(darktable.db);
+    g_free(dbname);
     exit(1);
   }
+  g_free(dbname);
   pthread_mutex_init(&(darktable.db_insert), NULL);
   pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
