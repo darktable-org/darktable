@@ -79,10 +79,10 @@ int dt_init(int argc, char *argv[])
 
   if(sqlite3_open(dbfilename, &(darktable.db)))
   {
-    fprintf(stderr, "[init] could not open database %s!\n", dbname);
+    fprintf(stderr, "[init] could not open database `%s'!\n", dbname);
     fprintf(stderr, "[init] maybe your ~/.darktablerc is corrupt?\n");
     dt_get_datadir(dbfilename, 512);
-    fprintf(stderr, "[init] try `cp %s/darktablerc ~/.darktablerc!\n", dbfilename);
+    fprintf(stderr, "[init] try `cp %s/darktablerc ~/.darktablerc'\n", dbfilename);
     sqlite3_close(darktable.db);
     g_free(dbname);
     exit(1);

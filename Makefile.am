@@ -8,8 +8,6 @@ dtdataroot_DATA=darktable.gtkrc darktable.glade
 dtapprootdir=$(datarootdir)/applications
 dtapproot_DATA=darktable.desktop
 if HAVE_GCONF
-EXTRA_DIST+=darktablerc
-dtdataroot_DATA+=darktablerc
 schemadir=$(GCONF_SCHEMA_FILE_DIR)
 schema_in_file=darktable.schemas.in
 schema_DATA=$(schema_in_file:.schemas.in=.schemas)
@@ -27,4 +25,7 @@ install-data-local:
 else
 install-data-local:
 endif
+else
+EXTRA_DIST+=darktablerc
+dtdataroot_DATA+=darktablerc
 endif
