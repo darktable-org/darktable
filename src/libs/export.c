@@ -1,6 +1,7 @@
 #include "common/darktable.h"
 #include "control/control.h"
 #include "control/jobs.h"
+#include "control/conf.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include <stdlib.h>
@@ -29,10 +30,10 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   // read "format" to global settings
   int i = gtk_combo_box_get_active(d->format);
-  if     (i == 0)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format",   DT_DEV_EXPORT_JPG, NULL);
-  else if(i == 1)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format",   DT_DEV_EXPORT_PNG, NULL);
-  else if(i == 2)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format",   DT_DEV_EXPORT_PPM16, NULL);
-  else if(i == 3)  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format",   DT_DEV_EXPORT_PFM, NULL);
+  if     (i == 0)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_JPG);
+  else if(i == 1)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_PNG);
+  else if(i == 2)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_PPM16);
+  else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_PFM);
   dt_control_export();
 }
 
@@ -41,7 +42,7 @@ export_quality_changed (GtkRange *range, gpointer user_data)
 {
   GtkWidget *widget;
   int quality = (int)gtk_range_get_value(range);
-  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/quality", quality, NULL);
+  dt_conf_set_int ("plugins/lighttable/export/quality", quality);
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
 }
@@ -50,14 +51,14 @@ static void
 width_changed (GtkSpinButton *spin, gpointer user_data)
 {
   int value = gtk_spin_button_get_value(spin);
-  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", value, NULL);
+  dt_conf_set_int ("plugins/lighttable/export/width", value);
 }
 
 static void
 height_changed (GtkSpinButton *spin, gpointer user_data)
 {
   int value = gtk_spin_button_get_value(spin);
-  gconf_client_set_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", value, NULL);
+  dt_conf_set_int ("plugins/lighttable/export/height", value);
 }
 
 void

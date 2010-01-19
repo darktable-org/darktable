@@ -2,6 +2,7 @@
 #  include "config.h"
 #endif
 #include "control/control.h"
+#include "control/conf.h"
 #include "develop/develop.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
@@ -26,47 +27,42 @@
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/config_version", DT_VERSION, NULL);
-  gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/write_dt_files", TRUE, NULL);
-  gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/ask_before_delete", TRUE, NULL);
-  gconf_client_set_float(c->gconf, DT_GCONF_DIR"/preview_subsample", .5f, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/mipmap_cache_thumbnails", 300, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/mipmap_cache_full_images", 1, NULL);
+  dt_conf_set_int  ("config_version", DT_VERSION);
+  dt_conf_set_bool ("write_dt_files", TRUE);
+  dt_conf_set_bool ("ask_before_delete", TRUE);
+  dt_conf_set_float("preview_subsample", .5f);
+  dt_conf_set_int  ("mipmap_cache_thumbnails", 300);
+  dt_conf_set_int  ("mipmap_cache_full_images", 1);
 
-  // recently used ui configuration
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/select_action", 0, NULL);
-  gconf_client_set_bool (c->gconf, DT_GCONF_DIR"/ui_last/fullscreen", FALSE, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/view", DT_LIBRARY, NULL);
+  dt_conf_set_int  ("ui_last/select_action", 0);
+  dt_conf_set_bool ("ui_last/fullscreen", FALSE);
+  dt_conf_set_int  ("ui_last/view", DT_MODE_NONE);
 
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_x",      0, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_y",      0, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_w",    640, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_h",    480, NULL);
+  dt_conf_set_int  ("ui_last/window_x",      0);
+  dt_conf_set_int  ("ui_last/window_y",      0);
+  dt_conf_set_int  ("ui_last/window_w",    640);
+  dt_conf_set_int  ("ui_last/window_h",    480);
 
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_left",   -1, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_right",  -1, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_top",     0, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/panel_bottom",  0, NULL);
+  dt_conf_set_int  ("ui_last/panel_left",   -1);
+  dt_conf_set_int  ("ui_last/panel_right",  -1);
+  dt_conf_set_int  ("ui_last/panel_top",     0);
+  dt_conf_set_int  ("ui_last/panel_bottom",  0);
 
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_library",     1<<DT_LIBRARY, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_metadata",    0, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_navigation", -1, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_histogram",  -1, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/expander_history",    -1, NULL);
+  dt_conf_set_int  ("ui_last/expander_library",     1<<DT_LIBRARY);
+  dt_conf_set_int  ("ui_last/expander_metadata",    0);
+  dt_conf_set_int  ("ui_last/expander_navigation", -1);
+  dt_conf_set_int  ("ui_last/expander_histogram",  -1);
+  dt_conf_set_int  ("ui_last/expander_history",    -1);
 
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_FILENAME, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/combo_filter",   DT_LIB_FILTER_STAR_1, NULL);
+  dt_conf_set_int  ("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
+  dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
 
-  // default [de-]gamma values.
-  gconf_client_set_float(c->gconf, DT_GCONF_DIR"/gamma_linear", .1f, NULL);
-  gconf_client_set_float(c->gconf, DT_GCONF_DIR"/gamma_gamma", .45f, NULL);
+  dt_conf_set_float("gamma_linear", .1f);
+  dt_conf_set_float("gamma_gamma", .45f);
 }
 
 void dt_ctl_settings_init(dt_control_t *s)
 {
-  g_type_init();
-  s->gconf = gconf_client_get_default();
-
   // same thread as init
   s->gui_thread = pthread_self();
   // init global defaults.
@@ -75,62 +71,15 @@ void dt_ctl_settings_init(dt_control_t *s)
 
   s->global_settings.version = DT_VERSION;
 
-  // TODO: => gconf
-  // s->global_settings.gui = DT_LIBRARY;
-  // s->global_settings.gui_fullscreen = 0;
-  // expand everything
-  // except top/bottm, retract everything but the lib button in lib mode
-  // retract lib button in dev mode
-  // s->global_settings.gui_x = 0;
-  // s->global_settings.gui_y = 0;
-  // s->global_settings.gui_w = 640;
-  // s->global_settings.gui_h = 480;
-  // s->global_settings.gui_top = s->global_settings.gui_bottom = 0;
-  // s->global_settings.gui_left = s->global_settings.gui_right = -1;
-  // s->global_settings.gui_export = 
-  // s->global_settings.gui_library = 1<<DT_LIBRARY;
-  // s->global_settings.gui_navigation = 
-  // s->global_settings.gui_history = s->global_settings.gui_histogram =
-  // s->global_settings.gui_tonecurve = s->global_settings.gui_gamma =
-  // s->global_settings.gui_hsb = 1<<DT_DEVELOP;
-
-  // TODO: move these to lighttable settings blob:
-  // TODO: sort out which we actually want to save, and if so, dependent on film?
-
-  // TODO: move these to lighttable locally (store per film)
-  // s->global_settings.lib_zoom = 13;
-  // s->global_settings.lib_zoom_x = 0.0f;
-  // s->global_settings.lib_zoom_y = 0.0f;
-
-  // s->global_settings.lib_center = 0;
-  // s->global_settings.lib_pan = 0;
-  // s->global_settings.lib_track = 0;
-
   // TODO: move the mouse_over_id of lighttable to something general in control: gui-thread selected img or so?
   s->global_settings.lib_image_mouse_over_id = -1;
-
-  // TODO: gconf: combobox
-  // s->global_settings.lib_sort = DT_LIB_SORT_FILENAME;
-  // s->global_settings.lib_filter = DT_LIB_FILTER_ALL;
 
   // TODO: move these to darkroom settings blob:
   s->global_settings.dev_closeup = 0;
   s->global_settings.dev_zoom_x = 0;
   s->global_settings.dev_zoom_y = 0;
   s->global_settings.dev_zoom = DT_ZOOM_FIT;
-  // TODO: dev_zoom_scale?
 
-  // TODO: => gconf: this is actually a combobox
-  // s->global_settings.dev_export_format = DT_DEV_EXPORT_JPG;
-  // s->global_settings.dev_export_quality = 97;
-
-  // TODO: what is this used for??
-  // strncpy(s->global_settings.dev_op, "original", 20);
-  
-  // TODO: => gconf
-  // s->global_settings.dev_gamma_linear = 0.1;
-  // s->global_settings.dev_gamma_gamma = 0.45;
-  
   memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
 }
 
@@ -225,9 +174,9 @@ int dt_control_load_config(dt_control_t *c)
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
   }
-  gconf_client_set_int(c->gconf, DT_GCONF_DIR"/ui_last/view", DT_LIBRARY, NULL);
-  int width  = gconf_client_get_int(c->gconf, DT_GCONF_DIR"/ui_last/window_w", NULL);
-  int height = gconf_client_get_int(c->gconf, DT_GCONF_DIR"/ui_last/window_h", NULL);
+  dt_conf_set_int("ui_last/view", DT_MODE_NONE);
+  int width  = dt_conf_get_int("ui_last/window_w");
+  int height = dt_conf_get_int("ui_last/window_h");
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   dt_control_restore_gui_settings(DT_LIBRARY);
@@ -237,15 +186,14 @@ int dt_control_load_config(dt_control_t *c)
 
 int dt_control_write_config(dt_control_t *c)
 {
-  dt_ctl_gui_mode_t gui = gconf_client_get_int(c->gconf,
-      DT_GCONF_DIR"/ui_last/view", NULL);
+  dt_ctl_gui_mode_t gui = dt_conf_get_int("ui_last/view");
   dt_control_save_gui_settings(gui);
 
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_x",  widget->allocation.x, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_y",  widget->allocation.y, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_w",  widget->allocation.width, NULL);
-  gconf_client_set_int  (c->gconf, DT_GCONF_DIR"/ui_last/window_h",  widget->allocation.height, NULL);
+  dt_conf_set_int ("ui_last/window_x",  widget->allocation.x);
+  dt_conf_set_int ("ui_last/window_y",  widget->allocation.y);
+  dt_conf_set_int ("ui_last/window_w",  widget->allocation.width);
+  dt_conf_set_int ("ui_last/window_h",  widget->allocation.height);
 
   int rc;
   sqlite3_stmt *stmt;
@@ -376,10 +324,10 @@ void dt_control_init(dt_control_t *s)
   pthread_mutex_init(&(s->log_mutex), NULL);
   s->progress = 200.0f;
 
-  gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", DT_MODE_NONE, NULL);
+  dt_conf_set_int("ui_last/view", DT_MODE_NONE);
 
   // if config is old, replace with new defaults.
-  if(DT_VERSION > gconf_client_get_int(s->gconf, DT_GCONF_DIR"/config_version", NULL))
+  if(DT_VERSION > dt_conf_get_int("config_version"))
     dt_ctl_settings_default(s);
 
   pthread_cond_init(&s->cond, NULL);
@@ -431,7 +379,7 @@ void dt_control_shutdown(dt_control_t *s)
 
 void dt_control_cleanup(dt_control_t *s)
 {
-  int keep = 2500, keep0 = 10000; // TODO: gconf, level dependent?
+  int keep = 2500, keep0 = 10000; // TODO: conf, level dependent?
   int rc;
   // delete mipmaps
   // ubuntu compiles a lame sqlite3, else we could simply:
@@ -472,7 +420,6 @@ void dt_control_cleanup(dt_control_t *s)
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);
   pthread_mutex_destroy(&s->log_mutex);
-  g_object_unref(s->gconf);
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
@@ -860,8 +807,7 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
 
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 {
-  dt_ctl_gui_mode_t oldmode =
-    gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/view", NULL);
+  dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode == mode) return;
   dt_control_save_gui_settings(oldmode);
   darktable.control->button_down = 0;
@@ -877,13 +823,12 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, NULL);
   snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"), dt_view_manager_name(darktable.view_manager));
   gtk_label_set_label(GTK_LABEL(widget), buf);
-  gconf_client_set_int (darktable.control->gconf, DT_GCONF_DIR"/view", mode, NULL);
+  dt_conf_set_int ("ui_last/view", mode);
 }
 
 void dt_ctl_switch_mode()
 {
-  dt_ctl_gui_mode_t mode =
-    gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/view", NULL);
+  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
   if(mode == DT_LIBRARY) mode = DT_DEVELOP;
   else mode = DT_LIBRARY;
   dt_ctl_switch_mode_to(mode);
@@ -992,56 +937,55 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 {
   int8_t bit;
   GtkWidget *widget;
-  GConfClient *c = darktable.control->gconf;
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "select_action");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), gconf_client_get_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/select_action", NULL));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/select_action"));
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
-  dt_lib_filter_t filter = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/combo_filter", NULL);
+  dt_lib_filter_t filter = dt_conf_get_int("ui_last/combo_filter");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)filter);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
-  dt_lib_sort_t sort = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/combo_sort", NULL);
+  dt_lib_sort_t sort = dt_conf_get_int("ui_last/combo_sort");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_left", NULL);
+  bit = dt_conf_get_int("ui_last/panel_left");
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_right", NULL);
+  bit = dt_conf_get_int("ui_last/panel_right");
   widget = glade_xml_get_widget (darktable.gui->main_window, "right");
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_top", NULL);
+  bit = dt_conf_get_int("ui_last/panel_top");
   widget = glade_xml_get_widget (darktable.gui->main_window, "top");
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_bottom", NULL);
+  bit = dt_conf_get_int("ui_last/panel_bottom");
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_navigation", NULL);
+  bit = dt_conf_get_int("ui_last/expander_navigation");
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_library", NULL);
+  bit = dt_conf_get_int("ui_last/expander_library");
   widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_history", NULL);
+  bit = dt_conf_get_int("ui_last/expander_history");
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_histogram", NULL);
+  bit = dt_conf_get_int("ui_last/expander_histogram");
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_metadata", NULL);
+  bit = dt_conf_get_int("ui_last/expander_metadata");
   widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 }
@@ -1050,75 +994,73 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 {
   int8_t bit;
   GtkWidget *widget;
-  GConfClient *c = darktable.control->gconf;
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_left", NULL);
+  bit = dt_conf_get_int("ui_last/panel_left");
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/panel_left", bit, NULL);
+  dt_conf_set_int("ui_last/panel_left", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_right", NULL);
+  bit = dt_conf_get_int("ui_last/panel_right");
   widget = glade_xml_get_widget (darktable.gui->main_window, "right");
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/panel_right", bit, NULL);
+  dt_conf_set_int("ui_last/panel_right", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_bottom", NULL);
+  bit = dt_conf_get_int("ui_last/panel_bottom");
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/panel_bottom", bit, NULL);
+  dt_conf_set_int("ui_last/panel_bottom", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/panel_top", NULL);
+  bit = dt_conf_get_int("ui_last/panel_top");
   widget = glade_xml_get_widget (darktable.gui->main_window, "top");
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/panel_top", bit, NULL);
+  dt_conf_set_int("ui_last/panel_top", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_navigation", NULL);
+  bit = dt_conf_get_int("ui_last/expander_navigation");
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_navigation", bit, NULL);
+  dt_conf_set_int("ui_last/expander_navigation", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_library", NULL);
+  bit = dt_conf_get_int("ui_last/expander_library");
   widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_library", bit, NULL);
+  dt_conf_set_int("ui_last/expander_library", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_history", NULL);
+  bit = dt_conf_get_int("ui_last/expander_history");
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_history", bit, NULL);
+  dt_conf_set_int("ui_last/expander_history", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_histogram", NULL);
+  bit = dt_conf_get_int("ui_last/expander_histogram");
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_histogram", bit, NULL);
+  dt_conf_set_int("ui_last/expander_histogram", bit);
 
-  bit = gconf_client_get_int(c, DT_GCONF_DIR"/ui_last/expander_metadata", NULL);
+  bit = dt_conf_get_int("ui_last/expander_metadata");
   widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  gconf_client_set_int(c, DT_GCONF_DIR"/ui_last/expander_metadata", bit, NULL);
+  dt_conf_set_int("ui_last/expander_metadata", bit);
 }
 
 int dt_control_key_pressed_override(uint16_t which)
 {
   int fullscreen, visible;
   GtkWidget *widget;
-  GConfClient *c = darktable.control->gconf;
   switch (which)
   {
     case KEYCODE_Escape: case KEYCODE_Caps:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
-      gconf_client_set_bool(c, DT_GCONF_DIR"/ui_last/fullscreen", fullscreen, NULL);
+      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
@@ -1158,7 +1100,6 @@ int dt_control_key_pressed(uint16_t which)
   // printf("key code pressed: %d\n", which);
   int fullscreen;
   GtkWidget *widget;
-  GConfClient *c = darktable.control->gconf;
   switch (which)
   {
     case KEYCODE_period:
@@ -1166,11 +1107,11 @@ int dt_control_key_pressed(uint16_t which)
       break;
     case KEYCODE_F11:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-      fullscreen = gconf_client_get_bool(c, DT_GCONF_DIR"/ui_last/fullscreen", NULL);
+      fullscreen = dt_conf_get_bool("ui_last/fullscreen");
       if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
       else           gtk_window_fullscreen  (GTK_WINDOW(widget));
       fullscreen ^= 1;
-      gconf_client_set_bool(c, DT_GCONF_DIR"/ui_last/fullscreen", fullscreen, NULL);
+      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
       dt_dev_invalidate(darktable.develop);
       break;
     default:

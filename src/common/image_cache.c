@@ -1,4 +1,6 @@
-
+#ifdef HAVE_CONFIG_H
+  #include "../config.h"
+#endif
 #include "common/darktable.h"
 #include "common/image_cache.h"
 
@@ -102,7 +104,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
     }
     if(k == cache->num_lines)
     {
-      fprintf(stderr, "[image_cache_use] all slots are in use!\n");
+      fprintf(stderr, "[image_cache_use] all %d slots are in use!\n", cache->num_lines);
       pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }

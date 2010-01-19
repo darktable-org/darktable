@@ -2,10 +2,11 @@
 #include "views/view.h"
 #include "develop/develop.h"
 #include "control/jobs.h"
+#include "control/control.h"
+#include "control/conf.h"
 #include "develop/imageop.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
-#include "control/control.h"
 #include "gui/gtk.h"
 
 #include <stdlib.h>
@@ -156,18 +157,18 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   char option[512];
-  snprintf(option, 512, DT_GCONF_DIR"/plugins/darkroom/%s/visible", module->op);
+  snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
   if(gtk_toggle_button_get_active(togglebutton))
   {
     gtk_widget_show_all(GTK_WIDGET(module->topwidget));
-    gconf_client_set_bool (darktable.control->gconf, option, TRUE, NULL);
+    dt_conf_set_bool (option, TRUE);
     gtk_expander_set_expanded(module->expander, TRUE);
     snprintf(option, 512, _("hide %s"), module->name());
   }
   else
   {
     gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
-    gconf_client_set_bool (darktable.control->gconf, option, FALSE, NULL);
+    dt_conf_set_bool (option, FALSE);
     gtk_expander_set_expanded(module->expander, FALSE);
     snprintf(option, 512, _("show %s"), module->name());
   }
@@ -280,13 +281,13 @@ void enter(dt_view_t *self)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     char option[1024];
-    snprintf(option, 1024, DT_GCONF_DIR"/plugins/darkroom/%s/visible", module->op);
-    gboolean active = gconf_client_get_bool  (darktable.control->gconf, option, NULL);
+    snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+    gboolean active = dt_conf_get_bool (option);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
 
-    snprintf(option, 1024, DT_GCONF_DIR"/plugins/darkroom/%s/expanded", module->op);
-    active = gconf_client_get_bool(darktable.control->gconf, option, NULL);
+    snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+    active = dt_conf_get_bool (option);
     gtk_expander_set_expanded (module->expander, active);
     modules = g_list_next(modules);
   }
@@ -344,8 +345,8 @@ void leave(dt_view_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     // printf("removing module %d - %s\n", module->instance, module->op);
     char var[1024];
-    snprintf(var, 1024, DT_GCONF_DIR"/plugins/darkroom/%s/expanded", module->op);
-    gconf_client_set_bool(darktable.control->gconf, var, gtk_expander_get_expanded (module->expander), NULL);
+    snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
+    dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
 
     module->gui_cleanup(module);
     module->cleanup(module);

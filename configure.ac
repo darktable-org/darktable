@@ -59,8 +59,28 @@ AC_ARG_ENABLE(gegl,
              PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
         ]
         )
+AC_MSG_CHECKING([whether to use gconf to store settings])
+AC_ARG_ENABLE(gconf,
+	      AC_HELP_STRING([--enable-gconf], [use gconf to store settings (default under linux)]),
+        [
+          if test "$enable_gconf" = "yes"; then
+             AC_DEFINE(HAVE_GCONF, 1, [whether to use gconf to store settings])
+             AC_MSG_RESULT([yes])
+             PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
+             AM_CONDITIONAL(HAVE_GCONF, true)
+          else
+             AC_MSG_RESULT([no])
+             AM_CONDITIONAL(HAVE_GCONF, false)
+          fi
+        ],
+        [
+             AC_DEFINE(HAVE_GCONF, 1, [whether to use gconf to store settings])
+             AC_MSG_RESULT([yes])
+             PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
+             AM_CONDITIONAL(HAVE_GCONF, true)
+        ]
+        )
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.18)
-PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
 PKG_CHECK_MODULES(CAIRO, [cairo])
 PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
 PKG_CHECK_MODULES(GLADE, [libglade-2.0])

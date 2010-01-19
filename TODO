@@ -1,4 +1,9 @@
 0.5 release:
+- silly mac osx gconf replacement: dtconf.h:
+  - need to replace all direct calls to gconf
+  - need a mutex
+  - shell script to create default dt conf from schemas.in
+  - init into darktable.conf (remove from control)
 - create share/darktable/color/{in,out}/README
 - color matrix/gamma vs input profile consistency
   - move color matrix from libraw to dt

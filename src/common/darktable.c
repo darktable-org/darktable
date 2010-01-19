@@ -8,6 +8,7 @@
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -64,30 +65,31 @@ int dt_init(int argc, char *argv[])
 #endif
   (void)cmsErrorAction(LCMS_ERROR_IGNORE);
   char *homedir = getenv("HOME");
-  char filename[512], *c = NULL;
+  char filename[512];
   snprintf(filename, 512, "%s/.darktablerc", homedir);
-  FILE *f = fopen(filename, "rb");
-  if(f)
+
+  // has to go first for settings needed by all the others.
+  darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
+  dt_conf_init(darktable.conf, filename);
+
+  char dbfilename[1024];
+  const char *dbname = dt_conf_get_string("database");
+  if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
+  else                 snprintf(dbfilename, 512, "%s", dbname);
+
+  if(sqlite3_open(dbfilename, &(darktable.db)))
   {
-    c = fgets(filename, 512, f);
-    if(c) for(;c<filename+MIN(512,strlen(filename));c++) if(*c == '\n') *c = '\0';
-    fclose(f);
-  }
-  if(!c) snprintf(filename, 512, "%s/.darktabledb", homedir);
-  if(sqlite3_open(filename, &(darktable.db)))
-  {
-    fprintf(stderr, "[init] could not open database %s!\n", filename);
+    fprintf(stderr, "[init] could not open database %s!\n", dbname);
     sqlite3_close(darktable.db);
     exit(1);
   }
   pthread_mutex_init(&(darktable.db_insert), NULL);
   pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
-  // has to go first for settings needed by all the others.
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
   dt_control_init(darktable.control);
 
-  int thumbnails = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/mipmap_cache_thumbnails", NULL);
+  int thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = MIN(1000, MAX(20, thumbnails));
 
   darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
@@ -133,18 +135,8 @@ int dt_init(int argc, char *argv[])
 void dt_cleanup()
 {
   dt_ctl_switch_mode_to(DT_LIBRARY);
-  char *homedir = getenv("HOME");
-  char filename[512];
-  snprintf(filename, 512, "%s/.darktablerc", homedir);
-  FILE *f = fopen(filename, "wb");
-  if(f)
-  {
-    if(fputs(darktable.control->global_settings.dbname, f) == EOF) fprintf(stderr, "[cleanup] could not write to %s!\n", filename);
-    fclose(f);
-  }
-  else fprintf(stderr, "[cleanup] could not write to %s!\n", filename);
-  dt_control_write_config(darktable.control);
 
+  dt_control_write_config(darktable.control);
   dt_control_shutdown(darktable.control);
 
   dt_gui_gtk_cleanup(darktable.gui);
@@ -161,6 +153,8 @@ void dt_cleanup()
   free(darktable.mipmap_cache);
   dt_control_cleanup(darktable.control);
   free(darktable.control);
+  dt_conf_cleanup(darktable.conf);
+  free(darktable.conf);
 
   sqlite3_close(darktable.db);
   pthread_mutex_destroy(&(darktable.db_insert));

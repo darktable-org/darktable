@@ -1,6 +1,19 @@
 <gconfschemafile>
   <schemalist>
     <schema>
+      <key>/schemas/apps/darktable/database</key>
+      <applyto>/apps/darktable/database</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>.darktabledb</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>database file</short>
+        <long>filename relative to your home directory, or starting with a slash.</long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/mipmap_cache_thumbnails</key>
       <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
       <owner>darktable</owner>
@@ -264,6 +277,19 @@
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/copy_history/expanded</key>
       <applyto>/apps/darktable/plugins/lighttable/copy_history/expanded</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/image/expanded</key>
+      <applyto>/apps/darktable/plugins/lighttable/image/expanded</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>

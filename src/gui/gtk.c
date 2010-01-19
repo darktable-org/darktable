@@ -15,6 +15,7 @@
 #include "gui/metadata.h"
 #include "control/control.h"
 #include "control/jobs.h"
+#include "control/conf.h"
 #include "views/view.h"
 
 static gboolean
@@ -63,12 +64,12 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_filter
   int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_ALL, NULL);
-  else if(i == 1)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_NO, NULL);
-  else if(i == 2)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_1, NULL);
-  else if(i == 3)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_2, NULL);
-  else if(i == 4)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_3, NULL);
-  else if(i == 5)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter",     DT_LIB_FILTER_STAR_4, NULL);
+  if     (i == 0)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_ALL);
+  else if(i == 1)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_NO);
+  else if(i == 2)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_1);
+  else if(i == 3)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_2);
+  else if(i == 4)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_3);
+  else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }
@@ -79,10 +80,10 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_sort
   int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_FILENAME, NULL);
-  else if(i == 1)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_DATETIME, NULL);
-  else if(i == 2)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_RATING, NULL);
-  else if(i == 3)  gconf_client_set_int(darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",     DT_LIB_SORT_ID, NULL);
+  if     (i == 0)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
+  else if(i == 1)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_DATETIME);
+  else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
+  else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }

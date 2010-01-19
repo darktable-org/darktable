@@ -4,6 +4,7 @@
 #include "control/jobs.h"
 #include "control/settings.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/darktable.h"
 #include "gui/gtk.h"
@@ -353,8 +354,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   pan    = lib->pan;
   center = lib->center;
   track  = lib->track;
-  sort   = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_sort",   NULL);
-  filter = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/ui_last/combo_filter", NULL);
+  sort   = dt_conf_get_int ("ui_last/combo_sort");
+  filter = dt_conf_get_int ("ui_last/combo_filter");
 
   lib->image_over = DT_LIB_DESERT;
 
@@ -573,8 +574,8 @@ void enter(dt_view_t *self)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     char var[1024];
-    snprintf(var, 1024, DT_GCONF_DIR"/plugins/lighttable/%s/expanded", module->plugin_name);
-    gboolean expanded = gconf_client_get_bool(darktable.control->gconf, var, NULL);
+    snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
+    gboolean expanded = dt_conf_get_bool(var);
     gtk_expander_set_expanded (module->expander, expanded);
     if(expanded) gtk_widget_show_all(module->widget);
     else         gtk_widget_hide_all(module->widget);

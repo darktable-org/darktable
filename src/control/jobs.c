@@ -1,4 +1,5 @@
 #include "control/jobs.h"
+#include "control/conf.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -246,7 +247,7 @@ void dt_control_duplicate_images()
 
 void dt_control_remove_images()
 {
-  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/ask_before_remove", NULL))
+  if(dt_conf_get_bool("ask_before_remove"))
   {
     GtkWidget *dialog;
     GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
@@ -267,7 +268,7 @@ void dt_control_remove_images()
 
 void dt_control_delete_images()
 {
-  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/ask_before_delete", NULL))
+  if(dt_conf_get_bool("ask_before_delete"))
   {
     GtkWidget *dialog;
     GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
@@ -314,8 +315,7 @@ void dt_control_export_job_run(dt_job_t *job)
     if(c <= filename) c = filename + strlen(filename);
 
     // read type from global config.
-    dt_dev_export_format_t fmt =
-      gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/format", NULL);
+    dt_dev_export_format_t fmt = dt_conf_get_int ("/plugins/lighttable/export/format");
     switch(fmt)
     {
       case DT_DEV_EXPORT_JPG:

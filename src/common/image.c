@@ -5,6 +5,7 @@
 #include "common/imageio.h"
 #include "common/exif.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "control/jobs.h"
 #include <math.h>
 #include <sqlite3.h>
@@ -16,7 +17,7 @@
 void dt_image_write_dt_files(dt_image_t *img)
 {
   // write .dt file
-  if(gconf_client_get_bool(darktable.control->gconf, DT_GCONF_DIR"/write_dt_files", NULL))
+  if(dt_conf_get_bool("write_dt_files"))
   {
     char filename[520];
     dt_image_full_path(img, filename, 512);
@@ -602,7 +603,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache, int32_t entries)
   pthread_mutex_init(&(cache->mutex), NULL);
   for(int k=0;k<(int)DT_IMAGE_NONE;k++)
   {
-    int full_entries = gconf_client_get_int (darktable.control->gconf, DT_GCONF_DIR"/mipmap_cache_full_images", NULL);
+    int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
     full_entries = MIN(10, MAX(1, full_entries));
     if(k == DT_IMAGE_FULL) entries = full_entries;
     dt_print(DT_DEBUG_CACHE, "mipmap cache has %d entries for mip %d.\n", entries, k);

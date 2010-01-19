@@ -2,6 +2,7 @@
 #include "develop/imageop.h"
 #include "control/jobs.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "gui/gtk.h"
@@ -45,7 +46,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
-  float downsampling = gconf_client_get_float(darktable.control->gconf, DT_GCONF_DIR"/preview_subsample", NULL);
+  float downsampling = dt_conf_get_float ("preview_subsample");
   dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
   dev->gui_module = NULL;
   dev->timestamp = 0;
@@ -82,8 +83,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_max = -1;
     dev->histogram_pre_max = -1;
 
-    float lin = gconf_client_get_float(darktable.control->gconf, DT_GCONF_DIR"/gamma_linear", NULL);
-    float gam = gconf_client_get_float(darktable.control->gconf, DT_GCONF_DIR"/gamma_gamma",  NULL);
+    float lin = dt_conf_get_float("gamma_linear");
+    float gam = dt_conf_get_float("gamma_gamma");
     dt_dev_set_gamma_array(dev, lin, gam, dt_dev_default_gamma);
     int last = 0; // invert
     for(int i=0;i<0x100;i++) for(int k=last;k<0x10000;k++)

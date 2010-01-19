@@ -1,5 +1,6 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include <glade/glade.h>
 #include <stdlib.h>
@@ -90,8 +91,8 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
 
   char var[1024];
-  snprintf(var, 1024, DT_GCONF_DIR"/plugins/lighttable/%s/expanded", module->plugin_name);
-  gconf_client_set_bool(darktable.control->gconf, var, gtk_expander_get_expanded (expander), NULL);
+  snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
+  dt_conf_set_bool(var, gtk_expander_get_expanded (expander));
 
   if (gtk_expander_get_expanded (expander))
   {

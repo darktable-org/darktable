@@ -11,6 +11,7 @@
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "libraw/libraw.h"
@@ -1102,8 +1103,8 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  const int width = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", NULL);
-  const int height = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", NULL);
+  const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  const int height = dt_conf_get_int ("plugins/lighttable/export/height");
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
   const int processed_width  = scale*pipe.processed_width;
   const int processed_height = scale*pipe.processed_height;
@@ -1144,8 +1145,8 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  const int width = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", NULL);
-  const int height = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", NULL);
+  const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  const int height = dt_conf_get_int ("plugins/lighttable/export/height");
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
   const int processed_width  = scale*pipe.processed_width;
   const int processed_height = scale*pipe.processed_height;
@@ -1329,8 +1330,8 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
 
-  const int width = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/width", NULL);
-  const int height = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/height", NULL);
+  const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  const int height = dt_conf_get_int ("plugins/lighttable/export/height");
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
   const int processed_width  = scale*pipe.processed_width;
   const int processed_height = scale*pipe.processed_height;
@@ -1354,7 +1355,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
   length = dt_exif_read_blob(exif_profile, pathname);
 
-  int quality = gconf_client_get_int  (darktable.control->gconf, DT_GCONF_DIR"/plugins/lighttable/export/quality", NULL);
+  int quality = dt_conf_get_int ("plugins/lighttable/export/quality");
   if(quality <= 0 || quality > 100) quality = 100;
   if((!export_png && dt_imageio_jpeg_write(filename, buf8,             processed_width, processed_height, quality, exif_profile, length)) ||
      ( export_png && dt_imageio_png_write (filename, buf8,             processed_width, processed_height)))

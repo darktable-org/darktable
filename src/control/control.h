@@ -9,10 +9,7 @@
 
 #include "control/settings.h"
 #include <gtk/gtk.h>
-#include <gconf/gconf-client.h>
 // #include "control/job.def"
-
-#define DT_GCONF_DIR "/apps/darktable"
 
 #define DT_CONTROL_MAX_JOBS 300
 #define DT_CONTROL_JOB_DEBUG
@@ -163,7 +160,6 @@ typedef struct dt_control_t
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
   pthread_mutex_t global_mutex, image_mutex;
-  GConfClient *gconf;
 
   // xatom color profile:
   uint8_t *xprofile_data;
