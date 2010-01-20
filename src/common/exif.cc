@@ -218,6 +218,41 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
 }
 
+int dt_exif_read_wb(const char* path, float *wb)
+{
+  try
+  {
+    Exiv2::Image::AutoPtr image;
+    image = Exiv2::ImageFactory::open(path);
+    assert(image.get() != 0);
+    image->readMetadata();
+    Exiv2::ExifData &exifData = image->exifData();
+    if (exifData.empty())
+    {
+      std::string error(path);
+      error += ": no exif data found in the file";
+      throw Exiv2::Error(1, error);
+    }
+    printf("searching for wb presets\n");
+
+    /* List of tag names taken from exiv2's printSummary() in actions.cpp */
+    Exiv2::ExifData::iterator pos;
+    if ((pos = exifData.findKey(Exiv2::ExifKey("0x0043"))) != exifData.end())
+    {
+      const int num = pos->toLong();
+      printf("got temp %d\n", num);
+    }
+    return 0;
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    // std::cerr.rdbuf(savecerr);
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return 1;
+  }
+}
+
 int dt_exif_read_blob(uint8_t *buf, const char* path)
 {
   try

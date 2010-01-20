@@ -27,7 +27,9 @@
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
-  dt_conf_set_int  ("config_version", DT_VERSION);
+  dt_conf_set_string ("database", ".darktabledb");
+
+  dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
   dt_conf_set_bool ("write_dt_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
   dt_conf_set_float("preview_subsample", .5f);
@@ -327,7 +329,7 @@ void dt_control_init(dt_control_t *s)
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
 
   // if config is old, replace with new defaults.
-  if(DT_VERSION > dt_conf_get_int("config_version"))
+  if(DT_CONFIG_VERSION > dt_conf_get_int("config_version"))
     dt_ctl_settings_default(s);
 
   pthread_cond_init(&s->cond, NULL);

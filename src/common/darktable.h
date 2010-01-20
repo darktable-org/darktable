@@ -9,6 +9,7 @@
 #include <glib/gi18n.h>
 
 #define DT_VERSION 32
+#define DT_CONFIG_VERSION 33
 
 #ifndef M_PI
   #define M_PI 3.14159265358979323846

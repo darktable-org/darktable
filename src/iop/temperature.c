@@ -12,6 +12,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "common/exif.h"
 
 /** this wraps gegl:temperature plus some additional whitebalance adjustments. */
 
@@ -223,6 +224,10 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+
+  char filename[1024];
+  dt_image_full_path(self->dev->image, filename, 1024);
+  dt_exif_read_wb(filename, NULL);
 
   g->grayboxmode = 0;
   g->graybox[0] = g->graybox[1] = -0.1;
