@@ -65,7 +65,7 @@
     	<div class="listtext">
       <img src="images/macosx.jpg" alt="release" class="img" /><h1>current release for mac osx</h1>
       <ul>
-        <li>download this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.3/darktable_0.3.dmg/download">disk image</a></li>
+        <li>download this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.dmg/download">disk image</a></li>
         <li>mount the thing</li>
         <li>pull the darktable icon into your applications folder</li>
         <li>it worked on a few macs (100%) so far, good luck :)</li>

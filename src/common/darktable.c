@@ -74,15 +74,22 @@ int dt_init(int argc, char *argv[])
 
   char dbfilename[1024];
   gchar *dbname = dt_conf_get_string("database");
-  if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
-  else                 snprintf(dbfilename, 512, "%s", dbname);
+  if(!dbname)               snprintf(dbfilename, 512, "%s/.darktabledb", homedir);
+  else if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
+  else                      snprintf(dbfilename, 512, "%s", dbname);
 
   if(sqlite3_open(dbfilename, &(darktable.db)))
   {
-    fprintf(stderr, "[init] could not open database `%s'!\n", dbname);
+    fprintf(stderr, "[init] could not open database ");
+    if(dbname) fprintf(stderr, "`%s'!\n", dbname);
+    else       fprintf(stderr, "\n");
+#ifndef HAVE_GCONF
     fprintf(stderr, "[init] maybe your ~/.darktablerc is corrupt?\n");
     dt_get_datadir(dbfilename, 512);
     fprintf(stderr, "[init] try `cp %s/darktablerc ~/.darktablerc'\n", dbfilename);
+#else
+    fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
+#endif
     sqlite3_close(darktable.db);
     g_free(dbname);
     exit(1);
