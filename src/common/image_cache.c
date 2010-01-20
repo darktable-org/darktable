@@ -99,7 +99,11 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
     for(int i=0;i<cache->num_lines;i++)
     {
       if(cache->line[k].image.id == -1) break;
-      if(cache->line[k].lock.write == 0 && cache->line[k].lock.users == 0) break;
+      if(cache->line[k].lock.write == 0 && cache->line[k].lock.users == 0)
+      { // in case image buffers have not been released correctly, do it now:
+        for(int i=0;i<DT_IMAGE_NONE;i++) cache->line[k].image.lock[i].users = cache->line[k].image.lock[i].write = 0;
+        break;
+      }
       k = cache->line[k].mru;
     }
     if(k == cache->num_lines)

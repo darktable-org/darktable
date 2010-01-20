@@ -67,9 +67,6 @@ delete_button_clicked (GtkWidget *widget, gpointer user_data)
   img->output_height = img->height;
   dt_image_cache_flush(img);
   dt_image_write_dt_files(img);
-  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
-  for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) dt_image_free(img, k);
-  pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   dt_image_cache_release(img, 'r');
 
   dt_control_gui_queue_draw();
@@ -125,9 +122,6 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
     img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;
     dt_image_cache_flush(img);
     dt_image_write_dt_files(img);
-    pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
-    for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) dt_image_free(img, k);
-    pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
     dt_image_cache_release(img, 'r');
   }
   dt_image_cache_release(oimg, 'r');
@@ -177,13 +171,13 @@ gui_init (dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  g_signal_connect (G_OBJECT (copy), "clicked",
+  g_signal_connect (G_OBJECT (copy), "pressed",
                     G_CALLBACK (copy_button_clicked),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (delete), "clicked",
+  g_signal_connect (G_OBJECT (delete), "pressed",
                     G_CALLBACK (delete_button_clicked),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (d->paste), "clicked",
+  g_signal_connect (G_OBJECT (d->paste), "pressed",
                     G_CALLBACK (paste_button_clicked),
                     (gpointer)self);
 }
