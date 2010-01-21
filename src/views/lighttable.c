@@ -693,7 +693,20 @@ void scrolled(dt_view_t *view, double x, double y, int up)
 {
   dt_library_t *lib = (dt_library_t *)view->data;
   int zoom = lib->zoom;
-  if(up)
+  int tb = darktable.control->tabborder;
+  int wd = darktable.control->width;
+  int ht = darktable.control->height;
+  if(x < tb || x > wd - tb)
+  {
+    if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else   lib->track =  DT_LIBRARY_MAX_ZOOM;
+  }
+  else if(y < tb || y > ht - tb)
+  {
+    if(up) lib->track = -1;
+    else   lib->track =  1;
+  }
+  else if(up)
   {
     zoom--;
     if(zoom < 1) zoom = 1;
