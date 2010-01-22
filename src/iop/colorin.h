@@ -31,6 +31,8 @@ typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
+  // TODO: store color matrix from image
+  // TODO: store whether to apply color matrix
 }
 dt_iop_colorin_params_t;
 

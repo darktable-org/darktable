@@ -457,6 +457,8 @@ static void button_callback (GtkButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  self->dev->gui_module = self; // assert focus.
+  gtk_combo_box_set_active(g->presets, -1);
   g->button_down_zoom_x = g->button_down_zoom_y = 0.0f;
   g->grayboxmode = 1;
 }
