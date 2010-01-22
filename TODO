@@ -9,7 +9,9 @@
 - libs/db tag functionality:
   - image tagging, tag conditional probabilities
   - related tag browser view
+- views/browse.c: browse by similar tag.
 - color matrix/gamma vs input profile consistency
+  - auto wb button to make graybox whole image!
   - move color matrix from libraw to dt
     - don't re-open, during full raw load, store in image struct!
       - will be there if needed (raw has been loaded)

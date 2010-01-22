@@ -2,14 +2,13 @@
 #ifndef DT_IOP_COLOR_TEMPERATURE
 #define DT_IOP_COLOR_TEMPERATURE
 // plug-in frontend for gegl:color-temperature: (in sRGB)
-// params: kelvin in, kelvin out (or just one slider with magic 0..1 ?)
 
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
 #define DT_IOP_LOWEST_TEMPERATURE     3000
-#define DT_IOP_HIGHEST_TEMPERATURE   15000
+#define DT_IOP_HIGHEST_TEMPERATURE   12000
 
 
 static const float dt_iop_temperature_rgb_r55[][12];
@@ -17,7 +16,7 @@ static const float dt_iop_temperature_rgb_r55[][12];
 typedef struct dt_iop_temperature_params_t
 {
   int32_t trigger;
-  float temp_in;
+  float temp_out;
   float coeffs[3];
 }
 dt_iop_temperature_params_t;
@@ -26,11 +25,15 @@ typedef struct dt_iop_temperature_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2;
-  GtkHScale *scale_k, *scale_tint, *scale_k_in, *scale_r, *scale_g, *scale_b;
+  GtkHScale *scale_k, *scale_tint, *scale_k_out, *scale_r, *scale_g, *scale_b;
+  GtkComboBox *presets;
   int32_t grayboxmode;
   float graybox[4];
   float button_down_zoom_x, button_down_zoom_y;
   float grayrgb[3];
+  float cam_mul[4]; // rgbg
+  int preset_cnt;
+  int preset_num[50];
 }
 dt_iop_temperature_gui_data_t;
 
@@ -55,10 +58,11 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
-static void tint_callback    (GtkRange *range, gpointer user_data);
-static void temp_callback    (GtkRange *range, gpointer user_data);
-static void temp_in_callback (GtkRange *range, gpointer user_data);
-static void rgb_callback     (GtkRange *range, gpointer user_data);
-static void button_callback  (GtkButton *button, gpointer user_data);
+static void tint_callback     (GtkRange *range, gpointer user_data);
+static void temp_callback     (GtkRange *range, gpointer user_data);
+static void temp_out_callback (GtkRange *range, gpointer user_data);
+static void rgb_callback      (GtkRange *range, gpointer user_data);
+static void button_callback   (GtkButton *button, gpointer user_data);
+static void presets_changed   (GtkComboBox *widget, gpointer user_data);
 
 #endif
