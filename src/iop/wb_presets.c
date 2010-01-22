@@ -19,7 +19,16 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
-#include "ufraw.h"
+
+typedef struct
+{
+  const char *make;
+  const char *model;
+  const char *name;
+  int tuning;
+  double channel[4];
+}
+wb_data;
 
 /* Column 1 - "make" of the camera.
  * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
