@@ -325,6 +325,32 @@
         <long></long>
       </locale>
     </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/tagging/expanded</key>
+      <applyto>/apps/darktable/plugins/lighttable/tagging/expanded</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/tagging/ask_before_delete_tag</key>
+      <applyto>/apps/darktable/plugins/lighttable/tagging/ask_before_delete_tag</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
     
     <schema>
       <key>/schemas/apps/darktable/ui_last/expander_metadata</key>

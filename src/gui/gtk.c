@@ -33,6 +33,14 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   gtk_widget_queue_draw(widget);
 
+  GList *wdl = darktable.gui->redraw_widgets;
+  while(wdl)
+  {
+    GtkWidget *w = (GtkWidget *)wdl->data;
+    gtk_widget_queue_draw(w);
+    wdl = g_list_next(wdl);
+  }
+
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
   {
@@ -462,6 +470,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
 
   dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
+
+  darktable.gui->redraw_widgets = NULL;
 
   darktable.gui->reset = 0;
   for(int i=0;i<3;i++) darktable.gui->bgcolor[i] = 0.1333;

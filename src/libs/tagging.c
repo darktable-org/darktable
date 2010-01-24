@@ -2,10 +2,13 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
-#include <gtk/gtk.h>
+#include "gui/gtk.h"
+#include <glade/glade.h>
 
 #define MAX_TAGS_IN_LIST 14
 #define EXPOSE_COLUMNS 2
+
+// TODO: if view 1:1 in lighttable, use mouse over? or if no images selected? or trigger selection on 1:1 (no, stars)?
 
 typedef struct dt_lib_tagging_t
 {
@@ -48,13 +51,21 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
   sqlite3_stmt *stmt;
 
   if(which == 0) // tags of selected images
-    rc = sqlite3_prepare_v2(darktable.db, "select tags.id, tags.name from selected_images join tagged_images "
+    rc = sqlite3_prepare_v2(darktable.db, "select distinct tags.id, tags.name from selected_images join tagged_images "
         "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid limit ?1, ?2", -1, &stmt, NULL);
   else // related tags of typed text
-    rc = sqlite3_prepare_v2(darktable.db, d->related_query, -1, &stmt, NULL);
+  {
+    rc = sqlite3_exec(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, d->related_query, NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "insert into tagquery2 select distinct tagid, name, "
+        "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
+        NULL, NULL, NULL);
+    rc = sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc limit ?1, ?2", -1, &stmt, NULL);
+  }
   rc = sqlite3_bind_int(stmt, 1, offset);
-  rc = sqlite3_bind_int(stmt, 2, num_tags);
-  int i = 0, j = -.3*height/num_tags, num = 0;
+  rc = sqlite3_bind_int(stmt, 2, MAX_TAGS_IN_LIST);
+  int i = 0, j = 0, num = 0;
   cairo_set_source_rgb (cr, .7, .7, .7);
   cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, .7f*height/num_tags);
@@ -65,8 +76,8 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
     int tag = sqlite3_column_int(stmt, 0);
     if     (which == 0) d->current_taglist[num] = tag;
     else if(which == 1) d->related_taglist[num] = tag;
-    j += height/num_tags;
-    i = 5 + (width % EXPOSE_COLUMNS)*width/EXPOSE_COLUMNS;
+    j = (num / EXPOSE_COLUMNS - 0.3 + 1)*height/num_tags;
+    i = (num % EXPOSE_COLUMNS)*width/EXPOSE_COLUMNS + 5;
     if(selected == tag)
     {
       cairo_set_source_rgb (cr, .4, .4, .4);
@@ -79,6 +90,11 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
     num++;
   }
   rc = sqlite3_finalize(stmt);
+  if(which == 1)
+  {
+    sqlite3_exec(darktable.db, "drop table tagquery1", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "drop table tagquery2", NULL, NULL, NULL);
+  }
   cairo_set_source_rgb (cr, .7, .7, .7);
   if(num == MAX_TAGS_IN_LIST)
   { // there's more in this list!
@@ -129,13 +145,12 @@ static void set_related_query(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   // sql query for filtered tags and (one bounce) for related tags
   snprintf(d->related_query, 1024,
-    "select distinct related.id, related.name from ( "
+    "insert into tagquery1 select related.id, related.name, cross.count from ( "
     "select * from tags join tagxtag on tags.id = tagxtag.id1 or tags.id = tagxtag.id2 "
     "where name like '%%%s%%') as cross join tags as related "
     "where (id2 = related.id or id1 = related.id) "
     "and (cross.id1 = cross.id2 or related.id != cross.id) "
-    "and cross.count > 0 order by cross.count desc "
-    "limit ?1, ?2",
+    "and cross.count > 0",
     gtk_entry_get_text(d->entry));
   gtk_widget_queue_draw(self->widget);
 }
@@ -186,7 +201,7 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
 
-  // insert into tagged_images if not there already.
+  // remove from tagged_images
   rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where tagid = ?1 and imgid in (select imgid from selected_images)", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, tag);
   rc = sqlite3_step(stmt);
@@ -236,7 +251,7 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = 1 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
@@ -246,24 +261,49 @@ new_button_clicked (GtkButton *button, gpointer user_data)
 static void
 delete_button_clicked (GtkButton *button, gpointer user_data)
 {
-  // TODO: ask again!
-#if 0
-  int rc;
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+
+  int rc, res = GTK_RESPONSE_YES;
   sqlite3_stmt *stmt;
-  int id = 0;// TODO: get selected from gui!
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tags where id=?1");
+  int id = d->related_selected;
+
+  rc = sqlite3_prepare_v2(darktable.db, "select name from tags where id=?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int(stmt, 1, id);
+  if(sqlite3_step(stmt) != SQLITE_ROW)
+  {
+    rc = sqlite3_finalize(stmt);
+    return;
+  }
+  if(dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag"))
+  {
+    GtkWidget *dialog;
+    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_YES_NO,
+        _("do you really want to delete the tag `%s'?\nthis will also strip the tag off all tagged images!"),
+        (const char *)sqlite3_column_text(stmt, 0));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+  rc = sqlite3_finalize(stmt);
+  if(res != GTK_RESPONSE_YES) return;
+
+  rc = sqlite3_prepare_v2(darktable.db, "delete from tags where id=?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tagxtag where id1=?1 or id2=?1");
+  rc = sqlite3_prepare_v2(darktable.db, "delete from tagxtag where id1=?1 or id2=?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where tagid=?1");
+  rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where tagid=?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
-#endif
 }
 
 static gboolean 
@@ -307,7 +347,7 @@ current_button_pressed (GtkWidget *widget, GdkEventButton *event, gpointer user_
   { // select tag
     int y = (int)(num_tags * event->y / (float)height);
     int x = (int)(EXPOSE_COLUMNS * event->x / (float)width);
-    int selected = x * EXPOSE_COLUMNS + y;
+    int selected = y * EXPOSE_COLUMNS + x;
     selected = MAX(0, MIN(MAX_TAGS_IN_LIST-1, selected));
     if(d->current_taglist[selected] > 0) d->current_selected = d->current_taglist[selected];
     else d->current_selected = -1;
@@ -332,7 +372,7 @@ related_button_pressed (GtkWidget *widget, GdkEventButton *event, gpointer user_
   { // select tag
     int y = (int)(num_tags * event->y / (float)height);
     int x = (int)(EXPOSE_COLUMNS * event->x / (float)width);
-    int selected = x * EXPOSE_COLUMNS + y;
+    int selected = y * EXPOSE_COLUMNS + x;
     selected = MAX(0, MIN(MAX_TAGS_IN_LIST-1, selected));
     if(d->related_taglist[selected] > 0) d->related_selected = d->related_taglist[selected];
     else d->related_selected = -1;
@@ -362,6 +402,7 @@ gui_init (dt_lib_module_t *self)
   d->related_selected = d->current_selected = -1;
 
   self->widget = gtk_vbox_new(FALSE, 5);
+  darktable.gui->redraw_widgets = g_list_append(darktable.gui->redraw_widgets, self->widget);
 
   GtkBox *hbox;
   GtkWidget *button;
@@ -381,13 +422,22 @@ gui_init (dt_lib_module_t *self)
                     G_CALLBACK (current_button_pressed), (gpointer)self);
   gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("attached tags,\ndoubleclick to detach"), NULL);
 
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   w = gtk_entry_new();
   gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter tag name"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), w, TRUE, TRUE, 5);
+  gtk_box_pack_start(hbox, w, TRUE, TRUE, 5);
   g_signal_connect(G_OBJECT(w), "key-release-event",
                    G_CALLBACK(tag_name_changed), (gpointer)self);
   d->entry = GTK_ENTRY(w);
   set_related_query(self, d);
+
+  button = gtk_button_new_with_label(_("new"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"), NULL);
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 5);
+  g_signal_connect(G_OBJECT (button), "clicked",
+                   G_CALLBACK (new_button_clicked), (gpointer)self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
 
   w = gtk_drawing_area_new();
   asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
@@ -404,12 +454,6 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("related tags,\ndoubleclick to attach"), NULL);
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-
-  button = gtk_button_new_with_label(_("new"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered above"), NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 5);
-  g_signal_connect(G_OBJECT (button), "clicked",
-                   G_CALLBACK (new_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("delete"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("delete selected tag"), NULL);
@@ -435,6 +479,7 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
   free(self->data);
   self->data = NULL;
 }

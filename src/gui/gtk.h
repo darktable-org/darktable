@@ -11,6 +11,7 @@ typedef struct dt_gui_gtk_t
 {
   GladeXML *main_window;
   GdkPixmap *pixmap;
+  GList *redraw_widgets;
   dt_gui_navigation_t navigation;
   dt_gui_histogram_t histogram;
   int32_t reset;

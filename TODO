@@ -7,9 +7,10 @@
   - free db image selection 
   - folder watching and image re-import on change event (lib+dev)
 - libs/db tag functionality:
-  - image tagging, tag conditional probabilities
   - related tag browser view
-- views/browse.c: browse by similar tag.
+- views/browse.c: browse by similar tag:
+  inner 1:1 lighttable image, border with smaller images with
+  related tags, 2*k+2 many.
 - color matrix/gamma vs input profile consistency
   - move color matrix from libraw to dt
     - re-open file if color matrix is needed in colorin
