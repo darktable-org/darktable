@@ -408,8 +408,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     center = 0;
   }
 
-  // mouse left the area
-  if(!pan) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  // mouse left the area, but we leave mouse over as it was!
+  // if(!pan) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   int offset_i = (int)(zoom_x/wd);
   int offset_j = (int)(zoom_y/ht);

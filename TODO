@@ -1,4 +1,8 @@
 0.5 release:
+- lighttable q -> center without selected imgid
+- lighttable mouse_over_id not in -1th row!
+- tagging width of expose areas
+- tagging select vs mouse over?
 - libs/select plugin: select all, none, invert, by query
 - libs/history
   - favorites list (custom styles or so)

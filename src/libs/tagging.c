@@ -4,6 +4,7 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include <glade/glade.h>
+#include <math.h>
 
 #define MAX_TAGS_IN_LIST 14
 #define EXPOSE_COLUMNS 2
@@ -47,12 +48,55 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
   cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
+  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+
   int rc;
   sqlite3_stmt *stmt;
 
   if(which == 0) // tags of selected images
-    rc = sqlite3_prepare_v2(darktable.db, "select distinct tags.id, tags.name from selected_images join tagged_images "
-        "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid limit ?1, ?2", -1, &stmt, NULL);
+  {
+    int imgsel = -1;
+    DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+    if(imgsel > 0)
+    {
+      // draw affected image number in bg
+      char query[1024];
+      cairo_set_source_rgb (cr, .3, .3, .3);
+      cairo_set_font_size (cr, .8f*height);
+      snprintf(query, 1024, "%d", imgsel);
+      cairo_text_extents_t ext;
+      cairo_text_extents (cr, query, &ext);
+      cairo_move_to(cr, width-ext.width, height);
+      cairo_show_text(cr, query);
+      snprintf(query, 1024, "select distinct tags.id, tags.name from tagged_images "
+          "join tags on tags.id = tagged_images.tagid where tagged_images.imgid = %d limit ?1, ?2", imgsel);
+      rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+    }
+    else
+    {
+      char nums[40], *p = nums;
+      int cnt = 0;
+      rc = sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        if(p == nums) snprintf(p, 40 - (p-nums), "%d",  sqlite3_column_int(stmt, 0));
+        else          snprintf(p, 40 - (p-nums), ",%d", sqlite3_column_int(stmt, 0));
+        p = nums + strlen(nums);
+        if(p >= nums + 40) break;
+        cnt++;
+      }
+      rc = sqlite3_finalize(stmt);
+      cairo_set_source_rgb (cr, .3, .3, .3);
+      cairo_set_font_size (cr, .8*height/powf(cnt, .3));
+      cairo_text_extents_t ext;
+      cairo_text_extents (cr, nums, &ext);
+      cairo_move_to(cr, MAX(5, width-ext.width), height);
+      cairo_show_text(cr, nums);
+
+      rc = sqlite3_prepare_v2(darktable.db, "select distinct tags.id, tags.name from selected_images join tagged_images "
+          "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid limit ?1, ?2", -1, &stmt, NULL);
+    }
+  }
   else // related tags of typed text
   {
     rc = sqlite3_exec(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
@@ -67,7 +111,6 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
   rc = sqlite3_bind_int(stmt, 2, MAX_TAGS_IN_LIST);
   int i = 0, j = 0, num = 0;
   cairo_set_source_rgb (cr, .7, .7, .7);
-  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, .7f*height/num_tags);
   for(int k=0;k<MAX_TAGS_IN_LIST;k++) if(which == 0) d->current_taglist[k] = -1; else d->related_taglist[k] = -1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
