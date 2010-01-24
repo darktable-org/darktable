@@ -120,6 +120,7 @@ int dt_control_load_config(dt_control_t *c)
       rc = sqlite3_prepare_v2(darktable.db, "drop table mipmap_timestamps", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table history", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table tags", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      rc = sqlite3_prepare_v2(darktable.db, "drop table tagxtag", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       rc = sqlite3_prepare_v2(darktable.db, "drop table tagged_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
       return dt_control_load_config(c);
     }
@@ -151,8 +152,9 @@ int dt_control_load_config(dt_control_t *c)
     rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tags (id integer primary key, name varchar, icon blob)", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, foreign key (id1) references tags(id) foreign key (id2) references tags(id) primary key(id1, id2))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, foreign key(imgid) references images(id) foreign key(tagid) references tags(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, foreign key(imgid) references images(id) foreign key(tagid) references tags(id) primary key(imgid, tagid))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
 
     // add dummy film roll for single images
@@ -165,10 +167,6 @@ int dt_control_load_config(dt_control_t *c)
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
 
-    // TODO: - table tags "tag str" "key#"
-    // TODO: - table frequency tagXtag?
-    // TODO: - table tag X film_roll
-    // TODO: - table tag X image
     rc = sqlite3_prepare_v2(darktable.db, "insert into settings (settings) values (?1)", -1, &stmt, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_bind_blob(stmt, 1, &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t), SQLITE_STATIC);

@@ -279,6 +279,7 @@ static gboolean
 button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
   dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state);
+  gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
   return TRUE;
 }
