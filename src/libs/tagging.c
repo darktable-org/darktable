@@ -9,8 +9,6 @@
 #define MAX_TAGS_IN_LIST 14
 #define EXPOSE_COLUMNS 2
 
-// TODO: if view 1:1 in lighttable, use mouse over? or if no images selected? or trigger selection on 1:1 (no, stars)?
-
 typedef struct dt_lib_tagging_t
 {
   char related_query[1024];

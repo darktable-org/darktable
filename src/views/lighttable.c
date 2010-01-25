@@ -408,21 +408,23 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     center = 0;
   }
 
-  // mouse left the area, but we leave mouse over as it was!
-  // if(!pan) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  // mouse left the area, but we leave mouse over as it was, especially during panning
+  // if(!pan && pointerx > 0 && pointerx < width && pointery > 0 && pointery < height) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  if(!pan && zoom != 1) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   int offset_i = (int)(zoom_x/wd);
   int offset_j = (int)(zoom_y/ht);
-  int seli = (int)((pointerx + zoom_x)/wd) - MAX(offset_i, 0);
-  int selj = (int)((pointery + zoom_y)/ht) - offset_j;
+  // arbitrary 1000 to avoid bug due to round towards zero using (int)
+  int seli = zoom == 1 ? 0 : (int)(1000 + (pointerx + zoom_x)/wd) - MAX(offset_i, 0) - 1000;
+  int selj = zoom == 1 ? 0 : (int)(1000 + (pointery + zoom_y)/ht) - offset_j         - 1000;
   float offset_x = zoom == 1 ? 0.0 : zoom_x/wd - (int)(zoom_x/wd);
   float offset_y = zoom == 1 ? 0.0 : zoom_y/ht - (int)(zoom_y/ht);
   const int max_rows = zoom == 1 ? 1 : 2 + (int)((height)/ht + .5);
   const int max_cols = zoom == 1 ? 1 : MIN(DT_LIBRARY_MAX_ZOOM - MAX(0, offset_i), 1 + (int)(zoom+.5));
 
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM*offset_j;
-  int img_pointerx = fmodf(pointerx + zoom_x, wd);// - wd*MAX(offset_i, 0);
-  int img_pointery = fmodf(pointery + zoom_y, ht);// - ht*offset_j;
+  int img_pointerx = fmodf(pointerx + zoom_x, wd);
+  int img_pointery = fmodf(pointery + zoom_y, ht);
 
   // assure 1:1 is not switching images on resize/tab events:
   if(!track && last_offset != 0x7fffffff && zoom == 1)
@@ -498,7 +500,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
             }
           }
           cairo_save(cr);
-          // TODO: pass pointerx,y translated by cairo translate!
           dt_image_expose(image, lib, image->id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
