@@ -1,4 +1,6 @@
 0.5 release:
+- remove gtk_drawing_area_size()
+- tagging import of dttags tagtable explosion?
 - tagging width of expose areas
 - tagging double bounce related tags?
 - libs/select plugin: select all, none, invert, by query
@@ -17,6 +19,7 @@
   - move color matrix from libraw to dt
     - re-open file if color matrix is needed in colorin
 - create share/darktable/color/{in,out}/README
+- darkroom mode plugin template
 - simple db move by changing top-level directory?
 - export output file name pattern and editable
 - user adjustable defaults for all iops
@@ -41,13 +44,6 @@
 - mac bitch: gegl.h and Carbon.h are not friends.
 - side by side comparison view
 - gconf option for maximum number of jobs?
-- tagging plugin in lighttable mode:
-  - film.h: sql query string
-  - small gui to view tags (next to metadata?)
-  - small gui to organise tags (create, mod, delete)
-  - small gui to query images by tags
-- remove mipmap from db on new mipmap write?
-- whitebalance presets
 - quitting dialog/progress?
 - histogram fill light mouse gesture
 - exposure: highlight clipped parts
@@ -56,15 +52,11 @@
 - clipping event hooks: crop
 - user preferences
   - default processing stack, if exif matches
-- lighttable plugins:
-  - copy style
 - color picker for tonecurve/color correction/monochrome?
 - progress bars for coresponding widgets (export)?
 - efficiency:
   - dt_image_expose: check history cached in flags?
   - dt_dev_process_to_mip: check hash?
-- image file operations: remove from db, delete from disk (trash?),
-  write dt[tags], duplicate in db.
 - scroll to opened expander in darkroom mode.
 
 bugs:

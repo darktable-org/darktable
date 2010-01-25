@@ -288,6 +288,12 @@ void dt_image_remove(const int32_t imgid)
   rc = sqlite3_bind_int (stmt, 1, imgid);
   rc = sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
+      "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
+      "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+  rc = sqlite3_bind_int(stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
   rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, imgid);
   rc = sqlite3_step(stmt);

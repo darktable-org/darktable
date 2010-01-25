@@ -131,8 +131,10 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
     num++;
   }
   rc = sqlite3_finalize(stmt);
-  if(which == 1)
+  if(which != 0)
   {
+    sqlite3_exec(darktable.db, "delete from tagquery1", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "delete from tagquery2", NULL, NULL, NULL);
     sqlite3_exec(darktable.db, "drop table tagquery1", NULL, NULL, NULL);
     sqlite3_exec(darktable.db, "drop table tagquery2", NULL, NULL, NULL);
   }
@@ -210,21 +212,40 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   int rc;
   sqlite3_stmt *stmt;
-  int tag = d->related_selected;
+  int tag = d->related_selected, imgsel = -1;
   if(tag <= 0) return;
 
-  // insert into tagged_images if not there already.
-  rc = sqlite3_prepare_v2(darktable.db, "insert or replace into tagged_images select imgid, ?1 from selected_images", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, tag);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
+  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  if(imgsel > 0)
+  {
+    rc = sqlite3_prepare_v2(darktable.db, "insert or replace into tagged_images (imgid, tagid) values (?1, ?2)", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, imgsel);
+    rc = sqlite3_bind_int(stmt, 2, tag);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
 
-  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
-      "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
-      "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, tag);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
+    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
+        "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+        "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tag);
+    rc = sqlite3_bind_int(stmt, 2, imgsel);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+  }
+  else
+  { // insert into tagged_images if not there already.
+    rc = sqlite3_prepare_v2(darktable.db, "insert or replace into tagged_images select imgid, ?1 from selected_images", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tag);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+
+    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
+        "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
+        "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tag);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+  }
 }
 
 static void
@@ -232,21 +253,42 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   int rc;
   sqlite3_stmt *stmt;
-  int tag = d->current_selected;
+  int tag = d->current_selected, imgsel = -1;
   if(tag <= 0) return;
 
-  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
-      "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
-      "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, tag);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
+  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  if(imgsel > 0)
+  {
+    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
+        "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+        "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tag);
+    rc = sqlite3_bind_int(stmt, 2, imgsel);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
 
-  // remove from tagged_images
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where tagid = ?1 and imgid in (select imgid from selected_images)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, tag);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
+    // remove from tagged_images
+    rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where tagid = ?1 and imgid = ?2", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tag);
+    rc = sqlite3_bind_int(stmt, 2, imgsel);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+  }
+  else
+  {
+    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
+        "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
+        "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tag);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+
+    // remove from tagged_images
+    rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where tagid = ?1 and imgid in (select imgid from selected_images)", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tag);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+  }
 }
 
 static void
@@ -450,10 +492,10 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *w;
 
   w = gtk_drawing_area_new();
-  GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
+  GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 3.0/2.0, FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), w);
-  gtk_drawing_area_size(GTK_DRAWING_AREA(w), 258, 158);
+  gtk_widget_set_size_request(w, 300, 180);
   gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(w), "expose-event",
                    G_CALLBACK(expose_current_tags), (gpointer)self);
@@ -481,10 +523,10 @@ gui_init (dt_lib_module_t *self)
 
 
   w = gtk_drawing_area_new();
-  asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
+  asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 3.0/2.0, FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), w);
-  gtk_drawing_area_size(GTK_DRAWING_AREA(w), 258, 158);
+  gtk_widget_set_size_request(w, 300, 180);
   gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(w), "expose-event",
                    G_CALLBACK(expose_related_tags), (gpointer)self);
