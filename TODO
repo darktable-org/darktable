@@ -1,10 +1,5 @@
 0.5 release:
-- move show/hide panels panels outside.
-  - scrolled event -> view manager.
 - remove gtk_drawing_area_size()
-- tagging import of dttags tagtable explosion?
-- tagging width of expose areas
-- tagging double bounce related tags?
 - libs/select plugin: select all, none, invert, by query
 - libs/history
   - favorites list (custom styles or so)
@@ -12,8 +7,6 @@
   - film db operations: add, search, remove, check deleted, move dir
   - free db image selection 
   - folder watching and image re-import on change event (lib+dev)
-- libs/db tag functionality:
-  - related tag browser view
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
   related tags, 2*k+2 many.

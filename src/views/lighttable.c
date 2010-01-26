@@ -401,8 +401,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   {
     if(mouse_over_id >= 0)
     {
-      zoom_x -= width*.5f  - pointerx;
-      zoom_y -= height*.5f - pointery;
+      zoom_x = wd*((int)(zoom_x)/(int)wd);
+      zoom_y = ht*((int)(zoom_y)/(int)ht);
     }
     else zoom_x = zoom_y = 0.0;
     center = 0;
@@ -681,8 +681,18 @@ void key_pressed(dt_view_t *self, uint16_t which)
     case KEYCODE_1:
       lib->zoom = 1;
       break;
-    case KEYCODE_apostrophe:
+    case KEYCODE_2:
+      if(lib->zoom <= 1) lib->zoom = 1;
+      else lib->zoom --;
+      break;
+    case KEYCODE_3:
+      if(lib->zoom >= 2*DT_LIBRARY_MAX_ZOOM) lib->zoom = 2*DT_LIBRARY_MAX_ZOOM;
+      else lib->zoom ++;
+      break;
+    case KEYCODE_4:
       lib->zoom = DT_LIBRARY_MAX_ZOOM;
+      break;
+    case KEYCODE_apostrophe:
       lib->center = 1;
       break;
     default:

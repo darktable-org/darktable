@@ -833,33 +833,6 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
     if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
     else dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state);
   }
-#if 0
-  else if(x < tb)
-  {
-    widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-    if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-    else gtk_widget_show(widget);
-  }
-  else if(x > wd-tb)
-  {
-    widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-    if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-    else gtk_widget_show(widget);
-  }
-  else if(y < tb)
-  {
-    widget = glade_xml_get_widget (darktable.gui->main_window, "top");
-    if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-    else gtk_widget_show(widget);
-  }
-  else if(y > ht-tb)
-  {
-    widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-    if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-    // bottom has currently no useful controls in it, keep hidden:
-    // else gtk_widget_show(widget);
-  }
-#endif
 }
 
 void dt_control_log(const char* msg, ...)
