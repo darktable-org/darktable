@@ -16,6 +16,11 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
 AM_GCONF_SOURCE_2
 
+# Enable silent build rules by default, requires at least
+# Automake-1.11. Disable by either passing --disable-silent-rules to
+# configure or passing V=1 to make
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 AX_CC_MAXOPT
 AC_MSG_CHECKING([whether to enable debugging])
 AC_ARG_ENABLE(debug,
@@ -54,9 +59,7 @@ AC_ARG_ENABLE(gegl,
           fi
         ],
         [
-             AC_DEFINE(USE_GEGL_CURVE, 1, [whether to use gegl for rendering])
-             AC_MSG_RESULT([only for curve])
-             PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
+             AC_MSG_RESULT([no])
         ]
         )
 AC_MSG_CHECKING([whether to use gconf to store settings])
@@ -90,13 +93,9 @@ PKG_CHECK_MODULES(PNG, libpng12)
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),
         [
-          AC_MSG_CHECKING([whether build the lensfun plugin])
           if test "$enable_lensfun" = "yes"; then
              PKG_CHECK_MODULES(LENSFUN, lensfun >= 0.2.3)
              AC_DEFINE(HAVE_LENSFUN, 1, [whether build the lensfun plugin])
-             AC_MSG_RESULT([yes])
-          else
-             AC_MSG_RESULT([no])
           fi
           AM_CONDITIONAL([HAVE_LENSFUN], [test "$enable_lensfun" = yes])
         ],

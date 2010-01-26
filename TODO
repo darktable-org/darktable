@@ -29,7 +29,6 @@
 - automatic re-import in raw import on button press?
 - monochrome passthrough mode (or color channel equalizer tool?)
 - clipping aspect ratio
-- clean build system (kernel like)
 - crop/rotate angle == 0 bypass
 - auto center/filter to 1 star/filename if new film is loaded
   - or: presets for every film in separate db.
