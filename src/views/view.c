@@ -67,6 +67,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "key_pressed",     (gpointer)&(view->key_pressed)))     view->key_pressed = NULL;
   if(!g_module_symbol(view->module, "configure",       (gpointer)&(view->configure)))       view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled",        (gpointer)&(view->scrolled)))        view->scrolled = NULL;
+  if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
 
   if(view->init) view->init(view);
   return 0;
@@ -181,5 +182,12 @@ void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->scrolled) v->scrolled(v, x, y, up);
+}
+
+void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up)
+{
+  if(vm->current_view < 0) return;
+  dt_view_t *v = vm->view + vm->current_view;
+  if(v->border_scrolled) v->border_scrolled(v, x, y, which, up);
 }
 

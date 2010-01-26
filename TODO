@@ -1,4 +1,6 @@
 0.5 release:
+- move show/hide panels panels outside.
+  - scrolled event -> view manager.
 - remove gtk_drawing_area_size()
 - tagging import of dttags tagtable explosion?
 - tagging width of expose areas

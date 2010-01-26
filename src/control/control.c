@@ -642,19 +642,18 @@ void *dt_control_expose(void *voidptr)
 
     // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
     // 
-    float tb = 10;//fmaxf(10, width/100.0);
+    float tb = 8;//fmaxf(10, width/100.0);
     darktable.control->tabborder = tb;
     darktable.control->width = width;
     darktable.control->height = height;
 
-    // cairo_set_source_rgb (cr, .2, .2, .2);
-    cairo_set_source_rgb (cr, .25, .25, .25);
-    cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
-    cairo_rectangle(cr, 0, 0, width, height);
-    cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
-    cairo_fill_preserve(cr);
+    cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
+    cairo_set_line_width(cr, tb);
+    cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
+    cairo_stroke(cr);
     cairo_set_line_width(cr, 1.5);
-    cairo_set_source_rgb(cr, .1, .1, .1);
+    cairo_set_source_rgb (cr, .1, .1, .1);
+    cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_stroke(cr);
 
     cairo_save(cr);
@@ -665,33 +664,6 @@ void *dt_control_expose(void *voidptr)
     // draw view
     dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb, pointerx-tb, pointery-tb);
     cairo_restore(cr);
-
-    // draw gui arrows.
-    cairo_set_source_rgb (cr, .6, .6, .6);
-
-    cairo_move_to (cr, 0.0, height/2-tb);
-    cairo_rel_line_to (cr, 0.0, 2*tb);
-    cairo_rel_line_to (cr, tb, -tb);
-    cairo_close_path (cr);
-    cairo_fill(cr);
-
-    cairo_move_to (cr, width, height/2-tb);
-    cairo_rel_line_to (cr, 0.0, 2*tb);
-    cairo_rel_line_to (cr, -tb, -tb);
-    cairo_close_path (cr);
-    cairo_fill(cr);
-
-    cairo_move_to (cr, width/2-tb, height);
-    cairo_rel_line_to (cr, 2*tb, 0.0);
-    cairo_rel_line_to (cr, -tb, -tb);
-    cairo_close_path (cr);
-    cairo_fill(cr);
-
-    cairo_move_to (cr, width/2-tb, 0);
-    cairo_rel_line_to (cr, 2*tb, 0.0);
-    cairo_rel_line_to (cr, -tb, tb);
-    cairo_close_path (cr);
-    cairo_fill(cr);
 
     // draw status bar, if any
     if(darktable.control->progress < 100.0)
@@ -843,7 +815,6 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   float tb = darktable.control->tabborder;
   float wd = darktable.control->width;
   float ht = darktable.control->height;
-  GtkWidget *widget;
 
   // ack log message:
   pthread_mutex_lock(&darktable.control->log_mutex);
@@ -862,6 +833,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
     if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
     else dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state);
   }
+#if 0
   else if(x < tb)
   {
     widget = glade_xml_get_widget (darktable.gui->main_window, "left");
@@ -887,6 +859,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
     // bottom has currently no useful controls in it, keep hidden:
     // else gtk_widget_show(widget);
   }
+#endif
 }
 
 void dt_control_log(const char* msg, ...)

@@ -19,6 +19,85 @@
 #include "views/view.h"
 
 static gboolean
+borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
+{
+  GtkWidget *widget;
+  long int which = (long int)user_data;
+  switch(which)
+  {
+    case 0:
+      widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
+      else gtk_widget_show(widget);
+      break;
+    case 1:
+      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
+      else gtk_widget_show(widget);
+      break;
+    case 2:
+      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
+      else gtk_widget_show(widget);
+      break;
+    default:
+      // widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      // if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
+      // else gtk_widget_show(widget);
+      break;
+  }
+  return TRUE;
+}
+
+static gboolean
+expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{ // draw arrows on borders
+  long int which = (long int)user_data;
+  
+  int width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  cairo_set_source_rgb (cr, .2, .2, .2);
+  cairo_paint(cr);
+  // draw gui arrows.
+  cairo_set_source_rgb (cr, .6, .6, .6);
+
+  switch(which)
+  {
+    case 0: // left
+      cairo_move_to (cr, 0.0, height/2-width);
+      cairo_rel_line_to (cr, 0.0, 2*width);
+      cairo_rel_line_to (cr, width, -width);
+      break;
+    case 1: // right
+      cairo_move_to (cr, width, height/2-width);
+      cairo_rel_line_to (cr, 0.0, 2*width);
+      cairo_rel_line_to (cr, -width, -width);
+      break;
+    case 2: // top
+      cairo_move_to (cr, width/2-height, 0.0);
+      cairo_rel_line_to (cr, 2*height, 0.0);
+      cairo_rel_line_to (cr, -height, height);
+      break;
+    default: // bottom
+      cairo_move_to (cr, width/2-height, height);
+      cairo_rel_line_to (cr, 2*height, 0.0);
+      cairo_rel_line_to (cr, -height, -height);
+      break;
+  }
+  cairo_close_path (cr);
+  cairo_fill(cr);
+
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+static gboolean
 expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 {
   dt_control_expose(NULL);
@@ -232,6 +311,14 @@ scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
   return TRUE;
 }
 
+static gboolean
+borders_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_view_manager_border_scrolled(darktable.view_manager, event->x, event->y, (long int)user_data, event->direction == GDK_SCROLL_UP);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
 void quit()
 {
   // thread safe quit, 1st pass:
@@ -403,6 +490,24 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (scrolled), NULL);
   // TODO: left, right, top, bottom:
   //leave-notify-event
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)0);
+	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)0);
+	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)0);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)1);
+	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)1);
+	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)2);
+	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)2);
+	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)2);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)3);
+	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
+	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
+
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "selected_action_button");
   g_signal_connect (G_OBJECT (widget), "clicked",

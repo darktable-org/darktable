@@ -122,7 +122,7 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   }
   else
   {
-    double x0 = 0.007*width, y0 = 0.007*height, rect_width = 0.986*width, rect_height = 0.986*height, radius = 0.08*width;
+    double x0 = 0.007*width, y0 = 0.007*height, rect_width = 0.986*width, rect_height = 0.986*height, radius = 0.04*width;
     // double x0 = 0.*width, y0 = 0.*height, rect_width = 1.*width, rect_height = 1.*height, radius = 0.08*width;
     double x1, y1, off, off1;
 
@@ -690,24 +690,27 @@ void key_pressed(dt_view_t *self, uint16_t which)
   }
 }
 
-void scrolled(dt_view_t *view, double x, double y, int up)
+void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 {
   dt_library_t *lib = (dt_library_t *)view->data;
-  int zoom = lib->zoom;
-  int tb = darktable.control->tabborder;
-  int wd = darktable.control->width;
-  int ht = darktable.control->height;
-  if(x < tb || x > wd - tb)
+  if(which == 0 || which == 1)
   {
     if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
     else   lib->track =  DT_LIBRARY_MAX_ZOOM;
   }
-  else if(y < tb || y > ht - tb)
+  else if(which == 2 || which == 3)
   {
     if(up) lib->track = -1;
     else   lib->track =  1;
   }
-  else if(up)
+  dt_control_queue_draw_all();
+}
+
+void scrolled(dt_view_t *view, double x, double y, int up)
+{
+  dt_library_t *lib = (dt_library_t *)view->data;
+  int zoom = lib->zoom;
+  if(up)
   {
     zoom--;
     if(zoom < 1) zoom = 1;
