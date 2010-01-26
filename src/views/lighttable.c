@@ -684,10 +684,12 @@ void key_pressed(dt_view_t *self, uint16_t which)
     case KEYCODE_2:
       if(lib->zoom <= 1) lib->zoom = 1;
       else lib->zoom --;
+      lib->center = 1;
       break;
     case KEYCODE_3:
       if(lib->zoom >= 2*DT_LIBRARY_MAX_ZOOM) lib->zoom = 2*DT_LIBRARY_MAX_ZOOM;
       else lib->zoom ++;
+      lib->center = 1;
       break;
     case KEYCODE_4:
       lib->zoom = DT_LIBRARY_MAX_ZOOM;

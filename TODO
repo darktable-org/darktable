@@ -1,15 +1,16 @@
 0.5 release:
+- views/darkroom.c: expose black if first loaded??
+- libs/collect.c: free db image selection 
+- views/browse.c: browse by similar tag:
+  inner 1:1 lighttable image, border with smaller images with
+  related tags, 2*k+2 many.
 - remove gtk_drawing_area_size()
 - libs/select plugin: select all, none, invert, by query
 - libs/history
   - favorites list (custom styles or so)
 - libs/image handling:
   - film db operations: add, search, remove, check deleted, move dir
-  - free db image selection 
   - folder watching and image re-import on change event (lib+dev)
-- views/browse.c: browse by similar tag:
-  inner 1:1 lighttable image, border with smaller images with
-  related tags, 2*k+2 many.
 - color matrix/gamma vs input profile consistency
   - move color matrix from libraw to dt
     - re-open file if color matrix is needed in colorin

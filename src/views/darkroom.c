@@ -37,8 +37,6 @@ void cleanup(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
-  cairo_set_source_rgb (cri, .2, .2, .2);
-  cairo_paint(cri);
   // if width or height > max pipeline pixels: center the view and clamp.
   if(width  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width) *.5f, 0.0f);
   if(height > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height)*.5f);
@@ -480,6 +478,35 @@ void scrolled(dt_view_t *self, double x, double y, int up)
   DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
   DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
   dt_dev_invalidate(dev);
+}
+
+
+void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
+{
+  dt_develop_t *dev = (dt_develop_t *)view->data;
+  dt_dev_zoom_t zoom;
+  int closeup;
+  float zoom_x, zoom_y, scale;
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  DT_CTL_GET_GLOBAL(scale, dev_zoom_scale);
+  if(which > 1) 
+  {
+    if(up) zoom_x -= 0.02;
+    else   zoom_x += 0.02;
+  }
+  else
+  {
+    if(up) zoom_y -= 0.02;
+    else   zoom_y += 0.02;
+  }
+  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+  DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+  DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+  dt_dev_invalidate(dev);
+  dt_control_queue_draw_all();
 }
 
 
