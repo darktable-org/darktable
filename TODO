@@ -1,4 +1,5 @@
 0.5 release:
+- arrow keys additional to quake movement
 - libs/collect.c: free db image selection 
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
@@ -18,9 +19,10 @@
 - export output file name pattern and editable
 - user adjustable defaults for all iops
 - sliders numeric input field
+  - show magnification factor
+  - show sRGB/Lab/rgb values
 - gnome-color-manager dbus interaction
 - highlight reconstruction/tonemapping
-- save history stack list, make them stackable, clear history stack button.
 - automatic application of history stacks due to pattern matching.
 - write dttags on image_cache_flush?
 - ctrl + 01234 in lighttable => stars
