@@ -13,6 +13,7 @@
 #include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "gui/metadata.h"
+#include "gui/filmview.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -519,6 +520,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
   dt_gui_histogram_init(&gui->histogram, widget);
+
+  dt_gui_filmview_init();
 
   // film history
   for(long int k=1;k<5;k++)

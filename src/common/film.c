@@ -193,3 +193,19 @@ int dt_film_import(dt_film_t *film, const char *dirname)
   return 0;
 }
 
+void dt_film_remove(const int id)
+{
+  int rc;
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    dt_image_remove(sqlite3_column_int(stmt, 0));
+  rc = sqlite3_finalize(stmt);
+
+  rc = sqlite3_prepare_v2(darktable.db, "delete from film_rolls where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int(stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
+}
+

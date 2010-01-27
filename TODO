@@ -1,5 +1,4 @@
 0.5 release:
-- views/darkroom.c: expose black if first loaded??
 - libs/collect.c: free db image selection 
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
@@ -8,15 +7,14 @@
 - libs/select plugin: select all, none, invert, by query
 - libs/history
   - favorites list (custom styles or so)
-- libs/image handling:
-  - film db operations: add, search, remove, check deleted, move dir
-  - folder watching and image re-import on change event (lib+dev)
+- if dir is not found, try known top-levels or ask for new
+- folder watching and image re-import on change event (lib+dev)
 - color matrix/gamma vs input profile consistency
   - move color matrix from libraw to dt
     - re-open file if color matrix is needed in colorin
 - create share/darktable/color/{in,out}/README
 - darkroom mode plugin template
-- simple db move by changing top-level directory?
+- jpeg exif tags harmful?
 - export output file name pattern and editable
 - user adjustable defaults for all iops
 - sliders numeric input field
@@ -55,7 +53,6 @@
 - scroll to opened expander in darkroom mode.
 
 bugs:
-- temperature to match other apps.
 - bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit

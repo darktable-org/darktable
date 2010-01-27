@@ -406,108 +406,187 @@ physically delete</property>
                                 <property name="expanded">True</property>
                                 <property name="spacing">10</property>
                                 <child>
-                                  <widget class="GtkVBox" id="library_expander_body">
+                                  <widget class="GtkAlignment" id="library_alignment">
                                     <property name="visible">True</property>
-                                    <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-                                    <property name="orientation">vertical</property>
+                                    <property name="bottom_padding">10</property>
+                                    <property name="left_padding">5</property>
+                                    <property name="right_padding">10</property>
                                     <child>
-                                      <widget class="GtkButton" id="button_import">
-                                        <property name="label" translatable="yes">import film roll</property>
+                                      <widget class="GtkVBox" id="library_expander_body">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
+                                        <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                          <widget class="GtkButton" id="button_import">
+                                            <property name="label" translatable="yes">import film roll</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkButton" id="button_import_single">
+                                            <property name="label" translatable="yes">import single image</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkHSeparator" id="hseparator1">
+                                            <property name="visible">True</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="padding">7</property>
+                                            <property name="position">2</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkButton" id="recent_film_1">
+                                            <property name="label" translatable="yes">button</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="no_show_all">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">3</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkButton" id="recent_film_2">
+                                            <property name="label" translatable="yes">button</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="no_show_all">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">4</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkButton" id="recent_film_3">
+                                            <property name="label" translatable="yes">button</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="no_show_all">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">5</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkButton" id="recent_film_4">
+                                            <property name="label" translatable="yes">button</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="no_show_all">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">6</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkHSeparator" id="hseparator2">
+                                            <property name="visible">True</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="padding">7</property>
+                                            <property name="position">7</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkEntry" id="entry_film">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="events">GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_STRUCTURE_MASK</property>
+                                            <property name="tooltip" translatable="yes">search film rolls by folder</property>
+                                            <property name="invisible_char">&#x2022;</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">8</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkScrolledWindow" id="treeview_film_scrolledwindow">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="hscrollbar_policy">automatic</property>
+                                            <property name="vscrollbar_policy">automatic</property>
+                                            <property name="window_placement">top-right</property>
+                                            <property name="window_placement_set">True</property>
+                                            <child>
+                                              <widget class="GtkViewport" id="treeview_film_viewport">
+                                                <property name="visible">True</property>
+                                                <property name="resize_mode">queue</property>
+                                                <child>
+                                                  <widget class="GtkTreeView" id="treeview_film">
+                                                    <property name="visible">True</property>
+                                                    <property name="can_focus">True</property>
+                                                    <property name="headers_visible">False</property>
+                                                    <property name="search_column">0</property>
+                                                  </widget>
+                                                </child>
+                                              </widget>
+                                            </child>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">9</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkHBox" id="hbox1">
+                                            <property name="visible">True</property>
+                                            <property name="spacing">5</property>
+                                            <child>
+                                              <widget class="GtkButton" id="button_film_remove">
+                                                <property name="label" translatable="yes">remove</property>
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkButton" id="button_film_open">
+                                                <property name="label" translatable="yes">open</property>
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="position">1</property>
+                                              </packing>
+                                            </child>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">10</property>
+                                          </packing>
+                                        </child>
                                       </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkTreeView" id="treeview2">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkButton" id="button_import_single">
-                                        <property name="label" translatable="yes">import single image</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkHSeparator" id="hseparator1">
-                                        <property name="visible">True</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="padding">7</property>
-                                        <property name="position">3</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkButton" id="recent_film_1">
-                                        <property name="label" translatable="yes">button</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="no_show_all">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">4</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkButton" id="recent_film_2">
-                                        <property name="label" translatable="yes">button</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="no_show_all">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">5</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkButton" id="recent_film_3">
-                                        <property name="label" translatable="yes">button</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="no_show_all">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">6</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkButton" id="recent_film_4">
-                                        <property name="label" translatable="yes">button</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="no_show_all">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">8</property>
-                                      </packing>
                                     </child>
                                   </widget>
                                 </child>
@@ -832,129 +911,137 @@ physically delete</property>
                                 <property name="expanded">True</property>
                                 <property name="spacing">10</property>
                                 <child>
-                                  <widget class="GtkVBox" id="history_expander_body">
+                                  <widget class="GtkAlignment" id="history_alignment">
                                     <property name="visible">True</property>
-                                    <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-                                    <property name="orientation">vertical</property>
+                                    <property name="bottom_padding">10</property>
+                                    <property name="left_padding">5</property>
+                                    <property name="right_padding">10</property>
                                     <child>
-                                      <widget class="GtkToggleButton" id="history_09">
-                                        <property name="label" translatable="yes">togglebutton</property>
+                                      <widget class="GtkVBox" id="history_expander_body">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
+                                        <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_09">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_08">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_07">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">2</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_06">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">3</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_05">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">4</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_04">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">5</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_03">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">6</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_02">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">7</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_01">
+                                            <property name="label" translatable="yes">togglebutton</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">8</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkToggleButton" id="history_00">
+                                            <property name="label" translatable="yes">original</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="xalign">0.05000000074505806</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="position">9</property>
+                                          </packing>
+                                        </child>
                                       </widget>
-                                      <packing>
-                                        <property name="position">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_08">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_07">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_06">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">3</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_05">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">4</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_04">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">5</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_03">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">6</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_02">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">7</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_01">
-                                        <property name="label" translatable="yes">togglebutton</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">8</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkToggleButton" id="history_00">
-                                        <property name="label" translatable="yes">original</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">True</property>
-                                        <property name="xalign">0.05000000074505806</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="position">9</property>
-                                      </packing>
                                     </child>
                                   </widget>
                                 </child>

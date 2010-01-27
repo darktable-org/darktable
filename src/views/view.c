@@ -94,14 +94,14 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   int error = 0;
   dt_view_t *v = vm->view + vm->current_view;
   int newv = vm->current_view;
-  if(k < DT_VIEW_MAX_MODULES && k >= 0) newv = k;
+  if(k < vm->num_views) newv = k;
   dt_view_t *nv = vm->view + newv;
   if(nv->try_enter) error = nv->try_enter(nv);
   if(!error)
   {
     if(vm->current_view >= 0 && v->leave) v->leave(v);
     vm->current_view = newv;
-    if(nv->enter) nv->enter(nv);
+    if(newv >= 0 && nv->enter) nv->enter(nv);
   }
   return error;
 }

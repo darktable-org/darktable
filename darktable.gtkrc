@@ -100,7 +100,29 @@ style "clearlooks-frame-title" = "clearlooks-default"
 
 style "clearlooks-entry" = "clearlooks-default"
 {
-  text[NORMAL] = "#333333"
+	fg[NORMAL]        = "#CACAC6"
+	fg[ACTIVE]        = "#CACAC6"
+	fg[SELECTED]      = "#E2E2E2"
+	fg[PRELIGHT]      = "#E2E2E2"
+	fg[INSENSITIVE]   = "#000000"
+
+	bg[NORMAL]        = "#333333"
+	bg[ACTIVE]        = "#606060"
+	bg[SELECTED]      = "#606060"
+	bg[PRELIGHT]      = "#333333"
+	bg[INSENSITIVE]   = "#505050"
+
+	base[NORMAL]      = "#333333"
+	base[ACTIVE]      = "#606060"
+	base[SELECTED]    = "#606060"
+	base[PRELIGHT]    = "#333333"
+	base[INSENSITIVE] = "#222222"
+
+  text[NORMAL]      = "#B0B0B0"
+	text[ACTIVE]      = "#B0B0B0"
+	text[SELECTED]    = "#B0B0B0"
+	text[PRELIGHT]    = "#B0B0B0"
+	text[INSENSITIVE] = "#777777"
 }
 
 style "clearlooks-panel" = "clearlooks-default"
@@ -177,6 +199,7 @@ widget_class "*.GtkCheckMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkImageMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkSeparatorMenuItem.*" style "clearlooks-menu-item"
 class "GtkEntry" style "clearlooks-entry"
+class "GtkTreeView" style "clearlooks-entry"
 widget_class "*.tooltips.*.GtkToggleButton" style "clearlooks-tasklist"
 widget_class "*.GtkTreeView.GtkButton" style "clearlooks-tree"
 widget_class "*.GtkCTree.GtkButton" style "clearlooks-tree"

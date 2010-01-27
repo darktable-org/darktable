@@ -32,5 +32,7 @@ int dt_film_import(dt_film_t *film, const char *dirname);
 void dt_film_import1(dt_film_t *film);
 /** constructs the lighttable/query setting for this film, respecting stars and filters. */
 void dt_film_set_query(const int32_t id);
+/** removes this film and all its images from db. */
+void dt_film_remove(const int id);
 
 #endif
