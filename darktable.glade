@@ -537,17 +537,11 @@ physically delete</property>
                                             <property name="window_placement">top-right</property>
                                             <property name="window_placement_set">True</property>
                                             <child>
-                                              <widget class="GtkViewport" id="treeview_film_viewport">
+                                              <widget class="GtkTreeView" id="treeview_film">
                                                 <property name="visible">True</property>
-                                                <property name="resize_mode">queue</property>
-                                                <child>
-                                                  <widget class="GtkTreeView" id="treeview_film">
-                                                    <property name="visible">True</property>
-                                                    <property name="can_focus">True</property>
-                                                    <property name="headers_visible">False</property>
-                                                    <property name="search_column">0</property>
-                                                  </widget>
-                                                </child>
+                                                <property name="can_focus">True</property>
+                                                <property name="headers_visible">False</property>
+                                                <property name="search_column">0</property>
                                               </widget>
                                             </child>
                                           </widget>

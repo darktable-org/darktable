@@ -686,7 +686,6 @@ void *dt_control_expose(void *voidptr)
     pthread_mutex_lock(&darktable.control->log_mutex);
     if(darktable.control->log_ack != darktable.control->log_pos)
     {
-      tb = fmaxf(20, width/40.0);
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
       const float fontsize = 14;
       cairo_set_font_size (cr, fontsize);

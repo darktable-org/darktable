@@ -162,10 +162,3 @@ dt_gui_filmview_init()
   g_signal_connect(button, "clicked", G_CALLBACK(button_callback), (gpointer)1);
 }
 
-#if 0
-void
-dt_gui_filmview_cleanup()
-{
-}
-#endif
-

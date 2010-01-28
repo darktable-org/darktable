@@ -13,16 +13,18 @@ typedef struct dt_lib_tagging_t
 {
   char related_query[1024];
   GtkEntry *entry;
-  int current_taglist[MAX_TAGS_IN_LIST];
-  int related_taglist[MAX_TAGS_IN_LIST];
-  int current_showed_last;
-  int current_offset;
-  int current_selected;
-  int related_showed_last;
-  int related_offset;
-  int related_selected;
+  GtkTreeView *current, *related;
+  int imgsel;
 }
 dt_lib_tagging_t;
+
+typedef enum dt_lib_tagging_cols_t
+{
+  DT_LIB_TAGGING_COL_TAG=0,
+  DT_LIB_TAGGING_COL_ID,
+  DT_LIB_TAGGING_NUM_COLS
+}
+dt_lib_tagging_cols_t;
 
 const char*
 name ()
@@ -30,23 +32,10 @@ name ()
   return _("tagging");
 }
 
-static gboolean
-expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int which)
+static void 
+update (dt_lib_module_t *self, int which)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-
-  const int offset = which == 0 ? d->current_offset : d->related_offset;
-  const int num_tags = MAX_TAGS_IN_LIST/EXPOSE_COLUMNS;
-  const int selected = which == 0 ? d->current_selected : d->related_selected;
-  int width = widget->allocation.width, height = widget->allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
-  // clear bg
-  cairo_set_source_rgb (cr, .2, .2, .2);
-  cairo_paint(cr);
-
-  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 
   int rc;
   sqlite3_stmt *stmt;
@@ -55,10 +44,12 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
   {
     int imgsel = -1;
     DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+    d->imgsel = imgsel;
     if(imgsel > 0)
     {
       // draw affected image number in bg
       char query[1024];
+#if 0
       cairo_set_source_rgb (cr, .3, .3, .3);
       cairo_set_font_size (cr, .8f*height);
       snprintf(query, 1024, "%d", imgsel);
@@ -66,12 +57,14 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
       cairo_text_extents (cr, query, &ext);
       cairo_move_to(cr, width-ext.width, height);
       cairo_show_text(cr, query);
+#endif
       snprintf(query, 1024, "select distinct tags.id, tags.name from tagged_images "
-          "join tags on tags.id = tagged_images.tagid where tagged_images.imgid = %d limit ?1, ?2", imgsel);
+          "join tags on tags.id = tagged_images.tagid where tagged_images.imgid = %d", imgsel);
       rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
     }
     else
     {
+#if 0
       char nums[40], *p = nums;
       int cnt = 0;
       rc = sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
@@ -90,9 +83,9 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
       cairo_text_extents (cr, nums, &ext);
       cairo_move_to(cr, MAX(5, width-ext.width), height);
       cairo_show_text(cr, nums);
-
+#endif
       rc = sqlite3_prepare_v2(darktable.db, "select distinct tags.id, tags.name from selected_images join tagged_images "
-          "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid limit ?1, ?2", -1, &stmt, NULL);
+          "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid", -1, &stmt, NULL);
     }
   }
   else // related tags of typed text
@@ -103,31 +96,24 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
     rc = sqlite3_exec(darktable.db, "insert into tagquery2 select distinct tagid, name, "
         "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
         NULL, NULL, NULL);
-    rc = sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc limit ?1, ?2", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
   }
-  rc = sqlite3_bind_int(stmt, 1, offset);
-  rc = sqlite3_bind_int(stmt, 2, MAX_TAGS_IN_LIST);
-  int i = 0, j = 0, num = 0;
-  cairo_set_source_rgb (cr, .7, .7, .7);
-  cairo_set_font_size (cr, .7f*height/num_tags);
-  for(int k=0;k<MAX_TAGS_IN_LIST;k++) if(which == 0) d->current_taglist[k] = -1; else d->related_taglist[k] = -1;
+  int num = 0;
+  GtkTreeIter iter;
+  GtkTreeView *view;
+  if(which == 0) view = d->current;
+  else           view = d->related;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+  g_object_ref(model);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
+  gtk_list_store_clear(GTK_LIST_STORE(model));
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(num == MAX_TAGS_IN_LIST) break;
-    int tag = sqlite3_column_int(stmt, 0);
-    if     (which == 0) d->current_taglist[num] = tag;
-    else if(which == 1) d->related_taglist[num] = tag;
-    j = (num / EXPOSE_COLUMNS - 0.3 + 1)*height/num_tags;
-    i = (num % EXPOSE_COLUMNS)*width/EXPOSE_COLUMNS + 5;
-    if(selected == tag)
-    {
-      cairo_set_source_rgb (cr, .4, .4, .4);
-      cairo_rectangle(cr, i-5, j-.7*height/num_tags, width/EXPOSE_COLUMNS, height/num_tags);
-      cairo_fill(cr);
-      cairo_set_source_rgb (cr, .7, .7, .7);
-    }
-    cairo_move_to (cr, i, j);
-    cairo_show_text (cr, (const char *)sqlite3_column_text(stmt, 1));
+    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+    gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+                        DT_LIB_TAGGING_COL_TAG, sqlite3_column_text(stmt, 1),
+                        DT_LIB_TAGGING_COL_ID, sqlite3_column_int(stmt, 0),
+                        -1);
     num++;
   }
   rc = sqlite3_finalize(stmt);
@@ -138,53 +124,13 @@ expose_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data, int w
     sqlite3_exec(darktable.db, "drop table tagquery1", NULL, NULL, NULL);
     sqlite3_exec(darktable.db, "drop table tagquery2", NULL, NULL, NULL);
   }
-  cairo_set_source_rgb (cr, .7, .7, .7);
-  if(num == MAX_TAGS_IN_LIST)
-  { // there's more in this list!
-    if(which == 0) d->current_showed_last = 0;
-    if(which == 1) d->related_showed_last = 0;
-    cairo_move_to(cr, width - 5, height - 5);
-    cairo_line_to(cr, width, height - 5);
-    cairo_line_to(cr, width - 2.5, height);
-    cairo_close_path(cr);
-    cairo_fill(cr);
-  }
-  else
-  {
-    if(which == 0) d->current_showed_last = 1;
-    if(which == 1) d->related_showed_last = 1;
-  }
-  if(offset > 0)
-  {
-    cairo_move_to(cr, width - 5, 5);
-    cairo_line_to(cr, width, 5);
-    cairo_line_to(cr, width - 2.5, 0);
-    cairo_close_path(cr);
-    cairo_fill(cr);
-  }
-  
-  cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
-  cairo_surface_destroy(cst);
-  return TRUE;
+
+  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+  g_object_unref(model);
 }
 
-static gboolean
-expose_current_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-  return expose_tags(widget, event, user_data, 0);
-}
-
-static gboolean
-expose_related_tags (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-  return expose_tags(widget, event, user_data, 1);
-}
-
-static void set_related_query(dt_lib_module_t *self, dt_lib_tagging_t *d)
+static void
+set_related_query(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   // sql query for filtered tags and (one bounce) for related tags
   snprintf(d->related_query, 1024,
@@ -195,7 +141,18 @@ static void set_related_query(dt_lib_module_t *self, dt_lib_tagging_t *d)
     "and (cross.id1 = cross.id2 or related.id != cross.id) "
     "and cross.count > 0",
     gtk_entry_get_text(d->entry));
-  gtk_widget_queue_draw(self->widget);
+  update (self, 1);
+}
+
+static gboolean
+expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+  int imgsel = -1;
+  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  if(imgsel != d->imgsel) update (self, 0);
+  return FALSE;
 }
 
 static gboolean
@@ -212,7 +169,18 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   int rc;
   sqlite3_stmt *stmt;
-  int tag = d->related_selected, imgsel = -1;
+  
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeView *view = d->related;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+  guint tag;
+  gtk_tree_model_get (model, &iter, 
+                      DT_LIB_TAGGING_COL_ID, &tag,
+                      -1);
+
+  int imgsel = -1;
   if(tag <= 0) return;
 
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
@@ -253,7 +221,18 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   int rc;
   sqlite3_stmt *stmt;
-  int tag = d->current_selected, imgsel = -1;
+
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeView *view = d->current;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+  guint tag;
+  gtk_tree_model_get (model, &iter, 
+                      DT_LIB_TAGGING_COL_ID, &tag,
+                      -1);
+
+  int imgsel = -1;
   if(tag <= 0) return;
 
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
@@ -292,12 +271,30 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 }
 
 static void
+attach_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+  attach_selected_tag(self, d);
+  update(self, 0);
+}
+
+static void
+detach_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+  detach_selected_tag(self, d);
+  update(self, 0);
+}
+
+static void
 attach_button_clicked (GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   attach_selected_tag(self, d);
-  gtk_widget_queue_draw(self->widget);
+  update(self, 0);
 }
 
 static void
@@ -306,7 +303,7 @@ detach_button_clicked (GtkButton *button, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   detach_selected_tag(self, d);
-  gtk_widget_queue_draw(self->widget);
+  update(self, 0);
 }
 
 static void
@@ -338,7 +335,7 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
-  gtk_widget_queue_draw(self->widget);
+  update(self, 1);
 }
 
 static void
@@ -349,7 +346,16 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
 
   int rc, res = GTK_RESPONSE_YES;
   sqlite3_stmt *stmt;
-  int id = d->related_selected;
+  guint id;
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeView *view = d->related;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+  gtk_tree_model_get (model, &iter, 
+                      DT_LIB_TAGGING_COL_ID, &id,
+                      -1);
+
 
   rc = sqlite3_prepare_v2(darktable.db, "select name from tags where id=?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, id);
@@ -387,82 +393,8 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
-}
-
-static gboolean 
-current_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  if(event->direction == GDK_SCROLL_UP)
-    d->current_offset = MAX(0, d->current_offset - EXPOSE_COLUMNS);
-  else if(!d->current_showed_last)
-    d->current_offset += EXPOSE_COLUMNS;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
-}
-
-static gboolean 
-related_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  if(event->direction == GDK_SCROLL_UP)
-    d->related_offset = MAX(0, d->related_offset - EXPOSE_COLUMNS);
-  else if(!d->related_showed_last)
-    d->related_offset += EXPOSE_COLUMNS;
-  gtk_widget_queue_draw(widget);
-  return TRUE;
-}
-
-static gboolean
-current_button_pressed (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t  *)user_data;
-  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  const int num_tags = MAX_TAGS_IN_LIST/EXPOSE_COLUMNS;
-  const int width = widget->allocation.width, height = widget->allocation.height;
-  if(event->x > width - 10 && event->y < 10) // scroll up/down
-    d->current_offset = MAX(0, d->current_offset - EXPOSE_COLUMNS);
-  else if(event->x > width - 10 && event->y > height - 10 && !d->current_showed_last)
-    d->current_offset = MAX(0, d->current_offset - EXPOSE_COLUMNS);
-  else
-  { // select tag
-    int y = (int)(num_tags * event->y / (float)height);
-    int x = (int)(EXPOSE_COLUMNS * event->x / (float)width);
-    int selected = y * EXPOSE_COLUMNS + x;
-    selected = MAX(0, MIN(MAX_TAGS_IN_LIST-1, selected));
-    if(d->current_taglist[selected] > 0) d->current_selected = d->current_taglist[selected];
-    else d->current_selected = -1;
-    if(event->type == GDK_2BUTTON_PRESS) detach_selected_tag(self, d);
-  }
-  gtk_widget_queue_draw(self->widget);
-  return TRUE;
-}
-
-static gboolean
-related_button_pressed (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t  *)user_data;
-  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  const int num_tags = MAX_TAGS_IN_LIST/EXPOSE_COLUMNS;
-  const int width = widget->allocation.width, height = widget->allocation.height;
-  if(event->x > width - 10 && event->y < 10) // scroll up/down
-    d->related_offset = MAX(0, d->related_offset - EXPOSE_COLUMNS);
-  else if(event->x > width - 10 && event->y > height - 10 && !d->related_showed_last)
-    d->related_offset = MAX(0, d->related_offset - EXPOSE_COLUMNS);
-  else
-  { // select tag
-    int y = (int)(num_tags * event->y / (float)height);
-    int x = (int)(EXPOSE_COLUMNS * event->x / (float)width);
-    int selected = y * EXPOSE_COLUMNS + x;
-    selected = MAX(0, MIN(MAX_TAGS_IN_LIST-1, selected));
-    if(d->related_taglist[selected] > 0) d->related_selected = d->related_taglist[selected];
-    else d->related_selected = -1;
-    if(event->type == GDK_2BUTTON_PRESS) attach_selected_tag(self, d);
-  }
-  gtk_widget_queue_draw(self->widget);
-  return TRUE;
+  update(self, 0);
+  update(self, 1);
 }
 
 void
@@ -479,84 +411,104 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
   self->data = (void *)d;
+  d->imgsel = -1;
 
-  d->related_offset = d->current_offset = 0;
-  d->related_showed_last = d->current_showed_last = 0;
-  d->related_selected = d->current_selected = -1;
-
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_hbox_new(TRUE, 0);
+  g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
   darktable.gui->redraw_widgets = g_list_append(darktable.gui->redraw_widgets, self->widget);
 
-  GtkBox *hbox;
+  GtkBox *box, *hbox;
   GtkWidget *button;
   GtkWidget *w;
+  GtkListStore *liststore;
 
-  w = gtk_drawing_area_new();
-  GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 3.0/2.0, FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(asp), w);
-  gtk_widget_set_size_request(w, 300, 180);
-  gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(w), "expose-event",
-                   G_CALLBACK(expose_current_tags), (gpointer)self);
-	g_signal_connect (G_OBJECT (w), "scroll-event",
-                    G_CALLBACK (current_scrolled), (gpointer)self);
-	g_signal_connect (G_OBJECT (w), "button-press-event",
-                    G_CALLBACK (current_button_pressed), (gpointer)self);
-  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("attached tags,\ndoubleclick to detach"), NULL);
+  // left side, current
+  box = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
+  w = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+  d->current = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_tree_view_set_headers_visible(d->current, FALSE);
+  liststore = gtk_list_store_new(DT_LIB_TAGGING_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT);
+  GtkTreeViewColumn *col = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(d->current, col);
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_TAGGING_COL_TAG);
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->current),
+      GTK_SELECTION_SINGLE);
+  gtk_tree_view_set_model(d->current, GTK_TREE_MODEL(liststore));
+  gtk_object_set(GTK_OBJECT(d->current), "tooltip-text", _("attached tags,\ndoubleclick to detach"), NULL);
+  g_signal_connect(G_OBJECT (d->current), "row-activated", G_CALLBACK (detach_activated), (gpointer)self);
+  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
 
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  w = gtk_entry_new();
-  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter tag name"), NULL);
-  gtk_box_pack_start(hbox, w, TRUE, TRUE, 5);
-  g_signal_connect(G_OBJECT(w), "key-release-event",
-                   G_CALLBACK(tag_name_changed), (gpointer)self);
-  d->entry = GTK_ENTRY(w);
-  set_related_query(self, d);
-
-  button = gtk_button_new_with_label(_("new"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"), NULL);
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 5);
-  g_signal_connect(G_OBJECT (button), "clicked",
-                   G_CALLBACK (new_button_clicked), (gpointer)self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-
-  w = gtk_drawing_area_new();
-  asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 3.0/2.0, FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(asp), w);
-  gtk_widget_set_size_request(w, 300, 180);
-  gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(w), "expose-event",
-                   G_CALLBACK(expose_related_tags), (gpointer)self);
-	g_signal_connect (G_OBJECT (w), "scroll-event",
-                    G_CALLBACK (related_scrolled), (gpointer)self);
-	g_signal_connect (G_OBJECT (w), "button-press-event",
-                    G_CALLBACK (related_button_pressed), (gpointer)self);
-  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("related tags,\ndoubleclick to attach"), NULL);
-
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-
-  button = gtk_button_new_with_label(_("delete"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("delete selected tag"), NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 5);
-  g_signal_connect(G_OBJECT (button), "clicked",
-                   G_CALLBACK (delete_button_clicked), (gpointer)self);
+  // attach/detach buttons
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("attach"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("attach tag to all selected images"), NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 5);
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (attach_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("detach"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("detach tag from all selected images"), NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 5);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (detach_button_clicked), (gpointer)self);
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
+
+  // right side, related 
+  box = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
+  
+  // text entry and new button
+  w = gtk_entry_new();
+  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter tag name"), NULL);
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(w), "key-release-event",
+                   G_CALLBACK(tag_name_changed), (gpointer)self);
+  d->entry = GTK_ENTRY(w);
+
+  // related tree view
+  w = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+  d->related = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_tree_view_set_headers_visible(d->related, FALSE);
+  liststore = gtk_list_store_new(DT_LIB_TAGGING_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT);
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(d->related, col);
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_TAGGING_COL_TAG);
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->related),
+      GTK_SELECTION_SINGLE);
+  gtk_tree_view_set_model(d->related, GTK_TREE_MODEL(liststore));
+  gtk_object_set(GTK_OBJECT(d->related), "tooltip-text", _("related tags,\ndoubleclick to attach"), NULL);
+  g_signal_connect(G_OBJECT (d->related), "row-activated", G_CALLBACK (attach_activated), (gpointer)self);
+  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
+
+  // attach and delete buttons
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
+  button = gtk_button_new_with_label(_("new"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"), NULL);
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT (button), "clicked",
+                   G_CALLBACK (new_button_clicked), (gpointer)self);
+
+  button = gtk_button_new_with_label(_("delete"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("delete selected tag"), NULL);
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT (button), "clicked",
+                   G_CALLBACK (delete_button_clicked), (gpointer)self);
+
+  gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
+
+  set_related_query(self, d);
 }
 
 void
