@@ -6,9 +6,6 @@
 #include <glade/glade.h>
 #include <math.h>
 
-#define MAX_TAGS_IN_LIST 14
-#define EXPOSE_COLUMNS 2
-
 typedef struct dt_lib_tagging_t
 {
   char related_query[1024];
@@ -49,41 +46,12 @@ update (dt_lib_module_t *self, int which)
     {
       // draw affected image number in bg
       char query[1024];
-#if 0
-      cairo_set_source_rgb (cr, .3, .3, .3);
-      cairo_set_font_size (cr, .8f*height);
-      snprintf(query, 1024, "%d", imgsel);
-      cairo_text_extents_t ext;
-      cairo_text_extents (cr, query, &ext);
-      cairo_move_to(cr, width-ext.width, height);
-      cairo_show_text(cr, query);
-#endif
       snprintf(query, 1024, "select distinct tags.id, tags.name from tagged_images "
           "join tags on tags.id = tagged_images.tagid where tagged_images.imgid = %d", imgsel);
       rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
     }
     else
     {
-#if 0
-      char nums[40], *p = nums;
-      int cnt = 0;
-      rc = sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
-      while(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        if(p == nums) snprintf(p, 40 - (p-nums), "%d",  sqlite3_column_int(stmt, 0));
-        else          snprintf(p, 40 - (p-nums), ",%d", sqlite3_column_int(stmt, 0));
-        p = nums + strlen(nums);
-        if(p >= nums + 40) break;
-        cnt++;
-      }
-      rc = sqlite3_finalize(stmt);
-      cairo_set_source_rgb (cr, .3, .3, .3);
-      cairo_set_font_size (cr, .8*height/powf(cnt, .3));
-      cairo_text_extents_t ext;
-      cairo_text_extents (cr, nums, &ext);
-      cairo_move_to(cr, MAX(5, width-ext.width), height);
-      cairo_show_text(cr, nums);
-#endif
       rc = sqlite3_prepare_v2(darktable.db, "select distinct tags.id, tags.name from selected_images join tagged_images "
           "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid", -1, &stmt, NULL);
     }

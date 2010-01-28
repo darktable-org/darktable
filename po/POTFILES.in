@@ -11,6 +11,7 @@ src/libs/lib.c
 src/libs/export.c
 src/libs/image.c
 src/libs/tagging.c
+src/libs/select.c
 src/iop/clipping.c
 src/iop/colorcorrection.c
 src/iop/colorin.c

@@ -435,16 +435,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
   else last_offset = offset;
 
-  sqlite3_stmt *stmt = NULL, *stmt2 = NULL;
-  int rc, rc2, id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
+  sqlite3_stmt *stmt = NULL;
+  int rc, id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
-  if(clicked1 &&
-    (lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0)
-  { // clear selected if no modifier
-    rc2 = sqlite3_prepare_v2(darktable.db, "delete from selected_images", -1, &stmt2, NULL);
-    rc2 = sqlite3_step(stmt2);
-    sqlite3_finalize(stmt2);
-  }
 
   gchar *query = dt_conf_get_string ("plugins/lighttable/query");
   if(query[0] == '\0')
@@ -485,6 +478,14 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
           // add clicked image to selected table
           if(clicked1)
           {
+            if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
+            { // clear selected if no modifier
+              sqlite3_stmt *stmt2;
+              sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
+              sqlite3_bind_int(stmt2, 1, image->id);
+              sqlite3_step(stmt2);
+              sqlite3_finalize(stmt2);
+            }
             // FIXME: whatever comes first assumtion is broken!
             // if((lib->modifiers & GDK_SHIFT_MASK) && (last_seli == (1<<30)) &&
             //    (image->id == lib->last_selected_id || image->id == mouse_over_id)) { last_seli = col; last_selj = row; }
