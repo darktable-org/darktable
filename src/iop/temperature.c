@@ -197,6 +197,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_range_set_value(GTK_RANGE(g->scale_b), mul[2]);
   gtk_range_set_value(GTK_RANGE(g->scale_k), temp);
   gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
+  g->grayboxmode = 0;
   if(fabsf(p->coeffs[0]-1.0) + fabsf(p->coeffs[1]-1.0) + fabsf(p->coeffs[2]-1.0) < 0.01)
     gtk_combo_box_set_active(g->presets, 0);
   else
@@ -327,7 +328,7 @@ void gui_init(struct dt_iop_module_t *self)
       g->preset_num[g->preset_cnt++] = i;
     }
   }
-  GtkWidget *button = gtk_button_new_with_label(_("gray box"));
+  GtkWidget *button = gtk_button_new_with_label(_("spot whitebalance"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select a gray box\nin the image"), NULL);
   gtk_box_pack_start(vbox1, GTK_WIDGET(g->presets), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox2, button, FALSE, FALSE, 0);
@@ -489,6 +490,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   for(int k=0;k<2;k++)
   {
     cairo_rectangle(cr, g->graybox[0]*wd, g->graybox[1]*ht, (g->graybox[2] - g->graybox[0])*wd, (g->graybox[3] - g->graybox[1])*ht);
+    cairo_stroke(cr);
     cairo_translate(cr, 1.0/zoom_scale, 1.0/zoom_scale);
     cairo_set_source_rgb(cr, .8, .8, .8);
   }
