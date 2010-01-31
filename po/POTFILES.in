@@ -26,6 +26,7 @@ src/iop/sharpen.c
 src/iop/temperature.c
 src/iop/wb_presets.c
 src/iop/tonecurve.c
+src/iop/colorzones.c
 src/gui/gtk.c
 src/gui/histogram.c
 src/gui/metadata.c

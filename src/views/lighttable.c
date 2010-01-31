@@ -188,15 +188,15 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
     cairo_fill(cr);
     cairo_surface_destroy (surface);
     dt_image_release(img, mip, 'r');
-  }
 
-  if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-  cairo_rectangle(cr, 0, 0, fwd, fht);
+    if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+    cairo_rectangle(cr, 0, 0, fwd, fht);
+  }
 
   // border around image
   const float border = zoom == 1 ? 16/scale : 2/scale;
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
-  if(selected)
+  if(mip != DT_IMAGE_NONE && selected)
   {
     cairo_set_line_width(cr, 1./scale);
     if(zoom == 1)

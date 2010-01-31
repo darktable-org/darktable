@@ -564,7 +564,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   int ret = 0;
   char filename[1024];
   dt_image_full_path(img, filename, 1024);
-  if(img->force_reimport)
+  if(img->force_reimport || img->width == 0 || img->height == 0)
   {
     ret = dt_image_reimport(img, filename);
     dt_image_release(img, mip, 'w');
@@ -727,6 +727,7 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
     }
   }
   fprintf(stderr, "[image_alloc] all cache slots seem to be in use! alloc of %d bytes for img id %d mip %d failed!\n", (int)size, img->id, mip);
+  for(int k=0;k<darktable.mipmap_cache->num_entries[mip];k++) fprintf(stderr, "[image_alloc] slot[%d] lock %s %d\n", k,darktable.mipmap_cache->mip_lru[mip][k]->lock[mip].write == 0 ? " " : "w", darktable.mipmap_cache->mip_lru[mip][k]->lock[mip].users);
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   return 1;
 }

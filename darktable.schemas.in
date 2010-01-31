@@ -270,7 +270,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>sql query to select images for current view</short>
-        <long></long>
+        <long>order by and limit clauses go last</long>
       </locale>
     </schema>
     
@@ -678,6 +678,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/colorzones/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/colorzones/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/clipping/expanded</key>
       <applyto>/apps/darktable/plugins/darkroom/clipping/expanded</applyto>
       <owner>darktable</owner>
@@ -797,6 +810,19 @@
     <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/rawimport/expanded</key>
       <applyto>/apps/darktable/plugins/darkroom/rawimport/expanded</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/colorzones/expanded</key>
+      <applyto>/apps/darktable/plugins/darkroom/colorzones/expanded</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>

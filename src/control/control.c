@@ -1001,6 +1001,15 @@ int dt_control_key_pressed_override(uint16_t which)
   GtkWidget *widget;
   switch (which)
   {
+    case KEYCODE_F11:
+      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+      fullscreen = dt_conf_get_bool("ui_last/fullscreen");
+      if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
+      else           gtk_window_fullscreen  (GTK_WINDOW(widget));
+      fullscreen ^= 1;
+      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
+      dt_dev_invalidate(darktable.develop);
+      break;
     case KEYCODE_Escape: case KEYCODE_Caps:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
@@ -1043,21 +1052,11 @@ int dt_control_key_pressed(uint16_t which)
 {
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
-  int fullscreen;
   GtkWidget *widget;
   switch (which)
   {
     case KEYCODE_period:
       dt_ctl_switch_mode();
-      break;
-    case KEYCODE_F11:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-      fullscreen = dt_conf_get_bool("ui_last/fullscreen");
-      if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
-      else           gtk_window_fullscreen  (GTK_WINDOW(widget));
-      fullscreen ^= 1;
-      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
-      dt_dev_invalidate(darktable.develop);
       break;
     default:
       // propagate to view modules.

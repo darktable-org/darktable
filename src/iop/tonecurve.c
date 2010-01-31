@@ -27,11 +27,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   float *in = (float *)i;
   float *out = (float *)o;
-  // uint16_t *out = (uint16_t *)o;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-#if 1 // in YCbCr float:
+#if 1 // in L(a/L)(b/L) float:
     // uint32_t tmp = 0x3f800000ul | (d->table[CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff)]<<7);
     // out[0] = *(float *)&tmp - 1.0f;
     // in Lab: correct compressed Luminance for saturation:
@@ -220,7 +219,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 }
 
 
-gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -229,7 +228,7 @@ gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *even
   return TRUE;
 }
 
-gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -348,7 +347,7 @@ gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   return TRUE;
 }
 
-gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -396,7 +395,7 @@ gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
   return TRUE;
 }
 
-gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 { // set active point
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -404,7 +403,7 @@ gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event,
   return TRUE;
 }
 
-gboolean dt_iop_tonecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean dt_iop_tonecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;

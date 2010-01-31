@@ -1,7 +1,12 @@
 0.5 release:
+- register key combo for plugins
 - remove all rc = clang errors?
 - dt_conf usage for wb-modes/presets in other iops.
 - libs/collect.c: free db image selection 
+  - re-use star/sort widget on top
+  - collect all images with | same    | film roll | | as selected | 
+                            | exactly | camera    | | text entry  |
+                                      | tag       | |  with list  |
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
   related tags, 2*k+2 many.

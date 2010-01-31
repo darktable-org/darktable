@@ -24,6 +24,7 @@ int dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   else if(head[1] == 'f') cols = 1;
   else goto error;
   ret = fscanf(f, "%d %d\n%*[^\n]\n", &img->width, &img->height);
+  printf("img width, height %d %d\n", img->width, img->height);
   if(ret != 2) goto error;
 
   if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error;

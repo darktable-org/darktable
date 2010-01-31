@@ -534,8 +534,6 @@ physically delete</property>
                                             <property name="can_focus">True</property>
                                             <property name="hscrollbar_policy">automatic</property>
                                             <property name="vscrollbar_policy">automatic</property>
-                                            <property name="window_placement">top-right</property>
-                                            <property name="window_placement_set">True</property>
                                             <child>
                                               <widget class="GtkTreeView" id="treeview_film">
                                                 <property name="visible">True</property>
