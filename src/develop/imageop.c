@@ -254,7 +254,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_expander_set_spacing(module->expander, 10);
   gtk_widget_hide_all(module->widget);
   gtk_expander_set_expanded(module->expander, FALSE);
-  return GTK_WIDGET(vbox);
+  GtkWidget *evb = gtk_event_box_new();
+  gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
+  gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
+  return evb;
 }
 
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,

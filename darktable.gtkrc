@@ -98,6 +98,11 @@ style "clearlooks-frame-title" = "clearlooks-default"
   fg[NORMAL] = "#FFFFFF"
 }
 
+style "clearlooks-brightbg" = "clearlooks-default"
+{
+  bg[NORMAL] = "#292929"
+}
+
 style "clearlooks-entry" = "clearlooks-default"
 {
 	fg[NORMAL]        = "#CACAC6"
@@ -192,6 +197,10 @@ class "GtkFrame" style "clearlooks-wide"
 class "GtkStatusbar" style "clearlooks-wide"
 class "GtkMenu" style "clearlooks-menu"
 class "GtkMenuItem" style "clearlooks-menu-item"
+widget "*.plugins_vbox.GtkEventBox" style "clearlooks-brightbg"
+widget "*.left.GtkEventBox" style "clearlooks-brightbg"
+widget "*.left_scrolled.GtkEventBox" style "clearlooks-brightbg"
+widget "*.right.GtkEventBox" style "clearlooks-brightbg"
 widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkAccelMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkRadioMenuItem.*" style "clearlooks-menu-item"
