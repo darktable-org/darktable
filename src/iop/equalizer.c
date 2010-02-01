@@ -218,6 +218,9 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
     case 0: // sharpen
       for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
       {
+        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
         p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.25f*k/(float)DT_IOP_EQUALIZER_BANDS;
         p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
         p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
@@ -226,6 +229,9 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
     case 1: // sharpen a lot
       for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
       {
+        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
         p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.5f*k/(float)DT_IOP_EQUALIZER_BANDS;
         p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
         p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
@@ -234,6 +240,9 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
     case 2: // denoise
       for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
       {
+        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
         p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.4f*k/(float)DT_IOP_EQUALIZER_BANDS;
         p->equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
         p->equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
@@ -259,6 +268,7 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
+  c->x_move = -1;
   c->mouse_radius = 1.0/DT_IOP_EQUALIZER_BANDS;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
@@ -385,6 +395,21 @@ static gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 8, width, height);
+
+  // draw x positions
+  cairo_set_line_width(cr, 1.);
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+  const float arrw = 7.0f;
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+  {
+    cairo_move_to(cr, width*p.equalizer_x[c->channel][k], height+inset-1);
+    cairo_rel_line_to(cr, -arrw*.5f, 0);
+    cairo_rel_line_to(cr, arrw*.5f, -arrw);
+    cairo_rel_line_to(cr, arrw*.5f, arrw);
+    cairo_close_path(cr);
+    if(c->x_move == k) cairo_fill(cr);
+    else               cairo_stroke(cr);
+  }
   
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
@@ -479,9 +504,40 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
   if(c->dragging)
   {
     *p = c->drag_params;
-    dt_iop_equalizer_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
+    if(c->x_move >= 0)
+    {
+      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+      if(c->x_move > 0 && c->x_move < DT_IOP_EQUALIZER_BANDS-1)
+      {
+        const float minx = p->equalizer_x[c->channel][c->x_move-1];
+        const float maxx = p->equalizer_x[c->channel][c->x_move+1];
+        p->equalizer_x[c->channel][c->x_move] = fminf(maxx, fmaxf(minx, mx));
+      }
+    }
+    else
+    {
+      dt_iop_equalizer_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
+    }
     gtk_combo_box_set_active(c->presets, -1);
     dt_dev_add_history_item(darktable.develop, self);
+  }
+  else if(event->y > height)
+  {
+    c->x_move = 0;
+    float dist = fabsf(p->equalizer_x[c->channel][0] - c->mouse_x);
+    for(int k=1;k<DT_IOP_EQUALIZER_BANDS;k++)
+    {
+      float d2 = fabsf(p->equalizer_x[c->channel][k] - c->mouse_x);
+      if(d2 < dist)
+      {
+        c->x_move = k;
+        dist = d2;
+      }
+    }
+  }
+  else
+  {
+    c->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
   gint x, y;
@@ -514,7 +570,7 @@ static gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *eve
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 1.0/DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.9; //0.7;
+  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 0.5/DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.9; //0.7;
   if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0/0.9); //1.42;
   gtk_widget_queue_draw(widget);
   return TRUE;

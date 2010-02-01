@@ -7,7 +7,7 @@
 #include <inttypes.h>
 
 #define DT_IOP_EQUALIZER_RES 64
-#define DT_IOP_EQUALIZER_BANDS 9
+#define DT_IOP_EQUALIZER_BANDS 6
 #define DT_IOP_EQUALIZER_MAX_LEVEL 6
 
 typedef struct dt_iop_equalizer_params_t
@@ -35,6 +35,7 @@ typedef struct dt_iop_equalizer_gui_data_t
   float mouse_radius;
   dt_iop_equalizer_params_t drag_params;
   int dragging;
+  int x_move;
   dt_iop_equalizer_channel_t channel;
   double draw_xs[DT_IOP_EQUALIZER_RES], draw_ys[DT_IOP_EQUALIZER_RES];
   double draw_min_xs[DT_IOP_EQUALIZER_RES], draw_min_ys[DT_IOP_EQUALIZER_RES];
