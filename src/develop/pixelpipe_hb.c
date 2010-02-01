@@ -304,6 +304,20 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       dt_control_queue_draw(module->widget);
     }
 
+    // if module requested color statistics, get mean in box from preview pipe
+    if(dev->gui_attached && pipe == dev->preview_pipe && module == dev->gui_module && module->request_color_pick)
+    {
+      int box[4];
+      float rgb[3], *in = (float *)input;
+      for(int k=0;k<3;k++) rgb[k] = 0.0f;
+      for(int k=0;k<4;k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
+      for(int k=1;k<4;k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
+      const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
+      for(int j=box[1];j<=box[3];j++) for(int i=box[0];i<=box[2];i++)
+        for(int k=0;k<3;k++) rgb[k] += w*in[3*(roi_in.width*j + i) + k];
+      for(int k=0;k<3;k++) module->picked_color[k] = rgb[k];
+    }
+
     // printf("%s processing %s\n", pipe == dev->preview_pipe ? "[preview]" : "", module->op);
     // actual pixel processing done by module
     module->process(module, piece, input, *output, &roi_in, roi_out);

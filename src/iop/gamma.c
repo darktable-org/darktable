@@ -105,6 +105,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_gamma_params_t);
   module->gui_data = NULL;
   module->priority = 1000;
+  module->hide_enable_button = 1;
   dt_iop_gamma_params_t tmp = (dt_iop_gamma_params_t){0.45, 0.1};
   memcpy(module->params, &tmp, sizeof(dt_iop_gamma_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_gamma_params_t));

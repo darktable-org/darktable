@@ -37,6 +37,14 @@ typedef struct dt_iop_module_t
   int32_t instance;
   /** order in which plugins are stacked. */
   int32_t priority;
+  /** module sets this if the enable checkbox should be hidden. */
+  int32_t hide_enable_button;
+  /** set to 1 if you want an input color picked during next eval. gui mode only. */
+  int32_t request_color_pick;
+  /** bounding box in which the mean color is requested. */
+  float color_picker_box[4];
+  /** place to store the picked color. */
+  float picked_color[3];
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */

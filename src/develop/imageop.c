@@ -37,6 +37,11 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   module->widget = NULL;
   module->off = NULL;
   module->priority = 0;
+  module->hide_enable_button = 0;
+  module->request_color_pick = 0;
+  module->picked_color[0] = module->picked_color[1] = module->picked_color[2] = 0.0f;
+  module->color_picker_box[0] = module->color_picker_box[2] =  INFINITY;
+  module->color_picker_box[1] = module->color_picker_box[3] = -INFINITY;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   strncpy(module->op, op, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
@@ -212,10 +217,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
   // gamma is always needed for display (down to uint8_t)
   // colorin/colorout are essential for La/Lb/L conversion.
-  if(!(!strcmp(module->op, "gamma")   || 
-     !strcmp(module->op, "rawimport") ||
-     !strcmp(module->op, "colorin")   ||
-     !strcmp(module->op, "colorout")))
+  if(!module->hide_enable_button)
   {
     // GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
     GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_check_button_new());

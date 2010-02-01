@@ -73,11 +73,9 @@ const char *name()
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  // TODO: alloc small buf with selection channel (C) and gauss-blur it?
   float *in = (float *)i;
   float *out = (float *)o;
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
-  // float Lmean = 0.5f, Cmean = 0.5f, hmean = 0.5f;
   float Lmean = 0.0f, Cmean = 0.0f, hmean = 0.0f;
   for(int k=0;k<10;k++) Lmean += dt_draw_curve_calc_value(d->curve[0], k/9.0)/10.0;
   for(int k=0;k<10;k++) Cmean += dt_draw_curve_calc_value(d->curve[1], k/9.0)/10.0;
@@ -100,19 +98,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         select = h;
         break;
     }
-    const float bl = powf(fabsf(50.0 - in[0])/50.0, 5.0);//*powf(fmaxf(0., 128. - C)/128.0, 2.0);
+    const float bl = powf(fabsf(50.0 - in[0])/50.0, 5.0);
     const float Lm = 2.0 * (bl*Lmean + (1.-bl)*dt_draw_curve_calc_value(d->curve[0], select));
     const float Cm = 2.0 * (bl*Cmean + (1.-bl)*dt_draw_curve_calc_value(d->curve[1], select));
     const float hm =       (bl*hmean + (1.-bl)*dt_draw_curve_calc_value(d->curve[2], select)) - .5;
-    // const float L = fmaxf(0.0, in[0] * Lm);
     const float L = 100.0*powf(in[0]*(1.0/100.0), 2.0-Lm);
-    // const float Lwhite = 100.0f, Lclip = 20.0f;
-    // const float Lcap  = fminf(100.0, L);
-    // const float clip  = 1.0 - (Lcap - in[0])*(1.0/100.0)*fminf(Lwhite-Lclip, fmaxf(0.0, L - Lclip))/(Lwhite-Lclip);
-    // const float clip2 = clip*clip*clip;
-    out[0] = L;//Lcap;
-    out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;// * clip2;
-    out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;// * clip2;
+    out[0] = L;
+    out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
+    out[2] = sinf(2.0*M_PI*(h + hm)) * Cm * C;
     out += 3; in += 3;
   }
 }
@@ -370,6 +363,13 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_COLORZONES_RES, c->draw_max_xs, c->draw_max_ys);
   }
 
+  if(self->picked_color[0] == 0.0)
+  {
+    self->picked_color[0] = 50.0f;
+    self->picked_color[1] =  0.0f;
+    self->picked_color[2] = -5.0f;
+  }
+  const float pickC = sqrtf(self->picked_color[1]*self->picked_color[1] + self->picked_color[2]*self->picked_color[2]);
   const int cellsi = 16, cellsj = 9;
   for(int j=0;j<cellsj;j++) for(int i=0;i<cellsi;i++)
   {
@@ -380,13 +380,13 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     {
       case DT_IOP_COLORZONES_L:
         Lab.L = ii * 100.0;
-        Lab.a = 0.0f;
-        Lab.b = -5.0f;
+        Lab.a = self->picked_color[1];//0.0f;
+        Lab.b = self->picked_color[2];//-5.0f;
         break;
       case DT_IOP_COLORZONES_C:
         Lab.L = 50.0;
-        Lab.a = 0.0f;
-        Lab.b = -ii * 64.0f;
+        Lab.a = 64.0*ii*self->picked_color[1]/pickC;//0.0f;
+        Lab.b = 64.0*ii*self->picked_color[2]/pickC;//-ii * 64.0f;
         break;
       default: // case DT_IOP_COLORZONES_h:
         Lab.L = 50.0;
@@ -601,6 +601,15 @@ colorzones_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   }
 }
 
+#if 0
+static void
+request_pick_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
+}
+#endif
+
 static void
 colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
@@ -677,7 +686,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   // select by which dimension
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
   GtkLabel *label = GTK_LABEL(gtk_label_new(_("select color by")));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 5);
@@ -702,7 +710,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->select_button[0]), FALSE, FALSE, 5);
 
   hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
   label = GTK_LABEL(gtk_label_new(_("presets")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 5);
   c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());

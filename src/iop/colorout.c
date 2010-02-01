@@ -236,6 +236,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
   module->priority = 900;
+  module->hide_enable_button = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){"sRGB", "X profile", DT_INTENT_PERCEPTUAL};
   memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));

@@ -137,7 +137,36 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   }
 
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->gui_post_expose)
+  if(dev->gui_module && dev->gui_module->request_color_pick)
+  {
+    int32_t zoom, closeup;
+    float zoom_x, zoom_y;
+    float wd = dev->preview_pipe->backbuf_width;
+    float ht = dev->preview_pipe->backbuf_height;
+    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+
+    cairo_translate(cri, width/2.0, height/2.0f);
+    cairo_scale(cri, zoom_scale, zoom_scale);
+    cairo_translate(cri, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
+
+    // cairo_set_operator(cri, CAIRO_OPERATOR_XOR);
+    cairo_set_line_width(cri, 1.0/zoom_scale);
+    cairo_set_source_rgb(cri, .2, .2, .2);
+
+    for(int k=0;k<2;k++)
+    {
+      float *box = dev->gui_module->color_picker_box;
+      cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
+      cairo_stroke(cri);
+      cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
+      cairo_set_source_rgb(cri, .8, .8, .8);
+    }
+  }
+  else if(dev->gui_module && dev->gui_module->gui_post_expose)
     dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
 }
 
@@ -369,6 +398,21 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   int handled = 0;
+  dt_control_t *ctl = darktable.control;
+  if(dev->gui_module && dev->gui_module->request_color_pick &&
+     ctl->button_down &&
+     ctl->button_down_which == 1)
+  { // module requested a color box
+    float zoom_x, zoom_y, bzoom_x, bzoom_y;
+    dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
+    dt_dev_get_pointer_zoom_pos(dev, ctl->button_x, ctl->button_y, &bzoom_x, &bzoom_y);
+    dev->gui_module->color_picker_box[0] = fminf(.5f+bzoom_x, .5f+zoom_x);
+    dev->gui_module->color_picker_box[1] = fminf(.5f+bzoom_y, .5f+zoom_y);
+    dev->gui_module->color_picker_box[2] = fmaxf(.5f+bzoom_x, .5f+zoom_x);
+    dev->gui_module->color_picker_box[3] = fmaxf(.5f+bzoom_y, .5f+zoom_y);
+    dt_control_queue_draw_all();
+    return;
+  }
   if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
   if(handled) return;
 
@@ -407,6 +451,17 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   int handled = 0;
+  if(dev->gui_module && dev->gui_module->request_color_pick)
+  {
+    float zoom_x, zoom_y;
+    dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
+    dev->gui_module->color_picker_box[0] = .5f+zoom_x;
+    dev->gui_module->color_picker_box[1] = .5f+zoom_y;
+    dev->gui_module->color_picker_box[2] = .5f+zoom_x;
+    dev->gui_module->color_picker_box[3] = .5f+zoom_y;
+    dt_control_queue_draw_all();
+    return;
+  }
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
   if(handled) return;
 

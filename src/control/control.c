@@ -92,7 +92,7 @@ int dt_control_load_config(dt_control_t *c)
   // unsafe, fast write:
   rc = sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
   // free memory on disk if we call the line below:
-  rc = sqlite3_exec(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
+  // rc = sqlite3_exec(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   rc = sqlite3_prepare_v2(darktable.db, "select settings from settings", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
@@ -417,6 +417,7 @@ void dt_control_cleanup(dt_control_t *s)
 
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
+  // rc = sqlite3_exec(darktable.db, "vacuum", NULL, NULL, NULL);
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);
   pthread_mutex_destroy(&s->log_mutex);
@@ -807,11 +808,11 @@ void dt_ctl_switch_mode()
 
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state)
 {
+  float tb = darktable.control->tabborder;
   darktable.control->button_down = 1;
   darktable.control->button_down_which = which;
-  darktable.control->button_x = x;
-  darktable.control->button_y = y;
-  float tb = darktable.control->tabborder;
+  darktable.control->button_x = x - tb;
+  darktable.control->button_y = y - tb;
   float wd = darktable.control->width;
   float ht = darktable.control->height;
 

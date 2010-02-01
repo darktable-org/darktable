@@ -197,6 +197,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_rawimport_params_t);
   module->gui_data = NULL;
   module->priority = 100;
+  module->hide_enable_button = 1;
   p->raw_denoise_threshold     = module->dev->image->raw_denoise_threshold;
   p->raw_auto_bright_threshold = module->dev->image->raw_auto_bright_threshold;
   p->raw_wb_auto               = module->dev->image->raw_params.wb_auto;
