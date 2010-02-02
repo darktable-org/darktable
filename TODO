@@ -8,9 +8,6 @@
 - whitebalance combo->spot wb ->box?
 - libs/collect.c: free db image selection 
   - re-use star/sort widget on top
-  - collect all images with | same    | film roll | | as selected | 
-                            | exactly | camera    | | text entry  |
-                                      | tag       | |  with list  |
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
   related tags, 2*k+2 many.

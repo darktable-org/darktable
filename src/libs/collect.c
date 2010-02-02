@@ -225,7 +225,7 @@ gui_init (dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   // TODO: fix 5px border!
   // box = GTK_BOX(gtk_hbox_new(FALSE, 5));
-  // gtk_box_pack_start(box, GTK_WIDGET(sw), FALSE, FALSE, 0);
+  // gtk_box_pack_start(box, GTK_WIDGET(sw), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
   // GTK_WIDGET_SET_FLAGS(sw, GTK_NO_SHOW_ALL);
   // gtk_widget_set_visible(sw, FALSE);
