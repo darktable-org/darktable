@@ -44,7 +44,6 @@ update (dt_lib_module_t *self, int which)
     d->imgsel = imgsel;
     if(imgsel > 0)
     {
-      // draw affected image number in bg
       char query[1024];
       snprintf(query, 1024, "select distinct tags.id, tags.name from tagged_images "
           "join tags on tags.id = tagged_images.tagid where tagged_images.imgid = %d", imgsel);
@@ -66,7 +65,6 @@ update (dt_lib_module_t *self, int which)
         NULL, NULL, NULL);
     rc = sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
   }
-  int num = 0;
   GtkTreeIter iter;
   GtkTreeView *view;
   if(which == 0) view = d->current;
@@ -82,7 +80,6 @@ update (dt_lib_module_t *self, int which)
                         DT_LIB_TAGGING_COL_TAG, sqlite3_column_text(stmt, 1),
                         DT_LIB_TAGGING_COL_ID, sqlite3_column_int(stmt, 0),
                         -1);
-    num++;
   }
   rc = sqlite3_finalize(stmt);
   if(which != 0)
