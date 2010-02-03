@@ -613,14 +613,12 @@ colorzones_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   }
 }
 
-#if 0
 static void
-request_pick_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
+  self->dev->gui_module = self;
 }
-#endif
 
 static void
 colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -721,6 +719,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->select_button[1]), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->select_button[0]), FALSE, FALSE, 5);
 
+  GtkWidget *tb = gtk_toggle_button_new_with_label(_("pick gui color from image"));
+  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), tb, FALSE, FALSE, 5);
+
   hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
   label = GTK_LABEL(gtk_label_new(_("presets")));
@@ -733,6 +735,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->presets), "changed",
                     G_CALLBACK (presets_changed),
                     (gpointer)self);
+
   c->hsRGB = cmsCreate_sRGBProfile();
   c->hLab  = cmsCreateLabProfile(NULL);
   c->xform = cmsCreateTransform(c->hLab, TYPE_Lab_DBL, c->hsRGB, TYPE_RGB_DBL, 

@@ -35,6 +35,11 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     hash = ((hash << 5) + hash) ^ piece->hash;
+    if(piece->module->request_color_pick)
+    {
+      const char *str = (const char *)piece->module->color_picker_box;
+      for(int i=0;i<sizeof(float)*4;i++) hash = ((hash << 5) + hash) ^ str[i];
+    }
     pieces = g_list_next(pieces);
   }
   // also add scale, x and y:

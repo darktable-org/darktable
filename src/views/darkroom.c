@@ -410,6 +410,9 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     dev->gui_module->color_picker_box[1] = fminf(.5f+bzoom_y, .5f+zoom_y);
     dev->gui_module->color_picker_box[2] = fmaxf(.5f+bzoom_x, .5f+zoom_x);
     dev->gui_module->color_picker_box[3] = fmaxf(.5f+bzoom_y, .5f+zoom_y);
+    
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dt_dev_invalidate_all(dev);
     dt_control_queue_draw_all();
     return;
   }

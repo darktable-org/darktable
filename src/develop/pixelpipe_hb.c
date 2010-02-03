@@ -316,6 +316,11 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       for(int j=box[1];j<=box[3];j++) for(int i=box[0];i<=box[2];i++)
         for(int k=0;k<3;k++) rgb[k] += w*in[3*(roi_in.width*j + i) + k];
       for(int k=0;k<3;k++) module->picked_color[k] = rgb[k];
+
+      int needlock = pthread_self() != darktable.control->gui_thread;
+      if(needlock) gdk_threads_enter();
+      gtk_widget_queue_draw(module->widget);
+      if(needlock) gdk_threads_leave();
     }
 
     // printf("%s processing %s\n", pipe == dev->preview_pipe ? "[preview]" : "", module->op);
