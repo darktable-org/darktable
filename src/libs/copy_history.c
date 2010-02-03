@@ -45,30 +45,30 @@ static void
 delete_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   int imgid = -1;
-  int rc;
-  sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-  if(imgid < 0) return;
-  rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, imgid);
-  rc = sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  sqlite3_stmt *stmt, *stmt2;
+  sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    imgid = sqlite3_column_int(stmt, 0);
+    sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt2, NULL);
+    sqlite3_bind_int(stmt2, 1, imgid);
+    sqlite3_step(stmt2);
+    sqlite3_finalize(stmt2);
 
-  dt_image_t tmp;
-  dt_image_init(&tmp);
-  dt_image_t *img = dt_image_cache_use(imgid, 'r');
-  img->force_reimport = 1;
-  img->raw_params = tmp.raw_params;
-  img->raw_denoise_threshold = tmp.raw_denoise_threshold;
-  img->raw_auto_bright_threshold = tmp.raw_auto_bright_threshold;
-  img->output_width = img->width;
-  img->output_height = img->height;
-  dt_image_cache_flush(img);
-  dt_image_write_dt_files(img);
-  dt_image_cache_release(img, 'r');
-
+    dt_image_t tmp;
+    dt_image_init(&tmp);
+    dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    img->force_reimport = 1;
+    img->raw_params = tmp.raw_params;
+    img->raw_denoise_threshold = tmp.raw_denoise_threshold;
+    img->raw_auto_bright_threshold = tmp.raw_auto_bright_threshold;
+    img->output_width = img->width;
+    img->output_height = img->height;
+    dt_image_cache_flush(img);
+    dt_image_write_dt_files(img);
+    dt_image_cache_release(img, 'r');
+  }
+  sqlite3_finalize(stmt);
   dt_control_gui_queue_draw();
 }
 
