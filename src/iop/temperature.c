@@ -15,6 +15,8 @@
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
 
+DT_MODULE
+
 /** this wraps gegl:temperature plus some additional whitebalance adjustments. */
 
 /* Coefficients of rational functions of degree 5 fitted per color channel to

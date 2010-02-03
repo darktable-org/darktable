@@ -8,8 +8,16 @@
 #include <pthread.h>
 #include <glib/gi18n.h>
 
+#define DT_MODULE_VERSION 1
 #define DT_VERSION 33
 #define DT_CONFIG_VERSION 33
+
+// every module has to define this:
+#define DT_MODULE \
+int dt_module_version() \
+{\
+  return DT_MODULE_VERSION; \
+}
 
 #ifndef M_PI
   #define M_PI 3.14159265358979323846

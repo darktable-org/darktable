@@ -14,9 +14,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 
-#ifndef M_PI
-# define M_PI		3.14159265358979323846	/* pi */
-#endif
+DT_MODULE
 
 const char *name()
 {

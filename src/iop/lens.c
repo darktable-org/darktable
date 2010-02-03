@@ -18,6 +18,8 @@
 #include "gui/draw.h"
 #include "iop/lens.h"
 
+DT_MODULE
+
 const char *name()
 {
   return _("lens distortions");

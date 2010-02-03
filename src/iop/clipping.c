@@ -16,6 +16,8 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
+DT_MODULE
+
 /** rotate an image, then clip the buffer. */
 
 typedef struct dt_iop_clipping_params_t

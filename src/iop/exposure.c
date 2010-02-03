@@ -13,6 +13,8 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
+DT_MODULE
+
 const char *name()
 {
   return _("exposure");

@@ -15,6 +15,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+DT_MODULE
+
 #define MAXR 8
 
 typedef struct dt_iop_sharpen_params_t

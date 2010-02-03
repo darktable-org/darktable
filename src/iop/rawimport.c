@@ -17,6 +17,8 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
+DT_MODULE
+
 /** core libraw functionality wrapper, for convenience in darkroom mode. */
 
 typedef struct dt_iop_rawimport_params_t

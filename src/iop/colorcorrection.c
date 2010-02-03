@@ -17,6 +17,8 @@
 #include "gui/gtk.h"
 #include "develop/imageop.h"
 
+DT_MODULE
+
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.
 

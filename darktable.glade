@@ -365,7 +365,7 @@ physically delete</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkEventBox" id="eventbox1">
+                  <widget class="GtkEventBox" id="navigation_eventbox">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkExpander" id="navigation_expander">
@@ -641,6 +641,7 @@ all film rolls</property>
                                       <widget class="GtkTable" id="metadata_expander_body">
                                         <property name="visible">True</property>
                                         <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+                                        <property name="border_width">5</property>
                                         <property name="n_rows">11</property>
                                         <property name="n_columns">2</property>
                                         <child>
@@ -934,11 +935,11 @@ all film rolls</property>
                             </child>
                             <child>
                               <widget class="GtkEventBox" id="history_eventbox">
-                                <property name="visible">True</property>
+                                <property name="no_show_all">True</property>
                                 <child>
                                   <widget class="GtkExpander" id="history_expander">
+                                    <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="no_show_all">True</property>
                                     <property name="expanded">True</property>
                                     <property name="spacing">10</property>
                                     <child>

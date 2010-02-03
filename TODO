@@ -1,6 +1,6 @@
 0.5 release:
-- version check against old plugins!
-- collect: when to update lighttable mode? enter? always?
+- straighten history button to simplify same operations
+- color pick in color zones
 - set default for all iop
 - common color picker (shows numeric values, zoom ratio and
     provides currently picked color for iops)
