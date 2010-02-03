@@ -3,6 +3,7 @@
 #include "control/conf.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include <gdk/gdkkeysyms.h>
 
 const char*
 name ()
@@ -51,6 +52,11 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_draw_all();
 }
 
+static void key_accel_callback(void *d)
+{
+  button_clicked(NULL, d);
+}
+
 void
 gui_reset (dt_lib_module_t *self)
 {
@@ -66,21 +72,24 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select all"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select all images in current collection"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_a, key_accel_callback, (void *)0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
   button = gtk_button_new_with_label(_("select none"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear selection"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_A, key_accel_callback, (void *)1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("invert selection"));
+  button = gtk_button_new_with_label(_("invert selection (ctrl-!"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select unselected images\nin current collection"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_exclam, key_accel_callback, (void *)2);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)2);
 
   button = gtk_button_new_with_label(_("select film roll"));
@@ -94,5 +103,6 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_gui_key_accel_unregister(key_accel_callback);
 }
 

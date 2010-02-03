@@ -59,7 +59,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
       snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'", text);
       break;
     case 1: // camera
-      snprintf(query, 1024, "select distinct maker || ' ' || model, 1 from images where model like '%%%s%%' or maker like '%%%s%%'", text, text);
+      snprintf(query, 1024, "select distinct maker || ' ' || model, 1 from images where maker || ' ' || model like '%%%s%%'", text);
       break;
     case 2: // tag
       snprintf(query, 1024, "select distinct name, id from tags where name like '%%%s%%'", text);
@@ -69,7 +69,6 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
       break;
   }
   g_free(text);
-  printf("starting query `%s'\n", query);
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -218,7 +217,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_entry_changed), sw);
   gtk_widget_set_events(w, GDK_KEY_PRESS_MASK);
-  g_signal_connect(G_OBJECT(gtk_bin_get_child(GTK_BIN(w))), "key-press-event", G_CALLBACK(entry_key_press), d);
+  g_signal_connect(G_OBJECT(gtk_bin_get_child(GTK_BIN(w))), "key-release-event", G_CALLBACK(entry_key_press), d);
   gtk_box_pack_start(box, w, FALSE, TRUE, 0);
 
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
