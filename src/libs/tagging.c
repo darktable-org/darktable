@@ -57,13 +57,13 @@ update (dt_lib_module_t *self, int which)
   }
   else // related tags of typed text
   {
-    rc = sqlite3_exec(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
-    rc = sqlite3_exec(darktable.db, "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
-    rc = sqlite3_exec(darktable.db, d->related_query, NULL, NULL, NULL);
-    rc = sqlite3_exec(darktable.db, "insert into tagquery2 select distinct tagid, name, "
+    sqlite3_exec(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, d->related_query, NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "insert into tagquery2 select distinct tagid, name, "
         "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
         NULL, NULL, NULL);
-    rc = sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
+    sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
   }
   GtkTreeIter iter;
   GtkTreeView *view;

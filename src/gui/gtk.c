@@ -159,7 +159,16 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 4)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_3);
   else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
-  dt_film_set_query(darktable.film->id);
+
+  // replace filter part
+  gchar *query = dt_conf_get_string("plugins/lighttable/query");
+  gchar **split = g_regex_split_simple("flags .* order", query, 0, 0);
+  char newquery[1024];
+  if(i == 1) snprintf(newquery, 1024, "%sflags & 7) < 1 order%s", split[0], split[1]);
+  else       snprintf(newquery, 1024, "%sflags & 7) >= %d order%s", split[0], i-1, split[1]);
+  g_strfreev(split);
+  g_free(query);
+  dt_conf_set_string("plugins/lighttable/query", newquery);
   gtk_widget_queue_draw(win);
 }
 
@@ -173,7 +182,20 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 1)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_DATETIME);
   else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
   else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
-  dt_film_set_query(darktable.film->id);
+  // replace sort part
+  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
+  int sortindex = 3;
+  if     (i == 1) sortindex = 0;
+  else if(i == 2) sortindex = 1;
+  else if(i == 0) sortindex = 2;
+  // else (i == 3)
+  gchar *query = dt_conf_get_string("plugins/lighttable/query");
+  gchar **split = g_regex_split_simple("order by .* limit", query, 0, 0);
+  char newquery[1024];
+  snprintf(newquery, 1024, "%sorder by %s limit%s", split[0], sortstring[sortindex], split[1]);
+  g_strfreev(split);
+  g_free(query);
+  dt_conf_set_string("plugins/lighttable/query", newquery);
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }

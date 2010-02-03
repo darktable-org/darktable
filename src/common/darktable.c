@@ -146,17 +146,17 @@ int dt_init(int argc, char *argv[])
 
 void dt_cleanup()
 {
-  dt_ctl_switch_mode_to(DT_LIBRARY);
+  dt_ctl_switch_mode_to(DT_MODE_NONE);
 
   dt_control_write_config(darktable.control);
   dt_control_shutdown(darktable.control);
 
-  dt_gui_gtk_cleanup(darktable.gui);
-  free(darktable.gui);
-  dt_view_manager_cleanup(darktable.view_manager);
-  free(darktable.view_manager);
   dt_lib_cleanup(darktable.lib);
   free(darktable.lib);
+  dt_view_manager_cleanup(darktable.view_manager);
+  free(darktable.view_manager);
+  dt_gui_gtk_cleanup(darktable.gui);
+  free(darktable.gui);
   dt_film_cleanup(darktable.film);
   free(darktable.film);
   dt_image_cache_cleanup(darktable.image_cache);

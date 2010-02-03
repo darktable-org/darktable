@@ -90,11 +90,22 @@ update_query(dt_lib_collect_t *d)
   }
   g_free(text);
   // TODO: similar tagxtag query!
-  // TODO: and flags order by !!
-  // TODO: crash why?? (=>src/views/lighttable)
-  sprintf(query+strlen(query), " limit ?1, ?2");
+  dt_lib_sort_t   sort   = dt_conf_get_int ("ui_last/combo_sort");
+  dt_lib_filter_t filter = dt_conf_get_int ("ui_last/combo_filter");
+  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
+  int sortindex = 3;
+  if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
+  else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
+  else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
+  // else (sort == DT_LIB_SORT_ID)
+
+  if(filter == DT_LIB_FILTER_STAR_NO)
+    sprintf(query+strlen(query), " and (flags & 7) < 1 order by %s limit ?1, ?2", sortstring[sortindex]);
+  else
+    sprintf(query+strlen(query), " and (flags & 7) >= %d order by %s limit ?1, ?2", filter-1, sortstring[sortindex]);
   // printf("query `%s'\n", query);
   dt_conf_set_string ("plugins/lighttable/query", query);
+  dt_control_queue_draw_all();
 }
 
 static gboolean
@@ -199,7 +210,7 @@ gui_init (dt_lib_module_t *self)
   GtkListStore *liststore;
 
   box = GTK_BOX(gtk_hbox_new(FALSE, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   w = gtk_combo_box_new_text();
   d->combo = GTK_COMBO_BOX(w);
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("film roll"));
@@ -217,16 +228,11 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_entry_changed), d);
   gtk_widget_set_events(w, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(gtk_bin_get_child(GTK_BIN(w))), "key-release-event", G_CALLBACK(entry_key_press), d);
-  gtk_box_pack_start(box, w, FALSE, TRUE, 0);
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
 
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  // TODO: fix 5px border!
-  // box = GTK_BOX(gtk_hbox_new(FALSE, 5));
-  // gtk_box_pack_start(box, GTK_WIDGET(sw), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
-  // GTK_WIDGET_SET_FLAGS(sw, GTK_NO_SHOW_ALL);
-  // gtk_widget_set_visible(sw, FALSE);
   gtk_tree_view_set_headers_visible(view, FALSE);
   liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT);
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
