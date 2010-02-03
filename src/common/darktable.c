@@ -108,7 +108,7 @@ int dt_init(int argc, char *argv[])
   dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
 
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  dt_image_cache_init(darktable.image_cache, thumbnails);
+  dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)));
 
   darktable.film = (dt_film_t *)malloc(sizeof(dt_film_t));
   dt_film_init(darktable.film);
