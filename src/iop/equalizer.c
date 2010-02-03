@@ -463,6 +463,18 @@ static gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_fill(cr);
   }
 
+  // draw dots on knots
+  cairo_save(cr);
+  cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+  cairo_set_line_width(cr, 1.);
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+  {
+    cairo_arc(cr, width*p.equalizer_x[c->channel][k], - height*p.equalizer_y[c->channel][k], 3.0, 0.0, 2.0*M_PI);
+    if(c->x_move == k) cairo_fill(cr);
+    else               cairo_stroke(cr);
+  }
+  cairo_restore(cr);
+
   if(c->mouse_y > 0 || c->dragging)
   { // draw min/max, if selected
     // cairo_set_source_rgba(cr, .6, .6, .6, .5);
@@ -509,8 +521,8 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
       const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
       if(c->x_move > 0 && c->x_move < DT_IOP_EQUALIZER_BANDS-1)
       {
-        const float minx = p->equalizer_x[c->channel][c->x_move-1];
-        const float maxx = p->equalizer_x[c->channel][c->x_move+1];
+        const float minx = p->equalizer_x[c->channel][c->x_move-1] + 0.001f;
+        const float maxx = p->equalizer_x[c->channel][c->x_move+1] - 0.001f;
         p->equalizer_x[c->channel][c->x_move] = fminf(maxx, fmaxf(minx, mx));
       }
     }
@@ -570,7 +582,7 @@ static gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *eve
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 0.5/DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.9; //0.7;
+  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 0.25/DT_IOP_EQUALIZER_BANDS) c->mouse_radius *= 0.9; //0.7;
   if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0/0.9); //1.42;
   gtk_widget_queue_draw(widget);
   return TRUE;

@@ -416,8 +416,8 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   }
 
   // draw x positions
-  cairo_set_line_width(cr, 1.);
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+  cairo_set_line_width(cr, 1.);
   const float arrw = 7.0f;
   for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
   {
@@ -456,6 +456,16 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_move_to(cr, 0*width/(float)(DT_IOP_COLORZONES_RES-1), - height*c->draw_ys[0]);
     for(int k=1;k<DT_IOP_COLORZONES_RES;k++) cairo_line_to(cr, k*width/(float)(DT_IOP_COLORZONES_RES-1), - height*c->draw_ys[k]);
     cairo_stroke(cr);
+  }
+
+  // draw dots on knots
+  cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+  cairo_set_line_width(cr, 1.);
+  for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
+  {
+    cairo_arc(cr, width*p.equalizer_x[c->channel][k], - height*p.equalizer_y[c->channel][k], 3.0, 0.0, 2.0*M_PI);
+    if(c->x_move == k) cairo_fill(cr);
+    else               cairo_stroke(cr);
   }
 
   if(c->mouse_y > 0 || c->dragging)
@@ -505,8 +515,8 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
       const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
       if(c->x_move > 0 && c->x_move < DT_IOP_COLORZONES_BANDS-1)
       {
-        const float minx = p->equalizer_x[c->channel][c->x_move-1];
-        const float maxx = p->equalizer_x[c->channel][c->x_move+1];
+        const float minx = p->equalizer_x[c->channel][c->x_move-1]+0.001f;
+        const float maxx = p->equalizer_x[c->channel][c->x_move+1]-0.001f;
         p->equalizer_x[c->channel][c->x_move] = fminf(maxx, fmaxf(minx, mx));
       }
     }
