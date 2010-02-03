@@ -506,6 +506,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
           dt_image_cache_release(image, 'r');
         }
       }
+      else goto failure;
       cairo_translate(cr, wd, 0.0f);
     }
     cairo_translate(cr, -max_cols*wd, ht);
@@ -513,6 +514,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     rc = sqlite3_reset(stmt);
     rc = sqlite3_clear_bindings(stmt);
   }
+failure:
   sqlite3_finalize(stmt);
 
   oldpan = pan;

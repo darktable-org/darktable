@@ -7,21 +7,25 @@
 // also serves to store user settings.
 
 #define DT_CTL_GET_GLOBAL(x, attrib) \
+{\
   pthread_mutex_lock(&(darktable.control->global_mutex)); \
   x = darktable.control->global_settings.attrib; \
-  pthread_mutex_unlock(&(darktable.control->global_mutex))
+  pthread_mutex_unlock(&(darktable.control->global_mutex)); }
 
 #define DT_CTL_SET_GLOBAL(attrib, x) \
+{\
   pthread_mutex_lock(&(darktable.control->global_mutex)); \
   darktable.control->global_settings.attrib = x; \
-  pthread_mutex_unlock(&(darktable.control->global_mutex))
+  pthread_mutex_unlock(&(darktable.control->global_mutex)); }
 
 #define DT_CTL_GET_GLOBAL_STR(x, attrib, n) \
+{\
   pthread_mutex_lock(&(darktable.control->global_mutex)); \
   strncpy(x, darktable.control->global_settings.attrib, n); \
-  pthread_mutex_unlock(&(darktable.control->global_mutex))
+  pthread_mutex_unlock(&(darktable.control->global_mutex)); }
 
 #define DT_CTL_SET_GLOBAL_STR(attrib, x, n) \
+{\
   pthread_mutex_lock(&(darktable.control->global_mutex)); \
   strncpy(darktable.control->global_settings.attrib, x, n); \
   pthread_mutex_unlock(&(darktable.control->global_mutex))
