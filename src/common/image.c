@@ -166,7 +166,7 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
     dt_image_get_mip_size(img, mip, &mwd, &mht);
     const int owd = img->output_width  ? img->output_width  : img->width,
               oht = img->output_height ? img->output_height : img->height;
-    const float scale = fminf(1.0, fminf(mwd/(float)owd, mht/(float)oht));
+    const float scale = fminf(mwd/(float)owd, mht/(float)oht);
     wd = owd*scale;
     ht = oht*scale;
   }

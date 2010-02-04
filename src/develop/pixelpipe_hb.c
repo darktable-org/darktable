@@ -247,9 +247,13 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(roi_in.y < 0) roi_in.y = 0;
     if(roi_in.width  < 1) roi_in.width  = 1;
     if(roi_in.height < 1) roi_in.height = 1;
+
+#if 0 // zoom 2:1 actually breaks this check:
     // clamp max width:
-    if((roi_in.width +roi_in.x)/roi_in.scale > pipe->iwidth)  roi_in.width  = pipe->iwidth *roi_in.scale - roi_in.x;
-    if((roi_in.height+roi_in.y)/roi_in.scale > pipe->iheight) roi_in.height = pipe->iheight*roi_in.scale - roi_in.y;
+    if(roi_in.width +roi_in.x > pipe->iwidth *roi_in.scale) roi_in.width  = pipe->iwidth *roi_in.scale - roi_in.x;
+    if(roi_in.height+roi_in.y > pipe->iheight*roi_in.scale) roi_in.height = pipe->iheight*roi_in.scale - roi_in.y;
+#endif
+
     int maxwd = DT_DEV_PIXELPIPE_CACHE_SIZE;
     int maxht = DT_DEV_PIXELPIPE_CACHE_SIZE;
     // downscale request to cache buffer:

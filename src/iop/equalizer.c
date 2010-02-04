@@ -261,6 +261,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)self->params;
 
+  c->band_max = 0;
   c->channel = DT_IOP_EQUALIZER_L;
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
