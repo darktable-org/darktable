@@ -374,6 +374,7 @@ void leave(dt_view_t *self)
     snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
 
+    g_object_unref(module->menu);
     module->gui_cleanup(module);
     module->cleanup(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);

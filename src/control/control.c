@@ -112,16 +112,17 @@ int dt_control_load_config(dt_control_t *c)
       memcpy(&(darktable.control->global_settings), &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t));
       pthread_mutex_unlock(&(darktable.control->global_mutex));
       // drop all, restart. TODO: freeze this version or have update facility!
-      rc = sqlite3_prepare_v2(darktable.db, "drop table settings", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table film_rolls", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table selected_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table mipmaps", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table mipmap_timestamps", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table history", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table tags", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table tagxtag", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "drop table tagged_images", -1, &stmt, NULL); rc = sqlite3_step(stmt); rc = sqlite3_finalize(stmt);
+      sqlite3_exec(darktable.db, "drop table settings", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table film_rolls", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table images", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table selected_images", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table mipmaps", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table history", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table tags", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table tagxtag", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table tagged_images", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table iop_defaults", NULL, NULL, NULL);
       return dt_control_load_config(c);
     }
     else
@@ -156,6 +157,7 @@ int dt_control_load_config(dt_control_t *c)
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, foreign key(imgid) references images(id) foreign key(tagid) references tags(id) primary key(imgid, tagid))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
+    sqlite3_exec(darktable.db, "create table iop_defaults (operation varchar, op_params blob, enabled integer, model varchar, maker varchar)", NULL, NULL, NULL);
 
     // add dummy film roll for single images
     char datetime[20];

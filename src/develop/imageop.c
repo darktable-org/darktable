@@ -208,13 +208,45 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
   }
 }
 
-static void dt_iop_gui_reset_callback(GtkButton *button, gpointer user_data)
+static void
+dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   // module->enabled = module->default_enabled; // will not propagate correctly anyways ;)
   memcpy(module->params, module->default_params, module->params_size);
   module->gui_update(module);
   if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module);
+}
+
+static gboolean
+popup_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
+{
+  if(event->button == 3)
+  {
+    gtk_menu_popup(module->menu, NULL, NULL, NULL, NULL, event->button, event->time);
+    gtk_widget_show_all(GTK_WIDGET(module->menu));
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static void
+menuitem_store_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  // TODO: dump module->params to some special table
+  printf("store def\n");
+}
+
+static void
+menuitem_factory_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  // TODO: remove default from table
+  printf("reset def\n");
+}
+
+static void
+menuitem_reset_to_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  dt_iop_gui_reset_callback(NULL, module);
 }
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
@@ -238,6 +270,23 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     module->off = button;
   }
 
+  // popup menu
+  module->menu = GTK_MENU(gtk_menu_new());
+  GtkWidget *mi;
+  mi = gtk_menu_item_new_with_label(_("store as default"));
+  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default for this operation"), NULL);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default), module);
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+
+  mi = gtk_menu_item_new_with_label(_("remove default"));
+  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("discard custom default, reset\ndefault to factory settings"), NULL);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default), module);
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+
+  mi = gtk_menu_item_new_with_label(_("reset to default"));
+  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("discard current parameters,\nreset to default"), NULL);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_reset_to_default), module);
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
 
   // char filename[512];
   // snprintf(filename, 512, "%s/pixmaps/off.png", DATADIR);
@@ -264,6 +313,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkWidget *evb = gtk_event_box_new();
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
+
+  gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
+  g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_callback), module);
+
   return evb;
 }
 
