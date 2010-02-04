@@ -1,4 +1,5 @@
 0.5 release:
+- export/select by edited/up-to-date exported
 - temperature/wb: use color picker
 - extract image statistics/compare metric
 - straighten history button to simplify same operations

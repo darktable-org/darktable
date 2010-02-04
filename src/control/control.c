@@ -379,7 +379,8 @@ void dt_control_shutdown(dt_control_t *s)
 
 void dt_control_cleanup(dt_control_t *s)
 {
-  int keep = 2500, keep0 = 10000; // TODO: conf, level dependent?
+  int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
+  int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
   int rc;
   // delete mipmaps
   // ubuntu compiles a lame sqlite3, else we could simply:
