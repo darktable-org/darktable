@@ -319,7 +319,7 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   raw->params.gamm[1] = 1.0;
   raw->params.user_qual = 0; // linear
   raw->params.four_color_rgb = img->raw_params.four_color_rgb;
-  raw->params.use_camera_matrix = img->raw_params.cmatrix;
+  raw->params.use_camera_matrix = 0;//img->raw_params.cmatrix;
   raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
@@ -583,7 +583,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.gamm[1] = 1.0;
   raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
   raw->params.four_color_rgb = img->raw_params.four_color_rgb;
-  raw->params.use_camera_matrix = img->raw_params.cmatrix;
+  raw->params.use_camera_matrix = 0;//img->raw_params.cmatrix;
   raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;

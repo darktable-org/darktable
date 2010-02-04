@@ -98,7 +98,7 @@ static void convert_rgb_to_k(float rgb[3], const float temp_out, float *temp, fl
   tmin = DT_IOP_LOWEST_TEMPERATURE;
   tmax = DT_IOP_HIGHEST_TEMPERATURE;
   convert_k_to_rgb (temp_out,  intended_temperature_rgb);
-  for (*temp=(tmax+tmin)/2; tmax-tmin>10; *temp=(tmax+tmin)/2)
+  for (*temp=(tmax+tmin)/2; tmax-tmin>1; *temp=(tmax+tmin)/2)
   {
     convert_k_to_rgb (*temp, original_temperature_rgb);
 

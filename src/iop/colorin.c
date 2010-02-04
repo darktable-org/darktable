@@ -113,7 +113,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = NULL;
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
     d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
-    memcpy(d->cmatrix, p->cmatrix, 3*4*sizeof(float));
+    char filename[1024];
+    int ret;
+    dt_image_full_path(self->dev->image, filename, 1024);
+    libraw_data_t *raw = libraw_init(0);
+    ret = libraw_open_file(raw, filename);
+    if(!ret)
+    {
+      for(int k=0;k<4;k++) for(int i=0;i<3;i++)
+        d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
+    }
+    libraw_close(raw);
   }
   else
   { // else: load file name
@@ -190,7 +200,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 300;
   module->hide_enable_button = 1;
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"sRGB", DT_INTENT_PERCEPTUAL};
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"cmatrix", DT_INTENT_PERCEPTUAL};
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
@@ -216,28 +226,16 @@ void gui_init(struct dt_iop_module_t *self)
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
   g->profiles = g_list_append(g->profiles, prof);
-  int pos = prof->pos = 0;
+  prof->pos = 0;
   // get color matrix from raw image:
-  char filename[1024];
-  int ret;
-  dt_image_full_path(self->dev->image, filename, 1024);
-  libraw_data_t *raw = libraw_init(0);
-  ret = libraw_open_file(raw, filename);
-  if(!ret)
-  {
-    dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->default_params;
-    for(int k=0;k<4;k++) for(int i=0;i<3;i++)
-      p->cmatrix[i][k] = raw->color.rgb_cam[i][k];
-    prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-    strcpy(prof->filename, "cmatrix");
-    strcpy(prof->name, "cmatrix");
-    pos = prof->pos = 1;
-    g->profiles = g_list_append(g->profiles, prof);
-  }
-  libraw_close(raw);
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "cmatrix");
+  strcpy(prof->name, "cmatrix");
+  int pos = prof->pos = 1;
+  g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/in/*.icc
-  char datadir[1024], dirname[1024];
+  char datadir[1024], dirname[1024], filename[1024];
   dt_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/in", datadir);
   cmsHPROFILE tmpprof;

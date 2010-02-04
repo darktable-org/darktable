@@ -31,7 +31,6 @@ typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
-  float cmatrix[3][4];
 }
 dt_iop_colorin_params_t;
 

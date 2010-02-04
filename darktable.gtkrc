@@ -103,6 +103,12 @@ style "clearlooks-brightbg" = "clearlooks-default"
   bg[NORMAL] = "#292929"
 }
 
+style "clearlooks-vbrightbg" = "clearlooks-default"
+{
+  bg[NORMAL]   = "#606060"
+	bg[PRELIGHT] = "#D0D0D0"
+}
+
 style "clearlooks-entry" = "clearlooks-default"
 {
 	fg[NORMAL]        = "#CACAC6"
@@ -200,6 +206,7 @@ class "GtkMenuItem" style "clearlooks-menu-item"
 widget "*.plugins_vbox.GtkEventBox" style "clearlooks-brightbg"
 # widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 # widget "*.left_scrolled.GtkEventBox" style "clearlooks-brightbg"
+widget "*.GtkEventBox.GtkVBox.GtkHBox.GtkButton" style "clearlooks-vbrightbg"
 widget "*.library_eventbox" style "clearlooks-brightbg"
 widget "*.metadata_eventbox" style "clearlooks-brightbg"
 widget "*.history_eventbox" style "clearlooks-brightbg"

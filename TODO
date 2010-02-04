@@ -1,8 +1,4 @@
 0.5 release:
-- color matrix/gamma vs input profile consistency
-  - move color matrix from libraw to dt
-    - re-open file if color matrix is needed in colorin
-  - cmatrix in params.
 - wb presets broken for non-raw images
 - DT_MODULE also views/libs
 - export/select by edited/up-to-date exported
