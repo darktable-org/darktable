@@ -10,6 +10,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "libraw/libraw.h"
 
 DT_MODULE
 
@@ -56,16 +57,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-#ifdef _OPENMP // not thread safe?
-// #pragma omp parallel for schedule(static) default(none) shared(out, width, height, in) firstprivate(d)
-#endif
+  // not thread safe.
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    double RGB[3];
+    double RGB[3] = {0., 0., 0.};
     cmsCIELab Lab;
-
+    if(d->cmatrix[0][0] > -666.0)
+    {
+      for(int c=0;c<3;c++)
+        for(int j=0;j<3;j++)
+          RGB[c] += d->cmatrix[c][j] * in[3*k + j];
+    }
+    else
+    {
+      for(int c=0;c<3;c++) RGB[c] = in[3*k + c];
+    }
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    for(int c=0;c<3;c++) RGB[c] = in[3*k + c];
     cmsDoTransform(d->xform, RGB, &Lab, 1);
     // Lab.L = RGB[0]; Lab.a = RGB[1]; Lab.b = RGB[2];
     out[3*k + 0] = Lab.L;
@@ -93,11 +100,20 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
+  if(d->xform) cmsDeleteTransform(d->xform);
+  d->cmatrix[0][0] = -666.0;
   if(!strcmp(p->iccprofile, "sRGB"))
   { // default: sRGB
     d->input = NULL;
     d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
     d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+  }
+  else if(!strcmp(p->iccprofile, "cmatrix"))
+  { // color matrix
+    d->input = NULL;
+    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+    d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    memcpy(d->cmatrix, p->cmatrix, 3*4*sizeof(float));
   }
   else
   { // else: load file name
@@ -124,6 +140,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = malloc(sizeof(dt_iop_colorin_data_t));
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
+  d->xform = NULL;
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -137,6 +154,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
+  if(d->xform) cmsDeleteTransform(d->xform);
   free(piece->data);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
@@ -197,11 +215,29 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
-  int pos = prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
+  int pos = prof->pos = 0;
+  // get color matrix from raw image:
+  char filename[1024];
+  int ret;
+  dt_image_full_path(self->dev->image, filename, 1024);
+  libraw_data_t *raw = libraw_init(0);
+  ret = libraw_open_file(raw, filename);
+  if(!ret)
+  {
+    dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->default_params;
+    for(int k=0;k<4;k++) for(int i=0;i<3;i++)
+      p->cmatrix[i][k] = raw->color.rgb_cam[i][k];
+    prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+    strcpy(prof->filename, "cmatrix");
+    strcpy(prof->name, "cmatrix");
+    pos = prof->pos = 1;
+    g->profiles = g_list_append(g->profiles, prof);
+  }
+  libraw_close(raw);
 
   // read datadir/color/in/*.icc
-  char datadir[1024], dirname[1024], filename[1024];
+  char datadir[1024], dirname[1024];
   dt_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/in", datadir);
   cmsHPROFILE tmpprof;
@@ -248,7 +284,10 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    gtk_combo_box_append_text(g->cbox2, prof->name);
+    if(!strcmp(prof->name, "cmatrix"))
+      gtk_combo_box_append_text(g->cbox2, _("color matrix"));
+    else
+      gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);
   }
   gtk_combo_box_set_active(g->cbox1, 0);

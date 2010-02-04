@@ -10,6 +10,7 @@ libcolorcorrection_la_SOURCES=colorcorrection.c
 libexposure_la_SOURCES=exposure.c
 libequalizer_la_SOURCES=equalizer.c
 libcolorin_la_SOURCES=colorin.c
+libcolorin_la_CFLAGS=-I$(srcdir)/../LibRaw
 libcolorout_la_SOURCES=colorout.c
 libclipping_la_SOURCES=clipping.c
 libsharpen_la_SOURCES=sharpen.c

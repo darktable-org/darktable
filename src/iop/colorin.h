@@ -31,8 +31,7 @@ typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
-  // TODO: store color matrix from image
-  // TODO: store whether to apply color matrix
+  float cmatrix[3][4];
 }
 dt_iop_colorin_params_t;
 
@@ -50,6 +49,7 @@ typedef struct dt_iop_colorin_data_t
   cmsHPROFILE input;
   cmsHPROFILE Lab;
   cmsHTRANSFORM xform;
+  float cmatrix[3][4];
 }
 dt_iop_colorin_data_t;
 
