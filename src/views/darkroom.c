@@ -157,14 +157,13 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
     cairo_set_line_width(cri, 1.0/zoom_scale);
     cairo_set_source_rgb(cri, .2, .2, .2);
 
-    for(int k=0;k<2;k++)
-    {
-      float *box = dev->gui_module->color_picker_box;
-      cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
-      cairo_stroke(cri);
-      cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
-      cairo_set_source_rgb(cri, .8, .8, .8);
-    }
+    float *box = dev->gui_module->color_picker_box;
+    cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
+    cairo_stroke(cri);
+    cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
+    cairo_set_source_rgb(cri, .8, .8, .8);
+    cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
+    cairo_stroke(cri);
   }
   else if(dev->gui_module && dev->gui_module->gui_post_expose)
     dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);

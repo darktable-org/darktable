@@ -58,7 +58,7 @@ static const float dt_iop_temperature_rgb_r55[][12] =
 
 const char *name()
 {
-  return C_("modulename", "temperature");
+  return C_("modulename", "whitebalance");
 }
 
 static void convert_k_to_rgb (float temperature, float *rgb)
@@ -125,23 +125,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
     out += 3; in += 3;
   }
-  // get mean rgb from preview pipe.
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  if(self->dev->gui_attached && piece->iscale != 1.0 && self->dev->preview_pipe && g->grayboxmode)
-  {
-    int box[4];
-    float rgb[3];
-    in = (float *)i;
-    for(int k=0;k<3;k++) rgb[k] = 0.0f;
-    for(int k=0;k<4;k+=2) box[k] = MIN(roi_in->width -1, MAX(0, g->graybox[k]*roi_in->width));
-    for(int k=1;k<4;k+=2) box[k] = MIN(roi_in->height-1, MAX(0, g->graybox[k]*roi_in->height));
-    const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-    for(int j=box[1];j<=box[3];j++) for(int i=box[0];i<=box[2];i++)
-    {
-      for(int k=0;k<3;k++) rgb[k] += w*in[3*(roi_in->width*j + i) + k];
-    }
-    for(int k=0;k<3;k++) g->grayrgb[k] = rgb[k];
-  }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -153,11 +136,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0;k<3;k++) d->coeffs[k]  = p->coeffs[k];
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  if(self->dev->gui_attached && piece->iscale != 1.0 && self->dev->preview_pipe && g->grayboxmode)
-  {
-    for(int k=0;k<4;k++) d->graybox[k] = g->graybox[k];
-  }
 #endif
 }
 
@@ -189,6 +167,9 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
+  self->request_color_pick = 0;
+  self->color_picker_box[0] = self->color_picker_box[1] = .25f;
+  self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)module->params;
   float temp, tint, mul[3];
@@ -200,7 +181,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_range_set_value(GTK_RANGE(g->scale_b), mul[2]);
   gtk_range_set_value(GTK_RANGE(g->scale_k), temp);
   gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
-  g->grayboxmode = 0;
   if(fabsf(p->coeffs[0]-1.0) + fabsf(p->coeffs[1]-1.0) + fabsf(p->coeffs[2]-1.0) < 0.01)
     gtk_combo_box_set_active(g->presets, 0);
   else
@@ -229,6 +209,47 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static void
+gui_update_from_coeffs(dt_iop_module_t *self)
+{
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  // now get temp/tint from rgb. leave temp_out as it was:
+  float temp, tint, mul[3];
+  for(int k=0;k<3;k++) mul[k] = p->coeffs[k] * g->cam_mul[k];
+  p->temp_out = gtk_range_get_value(GTK_RANGE(g->scale_k_out));
+  convert_rgb_to_k(p->coeffs, p->temp_out, &temp, &tint);
+
+  darktable.gui->reset = 1;
+  gtk_range_set_value(GTK_RANGE(g->scale_k),    temp);
+  gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
+  gtk_range_set_value(GTK_RANGE(g->scale_r), mul[0]);
+  gtk_range_set_value(GTK_RANGE(g->scale_g), mul[1]);
+  gtk_range_set_value(GTK_RANGE(g->scale_b), mul[2]);
+  darktable.gui->reset = 0;
+}
+
+
+static gboolean
+expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+{ // capture gui color picked event.
+  if(darktable.gui->reset) return FALSE;
+  static float old[3] = {0, 0, 0};
+  const float *grayrgb = self->picked_color;
+  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
+  for(int k=0;k<3;k++) old[k] = grayrgb[k];
+  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  for(int k=0;k<3;k++) p->coeffs[k] = 1.0/(0.01 + grayrgb[k]);
+  float len = 0.0, lenc = 0.0f;
+  for(int k=0;k<3;k++) len  += grayrgb[k]*grayrgb[k];
+  for(int k=0;k<3;k++) lenc += grayrgb[k]*grayrgb[k]*p->coeffs[k]*p->coeffs[k];
+  if(lenc > 0.0001f) for(int k=0;k<3;k++) p->coeffs[k] *= sqrtf(len/lenc);
+  for(int k=0;k<3;k++) p->coeffs[k] = fmaxf(0.0f, fminf(3.0, p->coeffs[k]));
+  gui_update_from_coeffs(self);
+  dt_dev_add_history_item(darktable.develop, self);
+  return FALSE;
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
@@ -245,11 +266,9 @@ void gui_init(struct dt_iop_module_t *self)
   else     for(int k=0;k<4;k++) g->cam_mul[k] = 1.0;
   libraw_close(raw);
 
-  g->grayboxmode = 0;
-  g->graybox[0] = g->graybox[1] = -0.1;
-  g->graybox[2] = g->graybox[3] =  0.1;
   GtkWidget *label;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
   GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
   GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
@@ -311,16 +330,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);
   hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), TRUE, TRUE, 5);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  label = gtk_label_new(_("presets"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
 
   g->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->presets, _("camera whitebalance"));
+  gtk_combo_box_append_text(g->presets, _("spot whitebalance"));
   gtk_combo_box_append_text(g->presets, _("passthrough"));
-  g->preset_cnt = 2;
+  g->preset_cnt = 3;
   for(int i=0;i<wb_preset_count;i++)
   {
     if(g->preset_cnt >= 50) break;
@@ -331,12 +350,8 @@ void gui_init(struct dt_iop_module_t *self)
       g->preset_num[g->preset_cnt++] = i;
     }
   }
-  GtkWidget *button = gtk_button_new_with_label(_("spot whitebalance"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select a gray box\nin the image"), NULL);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(g->presets), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, button, FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->presets), FALSE, FALSE, 0);
 
-  // gui_update(self); <= crash :(
   float temp, tint;
   float mul[3];
   for(int k=0;k<3;k++) mul[k] = p->coeffs[k] * g->cam_mul[k];
@@ -360,8 +375,6 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (rgb_callback), self);
   g_signal_connect (G_OBJECT (g->scale_b), "value-changed",
                     G_CALLBACK (rgb_callback), self);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (button_callback), self);
   g_signal_connect (G_OBJECT (g->presets), "changed",
                     G_CALLBACK (presets_changed),
                     (gpointer)self);
@@ -378,7 +391,6 @@ static void temp_changed(dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
-  g->grayboxmode = 0;
   const float temp_out = gtk_range_get_value(GTK_RANGE(g->scale_k_out));
   const float temp_in  = gtk_range_get_value(GTK_RANGE(g->scale_k));
   const float tint     = gtk_range_get_value(GTK_RANGE(g->scale_tint));
@@ -421,32 +433,12 @@ static void temp_out_callback (GtkRange *range, gpointer user_data)
   temp_changed(self);
 }
 
-static void gui_update_from_coeffs(dt_iop_module_t *self)
-{
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  // now get temp/tint from rgb. leave temp_out as it was:
-  float temp, tint, mul[3];
-  for(int k=0;k<3;k++) mul[k] = p->coeffs[k] * g->cam_mul[k];
-  p->temp_out = gtk_range_get_value(GTK_RANGE(g->scale_k_out));
-  convert_rgb_to_k(p->coeffs, p->temp_out, &temp, &tint);
-
-  darktable.gui->reset = 1;
-  gtk_range_set_value(GTK_RANGE(g->scale_k),    temp);
-  gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
-  gtk_range_set_value(GTK_RANGE(g->scale_r), mul[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), mul[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), mul[2]);
-  darktable.gui->reset = 0;
-}
-
 static void rgb_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  g->grayboxmode = 0;
   const float value = gtk_range_get_value(range);
   if     (range == GTK_RANGE(g->scale_r)) p->coeffs[0] = value/g->cam_mul[0];
   else if(range == GTK_RANGE(g->scale_g)) p->coeffs[1] = value/g->cam_mul[1];
@@ -456,106 +448,11 @@ static void rgb_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-static void button_callback (GtkButton *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  self->dev->gui_module = self; // assert focus.
-  gtk_combo_box_set_active(g->presets, -1);
-  g->button_down_zoom_x = g->button_down_zoom_y = 0.0f;
-  g->grayboxmode = 1;
-}
-
-void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
-{
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  if(!g->grayboxmode) return;
-  dt_develop_t *dev = self->dev;
-  int32_t zoom, closeup;
-  float zoom_x, zoom_y;
-  float wd = dev->preview_pipe->backbuf_width;
-  float ht = dev->preview_pipe->backbuf_height;
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
-
-  cairo_translate(cr, width/2.0, height/2.0f);
-  cairo_scale(cr, zoom_scale, zoom_scale);
-  cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
-
-  // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
-  cairo_set_source_rgb(cr, .2, .2, .2);
-
-  for(int k=0;k<2;k++)
-  {
-    cairo_rectangle(cr, g->graybox[0]*wd, g->graybox[1]*ht, (g->graybox[2] - g->graybox[0])*wd, (g->graybox[3] - g->graybox[1])*ht);
-    cairo_stroke(cr);
-    cairo_translate(cr, 1.0/zoom_scale, 1.0/zoom_scale);
-    cairo_set_source_rgb(cr, .8, .8, .8);
-  }
-}
-
-int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
-{
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  if(!g->grayboxmode) return 0;
-  if(darktable.control->button_down && darktable.control->button_down_which == 1)
-  {
-    float zoom_x, zoom_y;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &zoom_x, &zoom_y);
-    g->graybox[0] = fminf(.5f+g->button_down_zoom_x, .5f+zoom_x);
-    g->graybox[1] = fminf(.5f+g->button_down_zoom_y, .5f+zoom_y);
-    g->graybox[2] = fmaxf(.5f+g->button_down_zoom_x, .5f+zoom_x);
-    g->graybox[3] = fmaxf(.5f+g->button_down_zoom_y, .5f+zoom_y);
-    dt_control_gui_queue_draw();
-    dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-    p->trigger++;
-    for(int k=0;k<3;k++) p->coeffs[k] = 1.0/(0.01 + g->grayrgb[k]);
-    float len = 0.0, lenc = 0.0f;
-    for(int k=0;k<3;k++) len  += g->grayrgb[k]*g->grayrgb[k];
-    for(int k=0;k<3;k++) lenc += g->grayrgb[k]*g->grayrgb[k]*p->coeffs[k]*p->coeffs[k];
-    if(lenc > 0.0001f) for(int k=0;k<3;k++) p->coeffs[k] *= sqrtf(len/lenc);
-    for(int k=0;k<3;k++) p->coeffs[k] = fmaxf(0.0f, fminf(3.0, p->coeffs[k]));
-    gui_update_from_coeffs(self);
-    dt_dev_add_history_item(darktable.develop, self);
-    return 1;
-  }
-  else return 0;
-}
-
-int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
-{
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  if(!g->grayboxmode) return 0;
-  if(which == 1)
-  {
-    // init grayrgb to be current wb + trigger, so a redraw will be triggered.
-    dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-    p->trigger++;
-    for(int k=0;k<3;k++) g->grayrgb[k] = 1.0/(0.01 + p->coeffs[k]);
-    float len = 0.0, lenc = 0.0f;
-    for(int k=0;k<3;k++) len  += g->grayrgb[k]*g->grayrgb[k];
-    for(int k=0;k<3;k++) lenc += g->grayrgb[k]*g->grayrgb[k]*p->coeffs[k]*p->coeffs[k];
-    if(len > 0.0001f) for(int k=0;k<3;k++) g->grayrgb[k] *= sqrtf(lenc/len);
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
-    g->graybox[0] = .5f+g->button_down_zoom_x;
-    g->graybox[1] = .5f+g->button_down_zoom_y;
-    g->graybox[2] = .5f+g->button_down_zoom_x;
-    g->graybox[3] = .5f+g->button_down_zoom_y;
-    dt_control_gui_queue_draw();
-    return 1;
-  }
-  else return 0;
-}
-
 static void
 presets_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  self->request_color_pick = 0;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
@@ -565,7 +462,12 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
     case 0: // camera wb
       for(int k=0;k<3;k++) p->coeffs[k] = 1.0;
       break;
-    case 1: // passthrough mode, raw data
+    case 1: // spot wb, exposure callback will set p->coeffs.
+      for(int k=0;k<3;k++) p->coeffs[k] = 1.0;
+      self->dev->gui_module = self;
+      self->request_color_pick = 1;
+      break;
+    case 2: // passthrough mode, raw data
       for(int k=0;k<3;k++) p->coeffs[k] = 1.0/g->cam_mul[k];
       break;
     default:
@@ -573,6 +475,7 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
         p->coeffs[k] = wb_preset[g->preset_num[pos]].channel[k]/g->cam_mul[k];
       break;
   }
+  if(self->off) gtk_toggle_button_set_active(self->off, 1);
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);
 }

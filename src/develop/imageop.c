@@ -40,8 +40,8 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
   module->picked_color[0] = module->picked_color[1] = module->picked_color[2] = 0.0f;
-  module->color_picker_box[0] = module->color_picker_box[2] =  INFINITY;
-  module->color_picker_box[1] = module->color_picker_box[3] = -INFINITY;
+  module->color_picker_box[0] = module->color_picker_box[1] = .25f;
+  module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   strncpy(module->op, op, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);

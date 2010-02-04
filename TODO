@@ -1,6 +1,7 @@
 0.5 release:
+- wb presets broken for non-raw images
+- DT_MODULE also views/libs
 - export/select by edited/up-to-date exported
-- temperature/wb: use color picker
 - extract image statistics/compare metric
 - straighten history button to simplify same operations
 - set default for all iop
