@@ -65,8 +65,15 @@ void
 gui_reset (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  gtk_range_set_value(GTK_RANGE(d->quality), 97);
-  gtk_combo_box_set_active(d->format, 0);
+  int quality = MIN(100, MAX(1, dt_conf_get_int ("plugins/lighttable/export/quality")));
+  gtk_range_set_value(GTK_RANGE(d->quality), quality);
+  int k = dt_conf_get_int ("plugins/lighttable/export/format");
+  int i = 0;
+  if     (k == DT_DEV_EXPORT_JPG)   i = 0;
+  else if(k == DT_DEV_EXPORT_PNG)   i = 1;
+  else if(k == DT_DEV_EXPORT_PPM16) i = 2;
+  else if(k == DT_DEV_EXPORT_PFM)   i = 3;
+  gtk_combo_box_set_active(d->format, i);
 }
 
 void

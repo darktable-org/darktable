@@ -379,7 +379,7 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     float jj = 1.0 - (j-.5)/(cellsj-1.), ii = (i+.5)/(cellsi-1.);
     cmsCIELab Lab;
     switch(p.channel)
-    {
+    { // select by channel, abscissa:
       case DT_IOP_COLORZONES_L:
         Lab.L = ii * 100.0;
         Lab.a = self->picked_color[1];//0.0f;
@@ -398,8 +398,9 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     }
     const float angle = atan2f(Lab.b, Lab.a);
     switch(c->channel)
-    {
+    { // channel to be altered:
       case DT_IOP_COLORZONES_L:
+        Lab.L *= .5f;
         Lab.L += - 50.0 + 100.0*jj;
         break;
       case DT_IOP_COLORZONES_C:
@@ -633,6 +634,7 @@ colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
     {
       memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
       p->channel = (dt_iop_colorzones_channel_t)k;
+      gtk_combo_box_set_active(c->presets, -1);
       dt_dev_add_history_item(darktable.develop, self);
       gtk_widget_queue_draw(self->widget);
       return;

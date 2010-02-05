@@ -12,6 +12,47 @@
 #include <gmodule.h>
 #include <pthread.h>
 
+void dt_iop_load_default_params(dt_iop_module_t *module)
+{
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from iop_defaults where operation = ?1 and model like ?2 and maker like ?3", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  char *m = darktable.develop->image->exif_model;
+  sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
+  m = darktable.develop->image->exif_maker;
+  sqlite3_bind_text(stmt, 3, m, strlen(m), SQLITE_TRANSIENT);
+
+  memcpy(module->default_params, module->factory_params, module->params_size);
+  module->default_enabled = module->factory_enabled;
+
+  const void *blob = NULL;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    blob  = sqlite3_column_blob(stmt, 0);
+    int length  = sqlite3_column_bytes(stmt, 0);
+    int enabled = sqlite3_column_int(stmt, 1);
+    if(blob && length == module->params_size)
+    {
+      memcpy(module->default_params, blob, length);
+      module->default_enabled = enabled;
+    }
+    else blob = NULL;
+  }
+  sqlite3_finalize(stmt);
+
+  if(!blob)
+  {
+    sqlite3_prepare_v2(darktable.db, "delete from iop_defaults where operation = ?1 and model like ?2 and maker like ?3", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+    char *m = darktable.develop->image->exif_model;
+    sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
+    m = darktable.develop->image->exif_maker;
+    sqlite3_bind_text(stmt, 3, m, strlen(m), SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+}
+
 void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
@@ -115,6 +156,10 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     }
     g_free(libname);
     res = g_list_insert_sorted(res, module, sort_plugins);
+    module->factory_params = malloc(module->params_size);
+    memcpy(module->factory_params, module->default_params, module->params_size);
+    module->factory_enabled = module->default_enabled;
+    dt_iop_load_default_params(module);
   }
   g_dir_close(dir);
 
@@ -131,6 +176,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_unload_module(dt_iop_module_t *module)
 {
+  free(module->factory_params);
   module->cleanup(module);
   pthread_mutex_destroy(&module->params_mutex);
   if(module->module) g_module_close(module->module);
@@ -232,15 +278,57 @@ popup_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module
 static void
 menuitem_store_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
-  // TODO: dump module->params to some special table
-  printf("store def\n");
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "insert or replace into iop_defaults values (?1, ?2, ?3, '%', '%')", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  sqlite3_bind_blob(stmt, 2, module->params, module->params_size, SQLITE_TRANSIENT);
+  sqlite3_bind_int (stmt, 3, module->enabled);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  dt_iop_load_default_params(module);
+}
+
+static void
+menuitem_store_default_for_camera (GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "insert or replace into iop_defaults values (?1, ?2, ?3, ?4, ?5)", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  sqlite3_bind_blob(stmt, 2, module->params, module->params_size, SQLITE_TRANSIENT);
+  sqlite3_bind_int (stmt, 3, module->enabled);
+  char *m = darktable.develop->image->exif_model;
+  sqlite3_bind_text(stmt, 4, m, strlen(m), SQLITE_TRANSIENT);
+  m = darktable.develop->image->exif_maker;
+  sqlite3_bind_text(stmt, 5, m, strlen(m), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  dt_iop_load_default_params(module);
 }
 
 static void
 menuitem_factory_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
-  // TODO: remove default from table
-  printf("reset def\n");
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "delete from iop_defaults where operation = ?1", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  dt_iop_load_default_params(module);
+}
+
+static void
+menuitem_factory_default_for_camera (GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "delete from iop_defaults where operation = ?1 and model like ?2 and maker like ?3", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  char *m = darktable.develop->image->exif_model;
+  sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
+  m = darktable.develop->image->exif_maker;
+  sqlite3_bind_text(stmt, 3, m, strlen(m), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  dt_iop_load_default_params(module);
 }
 
 static void
@@ -273,20 +361,33 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   // popup menu
   module->menu = GTK_MENU(gtk_menu_new());
   GtkWidget *mi;
-  mi = gtk_menu_item_new_with_label(_("store as default"));
+  mi = gtk_menu_item_new_with_label(_("reset parameters to default"));
+  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("discard current parameters,\nreset to default"), NULL);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_reset_to_default), module);
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+
+  mi = gtk_menu_item_new_with_label(_("store parameters as default"));
   // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default for this operation"), NULL);
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+
+  mi = gtk_menu_item_new_with_label(_("store as default for this camera"));
+  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default_for_camera), module);
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), gtk_separator_menu_item_new());
 
   mi = gtk_menu_item_new_with_label(_("remove default"));
   // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("discard custom default, reset\ndefault to factory settings"), NULL);
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
 
-  mi = gtk_menu_item_new_with_label(_("reset to default"));
-  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("discard current parameters,\nreset to default"), NULL);
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_reset_to_default), module);
+  mi = gtk_menu_item_new_with_label(_("remove default for this camera"));
+  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default_for_camera), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+
 
   // char filename[512];
   // snprintf(filename, 512, "%s/pixmaps/off.png", DATADIR);

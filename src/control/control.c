@@ -105,6 +105,10 @@ int dt_control_load_config(dt_control_t *c)
     if(len == sizeof(dt_ctl_settings_t)) memcpy(&(darktable.control->global_settings), set, len);
 #endif
     rc = sqlite3_finalize(stmt);
+
+    // insert new tables, if not there (statement will just fail if so):
+    sqlite3_exec(darktable.db, "create table iop_defaults (operation varchar, op_params blob, enabled integer, model varchar, maker varchar, primary key(operation, model, maker))", NULL, NULL, NULL);
+
 #if 1
     if(darktable.control->global_settings.version != DT_VERSION)
     {

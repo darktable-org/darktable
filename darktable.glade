@@ -959,7 +959,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">0</property>
@@ -971,7 +971,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">1</property>
@@ -983,7 +983,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">2</property>
@@ -995,7 +995,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">3</property>
@@ -1007,7 +1007,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">4</property>
@@ -1019,7 +1019,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">5</property>
@@ -1031,7 +1031,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">6</property>
@@ -1043,7 +1043,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">7</property>
@@ -1055,7 +1055,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">8</property>
@@ -1067,7 +1067,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="position">9</property>

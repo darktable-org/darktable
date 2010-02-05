@@ -9,7 +9,7 @@
 #include <glib/gi18n.h>
 
 #define DT_MODULE_VERSION 1
-#define DT_VERSION 34
+#define DT_VERSION 33
 #define DT_CONFIG_VERSION 33
 
 // every module has to define this:

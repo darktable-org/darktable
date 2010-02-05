@@ -7,6 +7,7 @@
 #include <string.h>
 // TODO: if using GEGL, this needs to be wrapped in color conversion routines of gegl?
 #include "iop/colorin.h"
+#include "iop/gamma.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -41,6 +42,24 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(pp->pos == pos)
     {
+      // change gamma as well:
+      GList *modules = g_list_last(self->dev->iop);
+      dt_iop_module_t *gamma;
+      while (modules && strcmp(gamma->op, "gamma"))
+      {
+        gamma = (dt_iop_module_t *)modules->data;
+        modules = g_list_previous(modules);
+      }
+      dt_iop_gamma_params_t *gp = (dt_iop_gamma_params_t *)gamma->params;
+      if(strcmp(pp->filename, "sRGB") && strcmp(pp->filename, "cmatrix"))
+        gp->gamma = gp->linear = 1.0;
+      else
+        memcpy(gamma->params, gamma->default_params, gamma->params_size);
+      dt_dev_add_history_item(darktable.develop, gamma);
+      darktable.gui->reset = 1;
+      gamma->gui_update(gamma);
+      darktable.gui->reset = 0;
+
       strcpy(p->iccprofile, pp->filename);
       dt_dev_add_history_item(darktable.develop, self);
       return;
@@ -282,7 +301,9 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "cmatrix"))
+    if(!strcmp(prof->name, "sRGB"))
+      gtk_combo_box_append_text(g->cbox2, _("no profile"));
+    else if(!strcmp(prof->name, "cmatrix"))
       gtk_combo_box_append_text(g->cbox2, _("color matrix"));
     else
       gtk_combo_box_append_text(g->cbox2, prof->name);

@@ -1,4 +1,10 @@
 0.5 release:
+- draw icon for colorzones.
+- draw xor vertical line as color reference in colorzones
+- fast 1:1 preview..?
+- merge gamma/input color profile iops?
+  - use gamma/lin from color profile.
+- imageop.c: menu popup callbacks for defaults/defaults for camera
 - wb presets broken for non-raw images
 - DT_MODULE also views/libs
 - export/select by edited/up-to-date exported
