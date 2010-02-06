@@ -162,6 +162,8 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
 
   // replace filter part
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
+  if (query == NULL)
+    return;
   gchar **split = g_regex_split_simple("flags .* order", query, 0, 0);
   char newquery[1024];
   if(i == 1) snprintf(newquery, 1024, "%sflags & 7) < 1 order%s", split[0], split[1]);
@@ -190,6 +192,8 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 0) sortindex = 2;
   // else (i == 3)
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
+  if (query == NULL)
+    return;
   gchar **split = g_regex_split_simple("order by .* limit", query, 0, 0);
   char newquery[1024];
   snprintf(newquery, 1024, "%sorder by %s limit%s", split[0], sortstring[sortindex], split[1]);
