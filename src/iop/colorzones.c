@@ -382,13 +382,13 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     { // select by channel, abscissa:
       case DT_IOP_COLORZONES_L:
         Lab.L = ii * 100.0;
-        Lab.a = self->picked_color[1];//0.0f;
-        Lab.b = self->picked_color[2];//-5.0f;
+        Lab.a = self->picked_color[1];
+        Lab.b = self->picked_color[2];
         break;
       case DT_IOP_COLORZONES_C:
         Lab.L = 50.0;
-        Lab.a = 64.0*ii*self->picked_color[1]/pickC;//0.0f;
-        Lab.b = 64.0*ii*self->picked_color[2]/pickC;//-ii * 64.0f;
+        Lab.a = 64.0*ii*self->picked_color[1]/pickC;
+        Lab.b = 64.0*ii*self->picked_color[2]/pickC;
         break;
       default: // case DT_IOP_COLORZONES_h:
         Lab.L = 50.0;
@@ -396,11 +396,11 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         Lab.b = sinf(2.0*M_PI*ii) * 64.0f;
         break;
     }
+    const float L0 = Lab.L;
     const float angle = atan2f(Lab.b, Lab.a);
     switch(c->channel)
     { // channel to be altered:
       case DT_IOP_COLORZONES_L:
-        Lab.L *= .5f;
         Lab.L += - 50.0 + 100.0*jj;
         break;
       case DT_IOP_COLORZONES_C:
@@ -408,15 +408,50 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         Lab.b *= 2.0f*jj;
         break;
       default: // DT_IOP_COLORZONES_h
-        Lab.a = cosf(angle + 2.0*M_PI*(jj-.5f)) * 64.0f;
-        Lab.b = sinf(angle + 2.0*M_PI*(jj-.5f)) * 64.0f;
+        Lab.a = cosf(angle + 2.0*M_PI*(jj-.5f)) * 64.0;
+        Lab.b = sinf(angle + 2.0*M_PI*(jj-.5f)) * 64.0;
+        if(p.channel == DT_IOP_COLORZONES_C)
+        {
+          Lab.a *= ii;
+          Lab.b *= ii;
+        }
         break;
     }
+    // gammut mapping magic from iop/exposure.c:
+    const float Lwhite = 100.0f, Lclip = 20.0f;
+    const float Lcap  = fminf(100.0, Lab.L);
+    const float clip  = 1.0 - (Lcap - L0)*(1.0/100.0)*fminf(Lwhite-Lclip, fmaxf(0.0, Lab.L - Lclip))/(Lwhite-Lclip);
+    const float clip2 = clip*clip*clip;
+    Lab.a *= Lab.L/L0 * clip2;
+    Lab.b *= Lab.L/L0 * clip2;
     cmsDoTransform(c->xform, &Lab, rgb, 1);
     cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
     cairo_rectangle(cr, width*i/(float)cellsi, height*j/(float)cellsj, width/(float)cellsi-1, height/(float)cellsj-1);
     cairo_fill(cr);
   }
+
+    // draw marker for currently selected color:
+  float picked_i = -1.0;
+  switch(p.channel)
+  { // select by channel, abscissa:
+    case DT_IOP_COLORZONES_L:
+      picked_i = self->picked_color[0]/100.0;
+      break;
+    case DT_IOP_COLORZONES_C:
+      picked_i = pickC / 128.0;
+      break;
+    default: // case DT_IOP_COLORZONES_h:
+      picked_i = fmodf(atan2f(self->picked_color[2], self->picked_color[1]) + 2.0*M_PI, 2.0*M_PI)/(2.0*M_PI);
+      break;
+  }
+  cairo_save(cr);
+  cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+  cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+  cairo_set_line_width(cr, 2.);
+  cairo_move_to(cr, width*picked_i, 0.0);
+  cairo_line_to(cr, width*picked_i, height);
+  cairo_stroke(cr);
+  cairo_restore(cr);
 
   // draw x positions
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);

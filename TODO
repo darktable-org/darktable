@@ -1,6 +1,6 @@
 0.5 release:
 - draw icon for colorzones.
-- draw xor vertical line as color reference in colorzones
+- color zones: check luma/luma gui and process!
 - fast 1:1 preview..?
 - merge gamma/input color profile iops?
   - use gamma/lin from color profile.
