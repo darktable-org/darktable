@@ -37,6 +37,7 @@ int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod)
 /** load a view module */
 int dt_view_load_module(dt_view_t *view, const char *module)
 {
+  int retval;
   bzero(view, sizeof(dt_view_t));
   view->data = NULL;
   strncpy(view->module_name, module, 64);
@@ -45,11 +46,11 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   strcpy(datadir + strlen(datadir), "/views");
   gchar *libname = g_module_build_path(datadir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
-  g_free(libname);
   if(!view->module)
   {
     fprintf(stderr, "[view_load_module] could not open %s (%s)!\n", libname, g_module_error());
-    return -1;
+    retval = -1;
+    goto out;
   }
 
   if(!g_module_symbol(view->module, "name",            (gpointer)&(view->name)))            view->name = NULL;
@@ -70,7 +71,13 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
 
   if(view->init) view->init(view);
-  return 0;
+
+  /* success */
+  retval = 0;
+
+out:
+  g_free(libname);
+  return retval;
 }
 
 /** unload, cleanup */
