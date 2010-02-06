@@ -21,14 +21,14 @@ int dt_imageio_png_write(const char *filename, const uint8_t *in, const int widt
   if (!info_ptr)
   {
     fclose(f);
-    png_destroy_write_struct(&png_ptr, png_infopp_NULL);
+    png_destroy_write_struct(&png_ptr, NULL);
     return 1;
   }
 
   if (setjmp(png_jmpbuf(png_ptr)))
   {
     fclose(f);
-    png_destroy_write_struct(&png_ptr, png_infopp_NULL);
+    png_destroy_write_struct(&png_ptr, NULL);
     return 1;
   }
 
@@ -93,14 +93,14 @@ int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
   if (!png->info_ptr)
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
     return 1;
   }
 
   if (setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
     return 1;
   }
 
@@ -123,7 +123,7 @@ int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 
   // 1, 2, 4 bit => 8 bit
   if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-    png_set_gray_1_2_4_to_8(png->png_ptr);
+    png_set_expand_gray_1_2_4_to_8(png->png_ptr);
 
   // strip alpha channel
   if (color_type & PNG_COLOR_MASK_ALPHA)
@@ -145,7 +145,7 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
   if (setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
     return 1;
   }
   uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
@@ -161,7 +161,7 @@ int dt_imageio_png_read(dt_imageio_png_t *png, uint8_t *out)
   if (setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
-    png_destroy_read_struct(&png->png_ptr, png_infopp_NULL, png_infopp_NULL);
+    png_destroy_read_struct(&png->png_ptr, NULL, NULL);
     return 1;
   }
   // reflect changes
@@ -177,7 +177,7 @@ int dt_imageio_png_read(dt_imageio_png_t *png, uint8_t *out)
   }
 
   png_read_end(png->png_ptr, png->info_ptr);
-  png_destroy_read_struct(&png->png_ptr, &png->info_ptr, png_infopp_NULL);
+  png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
 
   fclose(png->f);
   return 0;
