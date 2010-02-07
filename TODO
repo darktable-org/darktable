@@ -1,4 +1,6 @@
 0.5 release:
+- rawimport: store defaults affect dt_image_init!
+- rawimport: remove camera wb checkbutton
 - crash: remove film/quit dt_image_cache_free/dt_image_free
 - move exposure plugin before icc?
 - clipping output scanlines?

@@ -27,6 +27,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)o;
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
+#if 0 // Lab processing:
     // clip out colors to white if L > 100?
     const float L = 100.0*powf(fmaxf(0.0, (in[0]-d->black))*d->scale, d->gain);
     const float Lwhite = 100.0f, Lclip = 20.0f;
@@ -36,6 +37,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[0] = Lcap;
     out[1] = in[1] * clip2;
     out[2] = in[2] * clip2;
+#else // linear RGB processing:
+    for(int i=0;i<3;i++) out[i] = powf(fmaxf(0.0, (in[i]-d->black))*d->scale, d->gain);
+#endif
     out += 3; in += 3;
   }
 }
@@ -48,9 +52,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   fprintf(stderr, "implement exposure process gegl version! \n");
 #else
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+#if 0 // Lab
   d->black = 100.0*(powf(2.0, p->black) - 1.0);
   d->gain = 2.0 - p->gain;
   d->scale = 1.0/(100.0*(powf(2.0, p->white) - 1.0) - p->black); 
+#else // RGB
+  d->black = (powf(2.0, p->black) - 1.0);
+  d->gain = 2.0 - p->gain;
+  d->scale = 1.0/((powf(2.0, p->white) - 1.0) - p->black); 
+#endif
 #endif
 }
 
@@ -94,7 +104,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 600;
+  module->priority = 250;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};

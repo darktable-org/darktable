@@ -135,11 +135,11 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   GList *res = NULL;
   dt_iop_module_t *module;
   dev->iop_instance = 0;
-  char datadir[1024], op[20];
+  char plugindir[1024], op[20];
   const gchar *d_name;
-  dt_get_datadir(datadir, 1024);
-  strcpy(datadir + strlen(datadir), "/plugins");
-  GDir *dir = g_dir_open(datadir, 0, NULL); 
+  dt_get_plugindir(plugindir, 1024);
+  strcpy(plugindir + strlen(plugindir), "/plugins");
+  GDir *dir = g_dir_open(plugindir, 0, NULL); 
   if(!dir) return NULL;
   while((d_name = g_dir_read_name(dir)))
   { // get lib*.so
@@ -148,7 +148,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     strncpy(op, d_name+3, strlen(d_name)-6);
     op[strlen(d_name)-6] = '\0';
     module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-    gchar *libname = g_module_build_path(datadir, (const gchar *)op);
+    gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
     if(dt_iop_load_module(module, dev, libname, op))
     {
       free(module);
