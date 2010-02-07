@@ -5,5 +5,5 @@ LTADD=$(OPENMP_CFLAGS) $(GEGL_LIBS) $(JPEG_LIBS) $(PNG_LIBS) $(LCMS_LIBS) $(EXIV
 libdarkroom_la_SOURCES=darkroom.c
 liblighttable_la_SOURCES=lighttable.c
 noinst_HEADERS=view.h
-dtviewsdir=$(datarootdir)/darktable/views
+dtviewsdir=$(libdir)/darktable/views
 dtviews_LTLIBRARIES=libdarkroom.la liblighttable.la

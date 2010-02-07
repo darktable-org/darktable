@@ -41,10 +41,10 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   bzero(view, sizeof(dt_view_t));
   view->data = NULL;
   strncpy(view->module_name, module, 64);
-  char datadir[1024];
-  dt_get_datadir(datadir, 1024);
-  strcpy(datadir + strlen(datadir), "/views");
-  gchar *libname = g_module_build_path(datadir, (const gchar *)module);
+  char plugindir[1024];
+  dt_get_plugindir(plugindir, 1024);
+  strcpy(plugindir + strlen(plugindir), "/views");
+  gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!view->module)
   {

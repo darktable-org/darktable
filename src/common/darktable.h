@@ -76,5 +76,6 @@ void dt_gettime_t(char *datetime, time_t t);
 void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
 void dt_get_datadir(char *datadir, size_t bufsize);
+void dt_get_plugindir(char *datadir, size_t bufsize);
 
 #endif

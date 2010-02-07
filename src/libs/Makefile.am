@@ -9,5 +9,5 @@ libtagging_la_SOURCES=tagging.c
 libselect_la_SOURCES=select.c
 libcollect_la_SOURCES=collect.c
 noinst_HEADERS=lib.h
-dtlighttablepluginsdir=$(datarootdir)/darktable/plugins/lighttable
+dtlighttablepluginsdir=$(libdir)/darktable/plugins/lighttable
 dtlighttableplugins_LTLIBRARIES=libexport.la libcopy_history.la libimage.la libtagging.la libselect.la libcollect.la

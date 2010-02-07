@@ -48,11 +48,11 @@ dt_lib_load_modules ()
   darktable.lib->plugins = NULL;
   GList *res = NULL;
   dt_lib_module_t *module;
-  char datadir[1024], plugin_name[256];
+  char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_get_datadir(datadir, 1024);
-  strcpy(datadir + strlen(datadir), "/plugins/lighttable");
-  GDir *dir = g_dir_open(datadir, 0, NULL); 
+  dt_get_plugindir(plugindir, 1024);
+  strcpy(plugindir + strlen(plugindir), "/plugins/lighttable");
+  GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
   { // get lib*.so
@@ -61,7 +61,7 @@ dt_lib_load_modules ()
     strncpy(plugin_name, d_name+3, strlen(d_name)-6);
     plugin_name[strlen(d_name)-6] = '\0';
     module = (dt_lib_module_t *)malloc(sizeof(dt_lib_module_t));
-    gchar *libname = g_module_build_path(datadir, (const gchar *)plugin_name);
+    gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_lib_load_module(module, libname, plugin_name))
     {
       free(module);
