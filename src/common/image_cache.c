@@ -37,7 +37,9 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
     dt_image_cleanup(&(cache->line[k].image));
   }
   free(cache->line);
+  cache->line = NULL;
   free(cache->by_id);
+  cache->by_id = NULL;
   pthread_mutex_destroy(&(cache->mutex));
 }
 

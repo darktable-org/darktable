@@ -1,4 +1,8 @@
 0.5 release:
+- crash: remove film/quit dt_image_cache_free/dt_image_free
+- move exposure plugin before icc?
+- clipping output scanlines?
+- update recent on manage films!
 - draw icon for colorzones.
 - color zones: check luma/luma gui and process!
 - fast 1:1 preview..?

@@ -17,9 +17,9 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(darktable.db, "select op_params, enabled from iop_defaults where operation = ?1 and model like ?2 and maker like ?3", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  char *m = darktable.develop->image->exif_model;
+  char *m = module->dev->image->exif_model;
   sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
-  m = darktable.develop->image->exif_maker;
+  m = module->dev->image->exif_maker;
   sqlite3_bind_text(stmt, 3, m, strlen(m), SQLITE_TRANSIENT);
 
   memcpy(module->default_params, module->factory_params, module->params_size);
@@ -44,9 +44,9 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   {
     sqlite3_prepare_v2(darktable.db, "delete from iop_defaults where operation = ?1 and model like ?2 and maker like ?3", -1, &stmt, NULL);
     sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-    char *m = darktable.develop->image->exif_model;
+    char *m = module->dev->image->exif_model;
     sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
-    m = darktable.develop->image->exif_maker;
+    m = module->dev->image->exif_maker;
     sqlite3_bind_text(stmt, 3, m, strlen(m), SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -91,7 +91,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "dt_module_version", (gpointer)&(version))) goto error;
   if(version() != DT_MODULE_VERSION)
   {
-    fprintf(stderr, "[iop_load_module] `%s' is compiled for another version of dt!\n", libname);
+    fprintf(stderr, "[iop_load_module] `%s' is compiled for another version of dt (%d != %d) !\n", libname, version(), DT_MODULE_VERSION);
     goto error;
   }
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
@@ -296,9 +296,9 @@ menuitem_store_default_for_camera (GtkMenuItem *menuitem, dt_iop_module_t *modul
   sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   sqlite3_bind_blob(stmt, 2, module->params, module->params_size, SQLITE_TRANSIENT);
   sqlite3_bind_int (stmt, 3, module->enabled);
-  char *m = darktable.develop->image->exif_model;
+  char *m = module->dev->image->exif_model;
   sqlite3_bind_text(stmt, 4, m, strlen(m), SQLITE_TRANSIENT);
-  m = darktable.develop->image->exif_maker;
+  m = module->dev->image->exif_maker;
   sqlite3_bind_text(stmt, 5, m, strlen(m), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -322,9 +322,9 @@ menuitem_factory_default_for_camera (GtkMenuItem *menuitem, dt_iop_module_t *mod
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(darktable.db, "delete from iop_defaults where operation = ?1 and model like ?2 and maker like ?3", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  char *m = darktable.develop->image->exif_model;
+  char *m = module->dev->image->exif_model;
   sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
-  m = darktable.develop->image->exif_maker;
+  m = module->dev->image->exif_maker;
   sqlite3_bind_text(stmt, 3, m, strlen(m), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);

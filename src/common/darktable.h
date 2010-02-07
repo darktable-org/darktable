@@ -13,11 +13,19 @@
 #define DT_CONFIG_VERSION 33
 
 // every module has to define this:
+#ifdef _DEBUG
+#define DT_MODULE \
+int dt_module_version() \
+{\
+  return -DT_MODULE_VERSION; \
+}
+#else
 #define DT_MODULE \
 int dt_module_version() \
 {\
   return DT_MODULE_VERSION; \
 }
+#endif
 
 #ifndef M_PI
   #define M_PI 3.14159265358979323846
