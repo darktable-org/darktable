@@ -22,7 +22,7 @@ DT_MODULE
 /** core libraw functionality wrapper, for convenience in darkroom mode. */
 
 typedef struct dt_iop_rawimport_params_t
-{
+{ // exactly matches dt_image_raw_parameters_t + two floats as in dt_image_t
   float raw_denoise_threshold, raw_auto_bright_threshold;
   unsigned raw_wb_auto : 1, raw_wb_cam : 1, raw_cmatrix : 1,
            raw_no_auto_bright : 1, raw_demosaic_method : 2,
@@ -35,8 +35,8 @@ dt_iop_rawimport_params_t;
 
 typedef struct dt_iop_rawimport_gui_data_t
 {
-  // GtkCheckButton *wb_auto, *cmatrix,
-  GtkCheckButton *wb_cam, *auto_bright, *four_color_rgb;
+  // GtkCheckButton *wb_auto, *cmatrix, *wb_cam;
+  GtkCheckButton *auto_bright, *four_color_rgb;
   GtkComboBox *demosaic_method, *highlight;
   GtkScale *auto_bright_threshold, *denoise_threshold;
   GtkSpinButton *med_passes;
@@ -106,14 +106,14 @@ static void togglebutton_callback (GtkToggleButton *toggle, gpointer user_data)
     p->raw_wb_cam  = !active;
     darktable.gui->reset = 1; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), !active); darktable.gui->reset = 0;
   }
-  else*/ if (toggle == GTK_TOGGLE_BUTTON(g->wb_cam))
+  else if (toggle == GTK_TOGGLE_BUTTON(g->wb_cam))
   {
     p->raw_wb_cam  = active;
     // p->raw_wb_auto = !active;
     // darktable.gui->reset = 1; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_auto), !active); darktable.gui->reset = 0;
-  }
+  }*/
   // else if (toggle == GTK_TOGGLE_BUTTON(g->cmatrix))        p->raw_cmatrix = active;
-  else if (toggle == GTK_TOGGLE_BUTTON(g->auto_bright))    p->raw_no_auto_bright = !active;
+  if      (toggle == GTK_TOGGLE_BUTTON(g->auto_bright))    p->raw_no_auto_bright = !active;
   else if (toggle == GTK_TOGGLE_BUTTON(g->four_color_rgb)) p->raw_four_color_rgb = active;
 }
 
@@ -160,7 +160,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_range_set_value(GTK_RANGE(g->denoise_threshold), p->raw_denoise_threshold);
   gtk_range_set_value(GTK_RANGE(g->auto_bright_threshold), p->raw_auto_bright_threshold*100.0);
   // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_auto), p->raw_wb_auto);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), p->raw_wb_cam);
+  // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), p->raw_wb_cam);
   // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cmatrix), p->raw_cmatrix);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_bright), !p->raw_no_auto_bright);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
@@ -181,7 +181,7 @@ static void resetbutton_callback (GtkButton *button, gpointer user_data)
   gtk_range_set_value(GTK_RANGE(g->denoise_threshold), p->raw_denoise_threshold);
   gtk_range_set_value(GTK_RANGE(g->auto_bright_threshold), p->raw_auto_bright_threshold*100.0);
   // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_auto), p->raw_wb_auto);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), p->raw_wb_cam);
+  // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), p->raw_wb_cam);
   // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cmatrix), p->raw_cmatrix);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_bright), !p->raw_no_auto_bright);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
@@ -243,8 +243,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // g->wb_auto        = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto white balance")));
   // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->wb_auto), TRUE, TRUE, 0);
-  g->wb_cam         = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("camera white balance")));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->wb_cam), TRUE, TRUE, 0);
+  // g->wb_cam         = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("camera white balance")));
+  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->wb_cam), TRUE, TRUE, 0);
   g->auto_bright    = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto exposure")));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->auto_bright), TRUE, TRUE, 0);
   // g->cmatrix        = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("use color matrix")));
@@ -257,14 +257,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 5);
 
-  label = gtk_label_new(_("denoise"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
-  g->denoise_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.0, 1000.0, 1.0));
-  gtk_scale_set_digits(g->denoise_threshold, 1);
-  gtk_scale_set_value_pos(g->denoise_threshold, GTK_POS_LEFT);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->denoise_threshold), TRUE, TRUE, 0);
-
   label = gtk_label_new(_("exposure"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
@@ -273,6 +265,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_scale_set_digits(g->auto_bright_threshold, 1);
   gtk_scale_set_value_pos(g->auto_bright_threshold, GTK_POS_LEFT);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->auto_bright_threshold), TRUE, TRUE, 0);
+
+  label = gtk_label_new(_("denoise"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
+  g->denoise_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.0, 1000.0, 1.0));
+  gtk_scale_set_digits(g->denoise_threshold, 1);
+  gtk_scale_set_value_pos(g->denoise_threshold, GTK_POS_LEFT);
+  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->denoise_threshold), TRUE, TRUE, 0);
 
   label = gtk_label_new(_("median passes"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -318,7 +318,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_range_set_value(GTK_RANGE(g->denoise_threshold), p->raw_denoise_threshold);
   gtk_range_set_value(GTK_RANGE(g->auto_bright_threshold), p->raw_auto_bright_threshold*100.0);
   // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_auto), p->raw_wb_auto);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), p->raw_wb_cam);
+  // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_cam), p->raw_wb_cam);
   // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cmatrix), p->raw_cmatrix);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_bright), !p->raw_no_auto_bright);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
@@ -327,7 +327,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 
   // g_signal_connect (G_OBJECT (g->wb_auto),        "toggled", G_CALLBACK (togglebutton_callback), self);
-  g_signal_connect (G_OBJECT (g->wb_cam),         "toggled", G_CALLBACK (togglebutton_callback), self);
+  // g_signal_connect (G_OBJECT (g->wb_cam),         "toggled", G_CALLBACK (togglebutton_callback), self);
   // g_signal_connect (G_OBJECT (g->cmatrix),        "toggled", G_CALLBACK (togglebutton_callback), self);
   g_signal_connect (G_OBJECT (g->auto_bright),    "toggled", G_CALLBACK (togglebutton_callback), self);
   g_signal_connect (G_OBJECT (g->four_color_rgb), "toggled", G_CALLBACK (togglebutton_callback), self);

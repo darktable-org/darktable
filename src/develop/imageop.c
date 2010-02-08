@@ -371,10 +371,13 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
 
-  mi = gtk_menu_item_new_with_label(_("store as default for this camera"));
-  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default_for_camera), module);
-  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+  if(strcmp(module->op, "rawimport"))
+  { // camera maker and model are not yet known by raw import.
+    mi = gtk_menu_item_new_with_label(_("store as default for this camera"));
+    // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default_for_camera), module);
+    gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+  }
 
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), gtk_separator_menu_item_new());
 
@@ -383,10 +386,13 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
 
-  mi = gtk_menu_item_new_with_label(_("remove default for this camera"));
-  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default_for_camera), module);
-  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+  if(strcmp(module->op, "rawimport"))
+  {
+    mi = gtk_menu_item_new_with_label(_("remove default for this camera"));
+    // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default_for_camera), module);
+    gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+  }
 
 
   // char filename[512];

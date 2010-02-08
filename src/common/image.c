@@ -470,6 +470,7 @@ void dt_image_init(dt_image_t *img)
   img->mipf = NULL;
   img->pixels = NULL;
   img->orientation = -1; // not inited.
+
   img->raw_params.user_flip = -1;
   img->raw_params.med_passes = 0;
   img->raw_params.wb_auto = 0;
@@ -483,6 +484,17 @@ void dt_image_init(dt_image_t *img)
   img->raw_params.fill0 = 0;
   img->raw_denoise_threshold = 0.f;
   img->raw_auto_bright_threshold = 0.01f;
+
+  // try to get default raw parameters from db:
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select op_params from iop_defaults where operation = 'rawimport'", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *blob = sqlite3_column_blob(stmt, 0);
+    int length = sqlite3_column_bytes(stmt, 0);
+    if(length == sizeof(dt_image_raw_parameters_t) + 2*sizeof(float))
+      memcpy(&(img->raw_denoise_threshold), blob, length);
+  }
   img->film_id = -1;
   img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;
