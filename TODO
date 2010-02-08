@@ -1,8 +1,8 @@
 0.5 release:
 - clipping output scanlines?
 - sliders with spinboxes
+- color zones optimize lut
 - imageop.c: load defaults matches which set first? camera or general?
-- optimize colorzones: lut
 - tiff io
   TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
   TIFFSetField(out, TIFFTAG_ZIPQUALITY, 9);
@@ -19,7 +19,6 @@
 - try gegl 0.1.2
 - crash: remove film/quit dt_image_cache_free/dt_image_free
 - draw icon for colorzones.
-- color zones: check luma/luma gui and process!
 - merge gamma/input color profile iops?
   - use gamma/lin from color profile.
 - wb presets broken for non-raw images

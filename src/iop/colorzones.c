@@ -228,7 +228,11 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
         p->equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
         p->equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
       }
-      p->equalizer_y[DT_IOP_COLORZONES_C][0] = p->equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.5;
+      p->equalizer_y[DT_IOP_COLORZONES_C][0] = p->equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.65;
+      p->equalizer_x[DT_IOP_COLORZONES_C][1] = 3./16.;
+      p->equalizer_x[DT_IOP_COLORZONES_C][2] = 0.50;
+      p->equalizer_x[DT_IOP_COLORZONES_C][3] = 0.51;
+      p->equalizer_x[DT_IOP_COLORZONES_C][4] = 15./16.;
       break;
     case 1: // b/w + skin tones
       p->channel = DT_IOP_COLORZONES_h;
@@ -257,10 +261,9 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
         p->equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
       }
       for(int k=2;k<DT_IOP_COLORZONES_BANDS;k++)
-      {
         p->equalizer_y[DT_IOP_COLORZONES_C][k] += (k-1.5)/(DT_IOP_COLORZONES_BANDS-2.0) * 0.25;
-        p->equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-1.5)/(DT_IOP_COLORZONES_BANDS-2.0) * 0.4;
-      }
+      for(int k=3;k<DT_IOP_COLORZONES_BANDS;k++)
+        p->equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-2.5)/(DT_IOP_COLORZONES_BANDS-3.0) * 0.35;
       break;
     default: // custom
       return;
