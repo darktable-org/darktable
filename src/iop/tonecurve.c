@@ -152,7 +152,6 @@ void cleanup(dt_iop_module_t *module)
   // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)module->data;
   // gegl_node_remove_child(module->dev->gegl, d->node);
   // gegl_node_remove_child(module->dev->gegl, d->node_preview);
-  //..FIXME: ?? is this done by gegl?
   // free(d->curve);
   // g_unref(d->curve);
   // free(module->data);
@@ -174,7 +173,8 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1; c->selected_offset = 0.0;
   c->dragging = 0;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  c->x_move = -1;
+  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
@@ -290,6 +290,21 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, width, height);
+
+  // draw x positions
+  cairo_set_line_width(cr, 1.);
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+  const float arrw = 7.0f;
+  for(int k=1;k<5;k++)
+  {
+    cairo_move_to(cr, width*p->tonecurve_x[k], height+inset-1);
+    cairo_rel_line_to(cr, -arrw*.5f, 0);
+    cairo_rel_line_to(cr, arrw*.5f, -arrw);
+    cairo_rel_line_to(cr, arrw*.5f, arrw);
+    cairo_close_path(cr);
+    if(c->x_move == k) cairo_fill(cr);
+    else               cairo_stroke(cr);
+  }
   
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
@@ -357,16 +372,45 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
 
   if(c->dragging)
   {
-    float f = c->selected_y - (c->mouse_y-c->selected_offset)/height;
-    f = fmaxf(c->selected_min, fminf(c->selected_max, f));
-    if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
-    if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
-    p->tonecurve_y[c->selected] = f;
+    if(c->x_move >= 0)
+    {
+      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+      if(c->x_move > 0 && c->x_move < 6-1)
+      {
+        const float minx = p->tonecurve_x[c->x_move-1] + 0.001f;
+        const float maxx = p->tonecurve_x[c->x_move+1] - 0.001f;
+        p->tonecurve_x[c->x_move] = fminf(maxx, fmaxf(minx, mx));
+      }
+    }
+    else
+    {
+      float f = c->selected_y - (c->mouse_y-c->selected_offset)/height;
+      f = fmaxf(c->selected_min, fminf(c->selected_max, f));
+      if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
+      if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
+      p->tonecurve_y[c->selected] = f;
+    }
     gtk_combo_box_set_active(c->presets, -1);
     dt_dev_add_history_item(darktable.develop, self);
   }
+  else if(event->y > height)
+  {
+    c->x_move = 0;
+    const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+    float dist = fabsf(p->tonecurve_x[1] - mx);
+    for(int k=2;k<5;k++)
+    {
+      float d2 = fabsf(p->tonecurve_x[k] - mx);
+      if(d2 < dist)
+      {
+        c->x_move = k;
+        dist = d2;
+      }
+    }
+  }
   else
   {
+    c->x_move = -1;
     float pos = (event->x - inset)/width;
     float min = 100.0;
     int nearest = 0;

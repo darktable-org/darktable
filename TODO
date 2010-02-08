@@ -1,8 +1,23 @@
 0.5 release:
+- optimize colorzones: lut
+- arrows in tonecurve (move points)
+- tiff io
+  TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+  TIFFSetField(out, TIFFTAG_ZIPQUALITY, 9);
+  TIFFSetField(out, TIFFTAG_PREDICTOR, 2);
+- move output icc to global settings/export, sRGB (web-safe) ;)
+- remove gamma from input profile and move to end of pipe?
+  LPGAMMATABLE  cmsAllocGamma(int nEntries);
+  cmsHPROFILE cmsCreateRGBProfile(LPcmsCIExyY WhitePoint,
+                                        LPcmsCIExyYTRIPLE Primaries,
+                                        LPGAMMATABLE TransferFunction[3]);
+  LPGAMMATABLE cmsBuildGamma(int nEntries, double Gamma);
+
+- color picker dont update?
+- try gegl 0.1.2
 - rawimport: store defaults affect dt_image_init!
 - rawimport: remove camera wb checkbutton
 - crash: remove film/quit dt_image_cache_free/dt_image_free
-- move exposure plugin before icc?
 - clipping output scanlines?
 - update recent on manage films!
 - draw icon for colorzones.

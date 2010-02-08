@@ -23,7 +23,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   GtkLabel *label;
   GtkComboBox *presets;
   double mouse_x, mouse_y;
-  int selected, dragging;
+  int selected, dragging, x_move;
   double selected_offset, selected_y, selected_min, selected_max;
   double draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   double draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
