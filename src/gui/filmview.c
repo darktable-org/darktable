@@ -14,8 +14,8 @@ typedef enum dt_gui_filmview_columns_t
 }
 dt_gui_filmview_columns_t;
 
-static void
-update(const char *filter)
+void
+dt_gui_filmview_update(const char *filter)
 {
   char filterstring[512];
   snprintf(filterstring, 512, "%%%s%%", filter);
@@ -100,13 +100,13 @@ button_callback(GtkWidget *button, gpointer user_data)
       break;
   }
   GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-  update(gtk_entry_get_text(entry));
+  dt_gui_filmview_update(gtk_entry_get_text(entry));
 }
 
 static gboolean
 entry_callback (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
 {
-  update(gtk_entry_get_text(entry));
+  dt_gui_filmview_update(gtk_entry_get_text(entry));
   return FALSE;
 }
 
@@ -151,7 +151,7 @@ dt_gui_filmview_init()
 
   g_object_unref(liststore);
 
-  update("");
+  dt_gui_filmview_update("");
 
   GtkWidget *entry = glade_xml_get_widget (darktable.gui->main_window, "entry_film");
   g_signal_connect(entry, "key-release-event", G_CALLBACK(entry_callback), NULL);

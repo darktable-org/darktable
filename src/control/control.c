@@ -9,6 +9,7 @@
 #include "common/imageio.h"
 #include "views/view.h"
 #include "gui/gtk.h"
+#include "gui/filmview.h"
 #include "gui/draw.h"
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1160,68 +1161,31 @@ void dt_control_update_recent_films()
   char label[256];
   // FIXME: this is a temporary hack to keep the database low:
   // remove all data from db from all other films.
-  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(num < 5)
+    const int id = sqlite3_column_int(stmt, 1);
+    if(id == 1)
     {
-      const int id = sqlite3_column_int(stmt, 1);
-      if(id == 1)
-      {
-        snprintf(label, 256, _("single images"));
-      }
-      else
-      {
-        filename = (char *)sqlite3_column_text(stmt, 0);
-        cnt = filename + MIN(512,strlen(filename));
-        int i;
-        for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
-        if(cnt > filename) snprintf(label, label_cnt, "...%s", cnt+3);
-        else snprintf(label, label_cnt, "%s", cnt);
-      }
-      snprintf(wdname, 20, "recent_film_%d", num);
-      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-      gtk_button_set_label(GTK_BUTTON(widget), label);
-      gtk_widget_show(widget);
+      snprintf(label, 256, _("single images"));
     }
     else
     {
-      int film_id = sqlite3_column_int(stmt, 1);
-      // printf("removing %d\n", film_id);
-      sqlite3_stmt *stmt2;
-      int rc2;
-      rc2 = sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt2, NULL);
-      rc2 = sqlite3_bind_int (stmt, 1, film_id);
-      while(sqlite3_step(stmt2) == SQLITE_ROW)
-      {
-        int img_id = sqlite3_column_int(stmt2, 0);
-        sqlite3_stmt *stmt3;
-        int rc3;
-        rc3 = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt3, NULL);
-        rc3 = sqlite3_bind_int (stmt3, 1, img_id);
-        rc3 = sqlite3_step(stmt3);
-        sqlite3_finalize(stmt3);
-        rc3 = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt3, NULL);
-        rc3 = sqlite3_bind_int (stmt3, 1, img_id);
-        rc3 = sqlite3_step(stmt3);
-        sqlite3_finalize(stmt3);
-        rc3 = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt3, NULL);
-        rc3 = sqlite3_bind_int (stmt3, 1, img_id);
-        rc3 = sqlite3_step(stmt3);
-        sqlite3_finalize(stmt3);
-      }
-      sqlite3_finalize(stmt2);
-      rc2 = sqlite3_prepare_v2(darktable.db, "delete from images where film_id = ?1", -1, &stmt2, NULL);
-      rc2 = sqlite3_bind_int (stmt2, 1, film_id);
-      rc2 = sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
-      rc2 = sqlite3_prepare_v2(darktable.db, "delete from film_rolls where id = ?1", -1, &stmt2, NULL);
-      rc2 = sqlite3_bind_int (stmt2, 1, film_id);
-      rc2 = sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
+      filename = (char *)sqlite3_column_text(stmt, 0);
+      cnt = filename + MIN(512,strlen(filename));
+      int i;
+      for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
+      if(cnt > filename) snprintf(label, label_cnt, "...%s", cnt+3);
+      else snprintf(label, label_cnt, "%s", cnt);
     }
+    snprintf(wdname, 20, "recent_film_%d", num);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    gtk_button_set_label(GTK_BUTTON(widget), label);
+    gtk_widget_show(widget);
     num++;
   }
   sqlite3_finalize(stmt);
+  GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+  dt_gui_filmview_update(gtk_entry_get_text(entry));
 }
 
