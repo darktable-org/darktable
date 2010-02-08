@@ -1,7 +1,6 @@
 0.5 release:
-- clipping output scanlines?
+- clipping output scanlines garbled?
 - sliders with spinboxes
-- color zones optimize lut
 - imageop.c: load defaults matches which set first? camera or general?
 - tiff io
   TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
@@ -18,7 +17,6 @@
 - color picker dont update?
 - try gegl 0.1.2
 - crash: remove film/quit dt_image_cache_free/dt_image_free
-- draw icon for colorzones.
 - merge gamma/input color profile iops?
   - use gamma/lin from color profile.
 - wb presets broken for non-raw images
@@ -79,7 +77,6 @@
 - scroll to opened expander in darkroom mode.
 
 bugs:
-- bug for clipped mip maps and low resolutions.
 - develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit
 - zoom to wrong image bug: resize window helps (???)
