@@ -80,7 +80,6 @@ dt_lib_load_modules ()
 void
 dt_lib_unload_module (dt_lib_module_t *module)
 {
-  module->gui_cleanup(module);
   if(module->module) g_module_close(module->module);
 }
 

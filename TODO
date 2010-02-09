@@ -1,6 +1,7 @@
 0.5 release:
-- image import fails because all slots are in use?
-- monochrome radius depends on exposure?
+- image import fails because all slots (for full buf) are in use?
+  - dng => full res reimport => resource conflict.
+- monochrome radius depends on exposure (should be before exp..)?
 - remove auto exposure from raw import (and add auto button in exp)
 - clipping output scanlines garbled? (only subsample 1.0??)
 - sliders with spinboxes
