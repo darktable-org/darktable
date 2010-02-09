@@ -207,5 +207,6 @@ void dt_film_remove(const int id)
   rc = sqlite3_bind_int(stmt, 1, id);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
+  dt_control_update_recent_films();
 }
 

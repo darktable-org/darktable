@@ -1,5 +1,8 @@
 0.5 release:
-- clipping output scanlines garbled?
+- image import fails because all slots are in use?
+- monochrome radius depends on exposure?
+- remove auto exposure from raw import (and add auto button in exp)
+- clipping output scanlines garbled? (only subsample 1.0??)
 - sliders with spinboxes
 - imageop.c: load defaults matches which set first? camera or general?
 - tiff io
@@ -16,7 +19,6 @@
 
 - color picker dont update?
 - try gegl 0.1.2
-- crash: remove film/quit dt_image_cache_free/dt_image_free
 - merge gamma/input color profile iops?
   - use gamma/lin from color profile.
 - wb presets broken for non-raw images
