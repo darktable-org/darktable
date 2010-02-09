@@ -23,6 +23,8 @@
 #include <errno.h>
 #include <assert.h>
 
+DT_MODULE
+
 #define DT_LIBRARY_MAX_ZOOM 13
 
 typedef enum dt_library_image_over_t

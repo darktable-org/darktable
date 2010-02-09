@@ -9,6 +9,8 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
+DT_MODULE
+
 typedef struct dt_lib_copy_history_t
 {
   int32_t imageid;

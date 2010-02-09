@@ -27,6 +27,16 @@ int dt_module_version() \
 }
 #endif
 
+// ..to be able to compare it against this:
+static inline int dt_version()
+{
+#ifdef _DEBUG
+  return -DT_MODULE_VERSION;
+#else
+  return DT_MODULE_VERSION;
+#endif
+}
+
 #ifndef M_PI
   #define M_PI 3.14159265358979323846
 #endif

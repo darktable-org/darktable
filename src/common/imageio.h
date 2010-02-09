@@ -8,22 +8,22 @@
 #include <inttypes.h>
 
 // opens the file using pfm, hdr, exr.
-int dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename);
 // opens the file using libraw, doing interpolation and stuff
-int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *filename);
 // opens file using imagemagick
-int dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename);
 // try both, first libraw.
-int dt_imageio_open_preview(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filename);
 
 // opens the file using pfm, hdr, exr.
-int dt_imageio_open_hdr(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename);
 // opens the file using libraw, doing interpolation and stuff
-int dt_imageio_open_raw(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename);
 // opens file using imagemagick
-int dt_imageio_open_ldr(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename);
 // try both, first libraw.
-int dt_imageio_open(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename);
 
 // write cache to database, returns 0 on success. assumes buf to be locked.
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip);

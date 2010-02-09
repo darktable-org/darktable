@@ -8,6 +8,8 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
+DT_MODULE
+
 typedef struct dt_lib_export_t
 {
   GtkSpinButton *width, *height;

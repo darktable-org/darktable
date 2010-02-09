@@ -1,15 +1,10 @@
 0.5 release:
-- image import fails because all slots (for full buf) are in use?
-  - dng => full res reimport => resource conflict.
+- selected images redraw borders if not loaded.
 - monochrome radius depends on exposure (should be before exp..)?
 - remove auto exposure from raw import (and add auto button in exp)
 - clipping output scanlines garbled? (only subsample 1.0??)
 - sliders with spinboxes
 - imageop.c: load defaults matches which set first? camera or general?
-- tiff io
-  TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-  TIFFSetField(out, TIFFTAG_ZIPQUALITY, 9);
-  TIFFSetField(out, TIFFTAG_PREDICTOR, 2);
 - move output icc to global settings/export, sRGB (web-safe) ;)
 - remove gamma from input profile and move to end of pipe?
   LPGAMMATABLE  cmsAllocGamma(int nEntries);
@@ -19,7 +14,6 @@
   LPGAMMATABLE cmsBuildGamma(int nEntries, double Gamma);
 
 - color picker dont update?
-- try gegl 0.1.2
 - merge gamma/input color profile iops?
   - use gamma/lin from color profile.
 - wb presets broken for non-raw images
@@ -53,7 +47,6 @@
 - mirror horizontal/vertical in crop/rotate
 - gnome-color-manager dbus interaction
 - highlight reconstruction/tonemapping (reinhard 02)
-- automatic application of history stacks due to pattern matching.
 - write dttags on image_cache_flush?
 - ctrl + 01234 in lighttable => stars
 - esc -> unfullscreen -> center
@@ -66,18 +59,25 @@
 - mac bitch: gegl.h and Carbon.h are not friends.
 - side by side comparison view
 - gconf option for maximum number of jobs?
-- quitting dialog/progress?
+- gconf performance presets (memory/preview subsample)
 - histogram fill light mouse gesture
 - exposure: highlight clipped parts
-- exr import
 - clipping event hooks: crop
 - user preferences
-  - default processing stack, if exif matches
+  - automatic application of history stacks due to pattern matching.
+- scroll to opened expander in darkroom mode.
+
+later:
+- try gegl 0.1.2
+- exr import
+- tiff io
+  TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+  TIFFSetField(out, TIFFTAG_ZIPQUALITY, 9);
+  TIFFSetField(out, TIFFTAG_PREDICTOR, 2);
 - progress bars for coresponding widgets (export)?
 - efficiency:
   - dt_image_expose: check history cached in flags?
   - dt_dev_process_to_mip: check hash?
-- scroll to opened expander in darkroom mode.
 
 bugs:
 - develop left without mipf loaded => output_width messed up.

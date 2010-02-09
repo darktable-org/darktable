@@ -7,6 +7,8 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
+DT_MODULE
+
 typedef struct dt_lib_image_t
 {
 }

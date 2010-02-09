@@ -14,13 +14,17 @@
 #include <math.h>
 #include <glade/glade.h>
 
-const char *name(dt_view_t *self)
+DT_MODULE
+
+const char
+*name(dt_view_t *self)
 {
   return _("darkroom");
 }
 
 
-void init(dt_view_t *self)
+void
+init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);

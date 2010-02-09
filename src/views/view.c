@@ -37,7 +37,7 @@ int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod)
 /** load a view module */
 int dt_view_load_module(dt_view_t *view, const char *module)
 {
-  int retval;
+  int retval = -1;
   bzero(view, sizeof(dt_view_t));
   view->data = NULL;
   strncpy(view->module_name, module, 64);
@@ -52,7 +52,13 @@ int dt_view_load_module(dt_view_t *view, const char *module)
     retval = -1;
     goto out;
   }
-
+  int (*version)();
+  if(!g_module_symbol(view->module, "dt_module_version", (gpointer)&(version))) goto out;
+  if(version() != dt_version())
+  {
+    fprintf(stderr, "[view_load_module] `%s' is compiled for another version of dt (module %d != dt %d) !\n", libname, version(), dt_version());
+    goto out;
+  }
   if(!g_module_symbol(view->module, "name",            (gpointer)&(view->name)))            view->name = NULL;
   if(!g_module_symbol(view->module, "init",            (gpointer)&(view->init)))            view->init = NULL;
   if(!g_module_symbol(view->module, "cleanup",         (gpointer)&(view->cleanup)))         view->cleanup = NULL;

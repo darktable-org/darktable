@@ -89,9 +89,9 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_version", (gpointer)&(version))) goto error;
-  if(version() != DT_MODULE_VERSION)
+  if(version() != dt_version())
   {
-    fprintf(stderr, "[iop_load_module] `%s' is compiled for another version of dt (%d != %d) !\n", libname, version(), DT_MODULE_VERSION);
+    fprintf(stderr, "[iop_load_module] `%s' is compiled for another version of dt (module %d != dt %d) !\n", libname, version(), dt_version());
     goto error;
   }
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;

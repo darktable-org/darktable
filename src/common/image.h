@@ -8,6 +8,16 @@
 // this is able to develop images on a 1920 monitor (-2*300 - 20 for the panels).
 #define DT_IMAGE_WINDOW_SIZE 1300
 
+/** return value of image io functions. */
+typedef enum dt_imageio_retval_t
+{
+  DT_IMAGEIO_OK = 0,          // all good :)
+  DT_IMAGEIO_FILE_NOT_FOUND,  // file has been lost
+  DT_IMAGEIO_FILE_CORRUPTED,  // file contains garbage
+  DT_IMAGEIO_CACHE_FULL       // dt's caches are full :(
+}
+dt_imageio_retval_t;
+
 typedef enum
 {
   DT_IMAGE_DELETE = 1,
@@ -121,7 +131,7 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
 /** returns real image extends within mip map buffer size, in floating point. */
 void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, float *w, float *h);
 /** writes mip4 through to all smaller levels. */
-int dt_image_update_mipmaps(dt_image_t *img);
+dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img);
 /** this writes a .dt and a .dttags file for this image. */
 void dt_image_write_dt_files(dt_image_t *img);
 
@@ -155,7 +165,7 @@ void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode);
 
 /** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
-int dt_image_raw_to_preview(dt_image_t *img);
+dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img);
 /** up-converts mip4 to mipf using guessed gamma values. needs mip4 r locked. */
-int dt_image_preview_to_raw(dt_image_t *img);
+dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img);
 #endif

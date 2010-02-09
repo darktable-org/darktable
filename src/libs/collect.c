@@ -4,6 +4,8 @@
 #include "control/control.h"
 #include "libs/lib.h"
 
+DT_MODULE
+
 typedef struct dt_lib_collect_t
 {
   GtkComboBox *combo;

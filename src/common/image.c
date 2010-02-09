@@ -198,14 +198,14 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
   *h = ht;
 }
 
-int dt_image_preview_to_raw(dt_image_t *img)
+dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
 {
   int p_wd, p_ht;
   float f_wd, f_ht;
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
 
-  if(dt_image_alloc(img, DT_IMAGE_MIPF)) return 1;
+  if(dt_image_alloc(img, DT_IMAGE_MIPF)) return DT_IMAGEIO_CACHE_FULL;
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
 
@@ -214,10 +214,10 @@ int dt_image_preview_to_raw(dt_image_t *img)
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
   dt_imageio_preview_write(img, DT_IMAGE_MIPF);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  return 0;
+  return DT_IMAGEIO_OK;
 }
 
-int dt_image_raw_to_preview(dt_image_t *img)
+dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
 {
   const int raw_wd = img->width;
   const int raw_ht = img->height;
@@ -316,7 +316,13 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     return 1;
   }
   img->import_lock = 1;
-  if(dt_imageio_open_preview(img, filename))
+  dt_imageio_retval_t ret = dt_imageio_open_preview(img, filename);
+  if(ret == DT_IMAGEIO_CACHE_FULL)
+  { // handle resource conflicts if user provided very small caches:
+    img->import_lock = 0;
+    return 1;
+  }
+  else if(ret != DT_IMAGEIO_OK)
   {
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
     // dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
@@ -431,9 +437,9 @@ int dt_image_import(const int32_t film_id, const char *filename)
   return id;
 }
 
-int dt_image_update_mipmaps(dt_image_t *img)
+dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 {
-  if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r')) return 1;
+  if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r')) return DT_IMAGEIO_CACHE_FULL;
   int oldwd, oldht;
   dt_image_get_mip_size(img, DT_IMAGE_MIP4, &oldwd, &oldht);
   // create 8-bit mip maps:
@@ -441,7 +447,7 @@ int dt_image_update_mipmaps(dt_image_t *img)
   {
     int p_wd, p_ht;
     dt_image_get_mip_size(img, l, &p_wd, &p_ht);
-    if(dt_image_alloc(img, l)) return 1;
+    if(dt_image_alloc(img, l)) return DT_IMAGEIO_CACHE_FULL;
 
     dt_image_check_buffer(img, l, p_wd*p_ht*4*sizeof(uint8_t));
     // printf("creating mipmap %d for img %s: %d x %d\n", l, img->filename, p_wd, p_ht);
@@ -458,7 +464,7 @@ int dt_image_update_mipmaps(dt_image_t *img)
     dt_image_release(img, l+1, 'r');
   }
   dt_image_release(img, DT_IMAGE_MIP0, 'r');
-  return 0;
+  return DT_IMAGEIO_OK;
 }
 
 void dt_image_init(dt_image_t *img)

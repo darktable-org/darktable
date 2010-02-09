@@ -6,6 +6,8 @@
 #include <glade/glade.h>
 #include <math.h>
 
+DT_MODULE
+
 typedef struct dt_lib_tagging_t
 {
   char related_query[1024];

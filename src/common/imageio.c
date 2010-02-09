@@ -251,7 +251,7 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
     if(verb) fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret)); \
     libraw_close(raw);                         \
     raw = NULL; \
-    return -1;                                   \
+    return DT_IMAGEIO_FILE_CORRUPTED;                                   \
   }                                                       \
 }
 
@@ -269,42 +269,45 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
   return jj*w + ii;
 }
 
-int dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
 {
-  int ret = dt_imageio_open_hdr(img, filename);
+  dt_imageio_retval_t ret = dt_imageio_open_hdr(img, filename);
   if(ret) return ret;
-  ret +=  dt_image_raw_to_preview(img);
+  ret = dt_image_raw_to_preview(img);
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
   // this updates mipf/mip4..0 from raw pixels.
   int p_wd, p_ht;
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
-  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return 1;
+  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
   dt_image_get(img, DT_IMAGE_MIPF, 'r');
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-  ret = 0;
+  ret = DT_IMAGEIO_OK;
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
   dt_imageio_preview_write(img, DT_IMAGE_MIP4);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  if(dt_image_update_mipmaps(img)) ret = 1;
+  ret = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return ret;
 }
 
-int dt_imageio_open_hdr(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
-  if(!dt_imageio_open_rgbe(img, filename)) return 0;
-  if(!dt_imageio_open_pfm(img, filename)) return 0;
-  return 1;
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_rgbe(img, filename);
+  if(ret == DT_IMAGEIO_OK) return ret;
+  ret = dt_imageio_open_pfm(img, filename);
+  return ret;
 }
 
 // only set mip4..0.
-int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
   // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
+  dt_imageio_retval_t retval = DT_IMAGEIO_OK;
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
@@ -332,7 +335,6 @@ int dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
   }
 
   // get thumbnail
-  // ret = libraw_unpack(raw);
   ret = libraw_unpack_thumb(raw);
 
   if(!ret)
@@ -433,7 +435,7 @@ error_raw_magick:// clean up libraw and magick only
 #else
       const int orientation = img->orientation;// & 4 ? img->orientation : img->orientation ^ 1;
       dt_imageio_jpeg_t jpg;
-      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw;
+      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw_corrupted;
       if(orientation & 4)
       {
         image->width  = jpg.height;
@@ -445,11 +447,16 @@ error_raw_magick:// clean up libraw and magick only
         image->height = jpg.height;
       }
       uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-      if(dt_imageio_jpeg_decompress(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
+      if(dt_imageio_jpeg_decompress(&jpg, tmp))
+      {
+        free(tmp);
+        goto error_raw_corrupted;
+      }
+      if(dt_image_alloc(img, DT_IMAGE_MIP4))
       {
         free(tmp);
         fprintf(stderr, "[raw_preview] could not alloc mip4!\n");
-        goto error_raw;
+        goto error_raw_cache_full;
       }
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
       const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
@@ -477,22 +484,23 @@ error_raw_magick:// clean up libraw and magick only
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
       // store in db.
       dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-      if(dt_image_update_mipmaps(img)) ret = 1;
+      retval = dt_image_update_mipmaps(img);
 
       // clean up raw stuff.
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
-      (void)dt_image_preview_to_raw(img);
+      if(retval == DT_IMAGEIO_OK)
+        retval = dt_image_preview_to_raw(img);
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
-      return ret;
+      return retval;
 #endif
     }
     else
     {
       // BMP: directly to mip4
-      if (dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw;
+      if (dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
       const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
       const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
@@ -516,18 +524,19 @@ error_raw_magick:// clean up libraw and magick only
           for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
-      (void)dt_image_preview_to_raw(img);
+      retval = dt_image_preview_to_raw(img);
       // store in db.
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
       dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-      if(dt_image_update_mipmaps(img)) ret = 1;
+      if(retval == DT_IMAGEIO_OK)
+        retval = dt_image_update_mipmaps(img);
       // clean up raw stuff.
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
-      return ret;
+      return retval;
     }
   }
 
@@ -536,36 +545,43 @@ error_raw_magick:// clean up libraw and magick only
   libraw_close(raw);
   free(image);
 try_full_raw:
-  ret = dt_imageio_open_raw(img, filename);
-  if(ret) return ret;
-  ret +=  dt_image_raw_to_preview(img);
+  retval = dt_imageio_open_raw(img, filename);
+  if(retval != DT_IMAGEIO_OK) return retval;
+  retval = dt_image_raw_to_preview(img);
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
   // this updates mipf/mip4..0 from raw pixels.
   int p_wd, p_ht;
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
-  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return 1;
+  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
   dt_image_get(img, DT_IMAGE_MIPF, 'r');
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-  ret = 0;
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
   dt_imageio_preview_write(img, DT_IMAGE_MIP4);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  if(dt_image_update_mipmaps(img)) ret = 1;
+  retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return ret;
+  return retval;
 
-error_raw:
+error_raw_cache_full:
   fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
   // dt_image_cache_release(img, 'r');
-  return 1;
+  return DT_IMAGEIO_CACHE_FULL;
+
+error_raw_corrupted:
+  fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
+  libraw_recycle(raw);
+  libraw_close(raw);
+  free(image);
+  // dt_image_cache_release(img, 'r');
+  return DT_IMAGEIO_FILE_CORRUPTED;
 }
 
-int dt_imageio_open_raw(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
   // img = dt_image_cache_use(img->id, 'r');
@@ -619,7 +635,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
     libraw_close(raw);
     free(image);
     // dt_image_cache_release(img, 'r');
-    return 1;
+    return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width)*(img->height)*sizeof(float));
   const float m = 1./0xffff;
@@ -633,7 +649,7 @@ int dt_imageio_open_raw(dt_image_t *img, const char *filename)
   image = NULL;
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   // dt_image_cache_release(img, 'r');
-  return 0;
+  return DT_IMAGEIO_OK;
 }
 
 #if 0
@@ -724,7 +740,7 @@ void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
 //   begin magickcore wrapper functions:
 // =================================================
 
-int dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
 #if 0//def HAVE_MAGICK
@@ -842,7 +858,7 @@ error_magick_mip4:
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
+  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
   if(orientation & 4)
   {
     img->width  = jpg.height;
@@ -854,10 +870,15 @@ error_magick_mip4:
     img->height = jpg.height;
   }
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_MIP4))
+  if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     free(tmp);
-    return 1;
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+  if(dt_image_alloc(img, DT_IMAGE_MIP4))
+  {
+    free(tmp);
+    return DT_IMAGEIO_CACHE_FULL;
   }
 
   int p_wd, p_ht;
@@ -891,20 +912,19 @@ error_magick_mip4:
     }
   }
   free(tmp);
-  (void)dt_image_preview_to_raw(img);
+  dt_imageio_retval_t retval = dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   // store in db.
-  int ret = 0;
   dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-  if(dt_image_update_mipmaps(img)) ret = 1;
+  if(retval == DT_IMAGEIO_OK)
+    retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  
-  return ret;
+  return retval;
 #endif
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
-int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
 #if 0//def HAVE_MAGICK
@@ -1055,7 +1075,7 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_read_header(filename, &jpg)) return 1;
+  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
   if(orientation & 4)
   {
     img->width  = jpg.height;
@@ -1067,10 +1087,15 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     img->height = jpg.height;
   }
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-  if(dt_imageio_jpeg_read(&jpg, tmp) || dt_image_alloc(img, DT_IMAGE_FULL))
+  if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     free(tmp);
-    return 1;
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+  if(dt_image_alloc(img, DT_IMAGE_FULL))
+  {
+    free(tmp);
+    return DT_IMAGEIO_CACHE_FULL;
   }
  
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
@@ -1083,7 +1108,7 @@ int dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-  return 0;
+  return DT_IMAGEIO_OK;
 #endif
 }
 
@@ -1374,23 +1399,27 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 //   combined reading
 // =================================================
 
-int dt_imageio_open(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
-  int ret = 1;
-  if     (!dt_imageio_open_hdr(img, filename)) ret = 0;
-  else if(!dt_imageio_open_raw(img, filename)) ret = 0;
-  else if(!dt_imageio_open_ldr(img, filename)) ret = 0;
-  if(!ret) dt_image_cache_flush(img);
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_hdr(img, filename);
+  if(ret != DT_IMAGEIO_OK)
+    ret = dt_imageio_open_raw(img, filename);
+  if(ret != DT_IMAGEIO_OK)
+    ret = dt_imageio_open_ldr(img, filename);
+  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush(img);
   return ret;
 }
 
-int dt_imageio_open_preview(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
-  int ret = 1;
-  if     (!dt_imageio_open_hdr_preview(img, filename)) ret = 0;
-  else if(!dt_imageio_open_raw_preview(img, filename)) ret = 0;
-  else if(!dt_imageio_open_ldr_preview(img, filename)) ret = 0;
-  if(!ret) dt_image_cache_flush(img);
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_hdr_preview(img, filename);
+  if(ret != DT_IMAGEIO_OK)
+    ret = dt_imageio_open_raw_preview(img, filename);
+  if(ret != DT_IMAGEIO_OK)
+    ret = dt_imageio_open_ldr_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush(img);
   return ret;
 }
 
