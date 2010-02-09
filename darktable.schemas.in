@@ -509,6 +509,32 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/export/iccprofile</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/iccprofile</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>image</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>iccprofile to use for export</short>
+        <long>this overrides the per-image settings, if not set to `image'.</long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/export/iccintent</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/iccintent</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>-1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>icc rendering intent</short>
+        <long>if non-negative, this overrides the per-image output color profile rendering intent on export.</long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/gamma_linear</key>
       <applyto>/apps/darktable/gamma_linear</applyto>
       <owner>darktable</owner>

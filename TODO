@@ -3,27 +3,17 @@
 - resource conflict: load jobs reimport and dt
   gui develop full buf/mipf buf priority!
   - does dev actually hold a mipf reference?
-- selected images redraw borders if not loaded.
 - remove auto exposure from raw import (and add auto button in exp)
 - clipping output scanlines garbled? (only subsample 1.0??)
 - sliders with spinboxes
 - imageop.c: load defaults matches which set first? camera or general?
 - move output icc to global settings/export, sRGB (web-safe) ;)
 - remove gamma from input profile and move to end of pipe?
-  LPGAMMATABLE  cmsAllocGamma(int nEntries);
-  cmsHPROFILE cmsCreateRGBProfile(LPcmsCIExyY WhitePoint,
-                                        LPcmsCIExyYTRIPLE Primaries,
-                                        LPGAMMATABLE TransferFunction[3]);
-  LPGAMMATABLE cmsBuildGamma(int nEntries, double Gamma);
-
 - color picker dont update?
-- merge gamma/input color profile iops?
-  - use gamma/lin from color profile.
 - wb presets broken for non-raw images
 - export/select by edited/up-to-date exported
 - straighten history button to simplify same operations
-- set default for all iop
-- show numeric values, zoom ratio
+- show numeric values RGB, Lab, zoom ratio
 - remove all rc = clang errors?
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
@@ -41,12 +31,7 @@
 - darkroom mode plugin template
 - jpeg exif tags harmful?
 - export output file name pattern and editable
-- user adjustable defaults for all iops
-- sliders numeric input field
-  - show magnification factor
-  - show sRGB/Lab/rgb values
-  - crop with pixels/aspect
-- mirror horizontal/vertical in crop/rotate
+- mirror horizontal/vertical and aspect in crop/rotate
 - gnome-color-manager dbus interaction
 - highlight reconstruction/tonemapping (reinhard 02)
 - write dttags on image_cache_flush?

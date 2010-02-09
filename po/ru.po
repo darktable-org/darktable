@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-04 06:06+0300\n"
-"PO-Revision-Date: 2010-02-04 08:37+0300\n"
+"POT-Creation-Date: 2010-02-09 00:15+0300\n"
+"PO-Revision-Date: 2010-02-09 21:26+0300\n"
 "Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: GNOME Russian <gnome-cyr@gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -62,7 +62,7 @@ msgstr "все выбранные снимки"
 
 #: ../darktable.glade.h:15
 msgid "aperture"
-msgstr "Апертура"
+msgstr "Диафрагма"
 
 #: ../darktable.glade.h:16
 msgid "button"
@@ -74,8 +74,8 @@ msgstr "Дата и время"
 
 #: ../darktable.glade.h:18
 #: ../src/iop/exposure.c:20
-#: ../src/iop/exposure.c:181
-#: ../src/iop/rawimport.c:268
+#: ../src/iop/exposure.c:191
+#: ../src/iop/rawimport.c:260
 msgid "exposure"
 msgstr "Экспозиция"
 
@@ -262,65 +262,81 @@ msgid "how many full-resolution floating point buffers of loaded raw images to k
 msgstr ""
 
 #: ../darktable.schemas.in.h:14
-msgid "how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts, these get fewer by size. only read at startup."
+msgid "how many most-recently used thumbnail mipmaps should be kept in the database cache when darktable closes."
 msgstr ""
 
 #: ../darktable.schemas.in.h:15
-msgid "if this number is smaller than the darktable internal version number, the values here will be syched with the new defaults."
+msgid "how many smallest-size most-recently used thumbnail mipmaps should be kept in the database cache when darktable closes. these do not need a lot of memory and provide fast visual feedback for lighttable mode."
 msgstr ""
 
 #: ../darktable.schemas.in.h:16
-msgid "order by and limit clauses go last"
+msgid "how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts, these get fewer by size. only read at startup."
 msgstr ""
 
 #: ../darktable.schemas.in.h:17
-msgid "small thumbnails to keep in main memory cache"
+msgid "if this number is smaller than the darktable internal version number, the values here will be syched with the new defaults."
 msgstr ""
 
 #: ../darktable.schemas.in.h:18
-msgid "sql query to select images for current view"
+msgid "order by and limit clauses go last"
 msgstr ""
 
 #: ../darktable.schemas.in.h:19
-msgid "these files can later be re-imported into a different database, preserving your changes to the image."
-msgstr "Эти файлы с описанием внесённых изменений может будет позднее импортировать в другую базу данных."
+msgid "small thumbnails to keep in main memory cache"
+msgstr ""
 
 #: ../darktable.schemas.in.h:20
-msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
+msgid "sql query to select images for current view"
 msgstr ""
 
 #: ../darktable.schemas.in.h:21
+msgid "these files can later be re-imported into a different database, preserving your changes to the image."
+msgstr "Эти файлы с описанием внесённых изменений может будет позднее импортировать в другую базу данных."
+
+#: ../darktable.schemas.in.h:22
+msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
+msgstr ""
+
+#: ../darktable.schemas.in.h:23
+msgid "thumbnails to keep in database"
+msgstr ""
+
+#: ../darktable.schemas.in.h:24
 msgid "version of these dt-gconf entries"
 msgstr "Версия этих записей DT в GConf"
 
-#: ../darktable.schemas.in.h:22
+#: ../darktable.schemas.in.h:25
+msgid "very small thumbnails to keep in database"
+msgstr ""
+
+#: ../darktable.schemas.in.h:26
 msgid "width of the exported image"
 msgstr "Ширина экспортируемого снимка"
 
-#: ../darktable.schemas.in.h:23
+#: ../darktable.schemas.in.h:27
 msgid "width of the exported image, or 0 if no scaling should be done."
 msgstr "Ширина экспортируемого снимка, при значении 0 размер не меняется"
 
-#: ../darktable.schemas.in.h:24
+#: ../darktable.schemas.in.h:28
 msgid "write a redundant file for each image"
 msgstr "Записывать файлы .dt для каждого снимка"
 
-#: ../src/control/control.c:788
+#: ../src/control/control.c:796
 #, c-format
 msgid "switch to %s mode"
 msgstr "Переключиться в режим «%s»"
 
-#: ../src/control/control.c:796
+#: ../src/control/control.c:804
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b><i>Режим «%s»</i></b></big></span>"
 
-#: ../src/control/control.c:1117
+#: ../src/control/control.c:1125
 msgid "0 - original"
 msgstr "0 - Исходный вариант"
 
 #. single images
-#: ../src/control/control.c:1164
+#: ../src/control/control.c:1170
 #: ../src/gui/filmview.c:32
 #: ../src/gui/filmview.c:36
 #, c-format
@@ -351,19 +367,40 @@ msgstr "вкл"
 msgid "off"
 msgstr "выкл"
 
-#: ../src/develop/imageop.c:171
-#: ../src/develop/imageop.c:232
+#: ../src/develop/imageop.c:217
+#: ../src/develop/imageop.c:352
 #, c-format
 msgid "%s is switched on"
 msgstr "%s включен"
 
-#: ../src/develop/imageop.c:171
-#: ../src/develop/imageop.c:232
+#: ../src/develop/imageop.c:217
+#: ../src/develop/imageop.c:352
 #, c-format
 msgid "%s is switched off"
 msgstr "%s выключен"
 
-#: ../src/develop/imageop.c:248
+#: ../src/develop/imageop.c:364
+msgid "reset parameters to default"
+msgstr "Сбросить параметры до исходных"
+
+#: ../src/develop/imageop.c:369
+msgid "store parameters as default"
+msgstr "Использовать эти параметры как исходные"
+
+#. camera maker and model are not yet known by raw import.
+#: ../src/develop/imageop.c:376
+msgid "store as default for this camera"
+msgstr "Сохранить как исходные параметры для этой камеры"
+
+#: ../src/develop/imageop.c:384
+msgid "remove default"
+msgstr "Забыть исходные параметры"
+
+#: ../src/develop/imageop.c:391
+msgid "remove default for this camera"
+msgstr "Забыть исходные параметры для этой камеры"
+
+#: ../src/develop/imageop.c:404
 #: ../src/libs/lib.c:134
 msgid "reset parameters"
 msgstr "Сбросить параметры"
@@ -424,7 +461,7 @@ msgstr ""
 msgid "export selected"
 msgstr "Экспорт выбранного"
 
-#: ../src/libs/export.c:83
+#: ../src/libs/export.c:90
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -432,7 +469,7 @@ msgstr ""
 "Максимальная ширина конечного снимка,\n"
 "при значении 0 размер не меняется"
 
-#: ../src/libs/export.c:85
+#: ../src/libs/export.c:92
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -440,35 +477,35 @@ msgstr ""
 "Максимальная высота конечного снимка,\n"
 "при значении 0 размер не меняется"
 
-#: ../src/libs/export.c:86
+#: ../src/libs/export.c:93
 msgid "maximum size"
 msgstr "Максимальный размер:"
 
-#: ../src/libs/export.c:90
+#: ../src/libs/export.c:97
 msgid "x"
 msgstr "×"
 
-#: ../src/libs/export.c:99
+#: ../src/libs/export.c:106
 msgid "quality"
 msgstr "Качество"
 
-#: ../src/libs/export.c:105
+#: ../src/libs/export.c:112
 msgid "8-bit jpg"
 msgstr "8-разрядный JPEG"
 
-#: ../src/libs/export.c:106
+#: ../src/libs/export.c:113
 msgid "8-bit png"
 msgstr "8-разрядный PNG"
 
-#: ../src/libs/export.c:107
+#: ../src/libs/export.c:114
 msgid "16-bit ppm"
 msgstr "8-разрядный PPM"
 
-#: ../src/libs/export.c:108
+#: ../src/libs/export.c:115
 msgid "float pfm"
 msgstr "PFM с плавающей точкой"
 
-#: ../src/libs/export.c:109
+#: ../src/libs/export.c:116
 msgid "export"
 msgstr "Экспортировать"
 
@@ -667,48 +704,56 @@ msgid "color correction"
 msgstr "Цветокоррекция"
 
 #: ../src/iop/colorcorrection.c:160
-#: ../src/iop/colorin.c:244
+#: ../src/iop/colorin.c:297
 #: ../src/iop/colorout.c:327
 #: ../src/iop/colorout.c:332
 msgid "saturation"
 msgstr "Насыщенность:"
 
-#: ../src/iop/colorin.c:18
+#: ../src/iop/colorin.c:20
 msgid "input color profile"
 msgstr "Цветовой профиль камеры"
 
-#: ../src/iop/colorin.c:235
+#: ../src/iop/colorin.c:288
 msgid "intent"
 msgstr "Цветопередача:"
 
-#: ../src/iop/colorin.c:236
+#: ../src/iop/colorin.c:289
 msgid "profile"
 msgstr "Профиль:"
 
-#: ../src/iop/colorin.c:242
+#: ../src/iop/colorin.c:295
 #: ../src/iop/colorout.c:325
 #: ../src/iop/colorout.c:330
 msgid "perceptual"
 msgstr "Воспринимаемая"
 
-#: ../src/iop/colorin.c:243
+#: ../src/iop/colorin.c:296
 #: ../src/iop/colorout.c:326
 #: ../src/iop/colorout.c:331
 msgid "relative colorimetric"
 msgstr "Относительная колориметрическая"
 
-#: ../src/iop/colorin.c:245
+#: ../src/iop/colorin.c:298
 #: ../src/iop/colorout.c:328
 #: ../src/iop/colorout.c:333
 msgid "absolute colorimetric"
 msgstr "Абсолютная колориметрическая"
 
-#: ../src/iop/colorin.c:260
+#: ../src/iop/colorin.c:305
+msgid "no profile"
+msgstr "Без профиля"
+
+#: ../src/iop/colorin.c:307
+msgid "color matrix"
+msgstr "Цветовая матрица"
+
+#: ../src/iop/colorin.c:318
 #: ../src/iop/colorout.c:362
 msgid "rendering intent"
 msgstr "Цветопередача"
 
-#: ../src/iop/colorin.c:261
+#: ../src/iop/colorin.c:319
 #, c-format
 msgid "icc profiles in %s/color/in"
 msgstr "Цветовые профили из %s/color/in"
@@ -752,51 +797,52 @@ msgstr "Цветовые профили мониторов из %s/color/out"
 msgid "equalizer"
 msgstr "Эквалайзер"
 
-#: ../src/iop/equalizer.c:294
+#: ../src/iop/equalizer.c:295
 msgid "luma"
 msgstr "Яркостный канал"
 
-#: ../src/iop/equalizer.c:295
+#: ../src/iop/equalizer.c:296
 msgid "chroma"
 msgstr "Цветностные каналы"
 
-#: ../src/iop/equalizer.c:311
+#: ../src/iop/equalizer.c:312
+#: ../src/iop/temperature.c:334
 #: ../src/iop/tonecurve.c:199
-#: ../src/iop/colorzones.c:728
+#: ../src/iop/colorzones.c:787
 msgid "presets"
 msgstr "Профили:"
 
-#: ../src/iop/equalizer.c:314
+#: ../src/iop/equalizer.c:315
 #: ../src/iop/sharpen.c:64
 msgid "sharpen"
-msgstr "Высокая резкости"
-
-#: ../src/iop/equalizer.c:315
-msgid "sharpen more"
-msgstr "Очень высокая резкость"
+msgstr "Резкость"
 
 #: ../src/iop/equalizer.c:316
-#: ../src/iop/rawimport.c:260
+msgid "sharpen more"
+msgstr "Высокая резкость"
+
+#: ../src/iop/equalizer.c:317
+#: ../src/iop/rawimport.c:269
 msgid "denoise"
 msgstr "Подавление шума"
 
-#: ../src/iop/exposure.c:180
+#: ../src/iop/exposure.c:190
 msgid "black"
 msgstr "Тёмные области:"
 
-#: ../src/iop/exposure.c:182
+#: ../src/iop/exposure.c:192
 msgid "gain"
 msgstr "Усиление:"
 
-#: ../src/iop/exposure.c:190
+#: ../src/iop/exposure.c:200
 msgid "adjust the black level"
 msgstr "Изменить уровень чёрного"
 
-#: ../src/iop/exposure.c:192
+#: ../src/iop/exposure.c:202
 msgid "adjust the white level"
 msgstr "Изменить уровень белого"
 
-#: ../src/iop/exposure.c:194
+#: ../src/iop/exposure.c:204
 msgid ""
 "leave black and white,\n"
 "but compress brighter\n"
@@ -977,15 +1023,13 @@ msgstr ""
 
 #. g->wb_auto        = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto white balance")));
 #. gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->wb_auto), TRUE, TRUE, 0);
-#: ../src/iop/rawimport.c:246
-msgid "camera white balance"
-msgstr "Баланс белого камеры"
-
+#. g->wb_cam         = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("camera white balance")));
+#. gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->wb_cam), TRUE, TRUE, 0);
 #: ../src/iop/rawimport.c:248
 msgid "auto exposure"
 msgstr "Автоматическая экспозиция"
 
-#: ../src/iop/rawimport.c:272
+#: ../src/iop/rawimport.c:264
 msgid ""
 "percentage of bright values\n"
 "to be clipped out"
@@ -1091,52 +1135,44 @@ msgstr "Порог:"
 
 #: ../src/iop/temperature.c:61
 msgctxt "modulename"
-msgid "temperature"
-msgstr "Температура цвета"
+msgid "whitebalance"
+msgstr "Баланс белого"
 
-#: ../src/iop/temperature.c:256
+#: ../src/iop/temperature.c:275
 msgid "tint"
 msgstr "Оттенок:"
 
-#: ../src/iop/temperature.c:257
+#: ../src/iop/temperature.c:276
 msgid "temperature out"
 msgstr "Конечная температура:"
 
-#: ../src/iop/temperature.c:284
+#: ../src/iop/temperature.c:303
 msgid "temperature in"
 msgstr "Исходная температура:"
 
-#: ../src/iop/temperature.c:299
+#: ../src/iop/temperature.c:318
 msgid "red"
 msgstr "Красный:"
 
-#: ../src/iop/temperature.c:303
+#: ../src/iop/temperature.c:322
 msgid "green"
 msgstr "Зелёный:"
 
-#: ../src/iop/temperature.c:307
+#: ../src/iop/temperature.c:326
 msgid "blue"
 msgstr "Синий:"
 
-#: ../src/iop/temperature.c:321
+#: ../src/iop/temperature.c:339
 msgid "camera whitebalance"
 msgstr "ББ камеры"
 
-#: ../src/iop/temperature.c:322
-msgid "passthrough"
-msgstr "Пропустить"
-
-#: ../src/iop/temperature.c:334
+#: ../src/iop/temperature.c:340
 msgid "spot whitebalance"
 msgstr "Пипетка"
 
-#: ../src/iop/temperature.c:335
-msgid ""
-"select a gray box\n"
-"in the image"
-msgstr ""
-"Обведите рамкой серый\n"
-"участок на снимке"
+#: ../src/iop/temperature.c:341
+msgid "passthrough"
+msgstr "Пропустить"
 
 #. Column 1 - "make" of the camera.
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
@@ -1238,7 +1274,6 @@ msgstr "Вспышка"
 
 #. For Olympus with no real "Flash" preset:
 #: ../src/iop/wb_presets.c:70
-#, fuzzy
 msgid "flash (auto mode)"
 msgstr "Вспышка (в режиме авто)"
 
@@ -1256,7 +1291,6 @@ msgid "black & white"
 msgstr "Чёрно-белый"
 
 #: ../src/iop/wb_presets.c:77
-#, fuzzy
 msgid "manual wb"
 msgstr "Другой ББ"
 
@@ -1265,7 +1299,6 @@ msgid "camera wb"
 msgstr "ББ камеры"
 
 #: ../src/iop/wb_presets.c:79
-#, fuzzy
 msgid "auto wb"
 msgstr "Авто"
 
@@ -1285,62 +1318,62 @@ msgstr "Средний контраст"
 msgid "high contrast"
 msgstr "Высокий контраст"
 
-#: ../src/iop/colorzones.c:73
+#: ../src/iop/colorzones.c:76
 msgid "color zones"
 msgstr "Цветовые зоны"
 
-#: ../src/iop/colorzones.c:681
-#: ../src/iop/colorzones.c:706
+#: ../src/iop/colorzones.c:740
+#: ../src/iop/colorzones.c:765
 msgid "luma (L)"
 msgstr "Яркость (L)"
 
-#: ../src/iop/colorzones.c:682
-#: ../src/iop/colorzones.c:707
+#: ../src/iop/colorzones.c:741
+#: ../src/iop/colorzones.c:766
 msgid "colorness (C)"
 msgstr "Цветность (C)"
 
-#: ../src/iop/colorzones.c:683
-#: ../src/iop/colorzones.c:708
+#: ../src/iop/colorzones.c:742
+#: ../src/iop/colorzones.c:767
 msgid "hue (h)"
 msgstr "Тон (h)"
 
-#: ../src/iop/colorzones.c:699
+#: ../src/iop/colorzones.c:758
 msgid "select color by"
 msgstr "Выбирать цвета по:"
 
-#: ../src/iop/colorzones.c:722
+#: ../src/iop/colorzones.c:781
 msgid "pick gui color from image"
 msgstr "Взять цвет со снимка"
 
-#: ../src/iop/colorzones.c:731
+#: ../src/iop/colorzones.c:790
 msgid "black white red"
 msgstr "Ч/б и красный"
 
-#: ../src/iop/colorzones.c:732
+#: ../src/iop/colorzones.c:791
 msgid "black white and skin tones"
 msgstr "Ч/б и телесные тона"
 
-#: ../src/iop/colorzones.c:733
+#: ../src/iop/colorzones.c:792
 msgid "polarizing filter"
 msgstr "Поляризационный фильтр"
 
-#: ../src/gui/gtk.c:249
+#: ../src/gui/gtk.c:253
 msgid "import film"
 msgstr "Импортировать съёмку"
 
-#: ../src/gui/gtk.c:273
+#: ../src/gui/gtk.c:277
 msgid "import image"
 msgstr "Импортировать снимок"
 
-#: ../src/gui/gtk.c:292
+#: ../src/gui/gtk.c:296
 msgid "supported images"
 msgstr "Поддерживаемые форматы"
 
-#: ../src/gui/gtk.c:297
+#: ../src/gui/gtk.c:301
 msgid "all files"
 msgstr "Все файлы"
 
-#: ../src/gui/gtk.c:317
+#: ../src/gui/gtk.c:321
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Ошибка при загрузке файла '%s'"
@@ -1370,22 +1403,22 @@ msgstr "Удалить съёмку?"
 msgid "darkroom"
 msgstr "Проявка"
 
-#: ../src/views/darkroom.c:193
+#: ../src/views/darkroom.c:192
 #, c-format
 msgid "hide %s"
 msgstr "Скрыть модуль «%s»"
 
-#: ../src/views/darkroom.c:200
+#: ../src/views/darkroom.c:199
 #, c-format
 msgid "show %s"
 msgstr "Показать модуль «%s»"
 
 #. fail :(
-#: ../src/views/darkroom.c:223
+#: ../src/views/darkroom.c:222
 msgid "no image selected!"
 msgstr "Не выбранных снимков!"
 
-#: ../src/views/darkroom.c:234
+#: ../src/views/darkroom.c:233
 msgid "image does no longer exist"
 msgstr "Снимок больше не существует"
 
@@ -1393,17 +1426,24 @@ msgstr "Снимок больше не существует"
 msgid "lighttable"
 msgstr "Световой стол"
 
+#~ msgid "camera white balance"
+#~ msgstr "Баланс белого камеры"
+#~ msgctxt "modulename"
+#~ msgid "temperature"
+#~ msgstr "Температура цвета"
+#~ msgid ""
+#~ "select a gray box\n"
+#~ "in the image"
+#~ msgstr ""
+#~ "Обведите рамкой серый\n"
+#~ "участок на снимке"
 #~ msgid "gray box"
 #~ msgstr "Снять образец"
 #~ msgid "Auto WB"
 #~ msgstr "Автоматический ББ"
-#~ msgid "use color matrix"
-#~ msgstr "Использовать цветовую матрицу"
 #~ msgctxt "slider"
 #~ msgid "temperature"
 #~ msgstr "Конечная температура:"
-#~ msgid "X profile"
-#~ msgstr "Взятый от X"
 #~ msgid "original temperature"
 #~ msgstr "Исходная"
 #~ msgid "intended temperature"

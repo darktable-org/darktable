@@ -32,10 +32,10 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   // read "format" to global settings
   int i = gtk_combo_box_get_active(d->format);
-  if     (i == 0)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_JPG);
-  else if(i == 1)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_PNG);
-  else if(i == 2)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_PPM16);
-  else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format",   DT_DEV_EXPORT_PFM);
+  if     (i == 0)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_JPG);
+  else if(i == 1)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PNG);
+  else if(i == 2)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PPM16);
+  else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PFM);
   dt_control_export();
 }
 
@@ -108,6 +108,48 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, gtk_label_new(_("quality")), FALSE, FALSE, 5);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->quality), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+#if 0
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  g->label1 = GTK_LABEL(gtk_label_new(_("rendering intent")));
+  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
+  g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->cbox1, _("perceptual"));
+  gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
+  gtk_combo_box_append_text(g->cbox1, _("saturation"));
+  gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
+  GList *l = g->profiles;
+  while(l)
+  {
+    dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
+    if(!strcmp(prof->name, "X profile"))
+    {
+      gtk_combo_box_append_text(g->cbox2, _("system display profile"));
+      gtk_combo_box_append_text(g->cbox3, _("system display profile"));
+    }
+    else
+    {
+      gtk_combo_box_append_text(g->cbox2, prof->name);
+      gtk_combo_box_append_text(g->cbox3, prof->name);
+    }
+    l = g_list_next(l);
+  }
+  gtk_combo_box_set_active(g->cbox1, 0);
+  char tooltip[1024];
+  snprintf(tooltip, 1024, _("icc profiles in %s/color/out"), datadir);
+  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, NULL);
+  g_signal_connect (G_OBJECT (g->cbox4), "changed",
+                    G_CALLBACK (display_intent_changed),
+                    (gpointer)self);
+  g_signal_connect (G_OBJECT (g->cbox2), "changed",
+                    G_CALLBACK (profile_changed),
+                    (gpointer)self);
+#endif
+  
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());

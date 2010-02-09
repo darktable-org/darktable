@@ -9,6 +9,7 @@
 #include "iop/colorout.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "gui/gtk.h"
 
 DT_MODULE
@@ -116,10 +117,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   // dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
+  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
   if(d->output) cmsCloseProfile(d->output);
 
   if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
   {
+    // get export override:
+    if(overprofile && strcmp(overprofile, "image")) snprintf(p->iccprofile, DT_IOP_COLOR_ICC_LEN, "%s", overprofile);
+    if(overintent >= 0) p->intent = overintent;
     if(!strcmp(p->iccprofile, "sRGB"))
     { // default: sRGB
       d->output = NULL;
@@ -169,6 +175,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->displayintent, 0);
   }
 #endif
+  g_free(overprofile);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 

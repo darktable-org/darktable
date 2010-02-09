@@ -395,7 +395,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   }
   else if(event->y > height)
   {
-    c->x_move = 0;
+    c->x_move = 1;
     const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
     float dist = fabsf(p->tonecurve_x[1] - mx);
     for(int k=2;k<5;k++)
