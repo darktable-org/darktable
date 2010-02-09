@@ -52,18 +52,18 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
           break;
         modules = g_list_previous(modules);
       }
-      if (gamma == NULL)
-        return;
-      dt_iop_gamma_params_t *gp = (dt_iop_gamma_params_t *)gamma->params;
-      if(strcmp(pp->filename, "sRGB") && strcmp(pp->filename, "cmatrix"))
-        gp->gamma = gp->linear = 1.0;
-      else
-        memcpy(gamma->params, gamma->default_params, gamma->params_size);
-      dt_dev_add_history_item(darktable.develop, gamma);
-      darktable.gui->reset = 1;
-      gamma->gui_update(gamma);
-      darktable.gui->reset = 0;
-
+      if (gamma)
+      {
+        dt_iop_gamma_params_t *gp = (dt_iop_gamma_params_t *)gamma->params;
+        if(strcmp(pp->filename, "sRGB") && strcmp(pp->filename, "cmatrix"))
+          gp->gamma = gp->linear = 1.0;
+        else
+          memcpy(gamma->params, gamma->default_params, gamma->params_size);
+        dt_dev_add_history_item(darktable.develop, gamma);
+        darktable.gui->reset = 1;
+        gamma->gui_update(gamma);
+        darktable.gui->reset = 0;
+      }
       strcpy(p->iccprofile, pp->filename);
       dt_dev_add_history_item(darktable.develop, self);
       return;
