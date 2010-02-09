@@ -867,7 +867,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   // get image with no write lock set!
   if((int)mip < (int)DT_IMAGE_MIPF)
   {
-    while(mip > 0 && (img->mip[mip] == NULL || img->lock[mip].write)) mip--; // level 0 always there..?
+    while(mip > 0 && (img->mip[mip] == NULL || img->lock[mip].write)) mip--;
     if(mip == 0 && (img->mip[mip] == NULL || img->lock[mip].write)) mip = DT_IMAGE_NONE;
   }
   else if(mip == DT_IMAGE_MIPF)
