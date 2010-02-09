@@ -526,7 +526,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   }
   else
   {
-    fprintf(stderr, "[ctl_add_job] too many jobs in queue!\n");
+    dt_print(DT_DEBUG_CONTROL, "[add_job] too many jobs in queue!\n");
     pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }

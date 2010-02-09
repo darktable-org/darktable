@@ -228,7 +228,7 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
       cairo_fill(cr);
     }
   }
-  else
+  else if(mip != DT_IMAGE_NONE)
   {
     cairo_set_line_width(cr, 1);
     cairo_stroke(cr);
