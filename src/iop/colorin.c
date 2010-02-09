@@ -44,12 +44,16 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
     {
       // change gamma as well:
       GList *modules = g_list_last(self->dev->iop);
-      dt_iop_module_t *gamma;
-      while (modules && strcmp(gamma->op, "gamma"))
+      dt_iop_module_t *gamma = NULL;
+      while (modules)
       {
         gamma = (dt_iop_module_t *)modules->data;
+        if (strcmp(gamma->op, "gamma") == 0)
+          break;
         modules = g_list_previous(modules);
       }
+      if (gamma == NULL)
+        return;
       dt_iop_gamma_params_t *gp = (dt_iop_gamma_params_t *)gamma->params;
       if(strcmp(pp->filename, "sRGB") && strcmp(pp->filename, "cmatrix"))
         gp->gamma = gp->linear = 1.0;
