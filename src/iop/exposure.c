@@ -38,7 +38,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[1] = in[1] * clip2;
     out[2] = in[2] * clip2;
 #else // linear RGB processing:
-    for(int i=0;i<3;i++) out[i] = powf(fmaxf(0.0, (in[i]-d->black))*d->scale, d->gain);
+    for(int i=0;i<3;i++) out[i] = fmaxf(0.0, fminf(1.0, powf(fmaxf(0.0, (in[i]-d->black))*d->scale, d->gain)));
 #endif
     out += 3; in += 3;
   }
