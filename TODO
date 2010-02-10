@@ -7,7 +7,6 @@
 - remove auto exposure from raw import (and add auto button in exp)
 - clipping output scanlines garbled? (only subsample 1.0??)
 - sliders with spinboxes
-- imageop.c: load defaults matches which set first? camera or general?
 - remove gamma from input profile and move to end of pipe?
 - color picker dont update?
 - wb presets broken for non-raw images
