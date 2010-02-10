@@ -1,4 +1,5 @@
 0.5 release:
+- load only icc profiles which mach current camera and in/out selectively.
 - DT_MODULE(version) ! => incompatible *.dt
 - resource conflict: load jobs reimport and dt
   gui develop full buf/mipf buf priority!
@@ -7,7 +8,6 @@
 - clipping output scanlines garbled? (only subsample 1.0??)
 - sliders with spinboxes
 - imageop.c: load defaults matches which set first? camera or general?
-- move output icc to global settings/export, sRGB (web-safe) ;)
 - remove gamma from input profile and move to end of pipe?
 - color picker dont update?
 - wb presets broken for non-raw images
