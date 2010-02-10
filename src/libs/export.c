@@ -7,17 +7,26 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <glade/glade.h>
+#include <lcms.h>
 
 DT_MODULE
 
 typedef struct dt_lib_export_t
 {
   GtkSpinButton *width, *height;
-  GtkComboBox *format;
+  GtkComboBox *format, *profile, *intent;
   GtkScale *quality;
+  GList *profiles;
 }
 dt_lib_export_t;
 
+typedef struct dt_lib_export_profile_t
+{
+  char filename[512]; // icc file name
+  char name[512];     // product name
+  int  pos;           // position in combo box    
+}
+dt_lib_export_profile_t;
 
 const char*
 name ()
@@ -76,6 +85,48 @@ gui_reset (dt_lib_module_t *self)
   else if(k == DT_DEV_EXPORT_PPM16) i = 2;
   else if(k == DT_DEV_EXPORT_PFM)   i = 3;
   gtk_combo_box_set_active(d->format, i);
+  gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
+  int iccfound = 0;
+  gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  GList *prof = d->profiles;
+  while(prof)
+  {
+    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
+    if(!strcmp(pp->filename, iccprofile))
+    {
+      gtk_combo_box_set_active(d->profile, pp->pos);
+      iccfound = 1;
+    }
+    if(iccfound) break;
+    prof = g_list_next(prof);
+  }
+  g_free(iccprofile);
+  gtk_combo_box_set_active(d->profile, 0);
+}
+
+static void
+profile_changed (GtkComboBox *widget, dt_lib_export_t *d)
+{
+  int pos = gtk_combo_box_get_active(widget);
+  GList *prof = d->profiles;
+  while(prof)
+  { // could use g_list_nth. this seems safer?
+    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
+    if(pp->pos == pos)
+    {
+      dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
+      return;
+    }
+    prof = g_list_next(prof);
+  }
+  dt_conf_set_string("plugins/lighttable/export/iccprofile", "image");
+}
+
+static void
+intent_changed (GtkComboBox *widget, dt_lib_export_t *d)
+{
+  int pos = gtk_combo_box_get_active(widget);
+  dt_conf_set_int("plugins/lighttable/export/iccintent", pos-1);
 }
 
 void
@@ -83,7 +134,7 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, 5);
   
   GtkBox *hbox;
   GtkWidget *label;
@@ -109,47 +160,88 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(d->quality), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-#if 0
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("rendering intent")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->cbox1, _("perceptual"));
-  gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox1, _("saturation"));
-  gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
-  GList *l = g->profiles;
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  label = gtk_label_new(_("rendering intent"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox1, label, TRUE, TRUE, 0);
+  d->intent = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(d->intent, _("image settings"));
+  gtk_combo_box_append_text(d->intent, _("perceptual"));
+  gtk_combo_box_append_text(d->intent, _("relative colorimetric"));
+  gtk_combo_box_append_text(d->intent, _("saturation"));
+  gtk_combo_box_append_text(d->intent, _("absolute colorimetric"));
+  gtk_box_pack_start(vbox2, GTK_WIDGET(d->intent), TRUE, TRUE, 0);
+
+  d->profiles = NULL;
+  dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  strcpy(prof->filename, "sRGB");
+  strcpy(prof->name, "sRGB");
+  int pos;
+  prof->pos = 1;
+  d->profiles = g_list_append(d->profiles, prof);
+  prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  strcpy(prof->filename, "X profile");
+  strcpy(prof->name, "X profile");
+  pos = prof->pos = 2;
+  d->profiles = g_list_append(d->profiles, prof);
+
+  // read datadir/color/out/*.icc
+  char datadir[1024], dirname[1024], filename[1024];
+  dt_get_datadir(datadir, 1024);
+  snprintf(dirname, 1024, "%s/color/out", datadir);
+  cmsHPROFILE tmpprof;
+  const gchar *d_name;
+  GDir *dir = g_dir_open(dirname, 0, NULL);
+  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
+  if(dir)
+  {
+    while((d_name = g_dir_read_name(dir)))
+    {
+      snprintf(filename, 1024, "%s/%s", dirname, d_name);
+      tmpprof = cmsOpenProfileFromFile(filename, "r");
+      if(tmpprof)
+      {
+        dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+        strcpy(prof->name, cmsTakeProductDesc(tmpprof));
+        strcpy(prof->filename, d_name);
+        prof->pos = ++pos;
+        cmsCloseProfile(tmpprof);
+        d->profiles = g_list_append(d->profiles, prof);
+      }
+    }
+    g_dir_close(dir);
+  }
+  GList *l = d->profiles;
+  label = gtk_label_new(_("output profile"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox1, label, TRUE, TRUE, 0);
+  d->profile = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_box_pack_start(vbox2, GTK_WIDGET(d->profile), TRUE, TRUE, 0);
+  gtk_combo_box_append_text(d->profile, _("image settings"));
   while(l)
   {
-    dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
+    dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
     if(!strcmp(prof->name, "X profile"))
-    {
-      gtk_combo_box_append_text(g->cbox2, _("system display profile"));
-      gtk_combo_box_append_text(g->cbox3, _("system display profile"));
-    }
+      gtk_combo_box_append_text(d->profile, _("system display profile"));
     else
-    {
-      gtk_combo_box_append_text(g->cbox2, prof->name);
-      gtk_combo_box_append_text(g->cbox3, prof->name);
-    }
+      gtk_combo_box_append_text(d->profile, prof->name);
     l = g_list_next(l);
   }
-  gtk_combo_box_set_active(g->cbox1, 0);
+  gtk_combo_box_set_active(d->profile, 0);
   char tooltip[1024];
   snprintf(tooltip, 1024, _("icc profiles in %s/color/out"), datadir);
-  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, NULL);
-  g_signal_connect (G_OBJECT (g->cbox4), "changed",
-                    G_CALLBACK (display_intent_changed),
-                    (gpointer)self);
-  g_signal_connect (G_OBJECT (g->cbox2), "changed",
+  gtk_object_set(GTK_OBJECT(d->profile), "tooltip-text", tooltip, NULL);
+  g_signal_connect (G_OBJECT (d->intent), "changed",
+                    G_CALLBACK (intent_changed),
+                    (gpointer)d);
+  g_signal_connect (G_OBJECT (d->profile), "changed",
                     G_CALLBACK (profile_changed),
-                    (gpointer)self);
-#endif
-  
+                    (gpointer)d);
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());

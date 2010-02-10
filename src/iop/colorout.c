@@ -229,7 +229,8 @@ void gui_update(struct dt_iop_module_t *self)
     if(iccfound && displayfound) break;
     prof = g_list_next(prof);
   }
-  gtk_combo_box_set_active(g->cbox2, 0);
+  if(!iccfound)     gtk_combo_box_set_active(g->cbox2, 0);
+  if(!displayfound) gtk_combo_box_set_active(g->cbox3, 0);
   if(!iccfound)     fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
   if(!displayfound) fprintf(stderr, "[colorout] could not find requested display profile `%s'!\n", p->displayprofile);
 }
