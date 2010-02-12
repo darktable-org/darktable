@@ -88,19 +88,22 @@ gui_reset (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  GList *prof = d->profiles;
-  while(prof)
+  if(iccprofile)
   {
-    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
-    if(!strcmp(pp->filename, iccprofile))
+    GList *prof = d->profiles;
+    while(prof)
     {
-      gtk_combo_box_set_active(d->profile, pp->pos);
-      iccfound = 1;
+      dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
+      if(!strcmp(pp->filename, iccprofile))
+      {
+        gtk_combo_box_set_active(d->profile, pp->pos);
+        iccfound = 1;
+      }
+      if(iccfound) break;
+      prof = g_list_next(prof);
     }
-    if(iccfound) break;
-    prof = g_list_next(prof);
+    g_free(iccprofile);
   }
-  g_free(iccprofile);
   gtk_combo_box_set_active(d->profile, 0);
 }
 
