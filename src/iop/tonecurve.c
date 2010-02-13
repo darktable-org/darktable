@@ -68,6 +68,48 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
       p->tonecurve_y[1] -= 0.06; p->tonecurve_y[4] += 0.06;
       p->tonecurve_y[2] -= 0.10; p->tonecurve_y[3] += 0.10;
       break;
+    case 3: // bright canon-like contrasty
+      p->tonecurve_x[0] = 0.000000;
+      p->tonecurve_y[0] = 0.000000;
+      p->tonecurve_x[1] = 0.072581;
+      p->tonecurve_y[1] = 0.040161;
+      p->tonecurve_x[2] = 0.157258;
+      p->tonecurve_y[2] = 0.138710;
+      p->tonecurve_x[3] = 0.491935;
+      p->tonecurve_y[3] = 0.599194;
+      p->tonecurve_x[4] = 0.758065;
+      p->tonecurve_y[4] = 0.877177;
+      p->tonecurve_x[5] = 1.000000;
+      p->tonecurve_y[5] = 1.000000;
+      break;
+    case 4: // dark regions with more contrast
+      p->tonecurve_x[0] = 0.000000;
+      p->tonecurve_y[0] = 0.000000;
+      p->tonecurve_x[1] = 0.072581;
+      p->tonecurve_y[1] = 0.040000;
+      p->tonecurve_x[2] = 0.157258;
+      p->tonecurve_y[2] = 0.138710;
+      p->tonecurve_x[3] = 0.491935;
+      p->tonecurve_y[3] = 0.491935;
+      p->tonecurve_x[4] = 0.758065;
+      p->tonecurve_y[4] = 0.758065;
+      p->tonecurve_x[5] = 1.000000;
+      p->tonecurve_y[5] = 1.000000;
+      break;
+    case 5: // pascals eos curve:
+      p->tonecurve_x[0] = 0.000;
+      p->tonecurve_y[0] = 0.000;
+      p->tonecurve_x[1] = 0.055;
+      p->tonecurve_y[1] = 0.040;
+      p->tonecurve_x[2] = 0.090;
+      p->tonecurve_y[2] = 0.085;
+      p->tonecurve_x[3] = 0.550;
+      p->tonecurve_y[3] = 0.700;
+      p->tonecurve_x[4] = 0.990;
+      p->tonecurve_y[4] = 0.999;
+      p->tonecurve_x[5] = 1.000;
+      p->tonecurve_y[5] = 1.000;
+      break;
     default:
       return;
   }
@@ -85,7 +127,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   for(int k=0;k<6;k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   gegl_node_set(piece->input, "curve", d->curve, NULL);
 #else
-  for(int k=0;k<6;k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0;k<6;k++)
+    dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   for(int k=0;k<0x10000;k++)
     // d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
     d->table[k] = 100.0*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k);
@@ -202,6 +245,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("linear"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("med contrast"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("high contrast"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("bright contrast"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("dark contrast"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("canon eos"));
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
   g_signal_connect (G_OBJECT (c->presets), "changed",
                     G_CALLBACK (presets_changed),

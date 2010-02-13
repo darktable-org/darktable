@@ -1,4 +1,10 @@
 0.5 release:
+- make tonecurve default, and make it fit exactly the old results.
+- monochrome radius behaves differently in linear color mode. make it larger.
+- lamer lighttable mode ;)
+- save current settings as preset
+- remove gamma correction at end completely (merge to colorout)
+- replace preview_to_raw by sRGB input profile
 - load only icc profiles which mach current camera and in/out selectively.
 - DT_MODULE(version) ! => incompatible *.dt
 - resource conflict: load jobs reimport and dt
@@ -43,13 +49,13 @@
 - film strip in develop mode to switch to next image.
 - plugin focus (doubleclick header?)
 - side by side comparison view
-- gconf option for maximum number of jobs?
-- gconf performance presets (memory/preview subsample)
 - histogram fill light mouse gesture
 - exposure: highlight clipped parts
 - clipping event hooks: crop
 - user preferences
   - automatic application of history stacks due to pattern matching.
+  - gconf option for maximum number of jobs?
+  - gconf performance presets (memory/preview subsample)
 - scroll to opened expander in darkroom mode.
 
 later:

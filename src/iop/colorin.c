@@ -42,7 +42,7 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(pp->pos == pos)
     {
-      // change gamma as well:
+#if 0 // change gamma as well:
       GList *modules = g_list_last(self->dev->iop);
       dt_iop_module_t *gamma = NULL;
       while (modules)
@@ -55,15 +55,16 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
       if (gamma)
       {
         dt_iop_gamma_params_t *gp = (dt_iop_gamma_params_t *)gamma->params;
-        if(strcmp(pp->filename, "sRGB") && strcmp(pp->filename, "cmatrix"))
+        // if(strcmp(pp->filename, "linear_rgb") && strcmp(pp->filename, "cmatrix"))
           gp->gamma = gp->linear = 1.0;
-        else
-          memcpy(gamma->params, gamma->default_params, gamma->params_size);
+        // else
+          // memcpy(gamma->params, gamma->default_params, gamma->params_size);
         dt_dev_add_history_item(darktable.develop, gamma);
         darktable.gui->reset = 1;
         gamma->gui_update(gamma);
         darktable.gui->reset = 0;
       }
+#endif
       strcpy(p->iccprofile, pp->filename);
       dt_dev_add_history_item(darktable.develop, self);
       return;
@@ -83,21 +84,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // not thread safe.
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    double RGB[3] = {0., 0., 0.};
+    double XYZ[3] = {0., 0., 0.};
     cmsCIELab Lab;
     if(d->cmatrix[0][0] > -666.0)
     {
       for(int c=0;c<3;c++)
         for(int j=0;j<3;j++)
-          RGB[c] += d->cmatrix[c][j] * in[3*k + j];
+          XYZ[c] += d->cmatrix[c][j] * in[3*k + j];
     }
     else
     {
-      for(int c=0;c<3;c++) RGB[c] = in[3*k + c];
+      for(int c=0;c<3;c++) XYZ[c] = in[3*k + c];
     }
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    cmsDoTransform(d->xform, RGB, &Lab, 1);
-    // Lab.L = RGB[0]; Lab.a = RGB[1]; Lab.b = RGB[2];
+    cmsDoTransform(d->xform, XYZ, &Lab, 1);
+    // Lab.L = XYZ[0]; Lab.a = XYZ[1]; Lab.b = XYZ[2];
     out[3*k + 0] = Lab.L;
     if(Lab.L > 0)
     {
@@ -113,6 +114,34 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
+#if 0
+static void
+invert_matrix(const float mat[4][3], float inv[3][4])
+{
+#define A(y, x) mat[(y - 1)][(x - 1)]
+#define B(y, x) inv[(y - 1)][(x - 1)]
+    const float det =
+      A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3)) -
+      A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3)) +
+      A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+    const float invDet = 1.f / det;
+    B(1, 1) =  invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));
+    B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));
+    B(1, 3) =  invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+    B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));
+    B(2, 2) =  invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));
+    B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));
+
+    B(3, 1) =  invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));
+    B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));
+    B(3, 3) =  invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));
+#undef A
+#undef B
+}
+#endif
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -124,19 +153,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
   if(d->xform) cmsDeleteTransform(d->xform);
+  d->Lab = cmsCreateLabProfile(NULL);
   d->cmatrix[0][0] = -666.0;
-  if(!strcmp(p->iccprofile, "sRGB"))
-  { // default: sRGB
-    d->input = NULL;
-    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
-  }
-  else if(!strcmp(p->iccprofile, "cmatrix"))
+  char datadir[1024];
+  char filename[1024];
+  dt_get_datadir(datadir, 1024);
+  if(!strcmp(p->iccprofile, "cmatrix"))
   { // color matrix
     d->input = NULL;
-    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
-    char filename[1024];
     int ret;
     dt_image_full_path(self->dev->image, filename, 1024);
     libraw_data_t *raw = libraw_init(0);
@@ -144,22 +168,29 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(!ret)
     {
       for(int k=0;k<4;k++) for(int i=0;i<3;i++)
+        // invert_matrix(raw->color.cam_xyz, d->cmatrix);
         d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
     }
     libraw_close(raw);
   }
-  else
-  { // else: load file name
-    char datadir[1024];
-    char filename[1024];
-    dt_get_datadir(datadir, 1024);
+  else if(strcmp(p->iccprofile, "sRGB"))
+  {
     snprintf(filename, 1024, "%s/color/in/%s", datadir, p->iccprofile);
     d->input = cmsOpenProfileFromFile(filename, "r");
-    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    if(d->input)
-      d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
-    else
+  }
+  if(d->input)
+    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+  else
+  {
+    if(strcmp(p->iccprofile, "sRGB"))
+    {
+      snprintf(filename, 1024, "%s/color/in/%s", datadir, "linear_rgb.icc");
+      d->input = cmsOpenProfileFromFile(filename, "r");
+    }
+    if(!d->input) // sRGB fallback
       d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    else
+      d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
@@ -244,17 +275,23 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
-  // add std sRGB profile:
+  // add std RGB profile:
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "linear_rgb.icc");
+  strcpy(prof->name, "linear_rgb");
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = 0;
+  // sRGB for ldr image input
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
   g->profiles = g_list_append(g->profiles, prof);
-  prof->pos = 0;
+  prof->pos = 1;
   // get color matrix from raw image:
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "cmatrix");
   strcpy(prof->name, "cmatrix");
-  int pos = prof->pos = 1;
+  int pos = prof->pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/in/*.icc
@@ -264,7 +301,8 @@ void gui_init(struct dt_iop_module_t *self)
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
-  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
+  // (void)cmsErrorAction(LCMS_ERROR_IGNORE);
+  (void)cmsErrorAction(LCMS_ERROR_SHOW);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
@@ -305,8 +343,10 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "sRGB"))
-      gtk_combo_box_append_text(g->cbox2, _("no profile"));
+    if(!strcmp(prof->name, "linear_rgb"))
+      gtk_combo_box_append_text(g->cbox2, _("linear sensor"));
+    else if(!strcmp(prof->name, "sRGB"))
+      gtk_combo_box_append_text(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "cmatrix"))
       gtk_combo_box_append_text(g->cbox2, _("color matrix"));
     else
