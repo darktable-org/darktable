@@ -328,6 +328,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     return 1;
   }
   img->import_lock = 1;
+  img->output_width = img->output_height = 0;
   dt_imageio_retval_t ret = dt_imageio_open_preview(img, filename);
   if(ret == DT_IMAGEIO_CACHE_FULL)
   { // handle resource conflicts if user provided very small caches:
@@ -345,6 +346,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
 
   // already some db entry there?
   int rc, altered = img->force_reimport;
+  img->force_reimport = 0;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->id);
@@ -367,7 +369,6 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     dt_dev_load_preview(&dev, img);
     dt_dev_process_to_mip(&dev);
     dt_dev_cleanup(&dev);
-    img->force_reimport = 0;
   }
   img->import_lock = 0;
   // dt_image_cache_release(imgl, 'w');
@@ -845,7 +846,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
   // already loading? 
   if(img->lock[mip_in].write)
   {
-    pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+    pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
     return DT_IMAGE_NONE;
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
