@@ -14,7 +14,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 
-DT_MODULE
+DT_MODULE(1)
 
 const char *name()
 {

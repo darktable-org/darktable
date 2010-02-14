@@ -18,7 +18,7 @@
 #include "gui/draw.h"
 #include "iop/lens.h"
 
-DT_MODULE
+DT_MODULE(1)
 
 const char *name()
 {

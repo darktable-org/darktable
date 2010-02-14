@@ -4,7 +4,7 @@
 #include "control/control.h"
 #include "libs/lib.h"
 
-DT_MODULE
+DT_MODULE(1)
 
 typedef struct dt_lib_collect_t
 {

@@ -14,7 +14,7 @@
 #include <math.h>
 #include <glade/glade.h>
 
-DT_MODULE
+DT_MODULE(1)
 
 const char
 *name(dt_view_t *self)

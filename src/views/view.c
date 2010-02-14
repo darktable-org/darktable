@@ -53,7 +53,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
     goto out;
   }
   int (*version)();
-  if(!g_module_symbol(view->module, "dt_module_version", (gpointer)&(version))) goto out;
+  if(!g_module_symbol(view->module, "dt_module_dt_version", (gpointer)&(version))) goto out;
   if(version() != dt_version())
   {
     fprintf(stderr, "[view_load_module] `%s' is compiled for another version of dt (module %d != dt %d) !\n", libname, version(), dt_version());

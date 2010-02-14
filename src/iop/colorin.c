@@ -13,7 +13,7 @@
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
 
-DT_MODULE
+DT_MODULE(1)
 
 const char *name()
 {

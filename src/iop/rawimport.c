@@ -17,7 +17,7 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
-DT_MODULE
+DT_MODULE(1)
 
 /** core libraw functionality wrapper, for convenience in darkroom mode. */
 

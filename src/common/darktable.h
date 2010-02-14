@@ -14,16 +14,24 @@
 
 // every module has to define this:
 #ifdef _DEBUG
-#define DT_MODULE \
-int dt_module_version() \
+#define DT_MODULE(MODVER) \
+int dt_module_dt_version() \
 {\
   return -DT_MODULE_VERSION; \
+}\
+int dt_module_mod_version() \
+{\
+  return MODVER; \
 }
 #else
 #define DT_MODULE \
-int dt_module_version() \
+int dt_module_dt_version() \
 {\
   return DT_MODULE_VERSION; \
+}\
+int dt_module_mod_version() \
+{\
+  return MODVER; \
 }
 #endif
 

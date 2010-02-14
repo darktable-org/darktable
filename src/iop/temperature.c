@@ -15,7 +15,7 @@
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
 
-DT_MODULE
+DT_MODULE(1)
 
 /** this wraps gegl:temperature plus some additional whitebalance adjustments. */
 

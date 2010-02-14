@@ -14,7 +14,7 @@
 #include <inttypes.h>
 #include <lcms.h>
 
-DT_MODULE
+DT_MODULE(1)
 
 #define DT_IOP_COLORZONES_INSET 5
 #define DT_IOP_COLORZONES_CURVE_INFL .3f

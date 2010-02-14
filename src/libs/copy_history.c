@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 
-DT_MODULE
+DT_MODULE(1)
 
 typedef struct dt_lib_copy_history_t
 {

@@ -12,7 +12,7 @@
 #include "control/conf.h"
 #include "gui/gtk.h"
 
-DT_MODULE
+DT_MODULE(1)
 
 const char *name()
 {

@@ -16,7 +16,7 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
-DT_MODULE
+DT_MODULE(1)
 
 /** rotate an image, then clip the buffer. */
 

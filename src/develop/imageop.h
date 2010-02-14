@@ -76,6 +76,8 @@ typedef struct dt_iop_module_t
   /** expander containing the widget. */
   GtkExpander *expander;
 
+  /** version of the parameters in the database. */
+  int (*version)          ();
   /** get name of the module, to be translated. */
   const char* (*name)     ();
   /** callback methods for gui. */

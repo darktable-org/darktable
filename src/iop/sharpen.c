@@ -15,7 +15,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE
+DT_MODULE(1)
 
 #define MAXR 8
 

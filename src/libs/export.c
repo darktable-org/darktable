@@ -9,7 +9,7 @@
 #include <glade/glade.h>
 #include <lcms.h>
 
-DT_MODULE
+DT_MODULE(1)
 
 typedef struct dt_lib_export_t
 {

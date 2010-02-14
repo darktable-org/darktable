@@ -88,12 +88,13 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
-  if(!g_module_symbol(module->module, "dt_module_version", (gpointer)&(version))) goto error;
+  if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
   if(version() != dt_version())
   {
     fprintf(stderr, "[iop_load_module] `%s' is compiled for another version of dt (module %d != dt %d) !\n", libname, version(), dt_version());
     goto error;
   }
+  if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;

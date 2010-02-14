@@ -5,7 +5,7 @@
 #include "gui/gtk.h"
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE
+DT_MODULE(1)
 
 const char*
 name ()

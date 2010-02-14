@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <assert.h>
 
-DT_MODULE
+DT_MODULE(1)
 
 #define DT_LIBRARY_MAX_ZOOM 13
 
