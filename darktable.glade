@@ -41,7 +41,7 @@
                         <property name="has_tooltip">True</property>
                         <property name="tooltip" translatable="yes">switch to darkroom mode</property>
                         <property name="ypad">7</property>
-                        <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;&lt;i&gt;lighttable mode&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
+                        <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;lighttable mode&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                       </widget>
                     </child>
@@ -342,7 +342,7 @@ file manager</property>
                         <property name="visible">True</property>
                         <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                         <property name="ypad">7</property>
-                        <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;&lt;i&gt;darktable&lt;/i&gt;&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
+                        <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;darktable&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                       </widget>
                     </child>

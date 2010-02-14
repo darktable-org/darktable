@@ -17,12 +17,12 @@ msgid "-"
 msgstr "-"
 
 #: ../darktable.glade.h:2
-msgid "<span color=\"#7f7f7f\"><big><b><i>darktable</i></b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b><i>darktable</i></b></big></span>"
+msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
 
 #: ../darktable.glade.h:3
-msgid "<span color=\"#7f7f7f\"><big><b><i>lighttable mode</i></b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b><i>Ljusbordsläge</i></b></big></span>"
+msgid "<span color=\"#7f7f7f\"><big><b>lighttable mode</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>Ljusbordsläge</b></big></span>"
 
 #: ../darktable.glade.h:4
 msgid ""
@@ -227,8 +227,8 @@ msgstr "Byt till %s läge"
 
 #: ../src/control/control.c:841
 #, c-format
-msgid "<span color=\"#7f7f7f\"><big><b><i>%s mode</i></b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b><i>%s läge</i></b></big></span>"
+msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>%s läge</b></big></span>"
 
 #: ../src/control/control.c:1163
 msgid "0 - original"

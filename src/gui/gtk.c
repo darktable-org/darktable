@@ -564,7 +564,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_show_all(widget);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
-  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b><i>"PACKAGE_NAME"-"PACKAGE_VERSION"</i></b></big></span>");
+  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME"-"PACKAGE_VERSION"</b></big></span>");
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
 
   g_signal_connect (G_OBJECT (widget), "key-press-event",
