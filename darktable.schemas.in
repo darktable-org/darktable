@@ -552,7 +552,7 @@
       <applyto>/apps/darktable/gamma_linear</applyto>
       <owner>darktable</owner>
       <type>float</type>
-      <default>.1f</default>
+      <default>.4045f</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -565,7 +565,7 @@
       <applyto>/apps/darktable/gamma_gamma</applyto>
       <owner>darktable</owner>
       <type>float</type>
-      <default>.45f</default>
+      <default>.41f</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>

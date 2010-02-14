@@ -80,7 +80,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   d->a = p->a;
   d->b = p->b;
-  const float sigma = 64.0 * p->size;
+  const float sigma = 128.0 * p->size;
   d->size = sigma*sigma;
 #endif
 }
