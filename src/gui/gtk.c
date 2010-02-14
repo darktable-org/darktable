@@ -42,9 +42,9 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
       else gtk_widget_show(widget);
       break;
     default:
-      // widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-      // if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-      // else gtk_widget_show(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
+      else gtk_widget_show(widget);
       break;
   }
   return TRUE;
@@ -147,7 +147,23 @@ view_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data
   return FALSE;
 }
 
-void
+static void
+lighttable_zoom_changed (GtkSpinButton *widget, gpointer user_data)
+{
+  const int i = gtk_spin_button_get_value(widget);
+  dt_conf_set_int("plugins/lighttable/images_in_row", i);
+  dt_control_gui_queue_draw();
+}
+
+static void
+lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
+{
+  const int i = gtk_combo_box_get_active(widget);
+  dt_conf_set_int("plugins/lighttable/layout", i);
+  dt_control_gui_queue_draw();
+}
+
+static void
 image_filter_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_filter
@@ -175,7 +191,7 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
 }
 
 
-void
+static void
 image_sort_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_sort
@@ -204,15 +220,6 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   gtk_widget_queue_draw(win);
 }
 
-
-static void
-selected_action_button_clicked(GtkWidget *widget, gpointer user_data)
-{
-  GtkWidget *wid = glade_xml_get_widget (darktable.gui->main_window, "select_action");
-  int i = gtk_combo_box_get_active(GTK_COMBO_BOX(wid));
-  if     (i == 0) dt_control_write_dt_files();
-  else if(i == 1) dt_control_delete_images();
-}
 
 static void
 film_button_clicked (GtkWidget *widget, gpointer user_data)
@@ -572,12 +579,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
 	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
 
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "selected_action_button");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (selected_action_button_clicked),
-                    (gpointer)0);
-
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   dt_gui_navigation_init(&gui->navigation, widget);
 
@@ -616,6 +617,17 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
   g_signal_connect (G_OBJECT (widget), "changed",
                     G_CALLBACK (image_sort_changed),
+                    (gpointer)0);
+
+  // lighttable layout
+  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (lighttable_layout_changed),
+                    (gpointer)0);
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  g_signal_connect (G_OBJECT (widget), "value-changed",
+                    G_CALLBACK (lighttable_zoom_changed),
                     (gpointer)0);
 
   // nice endmarker drawing.

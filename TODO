@@ -1,10 +1,9 @@
 0.5 release:
-- make tonecurve default, and make it fit exactly the old results.
+- remove last few non-gconf settings.
 - monochrome radius behaves differently in linear color mode. make it larger.
 - lamer lighttable mode ;)
 - save current settings as preset
 - remove gamma correction at end completely (merge to colorout)
-- replace preview_to_raw by sRGB input profile
 - load only icc profiles which mach current camera and in/out selectively.
 - DT_MODULE(version) ! => incompatible *.dt
 - resource conflict: load jobs reimport and dt

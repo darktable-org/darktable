@@ -37,7 +37,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("mipmap_cache_thumbnails", 500);
   dt_conf_set_int  ("mipmap_cache_full_images", 1);
 
-  dt_conf_set_int  ("ui_last/select_action", 0);
   dt_conf_set_bool ("ui_last/fullscreen", FALSE);
   dt_conf_set_int  ("ui_last/view", DT_MODE_NONE);
 
@@ -892,8 +891,11 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   int8_t bit;
   GtkWidget *widget;
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "select_action");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/select_action"));
+  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("plugins/lighttable/layout"));
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/images_in_row"));
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
   dt_lib_filter_t filter = dt_conf_get_int("ui_last/combo_filter");

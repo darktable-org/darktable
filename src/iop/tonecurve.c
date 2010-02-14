@@ -179,13 +179,28 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
-  module->default_enabled = 0;
+  module->default_enabled = 1;
   module->priority = 700;
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t) {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                 {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                  0};
+  if(!dt_image_is_ldr(module->dev->image))
+  {
+    tmp.tonecurve_x[0] = 0.000;
+    tmp.tonecurve_y[0] = 0.000;
+    tmp.tonecurve_x[1] = 0.055;
+    tmp.tonecurve_y[1] = 0.040;
+    tmp.tonecurve_x[2] = 0.090;
+    tmp.tonecurve_y[2] = 0.085;
+    tmp.tonecurve_x[3] = 0.550;
+    tmp.tonecurve_y[3] = 0.700;
+    tmp.tonecurve_x[4] = 0.990;
+    tmp.tonecurve_y[4] = 0.999;
+    tmp.tonecurve_x[5] = 1.000;
+    tmp.tonecurve_y[5] = 1.000;
+  }
   memcpy(module->params, &tmp, sizeof(dt_iop_tonecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_tonecurve_params_t));
 }

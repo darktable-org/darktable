@@ -132,19 +132,6 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/ui_last/select_action</key>
-      <applyto>/apps/darktable/ui_last/select_action</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>0</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
-    <schema>
       <key>/schemas/apps/darktable/ui_last/fullscreen</key>
       <applyto>/apps/darktable/ui_last/fullscreen</applyto>
       <owner>darktable</owner>
@@ -297,6 +284,32 @@
       <locale name="C">
         <short>sql query to select images for current view</short>
         <long>order by and limit clauses go last</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/layout</key>
+      <applyto>/apps/darktable/plugins/lighttable/layout</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>which layout should lighttable mode show</short>
+        <long>select a layout for the lighttable: 0 - zoomable or 1 - file manager.</long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/images_in_row</key>
+      <applyto>/apps/darktable/plugins/lighttable/images_in_row</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>7</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>how many images are in one row</short>
+        <long></long>
       </locale>
     </schema>
     

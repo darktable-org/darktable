@@ -1104,7 +1104,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 
   for(int j=0; j < jpg.height; j++)
     for(int i=0; i < jpg.width; i++)
-      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = dt_dev_de_gamma[tmp[4*jpg.width*j+4*i+k]];
+      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');

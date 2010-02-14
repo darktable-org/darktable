@@ -31,6 +31,14 @@ void dt_image_write_dt_files(dt_image_t *img)
   }
 }
 
+int dt_image_is_ldr(dt_image_t *img)
+{
+  const char *c = img->filename + strlen(img->filename);
+  while(*c != '.' && c > img->filename) c--;
+  if(!strcasecmp(c, ".jpg") || !strcasecmp(c, ".png") || !strcasecmp(c, ".ppm")) return 1;
+  else return 0;
+}
+
 void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 {
   if(img->film_id == 1)
@@ -210,7 +218,11 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
 
   // convert and store in db.
-  dt_imageio_preview_8_to_f(p_wd, p_ht, img->mip[DT_IMAGE_MIP4], img->mipf);
+  if(dt_image_is_ldr(img))
+    for(int idx=0;idx < p_wd*p_ht; idx++)
+      for(int k=0;k<3;k++) img->mipf[3*idx+2-k] = (1./255.)*img->mip[DT_IMAGE_MIP4][4*idx+k];
+  else
+    dt_imageio_preview_8_to_f(p_wd, p_ht, img->mip[DT_IMAGE_MIP4], img->mipf);
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
   dt_imageio_preview_write(img, DT_IMAGE_MIPF);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');

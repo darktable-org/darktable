@@ -255,6 +255,7 @@ void init(dt_iop_module_t *module)
   module->priority = 300;
   module->hide_enable_button = 1;
   dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"cmatrix", DT_INTENT_PERCEPTUAL};
+  if(dt_image_is_ldr(module->dev->image)) strcpy(tmp.iccprofile, "sRGB");
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }

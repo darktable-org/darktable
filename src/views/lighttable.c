@@ -49,7 +49,8 @@ typedef struct dt_library_t
   int32_t last_selected_id;
   int button;
   uint32_t modifiers;
-  uint32_t center, pan, track;
+  uint32_t center, pan;
+  int32_t track, offset;
   float zoom_x, zoom_y, zoom;
   dt_library_image_over_t image_over;
 }
@@ -341,7 +342,112 @@ dt_library_toggle_selection(int iid)
   }
 }
 
-void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+static void
+expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  lib->image_over = DT_LIB_DESERT;
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  cairo_set_source_rgb (cr, .9, .9, .9);
+  cairo_paint(cr);
+
+  if(lib->track >  2) lib->offset += iir;
+  if(lib->track < -2) lib->offset -= iir;
+  lib->track = 0;
+  if(lib->center) lib->offset = 0;
+  lib->center = 0;
+  int offset = lib->offset;
+  static int oldpan = 0;
+  const int pan = lib->pan;
+
+  const float wd = width/(float)iir;
+  const float ht = width/(float)iir;
+
+  const int seli = pointerx / (float)wd;
+  const int selj = pointery / (float)ht;
+
+  const int img_pointerx = fmodf(pointerx, wd);
+  const int img_pointery = fmodf(pointery, ht);
+
+  const int max_rows = 1 + (int)((height)/ht + .5);
+  const int max_cols = iir;
+  sqlite3_stmt *stmt = NULL;
+  int rc, id, last_seli = 1<<30, last_selj = 1<<30;
+  int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
+
+  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
+  if(!query) return;
+  if(query[0] == '\0')
+  {
+    g_free(query);
+    return;
+  }
+  rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, offset);
+  rc = sqlite3_bind_int (stmt, 2, max_rows*iir);
+  g_free(query);
+  for(int row = 0; row < max_rows; row++)
+  {
+    for(int col = 0; col < max_cols; col++)
+    {
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        id = sqlite3_column_int(stmt, 0);
+        dt_image_t *image = dt_image_cache_get(id, 'r');
+        if(image)
+        {
+          // set mouse over id
+          if(seli == col && selj == row)
+          {
+            mouse_over_id = image->id;
+            DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+          }
+          // add clicked image to selected table
+          if(clicked1)
+          {
+            if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
+            { // clear selected if no modifier
+              sqlite3_stmt *stmt2;
+              sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
+              sqlite3_bind_int(stmt2, 1, image->id);
+              sqlite3_step(stmt2);
+              sqlite3_finalize(stmt2);
+            }
+            if((lib->modifiers & GDK_SHIFT_MASK) && image->id == lib->last_selected_id) { last_seli = col; last_selj = row; }
+            if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
+                    col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
+               (seli == col && selj == row))
+            { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
+              dt_library_toggle_selection(image->id);
+              lib->last_selected_id = image->id;
+            }
+          }
+          cairo_save(cr);
+          dt_image_expose(image, lib, image->id, cr, wd, ht, iir, img_pointerx, img_pointery);
+          cairo_restore(cr);
+          dt_image_cache_release(image, 'r');
+        }
+      }
+      else goto failure;
+      cairo_translate(cr, wd, 0.0f);
+    }
+    cairo_translate(cr, -max_cols*wd, ht);
+  }
+failure:
+  sqlite3_finalize(stmt);
+
+  oldpan = pan;
+#ifdef _DEBUG
+  if(darktable.unmuted & DT_DEBUG_CACHE)
+    dt_mipmap_cache_print(darktable.mipmap_cache);
+#endif
+}
+
+static void
+expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   static int last_offset = 0x7fffffff;
@@ -442,6 +548,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   gchar *query = dt_conf_get_string ("plugins/lighttable/query");
+  if(!query) return;
   if(query[0] == '\0')
   {
     g_free(query);
@@ -532,11 +639,26 @@ failure:
 #endif
 }
 
+void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  const int i = dt_conf_get_int("plugins/lighttable/layout");
+  switch(i)
+  {
+    case 1: // file manager
+      expose_filemanager(self, cr, width, height, pointerx, pointery);
+      break;
+    default: // zoomable
+      expose_zoomable(self, cr, width, height, pointerx, pointery);
+      break;
+  }
+}
+
 void enter(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->zoom = 1;
   lib->center = 1;
+  lib->offset = 0;
 
   // add expanders
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
@@ -726,18 +848,27 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 void scrolled(dt_view_t *view, double x, double y, int up)
 {
   dt_library_t *lib = (dt_library_t *)view->data;
-  int zoom = lib->zoom;
-  if(up)
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  if(layout == 1)
   {
-    zoom--;
-    if(zoom < 1) zoom = 1;
-    lib->zoom = zoom;
+    if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else   lib->track =  DT_LIBRARY_MAX_ZOOM;
   }
   else
-  {
-    zoom++;
-    if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-    lib->zoom = zoom;
+  { // zoom
+    int zoom = lib->zoom;
+    if(up)
+    {
+      zoom--;
+      if(zoom < 1) zoom = 1;
+      lib->zoom = zoom;
+    }
+    else
+    {
+      zoom++;
+      if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
+      lib->zoom = zoom;
+    }
   }
 }
 

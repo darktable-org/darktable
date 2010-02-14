@@ -290,39 +290,27 @@ id</property>
                         <property name="visible">True</property>
                         <property name="spacing">5</property>
                         <child>
-                          <widget class="GtkComboBox" id="select_action">
+                          <widget class="GtkComboBox" id="lighttable_layout_combobox">
                             <property name="visible">True</property>
-                            <property name="items" translatable="yes">write a history file for
-physically delete</property>
+                            <property name="active">0</property>
+                            <property name="items" translatable="yes">zoomable lighttable
+file manager</property>
                           </widget>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="label9">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">all selected images</property>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkButton" id="selected_action_button">
-                            <property name="label" translatable="yes">go</property>
+                          <widget class="GtkSpinButton" id="lighttable_zoom_spinbutton">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
+                            <property name="invisible_char">&#x2022;</property>
+                            <property name="adjustment">7 1 13 1 3 0</property>
+                            <property name="snap_to_ticks">True</property>
+                            <property name="numeric">True</property>
                           </widget>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                       </widget>
