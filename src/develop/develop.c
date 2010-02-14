@@ -126,6 +126,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   while(dev->iop)
   {
     dt_iop_unload_module((dt_iop_module_t *)dev->iop->data);
+    free(dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   pthread_mutex_destroy(&dev->history_mutex);
@@ -479,6 +480,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
       // printf("removing obsoleted history item: %s\n", hist->module->op);
       free(hist->params);
+      free(history->data);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
     }
@@ -579,6 +581,25 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
     dt_control_clear_history_items(dev->history_end);
     dt_control_queue_draw_all();
   }
+}
+
+void dt_dev_reload_history_items(dt_develop_t *dev)
+{
+  dt_dev_pop_history_items(dev, 0);
+  dt_control_clear_history_items(dev->history_end-1);
+  // remove unused history items:
+  GList *history = g_list_nth(dev->history, dev->history_end);
+  while(history)
+  {
+    GList *next = g_list_next(history);
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    free(hist->params);
+    free(history->data);
+    dev->history = g_list_delete_link(dev->history, history);
+    history = next;
+  }
+  dt_dev_read_history(dev);
+  dt_dev_pop_history_items(dev, dev->history_end);
 }
 
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)

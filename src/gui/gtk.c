@@ -19,6 +19,7 @@
 #include "control/conf.h"
 #include "views/view.h"
 
+
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
@@ -229,7 +230,30 @@ film_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_ctl_switch_mode_to(DT_LIBRARY);
 }
 
-void
+static void
+history_compress_clicked (GtkWidget *widget, gpointer user_data)
+{
+  const int imgid = darktable.develop->image ? darktable.develop->image->id : 0;
+  if(!imgid) return;
+  // make sure the right history is in there:
+  dt_dev_write_history(darktable.develop);
+  sqlite3_stmt *stmt;
+  sqlite3_exec(darktable.db, "create temp table temp_history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
+  sqlite3_prepare_v2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and enabled = 1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  sqlite3_exec(darktable.db, "insert into history select imgid,rowid-1,module,operation,op_params,enabled from temp_history", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from temp_history", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "drop table temp_history", NULL, NULL, NULL);
+  dt_dev_reload_history_items(darktable.develop);
+}
+
+static void
 history_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   static int reset = 0;
@@ -608,6 +632,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                       G_CALLBACK (history_button_clicked),
                       (gpointer)k);
   }
+  widget = glade_xml_get_widget (darktable.gui->main_window, "history_compress_button");
+  g_signal_connect (G_OBJECT (widget), "clicked",
+      G_CALLBACK (history_compress_clicked),
+      (gpointer)0);
 
   // image filtering/sorting
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");

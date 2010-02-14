@@ -1,4 +1,5 @@
 0.5 release:
+- check all g_list_delete_link 
 - dump mip4 on reimport
 - remove last few non-gconf settings.
 - save current settings as preset
@@ -7,13 +8,13 @@
 - resource conflict: load jobs reimport and dt
   gui develop full buf/mipf buf priority!
   - does dev actually hold a mipf reference?
+  - dev enter while still reimporting crashes.
 - remove auto exposure from raw import (and add auto button in exp)
 - clipping output scanlines garbled? (only subsample 1.0??)
 - sliders with spinboxes
 - color picker dont update?
 - wb presets broken for non-raw images
 - export/select by edited/up-to-date exported
-- straighten history button to simplify same operations
 - show numeric values RGB, Lab, zoom ratio
 - remove all rc = clang errors?
 - views/browse.c: browse by similar tag:

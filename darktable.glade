@@ -1061,6 +1061,19 @@ all film rolls</property>
                                                 <property name="position">9</property>
                                               </packing>
                                             </child>
+                                            <child>
+                                              <widget class="GtkButton" id="history_compress_button">
+                                                <property name="label" translatable="yes">compress history stack</property>
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                                <property name="xalign">0</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="padding">7</property>
+                                                <property name="position">10</property>
+                                              </packing>
+                                            </child>
                                           </widget>
                                         </child>
                                       </widget>
