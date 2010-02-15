@@ -29,7 +29,7 @@ int dt_module_dt_version() \
 {\
   return DT_MODULE_VERSION; \
 }\
-int dt_module_mod_version() \
+int dt_module_mod_version(MODVER) \
 {\
   return MODVER; \
 }
