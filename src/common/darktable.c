@@ -216,6 +216,27 @@ void *dt_alloc_align(size_t alignment, size_t size)
 
 void dt_get_plugindir(char *datadir, size_t bufsize)
 {
+#if defined(__MACH__) || defined(__APPLE__)
+  gchar *curr = g_get_current_dir();
+  int contains = 0; for(int k=0;darktable.progname[k] != 0;k++) if(darktable.progname[k] == '/') { contains = 1; break; }
+  if(darktable.progname[0] == '/') // absolute path
+    snprintf(datadir, bufsize, "%s", darktable.progname);
+  else if(contains) // relative path
+    snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
+  else
+  { // no idea where we have been called. use compiled in path
+    g_free(curr);
+    snprintf(datadir, bufsize, "%s/darktable", LIBDIR);
+    return;
+  }
+  size_t len = MIN(strlen(datadir), bufsize);
+  char *t = datadir + len; // strip off bin/darktable
+  for(;t>datadir && *t!='/';t--); t--;
+  if(*t == '.' && *(t-1) != '.') { for(;t>datadir && *t!='/';t--); t--; }
+  for(;t>datadir && *t!='/';t--);
+  strcpy(t, "/lib/darktable");
+  g_free(curr);
+#else
   snprintf(datadir, bufsize, "%s/darktable", LIBDIR);
 }
 
