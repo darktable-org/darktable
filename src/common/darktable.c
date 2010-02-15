@@ -238,6 +238,7 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
   g_free(curr);
 #else
   snprintf(datadir, bufsize, "%s/darktable", LIBDIR);
+#endif
 }
 
 void dt_get_datadir(char *datadir, size_t bufsize)
