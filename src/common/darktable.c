@@ -42,6 +42,16 @@ int dt_init(int argc, char *argv[])
   {
     if(argv[k][0] == '-')
     {
+      if(!strcmp(argv[k], "--help"))
+      {
+        printf("usage: %s [-d {cache,control,dev}] [IMG_1234.{RAW,..}]\n", argv[0]);
+        exit(0);
+      }
+      else if(!strcmp(argv[k], "--version"))
+      {
+        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2010 johannes hanika\n"PACKAGE_BUGREPORT"\n");
+        exit(0);
+      }
       if(argv[k][1] == 'd' && argc > k+1)
       {
         if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
