@@ -323,7 +323,10 @@ void init(dt_iop_module_t *module)
   pthread_mutex_lock(&darktable.plugin_threadsafe);
   lfDatabase *dt_iop_lensfun_db = lf_db_new();
   module->data = (void *)dt_iop_lensfun_db;
+#if defined(__MACH__) || defined(__APPLE__)
+#else
   if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
+#endif
   {
     char path[1024];
     dt_get_datadir(path, 1024);
@@ -333,7 +336,7 @@ void init(dt_iop_module_t *module)
     dt_iop_lensfun_db->HomeDataDir = path;
     if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
     {
-      fprintf(stderr, "[iop_lens]: could not load lensfun database!\n");
+      fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
     }
   }
   pthread_mutex_unlock(&darktable.plugin_threadsafe);

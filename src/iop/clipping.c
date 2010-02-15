@@ -16,13 +16,13 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 /** rotate an image, then clip the buffer. */
 
 typedef struct dt_iop_clipping_params_t
 {
-  float angle, cx, cy, cw, ch;
+  float angle, cx, cy, cw, ch, aspect;
 }
 dt_iop_clipping_params_t;
 
@@ -31,6 +31,8 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
   GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
+  GtkSpinButton *aspect;
+  GtkCheckButton *aspect_on;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
 }
 dt_iop_clipping_gui_data_t;
@@ -76,6 +78,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 {
   *roi_out = *roi_in;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
+  dt_iop_clipping_params_t *pm = (dt_iop_clipping_params_t *)self->params;
 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle),-sinf(d->angle),
@@ -95,11 +98,22 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->tx = roi_in->width  * .5f;
   d->ty = roi_in->height * .5f;
 
+  // enforce aspect ratio, only make area smaller
+  float ach = d->ch-d->cy, acw = d->cw-d->cx;
+  if(pm->aspect > 0.0)
+  {
+    const float ch = roi_in->width / pm->aspect  / (roi_in->height);
+    const float cw = pm->aspect * roi_in->height / (roi_in->width);
+    if     (acw >= cw) acw = cw; 
+    else if(ach >= ch) ach = ch;
+    else               acw *= ach/ch;
+  }
+
   // rotate and clip to max extent
   roi_out->x      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
   roi_out->y      = d->ty - (.5f - d->cy)*cropscale*roi_in->height;
-  roi_out->width  = (d->cw-d->cx)*cropscale*roi_in->width;
-  roi_out->height = (d->ch-d->cy)*cropscale*roi_in->height;
+  roi_out->width  = acw*cropscale*roi_in->width;
+  roi_out->height = ach*cropscale*roi_in->height;
   // sanity check.
   if(roi_out->width  < 1) roi_out->width  = 1;
   if(roi_out->height < 1) roi_out->height = 1;
@@ -246,7 +260,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #endif
 }
 
-void cx_callback (GtkRange *range, gpointer user_data)
+static void
+cx_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -255,7 +270,8 @@ void cx_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void cy_callback (GtkRange *range, gpointer user_data)
+static void
+cy_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -264,7 +280,8 @@ void cy_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void cw_callback (GtkRange *range, gpointer user_data)
+static void
+cw_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -273,7 +290,8 @@ void cw_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void ch_callback (GtkRange *range, gpointer user_data)
+static void
+ch_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -282,7 +300,8 @@ void ch_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void angle_callback (GtkRange *range, gpointer user_data)
+static void
+angle_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -300,6 +319,17 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_range_set_value(GTK_RANGE(g->scale3), p->cw);
   gtk_range_set_value(GTK_RANGE(g->scale4), p->ch);
   gtk_range_set_value(GTK_RANGE(g->scale5), p->angle);
+  gtk_spin_button_set_value(g->aspect, fabsf(p->aspect));
+  if(p->aspect > 0)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_on), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), TRUE);
+  }
+  else
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_on), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), FALSE);
+  }
 }
 
 void init(dt_iop_module_t *module)
@@ -311,7 +341,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
   module->priority = 950;
-  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0}; 
+  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, -1.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
 }
@@ -324,10 +354,35 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static gchar *fv_callback(GtkScale *scale, gdouble value)
+static gchar*
+fv_callback(GtkScale *scale, gdouble value)
 {
   int digits = gtk_scale_get_digits(scale);
   return g_strdup_printf("%# *.*f", 4+1+digits, digits, value);
+}
+
+static void
+aspect_callback(GtkSpinButton *widget, dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  p->aspect = gtk_spin_button_get_value(widget);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void
+aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), active);
+  if(active)
+    p->aspect =   gtk_spin_button_get_value(g->aspect);
+  else
+    p->aspect = - gtk_spin_button_get_value(g->aspect);
+  dt_dev_add_history_item(darktable.develop, self);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -337,8 +392,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("crop x")));
@@ -381,6 +436,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
+
+
+  g->aspect_on = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("fixed aspect ratio")));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (g->aspect_on), "toggled",
+                    G_CALLBACK (aspect_on_callback), self);
+  g->aspect = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0.1, 10.0, 0.01));
+  gtk_spin_button_set_increments(g->aspect, 0.01, 0.2);
+  gtk_spin_button_set_digits(g->aspect, 2);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), FALSE);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->aspect), FALSE, FALSE, 0);
+  g_signal_connect (G_OBJECT (g->aspect), "value-changed",
+                    G_CALLBACK (aspect_callback), self);
 
   g_signal_connect (G_OBJECT (g->scale1), "format-value",
                     G_CALLBACK (fv_callback), self);

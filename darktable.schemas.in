@@ -253,7 +253,7 @@
       <applyto>/apps/darktable/ui_last/panel_bottom</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>0</default>
+      <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>

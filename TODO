@@ -1,4 +1,6 @@
 0.5 release:
+- sRGB as input profile => crash
+- wb_presets finetuning spinbox
 - --version --help..?
 - write out dt_module_mod_version() as a header in each dt[tags]/xmp file,
   to check history stack params compatibility (also do this in db)
