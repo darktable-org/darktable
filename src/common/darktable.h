@@ -24,12 +24,12 @@ int dt_module_mod_version() \
   return MODVER; \
 }
 #else
-#define DT_MODULE \
+#define DT_MODULE(MODVER) \
 int dt_module_dt_version() \
 {\
   return DT_MODULE_VERSION; \
 }\
-int dt_module_mod_version(MODVER) \
+int dt_module_mod_version() \
 {\
   return MODVER; \
 }
