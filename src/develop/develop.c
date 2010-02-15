@@ -83,6 +83,19 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_max = -1;
     dev->histogram_pre_max = -1;
 
+#if 0 // this prints out a correction curve, to better understand the tonecurve.
+    dt_dev_set_gamma_array(dev, 0.04045, 0.41, dt_dev_default_gamma);
+    int last1 = 0; // invert
+    for(int i=0;i<0x100;i++) for(int k=last1;k<0x10000;k++)
+      if(dt_dev_default_gamma[k] >= i) { last1 = k; dt_dev_de_gamma[i] = k/(float)0x10000; break; }
+    dt_dev_set_gamma_array(dev, 0.1, 0.35, dt_dev_default_gamma);
+    printf("begin\n");
+    for(int k=0;k<0x10000;k++)
+    {
+      printf("%d %d\n", k, (int)(dt_dev_de_gamma[dt_dev_default_gamma[k]]*0x10000));
+    }
+    printf("end\n");
+#endif
     float lin = dt_conf_get_float("gamma_linear");
     float gam = dt_conf_get_float("gamma_gamma");
     dt_dev_set_gamma_array(dev, lin, gam, dt_dev_default_gamma);
