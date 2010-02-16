@@ -77,16 +77,37 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   return TRUE;
 }
 
-// TODO: include scrollbar borders (view->viewport variables)
 static gboolean
 expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 { // draw arrows on borders
+  if(!darktable.control->running) return TRUE;
   long int which = (long int)user_data;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  cairo_set_source_rgb (cr, .2, .2, .2);
+  cairo_set_source_rgb (cr, .13, .13, .13);
   cairo_paint(cr);
+
+  // draw scrollbar indicators
+  int v = darktable.view_manager->current_view;
+  dt_view_t *view = NULL;
+  if(v >= 0 && v < darktable.view_manager->num_views) view = darktable.view_manager->view + v;
+  cairo_set_source_rgb (cr, .16, .16, .16);
+  if(!view) cairo_paint(cr);
+  else
+  {
+    switch(which)
+    {
+      case 0: case 1: // left, right: vertical
+        cairo_rectangle(cr, 0.0, view->vscroll_pos/view->vscroll_size * height, width, view->vscroll_viewport_size/view->vscroll_size * height);
+        break;
+      default:        // bottom, top: horizontal
+        cairo_rectangle(cr, view->hscroll_pos/view->hscroll_size * width, 0.0, view->hscroll_viewport_size/view->hscroll_size * width, height);
+        break;
+    }
+    cairo_fill(cr);
+  }
+
   // draw gui arrows.
   cairo_set_source_rgb (cr, .6, .6, .6);
 

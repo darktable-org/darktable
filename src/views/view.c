@@ -40,6 +40,9 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   int retval = -1;
   bzero(view, sizeof(dt_view_t));
   view->data = NULL;
+  view->vscroll_size = view->vscroll_viewport_size = 1.0;
+  view->hscroll_size = view->hscroll_viewport_size = 1.0;
+  view->vscroll_pos = view->hscroll_pos = 0.0;
   strncpy(view->module_name, module, 64);
   char plugindir[1024];
   dt_get_plugindir(plugindir, 1024);
@@ -204,3 +207,21 @@ void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y,
   if(v->border_scrolled) v->border_scrolled(v, x, y, which, up);
 }
 
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize, float vwinsize)
+{
+  view->vscroll_pos = vpos;
+  view->vscroll_size = vsize;
+  view->vscroll_viewport_size = vwinsize;
+  view->hscroll_pos = hpos;
+  view->hscroll_size = hsize;
+  view->hscroll_viewport_size = hwinsize;
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  gtk_widget_queue_draw(widget);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  gtk_widget_queue_draw(widget);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  gtk_widget_queue_draw(widget);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  gtk_widget_queue_draw(widget);
+}

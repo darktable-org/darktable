@@ -375,7 +375,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
   sqlite3_stmt *stmt = NULL;
-  int rc, id, last_seli = 1<<30, last_selj = 1<<30;
+  int id, last_seli = 1<<30, last_selj = 1<<30;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   gchar *query = dt_conf_get_string ("plugins/lighttable/query");
@@ -385,9 +385,20 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     g_free(query);
     return;
   }
-  rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, offset);
-  rc = sqlite3_bind_int (stmt, 2, max_rows*iir);
+  char newquery[1024];
+  snprintf(newquery, 1024, "select count(id) %s", query + 8);
+  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, 0);
+  sqlite3_bind_int (stmt, 2, -1);
+  int count = 1;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_cols*iir);
+
+  sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, offset);
+  sqlite3_bind_int (stmt, 2, max_rows*iir);
   g_free(query);
   for(int row = 0; row < max_rows; row++)
   {
@@ -554,7 +565,19 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     g_free(query);
     return;
   }
-  rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+
+  char newquery[1024];
+  snprintf(newquery, 1024, "select count(id) %s", query + 8);
+  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, 0);
+  sqlite3_bind_int (stmt, 2, -1);
+  int count = 1;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
+
+  sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   g_free(query);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);

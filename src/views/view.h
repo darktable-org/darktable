@@ -16,6 +16,9 @@ typedef struct dt_view_t
   GModule *module;
   // custom data for module
   void *data;
+  // scroll bar control
+  float vscroll_size, vscroll_viewport_size, vscroll_pos;
+  float hscroll_size, hscroll_viewport_size, hscroll_pos;
   const char *(*name)     (struct dt_view_t *self); // get translatable name
   void (*init)            (struct dt_view_t *self); // init *data
   void (*cleanup)         (struct dt_view_t *self); // cleanup *data
@@ -76,6 +79,8 @@ int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod);
 int dt_view_load_module(dt_view_t *view, const char *module);
 /** unload, cleanup */
 void dt_view_unload_module(dt_view_t *view);
+/** set scrollbar positions, gui method. */
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize, float vwinsize);
 
 
 #endif

@@ -72,6 +72,13 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   cairo_surface_t *surface;
   cairo_t *cr = cairo_create(image_surface);
 
+  // adjust scroll bars
+  {
+    float zx = zoom_x, zy = zoom_y, boxw = 1., boxh = 1.;
+    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, &boxw, &boxh);
+    dt_view_set_scrollbar(self, zx+.5-boxw*.5, 1.0, boxw, zy+.5-boxh*.5, 1.0, boxh);
+  }
+
   if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
     mutex = &dev->pipe->backbuf_mutex;
