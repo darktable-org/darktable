@@ -25,37 +25,63 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
   GtkWidget *widget;
   long int which = (long int)user_data;
+  int32_t bit = 0;
+  int mode = dt_conf_get_int("ui_last/view");
   switch(which)
   {
     case 0:
+      bit = dt_conf_get_int("ui_last/panel_left");
       widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
       break;
     case 1:
+      bit = dt_conf_get_int("ui_last/panel_right");
       widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
       break;
     case 2:
+      bit = dt_conf_get_int("ui_last/panel_top");
       widget = glade_xml_get_widget (darktable.gui->main_window, "top");
-      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
       break;
     default:
+      bit = dt_conf_get_int("ui_last/panel_bottom");
       widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-      if(GTK_WIDGET_VISIBLE(widget)) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
       break;
   }
+
+  if(GTK_WIDGET_VISIBLE(widget))
+  {
+    gtk_widget_hide(widget);
+    bit &= ~(1<<mode);
+  }
+  else
+  {
+    gtk_widget_show(widget);
+    bit |=   1<<mode;
+  }
+
+  switch(which)
+  {
+    case 0:
+      dt_conf_set_int("ui_last/panel_left", bit);
+      break;
+    case 1:
+      dt_conf_set_int("ui_last/panel_right", bit);
+      break;
+    case 2:
+      dt_conf_set_int("ui_last/panel_top", bit);
+      break;
+    default:
+      dt_conf_set_int("ui_last/panel_bottom", bit);
+      break;
+  }
+  gtk_widget_queue_draw(w);
   return TRUE;
 }
 
+// TODO: include scrollbar borders (view->viewport variables)
 static gboolean
 expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 { // draw arrows on borders
   long int which = (long int)user_data;
-  
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -64,27 +90,64 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   // draw gui arrows.
   cairo_set_source_rgb (cr, .6, .6, .6);
 
+  int32_t mask = 1<<dt_conf_get_int("ui_last/view");
   switch(which)
   {
     case 0: // left
-      cairo_move_to (cr, 0.0, height/2-width);
-      cairo_rel_line_to (cr, 0.0, 2*width);
-      cairo_rel_line_to (cr, width, -width);
+      if(dt_conf_get_int("ui_last/panel_left") & mask)
+      {
+        cairo_move_to (cr, width, height/2-width);
+        cairo_rel_line_to (cr, 0.0, 2*width);
+        cairo_rel_line_to (cr, -width, -width);
+      }
+      else
+      {
+        cairo_move_to (cr, 0.0, height/2-width);
+        cairo_rel_line_to (cr, 0.0, 2*width);
+        cairo_rel_line_to (cr, width, -width);
+      }
       break;
     case 1: // right
-      cairo_move_to (cr, width, height/2-width);
-      cairo_rel_line_to (cr, 0.0, 2*width);
-      cairo_rel_line_to (cr, -width, -width);
+      if(dt_conf_get_int("ui_last/panel_right") & mask)
+      {
+        cairo_move_to (cr, 0.0, height/2-width);
+        cairo_rel_line_to (cr, 0.0, 2*width);
+        cairo_rel_line_to (cr, width, -width);
+      }
+      else
+      {
+        cairo_move_to (cr, width, height/2-width);
+        cairo_rel_line_to (cr, 0.0, 2*width);
+        cairo_rel_line_to (cr, -width, -width);
+      }
       break;
     case 2: // top
-      cairo_move_to (cr, width/2-height, 0.0);
-      cairo_rel_line_to (cr, 2*height, 0.0);
-      cairo_rel_line_to (cr, -height, height);
+      if(dt_conf_get_int("ui_last/panel_top") & mask)
+      {
+        cairo_move_to (cr, width/2-height, height);
+        cairo_rel_line_to (cr, 2*height, 0.0);
+        cairo_rel_line_to (cr, -height, -height);
+      }
+      else
+      {
+        cairo_move_to (cr, width/2-height, 0.0);
+        cairo_rel_line_to (cr, 2*height, 0.0);
+        cairo_rel_line_to (cr, -height, height);
+      }
       break;
     default: // bottom
-      cairo_move_to (cr, width/2-height, height);
-      cairo_rel_line_to (cr, 2*height, 0.0);
-      cairo_rel_line_to (cr, -height, -height);
+      if(dt_conf_get_int("ui_last/panel_bottom") & mask)
+      {
+        cairo_move_to (cr, width/2-height, 0.0);
+        cairo_rel_line_to (cr, 2*height, 0.0);
+        cairo_rel_line_to (cr, -height, height);
+      }
+      else
+      {
+        cairo_move_to (cr, width/2-height, height);
+        cairo_rel_line_to (cr, 2*height, 0.0);
+        cairo_rel_line_to (cr, -height, -height);
+      }
       break;
   }
   cairo_close_path (cr);
