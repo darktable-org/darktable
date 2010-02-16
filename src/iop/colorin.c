@@ -152,6 +152,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
+  d->input = NULL;
   if(d->xform) cmsDeleteTransform(d->xform);
   d->Lab = cmsCreateLabProfile(NULL);
   d->cmatrix[0][0] = -666.0;
@@ -160,7 +161,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_get_datadir(datadir, 1024);
   if(!strcmp(p->iccprofile, "cmatrix"))
   { // color matrix
-    d->input = NULL;
     int ret;
     dt_image_full_path(self->dev->image, filename, 1024);
     libraw_data_t *raw = libraw_init(0);
@@ -183,7 +183,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   else
   {
     if(strcmp(p->iccprofile, "sRGB"))
-    {
+    { // use linear_rgb as fallback for missing profiles:
       snprintf(filename, 1024, "%s/color/in/%s", datadir, "linear_rgb.icc");
       d->input = cmsOpenProfileFromFile(filename, "r");
     }

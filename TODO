@@ -1,5 +1,5 @@
 0.5 release:
-- sRGB as input profile => crash
+- boring scrollbars ;)
 - wb_presets finetuning spinbox
 - --version --help..?
 - write out dt_module_mod_version() as a header in each dt[tags]/xmp file,
