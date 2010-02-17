@@ -394,6 +394,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+  if(offset < 0)         lib->offset = offset = 0;
+  if(offset > count-iir) lib->offset = offset = count-iir;
   dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_cols*iir);
 
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
@@ -492,11 +494,19 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/pointery;
   }
 
+  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
+  if(!query) return;
+  if(query[0] == '\0')
+  {
+    g_free(query);
+    return;
+  }
+
   if     (track == 0);
-  else if(track > 1)  zoom_y += ht;
-  else if(track > 0)  zoom_x += wd;
-  else if(track > -2) zoom_x -= wd;
-  else                zoom_y -= ht;
+  else if(track >  1)  zoom_y += ht;
+  else if(track >  0)  zoom_x += wd;
+  else if(track > -2)  zoom_x -= wd;
+  else                 zoom_y -= ht;
 
   if(oldzoom != zoom)
   {
@@ -531,6 +541,23 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   // if(!pan && pointerx > 0 && pointerx < width && pointery > 0 && pointery < height) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
   if(!pan && zoom != 1) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
+  // set scrollbar positions, clamp zoom positions
+  sqlite3_stmt *stmt = NULL;
+  int rc;
+  char newquery[1024];
+  snprintf(newquery, 1024, "select count(id) %s", query + 8);
+  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, 0);
+  sqlite3_bind_int (stmt, 2, -1);
+  int count = 1;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  if(zoom_x < -wd*DT_LIBRARY_MAX_ZOOM/2)  zoom_x = -wd*DT_LIBRARY_MAX_ZOOM/2;
+  if(zoom_x >  wd*DT_LIBRARY_MAX_ZOOM-wd) zoom_x =  wd*DT_LIBRARY_MAX_ZOOM-wd;
+  if(zoom_y < -ht*2.0)                    zoom_y = -ht*2.0;
+  if(zoom_y >  ht*count/zoom)             zoom_y =  ht*count/zoom;
+
   int offset_i = (int)(zoom_x/wd);
   int offset_j = (int)(zoom_y/ht);
   // arbitrary 1000 to avoid bug due to round towards zero using (int)
@@ -554,27 +581,9 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
   else last_offset = offset;
 
-  sqlite3_stmt *stmt = NULL;
-  int rc, id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
+  int id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
-  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
-  if(!query) return;
-  if(query[0] == '\0')
-  {
-    g_free(query);
-    return;
-  }
-
-  char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 8);
-  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, 0);
-  sqlite3_bind_int (stmt, 2, -1);
-  int count = 1;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);

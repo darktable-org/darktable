@@ -105,7 +105,9 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_rectangle(cr, view->hscroll_pos/view->hscroll_size * width, 0.0, view->hscroll_viewport_size/view->hscroll_size * width, height);
         break;
     }
-    cairo_fill(cr);
+    cairo_fill_preserve(cr);
+    cairo_set_source_rgb (cr, .1, .1, .1);
+    cairo_stroke(cr);
   }
 
   // draw gui arrows.
