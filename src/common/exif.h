@@ -13,8 +13,8 @@ extern "C"
 /** read exif data from file with full path name, store to image struct. returns 0 on success. */
 int dt_exif_read(dt_image_t *img, const char* path);
 
-/** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. */
-int dt_exif_read_blob(uint8_t *blob, const char* path);
+/** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. sRGB should be true if sRGB colorspace is used as output. */
+int dt_exif_read_blob(uint8_t *blob, const char* path, const int sRGB);
 
 #ifdef __cplusplus
 }

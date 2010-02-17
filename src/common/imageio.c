@@ -14,6 +14,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "iop/colorout.h"
 #include "libraw/libraw.h"
 
 #include <inttypes.h>
@@ -1355,6 +1356,35 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
 
+  // find output color profile for this image:
+  int sRGB = 1;
+  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  if(!strcmp(overprofile, "sRGB"))
+  {
+    sRGB = 1;
+  }
+  else if(!strcmp(overprofile, "image"))
+  {
+    GList *modules = dev.iop;
+    dt_iop_module_t *colorout = NULL;
+    while (modules)
+    {
+      colorout = (dt_iop_module_t *)modules->data;
+      if (strcmp(colorout->op, "colorout") == 0)
+      {
+        dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)colorout->params;
+        if(!strcmp(p->iccprofile, "sRGB")) sRGB = 1;
+        else sRGB = 0;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+  else
+  {
+    sRGB = 0;
+  }
+  g_free(overprofile);
+
   const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
   const int height = dt_conf_get_int ("plugins/lighttable/export/height");
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
@@ -1378,7 +1408,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   int length;
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  length = dt_exif_read_blob(exif_profile, pathname);
+  length = dt_exif_read_blob(exif_profile, pathname, sRGB);
 
   int quality = dt_conf_get_int ("plugins/lighttable/export/quality");
   if(quality <= 0 || quality > 100) quality = 100;

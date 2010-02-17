@@ -218,7 +218,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
 }
 
-int dt_exif_read_blob(uint8_t *buf, const char* path)
+int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
 {
   try
   {
@@ -237,18 +237,113 @@ int dt_exif_read_blob(uint8_t *buf, const char* path)
     exifData["Exif.Image.Orientation"] = uint16_t(1);
     exifData["Exif.Photo.UserComment"]
         = "developed using "PACKAGE_NAME"-"PACKAGE_VERSION;
-#if 1//EXIV2_TEST_VERSION(0,17,91)		/* Exiv2 0.18-pre1 */
+
+    // ufraw-style exif stripping:
+    Exiv2::ExifData::iterator pos;
+    /* Delete original TIFF data, which is irrelevant*/
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ImageWidth")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ImageLength")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.BitsPerSample")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Compression")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.PhotometricInterpretation")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.FillOrder")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.SamplesPerPixel")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.StripOffsets")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.RowsPerStrip")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.StripByteCounts")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.XResolution")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.YResolution")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.PlanarConfiguration")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ResolutionUnit")))
+        != exifData.end() )
+      exifData.erase(pos);
+
+    /* Delete various MakerNote fields only applicable to the raw file */
+
+    // Nikon thumbnail data
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Preview")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.NikonPreview.JPEGInterchangeFormat")))
+        != exifData.end() )
+      exifData.erase(pos);
+
+    // DNG private data
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.DNGPrivateData")))
+        != exifData.end() )
+      exifData.erase(pos);
+
+    // Pentax thumbnail data
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewResolution")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewLength")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewOffset")))
+        != exifData.end() )
+      exifData.erase(pos);
+
+    // Minolta thumbnail data
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.Thumbnail")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.ThumbnailOffset")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.ThumbnailLength")))
+        != exifData.end() )
+      exifData.erase(pos);
+
+    // Olympus thumbnail data
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Olympus.Thumbnail")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Olympus.ThumbnailOffset")))
+        != exifData.end() )
+      exifData.erase(pos);
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Olympus.ThumbnailLength")))
+        != exifData.end() )
+      exifData.erase(pos);
+
+    /* Write appropriate color space tag if using sRGB output */
+    if (sRGB)
+      exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
+
+    exifData["Exif.Image.ProcessingSoftware"] = PACKAGE_NAME"-"PACKAGE_VERSION;
+
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
     const int length = blob.size();
     memcpy(buf, "Exif\000\000", 6);
     if(length > 0 && length < 65534)
       memcpy(buf+6, &(blob[0]), length);
-#else
-    Exiv2::DataBuf buf(exifData.copy());
-    const int length = buf.size_;
-    memcpy(buf, buf.pData_, buf.size_);
-#endif
     return length;
   }
   catch (Exiv2::AnyError& e)

@@ -7,7 +7,6 @@
 #include <string.h>
 // TODO: if using GEGL, this needs to be wrapped in color conversion routines of gegl?
 #include "iop/colorin.h"
-#include "iop/gamma.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -42,29 +41,6 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(pp->pos == pos)
     {
-#if 0 // change gamma as well:
-      GList *modules = g_list_last(self->dev->iop);
-      dt_iop_module_t *gamma = NULL;
-      while (modules)
-      {
-        gamma = (dt_iop_module_t *)modules->data;
-        if (strcmp(gamma->op, "gamma") == 0)
-          break;
-        modules = g_list_previous(modules);
-      }
-      if (gamma)
-      {
-        dt_iop_gamma_params_t *gp = (dt_iop_gamma_params_t *)gamma->params;
-        // if(strcmp(pp->filename, "linear_rgb") && strcmp(pp->filename, "cmatrix"))
-          gp->gamma = gp->linear = 1.0;
-        // else
-          // memcpy(gamma->params, gamma->default_params, gamma->params_size);
-        dt_dev_add_history_item(darktable.develop, gamma);
-        darktable.gui->reset = 1;
-        gamma->gui_update(gamma);
-        darktable.gui->reset = 0;
-      }
-#endif
       strcpy(p->iccprofile, pp->filename);
       dt_dev_add_history_item(darktable.develop, self);
       return;
@@ -113,34 +89,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
-
-#if 0
-static void
-invert_matrix(const float mat[4][3], float inv[3][4])
-{
-#define A(y, x) mat[(y - 1)][(x - 1)]
-#define B(y, x) inv[(y - 1)][(x - 1)]
-    const float det =
-      A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3)) -
-      A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3)) +
-      A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
-
-    const float invDet = 1.f / det;
-    B(1, 1) =  invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));
-    B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));
-    B(1, 3) =  invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
-
-    B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));
-    B(2, 2) =  invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));
-    B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));
-
-    B(3, 1) =  invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));
-    B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));
-    B(3, 3) =  invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));
-#undef A
-#undef B
-}
-#endif
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
