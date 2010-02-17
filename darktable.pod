@@ -63,13 +63,21 @@ Lighttable mode:
 
 Zoom in on image under cursor
 
+=item B<2, 3>
+
+Adjust zoom
+
+=item B<4>
+
+Zoom out completely
+
 =item B<q>
 
 Zoom out to fit all images in one row inside viewport, center on image under cursor
 
 =item B<a, s, d, w>
 
-Move around
+Move around (arrows also work)
 
 =back
 
