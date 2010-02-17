@@ -2,15 +2,15 @@
 - wb_presets finetuning spinbox
 - write out dt_module_mod_version() as a header in each dt[tags]/xmp file,
   to check history stack params compatibility (also do this in db)
+- resource conflict: load jobs reimport and dt
+  gui develop full buf/mipf buf priority!
+  - does dev actually hold a mipf reference?
+  - dev enter while still reimporting crashes.
 - check all g_list_delete_link 
 - remove last few non-gconf settings.
 - save current settings as preset
 - remove gamma correction at end completely (merge to colorout)
 - load only icc profiles which mach current camera and in/out selectively.
-- resource conflict: load jobs reimport and dt
-  gui develop full buf/mipf buf priority!
-  - does dev actually hold a mipf reference?
-  - dev enter while still reimporting crashes.
 - remove auto exposure from raw import (and add auto button in exp)
 - sliders with spinboxes
 - color picker dont update?

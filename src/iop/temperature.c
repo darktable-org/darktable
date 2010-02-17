@@ -61,7 +61,8 @@ const char *name()
   return C_("modulename", "whitebalance");
 }
 
-static void convert_k_to_rgb (float temperature, float *rgb)
+static void
+convert_k_to_rgb (float temperature, float *rgb)
 {
   int channel;
 
@@ -91,7 +92,8 @@ static void convert_k_to_rgb (float temperature, float *rgb)
 }
 
 // binary search inversion inspired by ufraw's RGB_to_Temperature:
-static void convert_rgb_to_k(float rgb[3], const float temp_out, float *temp, float *tint)
+static void
+convert_rgb_to_k(float rgb[3], const float temp_out, float *temp, float *tint)
 {
   float tmin, tmax, tmp[3], original_temperature_rgb[3], intended_temperature_rgb[3];
   for(int k=0;k<3;k++) tmp[k] = rgb[k];
@@ -164,7 +166,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #endif
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update (struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   self->request_color_pick = 0;
@@ -185,9 +187,10 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_combo_box_set_active(g->presets, 0);
   else
     gtk_combo_box_set_active(g->presets, -1);
+  gtk_spin_button_set_value(g->finetune, 0);
 }
 
-void init(dt_iop_module_t *module)
+void init (dt_iop_module_t *module)
 {
   // module->data = malloc(sizeof(dt_iop_temperature_data_t));
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
@@ -201,7 +204,7 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup (dt_iop_module_t *module)
 {
   free(module->gui_data);
   module->gui_data = NULL;
@@ -210,7 +213,7 @@ void cleanup(dt_iop_module_t *module)
 }
 
 static void
-gui_update_from_coeffs(dt_iop_module_t *self)
+gui_update_from_coeffs (dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
@@ -231,7 +234,7 @@ gui_update_from_coeffs(dt_iop_module_t *self)
 
 
 static gboolean
-expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 { // capture gui color picked event.
   if(darktable.gui->reset) return FALSE;
   static float old[3] = {0, 0, 0};
@@ -250,7 +253,7 @@ expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   return FALSE;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init (struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
@@ -335,6 +338,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
 
+  g->finetune = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(-9, 9, 1));
+  gtk_spin_button_set_value(g->finetune, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 5);
+  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune whitebalance preset"), NULL);
+
   g->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->presets, _("camera whitebalance"));
   gtk_combo_box_append_text(g->presets, _("spot whitebalance"));
@@ -344,7 +352,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     if(g->preset_cnt >= 50) break;
     if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&
-       !strcmp(wb_preset[i].model, self->dev->image->exif_model))
+       !strcmp(wb_preset[i].model, self->dev->image->exif_model) && wb_preset[i].tuning == 0)
     {
       gtk_combo_box_append_text(g->presets, _(wb_preset[i].name));
       g->preset_num[g->preset_cnt++] = i;
@@ -376,8 +384,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale_b), "value-changed",
                     G_CALLBACK (rgb_callback), self);
   g_signal_connect (G_OBJECT (g->presets), "changed",
-                    G_CALLBACK (presets_changed),
-                    (gpointer)self);
+                    G_CALLBACK (presets_changed), self);
+  g_signal_connect (G_OBJECT (g->finetune), "value-changed",
+                    G_CALLBACK (finetune_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -386,7 +395,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-static void temp_changed(dt_iop_module_t *self)
+static void
+temp_changed(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
@@ -412,28 +422,32 @@ static void temp_changed(dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-static void tint_callback (GtkRange *range, gpointer user_data)
+static void
+tint_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
 }
 
-static void temp_callback (GtkRange *range, gpointer user_data)
+static void
+temp_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
 }
 
-static void temp_out_callback (GtkRange *range, gpointer user_data)
+static void
+temp_out_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
 }
 
-static void rgb_callback (GtkRange *range, gpointer user_data)
+static void
+rgb_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -449,14 +463,14 @@ static void rgb_callback (GtkRange *range, gpointer user_data)
 }
 
 static void
-presets_changed (GtkComboBox *widget, gpointer user_data)
+apply_preset(dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   self->request_color_pick = 0;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  const int pos = gtk_combo_box_get_active(widget);
+  const int tune = gtk_spin_button_get_value(g->finetune);
+  const int pos = gtk_combo_box_get_active(g->presets);
   switch(pos)
   {
     case 0: // camera wb
@@ -471,12 +485,31 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
       for(int k=0;k<3;k++) p->coeffs[k] = 1.0/g->cam_mul[k];
       break;
     default:
-      for(int k=0;k<3;k++)
-        p->coeffs[k] = wb_preset[g->preset_num[pos]].channel[k]/g->cam_mul[k];
+      for(int i=0;i<wb_preset_count;i++)
+      {
+        if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&
+           !strcmp(wb_preset[i].model, self->dev->image->exif_model) && wb_preset[i].tuning == tune)
+        {
+          for(int k=0;k<3;k++) p->coeffs[k] = wb_preset[i].channel[k]/g->cam_mul[k];
+          break;
+        }
+      }
       break;
   }
   if(self->off) gtk_toggle_button_set_active(self->off, 1);
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void
+presets_changed (GtkComboBox *widget, gpointer user_data)
+{
+  apply_preset((dt_iop_module_t *)user_data);
+}
+
+static void
+finetune_changed (GtkSpinButton *widget, gpointer user_data)
+{
+  apply_preset((dt_iop_module_t *)user_data);
 }
 

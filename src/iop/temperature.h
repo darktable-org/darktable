@@ -27,6 +27,7 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkLabel *label1, *label2;
   GtkHScale *scale_k, *scale_tint, *scale_k_out, *scale_r, *scale_g, *scale_b;
   GtkComboBox *presets;
+  GtkSpinButton *finetune;
   float cam_mul[4]; // rgbg
   int preset_cnt;
   int preset_num[50];
@@ -57,5 +58,6 @@ static void temp_callback     (GtkRange *range, gpointer user_data);
 static void temp_out_callback (GtkRange *range, gpointer user_data);
 static void rgb_callback      (GtkRange *range, gpointer user_data);
 static void presets_changed   (GtkComboBox *widget, gpointer user_data);
+static void finetune_changed  (GtkSpinButton *widget, gpointer user_data);
 
 #endif
