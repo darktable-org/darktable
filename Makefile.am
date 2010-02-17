@@ -1,12 +1,13 @@
 ACLOCAL_AMFLAGS=-I m4
 SUBDIRS=src pixmaps po color
 INTLTOOL_FILES=intltool-extract.in intltool-merge.in intltool-update.in
-EXTRA_DIST=darktable.gtkrc darktable.glade darktable.desktop $(INTLTOOL_FILES) darktable.schemas.in TRANSLATORS
+EXTRA_DIST=darktable.gtkrc darktable.glade darktable.desktop $(INTLTOOL_FILES) darktable.schemas.in darktable.1 TRANSLATORS
 DISTCLEANFILES=intltool-extract intltool-merge intltool-update po/.intltool-merge-cache
 dtdatarootdir=$(datarootdir)/darktable
 dtdataroot_DATA=darktable.gtkrc darktable.glade
 dtapprootdir=$(datarootdir)/applications
 dtapproot_DATA=darktable.desktop
+man1_MANS=darktable.1
 if HAVE_GCONF
 schemadir=$(GCONF_SCHEMA_FILE_DIR)
 schema_in_file=darktable.schemas.in

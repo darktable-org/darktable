@@ -1,0 +1,113 @@
+
+=head1 NAME
+
+darktable - a digital photography workflow application
+
+=head1 SYNOPSIS
+
+C<darktable [options] [IMG_1234.RAW]>
+
+Options:
+
+    --help        
+    --version
+    -d {cache,control,dev}
+
+=head1 DESCRIPTION
+
+B<darktable> is a digital photography workflow application for B<Linux> 
+and B<Mac OS X> ine the lines of B<Adobe Lightroom> and B<Apple Aperture>.
+
+The application is designed to ease editing and consistent processing of large 
+photo sessions and provides a easy to use digital light-table and a set 
+of sophisticated postprocessing tools.
+
+Most of processing is done in 32bit float per channel mode in device independent 
+B<CIE L*a*b*> color space. B<darktable> is also fully color managed, which gives 
+you full control over the look of the photos.
+
+The application relies on modern plug-in architecture thus making it easy for 
+3rd party developers to extend the existing capabilities of the application. 
+All light-table and darkroom features are implemented as plug-ins, so you can 
+create your plug-ins reusing existing code.
+
+=head1 OTHER INFO
+
+Please visit B<darktable>'s website for news, bug tracker and forum: L<http://darktable.sourceforge.net>
+
+=head1 KEYBINDINGS
+
+All modes:
+
+=over
+
+=item B<F11>
+
+Switch between fullscreen and normal modes of the application's window
+
+=item B<Tab>
+
+Show/hide sidebars
+
+=item B<e>
+
+Switch between lighttable and darkroom modes
+
+=back
+
+Lighttable mode:
+
+=over
+
+=item B<1>
+
+Zoom in on image under cursor
+
+=item B<q>
+
+Zoom out to fit all images in one row inside viewport, center on image under cursor
+
+=item B<a, s, d, w>
+
+Move around
+
+=back
+
+Darkroom mode:
+
+=over
+
+=item B<1, 2, 3>
+
+Zoom to 1:1, fill, and fit, respectively
+
+=back
+
+=head1 BUGS
+
+Please use the mailing list to report all the bugs you run into.
+
+=head1 AUTHORS
+
+The principal developer of darktable is Johannes Hanika. The (hopefully)
+complete list of contributors to the project is:
+
+DREGGNAUTHORS
+
+This man page was written by Alexandre Prokoudine 
+E<lt>alexandre.prokoudine@gmail.comE<gt>.
+
+=head1 HISTORY
+
+The project was started by Johannes Hanika in early 2009 to fill the gap 
+(or, rather, a black hole) of a digital photography workflow tool on Linux.
+
+=head1 COPYRIGHT AND LICENSE
+
+B<Copyright (C)> 2009-2010 by Authors.
+
+B<darktable> is free software; you can redistribute it and/or modify it
+under the terms of the GPL v3 or (at your option) any later version.
+
+=for comment
+$Date$
