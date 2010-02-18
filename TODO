@@ -1,5 +1,4 @@
 0.5 release:
-- wb_presets finetuning spinbox
 - write out dt_module_mod_version() as a header in each dt[tags]/xmp file,
   to check history stack params compatibility (also do this in db)
 - resource conflict: load jobs reimport and dt
