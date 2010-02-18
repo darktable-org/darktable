@@ -506,6 +506,22 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   else if(track >  0)  zoom_x += wd;
   else if(track > -2)  zoom_x -= wd;
   else                 zoom_y -= ht;
+  if(zoom > DT_LIBRARY_MAX_ZOOM)
+  { // double speed.
+    if     (track == 0);
+    else if(track >  1)  zoom_y += ht;
+    else if(track >  0)  zoom_x += wd;
+    else if(track > -2)  zoom_x -= wd;
+    else                 zoom_y -= ht;
+    if(zoom > 1.5*DT_LIBRARY_MAX_ZOOM)
+    { // quad speed.
+      if     (track == 0);
+      else if(track >  1)  zoom_y += ht;
+      else if(track >  0)  zoom_x += wd;
+      else if(track > -2)  zoom_x -= wd;
+      else                 zoom_y -= ht;
+    }
+  }
 
   if(oldzoom != zoom)
   {

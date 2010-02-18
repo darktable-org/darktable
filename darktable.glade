@@ -305,7 +305,7 @@ file manager</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">&#x2022;</property>
-                            <property name="adjustment">7 1 13 1 3 0</property>
+                            <property name="adjustment">7 1 26 1 3 0</property>
                             <property name="snap_to_ticks">True</property>
                             <property name="numeric">True</property>
                           </widget>
