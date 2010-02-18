@@ -107,13 +107,13 @@ AC_ARG_ENABLE(lensfun,
         )
  
 AC_CHECK_LIB(jpeg, jpeg_destroy_decompress,
-   [JPEG_LIBS="-ljpeg"])
+   [JPEG_LIBS="-ljpeg"], AC_MSG_FAILURE([libjpeg is required!]))
 AC_SUBST(JPEG_LIBS)
 
 dnl *** Check for LittleCMS ***
 AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
    [AC_DEFINE(HAVE_LCMS, 1, [whether the LittleCMS development environment is available])
-    LCMS_LIBS="-llcms"])
+    LCMS_LIBS="-llcms"], AC_MSG_FAILURE([lcms is required!]))
 AC_SUBST(LCMS_LIBS)
 
 dnl *** mac os troubles ***
