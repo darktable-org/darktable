@@ -338,11 +338,6 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
 
-  g->finetune = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(-9, 9, 1));
-  gtk_spin_button_set_value(g->finetune, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 5);
-  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune whitebalance preset"), NULL);
-
   g->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->presets, _("camera whitebalance"));
   gtk_combo_box_append_text(g->presets, _("spot whitebalance"));
@@ -358,7 +353,12 @@ void gui_init (struct dt_iop_module_t *self)
       g->preset_num[g->preset_cnt++] = i;
     }
   }
-  gtk_box_pack_start(hbox, GTK_WIDGET(g->presets), FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->presets), FALSE, FALSE, 5);
+
+  g->finetune = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(-9, 9, 1));
+  gtk_spin_button_set_value(g->finetune, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 0);
+  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune whitebalance preset"), NULL);
 
   float temp, tint;
   float mul[3];
