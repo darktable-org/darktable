@@ -273,7 +273,7 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
 dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
 {
   dt_imageio_retval_t ret = dt_imageio_open_hdr(img, filename);
-  if(ret) return ret;
+  if(ret != DT_IMAGEIO_OK) return ret;
   ret = dt_image_raw_to_preview(img);
   dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
   // this updates mipf/mip4..0 from raw pixels.
@@ -297,7 +297,7 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_rgbe(img, filename);
-  if(ret == DT_IMAGEIO_OK) return ret;
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
   ret = dt_imageio_open_pfm(img, filename);
   return ret;
 }
@@ -1433,11 +1433,11 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_hdr(img, filename);
-  if(ret != DT_IMAGEIO_OK)
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename);
-  if(ret != DT_IMAGEIO_OK)
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr(img, filename);
-  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush(img);
+  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush(img);
   return ret;
 }
 
@@ -1445,11 +1445,11 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
 { // first try hdr and raw loading
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_hdr_preview(img, filename);
-  if(ret != DT_IMAGEIO_OK)
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw_preview(img, filename);
-  if(ret != DT_IMAGEIO_OK)
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush(img);
+  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush(img);
   return ret;
 }
 

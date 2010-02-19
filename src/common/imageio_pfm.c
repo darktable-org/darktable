@@ -8,25 +8,25 @@
 #include <string.h>
 #include <math.h>
 
-int dt_imageio_open_pfm(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".pfm", 4) && strncmp(ext, ".PFM", 4) && strncmp(ext, ".Pfm", 4)) return 1;
+  if(strncmp(ext, ".pfm", 4) && strncmp(ext, ".PFM", 4) && strncmp(ext, ".Pfm", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
   FILE *f = fopen(filename, "rb");
-  if(!f) return 1;
+  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
   int ret = 0;
   int cols = 3;
   char head[2] = {'X', 'X'};
   ret = fscanf(f, "%c%c\n", head, head+1);
-  if(ret != 2 || head[0] != 'P') goto error;
+  if(ret != 2 || head[0] != 'P') goto error_corrupt;
   if(head[1] == 'F') cols = 3;
   else if(head[1] == 'f') cols = 1;
-  else goto error;
+  else goto error_corrupt;
   ret = fscanf(f, "%d %d\n%*[^\n]\n", &img->width, &img->height);
-  if(ret != 2) goto error;
+  if(ret != 2) goto error_corrupt;
 
-  if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error;
+  if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
   if(cols == 3) ret = fread(img->pixels, 3*sizeof(float), img->width*img->height, f);
   else for(int j=0; j < img->height; j++)
@@ -48,9 +48,12 @@ int dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   }
   free(line);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-  return 0;
+  return DT_IMAGEIO_OK;
 
-error:
+error_corrupt:
   fclose(f);
-  return 1;
+  return DT_IMAGEIO_FILE_CORRUPTED;
+error_cache_full:
+  fclose(f);
+  return DT_IMAGEIO_CACHE_FULL;
 }

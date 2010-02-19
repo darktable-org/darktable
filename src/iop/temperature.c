@@ -344,7 +344,7 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->presets, _("passthrough"));
   g->preset_cnt = 3;
   const char *wb_name = NULL;
-  for(int i=0;i<wb_preset_count;i++)
+  if(!dt_image_is_ldr(self->dev->image)) for(int i=0;i<wb_preset_count;i++)
   {
     if(g->preset_cnt >= 50) break;
     if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&

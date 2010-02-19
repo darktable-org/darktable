@@ -438,7 +438,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
             }
           }
           cairo_save(cr);
-          dt_image_expose(image, lib, image->id, cr, wd, ht, iir, img_pointerx, img_pointery);
+          dt_image_expose(image, lib, image->id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
         }

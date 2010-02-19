@@ -440,30 +440,34 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width,
 #undef RGBE_DATA_SIZE
 
 
-int dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4)) return 1;
+  if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
   FILE *f = fopen(filename, "rb");
-  if(!f) return 1;
+  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
 
-  if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error;
+  if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
 
-  if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error;
+  if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
   if(RGBE_ReadPixels_RLE(f, img->pixels, img->width, img->height))
   {
     dt_image_release(img, DT_IMAGE_FULL, 'w');
     dt_image_release(img, DT_IMAGE_FULL, 'r');
-    goto error;
+    goto error_corrupt;
   }
   fclose(f);
   // repair nan/inf etc
   for(int i=0; i < img->width*img->height*3; i++) img->pixels[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-  return 0;
-error:
+  return DT_IMAGEIO_OK;
+
+error_corrupt:
   fclose(f);
-  return 1;
+  return DT_IMAGEIO_FILE_CORRUPTED;
+error_cache_full:
+  fclose(f);
+  return DT_IMAGEIO_CACHE_FULL;
 }

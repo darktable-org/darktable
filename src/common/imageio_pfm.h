@@ -3,6 +3,6 @@
 
 #include "common/image.h"
 
-int dt_imageio_open_pfm(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename);
 
 #endif
