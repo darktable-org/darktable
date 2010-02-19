@@ -1,1 +1,1 @@
-SUBDIRS=in
+SUBDIRS=in out

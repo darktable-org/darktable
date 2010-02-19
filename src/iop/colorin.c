@@ -256,6 +256,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
+      if(!strcmp(d_name, "linear_rgb.icc")) continue;
       snprintf(filename, 1024, "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
@@ -293,7 +294,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "linear_rgb"))
-      gtk_combo_box_append_text(g->cbox2, _("linear sensor"));
+      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
     else if(!strcmp(prof->name, "sRGB"))
       gtk_combo_box_append_text(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "cmatrix"))

@@ -110,7 +110,7 @@
       <applyto>/apps/darktable/preview_subsample</applyto>
       <owner>darktable</owner>
       <type>float</type>
-      <default>0.125</default>
+      <default>0.2</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>downsample the preview pixels</short>

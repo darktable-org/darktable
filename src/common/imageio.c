@@ -1132,8 +1132,8 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
   const int height = dt_conf_get_int ("plugins/lighttable/export/height");
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
-  const int processed_width  = scale*pipe.processed_width;
-  const int processed_height = scale*pipe.processed_height;
+  const int processed_width  = scale*pipe.processed_width  + .5f;
+  const int processed_height = scale*pipe.processed_height + .5f;
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
@@ -1174,8 +1174,8 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
   const int height = dt_conf_get_int ("plugins/lighttable/export/height");
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
-  const int processed_width  = scale*pipe.processed_width;
-  const int processed_height = scale*pipe.processed_height;
+  const int processed_width  = scale*pipe.processed_width  + .5f;
+  const int processed_height = scale*pipe.processed_height + .5f;
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
@@ -1388,8 +1388,8 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
   const int height = dt_conf_get_int ("plugins/lighttable/export/height");
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
-  const int processed_width  = scale*pipe.processed_width;
-  const int processed_height = scale*pipe.processed_height;
+  const int processed_width  = scale*pipe.processed_width  + .5f;
+  const int processed_height = scale*pipe.processed_height + .5f;
   dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
   char pathname[1024];
   dt_image_full_path(img, pathname, 1024);

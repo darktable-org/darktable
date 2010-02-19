@@ -156,7 +156,7 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
   { // use input width, mipf is before processing
     wd = img->width;
     ht = img->height;
-    const float scale = fminf(1.0, fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height));
+    const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height);
     wd *= scale; ht *= scale;
     while((int)mip < (int)DT_IMAGE_MIP4)
     {
@@ -187,7 +187,7 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
   int32_t wd = img->width, ht = img->height;
   if((int)mip < (int)DT_IMAGE_FULL)
   {
-    const float scale = fminf(1.0, fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height));
+    const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height);
     wd *= scale; ht *= scale;
     // make exact mip possible (almost power of two)
     if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
@@ -238,7 +238,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
 
-  if(dt_image_alloc(img, DT_IMAGE_MIPF)) return 1;
+  if(dt_image_alloc(img, DT_IMAGE_MIPF)) return DT_IMAGEIO_CACHE_FULL;
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
 
   if(raw_wd == p_wd && raw_ht == p_ht)
@@ -264,7 +264,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
 
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  return 0;
+  return DT_IMAGEIO_OK;
 }
 
 void dt_image_duplicate(const int32_t imgid)

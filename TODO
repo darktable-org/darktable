@@ -1,24 +1,5 @@
 0.5 release:
-- export_16/_f: replace sRGB by linear raw.
-- import small pfm: black border in preview?
-- resource conflict: load jobs reimport and dt
-  gui develop full buf/mipf buf priority!
-  - does dev actually hold a mipf reference?
-  - dev enter while still reimporting crashes.
-- write out dt_module_mod_version() as a header in each dt[tags]/xmp file,
-  to check history stack params compatibility (also do this in db)
-- check all g_list_delete_link 
-- remove last few non-gconf settings.
-- save current settings as preset
-- remove gamma correction at end completely (merge to colorout)
-- load only icc profiles which mach current camera and in/out selectively.
-- remove auto exposure from raw import (and add auto button in exp)
-  - color picker: get min/max/mean
-- sliders with spinboxes
-- color picker dont update?
-- export/select by edited/up-to-date exported
-- show numeric values RGB, Lab, zoom ratio
-- remove all rc = clang errors?
+- side by side comparison view through snapshots (save pixbuf + zoom pos)
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
   related tags, 2*k+2 many.
@@ -26,31 +7,40 @@
   - extract image statistics/compare metric
   - faces (opencv), hist L, hist wtf, hist (a,b)
   - select (random?) representative
-- remove gtk_drawing_area_size()
+- folder watching and image re-import on change event (lib+dev)
+- remove auto exposure from raw import (and add auto button in exp)
+  - color picker: get min/max/mean
+- film strip in develop mode to switch to next image.
+- resource conflict: load jobs reimport and dt
+  gui develop full buf/mipf buf priority!
+  - does dev actually hold a mipf reference?
+  - dev enter while still reimporting crashes.
+- write out dt_module_mod_version() as a header in each dt[tags]/xmp file,
+  to check history stack params compatibility (also do this in db)
+- save current settings as preset
+- load only icc profiles which mach current camera and in/out selectively.
+- import small pfm: black border in preview?
+- remove gamma correction at end completely (merge to colorout)
+- sliders with spinboxes
+- color picker dont update?
+- export/select by edited/up-to-date exported
+- show numeric values RGB, Lab, zoom ratio
 - libs/history
   - favorites list (custom styles or so)
 - if dir is not found, try known top-levels or ask for new
-- folder watching and image re-import on change event (lib+dev)
-- create share/darktable/color/{in,out}/README
 - darkroom mode plugin template
-- jpeg exif tags harmful?
 - export output file name pattern and editable
-- mirror horizontal/vertical and aspect in crop/rotate
+- mirror horizontal/vertical in crop/rotate, drag crop box, bypass angle==0
 - gnome-color-manager dbus interaction
 - highlight reconstruction/tonemapping (reinhard 02)
 - write dttags on image_cache_flush?
 - ctrl + 01234 in lighttable => stars
 - esc -> unfullscreen -> center
 - automatic re-import in raw import on button press?
-- crop/rotate angle == 0 bypass
 - auto center/filter to 1 star/filename if new film is loaded
   - or: presets for every film in separate db.
-- film strip in develop mode to switch to next image.
-- plugin focus (doubleclick header?)
-- side by side comparison view
 - histogram fill light mouse gesture
 - exposure: highlight clipped parts
-- clipping event hooks: crop
 - user preferences
   - automatic application of history stacks due to pattern matching.
   - gconf option for maximum number of jobs?
@@ -60,7 +50,7 @@
 later:
 - try gegl 0.1.2
 - mac bitch: gegl.h and Carbon.h are not friends.
-- exr import
+- exr io
 - tiff io
   TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
   TIFFSetField(out, TIFFTAG_ZIPQUALITY, 9);
@@ -73,7 +63,7 @@ later:
 bugs:
 - develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit
-- zoom to wrong image bug: resize window helps (???)
+- import while still importing crashes.
 
 cleanup:
 - remove most iop/*.h 
@@ -81,29 +71,25 @@ cleanup:
 - add some user guide documentation.
 - progress bars for image folder import and image export
 - print GPLv3 notice on top of all files
+- remove all rc = clang errors?
+- check all g_list_delete_link 
+- remove last few non-gconf settings.
+- remove gtk_drawing_area_size()
+
 
 - copy function in lib:
   - flags, tags
   - histogram :)
-- write back images to db after cache drop!
-- quality parameter for pixelpipe init callbacks in modules?
-- try gegl raw-load and openraw-load nodes
 
 1.0 roadmap:
 - better demosaicing
 - quickly template for dt plugins (translatable)
 
-bugs:
- - import while still importing crashes.
-
 feature requests:
  - gphoto2 import (views/acquire)
- - step to next image in darkroom mode (precache:)
  - bzip2 compressed content
  - offline media reference in db
- - clustered image view by similar tag/flag
  - user orient rotation
- - linear/gamma from database for camera models.
  - spot removal brush
  - images of expensive cameras for webpage.
  - libglade => gtkbuilder.

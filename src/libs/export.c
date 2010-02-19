@@ -77,6 +77,8 @@ gui_reset (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   int quality = MIN(100, MAX(1, dt_conf_get_int ("plugins/lighttable/export/quality")));
+  gtk_spin_button_set_value(d->width,  dt_conf_get_int("plugins/lighttable/export/width"));
+  gtk_spin_button_set_value(d->height, dt_conf_get_int("plugins/lighttable/export/height"));
   gtk_range_set_value(GTK_RANGE(d->quality), quality);
   int k = dt_conf_get_int ("plugins/lighttable/export/format");
   int i = 0;
@@ -104,7 +106,7 @@ gui_reset (dt_lib_module_t *self)
     }
     g_free(iccprofile);
   }
-  gtk_combo_box_set_active(d->profile, 0);
+  if(!iccfound) gtk_combo_box_set_active(d->profile, 0);
 }
 
 static void

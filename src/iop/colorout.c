@@ -130,7 +130,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     { // default: sRGB
       d->output = NULL;
     }
-    else if(!strcmp(p->displayprofile, "X profile"))
+    else if(!strcmp(p->iccprofile, "X profile"))
     { // x default
       if(darktable.control->xprofile_data) d->output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
       else d->output = NULL;

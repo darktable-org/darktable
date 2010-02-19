@@ -570,8 +570,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   sqlite3_finalize(stmt);
   if(zoom_x < -wd*DT_LIBRARY_MAX_ZOOM/2)  zoom_x = -wd*DT_LIBRARY_MAX_ZOOM/2;
   if(zoom_x >  wd*DT_LIBRARY_MAX_ZOOM-wd) zoom_x =  wd*DT_LIBRARY_MAX_ZOOM-wd;
-  if(zoom_y < -ht*2.0)                    zoom_y = -ht*2.0;
-  if(zoom_y >  ht*count/zoom)             zoom_y =  ht*count/zoom;
+  if(zoom_y < -height+ht)                 zoom_y = -height+ht;
+  if(zoom_y >  ht*count/zoom-ht)          zoom_y =  ht*count/zoom-ht;
 
   int offset_i = (int)(zoom_x/wd);
   int offset_j = (int)(zoom_y/ht);
