@@ -110,7 +110,7 @@
       <applyto>/apps/darktable/preview_subsample</applyto>
       <owner>darktable</owner>
       <type>float</type>
-      <default>0.25</default>
+      <default>0.125</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>downsample the preview pixels</short>
@@ -730,6 +730,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/basecurve/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/basecurve/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/rawimport/visible</key>
       <applyto>/apps/darktable/plugins/darkroom/rawimport/visible</applyto>
       <owner>darktable</owner>
@@ -927,6 +940,19 @@
     <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/tonecurve/expanded</key>
       <applyto>/apps/darktable/plugins/darkroom/tonecurve/expanded</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/basecurve/expanded</key>
+      <applyto>/apps/darktable/plugins/darkroom/basecurve/expanded</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
