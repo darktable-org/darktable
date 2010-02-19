@@ -343,20 +343,26 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->presets, _("spot whitebalance"));
   gtk_combo_box_append_text(g->presets, _("passthrough"));
   g->preset_cnt = 3;
+  const char *wb_name = NULL;
   for(int i=0;i<wb_preset_count;i++)
   {
     if(g->preset_cnt >= 50) break;
     if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&
-       !strcmp(wb_preset[i].model, self->dev->image->exif_model) && wb_preset[i].tuning == 0)
+       !strcmp(wb_preset[i].model, self->dev->image->exif_model))
     {
-      gtk_combo_box_append_text(g->presets, _(wb_preset[i].name));
-      g->preset_num[g->preset_cnt++] = i;
+      if(!wb_name || strcmp(wb_name, wb_preset[i].name))
+      {
+        wb_name = wb_preset[i].name;
+        gtk_combo_box_append_text(g->presets, _(wb_preset[i].name));
+        g->preset_num[g->preset_cnt++] = i;
+      }
     }
   }
   gtk_box_pack_start(hbox, GTK_WIDGET(g->presets), FALSE, FALSE, 5);
 
   g->finetune = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(-9, 9, 1));
-  gtk_spin_button_set_value(g->finetune, 0);
+  gtk_spin_button_set_value (g->finetune, 0);
+  gtk_spin_button_set_digits(g->finetune, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 0);
   gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune whitebalance preset"), NULL);
 
@@ -485,7 +491,7 @@ apply_preset(dt_iop_module_t *self)
       for(int k=0;k<3;k++) p->coeffs[k] = 1.0/g->cam_mul[k];
       break;
     default:
-      for(int i=0;i<wb_preset_count;i++)
+      for(int i=g->preset_num[pos];i<wb_preset_count;i++)
       {
         if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&
            !strcmp(wb_preset[i].model, self->dev->image->exif_model) && wb_preset[i].tuning == tune)
@@ -504,7 +510,13 @@ apply_preset(dt_iop_module_t *self)
 static void
 presets_changed (GtkComboBox *widget, gpointer user_data)
 {
-  apply_preset((dt_iop_module_t *)user_data);
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  apply_preset(self);
+  const int pos = gtk_combo_box_get_active(widget);
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  gtk_widget_set_sensitive(GTK_WIDGET(g->finetune), pos > 2);
+  // TODO: get preset finetunings and insert in combobox
+  // gtk_spin_button_set_(g->finetune, 0);
 }
 
 static void

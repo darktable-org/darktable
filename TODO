@@ -1,5 +1,6 @@
 0.5 release:
-- cp tonecurve.c basecurve.c => rgb and possibly read from exif?
+- check ufraws gamma curve behavior.
+- make finetune spinbox fit data ranges: replace spinbutton by combobox..?
 - write out dt_module_mod_version() as a header in each dt[tags]/xmp file,
   to check history stack params compatibility (also do this in db)
 - resource conflict: load jobs reimport and dt
@@ -84,7 +85,6 @@ cleanup:
 - copy function in lib:
   - flags, tags
   - histogram :)
-- man page
 - write back images to db after cache drop!
 - quality parameter for pixelpipe init callbacks in modules?
 - try gegl raw-load and openraw-load nodes
@@ -114,7 +114,4 @@ usability:
 
 cache:
  - user profile guided prefetching for full raw load!
-
-build/packaging:
- - doxygen documentation
 
