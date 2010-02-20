@@ -933,6 +933,10 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
+  bit = dt_conf_get_int("ui_last/expander_snapshots");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_expander");
+  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
+
   bit = dt_conf_get_int("ui_last/expander_history");
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
@@ -986,6 +990,12 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_library", bit);
+
+  bit = dt_conf_get_int("ui_last/expander_snapshots");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_expander");
+  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/expander_snapshots", bit);
 
   bit = dt_conf_get_int("ui_last/expander_history");
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");

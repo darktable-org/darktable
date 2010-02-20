@@ -31,6 +31,7 @@ plugins/lighttable/tagging/ask_before_delete_tag=TRUE
 ui_last/expander_metadata=0
 ui_last/expander_navigation=-1
 ui_last/expander_histogram=-1
+ui_last/expander_snapshots=-1
 ui_last/expander_history=-1
 ui_last/combo_sort=0
 ui_last/combo_filter=2
