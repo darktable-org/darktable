@@ -105,18 +105,18 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
       p->tonecurve_y[5] = 1.000000;
       break;
     case 2: // pascals eos curve:
-      p->tonecurve_x[0] = 0.000;
-      p->tonecurve_y[0] = 0.000;
-      p->tonecurve_x[1] = 0.055;
-      p->tonecurve_y[1] = 0.040;
-      p->tonecurve_x[2] = 0.090;
-      p->tonecurve_y[2] = 0.085;
-      p->tonecurve_x[3] = 0.550;
-      p->tonecurve_y[3] = 0.700;
-      p->tonecurve_x[4] = 0.750;
-      p->tonecurve_y[4] = 0.875;
-      p->tonecurve_x[5] = 1.000;
-      p->tonecurve_y[5] = 1.000;
+      p->tonecurve_x[0] = 0.000000;
+      p->tonecurve_y[0] = 0.000000;
+      p->tonecurve_x[1] = 0.055000;
+      p->tonecurve_y[1] = 0.041613;
+      p->tonecurve_x[2] = 0.090000;
+      p->tonecurve_y[2] = 0.076935;
+      p->tonecurve_x[3] = 0.550000;
+      p->tonecurve_y[3] = 0.675806;
+      p->tonecurve_x[4] = 0.750000;
+      p->tonecurve_y[4] = 0.859677;
+      p->tonecurve_x[5] = 1.000000;
+      p->tonecurve_y[5] = 1.000000;
       break;
     default:
       return;
@@ -135,8 +135,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   for(int k=0;k<6;k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   gegl_node_set(piece->input, "curve", d->curve, NULL);
 #else
+  // printf("committing params:\n");
   for(int k=0;k<6;k++)
+  {
+    // printf("tmp.tonecurve_x[%d] = %f;\n", k, p->tonecurve_x[k]);
+    // printf("tmp.tonecurve_y[%d] = %f;\n", k, p->tonecurve_y[k]);
     dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  }
   for(int k=0;k<0x10000;k++)
     // d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
     d->table[k] = dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k);
@@ -195,19 +200,19 @@ void init(dt_iop_module_t *module)
                                                 {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                  0};
   if(!dt_image_is_ldr(module->dev->image))
-  {
-    tmp.tonecurve_x[0] = 0.000;
-    tmp.tonecurve_y[0] = 0.000;
-    tmp.tonecurve_x[1] = 0.055;
-    tmp.tonecurve_y[1] = 0.040;
-    tmp.tonecurve_x[2] = 0.090;
-    tmp.tonecurve_y[2] = 0.085;
-    tmp.tonecurve_x[3] = 0.550;
-    tmp.tonecurve_y[3] = 0.700;
-    tmp.tonecurve_x[4] = 0.750;
-    tmp.tonecurve_y[4] = 0.875;
-    tmp.tonecurve_x[5] = 1.000;
-    tmp.tonecurve_y[5] = 1.000;
+  { 
+    tmp.tonecurve_x[0] = 0.000000;
+    tmp.tonecurve_y[0] = 0.000000;
+    tmp.tonecurve_x[1] = 0.055000;
+    tmp.tonecurve_y[1] = 0.041613;
+    tmp.tonecurve_x[2] = 0.090000;
+    tmp.tonecurve_y[2] = 0.076935;
+    tmp.tonecurve_x[3] = 0.550000;
+    tmp.tonecurve_y[3] = 0.675806;
+    tmp.tonecurve_x[4] = 0.750000;
+    tmp.tonecurve_y[4] = 0.859677;
+    tmp.tonecurve_x[5] = 1.000000;
+    tmp.tonecurve_y[5] = 1.000000;
   }
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
