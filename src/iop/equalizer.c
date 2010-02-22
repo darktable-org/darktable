@@ -242,6 +242,17 @@ static void presets_changed (GtkComboBox *widget, gpointer user_data)
         p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
         p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
         p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.2f*k/(float)DT_IOP_EQUALIZER_BANDS;
+        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
+        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
+      }
+      break;
+    case 3: // denoise a lot
+      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+      {
+        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
         p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.4f*k/(float)DT_IOP_EQUALIZER_BANDS;
         p->equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
         p->equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
@@ -313,8 +324,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 5);
   c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sharpen"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sharpen more"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sharpen (strong)"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("denoise"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("denoise (strong)"));
   gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
   g_signal_connect (G_OBJECT (c->presets), "changed",
                     G_CALLBACK (presets_changed),
