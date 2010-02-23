@@ -702,10 +702,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
 void enter(dt_view_t *self)
 {
-  dt_library_t *lib = (dt_library_t *)self->data;
-  lib->center = 1;
-  lib->offset = 0;
-
   // add expanders
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GList *modules = g_list_last(darktable.lib->plugins);

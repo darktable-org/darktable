@@ -185,6 +185,9 @@ int dt_control_load_config(dt_control_t *c)
   int height = dt_conf_get_int("ui_last/window_h");
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   gtk_window_resize(GTK_WINDOW(widget), width, height);
+  int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
+  if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
+  else           gtk_window_unfullscreen(GTK_WINDOW(widget));
   dt_control_restore_gui_settings(DT_LIBRARY);
   dt_control_update_recent_films();
   return 0;

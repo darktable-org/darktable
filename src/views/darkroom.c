@@ -39,13 +39,13 @@ void cleanup(dt_view_t *self)
 }
 
 
-void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
   // if width or height > max pipeline pixels: center the view and clamp.
-  if(width  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width) *.5f, 0.0f);
-  if(height > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height)*.5f);
-  width  = MIN(width,  DT_IMAGE_WINDOW_SIZE);
-  height = MIN(height, DT_IMAGE_WINDOW_SIZE);
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
+  if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
+  int32_t width  = MIN(width_i,  DT_IMAGE_WINDOW_SIZE);
+  int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
   cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -64,9 +64,6 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
 
-  // TODO: if dt.gui requested a snapshot:
-  // cairo_surface_to_png (surface_t, filename)
-  // TODO: and if a snapshot is currently selected, draw it on top!
   if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
   { // create double-buffered image to draw on, to make modules draw more fluently.
     image_surface_width = width; image_surface_height = height;
@@ -151,6 +148,24 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
     cairo_paint(cri);
   }
 
+  if(darktable.gui->request_snapshot)
+  {
+    cairo_surface_write_to_png(image_surface, darktable.gui->snapshot[0].filename);
+    darktable.gui->request_snapshot = 0;
+  }
+  // and if a snapshot is currently selected, draw it on top!
+  if(darktable.gui->snapshot_image)
+  {
+    cairo_set_source_surface(cri, darktable.gui->snapshot_image, 0, 0);
+    cairo_rectangle(cri, 0, 0, width*.5f, height);
+    cairo_fill(cri);
+    cairo_set_source_rgb(cri, .7, .7, .7);
+    cairo_set_line_width(cri, 1.0);
+    cairo_move_to(cri, width*.5f, 0.0f);
+    cairo_line_to(cri, width*.5f, height);
+    cairo_stroke(cri);
+  }
+  
   // execute module callback hook.
   if(dev->gui_module && dev->gui_module->request_color_pick)
   {

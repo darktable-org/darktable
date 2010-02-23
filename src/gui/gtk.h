@@ -18,8 +18,9 @@ dt_gui_key_accel_t;
 
 typedef struct dt_gui_snapshot_t
 {
-  float zoom_x, zoom_y, scale;
-  char filename[20];
+  float zoom_x, zoom_y, zoom_scale;
+  int32_t zoom, closeup;
+  char filename[30];
 }
 dt_gui_snapshot_t;
 
@@ -33,7 +34,7 @@ typedef struct dt_gui_gtk_t
   dt_gui_navigation_t navigation;
   dt_gui_histogram_t histogram;
 
-  int32_t num_snapshots, request_snapshot;
+  int32_t num_snapshots, request_snapshot, selected_snapshot;
   dt_gui_snapshot_t snapshot[4];
   cairo_surface_t *snapshot_image;
 
