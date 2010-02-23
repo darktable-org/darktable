@@ -1,5 +1,10 @@
 0.5 release:
+- remember fullscreen mode
 - side by side comparison view through snapshots (save pixbuf + zoom pos)
+  - mktemp + gconf vars?
+  - update buttons somewhere in gui.
+- export override for output path (collection)
+- leave corners free (top/bottom scrolling indicators)
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
   related tags, 2*k+2 many.

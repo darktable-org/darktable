@@ -431,6 +431,19 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/ui_last/expander_snapshots</key>
+      <applyto>/apps/darktable/ui_last/expander_snapshots</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>-1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/ui_last/expander_history</key>
       <applyto>/apps/darktable/ui_last/expander_history</applyto>
       <owner>darktable</owner>

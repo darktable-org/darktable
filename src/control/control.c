@@ -185,6 +185,9 @@ int dt_control_load_config(dt_control_t *c)
   int height = dt_conf_get_int("ui_last/window_h");
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   gtk_window_resize(GTK_WINDOW(widget), width, height);
+  int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
+  if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
+  else           gtk_window_unfullscreen(GTK_WINDOW(widget));
   dt_control_restore_gui_settings(DT_LIBRARY);
   dt_control_update_recent_films();
   return 0;
@@ -933,6 +936,10 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
+  bit = dt_conf_get_int("ui_last/expander_snapshots");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_expander");
+  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
+
   bit = dt_conf_get_int("ui_last/expander_history");
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
@@ -986,6 +993,12 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_library", bit);
+
+  bit = dt_conf_get_int("ui_last/expander_snapshots");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_expander");
+  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/expander_snapshots", bit);
 
   bit = dt_conf_get_int("ui_last/expander_history");
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");

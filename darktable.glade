@@ -618,6 +618,103 @@ all film rolls</property>
                               </packing>
                             </child>
                             <child>
+                              <widget class="GtkEventBox" id="snapshots_eventbox">
+                                <property name="no_show_all">True</property>
+                                <child>
+                                  <widget class="GtkExpander" id="snapshots_expander">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="spacing">10</property>
+                                    <child>
+                                      <widget class="GtkAlignment" id="snapshots_alignment">
+                                        <property name="visible">True</property>
+                                        <property name="bottom_padding">10</property>
+                                        <property name="left_padding">5</property>
+                                        <property name="right_padding">10</property>
+                                        <child>
+                                          <widget class="GtkVBox" id="snapshots_body">
+                                            <property name="visible">True</property>
+                                            <property name="orientation">vertical</property>
+                                            <child>
+                                              <widget class="GtkToggleButton" id="snapshot_1_togglebutton">
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                                <property name="no_show_all">True</property>
+                                                <property name="xalign">0</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkToggleButton" id="snapshot_2_togglebutton">
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                                <property name="no_show_all">True</property>
+                                                <property name="xalign">0</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="position">1</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkToggleButton" id="snapshot_3_togglebutton">
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                                <property name="no_show_all">True</property>
+                                                <property name="xalign">0</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkToggleButton" id="snapshot_4_togglebutton">
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                                <property name="no_show_all">True</property>
+                                                <property name="xalign">0</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="position">3</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkButton" id="snapshot_take_button">
+                                                <property name="label" translatable="yes">take snapshot</property>
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">True</property>
+                                                <property name="receives_default">True</property>
+                                                <property name="xalign">0</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="padding">5</property>
+                                                <property name="position">4</property>
+                                              </packing>
+                                            </child>
+                                          </widget>
+                                        </child>
+                                      </widget>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkLabel" id="label9">
+                                        <property name="visible">True</property>
+                                        <property name="label" translatable="yes">snapshots</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="type">label_item</property>
+                                      </packing>
+                                    </child>
+                                  </widget>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
                               <widget class="GtkEventBox" id="metadata_eventbox">
                                 <property name="visible">True</property>
                                 <child>
@@ -918,7 +1015,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                             <child>
@@ -1093,7 +1190,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">2</property>
+                                <property name="position">3</property>
                               </packing>
                             </child>
                             <child>
@@ -1105,7 +1202,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">3</property>
+                                <property name="position">4</property>
                               </packing>
                             </child>
                           </widget>
