@@ -49,6 +49,41 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  // adjust picked color:
+  if(dev->gui_module && dev->gui_module->request_color_pick)
+  {
+    int m = dt_conf_get_int("plugins/darkroom/pick_mean");
+    int c = dt_conf_get_int("plugins/darkroom/pick_colorspace");
+    float *col;
+    switch(m)
+    {
+      case 0: // mean
+        col = dev->gui_module->picked_color;
+        break;
+      case 1: //min
+        col = dev->gui_module->picked_color_min;
+        break;
+      default:
+        col = dev->gui_module->picked_color_max;
+        break;
+    }
+    // TODO: colorin/colorout aware color system conversion!
+    switch(c)
+    {
+      case 0:  // Lab
+        break;
+      case 1:  // rgb
+        // TODO: convert to rgb
+        break;
+      default: // adam's zone
+        break;
+    }
+    char colstring[512];
+    GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_Lab_label");
+    snprintf(colstring, 512, "(%.04f %.04f %.04f)", col[0], col[1], col[2]);
+    gtk_label_set_label(GTK_LABEL(w), colstring);
+  }
   
   if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
   if(dev->preview_dirty) dt_dev_process_preview(dev);
@@ -292,6 +327,8 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_eventbox");
   gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_notebook");
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), 1);
 
   // get top level vbox containing all expanders, plugins_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
@@ -379,6 +416,8 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "history_eventbox");
   gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_notebook");
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(widget), 0);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db

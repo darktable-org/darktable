@@ -44,7 +44,7 @@ typedef struct dt_iop_module_t
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** place to store the picked color. */
-  float picked_color[3];
+  float picked_color[3], picked_color_min[3], picked_color_max[3];
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */

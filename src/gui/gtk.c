@@ -208,6 +208,18 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     wdl = g_list_next(wdl);
   }
 
+  // synch bottom panel for develop mode
+  if(darktable.develop->gui_module)
+  {
+    GtkWidget *w;
+    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
+    gtk_label_set_label(GTK_LABEL(w), darktable.develop->gui_module->name());
+    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
+    darktable.gui->reset = 1;
+    gtk_togglebutton_set_active(GTK_TOGGLEBUTTON(w), darktable.develop->gui_module->request_color_pick);
+    darktable.gui->reset = 0;
+  }
+
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
   {

@@ -317,8 +317,15 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       for(int k=0;k<4;k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
       for(int k=1;k<4;k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
       const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
+      for(int k=0;k<3;k++) module->picked_color_min[k] =  666.0f;
+      for(int k=0;k<3;k++) module->picked_color_max[k] = -666.0f;
       for(int j=box[1];j<=box[3];j++) for(int i=box[0];i<=box[2];i++)
-        for(int k=0;k<3;k++) rgb[k] += w*in[3*(roi_in.width*j + i) + k];
+        for(int k=0;k<3;k++)
+        {
+          module->picked_color_min[k] = fminf(module->picked_color_min[k], in[3*(roi_in.width*j + i) + k]);
+          module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[3*(roi_in.width*j + i) + k]);
+          rgb[k] += w*in[3*(roi_in.width*j + i) + k];
+        }
       for(int k=0;k<3;k++) module->picked_color[k] = rgb[k];
 
       int needlock = pthread_self() != darktable.control->gui_thread;
