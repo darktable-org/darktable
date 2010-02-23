@@ -249,8 +249,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 8.0000, 0.001));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0000, 0.001));
+  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 8.0000, 0.100));
+  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0000, 0.010));
   g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0000, 0.001));
   gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale2), 3);
