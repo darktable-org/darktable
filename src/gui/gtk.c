@@ -307,6 +307,44 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   gtk_widget_queue_draw(win);
 }
 
+static void
+snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  char wdname[64];
+  GtkWidget *wid;
+  snprintf(wdname, 64, "snapshot_1_togglebutton");
+  wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
+  gchar *label1 = g_strdup(gtk_button_get_label(GTK_BUTTON(wid)));
+  for(int k=1;k<MIN(4,darktable.gui->num_snapshots+1);k++)
+  {
+    snprintf(wdname, 64, "snapshot_%d_togglebutton", k+1);
+    wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
+    gtk_widget_set_visible(wid, TRUE);
+    gchar *label2 = g_strdup(gtk_button_get_label(GTK_BUTTON(wid)));
+    gtk_button_set_label(GTK_BUTTON(wid), label1);
+    g_free(label1);
+    label1 = label2;
+    darktable.gui->snapshot[k] = darktable.gui->snapshot[k-1];
+  }
+  g_free(label1);
+  snprintf(wdname, 64, "snapshot_%d_togglebutton", 1);
+  wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
+  snprintf(wdname, 64, _("snapshot %d"), snap_num+1);
+  gtk_button_set_label(GTK_BUTTON(wid), wdname);
+  gtk_widget_set_visible(wid, TRUE);
+  // TODO: open file mkstemp
+  // TODO: get zoom pos from develop
+  // TODO: set take snap bit for darkroom
+  // TODO: request repaint of darkroom
+  darktable.gui->num_snapshots ++;
+}
+
+static void
+snapshot_toggled (GtkToggleButton *widget, long int which)
+{
+  // TODO: read resp. snap to cached cairo surface:
+  // cairo_image_surface_create_from_png(filename)
+}
 
 static void
 film_button_clicked (GtkWidget *widget, gpointer user_data)
@@ -587,6 +625,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
   GtkWidget *widget;
 
+  gui->num_snapshots = 0;
+  bzero(gui->snapshot, sizeof(gui->snapshot));
   if (!g_thread_supported ()) g_thread_init(NULL);
   gdk_threads_init();
   gdk_threads_enter();
@@ -732,6 +772,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect (G_OBJECT (widget), "changed",
                     G_CALLBACK (image_sort_changed),
                     (gpointer)0);
+
+  // snapshot management
+  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_take_button");
+  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(snapshot_add_button_clicked), NULL);
 
   // lighttable layout
   widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");

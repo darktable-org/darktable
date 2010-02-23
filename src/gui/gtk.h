@@ -16,6 +16,14 @@ typedef struct dt_gui_key_accel_t
 }
 dt_gui_key_accel_t;
 
+typedef struct dt_gui_snapshot_t
+{
+  float zoom_x, zoom_y, scale;
+  char filename[20];
+}
+dt_gui_snapshot_t;
+
+struct cairo_surface_t;
 typedef struct dt_gui_gtk_t
 {
   GladeXML *main_window;
@@ -24,6 +32,11 @@ typedef struct dt_gui_gtk_t
   GList *key_accels;
   dt_gui_navigation_t navigation;
   dt_gui_histogram_t histogram;
+
+  int32_t num_snapshots, request_snapshot;
+  dt_gui_snapshot_t snapshot[4];
+  cairo_surface_t *snapshot_image;
+
   int32_t reset;
   float bgcolor[3];
 }

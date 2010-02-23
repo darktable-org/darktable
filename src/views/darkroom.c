@@ -63,6 +63,10 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
+
+  // TODO: if dt.gui requested a snapshot:
+  // cairo_surface_to_png (surface_t, filename)
+  // TODO: and if a snapshot is currently selected, draw it on top!
   if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
   { // create double-buffered image to draw on, to make modules draw more fluently.
     image_surface_width = width; image_surface_height = height;
