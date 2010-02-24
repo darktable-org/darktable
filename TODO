@@ -1,14 +1,9 @@
 0.5 release:
-- remember fullscreen mode
+- snapshot names: IMG_1234 (stack top)
 - color picker with values:
-  - darkroom expose: get picked value and display in label
-  - each time a focus is changed: set gui module in bottom label
-    - need encapsuled set gui module func?
-  - dt conf vars for all gui elements/settings
-    - and bind Lab/rgb/zones and mean/min/max comboboxes to these settings.
+  - extra color picker callback: select module and pick min/mean/max.
   - transform colors to right spaces
   - toggle pick: synch with selected module
-  - just synch each expose?
 - export override for output path (collection)
 - leave corners free (top/bottom scrolling indicators)
 - views/browse.c: browse by similar tag:

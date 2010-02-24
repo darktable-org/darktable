@@ -80,9 +80,15 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   module->priority = 0;
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
-  module->picked_color[0] = module->picked_color[1] = module->picked_color[2] = 0.0f;
-  module->picked_color_min[0] = module->picked_color_min[1] = module->picked_color_min[2] = 0.0f;
-  module->picked_color_max[0] = module->picked_color_max[1] = module->picked_color_max[2] = 0.0f;
+  for(int k=0;k<3;k++)
+  {
+    module->picked_color[k] = 
+    module->picked_color_min[k] = 
+    module->picked_color_max[k] = 
+    module->picked_color_Lab[k] = 
+    module->picked_color_min_Lab[k] = 
+    module->picked_color_max_Lab[k] = 0.0f;
+  }
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.

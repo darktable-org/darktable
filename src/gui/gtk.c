@@ -185,6 +185,78 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   return TRUE;
 }
 
+static void
+update_colorpicker_panel()
+{
+  dt_develop_t *dev = darktable.develop;
+  // synch bottom panel for develop mode
+  if(dev->gui_module)
+  {
+    char colstring[512];
+    GtkWidget *w;
+    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
+    snprintf(colstring, 512, C_("colorpicker module", "`%s'"), darktable.develop->gui_module->name());
+    gtk_label_set_label(GTK_LABEL(w), colstring);
+    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
+    darktable.gui->reset = 1;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), darktable.develop->gui_module->request_color_pick);
+    darktable.gui->reset = 0;
+
+    // determine input color space:
+    GList *modules = dev->iop;
+    int input_color = 0; // linear rgb
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+      if     (module == dev->gui_module) break;
+      else if(!strcmp(module->op, "colorin"))  input_color = 1;  // Lab from here
+      else if(!strcmp(module->op, "colorout")) input_color = 2;  // output profile, probably sRGB
+      modules = g_list_next(modules);
+    }
+
+    // adjust picked color:
+    if(dev->gui_module->request_color_pick)
+    {
+      int m = dt_conf_get_int("ui_last/colorpicker_mean");
+      float *col;
+      switch(m)
+      {
+        case 0: // mean
+          if(input_color == 1) col = dev->gui_module->picked_color_Lab;
+          else col = dev->gui_module->picked_color;
+          break;
+        case 1: //min
+          if(input_color == 1) col = dev->gui_module->picked_color_min_Lab;
+          else col = dev->gui_module->picked_color_min;
+          break;
+        default:
+          if(input_color == 1) col = dev->gui_module->picked_color_max_Lab;
+          else col = dev->gui_module->picked_color_max;
+          break;
+      }
+      GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_Lab_label");
+      switch(input_color)
+      {
+        case 0: // linear rgb
+          snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
+          break;
+        case 1: // L a/L b/L
+          snprintf(colstring, 512, "%s: (%.02f, %.02f, %.02f)", _("Lab"), col[0], col[1], col[2]);
+          break;
+        default: // output color profile
+          snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("output profile"), col[0], col[1], col[2]);
+          break;
+      }
+      gtk_label_set_label(GTK_LABEL(w), colstring);
+    }
+    else
+    {
+      GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_Lab_label");
+      gtk_label_set_label(GTK_LABEL(w), "( --- )");
+    }
+  }
+}
+
 static gboolean
 expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 {
@@ -208,17 +280,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     wdl = g_list_next(wdl);
   }
 
-  // synch bottom panel for develop mode
-  if(darktable.develop->gui_module)
-  {
-    GtkWidget *w;
-    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
-    gtk_label_set_label(GTK_LABEL(w), darktable.develop->gui_module->name());
-    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
-    darktable.gui->reset = 1;
-    gtk_togglebutton_set_active(GTK_TOGGLEBUTTON(w), darktable.develop->gui_module->request_color_pick);
-    darktable.gui->reset = 0;
-  }
+  update_colorpicker_panel();
 
   // test quit cond (thread safe, 2nd pass)
   if(!darktable.control->running)
@@ -244,6 +306,23 @@ view_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data
     return TRUE;
   }
   return FALSE;
+}
+
+static void
+colorpicker_mean_changed (GtkComboBox *widget, gpointer p)
+{
+  dt_conf_set_int("ui_last/colorpicker_mean", gtk_combo_box_get_active(widget));
+  update_colorpicker_panel();
+}
+
+static void
+colorpicker_toggled (GtkToggleButton *button, gpointer p)
+{
+  if(darktable.gui->reset) return;
+  if(darktable.develop->gui_module)
+  {
+    darktable.develop->gui_module->request_color_pick = gtk_toggle_button_get_active(button);
+  }
 }
 
 static void
@@ -844,6 +923,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)2);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_4_togglebutton");
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)3);
+
+  // color picker
+  widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_mean"));
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(colorpicker_mean_changed), NULL);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
+  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(colorpicker_toggled), NULL);
 
   // lighttable layout
   widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");

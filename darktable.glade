@@ -286,11 +286,91 @@ id</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
-                      <widget class="GtkNotebook" id="bottom_notebook">
+                      <widget class="GtkVBox" id="vbox2">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="show_tabs">False</property>
-                        <property name="show_border">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <widget class="GtkVBox" id="bottom_darkroom_box">
+                            <property name="no_show_all">True</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">5</property>
+                            <child>
+                              <widget class="GtkHBox" id="bottom_darkroom_hbox">
+                                <property name="visible">True</property>
+                                <property name="spacing">5</property>
+                                <child>
+                                  <widget class="GtkToggleButton" id="colorpicker_togglebutton">
+                                    <property name="label" translatable="yes">pick</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkComboBox" id="colorpicker_mean_combobox">
+                                    <property name="visible">True</property>
+                                    <property name="items" translatable="yes">mean
+min
+max</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="label12">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">before module</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkHBox" id="hbox2">
+                                <property name="visible">True</property>
+                                <child>
+                                  <widget class="GtkLabel" id="colorpicker_module_label">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="xpad">2</property>
+                                    <property name="label" translatable="yes">no module selected</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="colorpicker_Lab_label">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">1</property>
+                                    <property name="xpad">2</property>
+                                    <property name="label" translatable="yes">( --- )</property>
+                                    <property name="selectable">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
                         <child>
                           <widget class="GtkHBox" id="bottom_lighttable_box">
                             <property name="visible">True</property>
@@ -320,87 +400,8 @@ file manager</property>
                               </packing>
                             </child>
                           </widget>
-                        </child>
-                        <child>
-                          <placeholder/>
-                          <packing>
-                            <property name="type">tab</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkHBox" id="bottom_darkroom_box">
-                            <property name="visible">True</property>
-                            <child>
-                              <widget class="GtkToggleButton" id="colorpicker_togglebutton">
-                                <property name="label" translatable="yes">pick</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                              </widget>
-                              <packing>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkComboBox" id="colorpicker_mean_combobox">
-                                <property name="visible">True</property>
-                                <property name="items" translatable="yes">mean
-min
-max</property>
-                              </widget>
-                              <packing>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkComboBox" id="colorpicker_colorspace_combobox">
-                                <property name="visible">True</property>
-                                <property name="items" translatable="yes">Lab
-rgb
-adam's zone</property>
-                              </widget>
-                              <packing>
-                                <property name="position">2</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="colorpicker_module_label">
-                                <property name="visible">True</property>
-                                <property name="xpad">2</property>
-                                <property name="label" translatable="yes">before output profile</property>
-                              </widget>
-                              <packing>
-                                <property name="position">3</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="colorpicker_Lab_label">
-                                <property name="visible">True</property>
-                                <property name="xpad">2</property>
-                                <property name="label" translatable="yes">0.0, 0.0, 0.0</property>
-                              </widget>
-                              <packing>
-                                <property name="position">4</property>
-                              </packing>
-                            </child>
-                          </widget>
                           <packing>
                             <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
-                          <packing>
-                            <property name="type">tab</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                          <packing>
-                            <property name="type">tab</property>
                           </packing>
                         </child>
                       </widget>
