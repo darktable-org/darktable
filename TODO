@@ -1,9 +1,6 @@
 0.5 release:
 - snapshot names: IMG_1234 (stack top)
-- color picker with values:
-  - extra color picker callback: select module and pick min/mean/max.
-  - transform colors to right spaces
-  - toggle pick: synch with selected module
+- segfault on exit??
 - export override for output path (collection)
 - leave corners free (top/bottom scrolling indicators)
 - views/browse.c: browse by similar tag:

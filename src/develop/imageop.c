@@ -15,7 +15,7 @@
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from iop_defaults where operation = ?1 and model like ?2 and maker like ?3 order by length(model) desc", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from iop_defaults where operation = ?1 and ((model like ?2 and maker like ?3) or (model = '%' and maker = '%')) order by length(model) desc", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   char *m = module->dev->image->exif_model;
   sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
