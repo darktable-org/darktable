@@ -1255,6 +1255,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
+                                                <property name="tooltip" translatable="yes">create a minmal history stack which produces the same image</property>
                                                 <property name="xalign">0</property>
                                               </widget>
                                               <packing>
