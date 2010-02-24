@@ -82,7 +82,8 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
     const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
     const float cur_scale = dt_dev_get_zoom_scale(dev, zoom,        closeup ? 2.0 : 1.0, 0);
-    if(cur_scale > min_scale)
+    // avoid numerical instability for small resolutions:
+    if(cur_scale > min_scale+0.001)
     {
       float boxw = 1, boxh = 1;
       dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);

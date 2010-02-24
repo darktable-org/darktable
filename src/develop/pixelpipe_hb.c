@@ -334,12 +334,12 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         const float b = fminf(128, fmaxf(-128.0, in[3*(roi_in.width*j + i) + 2]*L));
         Lab[1] += w*a;
         Lab[2] += w*b;
-        module->picked_color_min_Lab[0] = fminf(module->picked_color_min[0], L);
-        module->picked_color_min_Lab[1] = fminf(module->picked_color_min[1], a);
-        module->picked_color_min_Lab[2] = fminf(module->picked_color_min[2], b);
-        module->picked_color_max_Lab[0] = fmaxf(module->picked_color_max[0], L);
-        module->picked_color_max_Lab[1] = fmaxf(module->picked_color_max[1], a);
-        module->picked_color_max_Lab[2] = fmaxf(module->picked_color_max[2], b);
+        module->picked_color_min_Lab[0] = fminf(module->picked_color_min_Lab[0], L);
+        module->picked_color_min_Lab[1] = fminf(module->picked_color_min_Lab[1], a);
+        module->picked_color_min_Lab[2] = fminf(module->picked_color_min_Lab[2], b);
+        module->picked_color_max_Lab[0] = fmaxf(module->picked_color_max_Lab[0], L);
+        module->picked_color_max_Lab[1] = fmaxf(module->picked_color_max_Lab[1], a);
+        module->picked_color_max_Lab[2] = fmaxf(module->picked_color_max_Lab[2], b);
       }
       Lab[0] = rgb[0];
       for(int k=0;k<3;k++) module->picked_color_Lab[k] = Lab[k];

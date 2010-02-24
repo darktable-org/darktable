@@ -240,7 +240,7 @@ update_colorpicker_panel()
         case 0: // linear rgb
           snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
           break;
-        case 1: // L a/L b/L
+        case 1: // Lab
           snprintf(colstring, 512, "%s: (%.02f, %.02f, %.02f)", _("Lab"), col[0], col[1], col[2]);
           break;
         default: // output color profile
@@ -253,6 +253,8 @@ update_colorpicker_panel()
     {
       GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_Lab_label");
       gtk_label_set_label(GTK_LABEL(w), "( --- )");
+      w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
+      gtk_label_set_label(GTK_LABEL(w), _("no module selected"));
     }
   }
 }
@@ -401,17 +403,18 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
 static void
 snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
 {
+  if(!darktable.develop->image) return;
   char wdname[64], oldfilename[30];
   GtkWidget *wid;
   snprintf(wdname, 64, "snapshot_1_togglebutton");
   wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
   gchar *label1 = g_strdup(gtk_button_get_label(GTK_BUTTON(wid)));
   snprintf(oldfilename, 30, "%s", darktable.gui->snapshot[3].filename);
-  for(int k=1;k<MIN(4,darktable.gui->num_snapshots+1);k++)
+  for(int k=1;k<4;k++)
   {
     snprintf(wdname, 64, "snapshot_%d_togglebutton", k+1);
     wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_set_visible(wid, TRUE);
+    if(k<MIN(4,darktable.gui->num_snapshots+1)) gtk_widget_set_visible(wid, TRUE);
     gchar *label2 = g_strdup(gtk_button_get_label(GTK_BUTTON(wid)));
     gtk_button_set_label(GTK_BUTTON(wid), label1);
     g_free(label1);
@@ -423,7 +426,14 @@ snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
   g_free(label1);
   snprintf(wdname, 64, "snapshot_%d_togglebutton", 1);
   wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
-  snprintf(wdname, 64, _("snapshot %d"), darktable.gui->num_snapshots+1);
+  char *fname = darktable.develop->image->filename + strlen(darktable.develop->image->filename);
+  while(fname > darktable.develop->image->filename && *fname != '/') fname--;
+  snprintf(wdname, 64, "%s", fname);
+  fname = wdname + strlen(wdname);
+  while(fname > wdname && *fname != '.') fname --;
+  if(*fname != '.') fname = wdname + strlen(wdname);
+  if(wdname + 64 - fname > 4) sprintf(fname, "(%d)", darktable.develop->history_end);
+  // snprintf(wdname, 64, _("snapshot %d"), darktable.gui->num_snapshots+1);
   gtk_button_set_label(GTK_BUTTON(wid), wdname);
   gtk_widget_set_visible(wid, TRUE);
   
