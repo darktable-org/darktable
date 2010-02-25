@@ -15,7 +15,7 @@
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 /** this wraps gegl:temperature plus some additional whitebalance adjustments. */
 
@@ -173,17 +173,18 @@ void gui_update (struct dt_iop_module_t *self)
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)module->params;
+  dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)module->params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)module->factory_params;
   float temp, tint, mul[3];
-  for(int k=0;k<3;k++) mul[k] = p->coeffs[k]*g->cam_mul[k];
-  convert_rgb_to_k(p->coeffs, p->temp_out, &temp, &tint);
+  for(int k=0;k<3;k++) mul[k] = p->coeffs[k]/fp->coeffs[k];
+  convert_rgb_to_k(mul, p->temp_out, &temp, &tint);
   gtk_range_set_value(GTK_RANGE(g->scale_k_out), p->temp_out);
-  gtk_range_set_value(GTK_RANGE(g->scale_r), mul[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), mul[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), mul[2]);
+  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]);
+  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]);
+  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]);
   gtk_range_set_value(GTK_RANGE(g->scale_k), temp);
   gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
-  if(fabsf(p->coeffs[0]-1.0) + fabsf(p->coeffs[1]-1.0) + fabsf(p->coeffs[2]-1.0) < 0.01)
+  if(fabsf(p->coeffs[0]-fp->coeffs[0]) + fabsf(p->coeffs[1]-fp->coeffs[1]) + fabsf(p->coeffs[2]-fp->coeffs[2]) < 0.01)
     gtk_combo_box_set_active(g->presets, 0);
   else
     gtk_combo_box_set_active(g->presets, -1);
@@ -192,14 +193,25 @@ void gui_update (struct dt_iop_module_t *self)
 
 void init (dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_temperature_data_t));
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->default_enabled = 0;
+  // raw images need wb:
+  if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
+  else                                    module->default_enabled = 1;
   module->priority = 200;
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
-  dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t){0, 5000.0, {1.0, 1.0, 1.0}};
+  dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t){5000.0, {1.0, 1.0, 1.0}};
+
+  // get white balance coefficients, as shot
+  char filename[1024];
+  int ret;
+  dt_image_full_path(module->dev->image, filename, 1024);
+  libraw_data_t *raw = libraw_init(0);
+  ret = libraw_open_file(raw, filename);
+  if(!ret) for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.cam_mul[k]/1024.0;
+  libraw_close(raw);
+
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
 }
@@ -216,19 +228,21 @@ static void
 gui_update_from_coeffs (dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
   // now get temp/tint from rgb. leave temp_out as it was:
   float temp, tint, mul[3];
-  for(int k=0;k<3;k++) mul[k] = p->coeffs[k] * g->cam_mul[k];
+
+  for(int k=0;k<3;k++) mul[k] = p->coeffs[k]/fp->coeffs[k];
   p->temp_out = gtk_range_get_value(GTK_RANGE(g->scale_k_out));
-  convert_rgb_to_k(p->coeffs, p->temp_out, &temp, &tint);
+  convert_rgb_to_k(mul, p->temp_out, &temp, &tint);
 
   darktable.gui->reset = 1;
   gtk_range_set_value(GTK_RANGE(g->scale_k),    temp);
   gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
-  gtk_range_set_value(GTK_RANGE(g->scale_r), mul[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), mul[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), mul[2]);
+  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]);
+  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]);
+  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]);
   darktable.gui->reset = 0;
 }
 
@@ -257,17 +271,6 @@ void gui_init (struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-
-  // get white balance coefficients, as shot
-  char filename[1024];
-  int ret;
-  dt_image_full_path(self->dev->image, filename, 1024);
-  libraw_data_t *raw = libraw_init(0);
-  ret = libraw_open_file(raw, filename);
-  if(!ret) for(int k=0;k<4;k++) g->cam_mul[k] = raw->color.cam_mul[k]/1024.0;
-  else     for(int k=0;k<4;k++) g->cam_mul[k] = 1.0;
-  libraw_close(raw);
 
   GtkWidget *label;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
@@ -366,16 +369,7 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 0);
   gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune whitebalance preset"), NULL);
 
-  float temp, tint;
-  float mul[3];
-  for(int k=0;k<3;k++) mul[k] = p->coeffs[k] * g->cam_mul[k];
-  convert_rgb_to_k(p->coeffs, p->temp_out, &temp, &tint);
-  gtk_range_set_value(GTK_RANGE(g->scale_k_out), p->temp_out);
-  gtk_range_set_value(GTK_RANGE(g->scale_r), mul[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), mul[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), mul[2]);
-  gtk_range_set_value(GTK_RANGE(g->scale_k), temp);
-  gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
+  self->gui_update(self);
 
   g_signal_connect (G_OBJECT (g->scale_tint), "value-changed",
                     G_CALLBACK (tint_callback), self);
@@ -405,7 +399,8 @@ static void
 temp_changed(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
 
   const float temp_out = gtk_range_get_value(GTK_RANGE(g->scale_k_out));
   const float temp_in  = gtk_range_get_value(GTK_RANGE(g->scale_k));
@@ -416,14 +411,14 @@ temp_changed(dt_iop_module_t *self)
   convert_k_to_rgb (temp_out, intended_temperature_rgb);
 
   p->temp_out = temp_out;
-  p->coeffs[0] =        intended_temperature_rgb[0] / original_temperature_rgb[0];
-  p->coeffs[1] = tint * intended_temperature_rgb[1] / original_temperature_rgb[1];
-  p->coeffs[2] =        intended_temperature_rgb[2] / original_temperature_rgb[2];
+  p->coeffs[0] = fp->coeffs[0] *        intended_temperature_rgb[0] / original_temperature_rgb[0];
+  p->coeffs[1] = fp->coeffs[1] * tint * intended_temperature_rgb[1] / original_temperature_rgb[1];
+  p->coeffs[2] = fp->coeffs[2] *        intended_temperature_rgb[2] / original_temperature_rgb[2];
 
   darktable.gui->reset = 1;
-  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]*g->cam_mul[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]*g->cam_mul[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]*g->cam_mul[2]);
+  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]);
+  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]);
+  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]);
   darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -460,9 +455,9 @@ rgb_callback (GtkRange *range, gpointer user_data)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
   const float value = gtk_range_get_value(range);
-  if     (range == GTK_RANGE(g->scale_r)) p->coeffs[0] = value/g->cam_mul[0];
-  else if(range == GTK_RANGE(g->scale_g)) p->coeffs[1] = value/g->cam_mul[1];
-  else if(range == GTK_RANGE(g->scale_b)) p->coeffs[2] = value/g->cam_mul[2];
+  if     (range == GTK_RANGE(g->scale_r)) p->coeffs[0] = value;
+  else if(range == GTK_RANGE(g->scale_g)) p->coeffs[1] = value;
+  else if(range == GTK_RANGE(g->scale_b)) p->coeffs[2] = value;
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);
@@ -474,21 +469,22 @@ apply_preset(dt_iop_module_t *self)
   self->request_color_pick = 0;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
+  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
   const int tune = gtk_spin_button_get_value(g->finetune);
   const int pos = gtk_combo_box_get_active(g->presets);
   switch(pos)
   {
     case 0: // camera wb
-      for(int k=0;k<3;k++) p->coeffs[k] = 1.0;
+      for(int k=0;k<3;k++) p->coeffs[k] = fp->coeffs[k];
       break;
     case 1: // spot wb, exposure callback will set p->coeffs.
-      for(int k=0;k<3;k++) p->coeffs[k] = 1.0;
+      for(int k=0;k<3;k++) p->coeffs[k] = fp->coeffs[k];
       self->dev->gui_module = self;
       self->request_color_pick = 1;
       break;
     case 2: // passthrough mode, raw data
-      for(int k=0;k<3;k++) p->coeffs[k] = 1.0/g->cam_mul[k];
+      for(int k=0;k<3;k++) p->coeffs[k] = 1.0;
       break;
     default:
       for(int i=g->preset_num[pos];i<wb_preset_count;i++)
@@ -496,7 +492,7 @@ apply_preset(dt_iop_module_t *self)
         if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&
            !strcmp(wb_preset[i].model, self->dev->image->exif_model) && wb_preset[i].tuning == tune)
         {
-          for(int k=0;k<3;k++) p->coeffs[k] = wb_preset[i].channel[k]/g->cam_mul[k];
+          for(int k=0;k<3;k++) p->coeffs[k] = wb_preset[i].channel[k];
           break;
         }
       }

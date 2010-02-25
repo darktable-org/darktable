@@ -87,6 +87,7 @@ typedef struct dt_image_t
   int32_t force_reimport;
 
   // raw image parameters
+  float black, maximum;
   float raw_denoise_threshold, raw_auto_bright_threshold;
   dt_image_raw_parameters_t raw_params;
   float *pixels;

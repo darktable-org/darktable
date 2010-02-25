@@ -49,6 +49,20 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  if(dev->gui_synch)
+  { // synch module guis from gtk thread:
+    darktable.gui->reset = 1;
+    GList *modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      dt_iop_gui_update(module);
+      modules = g_list_next(modules);
+    }
+    darktable.gui->reset = 0;
+    dev->gui_synch = 0;
+  }
   
   if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
   if(dev->preview_dirty) dt_dev_process_preview(dev);

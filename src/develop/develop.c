@@ -51,6 +51,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->gui_leaving = 0;
+  dev->gui_synch = 0;
   pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
@@ -364,6 +365,21 @@ restart:
     // during load, a mipf update could have been issued.
     dev->preview_input_changed = 1;
     dev->preview_dirty = 1;
+    // also reload defaults, as only now exposure/black levels are known:
+    GList *modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+      if(module->reload_defaults)
+      {
+        module->reload_defaults(module);    // eval new default
+        dt_iop_load_default_params(module); // and override, maybe.
+      }
+      modules = g_list_next(modules);
+    }
+    dev->gui_synch = 1; // notify gui thread we want to synch
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_process_image(dev);
   }
 }
@@ -425,11 +441,11 @@ void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
   else dev->mipf = NULL;
   dev->image_dirty = dev->preview_dirty = 1;
 
-  dev->iop = dt_iop_load_modules(dev);
-
-  dt_dev_read_history(dev);
   if(!dev->gui_attached)
     dt_dev_raw_load(dev, dev->image);
+
+  dev->iop = dt_iop_load_modules(dev);
+  dt_dev_read_history(dev);
 }
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht)

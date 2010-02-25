@@ -107,6 +107,8 @@ typedef struct dt_iop_module_t
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
   /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
   void (*commit_params) (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** this is the chance to update default parameters, after the full raw is loaded. */
+  void (*reload_defaults) (struct dt_iop_module_t *self);
   /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
   void (*cleanup_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*modify_roi_in)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
@@ -130,6 +132,9 @@ void dt_iop_gui_update(dt_iop_module_t *module);
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+/** loads default settings from database. */
+void dt_iop_load_default_params(dt_iop_module_t *module);
+
 
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom  (const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,

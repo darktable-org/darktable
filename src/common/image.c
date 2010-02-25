@@ -490,6 +490,8 @@ void dt_image_init(dt_image_t *img)
   img->pixels = NULL;
   img->orientation = -1; // not inited.
 
+  img->black = 0.0f;
+  img->maximum = 1.0f;
   img->raw_params.user_flip = -1;
   img->raw_params.med_passes = 0;
   img->raw_params.wb_auto = 0;

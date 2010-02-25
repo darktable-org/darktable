@@ -15,7 +15,6 @@ static const float dt_iop_temperature_rgb_r55[][12];
 
 typedef struct dt_iop_temperature_params_t
 {
-  int32_t trigger;
   float temp_out;
   float coeffs[3];
 }
@@ -28,7 +27,6 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkHScale *scale_k, *scale_tint, *scale_k_out, *scale_r, *scale_g, *scale_b;
   GtkComboBox *presets;
   GtkSpinButton *finetune;
-  float cam_mul[4]; // rgbg
   int preset_cnt;
   int preset_num[50];
 }

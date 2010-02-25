@@ -1,4 +1,10 @@
 0.5 release:
+- exposure pipe:
+  - store black/max in database (=> incompatible again..)
+  - use color picker to do auto exposure with given percentage of clipping.
+  - implement cool highlight reconstruction with new information above max.
+- wb invalidate presets on change.
+- embedded profiles?
 - segfault on exit??
 - save custom defaults (sqlite table iop_defaults) to external file as well
 - export override for output path (collection)

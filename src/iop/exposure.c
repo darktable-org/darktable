@@ -25,23 +25,34 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   float *in =  (float *)i;
   float *out = (float *)o;
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  if(fabsf(d->gain - 1.0) < 0.001)
   {
-#if 0 // Lab processing:
-    // clip out colors to white if L > 100?
-    const float L = 100.0*powf(fmaxf(0.0, (in[0]-d->black))*d->scale, d->gain);
-    const float Lwhite = 100.0f, Lclip = 20.0f;
-    const float Lcap  = fminf(100.0, L);
-    const float clip  = 1.0 - (Lcap - in[0])*(1.0/100.0)*fminf(Lwhite-Lclip, fmaxf(0.0, L - Lclip))/(Lwhite-Lclip);
-    const float clip2 = clip*clip*clip;
-    out[0] = Lcap;
-    out[1] = in[1] * clip2;
-    out[2] = in[2] * clip2;
-#else // linear RGB processing:
-    for(int i=0;i<3;i++) out[i] = fmaxf(0.0, fminf(1.0, powf(fmaxf(0.0, (in[i]-d->black))*d->scale, d->gain)));
-#endif
-    out += 3; in += 3;
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
+    {
+      for(int i=0;i<3;i++) out[i] = fminf(1.0, fmaxf(0.0, (in[i]-d->black)*d->scale));
+      out += 3; in += 3;
+    }
   }
+  else
+  {
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
+    {
+      for(int i=0;i<3;i++) out[i] = powf(fmaxf(0.0, fminf(1.0, (in[i]-d->black))*d->scale), d->gain);
+      out += 3; in += 3;
+    }
+  }
+}
+
+void reload_defaults (struct dt_iop_module_t *self)
+{
+  dt_iop_exposure_params_t *p  = (dt_iop_exposure_params_t *)self->default_params;
+  dt_iop_exposure_params_t *fp = (dt_iop_exposure_params_t *)self->factory_params;
+  int cp = memcmp(self->default_params, self->params, self->params_size);
+  fp->black = p->black = self->dev->image->black;
+  fp->white = p->white = log2f(1.0+self->dev->image->maximum);
+  // FIXME: this function is called from render threads, but these values
+  // should be written by gui threads. but it is only a matter of gui synching..
+  if(!cp) memcpy(self->params, self->default_params, self->params_size);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -52,15 +63,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   fprintf(stderr, "implement exposure process gegl version! \n");
 #else
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-#if 0 // Lab
-  d->black = 100.0*(powf(2.0, p->black) - 1.0);
-  d->gain = 2.0 - p->gain;
-  d->scale = 1.0/(100.0*(powf(2.0, p->white) - 1.0) - p->black); 
-#else // RGB
-  d->black = (powf(2.0, p->black) - 1.0);
+  d->black = p->black;
   d->gain = 2.0 - p->gain;
   d->scale = 1.0/((powf(2.0, p->white) - 1.0) - p->black); 
-#endif
 #endif
 }
 
@@ -103,11 +108,16 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_exposure_data_t));
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
-  module->default_enabled = 0;
-  module->priority = 250;
+  if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
+  else                                    module->default_enabled = 1;
+  module->priority = 150;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};
+
+  tmp.black = module->dev->image->black;
+  tmp.white = log2f(1.0+module->dev->image->maximum);
+
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
 }
@@ -181,6 +191,8 @@ void gui_init(struct dt_iop_module_t *self)
   darktable.gui->histogram.exposure = self;
   darktable.gui->histogram.set_white = dt_iop_exposure_set_white;
   darktable.gui->histogram.get_white = dt_iop_exposure_get_white;
+
+  // TODO: get black level from raw data
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));

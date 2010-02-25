@@ -120,6 +120,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
   if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
   if(!g_module_symbol(module->module, "commit_params",          (gpointer)&(module->commit_params)))          goto error;
+  if(!g_module_symbol(module->module, "reload_defaults",        (gpointer)&(module->reload_defaults)))        module->reload_defaults = NULL;
   if(!g_module_symbol(module->module, "init_pipe",              (gpointer)&(module->init_pipe)))              goto error;
   if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;

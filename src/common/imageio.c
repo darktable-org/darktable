@@ -590,10 +590,14 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = img->raw_params.wb_cam;
-  raw->params.use_auto_wb = img->raw_params.wb_auto;
+  raw->params.use_camera_wb = 0;//img->raw_params.wb_cam;
+  raw->params.use_auto_wb = 0;//img->raw_params.wb_auto;
   raw->params.med_passes = img->raw_params.med_passes;
-  raw->params.no_auto_bright = img->raw_params.no_auto_bright;
+  raw->params.no_auto_bright = 1;//img->raw_params.no_auto_bright;
+  // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
+  // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
+  raw->params.dont_scale = 1;
+  raw->params.output_color = 0;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
   raw->params.gamm[0] = 1.0;
@@ -613,6 +617,8 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   }
 
   ret = libraw_unpack(raw);
+  img->black   = raw->color.black/65535.0;
+  img->maximum = raw->color.maximum/65535.0;
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
   HANDLE_ERRORS(ret, 1);
