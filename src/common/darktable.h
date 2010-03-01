@@ -8,9 +8,9 @@
 #include <pthread.h>
 #include <glib/gi18n.h>
 
-#define DT_MODULE_VERSION 1
-#define DT_VERSION 33
-#define DT_CONFIG_VERSION 33
+#define DT_MODULE_VERSION 1   // version of dt's module interface
+#define DT_VERSION 34         // version of dt's database tables
+#define DT_CONFIG_VERSION 33  // dt gconf var version
 
 // every module has to define this:
 #ifdef _DEBUG

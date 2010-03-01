@@ -25,11 +25,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   float *in =  (float *)i;
   float *out = (float *)o;
+  float scale = d->scale;
+  float black = d->black;
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
+  { // path for already exposed preview buffer
+    black -= self->dev->image->black;
+    scale /= self->dev->image->maximum;
+  }
   if(fabsf(d->gain - 1.0) < 0.001)
   {
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      for(int i=0;i<3;i++) out[i] = fminf(1.0, fmaxf(0.0, (in[i]-d->black)*d->scale));
+      for(int i=0;i<3;i++) out[i] = fminf(1.0, fmaxf(0.0, (in[i]-black)*scale));
       out += 3; in += 3;
     }
   }
@@ -37,7 +44,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      for(int i=0;i<3;i++) out[i] = powf(fmaxf(0.0, fminf(1.0, (in[i]-d->black))*d->scale), d->gain);
+      for(int i=0;i<3;i++) out[i] = powf(fmaxf(0.0, fminf(1.0, (in[i]-black))*scale), d->gain);
       out += 3; in += 3;
     }
   }
@@ -99,7 +106,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
   gtk_range_set_value(GTK_RANGE(g->scale1), p->black);
-  gtk_range_set_value(GTK_RANGE(g->scale2), -log2f(p->white));
+  gtk_range_set_value(GTK_RANGE(g->scale2), -log2f(p->white/self->dev->image->maximum));
   gtk_range_set_value(GTK_RANGE(g->scale3), p->gain);
 }
 
@@ -142,19 +149,36 @@ float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
   return p->white;
 }
 
-static void white_callback (GtkRange *range, gpointer user_data)
+static void
+autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
+{
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  if(darktable.gui->reset) return;
+  self->request_color_pick = gtk_toggle_button_get_active(button);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
+}
+
+static void
+autoexpp_callback (GtkRange *range, dt_iop_module_t *self)
+{
+  // TODO: adjust percentage param
+}
+
+static void
+white_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->white = exp2f(-gtk_range_get_value(range));
+  p->white = exp2f(-gtk_range_get_value(range))*self->dev->image->maximum;
   float black = gtk_range_get_value(GTK_RANGE(g->scale1));
   if(p->white < black) gtk_range_set_value(GTK_RANGE(g->scale1), p->white);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-static void black_callback (GtkRange *range, gpointer user_data)
+static void
+black_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
@@ -166,7 +190,8 @@ static void black_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-static void gain_callback (GtkRange *range, gpointer user_data)
+static void
+gain_callback (GtkRange *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -175,10 +200,22 @@ static void gain_callback (GtkRange *range, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-static gchar *fv_callback(GtkScale *scale, gdouble value)
+static gchar
+*fv_callback(GtkScale *scale, gdouble value)
 {
   int digits = gtk_scale_get_digits(scale);
   return g_strdup_printf("%# *.*f", 2+1+digits, digits, value);
+}
+
+static gboolean
+expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return FALSE;
+  if(!self->request_color_pick) return FALSE;
+  // dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  // TODO: use this hook and calculate new exposure from picked color (hist)
+  dt_dev_add_history_item(self->dev, self);
+  return FALSE;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -191,8 +228,6 @@ void gui_init(struct dt_iop_module_t *self)
   darktable.gui->histogram.exposure = self;
   darktable.gui->histogram.set_white = dt_iop_exposure_set_white;
   darktable.gui->histogram.get_white = dt_iop_exposure_get_white;
-
-  // TODO: get black level from raw data
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
@@ -227,11 +262,24 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
+  g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto exposure")));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+  g->autoexpp = GTK_HSCALE(gtk_hscale_new_with_range(0.0, .1, .001));
+  gtk_object_set(GTK_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out"), NULL);
+  gtk_scale_set_digits(GTK_SCALE(g->autoexpp), 3);
+  gtk_scale_set_value_pos(GTK_SCALE(g->autoexpp), GTK_POS_LEFT);
+  gtk_range_set_value(GTK_RANGE(g->autoexpp), 0.01);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->autoexp), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
+
   g_signal_connect (G_OBJECT (g->scale1), "format-value",
                     G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "format-value",
                     G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "format-value",
+                    G_CALLBACK (fv_callback), self);
+  g_signal_connect (G_OBJECT (g->autoexpp), "format-value",
                     G_CALLBACK (fv_callback), self);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
@@ -240,6 +288,12 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (white_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (gain_callback), self);
+  g_signal_connect (G_OBJECT (g->autoexpp), "value-changed",
+                    G_CALLBACK (autoexpp_callback), self);
+  g_signal_connect (G_OBJECT (g->autoexp), "toggled",
+                    G_CALLBACK (autoexp_callback), self);
+  g_signal_connect (G_OBJECT(self->widget), "expose-event",
+                    G_CALLBACK(expose), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

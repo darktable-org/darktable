@@ -226,6 +226,8 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
   dt_imageio_preview_write(img, DT_IMAGE_MIPF);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
+  // remember this is no real raw data:
+  img->flags |= DT_IMAGE_THUMBNAIL;
   return DT_IMAGEIO_OK;
 }
 
@@ -274,10 +276,10 @@ void dt_image_duplicate(const int32_t imgid)
   rc = sqlite3_prepare_v2(darktable.db, "insert into images "
       "(id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
       "focal_length, datetime_taken, flags, output_width, output_height, crop, "
-      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold) "
+      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum) "
       "select null, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
       "focal_length, datetime_taken, flags, width, height, crop, "
-      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold "
+      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum "
       "from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, imgid);
   rc = sqlite3_step(stmt);
@@ -548,7 +550,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
   int rc, ret = 1;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -573,6 +575,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     *(int *)&img->raw_params = sqlite3_column_int(stmt, 17);
     img->raw_denoise_threshold = sqlite3_column_double(stmt, 18);
     img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
+    img->black   = sqlite3_column_double(stmt, 20);
+    img->maximum = sqlite3_column_double(stmt, 21);
     
     ret = 0;
   }

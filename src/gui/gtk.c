@@ -659,6 +659,11 @@ void quit()
   gtk_widget_queue_draw(widget);
 }
 
+static void quit_callback(void *p)
+{
+  quit();
+}
+
 static gboolean
 configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
@@ -980,6 +985,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->redraw_widgets = NULL;
   darktable.gui->key_accels = NULL;
 
+  // register ctrl-q to quit:
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
   darktable.gui->reset = 0;
   for(int i=0;i<3;i++) darktable.gui->bgcolor[i] = 0.1333;
   return 0;

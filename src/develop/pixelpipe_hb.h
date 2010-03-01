@@ -12,9 +12,11 @@
  * will be freed at the end.
  */
 struct dt_iop_module_t;
+struct dt_dev_pixelpipe_t;
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
+  struct dt_dev_pixelpipe_t *pipe; // the pipe this piece belongs to
   void *data;                      // to be used by the module to store stuff per pipe piece
   int enabled;                     // used to disable parts of the pipe for export, independent on module itself.
   float iscale;                    // input actually just downscaled buffer? iscale*iwidth = actual width

@@ -64,6 +64,8 @@ delete_button_clicked (GtkWidget *widget, gpointer user_data)
     img->raw_params = tmp.raw_params;
     img->raw_denoise_threshold = tmp.raw_denoise_threshold;
     img->raw_auto_bright_threshold = tmp.raw_auto_bright_threshold;
+    img->black = tmp.black;
+    img->maximum = tmp.maximum;
     img->output_width = img->width;
     img->output_height = img->height;
     dt_image_cache_flush(img);

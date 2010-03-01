@@ -1,11 +1,24 @@
 0.5 release:
+- write dttags doesn't work if stack is discarded (should remove the file)
+- exposure: make black 0.0 dcraw black as well,
+  and have a pass-through button for no black subtraction?
+  - white point matching gives silly numbers on slider.
+  => exposure would be compatible with old *.dt files.
+- also pick output profile and zone
+- different defaults in unsharp mask: 2/0.5/0.004
+- redraw problem in basecurve / tonecurve (flat line)
+- gimp code: optimized jpeg + gui for export
+- busy indicator (progress bars?)
+- custom presets with name
+- custom preset bug: doesn't overwrite.
 - exposure pipe:
-  - store black/max in database (=> incompatible again..)
   - use color picker to do auto exposure with given percentage of clipping.
   - implement cool highlight reconstruction with new information above max.
 - wb invalidate presets on change.
 - embedded profiles?
+- remove before label etc in color picker.
 - segfault on exit??
+- aspect ratio presets
 - save custom defaults (sqlite table iop_defaults) to external file as well
 - export override for output path (collection)
 - leave corners free (top/bottom scrolling indicators)
@@ -54,6 +67,8 @@
 - scroll to opened expander in darkroom mode.
 
 later:
+- noise/film grain simulator plugin
+- embedded thumbnail as static snapshot
 - try gegl 0.1.2
 - mac bitch: gegl.h and Carbon.h are not friends.
 - exr io

@@ -46,6 +46,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->iheight = height;
   pipe->iscale = iscale;
   pipe->input = input;
+  if(width < dev->image->width && height < dev->image->height) pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
@@ -85,6 +86,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       piece->iwidth  = pipe->iwidth;
       piece->iheight = pipe->iheight;
       piece->module  = module;
+      piece->pipe    = pipe;
       piece->data = NULL;
       piece->hash = 0;
       piece->module->init_pipe(piece->module, pipe, piece);
