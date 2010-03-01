@@ -203,14 +203,14 @@ void init(dt_iop_module_t *module)
   { 
     tmp.tonecurve_x[0] = 0.000000;
     tmp.tonecurve_y[0] = 0.000000;
-    tmp.tonecurve_x[1] = 0.055000;
-    tmp.tonecurve_y[1] = 0.041613;
-    tmp.tonecurve_x[2] = 0.090000;
-    tmp.tonecurve_y[2] = 0.076935;
-    tmp.tonecurve_x[3] = 0.550000;
-    tmp.tonecurve_y[3] = 0.675806;
-    tmp.tonecurve_x[4] = 0.750000;
-    tmp.tonecurve_y[4] = 0.859677;
+    tmp.tonecurve_x[1] = 0.028226;
+    tmp.tonecurve_y[1] = 0.029677;
+    tmp.tonecurve_x[2] = 0.120968;
+    tmp.tonecurve_y[2] = 0.232258;
+    tmp.tonecurve_x[3] = 0.459677;
+    tmp.tonecurve_y[3] = 0.747581;
+    tmp.tonecurve_x[4] = 0.858871;
+    tmp.tonecurve_y[4] = 0.983871;
     tmp.tonecurve_x[5] = 1.000000;
     tmp.tonecurve_y[5] = 1.000000;
   }

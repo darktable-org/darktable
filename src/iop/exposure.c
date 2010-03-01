@@ -159,11 +159,11 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
 }
 
-static void
+/*static void
 autoexpp_callback (GtkRange *range, dt_iop_module_t *self)
 {
   // TODO: adjust percentage param
-}
+}*/
 
 static void
 white_callback (GtkRange *range, gpointer user_data)
@@ -296,8 +296,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (white_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (gain_callback), self);
-  g_signal_connect (G_OBJECT (g->autoexpp), "value-changed",
-                    G_CALLBACK (autoexpp_callback), self);
+  // g_signal_connect (G_OBJECT (g->autoexpp), "value-changed",
+  //                   G_CALLBACK (autoexpp_callback), self);
   g_signal_connect (G_OBJECT (g->autoexp), "toggled",
                     G_CALLBACK (autoexp_callback), self);
   g_signal_connect (G_OBJECT(self->widget), "expose-event",
