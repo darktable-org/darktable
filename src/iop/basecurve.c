@@ -107,14 +107,14 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
     case 2: // pascals eos curve:
       p->tonecurve_x[0] = 0.000000;
       p->tonecurve_y[0] = 0.000000;
-      p->tonecurve_x[1] = 0.055000;
-      p->tonecurve_y[1] = 0.041613;
-      p->tonecurve_x[2] = 0.090000;
-      p->tonecurve_y[2] = 0.076935;
-      p->tonecurve_x[3] = 0.550000;
-      p->tonecurve_y[3] = 0.675806;
-      p->tonecurve_x[4] = 0.750000;
-      p->tonecurve_y[4] = 0.859677;
+      p->tonecurve_x[1] = 0.028226;
+      p->tonecurve_y[1] = 0.029677;
+      p->tonecurve_x[2] = 0.120968;
+      p->tonecurve_y[2] = 0.232258;
+      p->tonecurve_x[3] = 0.459677;
+      p->tonecurve_y[3] = 0.747581;
+      p->tonecurve_x[4] = 0.858871;
+      p->tonecurve_y[4] = 0.983871;
       p->tonecurve_x[5] = 1.000000;
       p->tonecurve_y[5] = 1.000000;
       break;
