@@ -1,11 +1,7 @@
 0.5 release:
+- pascal's patch for basecurve + default patch.
 - write dttags doesn't work if stack is discarded (should remove the file)
-- exposure: make black 0.0 dcraw black as well,
-  and have a pass-through button for no black subtraction?
-  - white point matching gives silly numbers on slider.
-  => exposure would be compatible with old *.dt files.
 - also pick output profile and zone
-- different defaults in unsharp mask: 2/0.5/0.004
 - redraw problem in basecurve / tonecurve (flat line)
 - gimp code: optimized jpeg + gui for export
 - busy indicator (progress bars?)

@@ -344,9 +344,9 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);
   hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  label = gtk_label_new(_("presets"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
+  // label = gtk_label_new(_("presets"));
+  // gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  // gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
 
   g->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->presets, _("camera whitebalance"));

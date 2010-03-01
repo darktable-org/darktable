@@ -155,6 +155,7 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
   self->request_color_pick = gtk_toggle_button_get_active(button);
+  self->dev->gui_module = self;
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
 }
 
@@ -212,8 +213,13 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(!self->request_color_pick) return FALSE;
-  // dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   // TODO: use this hook and calculate new exposure from picked color (hist)
+  p->white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]) * (1.0-gtk_range_get_value(GTK_RANGE(g->autoexpp)));
+  darktable.gui->reset = 1;
+  self->gui_update(self);
+  darktable.gui->reset = 0;
   dt_dev_add_history_item(self->dev, self);
   return FALSE;
 }
@@ -229,6 +235,8 @@ void gui_init(struct dt_iop_module_t *self)
   darktable.gui->histogram.set_white = dt_iop_exposure_set_white;
   darktable.gui->histogram.get_white = dt_iop_exposure_get_white;
 
+  self->request_color_pick = 0;
+
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
@@ -243,7 +251,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .001));
+  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .0005));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
   g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(-3.0, 6.0, .02));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the white level"), NULL);
@@ -262,9 +270,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
-  g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto exposure")));
+  g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  g->autoexpp = GTK_HSCALE(gtk_hscale_new_with_range(0.0, .1, .001));
+  g->autoexpp = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 0.2, .001));
   gtk_object_set(GTK_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out"), NULL);
   gtk_scale_set_digits(GTK_SCALE(g->autoexpp), 3);
   gtk_scale_set_value_pos(GTK_SCALE(g->autoexpp), GTK_POS_LEFT);
