@@ -15,7 +15,7 @@
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from iop_defaults where operation = ?1 and ((model like ?2 and maker like ?3) or (model = '%' and maker = '%')) order by length(model) desc", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from iop_defaults where operation = ?1 and ((model like ?2 and maker like ?3) or (model = '%' and maker = '%')) order by length(model) desc, rowid desc", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   char *m = module->dev->image->exif_model;
   sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);
@@ -36,13 +36,14 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       memcpy(module->default_params, blob, length);
       module->default_enabled = enabled;
     }
-    else blob = NULL;
+    else blob = (void *)1;
   }
   sqlite3_finalize(stmt);
 
-  if(!blob)
+  if(blob == (void *)1)
   {
-    sqlite3_prepare_v2(darktable.db, "delete from iop_defaults where operation = ?1 and model like ?2 and maker like ?3", -1, &stmt, NULL);
+    printf("[iop_load_defaults]: module param sizes have changed! removing default :(\n");
+    sqlite3_prepare_v2(darktable.db, "delete from iop_defaults where operation = ?1 and ((model like ?2 and maker like ?3) or (model = '%' and maker = '%'))", -1, &stmt, NULL);
     sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
     char *m = module->dev->image->exif_model;
     sqlite3_bind_text(stmt, 2, m, strlen(m), SQLITE_TRANSIENT);

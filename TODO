@@ -1,12 +1,10 @@
 0.5 release:
-- pascal's patch for basecurve + default patch.
 - write dttags doesn't work if stack is discarded (should remove the file)
 - also pick output profile and zone
 - redraw problem in basecurve / tonecurve (flat line)
 - gimp code: optimized jpeg + gui for export
 - busy indicator (progress bars?)
 - custom presets with name
-- custom preset bug: doesn't overwrite.
 - exposure pipe:
   - use color picker to do auto exposure with given percentage of clipping.
   - implement cool highlight reconstruction with new information above max.
