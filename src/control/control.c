@@ -106,9 +106,6 @@ int dt_control_load_config(dt_control_t *c)
 #endif
     rc = sqlite3_finalize(stmt);
 
-    // insert new tables, if not there (statement will just fail if so):
-    sqlite3_exec(darktable.db, "create table iop_defaults (operation varchar, op_params blob, enabled integer, model varchar, maker varchar, primary key(operation, model, maker))", NULL, NULL, NULL);
-
 #if 1
     if(darktable.control->global_settings.version != DT_VERSION)
     {
@@ -127,10 +124,12 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "drop table tagxtag", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table tagged_images", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table iop_defaults", NULL, NULL, NULL);
-      return dt_control_load_config(c);
+      goto create_tables;
     }
     else
     {
+      // insert new tables, if not there (statement will just fail if so):
+      sqlite3_exec(darktable.db, "create table iop_defaults (operation varchar, op_params blob, enabled integer, model varchar, maker varchar, primary key(operation, model, maker))", NULL, NULL, NULL);
       pthread_mutex_unlock(&(darktable.control->global_mutex));
       // TODO: get last from sql query!
       // dt_film_roll_open(darktable.library->film, film_id);
@@ -142,6 +141,7 @@ int dt_control_load_config(dt_control_t *c)
   { // db not yet there, create it
     // dt_ctl_settings_default(darktable.control);
     rc = sqlite3_finalize(stmt);
+create_tables:
     rc = sqlite3_exec(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
