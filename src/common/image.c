@@ -137,11 +137,12 @@ dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const in
   while((int)mip > (int)DT_IMAGE_MIP0 && wd > wd2 && ht > ht2)
   {
     mip--;
-    if(wd > 32 || ht > 32)
+    if(wd > 32 && ht > 32)
     { // only if it's not vanishing completely :)
       wd >>= 1;
       ht >>= 1;
     }
+    else mip = DT_IMAGE_MIP0;
   }
   *w = wd;
   *h = ht;
@@ -161,7 +162,7 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
     while((int)mip < (int)DT_IMAGE_MIP4)
     {
       mip++;
-      if(wd > 32 || ht > 32)
+      if(wd > 32 && ht > 32)
       { // only if it's not vanishing completely :)
         wd *= .5;
         ht *= .5;
