@@ -1,16 +1,18 @@
 0.5 release:
+- check control sensitivity (everything /2?, +spin buttons?)
+- try image history stack indication right justified.
 - write dttags doesn't work if stack is discarded (should remove the file)
-- also pick output profile and zone
+- develop bottom panel: color picker:
+  - also pick output profile and zone
+  - remove before label etc
 - redraw problem in basecurve / tonecurve (flat line)
 - gimp code: optimized jpeg + gui for export
 - busy indicator (progress bars?)
 - custom presets with name
 - exposure pipe:
-  - use color picker to do auto exposure with given percentage of clipping.
   - implement cool highlight reconstruction with new information above max.
 - wb invalidate presets on change.
 - embedded profiles?
-- remove before label etc in color picker.
 - segfault on exit??
 - aspect ratio presets
 - save custom defaults (sqlite table iop_defaults) to external file as well
