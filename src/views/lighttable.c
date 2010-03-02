@@ -271,12 +271,12 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
         if(k == 4)
         {
           if(altered) 
-	  {
-	    // Align to right
-	    float s = (r1+r2)*.5;
-	    x=(zoom!=1?(width*0.85)-0.15:(fscale*0.96)-0.04);
-	    dt_draw_altered(cr, x, y, s);
-	  }
+          {
+            // Align to right
+            float s = (r1+r2)*.5;
+            if(zoom != 1) x = width*0.85-0.15;
+            dt_draw_altered(cr, x, y, s);
+          }
         }
         else
         {
