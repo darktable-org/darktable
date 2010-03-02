@@ -90,6 +90,7 @@ PKG_CHECK_MODULES(GLADE, [libglade-2.0])
 PKG_CHECK_MODULES(SQLITE, [sqlite3])
 PKG_CHECK_MODULES(EXIV2, exiv2 >= 0.18)
 PKG_CHECK_MODULES(PNG, libpng >= 1.2)
+PKG_CHECK_MODULES(PHAT, phat >= 0.4.1)
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),
         [

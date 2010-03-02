@@ -5,6 +5,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <phat/phat.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
@@ -105,7 +106,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->black);
+  // gtk_range_set_value(GTK_RANGE(g->scale1), p->black);
+  phat_slider_button_set_value(g->scale1, p->black);
   gtk_range_set_value(GTK_RANGE(g->scale2), -log2f(p->white/self->dev->image->maximum));
   gtk_range_set_value(GTK_RANGE(g->scale3), p->gain);
 }
@@ -173,19 +175,21 @@ white_callback (GtkRange *range, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   p->white = exp2f(-gtk_range_get_value(range))*self->dev->image->maximum;
-  float black = gtk_range_get_value(GTK_RANGE(g->scale1));
-  if(p->white < black) gtk_range_set_value(GTK_RANGE(g->scale1), p->white);
+  // float black = gtk_range_get_value(GTK_RANGE(g->scale1));
+  // if(p->white < black) gtk_range_set_value(GTK_RANGE(g->scale1), p->white);
+  float black = phat_slider_button_get_value(g->scale1);
+  if(p->white < black) phat_slider_button_set_value(g->scale1, p->white);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-black_callback (GtkRange *range, gpointer user_data)
+black_callback (PhatSliderButton *range, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->black = gtk_range_get_value(range);
+  p->black = phat_slider_button_get_value(range); //gtk_range_get_value(range);
   float white = exp2f(-gtk_range_get_value(GTK_RANGE(g->scale2)));
   if(white < p->black) gtk_range_set_value(GTK_RANGE(g->scale2), - log2f(p->black));
   dt_dev_add_history_item(darktable.develop, self);
@@ -215,7 +219,6 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  // TODO: use this hook and calculate new exposure from picked color (hist)
   p->white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]) * (1.0-gtk_range_get_value(GTK_RANGE(g->autoexpp)));
   darktable.gui->reset = 1;
   self->gui_update(self);
@@ -251,19 +254,20 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .0005));
+  // g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .0005));
+  g->scale1 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(p->black, -.5, 1.0, .001, 3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
   g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(-3.0, 6.0, .02));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the white level"), NULL);
   g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0, .005));
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("leave black and white,\nbut compress brighter\nvalues (non-linear)"), NULL);
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
+  // gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale2), 3);
   gtk_scale_set_digits(GTK_SCALE(g->scale3), 3);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
+  // gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale3), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->black);
+  // gtk_range_set_value(GTK_RANGE(g->scale1), p->black);
   gtk_range_set_value(GTK_RANGE(g->scale2), -log2f(p->white));
   gtk_range_set_value(GTK_RANGE(g->scale3), p->gain);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
@@ -281,8 +285,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->autoexp), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
 
-  g_signal_connect (G_OBJECT (g->scale1), "format-value",
-                    G_CALLBACK (fv_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale1), "format-value",
+                    // G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "format-value",
                     G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "format-value",

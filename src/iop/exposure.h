@@ -4,6 +4,7 @@
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <phat/phat.h>
 
 typedef struct dt_iop_exposure_params_t
 {
@@ -16,7 +17,8 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3;
   GtkCheckButton *autoexp;
-  GtkHScale *scale1, *scale2, *scale3, *autoexpp;
+  GtkHScale *scale2, *scale3, *autoexpp;
+  PhatSliderButton *scale1;
 }
 dt_iop_exposure_gui_data_t;
 
