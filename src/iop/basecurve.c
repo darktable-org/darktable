@@ -33,7 +33,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
-  GtkLabel *label;
+  // GtkLabel *label;
   GtkComboBox *presets;
   double mouse_x, mouse_y;
   int selected, dragging, x_move;
@@ -536,10 +536,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_basecurve_leave_notify), self);
   // init gtk stuff
-  c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
-  c->label = GTK_LABEL(gtk_label_new(_("presets")));
-  gtk_box_pack_start(GTK_BOX(c->hbox), GTK_WIDGET(c->label), FALSE, FALSE, 5);
+  // c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
+  // c->label = GTK_LABEL(gtk_label_new(_("presets")));
+  // gtk_box_pack_start(GTK_BOX(c->hbox), GTK_WIDGET(c->label), FALSE, FALSE, 5);
   c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("linear"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("dark contrast"));
@@ -547,6 +547,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("Fotogenetic - Point and shoot v4.1"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("Fotogenetic - EV3 v4.2"));
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
+  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(c->presets), FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (c->presets), "changed",
                     G_CALLBACK (presets_changed),
                     (gpointer)self);
