@@ -1,5 +1,11 @@
 0.5 release:
 - fix a lot of small images always wasting mip4 slots (limit mem/slot)
+  - alloc more entries in dt_mipmap_cache_t and cap at certain mem bound.
+  - image.c: dt_mipmap_cache_init: alloc full
+  - image.c: dt_image_alloc: free other buffers until we got enough free heap
+  - remove _DEBUG!
+  - fix heap utilization: same number of pixels for each level.
+- remove libraw denoise
 - check control sensitivity (everything /2?, +spin buttons?)
 - try image history stack indication right justified.
 - write dttags doesn't work if stack is discarded (should remove the file)
