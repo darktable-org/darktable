@@ -118,6 +118,34 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
       p->tonecurve_x[5] = 1.000000;
       p->tonecurve_y[5] = 1.000000;
       break;
+    case 3: // Fotogenic - Point and shoot v4.1
+      p->tonecurve_x[0] = 0.000000;
+      p->tonecurve_y[0] = 0.000000;
+      p->tonecurve_x[1] = 0.087879;	// Added this point to make a 6 point curve
+      p->tonecurve_y[1] = 0.125252;	//	out of orginal Point and shoot curve
+      p->tonecurve_x[2] = 0.175758;
+      p->tonecurve_y[2] = 0.250505;
+      p->tonecurve_x[3] = 0.353535;
+      p->tonecurve_y[3] = 0.501010;
+      p->tonecurve_x[4] = 0.612658;
+      p->tonecurve_y[4] = 0.749495;
+      p->tonecurve_x[5] = 1.000000;
+      p->tonecurve_y[5] = 0.876573;
+      break;
+    case 4: // Fotogenic - EV3 v4.2
+      p->tonecurve_x[0] = 0.000000;
+      p->tonecurve_y[0] = 0.000000;
+      p->tonecurve_x[1] = 0.100943;	// Added this point to make a 6 point curve
+      p->tonecurve_y[1] = 0.125252;	//	out of orginal Point and shoot curve
+      p->tonecurve_x[2] = 0.201886;
+      p->tonecurve_y[2] = 0.250505;
+      p->tonecurve_x[3] = 0.301010;
+      p->tonecurve_y[3] = 0.377778;
+      p->tonecurve_x[4] = 0.404040;
+      p->tonecurve_y[4] = 0.503030;
+      p->tonecurve_x[5] = 1.000000;
+      p->tonecurve_y[5] = 0.876768;
+      break;
     default:
       return;
   }
@@ -516,6 +544,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("linear"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("dark contrast"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("canon eos like"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("Fotogenetic - Point and shoot v4.1"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("Fotogenetic - EV3 v4.2"));
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
   g_signal_connect (G_OBJECT (c->presets), "changed",
                     G_CALLBACK (presets_changed),
