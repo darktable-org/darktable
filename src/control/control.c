@@ -36,6 +36,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_float("preview_subsample", .5f);
   dt_conf_set_int  ("mipmap_cache_thumbnails", 500);
   dt_conf_set_int  ("mipmap_cache_full_images", 1);
+  dt_conf_set_int  ("cache_memory", 1610612736);
 
   dt_conf_set_bool ("ui_last/fullscreen", FALSE);
   dt_conf_set_int  ("ui_last/view", DT_MODE_NONE);

@@ -743,7 +743,8 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   // max memory: user supplied number of bytes, evenly distributed among mip levels.
   // clamped between 50MB -- 4GB
   size_t max_mem = (size_t)(MIN(4294967295, MAX(52428800, dt_conf_get_int("cache_memory")))/(float)DT_IMAGE_FULL);
-  dt_print(DT_DEBUG_CACHE, "[image_alloc] use %.3f MB, alloc %.3f MB\n", cache->total_size[mip]/(1024.0*1024.0), size/(1024.0*1024.0));
+  dt_print(DT_DEBUG_CACHE, "[image_alloc] mip %d uses %.3f/%.3f MB, alloc %.3f MB\n", mip, 
+           cache->total_size[mip]/(1024.0*1024.0), max_mem/(1024.0*1024.0), size/(1024.0*1024.0));
   if(cache->total_size[mip] > 0 && cache->total_size[mip]+size > max_mem)
     for(int k=0;k<cache->num_entries[mip];k++)
   {
@@ -752,7 +753,7 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
     {
       dt_image_t *entry = cache->mip_lru[mip][k];
       dt_image_free(entry, mip);
-      dt_print(DT_DEBUG_CACHE, "[image_alloc] INFO: free mip %d to %.2f MB\n", mip, cache->total_size[mip]/(1024.0*1024.0));
+      dt_print(DT_DEBUG_CACHE, "[image_alloc] free mip %d to %.2f MB\n", mip, cache->total_size[mip]/(1024.0*1024.0));
       if(cache->total_size[mip] < 0)
       {
         fprintf(stderr, "[image_alloc] WARNING: memory usage for mip %d dropped below zero!\n", mip);
