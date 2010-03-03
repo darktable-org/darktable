@@ -34,8 +34,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3;
   GtkCheckButton *autoexp;
-  GtkHScale *scale2, *scale3, *autoexpp;
-  PhatSliderButton *scale1;
+  PhatSliderButton *scale1, *scale2, *scale3, *autoexpp;
 }
 dt_iop_exposure_gui_data_t;
 

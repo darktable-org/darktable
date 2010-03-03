@@ -563,7 +563,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("canon eos like"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("fotogenetic - point and shoot v4.1"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("fotogenetic - EV3 v4.2"));
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
+  // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(c->presets), FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (c->presets), "changed",
                     G_CALLBACK (presets_changed),
