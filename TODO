@@ -1,6 +1,6 @@
 0.5 release:
-- fix a lot of small images always wasting mip4 slots (limit mem/slot)
-- check control sensitivity (everything /2?, +spin buttons?)
+- highlight clipping/recons after wb: max * min(coeffs)
+- all phat sliders
 - try image history stack indication right justified.
 - write dttags doesn't work if stack is discarded (should remove the file)
 - develop bottom panel: color picker:
