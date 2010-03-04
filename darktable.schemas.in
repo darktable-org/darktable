@@ -14,6 +14,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/cache_memory</key>
+      <applyto>/apps/darktable/cache_memory</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>536870912</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>memory in bytes to use for mipmap cache</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/database_cache_thumbnails</key>
       <applyto>/apps/darktable/database_cache_thumbnails</applyto>
       <owner>darktable</owner>

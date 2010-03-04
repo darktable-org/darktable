@@ -98,6 +98,11 @@ style "clearlooks-frame-title" = "clearlooks-default"
   fg[NORMAL] = "#FFFFFF"
 }
 
+# style "phatsliderbutton" = "clearlooks-default"
+# {
+  # selected_shadow_type = none
+# }
+
 style "clearlooks-brightbg" = "clearlooks-default"
 {
   bg[NORMAL] = "#292929"
@@ -219,6 +224,7 @@ widget_class "*.GtkRadioMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkCheckMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkImageMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkSeparatorMenuItem.*" style "clearlooks-menu-item"
+# class "PhatSliderButton" style "phatsliderbutton"
 class "GtkEntry" style "clearlooks-entry"
 class "GtkTreeView" style "clearlooks-entry"
 widget_class "*.tooltips.*.GtkToggleButton" style "clearlooks-tasklist"

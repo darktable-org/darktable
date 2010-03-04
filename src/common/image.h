@@ -108,9 +108,7 @@ typedef struct dt_image_t
   float raw_denoise_threshold, raw_auto_bright_threshold;
   dt_image_raw_parameters_t raw_params;
   float *pixels;
-#ifdef _DEBUG
   int32_t mip_buf_size[DT_IMAGE_NONE];
-#endif
 }
 dt_image_t;
 
@@ -161,6 +159,7 @@ typedef struct dt_mipmap_cache_t
   pthread_mutex_t mutex;
   int32_t num_entries[DT_IMAGE_NONE];
   dt_image_t **mip_lru[DT_IMAGE_NONE];
+  size_t total_size[DT_IMAGE_NONE];
 }
 dt_mipmap_cache_t;
 
