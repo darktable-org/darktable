@@ -1,7 +1,5 @@
 0.5 release:
-- highlight clipping/recons after wb: max * min(coeffs)
 - all phat sliders
-- try image history stack indication right justified.
 - write dttags doesn't work if stack is discarded (should remove the file)
 - develop bottom panel: color picker:
   - also pick output profile and zone
@@ -27,7 +25,6 @@
   - faces (opencv), hist L, hist wtf, hist (a,b)
   - select (random?) representative
 - folder watching and image re-import on change event via inotify (lib+dev)
-- remove auto exposure from raw import (and add auto button in exp)
 - film strip in develop mode to switch to next image.
 - resource conflict: load jobs reimport and dt
   gui develop full buf/mipf buf priority!

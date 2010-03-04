@@ -78,6 +78,8 @@ typedef struct dt_dev_pixelpipe_t
   float iscale;
   // dimensions of processed buffer
   int processed_width, processed_height;
+  // sensor saturation, propagated through the operations:
+  float processed_maximum;
   // gegl instances of pixel pipeline, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag
