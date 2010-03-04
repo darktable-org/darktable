@@ -19,6 +19,7 @@
   #include "../config.h"
 #endif
 #include "common/darktable.h"
+#include "common/fswatch.h"
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -95,6 +96,9 @@ int dt_init(int argc, char *argv[])
   char filename[512];
   snprintf(filename, 512, "%s/.darktablerc", homedir);
 
+  // Initialize the filesystem watcher  
+  darktable.fswatch=dt_fswatch_new();	
+  
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
@@ -194,6 +198,8 @@ void dt_cleanup()
   free(darktable.control);
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
+
+  dt_fswatch_destroy(darktable.fswatch);
 
   sqlite3_close(darktable.db);
   pthread_mutex_destroy(&(darktable.db_insert));

@@ -103,6 +103,7 @@ typedef struct darktable_t
   struct dt_mipmap_cache_t *mipmap_cache;
   struct dt_image_cache_t  *image_cache;
   sqlite3                  *db;
+  const struct dt_fswatch_t	*fswatch;
   pthread_mutex_t db_insert;
   pthread_mutex_t plugin_threadsafe;
   char *progname;

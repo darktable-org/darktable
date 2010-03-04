@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/fswatch.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -449,6 +450,8 @@ int dt_image_import(const int32_t film_id, const char *filename)
   img->id = id;
   img->film_id = film_id;
 
+  dt_fswatch_add(darktable.fswatch, DT_FSWATCH_IMAGE, img);
+  
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
   char dtfilename[1024];
@@ -599,6 +602,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(darktable.db));
   rc = sqlite3_finalize(stmt);
   if(ret) return ret;
+  // add watch for file
+  dt_fswatch_add( darktable.fswatch, DT_FSWATCH_IMAGE, img);
   // read mip 0:
   rc = dt_imageio_preview_read(img, DT_IMAGE_MIP0);
   if(!rc) dt_image_release(img, DT_IMAGE_MIP0, 'r');

@@ -16,6 +16,23 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
 AM_GCONF_SOURCE_2
 
+dnl *** Check for inotify ***
+AC_CHECK_HEADER([sys/inotify.h],
+	[AC_CHECK_FUNC([inotify_init],[have_inotify="yes"],[have_inotify="no"])],
+	[have_inotify="no"])
+AC_ARG_WITH([inotify],
+	[AS_HELP_STRING([--with-inotify],[Enable inotify support (default=auto)])],
+		[want_inotify=${withval}],
+		[want_inotify=${have_inotify}])
+	if test "x$want_inotify" = "xyes" ; then
+		if test "x$have_inotify" = "xyes"; then
+			AC_DEFINE(HAVE_INOTIFY, 1, [wheter to use inotify filesystem change events] )
+		else
+			AC_MSG_ERROR("inotify not found!")
+	fi
+fi 
+
+
 # Enable silent build rules by default, requires at least
 # Automake-1.11. Disable by either passing --disable-silent-rules to
 # configure or passing V=1 to make
@@ -110,6 +127,7 @@ AC_ARG_ENABLE(lensfun,
 AC_CHECK_LIB(jpeg, jpeg_destroy_decompress,
    [JPEG_LIBS="-ljpeg"], AC_MSG_FAILURE([libjpeg is required!]))
 AC_SUBST(JPEG_LIBS)
+
 
 dnl *** Check for LittleCMS ***
 AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
