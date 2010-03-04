@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/image_cache.h"
+#include "common/fswatch.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -132,6 +133,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
       return NULL;
     }
     // TODO: update images set !!
+    dt_fswatch_remove(darktable.fswatch, DT_FSWATCH_IMAGE, &(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
     dt_image_init(&(cache->line[k].image));
     cache->line[k].image.id = id;
