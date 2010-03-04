@@ -505,6 +505,9 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 
 void dt_image_init(dt_image_t *img)
 {
+  if( strlen(img->filename) && strcmp(img->filename,"(unknown)")!=0)  // Reuse of img object...
+    dt_fswatch_remove(darktable.fswatch,DT_FSWATCH_IMAGE,img);
+  
   for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) img->mip[k] = NULL;
   bzero(img->lock, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
   img->import_lock = 0;

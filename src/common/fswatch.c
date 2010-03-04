@@ -45,7 +45,7 @@ typedef struct inotify_event_t {
 
 // Compare func for GList
 static gint _fswatch_items_by_data(const void* a,const void *b) {
-  return (((_watch_t*)a)->data<((_watch_t*)b)->data)?-1:((((_watch_t*)a)->data==((_watch_t*)b)->data)?0:1);
+  return (((_watch_t*)a)->data<b)?-1:((((_watch_t*)a)->data==b)?0:1);
 }
 
 // Compare func for GList
@@ -158,7 +158,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
     ctx->items=g_list_append(fswatch->items, item);
     item->descriptor=inotify_add_watch(fswatch->inotify_fd,filename,mask);
     pthread_mutex_unlock(&ctx->mutex);
-    fprintf(stderr,"[fswatch_add] Watch added on file %s\n",filename);
+    fprintf(stderr,"[fswatch_add] Watch on object %lx added on file %s\n",(unsigned long int)data,filename);
   } else 
     fprintf(stderr,"[fswatch_add] No watch added, failed to get related filename of object type %d\n",type);
 
@@ -166,21 +166,9 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
 
 void dt_fswatch_remove(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
-  char *filename=NULL;
-  switch(type) 
-  {
-    case DT_FSWATCH_IMAGE:
-      filename=((dt_image_t*)data)->filename;
-      break;
-    case DT_FSWATCH_CURVE_DIRECTORY:
-      break;
-
-  }
-
-  fprintf(stderr,"[fswatch_remove] Removing watch on file %s\n",filename);
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
   pthread_mutex_lock(&ctx->mutex);
-  // Find and remove watch to watchlist based on data
+  fprintf(stderr,"[fswatch_remove] removing watch on object %lx\n",(unsigned long int)data);
   GList *gitem=g_list_find_custom(fswatch->items,data,&_fswatch_items_by_data);
   if( gitem ) {
     _watch_t *item=gitem->data;
