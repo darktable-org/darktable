@@ -36,7 +36,7 @@ typedef struct _watch_t {
 } _watch_t;
 
 typedef struct inotify_event_t {
-		int      wd;       /* Watch descriptor */
+		long int wd;       /* Watch descriptor */
 		uint32_t mask;     /* Mask of events */
 		uint32_t cookie;   /* Unique cookie associating related events (for rename(2)) */
 		uint32_t len;      /* Size of 'name' field */
@@ -50,7 +50,7 @@ static gint _fswatch_items_by_data(const void* a,const void *b) {
 
 // Compare func for GList
 static gint _fswatch_items_by_descriptor(const void* a,const void *b) {
-	gint result=(((_watch_t*)a)->descriptor < (int)b)?-1:((((_watch_t*)a)->descriptor==(int)b)?0:1);
+	gint result=(((_watch_t*)a)->descriptor < (long int)b)?-1:((((_watch_t*)a)->descriptor==(long int)b)?0:1);
 	return result;
 }
 
@@ -61,7 +61,7 @@ static void *_fswatch_thread(void *data) {
 	uint32_t event_hdr_size=sizeof(inotify_event_t);
 	inotify_event_t *event_hdr=g_malloc(sizeof(inotify_event_t));
 	char *name=g_malloc(2048);
-	fprintf(stderr,"[fswatch_thread] Starting thread of context %x\n",(int)data);
+	fprintf(stderr,"[fswatch_thread] Starting thread of context %lx\n",(unsigned long int)data);
 	while(1) {
 		// Blocking read loop of event fd into event
 		if((res=read(fswatch->inotify_fd,event_hdr,event_hdr_size))!=event_hdr_size) {
@@ -74,7 +74,7 @@ static void *_fswatch_thread(void *data) {
 			name[res]='\0';
 		}
 
-		fprintf(stderr,"[fswatch_thread] Got event for %d mask %x with name: %s\n", event_hdr->wd, event_hdr->mask, ((event_hdr->len>0)?name:""));
+		fprintf(stderr,"[fswatch_thread] Got event for %ld mask %x with name: %s\n", event_hdr->wd, event_hdr->mask, ((event_hdr->len>0)?name:""));
 		
 		// when event is read pass it to an handler..
 		// _fswatch_handler(fswatch,event);
@@ -93,11 +93,11 @@ static void *_fswatch_thread(void *data) {
 				} break;
 				
 				default:
-					fprintf(stderr,"[fswatch_thread] Unhandled object type %d for event descriptor %d\n", item->type, event_hdr->wd );
+					fprintf(stderr,"[fswatch_thread] Unhandled object type %d for event descriptor %ld\n", item->type, event_hdr->wd );
 				break;
 			}
 		} else
-			fprintf(stderr,"[fswatch_thread] Failed to found watch item for descriptor %d\n", event_hdr->wd );
+			fprintf(stderr,"[fswatch_thread] Failed to found watch item for descriptor %ld\n", event_hdr->wd );
 		
 		pthread_mutex_unlock(&fswatch->mutex);
 	}
@@ -116,14 +116,14 @@ const dt_fswatch_t* dt_fswatch_new()
 	fswatch->items=NULL;
 	pthread_mutex_init(&fswatch->mutex, NULL);
 	pthread_create(&fswatch->thread, NULL, &_fswatch_thread, fswatch);
-	fprintf(stderr,"[fswatch_new] Creating new context %x\n",(int)fswatch);
+	fprintf(stderr,"[fswatch_new] Creating new context %lx\n",(unsigned long int)fswatch);
 	
 	return fswatch;
 }
 
 void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 {
-	fprintf(stderr,"[fswatch_destroy] Destroying context %x\n",(int)fswatch);
+	fprintf(stderr,"[fswatch_destroy] Destroying context %lx\n",(unsigned long int)fswatch);
 	dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
 	pthread_mutex_destroy(&ctx->mutex);
 	g_list_free(fswatch->items);
@@ -188,7 +188,7 @@ void dt_fswatch_remove(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void
 		inotify_rm_watch(fswatch->inotify_fd,item->descriptor); 
 		g_free(item);
 	} else
-		fprintf(stderr,"[fswatch_remove] Didnt found watch on object %x type %d\n",(int)data,type);
+		fprintf(stderr,"[fswatch_remove] Didnt found watch on object %lx type %d\n",(unsigned long int)data,type);
 	
 	pthread_mutex_unlock(&ctx->mutex);
 }
