@@ -66,6 +66,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out += 3; in += 3;
     }
   }
+  piece->pipe->processed_maximum = powf(fmaxf(0.0, fminf(1.0, (piece->pipe->processed_maximum-black))*scale), d->gain);
 }
 
 void reload_defaults (struct dt_iop_module_t *self)
