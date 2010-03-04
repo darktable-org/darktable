@@ -18,7 +18,7 @@
       <applyto>/apps/darktable/cache_memory</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>1610612736</default>
+      <default>536870912</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>memory in bytes to use for mipmap cache</short>
