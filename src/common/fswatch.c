@@ -28,11 +28,13 @@
 
 #include "common/image.h"
 #include "common/fswatch.h"
+#include "develop/develop.h"
 
 typedef struct _watch_t {
   uint32_t descriptor;		// Handle
   dt_fswatch_type_t type;		// DT_FSWATCH_* type
   void *data;				// Assigned data
+  int events;				// events occured..
 } _watch_t;
 
 typedef struct inotify_event_t {
@@ -74,7 +76,7 @@ static void *_fswatch_thread(void *data) {
       name[res]='\0';
     }
 
-    dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Got event for %ld mask %x with name: %s\n", event_hdr->wd, event_hdr->mask, ((event_hdr->len>0)?name:""));
+    //dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Got event for %ld mask %x with name: %s\n", event_hdr->wd, event_hdr->mask, ((event_hdr->len>0)?name:""));
 
     // when event is read pass it to an handler..
     // _fswatch_handler(fswatch,event);
@@ -82,15 +84,28 @@ static void *_fswatch_thread(void *data) {
     GList *gitem=g_list_find_custom(fswatch->items,(void *)event_hdr->wd,&_fswatch_items_by_descriptor);
     if( gitem ) {
       _watch_t *item = gitem->data;
+      item->events=item->events|event_hdr->mask;
+              
       switch( item->type ) {
         case DT_FSWATCH_IMAGE:
-          {
-            if((event_hdr->mask&(IN_CLOSE_WRITE|IN_CREATE|IN_MOVE_SELF|IN_MOVED_TO)))
-            {	//  Something wrote on image externally, lets reimport...
-              dt_image_t *img=(dt_image_t *)item->data;
-              dt_image_reimport(img,img->filename);
-            }
-          } break;
+        {
+          if( (event_hdr->mask&IN_CLOSE) && (item->events&IN_MODIFY) ) // Check if file modified and closed...
+          {	//  Something wrote on image externally and closed it, lets tag item as dirty...
+            dt_image_t *img=(dt_image_t *)item->data;
+            dt_image_reimport(img,img->filename);
+            //if(darktable.develop->image==img)
+            //	dt_dev_raw_reload(darktable.develop);
+            item->events=0;
+          } 
+          else if( (event_hdr->mask&IN_ATTRIB) && (item->events&IN_DELETE_SELF) && (item->events&IN_IGNORED))
+          { // This pattern showed up when another file is replacing the orginal...
+            dt_image_t *img=(dt_image_t *)item->data;
+            dt_image_reimport(img,img->filename);
+            //if(darktable.develop->image==img)
+            //	dt_dev_raw_reload(darktable.develop);
+            item->events=0;
+          }
+        } break;
 
         default:
           dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Unhandled object type %d for event descriptor %ld\n", item->type, event_hdr->wd );
@@ -139,7 +154,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
   switch(type) 
   {
     case DT_FSWATCH_IMAGE:
-      mask=IN_CLOSE_WRITE|IN_CREATE|IN_MOVE_SELF|IN_MOVED_TO;
+      mask=IN_ALL_EVENTS;
       filename=((dt_image_t*)data)->filename;
       break;
     case DT_FSWATCH_CURVE_DIRECTORY:
