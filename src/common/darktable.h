@@ -86,7 +86,8 @@ typedef enum dt_debug_thread_t
 {
   DT_DEBUG_CACHE = 1,
   DT_DEBUG_CONTROL = 2,
-  DT_DEBUG_DEV = 4 // powers of two, masking
+  DT_DEBUG_DEV = 4, // powers of two, masking
+  DT_DEBUG_FSWATCH = 8 
 }
 dt_debug_thread_t;
 
