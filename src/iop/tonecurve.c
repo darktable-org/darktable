@@ -248,7 +248,6 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  // dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)self->data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   for(int k=0;k<6;k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
@@ -287,21 +286,23 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   {
     float oldx1, oldy1;
     oldx1 = p->tonecurve_x[c->selected]; oldy1 = p->tonecurve_y[c->selected];
-    // dt_draw_curve_get_point(d->curve, c->selected, &oldx1, &oldy1);
-    // if(c->selected == 2) dt_draw_curve_get_point(d->curve, 1, &oldx2, &oldy2);
-    // if(c->selected == 3) dt_draw_curve_get_point(d->curve, 4, &oldx2, &oldy2);
+
+    if(c->selected == 0) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fmaxf(c->selected_min, p->tonecurve_y[1]));
     if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_min, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
     if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_min, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
+    if(c->selected == 5) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fminf(c->selected_min, p->tonecurve_y[4]));
     dt_draw_curve_set_point(c->minmax_curve, c->selected, oldx1, c->selected_min);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_min_xs, c->draw_min_ys);
+
+    if(c->selected == 0) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fmaxf(c->selected_max, p->tonecurve_y[1]));
     if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_max, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
     if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_max, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
+    if(c->selected == 5) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fminf(c->selected_max, p->tonecurve_y[4]));
     dt_draw_curve_set_point  (c->minmax_curve, c->selected, oldx1, c->selected_max);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_max_xs, c->draw_max_ys);
-    dt_draw_curve_set_point(c->minmax_curve, c->selected, oldx1, oldy1);
-    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], p->tonecurve_y[1]);
-    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], p->tonecurve_y[4]);
+
   }
+  for(int k=0;k<6;k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
 
   // draw grid
@@ -346,9 +347,11 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   {
     // draw min/max, if selected
     cairo_set_source_rgba(cr, .6, .6, .6, .5);
-    cairo_move_to(cr, 0, 0);
-    for(int k=0;k<DT_IOP_TONECURVE_RES;k++)   cairo_line_to(cr, k*width/(float)DT_IOP_TONECURVE_RES, - height*c->draw_min_ys[k]);
-    for(int k=DT_IOP_TONECURVE_RES-2;k>0;k--) cairo_line_to(cr, k*width/(float)DT_IOP_TONECURVE_RES, - height*c->draw_max_ys[k]);
+    cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
+    for(int k=1;k<DT_IOP_TONECURVE_RES;k++)   cairo_line_to(cr, k*width/(float)DT_IOP_TONECURVE_RES, - height*c->draw_min_ys[k]);
+    cairo_line_to(cr, width, - height*c->draw_min_ys[DT_IOP_TONECURVE_RES-1]);
+    cairo_line_to(cr, width, - height*c->draw_max_ys[DT_IOP_TONECURVE_RES-1]);
+    for(int k=DT_IOP_TONECURVE_RES-2;k>=0;k--) cairo_line_to(cr, k*width/(float)DT_IOP_TONECURVE_RES, - height*c->draw_max_ys[k]);
     cairo_close_path(cr);
     cairo_fill(cr);
     // draw mouse focus circle
@@ -365,8 +368,8 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_set_line_width(cr, 2.);
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
-  cairo_move_to(cr, 0, 0);
-  for(int k=0;k<DT_IOP_TONECURVE_RES;k++) cairo_line_to(cr, k*width/(float)DT_IOP_TONECURVE_RES, - height*c->draw_ys[k]);
+  cairo_move_to(cr, 0, -height*c->draw_ys[0]);
+  for(int k=1;k<DT_IOP_TONECURVE_RES;k++) cairo_line_to(cr, k*width/(float)DT_IOP_TONECURVE_RES, - height*c->draw_ys[k]);
   cairo_stroke(cr);
 
   cairo_destroy(cr);
@@ -404,8 +407,10 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     {
       float f = c->selected_y - (c->mouse_y-c->selected_offset)/height;
       f = fmaxf(c->selected_min, fminf(c->selected_max, f));
+      if(c->selected == 0) p->tonecurve_y[1] = fmaxf(f, p->tonecurve_y[1]);
       if(c->selected == 2) p->tonecurve_y[1] = fminf(f, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[2])));
       if(c->selected == 3) p->tonecurve_y[4] = fmaxf(f, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(f - p->tonecurve_y[3])));
+      if(c->selected == 5) p->tonecurve_y[4] = fminf(f, p->tonecurve_y[4]);
       p->tonecurve_y[c->selected] = f;
     }
     gtk_combo_box_set_active(c->presets, -1);
@@ -432,7 +437,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     float pos = (event->x - inset)/width;
     float min = 100.0;
     int nearest = 0;
-    for(int k=1;k<5;k++)
+    for(int k=0;k<6;k++)
     {
       float dist = (pos - p->tonecurve_x[k]); dist *= dist;
       if(dist < min) { min = dist; nearest = k; }
@@ -440,11 +445,22 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     c->selected = nearest;
     c->selected_y = p->tonecurve_y[c->selected];
     c->selected_offset = c->mouse_y;
-    // c->selected_min = .5f*(c->selected_y + c->curve.m_anchors[c->selected-1].y);
-    // c->selected_max = .5f*(c->selected_y + c->curve.m_anchors[c->selected+1].y);
     const float f = 0.8f;
-    c->selected_min = fmaxf(c->selected_y - 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected-1]);
-    c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected+1]);
+    if(c->selected == 0)
+    {
+      c->selected_min = 0.0f;
+      c->selected_max = 0.2f;
+    }
+    else if(c->selected == 5)
+    {
+      c->selected_min = 0.8f;
+      c->selected_max = 1.0f;
+    }
+    else
+    {
+      c->selected_min = fmaxf(c->selected_y - 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected-1]);
+      c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p->tonecurve_y[c->selected+1]);
+    }
     if(c->selected == 1) c->selected_max *= 0.7;
     if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
   }

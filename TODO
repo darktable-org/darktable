@@ -61,6 +61,9 @@
 - scroll to opened expander in darkroom mode.
 
 later:
+- lighttable side-by-side mode
+- color labels, key shortcuts, sorting by color, bg of image in color.
+- show stars for unselected images on mouse move?
 - noise/film grain simulator plugin
 - embedded thumbnail as static snapshot
 - try gegl 0.1.2
