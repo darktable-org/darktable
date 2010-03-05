@@ -33,13 +33,21 @@ name ()
 static void
 button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  char fullq[1024];
+  char fullq[2048];
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
   gchar *c = g_strrstr(query, "order by");
   if(c) *c = '\0';
   c = g_strrstr(query, "limit");
   if(c) *c = '\0';
-  snprintf(fullq, 1024, "insert into selected_images select id %s", query + 8);
+  
+  // fix to group first where within () for use an addition statement to existing where
+  c = g_strrstr(query, "where");
+  if(c) *c = '\0';
+  snprintf(fullq, 2048, "insert into selected_images select id %s", query + 8);
+  strcat(fullq,"where (");
+  snprintf(fullq+strlen(fullq), 2048-strlen(fullq), "%s", query+strlen(query) + 6);
+  strcat(fullq,")");
+  
   switch((long int)user_data)
   {
     case 0: // all
@@ -57,6 +65,11 @@ button_clicked(GtkWidget *widget, gpointer user_data)
       sqlite3_exec(darktable.db, "delete from selected_images where imgid in (select imgid from tmp_selection)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "delete from tmp_selection", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
+      break;
+    case 4: // untouched
+      sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+      strcat(fullq+strlen(fullq)," and id not in (select imgid from history where imgid=id)");
+      sqlite3_exec(darktable.db, fullq, NULL, NULL, NULL);
       break;
     default: // case 3: same film roll
       sqlite3_exec(darktable.db, "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
@@ -115,6 +128,16 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select all images which are in the same\nfilm roll as the selected images"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
+  button = gtk_button_new_with_label(_("select untouched"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select untouched images in\ncurren collection"), NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
+  // Just a filler, remove if a new button is added
+  gtk_box_pack_start(hbox,gtk_hbox_new(TRUE, 5),TRUE,TRUE,0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }
