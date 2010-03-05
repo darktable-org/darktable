@@ -137,7 +137,7 @@ create_cmatrix_profile(float cmatrix[3][4])
     x[k] = mat[0][k] / norm;
     y[k] = mat[1][k] / norm;
   }
-  cmsCIExyYTRIPLE Rec709Primaries = {
+  cmsCIExyYTRIPLE CameraPrimaries = {
     {x[0], y[0], 1.0},
     {x[1], y[1], 1.0},
     {x[2], y[2], 1.0}
@@ -148,7 +148,7 @@ create_cmatrix_profile(float cmatrix[3][4])
   cmsWhitePointFromTemp(6504, &D65);
   linear[0] = linear[1] = linear[2] = build_linear_gamma();
 
-  cmat = cmsCreateRGBProfile(&D65, &Rec709Primaries, linear);
+  cmat = cmsCreateRGBProfile(&D65, &CameraPrimaries, linear);
   cmsFreeGamma(linear[0]);
   if (cmat == NULL) return NULL;
 
