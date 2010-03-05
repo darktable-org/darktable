@@ -60,7 +60,7 @@ update_query(dt_lib_collect_t *d)
   if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->text)) != -1)
     DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
 
-  // film roll, camera, tag, day
+  // film roll, camera, tag, day, history
   int property = gtk_combo_box_get_active(d->combo);
   gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->text));
   switch(property)
@@ -75,6 +75,11 @@ update_query(dt_lib_collect_t *d)
         snprintf(query, 1024, "select * from images where film_id in (select id from film_rolls where id in "
                               "(select film_id from images as a join selected_images as b on a.id = b.imgid))");
       break;
+      
+    case 4: // history
+      snprintf(query, 1024, "select * from images where id %s in (select imgid from history where imgid=images.id) ",(strcmp(text,_("altered"))==0)?"":"not");
+    break;
+      
     case 1: // camera
       if(imgsel == -666)
         snprintf(query, 1024, "select * from images where maker || ' ' || model like '%%%s%%'", text);
@@ -98,6 +103,8 @@ update_query(dt_lib_collect_t *d)
                               "(select imgid from tagged_images as a join tags as b on a.tagid = b.id where "
                               "b.id in (select tagid from tagged_images as c join selected_images as d on c.imgid = d.imgid))");
       break;
+ 
+
     default: // case 3: // day
       if(imgsel == -666)
         snprintf(query, 1024, "select * from images where datetime_taken like '%%%s%%'", text);
@@ -162,6 +169,19 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
     case 2: // tag
       snprintf(query, 1024, "select distinct name, id from tags where name like '%%%s%%'", text);
       break;
+    case 4: // History, 2 hardcoded alternatives
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+        DT_LIB_COLLECT_COL_TEXT,_("altered"),
+        DT_LIB_COLLECT_COL_ID, 0,
+        -1);
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+        DT_LIB_COLLECT_COL_TEXT,_("not altered"),
+        DT_LIB_COLLECT_COL_ID, 1,
+        -1);
+      goto entry_key_press_exit;
+    break;
     default: // case 3: // day
       snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", text);
       break;
@@ -177,6 +197,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
                         -1);
   }
   sqlite3_finalize(stmt);
+entry_key_press_exit:
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
   g_object_unref(model);
   update_query(d);
@@ -236,6 +257,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("camera"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("tag"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("date"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("history"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), 0);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d);
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
