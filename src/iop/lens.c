@@ -1205,8 +1205,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
 
   // scale
-  g->scale = GTK_HSCALE(gtk_hscale_new_with_range(0.1, 2.0, 0.01));
-  gtk_scale_set_digits(GTK_SCALE(g->scale), 2);
+  g->scale = GTK_HSCALE(gtk_hscale_new_with_range(0.1, 2.0, 0.005));
+  gtk_scale_set_digits(GTK_SCALE(g->scale), 3);
   gtk_scale_set_value_pos(GTK_SCALE(g->scale), GTK_POS_LEFT);
   gtk_range_set_value(GTK_RANGE(g->scale), p->scale);
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
