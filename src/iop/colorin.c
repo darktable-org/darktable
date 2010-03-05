@@ -107,6 +107,58 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
+static LPGAMMATABLE
+build_linear_gamma(void)
+{
+  return cmsBuildGamma(1024, 1.0);
+}
+
+static cmsHPROFILE
+create_cmatrix_profile(float cmatrix[3][4])
+{
+  cmsCIExyY D65;
+  float x[3], y[3];
+  float mat[3][3];
+  // sRGB D65, the linear part:
+  const float rgb_to_xyz[3][3] = {
+    {0.4124564, 0.3575761, 0.1804375},
+    {0.2126729, 0.7151522, 0.0721750},
+    {0.0193339, 0.1191920, 0.9503041}
+  };
+
+  for(int c=0;c<3;c++) for(int j=0;j<3;j++)
+  {
+    mat[c][j] = 0;
+    for(int k=0;k<3;k++) mat[c][j] += rgb_to_xyz[c][k]*cmatrix[k][j];
+  }
+  for(int k=0;k<3;k++)
+  {
+    const float norm = mat[0][k] + mat[1][k] + mat[2][k];
+    x[k] = mat[0][k] / norm;
+    y[k] = mat[1][k] / norm;
+  }
+  cmsCIExyYTRIPLE Rec709Primaries = {
+    {x[0], y[0], 1.0},
+    {x[1], y[1], 1.0},
+    {x[2], y[2], 1.0}
+    };
+  LPGAMMATABLE linear[3];
+  cmsHPROFILE  cmat;
+
+  cmsWhitePointFromTemp(6504, &D65);
+  linear[0] = linear[1] = linear[2] = build_linear_gamma();
+
+  cmat = cmsCreateRGBProfile(&D65, &Rec709Primaries, linear);
+  cmsFreeGamma(linear[0]);
+  if (cmat == NULL) return NULL;
+
+  cmsAddTag(cmat, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
+  cmsAddTag(cmat, icSigDeviceModelDescTag,    (LPVOID) "color matrix built-in");
+  cmsAddTag(cmat, icSigProfileDescriptionTag, (LPVOID) "color matrix built-in");
+
+  return cmat;
+}
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -132,9 +184,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     ret = libraw_open_file(raw, filename);
     if(!ret)
     {
+      float cmat[3][4];
       for(int k=0;k<4;k++) for(int i=0;i<3;i++)
-        // invert_matrix(raw->color.cam_xyz, d->cmatrix);
-        d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
+      {
+        // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
+        cmat[i][k] = raw->color.rgb_cam[i][k];
+      }
+      d->input = create_cmatrix_profile(cmat);
     }
     libraw_close(raw);
   }
