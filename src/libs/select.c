@@ -133,7 +133,7 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select untouched"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select untouched images in\ncurren collection"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
   // Just a filler, remove if a new button is added
