@@ -162,8 +162,7 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
     blob = sqlite3_column_blob(stmt, 0);
     length = sqlite3_column_bytes(stmt, 0);
   }
-  if(!blob) return 1; // not there. will be handled by caller (load to db)
-  if(dt_image_alloc(img, mip))
+  if(!blob || dt_image_alloc(img, mip))
   {
     rc = sqlite3_finalize(stmt);
     return 1;
@@ -171,79 +170,31 @@ int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
 
   if(mip == DT_IMAGE_MIPF)
   {
-    assert(length==sizeof(uint8_t)*wd*ht);
+    if(length != sizeof(uint8_t)*wd*ht) goto err_wrong_res;
     dt_image_check_buffer(img, mip, 3*wd*ht*sizeof(float));
     dt_image_uncompress((uint8_t *)blob, img->mipf, wd, ht);
   }
   else
   {
     dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-#if 0//def HAVE_MAGICK
-    ExceptionInfo *exception = AcquireExceptionInfo();
-    ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
-    Image *image = BlobToImage(image_info, blob, length, exception);
-    if (image == (Image *) NULL)
-    {
-      CatchException(exception);
-      image_info = DestroyImageInfo(image_info);
-      exception = DestroyExceptionInfo(exception);
-      rc = sqlite3_finalize(stmt);
-      dt_image_release(img, mip, 'w');
-      dt_image_release(img, mip, 'r');
-      fprintf(stderr, "[preview_read] could not get image from blob!\n");
-      return 1;
-    }
-    const PixelPacket *p;
-    assert(image->rows == ht && image->columns == wd);
-    for (int y=0; y < image->rows; y++)
-    {
-      p = AcquireImagePixels(image,0,y,image->columns,1,exception);
-      if (p == (const PixelPacket *) NULL) 
-      {
-        dt_image_release(img, mip, 'w');
-        dt_image_release(img, mip, 'r');
-        fprintf(stderr, "[preview_read] pixel read failed!\n");
-        return 1;
-      }
-      for (int x=0; x < image->columns; x++)
-      {
-        if(QuantumDepth == 16)
-        {
-          img->mip[mip][4*wd*y + 4*x + 0] = (int)p->red>>8;
-          img->mip[mip][4*wd*y + 4*x + 1] = (int)p->green>>8;
-          img->mip[mip][4*wd*y + 4*x + 2] = (int)p->blue>>8;
-        }
-        else
-        {
-          img->mip[mip][4*wd*y + 4*x + 0] = (int)p->red;
-          img->mip[mip][4*wd*y + 4*x + 1] = (int)p->green;
-          img->mip[mip][4*wd*y + 4*x + 2] = (int)p->blue;
-        }
-        p++;
-      }
-    }
-    image = DestroyImage(image);
-    image_info = DestroyImageInfo(image_info);
-    exception = DestroyExceptionInfo(exception);
-#else
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) || 
-       dt_imageio_jpeg_decompress(&jpg, img->mip[mip]))
-    {
-      assert(jpg.width == wd && jpg.height == ht);
-      rc = sqlite3_finalize(stmt);
-      dt_image_release(img, mip, 'w');
-      dt_image_release(img, mip, 'r');
-      fprintf(stderr, "[preview_read] could not get image from blob!\n");
-      return 1;
-    }
-    // assert(length==sizeof(uint8_t)*4*wd*ht);
-    // for(int k=0;k<length;k++) img->mip[mip][k] = ((uint8_t *)blob)[k];
-#endif
+      (jpg.width != wd || jpg.height != ht) ||
+       dt_imageio_jpeg_decompress(&jpg, img->mip[mip])) goto err_wrong_res;
   }
   rc = sqlite3_finalize(stmt);
   dt_image_release(img, mip, 'w');
   return 0;
+err_wrong_res: // remove obsoleted thumbnail from db
+  sqlite3_finalize(stmt);
+  dt_image_release(img, mip, 'w');
+  dt_image_release(img, mip, 'r');
+  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, img->id);
+  sqlite3_bind_int (stmt, 2, mip);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  return 1;
 }
 
 void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8_t *p8)
@@ -378,79 +329,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
       // JPEG: decode with magick (directly rescaled to mip4)
-#if 0//def HAVE_MAGICK
-      ExceptionInfo *exception = AcquireExceptionInfo();
-      ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
-      Image *imimage = BlobToImage(image_info, image->data, image->data_size, exception);
-      if(raw->sizes.flip & 4)
-      {
-        image->width  = imimage->rows;
-        image->height = imimage->columns;
-      }
-      else
-      {
-        image->width  = imimage->columns;
-        image->height = imimage->rows;
-      }
-      if (imimage == (Image *) NULL || dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_magick;
-
-      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-      assert(QuantumDepth == 16);
-      const PixelPacket *p, *p1;
-      const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-      const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
-
-      if(image->width == p_wd && image->height == p_ht)
-      { // use 1:1
-        for (int j=0; j < imimage->rows; j++)
-        {
-          p = AcquireImagePixels(imimage,0,j,imimage->columns,1,exception);
-          if (p == (const PixelPacket *) NULL) goto error_raw_magick_mip4;
-          for (int i=0; i < imimage->columns; i++)
-          {
-            uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
-            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = cam[k];
-            p++;
-          }
-        }
-      }
-      else
-      { // scale to fit
-        bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
-        const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
-        p1 = AcquireImagePixels(imimage,0,0,imimage->columns,imimage->rows,exception);
-        if (p1 == (const PixelPacket *) NULL) goto error_raw_magick_mip4;
-        for(int j=0;j<p_ht2 && scale*j<imimage->rows;j++) for(int i=0;i<p_wd2 && scale*i < imimage->columns;i++)
-        {
-          p = p1 + ((int)(scale*j)*imimage->columns + (int)(scale*i));
-          uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, raw->sizes.flip)+2-k] = cam[k];
-        }
-      }
-      dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      // store in db.
-      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-      if(dt_image_update_mipmaps(img)) ret = 1;
-
-      imimage = DestroyImage(imimage);
-      image_info = DestroyImageInfo(image_info);
-      exception = DestroyExceptionInfo(exception);
-      // clean up raw stuff.
-      libraw_recycle(raw);
-      libraw_close(raw);
-      free(image);
-      dt_image_release(img, DT_IMAGE_MIP4, 'r');
-      // dt_image_cache_release(img, 'r');
-      return ret;
-error_raw_magick_mip4:// clean up libraw and magick only
-      dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      dt_image_release(img, DT_IMAGE_MIP4, 'r');
-error_raw_magick:// clean up libraw and magick only
-      CatchException(exception);
-      image_info = DestroyImageInfo(image_info);
-      exception = DestroyExceptionInfo(exception);
-      goto error_raw;
-#else
       const int orientation = img->orientation;// & 4 ? img->orientation : img->orientation ^ 1;
       dt_imageio_jpeg_t jpg;
       if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw_corrupted;
@@ -513,7 +391,6 @@ error_raw_magick:// clean up libraw and magick only
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
       return retval;
-#endif
     }
     else
     {
@@ -767,118 +644,6 @@ void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
-#if 0//def HAVE_MAGICK
-  img->shrink = 0;
-  img->orientation = 0;
-
-  ImageInfo *image_info;
-  ExceptionInfo *exception;
-  Image *image;
-  exception = AcquireExceptionInfo();
-  image_info = CloneImageInfo((ImageInfo *) NULL);
-
-  (void) strcpy(image_info->filename, filename);
-  image = ReadImage(image_info, exception);
-  if (image == (Image *) NULL)
-  {
-    image_info = DestroyImageInfo(image_info);
-    exception = DestroyExceptionInfo(exception);
-    return 1;
-  }
-
-  const char *value = NULL;
-  float num, den;
-  value = GetImageProperty(image, "exif:DateTimeOriginal");
-  if (value != (const char *) NULL) strncpy(img->exif_datetime_taken, value, 20);
-  value = GetImageProperty(image, "exif:ExposureTime");
-  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_exposure = num/den; }
-  value = GetImageProperty(image, "exif:FNumber");
-  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_aperture = num/den; }
-  value = GetImageProperty(image, "exif:FocalLength");
-  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_focal_length = num/den; }
-  value = GetImageProperty(image, "exif:ISOSpeedRatings");
-  if (value != (const char *) NULL) img->exif_iso = g_ascii_strtod(value, NULL);
-  value = GetImageProperty(image, "exif:Make");
-  if (value != (const char *) NULL) strncpy(img->exif_maker, value, 20);
-  value = GetImageProperty(image, "exif:Model");
-  if (value != (const char *) NULL) strncpy(img->exif_model, value, 20);
-  value = GetImageProperty(image, "exif:Orientation");
-  if (value != (const char *) NULL) img->orientation = atol(value);
-
-  if(img->orientation & 4)
-  {
-    img->width  = image->rows;
-    img->height = image->columns;
-  }
-  else
-  {
-    img->width  = image->columns;
-    img->height = image->rows;
-  }
-  int p_wd, p_ht;
-  float f_wd, f_ht;
-  dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
-  dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
-
-  if(dt_image_alloc(img, DT_IMAGE_MIP4))
-  {
-    image = DestroyImage(image);
-    image_info = DestroyImageInfo(image_info);
-    exception = DestroyExceptionInfo(exception);
-    return 2;
-  }
-
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  assert(QuantumDepth == 16);
-  const PixelPacket *p, *p1;
-  const int p_ht2 = img->orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-  const int p_wd2 = img->orientation & 4 ? p_ht : p_wd;
-
-  if(img->width == p_wd && img->height == p_ht)
-  { // use 1:1
-    for (int j=0; j < image->rows; j++)
-    {
-      p = AcquireImagePixels(image,0,j,image->columns,1,exception);
-      if (p == (const PixelPacket *) NULL) goto error_magick_mip4;
-      for (int i=0; i < image->columns; i++)
-      {
-        uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
-        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = cam[k];
-        p++;
-      }
-    }
-  }
-  else
-  { // scale to fit
-    bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
-    const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
-    p1 = AcquireImagePixels(image,0,0,image->columns,image->rows,exception);
-    if (p1 == (const PixelPacket *) NULL) goto error_magick_mip4;
-    for(int j=0;j<p_ht2 && scale*j<image->rows;j++) for(int i=0;i<p_wd2 && scale*i < image->columns;i++)
-    {
-      p = p1 + ((int)(scale*j)*image->columns + (int)(scale*i));
-      uint8_t cam[3] = {(int)p->red>>8, (int)p->green>>8, (int)p->blue>>8};
-      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, img->orientation)+2-k] = cam[k];
-    }
-  }
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  // store in db.
-  int ret = 0;
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-  if(dt_image_update_mipmaps(img)) ret = 1;
-  
-  image = DestroyImage(image);
-  image_info = DestroyImageInfo(image_info);
-  exception = DestroyExceptionInfo(exception);
-  return ret;
-error_magick_mip4:
-  image = DestroyImage(image);
-  image_info = DestroyImageInfo(image_info);
-  exception = DestroyExceptionInfo(exception);
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return 1;
-#else
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
@@ -944,158 +709,12 @@ error_magick_mip4:
     retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return retval;
-#endif
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
   (void) dt_exif_read(img, filename);
-#if 0//def HAVE_MAGICK
-  img->orientation = 0;
-
-  ImageInfo *image_info;
-  ExceptionInfo *exception;
-  Image *image;
-  exception = AcquireExceptionInfo();
-  image_info = CloneImageInfo((ImageInfo *) NULL);
-
-  (void) strcpy(image_info->filename, filename);
-  image = ReadImage(image_info, exception);
-  if (image == (Image *) NULL)
-  {
-    image_info = DestroyImageInfo(image_info);
-    exception = DestroyExceptionInfo(exception);
-    return 1;
-  }
-
-  const char *value = NULL;
-  float num, den;
-  value = GetImageProperty(image, "exif:DateTimeOriginal");
-  if (value != (const char *) NULL) strncpy(img->exif_datetime_taken, value, 20);
-  value = GetImageProperty(image, "exif:ExposureTime");
-  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_exposure = num/den; }
-  value = GetImageProperty(image, "exif:FNumber");
-  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_aperture = num/den; }
-  value = GetImageProperty(image, "exif:FocalLength");
-  if (value != (const char *) NULL) { num = g_ascii_strtod(value, (gchar**)&value); den = g_ascii_strtod(value+1, NULL); img->exif_focal_length = num/den; }
-  value = GetImageProperty(image, "exif:ISOSpeedRatings");
-  if (value != (const char *) NULL) img->exif_iso = g_ascii_strtod(value, NULL);
-  value = GetImageProperty(image, "exif:Make");
-  if (value != (const char *) NULL) strncpy(img->exif_maker, value, 20);
-  value = GetImageProperty(image, "exif:Model");
-  if (value != (const char *) NULL) strncpy(img->exif_model, value, 20);
-  value = GetImageProperty(image, "exif:Orientation");
-  if (value != (const char *) NULL) img->orientation = atol(value);
-
-  if(img->orientation & 4)
-  {
-    img->width  = image->rows;
-    img->height = image->columns;
-  }
-  else
-  {
-    img->width  = image->columns;
-    img->height = image->rows;
-  }
-
-  if(dt_image_alloc(img, DT_IMAGE_FULL))
-  {
-    image = DestroyImage(image);
-    image_info = DestroyImageInfo(image_info);
-    exception = DestroyExceptionInfo(exception);
-    return 2;
-  }
-  // img->pixels = (float *)malloc(sizeof(float)*3*img->width*img->height);
-
-  const int ht2 = img->orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
-  const int wd2 = img->orientation & 4 ? img->height : img->width;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
-  const PixelPacket *p;
-  assert(QuantumDepth == 16);
-  for (int j=0; j < image->rows; j++)
-  {
-    p = AcquireImagePixels(image,0,j,image->columns,1,exception);
-    if (p == (const PixelPacket *) NULL)
-    {
-      image = DestroyImage(image);
-      image_info = DestroyImageInfo(image_info);
-      exception = DestroyExceptionInfo(exception);
-      dt_image_release(img, DT_IMAGE_FULL, 'w');
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      return 1;
-    }
-    for (int i=0; i < image->columns; i++)
-    {
-      float cam[3] = {dt_dev_de_gamma[(int)p->red>>8], dt_dev_de_gamma[(int)p->green>>8], dt_dev_de_gamma[(int)p->blue>>8]};
-      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, img->orientation)+k] = cam[k];
-      p++;
-    }
-  }
-
-#if 0
-  for (int y=0; y < image->rows; y++)
-  {
-    p = AcquireImagePixels(image,0,y,image->columns,1,exception);
-    if (p == (const PixelPacket *) NULL) 
-    {
-      image = DestroyImage(image);
-      image_info = DestroyImageInfo(image_info);
-      exception = DestroyExceptionInfo(exception);
-      dt_image_release(img, DT_IMAGE_FULL, 'w');
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      return 1;
-    }
-    for (int x=0; x < image->columns; x++)
-    {
-      if(QuantumDepth == 16)
-      {
-        img->pixels[3*img->width*y + 3*x + 0] = dt_dev_de_gamma[(int)p->red>>8];
-        img->pixels[3*img->width*y + 3*x + 1] = dt_dev_de_gamma[(int)p->green>>8];
-        img->pixels[3*img->width*y + 3*x + 2] = dt_dev_de_gamma[(int)p->blue>>8];
-      }
-      else
-      {
-        img->pixels[3*img->width*y + 3*x + 0] = dt_dev_de_gamma[(int)p->red];
-        img->pixels[3*img->width*y + 3*x + 1] = dt_dev_de_gamma[(int)p->green];
-        img->pixels[3*img->width*y + 3*x + 2] = dt_dev_de_gamma[(int)p->blue];
-      }
-      // p->opacity
-      p++;
-    }
-  }
-#endif
-
-#if 0
-  const StringInfo *str = GetImageProfile(image, "exif");
-  for(int k=0;k<str->length;k++) putchar(str->path[k]);
-
-  (void) GetImageProperty(image,"exif:*");
-  ResetImagePropertyIterator(image);
-  char *property=GetNextImageProperty(image);
-  if (property != (const char *) NULL)
-  {
-    (void) printf("  Properties:\n");
-    while (property != (const char *) NULL)
-    {
-      (void) printf("    %c",*property);
-      if (strlen(property) > 1)
-        (void) printf("%s: ",property+1);
-      if (strlen(property) > 80)
-        (void) printf("\n");
-      const char *value=GetImageProperty(image,property);
-      if (value != (const char *) NULL)
-        (void) printf("%s\n",value);
-      property=GetNextImageProperty(image);
-    }
-  }
-#endif
-  image = DestroyImage(image);
-  image_info = DestroyImageInfo(image_info);
-  exception = DestroyExceptionInfo(exception);
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
-  return 0;
-#else
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
@@ -1133,7 +752,6 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return DT_IMAGEIO_OK;
-#endif
 }
 
 // batch-processing enabled write method: history stack, raw image, custom copy of gamma/tonecurves

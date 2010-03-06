@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <glib.h>
 #ifdef  HAVE_INOTIFY
 #include <sys/inotify.h>
@@ -31,14 +32,14 @@
 #include "develop/develop.h"
 
 typedef struct _watch_t {
-  uint32_t descriptor;		// Handle
-  dt_fswatch_type_t type;		// DT_FSWATCH_* type
+  int descriptor;   // Handle
+  dt_fswatch_type_t type;        // DT_FSWATCH_* type
   void *data;				// Assigned data
   int events;				// events occured..
 } _watch_t;
 
 typedef struct inotify_event_t {
-  long int wd;       /* Watch descriptor */
+  uint32_t wd;       /* Watch descriptor */
   uint32_t mask;     /* Mask of events */
   uint32_t cookie;   /* Unique cookie associating related events (for rename(2)) */
   uint32_t len;      /* Size of 'name' field */
@@ -51,8 +52,8 @@ static gint _fswatch_items_by_data(const void* a,const void *b) {
 }
 
 // Compare func for GList
-static gint _fswatch_items_by_descriptor(const void* a,const void *b) {
-  gint result=(((_watch_t*)a)->descriptor < (long int)b)?-1:((((_watch_t*)a)->descriptor==(long int)b)?0:1);
+static gint _fswatch_items_by_descriptor(const void *a,const void *b) {
+  gint result=(((_watch_t*)a)->descriptor < *(const int *)b)?-1:((((_watch_t*)a)->descriptor==*(const int *)b)?0:1);
   return result;
 }
 
@@ -67,6 +68,8 @@ static void *_fswatch_thread(void *data) {
   while(1) {
     // Blocking read loop of event fd into event
     if((res=read(fswatch->inotify_fd,event_hdr,event_hdr_size))!=event_hdr_size) {
+      if(errno == EINTR) continue;
+      perror("[fswatch_thread] read inotify fd");
       break;
     }
 
@@ -81,7 +84,7 @@ static void *_fswatch_thread(void *data) {
     // when event is read pass it to an handler..
     // _fswatch_handler(fswatch,event);
     pthread_mutex_lock(&fswatch->mutex);
-    GList *gitem=g_list_find_custom(fswatch->items,(void *)event_hdr->wd,&_fswatch_items_by_descriptor);
+    GList *gitem=g_list_find_custom(fswatch->items,&event_hdr->wd,&_fswatch_items_by_descriptor);
     if( gitem ) {
       _watch_t *item = gitem->data;
       item->events=item->events|event_hdr->mask;
@@ -92,17 +95,17 @@ static void *_fswatch_thread(void *data) {
           if( (event_hdr->mask&IN_CLOSE) && (item->events&IN_MODIFY) ) // Check if file modified and closed...
           {	//  Something wrote on image externally and closed it, lets tag item as dirty...
             dt_image_t *img=(dt_image_t *)item->data;
-            dt_image_reimport(img,img->filename);
-            //if(darktable.develop->image==img)
-            //	dt_dev_raw_reload(darktable.develop);
+            img->force_reimport = 1;
+            // if(darktable.develop->image==img)
+              // dt_dev_raw_reload(darktable.develop);
             item->events=0;
           } 
           else if( (event_hdr->mask&IN_ATTRIB) && (item->events&IN_DELETE_SELF) && (item->events&IN_IGNORED))
           { // This pattern showed up when another file is replacing the orginal...
             dt_image_t *img=(dt_image_t *)item->data;
-            dt_image_reimport(img,img->filename);
-            //if(darktable.develop->image==img)
-            //	dt_dev_raw_reload(darktable.develop);
+            img->force_reimport = 1;
+            // if(darktable.develop->image==img)
+              // dt_dev_raw_reload(darktable.develop);
             item->events=0;
           }
         } break;
@@ -116,6 +119,9 @@ static void *_fswatch_thread(void *data) {
 
     pthread_mutex_unlock(&fswatch->mutex);
   }
+  dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] terminating.\n");
+  g_free(event_hdr);
+  g_free(name);
   return NULL;
 }
 
@@ -147,15 +153,16 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 
 void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
-  char *filename=NULL;
+  char filename[1024];
   uint32_t mask=0;
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
+  filename[0] = '\0';
 
   switch(type) 
   {
     case DT_FSWATCH_IMAGE:
       mask=IN_ALL_EVENTS;
-      filename=((dt_image_t*)data)->filename;
+      dt_image_full_path((dt_image_t *)data, filename, 1024);
       break;
     case DT_FSWATCH_CURVE_DIRECTORY:
       break;
@@ -164,7 +171,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
       break;
   }
 
-  if(filename)
+  if(filename[0] != '\0')
   {
     pthread_mutex_lock(&ctx->mutex);
     _watch_t *item = g_malloc(sizeof(_watch_t));

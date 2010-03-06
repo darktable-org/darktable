@@ -742,11 +742,27 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   }
   if(ptr)
   {
-    // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
-    img->lock[mip].write = 1; // write lock
-    img->lock[mip].users = 1; // read lock
-    pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    return 0; // all good, already alloc'ed.
+    if(size != img->mip_buf_size[mip])
+    {
+      if(img->lock[mip].write || img->lock[mip].users)
+      { // in use, can't free this buffer now.
+        dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d of wrong dimensions is still locked!\n", mip);
+        pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+        return 1;
+      }
+      else
+      { // free buffer, alter cache size stats, and continue below.
+        dt_image_free(img, mip);
+      }
+    }
+    else
+    {
+      // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
+      img->lock[mip].write = 1; // write lock
+      img->lock[mip].users = 1; // read lock
+      pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+      return 0; // all good, already alloc'ed.
+    }
   }
 
   // printf("allocing %d x %d x %d for %s (%d)\n", wd, ht, size/(wd*ht), img->filename, mip);
