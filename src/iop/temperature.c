@@ -288,6 +288,10 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   for(int k=0;k<3;k++) len  += grayrgb[k]*grayrgb[k];
   for(int k=0;k<3;k++) lenc += grayrgb[k]*grayrgb[k]*p->coeffs[k]*p->coeffs[k];
   if(lenc > 0.0001f) for(int k=0;k<3;k++) p->coeffs[k] *= sqrtf(len/lenc);
+  // normalize green:
+  p->coeffs[0] /= p->coeffs[1];
+  p->coeffs[2] /= p->coeffs[1];
+  p->coeffs[1] = 1.0;
   for(int k=0;k<3;k++) p->coeffs[k] = fmaxf(0.0f, fminf(3.0, p->coeffs[k]));
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);
