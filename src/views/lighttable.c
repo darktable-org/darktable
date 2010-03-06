@@ -256,7 +256,8 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   if(imgsel == img->id)
   { // draw mouseover hover effects, set event hook for mouse button down!
     lib->image_over = DT_LIB_DESERT;
-    if(zoom != 1 || (zoom == 1 && selected))
+    // commented out, so stars are also on mouse over for zoom == 1
+    // if(zoom != 1 || (zoom == 1 && selected))
     {
       cairo_set_line_width(cr, 1.5);
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
@@ -316,7 +317,8 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
     }
   }
 
-  if(selected && (zoom == 1))
+  // if(selected && (zoom == 1))
+  if(zoom == 1)
   { // some exif data
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
@@ -391,8 +393,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   const int seli = pointerx / (float)wd;
   const int selj = pointery / (float)ht;
 
-  const int img_pointerx = fmodf(pointerx, wd);
-  const int img_pointery = fmodf(pointery, ht);
+  const int img_pointerx = iir == 1 ? pointerx : fmodf(pointerx, wd);
+  const int img_pointery = iir == 1 ? pointery : fmodf(pointery, ht);
 
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
@@ -464,6 +466,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           dt_image_expose(image, lib, image->id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
+          if (iir == 1) goto failure; // only one image in one-image mode ;)
         }
       }
       else goto failure;
@@ -607,8 +610,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   const int max_cols = zoom == 1 ? 1 : MIN(DT_LIBRARY_MAX_ZOOM - MAX(0, offset_i), 1 + (int)(zoom+.5));
 
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM*offset_j;
-  int img_pointerx = fmodf(pointerx + zoom_x, wd);
-  int img_pointery = fmodf(pointery + zoom_y, ht);
+  int img_pointerx = zoom == 1 ? pointerx : fmodf(pointerx + zoom_x, wd);
+  int img_pointery = zoom == 1 ? pointery : fmodf(pointery + zoom_y, ht);
 
   // assure 1:1 is not switching images on resize/tab events:
   if(!track && last_offset != 0x7fffffff && zoom == 1)
@@ -857,13 +860,16 @@ void key_pressed(dt_view_t *self, uint16_t which)
   dt_library_t *lib = (dt_library_t *)self->data;
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
   switch (which)
   {
     case KEYCODE_Left: case KEYCODE_a:
-      lib->track = -1;
+      if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
+      else lib->track = -1;
       break;
     case KEYCODE_Right: case KEYCODE_e:
-      lib->track = 1;
+      if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
+      else lib->track = 1;
       break;
     case KEYCODE_Up: case KEYCODE_comma:
       lib->track = -DT_LIBRARY_MAX_ZOOM;

@@ -25,7 +25,6 @@
   - extract image statistics/compare metric
   - faces (opencv), hist L, hist wtf, hist (a,b)
   - select (random?) representative
-- folder watching and image re-import on change event via inotify (lib+dev)
 - film strip in develop mode to switch to next image.
 - resource conflict: load jobs reimport and dt
   gui develop full buf/mipf buf priority!
@@ -37,7 +36,6 @@
 - load only icc profiles which mach current camera and in/out selectively.
 - import small pfm: black border in preview?
 - remove gamma correction at end completely (merge to colorout)
-- sliders with spinboxes
 - color picker dont update?
 - export/select by edited/up-to-date exported
 - libs/history
@@ -65,7 +63,6 @@ later:
 - artistic vignetting (applied after cropping)
 - lighttable side-by-side mode
 - color labels, key shortcuts, sorting by color, bg of image in color.
-- show stars for unselected images on mouse move?
 - noise/film grain simulator plugin
 - embedded thumbnail as static snapshot
 - try gegl 0.1.2
@@ -86,11 +83,8 @@ bugs:
 - import while still importing crashes.
 
 cleanup:
-- remove most iop/*.h 
 - keep stdout clean! (shut up exiv2 and jpg)
 - add some user guide documentation.
-- progress bars for image folder import and image export
-- print GPLv3 notice on top of all files
 - remove all rc = clang errors?
 - check all g_list_delete_link 
 - remove last few non-gconf settings.
