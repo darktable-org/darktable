@@ -1,5 +1,6 @@
 0.5 release:
 - all phat sliders
+- whitebalance finetune presets: interpolate if not all in wb_presets.c
 - write dttags doesn't work if stack is discarded (should remove the file)
 - develop bottom panel: color picker:
   - also pick output profile and zone
