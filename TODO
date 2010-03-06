@@ -1,4 +1,5 @@
 0.5 release:
+- spot wb: keep green at 1.0
 - all phat sliders
 - whitebalance finetune presets: interpolate if not all in wb_presets.c
 - write dttags doesn't work if stack is discarded (should remove the file)
@@ -62,6 +63,7 @@
 - scroll to opened expander in darkroom mode.
 
 later:
+- artistic vignetting (applied after cropping)
 - lighttable side-by-side mode
 - color labels, key shortcuts, sorting by color, bg of image in color.
 - show stars for unselected images on mouse move?
