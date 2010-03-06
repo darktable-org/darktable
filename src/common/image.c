@@ -744,9 +744,10 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   {
     if(size != img->mip_buf_size[mip])
     {
-      if(img->lock[mip].write || img->lock[mip].users)
+      // can't happen?
+      if(0)//img->lock[mip].write || img->lock[mip].users)
       { // in use, can't free this buffer now.
-        dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d of wrong dimensions is still locked!\n", mip);
+        dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d of wrong dimensions is still locked! (w:%d u:%d)\n", mip, img->lock[mip].write, img->lock[mip].users);
         pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
         return 1;
       }
@@ -846,7 +847,7 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip)
   // printf("[image_free] freed %d bytes\n", img->mip_buf_size[mip]);
 #ifdef _DEBUG
   if(darktable.control->running)
-    assert(img->lock[mip].users == 0 && img->lock[mip].write == 0);
+    assert(img->lock[mip].users == 0);
 #endif
   img->mip_buf_size[mip] = 0;
 }

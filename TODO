@@ -1,4 +1,5 @@
 0.5 release:
+- compare sha1sum in db with image on open.
 - crash if resized image is reloaded.
 - all phat sliders
 - write dttags doesn't work if stack is discarded (should remove the file)

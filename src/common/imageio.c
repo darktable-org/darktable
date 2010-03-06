@@ -46,9 +46,17 @@
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
 {
-  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1; 
   sqlite3_stmt *stmt;
   int rc, wd, ht;
+  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1; 
+  dt_image_get_mip_size(img, mip, &wd, &ht);
+  // check if resolution is still up-to-date:
+  if(img->mip_buf_size[mip] != (mip == DT_IMAGE_MIPF?3*sizeof(float):4*sizeof(uint8_t))*wd*ht)
+  {
+    printf("[imageio_preview_write] rejecting old resolution\n");
+    return 0;
+  }
+
   rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->id);
   rc = sqlite3_bind_int (stmt, 2, mip);
@@ -71,7 +79,6 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   rc = sqlite3_finalize(stmt);
   if(mip == DT_IMAGE_MIPF)
   {
-    dt_image_get_mip_size(img, DT_IMAGE_MIPF, &wd, &ht);
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
     uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
     dt_image_compress(img->mipf, buf, wd, ht);
@@ -84,36 +91,12 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
     return 0;
   }
 
-  dt_image_get_mip_size(img, mip, &wd, &ht);
   dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-#if 0//def HAVE_MAGICK
-  ExceptionInfo *exception = AcquireExceptionInfo();
-  ImageInfo *image_info = CloneImageInfo((ImageInfo *) NULL);
-  Image *image = ConstituteImage(wd, ht, "RGBA", CharPixel, img->mip[mip], exception);
-  if (image == (Image *) NULL)
-  {
-    image_info = DestroyImageInfo(image_info);
-    exception = DestroyExceptionInfo(exception);
-    fprintf(stderr, "[preview_write] could not constitute magick image (%dx%d for mip %d)!\n", wd, ht, mip);
-    return 1;
-  }
-  (void)strncpy(image_info->magick, "jpeg", 4);
-  image_info->quality = 95;
-  size_t length;
-  uint8_t *blob = ImageToBlob(image_info, image, &length, exception);
-  rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
-  HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_blob(stmt, 1, blob, sizeof(uint8_t)*length, (void (*)(void *))RelinquishMagickMemory);
-#else
-  /*uint8_t *blob = img->mip[mip];
-  size_t length = 4*wd*ht*sizeof(uint8_t);*/
   uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
   int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, 97);
   rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
   HANDLE_SQLITE_ERR(rc);
-  //rc = sqlite3_bind_blob(stmt, 1, blob, sizeof(uint8_t)*length, SQLITE_STATIC);
   rc = sqlite3_bind_blob(stmt, 1, blob, length, free);
-#endif
   HANDLE_SQLITE_ERR(rc);
   rc = sqlite3_bind_int (stmt, 2, img->id);
   rc = sqlite3_bind_int (stmt, 3, mip);
@@ -121,11 +104,6 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   if(rc != SQLITE_DONE) fprintf(stderr, "[preview_write] update mipmap failed: %s\n", sqlite3_errmsg(darktable.db));
   rc = sqlite3_finalize(stmt);
 
-#if 0//def HAVE_MAGICK
-  image = DestroyImage(image);
-  image_info = DestroyImageInfo(image_info);
-  exception = DestroyExceptionInfo(exception);
-#endif
   return 0;
 }
 
