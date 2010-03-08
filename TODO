@@ -1,4 +1,6 @@
 0.5 release:
+- shortened [..]/filename in folders, + tooltip with full name
+- give tag for each film roll during import, make editing easy after
 - all phat sliders
 - whitebalance finetune presets: interpolate if not all in wb_presets.c
 - write dttags doesn't work if stack is discarded (should remove the file)

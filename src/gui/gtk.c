@@ -399,7 +399,7 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
   else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
   // replace sort part
-  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
+  char *sortstring[4] = {"datetime_taken, filename", "flags & 7 desc", "filename", "id"};
   int sortindex = 3;
   if     (i == 1) sortindex = 0;
   else if(i == 2) sortindex = 1;
