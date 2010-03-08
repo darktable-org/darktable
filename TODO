@@ -1,4 +1,8 @@
 0.5 release:
+- decapitalize icc profile names
+- busy indicators of some simple kind
+- multiselect film import
+- size of film rolls list?
 - shortened [..]/filename in folders, + tooltip with full name
 - give tag for each film roll during import, make editing easy after
 - all phat sliders

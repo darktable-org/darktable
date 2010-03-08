@@ -27,6 +27,7 @@ typedef enum dt_gui_filmview_columns_t
 {
   DT_GUI_FILM_COL_FOLDER=0,
   DT_GUI_FILM_COL_ID,
+  DT_GUI_FILM_COL_TOOLTIP,
   DT_GUI_FILM_NUM_COLS
 }
 dt_gui_filmview_columns_t;
@@ -52,6 +53,7 @@ dt_gui_filmview_update(const char *filter)
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                         DT_GUI_FILM_COL_FOLDER, _("single images"),
                         DT_GUI_FILM_COL_ID, (guint)1,
+                        DT_GUI_FILM_COL_TOOLTIP, _("single images"),
                         -1);
   }
   // sql query insert
@@ -62,13 +64,19 @@ dt_gui_filmview_update(const char *filter)
   rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    const char *path = (const char *)sqlite3_column_text(stmt, 1);
+    const char *folder = path + strlen(path);
+    while(folder > path && *folder != '/') folder--;
+    if(*folder == '/' && folder != path) folder++;
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-                        DT_GUI_FILM_COL_FOLDER, sqlite3_column_text(stmt, 1),
+                        DT_GUI_FILM_COL_FOLDER, folder,
                         DT_GUI_FILM_COL_ID, (guint)sqlite3_column_int(stmt, 0),
+                        DT_GUI_FILM_COL_TOOLTIP, path,
                         -1);
   }
 
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_GUI_FILM_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
   g_object_unref(model);
 }
@@ -128,6 +136,21 @@ entry_callback (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
 }
 
 static void
+focus_in_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
+{
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  gtk_widget_set_size_request(view, -1, win->allocation.height/2);
+}
+
+#if 0 // results in jumpy gui :(
+static void
+focus_out_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
+{
+  gtk_widget_set_size_request(view, -1, -1);
+}
+#endif
+
+static void
 row_activated_callback (GtkTreeView        *view,
                         GtkTreePath        *path,
                         GtkTreeViewColumn  *col,
@@ -150,7 +173,7 @@ row_activated_callback (GtkTreeView        *view,
 void
 dt_gui_filmview_init()
 {
-  GtkListStore *liststore = gtk_list_store_new(DT_GUI_FILM_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT);
+  GtkListStore *liststore = gtk_list_store_new(DT_GUI_FILM_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 
   GtkWidget *view = glade_xml_get_widget (darktable.gui->main_window, "treeview_film");
   g_signal_connect(view, "row-activated", G_CALLBACK(row_activated_callback), NULL);
@@ -169,6 +192,9 @@ dt_gui_filmview_init()
   g_object_unref(liststore);
 
   dt_gui_filmview_update("");
+
+  g_signal_connect(view, "focus-in-event",  G_CALLBACK(focus_in_callback), view);
+  // g_signal_connect(view, "focus-out-event", G_CALLBACK(focus_out_callback), view);
 
   GtkWidget *entry = glade_xml_get_widget (darktable.gui->main_window, "entry_film");
   g_signal_connect(entry, "key-release-event", G_CALLBACK(entry_callback), NULL);
