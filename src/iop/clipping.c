@@ -35,19 +35,28 @@
 
 DT_MODULE(2)
 
-/** rotate an image, then clip the buffer. */
+/** flip H/V, rotate an image, then clip the buffer. */
+typedef enum dt_iop_clipping_flags_t
+{
+  FLAG_FLIP_HORIZONTAL = 1,
+  FLAG_FLIP_VERTICAL = 2
+}
+dt_iop_clipping_flags_t;
 
 typedef struct dt_iop_clipping_params_t
 {
   float angle, cx, cy, cw, ch, aspect;
+  uint32_t flags;
 }
 dt_iop_clipping_params_t;
 
 typedef struct dt_iop_clipping_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
+  GtkHBox *hbox1, *hbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
   GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
+  GtkToggleButton *hflip,*vflip;
   GtkSpinButton *aspect;
   GtkCheckButton *aspect_on;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
@@ -61,6 +70,7 @@ typedef struct dt_iop_clipping_data_t
   float tx, ty;             // rotation center
   float cx, cy, cw, ch;     // crop window
   float cix, ciy, ciw, cih; // crop window on roi_out 1.0 scale
+  uint32_t flags;            // flipping flags
 }
 dt_iop_clipping_data_t;
 
@@ -235,7 +245,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       else for(int c=0;c<3;c++) out[c] = 0.0f;
       for(int k=0;k<2;k++) pi[k] += dx[k];
-      out += 3;
+      out = ((float *)o)+(3*((roi_out->width*(d->flags&FLAG_FLIP_VERTICAL?(roi_out->height)-j:j))+(d->flags&FLAG_FLIP_HORIZONTAL?(roi_out->width)-i:i)));
     }
     for(int k=0;k<2;k++) pi[k] = tmppi[k];
     for(int k=0;k<2;k++) pi[k] += dy[k];
@@ -255,6 +265,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->cy = p->cy;
   d->cw = p->cw;
   d->ch = p->ch;
+  d->flags = p->flags;
 #endif
 }
 
@@ -358,7 +369,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
   module->priority = 950;
-  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, -1.0};
+  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, -1.0,0};
   memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
 }
@@ -402,17 +413,38 @@ aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+static void
+toggled_callback(GtkToggleButton *widget, dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  if(widget==g->hflip)
+    p->flags=(gtk_toggle_button_get_active(widget)?p->flags|FLAG_FLIP_HORIZONTAL:p->flags & ~FLAG_FLIP_HORIZONTAL);
+  else if(widget==g->vflip)
+    p->flags=(gtk_toggle_button_get_active(widget)?p->flags|FLAG_FLIP_VERTICAL:p->flags & ~FLAG_FLIP_VERTICAL);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_clipping_gui_data_t));
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  g->hbox1 = GTK_HBOX(gtk_hbox_new(TRUE,0));
+  g->hbox2 = GTK_HBOX(gtk_hbox_new(TRUE,0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox2), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  g->hflip = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("horizontal flip")));
+  g->vflip = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("vertical flip")));
+  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->hflip), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->vflip), TRUE, TRUE, 0);
   g->label1 = GTK_LABEL(gtk_label_new(_("crop x")));
   g->label2 = GTK_LABEL(gtk_label_new(_("crop y")));
   g->label3 = GTK_LABEL(gtk_label_new(_("crop w")));
@@ -454,6 +486,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
+  g_signal_connect (G_OBJECT (g->hflip), "toggled", G_CALLBACK(toggled_callback), self);
+  g_signal_connect (G_OBJECT (g->vflip), "toggled", G_CALLBACK(toggled_callback), self);
 
   g->aspect_on = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("fixed aspect ratio")));
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
