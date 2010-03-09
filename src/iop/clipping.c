@@ -152,6 +152,8 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   rt[1] = - rt[1];
   rt[2] = - rt[2];
   for(int k=0;k<4;k++) d->m[k] = rt[k];
+  if(d->flags & FLAG_FLIP_HORIZONTAL) { d->m[0] = - rt[0]; d->m[2] = - rt[2]; }
+  if(d->flags & FLAG_FLIP_VERTICAL)   { d->m[1] = - rt[1]; d->m[3] = - rt[3]; }
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -191,7 +193,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-  
+
   float pi[2], p0[2], tmp[2];
   float dx[2], dy[2];
   // get whole-buffer point from i,j
@@ -244,7 +246,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       else for(int c=0;c<3;c++) out[c] = 0.0f;
       for(int k=0;k<2;k++) pi[k] += dx[k];
-      out = ((float *)o)+(3*((roi_out->width*(d->flags&FLAG_FLIP_VERTICAL?(roi_out->height-1)-j:j))+(d->flags&FLAG_FLIP_HORIZONTAL?(roi_out->width-1)-i:i)));
+      out = ((float *)o)+3*(roi_out->width*j+i);
     }
     for(int k=0;k<2;k++) pi[k] = tmppi[k];
     for(int k=0;k<2;k++) pi[k] += dy[k];
