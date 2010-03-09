@@ -410,6 +410,7 @@ aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
     p->aspect =   gtk_spin_button_get_value(g->aspect);
   else
     p->aspect = - gtk_spin_button_get_value(g->aspect);
+  if(self->off) gtk_toggle_button_set_active(self->off, 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -423,6 +424,7 @@ toggled_callback(GtkToggleButton *widget, dt_iop_module_t *self)
     p->flags=(gtk_toggle_button_get_active(widget)?p->flags|FLAG_FLIP_HORIZONTAL:p->flags & ~FLAG_FLIP_HORIZONTAL);
   else if(widget==g->vflip)
     p->flags=(gtk_toggle_button_get_active(widget)?p->flags|FLAG_FLIP_VERTICAL:p->flags & ~FLAG_FLIP_VERTICAL);
+  if(self->off) gtk_toggle_button_set_active(self->off, 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
