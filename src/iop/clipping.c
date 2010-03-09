@@ -245,7 +245,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       else for(int c=0;c<3;c++) out[c] = 0.0f;
       for(int k=0;k<2;k++) pi[k] += dx[k];
-      out = ((float *)o)+(3*((roi_out->width*(d->flags&FLAG_FLIP_VERTICAL?(roi_out->height)-j:j))+(d->flags&FLAG_FLIP_HORIZONTAL?(roi_out->width)-i:i)));
+      out = ((float *)o)+(3*((roi_out->width*(d->flags&FLAG_FLIP_VERTICAL?(roi_out->height-1)-j:j))+(d->flags&FLAG_FLIP_HORIZONTAL?(roi_out->width-1)-i:i)));
     }
     for(int k=0;k<2;k++) pi[k] = tmppi[k];
     for(int k=0;k<2;k++) pi[k] += dy[k];
