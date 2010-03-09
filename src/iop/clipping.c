@@ -46,7 +46,6 @@ dt_iop_clipping_flags_t;
 typedef struct dt_iop_clipping_params_t
 {
   float angle, cx, cy, cw, ch, aspect;
-  uint32_t flags;
 }
 dt_iop_clipping_params_t;
 
@@ -70,7 +69,7 @@ typedef struct dt_iop_clipping_data_t
   float tx, ty;             // rotation center
   float cx, cy, cw, ch;     // crop window
   float cix, ciy, ciw, cih; // crop window on roi_out 1.0 scale
-  uint32_t flags;            // flipping flags
+  uint32_t flags;           // flipping flags
 }
 dt_iop_clipping_data_t;
 
@@ -263,9 +262,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->angle = M_PI/180.0 * p->angle;
   d->cx = p->cx;
   d->cy = p->cy;
-  d->cw = p->cw;
-  d->ch = p->ch;
-  d->flags = p->flags;
+  d->cw = fabsf(p->cw);
+  d->ch = fabsf(p->ch);
+  d->flags = (p->ch < 0 ? FLAG_FLIP_VERTICAL : 0) | (p->cw < 0 ? FLAG_FLIP_HORIZONTAL : 0);
 #endif
 }
 
@@ -314,7 +313,7 @@ cw_callback (GtkRange *range, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->cw = gtk_range_get_value(range);
+  p->cw = copysignf(gtk_range_get_value(range), p->cw);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -324,7 +323,7 @@ ch_callback (GtkRange *range, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->ch = gtk_range_get_value(range);
+  p->ch = copysignf(gtk_range_get_value(range), p->ch);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -344,10 +343,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   gtk_range_set_value(GTK_RANGE(g->scale1), p->cx);
   gtk_range_set_value(GTK_RANGE(g->scale2), p->cy);
-  gtk_range_set_value(GTK_RANGE(g->scale3), p->cw);
-  gtk_range_set_value(GTK_RANGE(g->scale4), p->ch);
+  gtk_range_set_value(GTK_RANGE(g->scale3), fabsf(p->cw));
+  gtk_range_set_value(GTK_RANGE(g->scale4), fabsf(p->ch));
   gtk_range_set_value(GTK_RANGE(g->scale5), p->angle);
   gtk_spin_button_set_value(g->aspect, fabsf(p->aspect));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
   if(p->aspect > 0)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_on), TRUE);
@@ -369,7 +370,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
   module->priority = 950;
-  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, -1.0,0};
+  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, -1.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
 }
@@ -421,9 +422,15 @@ toggled_callback(GtkToggleButton *widget, dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   if(widget==g->hflip)
-    p->flags=(gtk_toggle_button_get_active(widget)?p->flags|FLAG_FLIP_HORIZONTAL:p->flags & ~FLAG_FLIP_HORIZONTAL);
+  {
+    if(gtk_toggle_button_get_active(widget)) p->cw = copysignf(p->cw, -1.0);
+    else                                     p->cw = copysignf(p->cw,  1.0);
+  }
   else if(widget==g->vflip)
-    p->flags=(gtk_toggle_button_get_active(widget)?p->flags|FLAG_FLIP_VERTICAL:p->flags & ~FLAG_FLIP_VERTICAL);
+  {
+    if(gtk_toggle_button_get_active(widget)) p->ch = copysignf(p->ch, -1.0);
+    else                                     p->ch = copysignf(p->ch,  1.0);
+  }
   if(self->off) gtk_toggle_button_set_active(self->off, 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
