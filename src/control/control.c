@@ -1192,8 +1192,6 @@ void dt_control_update_recent_films()
   const char *filename, *cnt;
   const int label_cnt = 25;
   char label[256];
-  // FIXME: this is a temporary hack to keep the database low:
-  // remove all data from db from all other films.
   rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1201,19 +1199,22 @@ void dt_control_update_recent_films()
     if(id == 1)
     {
       snprintf(label, 256, _("single images"));
+      filename = _("single images");
     }
     else
     {
       filename = (char *)sqlite3_column_text(stmt, 0);
       cnt = filename + MIN(512,strlen(filename));
       int i;
-      for(i=0;i<label_cnt-1;i++) if(cnt > filename) cnt--;
-      if(cnt > filename) snprintf(label, label_cnt, "...%s", cnt+3);
+      for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
+      if(cnt > filename && *cnt != '/') snprintf(label, label_cnt, "...%s", cnt+3);
+      else if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
       else snprintf(label, label_cnt, "%s", cnt);
     }
     snprintf(wdname, 20, "recent_film_%d", num);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_button_set_label(GTK_BUTTON(widget), label);
+    g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
     gtk_widget_show(widget);
     num++;
   }
