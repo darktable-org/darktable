@@ -157,6 +157,7 @@ AC_CONFIG_FILES([
     Makefile
     po/Makefile.in
     src/Makefile
+    src/dtgtk/Makefile
     src/LibRaw/Makefile
     src/iop/Makefile
     src/views/Makefile

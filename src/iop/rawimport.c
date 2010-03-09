@@ -31,6 +31,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/image_cache.h"
+#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -54,7 +55,7 @@ typedef struct dt_iop_rawimport_gui_data_t
 {
   GtkCheckButton *four_color_rgb;
   GtkComboBox *demosaic_method, *highlight;
-  GtkScale *denoise_threshold;
+  GtkDarktableSlider *denoise_threshold;
   GtkSpinButton *med_passes;
 }
 dt_iop_rawimport_gui_data_t;
@@ -134,12 +135,12 @@ static void median_callback (GtkSpinButton *spin, gpointer user_data)
   p->raw_med_passes = gtk_spin_button_get_value(spin);
 }
 
-static void scale_callback (GtkRange *range, gpointer user_data)
+static void scale_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
-  p->raw_denoise_threshold = gtk_range_get_value(range);
+  p->raw_denoise_threshold = dtgtk_slider_get_value(slider);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -147,7 +148,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_rawimport_gui_data_t *g = (dt_iop_rawimport_gui_data_t *)self->gui_data;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   // update gui info from params.
-  gtk_range_set_value(GTK_RANGE(g->denoise_threshold), p->raw_denoise_threshold);
+  dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
@@ -162,7 +163,7 @@ static void resetbutton_callback (GtkButton *button, gpointer user_data)
   memcpy(self->params, &tmp, sizeof(dt_iop_rawimport_params_t));
   dt_iop_rawimport_gui_data_t *g = (dt_iop_rawimport_gui_data_t *)self->gui_data;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
-  gtk_range_set_value(GTK_RANGE(g->denoise_threshold), p->raw_denoise_threshold);
+  dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
@@ -228,9 +229,7 @@ void gui_init(struct dt_iop_module_t *self)
   label = gtk_label_new(_("denoise"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
-  g->denoise_threshold = GTK_SCALE(gtk_hscale_new_with_range(0.0, 1000.0, 1.0));
-  gtk_scale_set_digits(g->denoise_threshold, 1);
-  gtk_scale_set_value_pos(g->denoise_threshold, GTK_POS_LEFT);
+  g->denoise_threshold = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1000.0, 1.0,0,1));
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->denoise_threshold), TRUE, TRUE, 0);
 
   label = gtk_label_new(_("median passes"));
@@ -264,7 +263,7 @@ void gui_init(struct dt_iop_module_t *self)
   
   // self->gui_update(self);
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
-  gtk_range_set_value(GTK_RANGE(g->denoise_threshold), p->raw_denoise_threshold);
+  dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);

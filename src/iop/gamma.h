@@ -19,6 +19,7 @@
 #define DARKTABLE_IOP_GAMMA_H
 
 #include "develop/imageop.h"
+#include "dtgtk/slider.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -32,7 +33,7 @@ typedef struct dt_iop_gamma_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2;
-  GtkHScale *scale1, *scale2;
+  GtkDarktableSlider *scale1, *scale2;
 }
 dt_iop_gamma_gui_data_t;
 
@@ -56,7 +57,7 @@ void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
-void gamma_callback  (GtkRange *range, gpointer user_data);
-void linear_callback (GtkRange *range, gpointer user_data);
+void gamma_callback  (GtkDarktableSlider *slider, gpointer user_data);
+void linear_callback (GtkDarktableSlider *slider, gpointer user_data);
 
 #endif

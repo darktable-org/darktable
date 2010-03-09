@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -46,7 +47,7 @@ typedef struct dt_iop_sharpen_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkLabel  *label1, *label2, *label3;
-  GtkHScale *scale1, *scale2, *scale3;
+  GtkDarktableSlider *scale1, *scale2, *scale3;
 }
 dt_iop_sharpen_gui_data_t;
 
@@ -151,30 +152,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
-void radius_callback (GtkRange *range, gpointer user_data)
+void radius_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  p->radius = gtk_range_get_value(range);
+  p->radius = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void amount_callback (GtkRange *range, gpointer user_data)
+void amount_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  p->amount = gtk_range_get_value(range);
+  p->amount = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void threshold_callback (GtkRange *range, gpointer user_data)
+void threshold_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  p->threshold = gtk_range_get_value(range);
+  p->threshold = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -219,9 +220,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)module->params;
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->radius);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->amount);
-  gtk_range_set_value(GTK_RANGE(g->scale3), p->threshold);
+  dtgtk_slider_set_value(g->scale1, p->radius);
+  dtgtk_slider_set_value(g->scale2, p->amount);
+  dtgtk_slider_set_value(g->scale3, p->threshold);
 }
 
 void init(dt_iop_module_t *module)
@@ -266,18 +267,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 8.0000, 0.100));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 2.0000, 0.010));
-  g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0000, 0.001));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 3);
-  gtk_scale_set_digits(GTK_SCALE(g->scale2), 3);
-  gtk_scale_set_digits(GTK_SCALE(g->scale3), 3);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale3), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->radius);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->amount);
-  gtk_range_set_value(GTK_RANGE(g->scale3), p->threshold);
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0000, 0.100, p->radius, 3));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0000, 0.010, p->amount, 3));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.001, p->threshold, 3));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);

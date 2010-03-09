@@ -30,6 +30,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -54,7 +55,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkVBox *vbox1, *vbox2;
   GtkHBox *hbox1, *hbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
-  GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
+  GtkDarktableSlider *scale1, *scale2, *scale3, *scale4, *scale5;
   GtkToggleButton *hflip,*vflip;
   GtkSpinButton *aspect;
   GtkCheckButton *aspect_on;
@@ -290,52 +291,52 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 }
 
 static void
-cx_callback (GtkRange *range, gpointer user_data)
+cx_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->cx = gtk_range_get_value(range);
+  p->cx = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-cy_callback (GtkRange *range, gpointer user_data)
+cy_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->cy = gtk_range_get_value(range);
+  p->cy = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-cw_callback (GtkRange *range, gpointer user_data)
+cw_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->cw = copysignf(gtk_range_get_value(range), p->cw);
+  p->cw = copysignf( dtgtk_slider_get_value(slider), p->cw);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-ch_callback (GtkRange *range, gpointer user_data)
+ch_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->ch = copysignf(gtk_range_get_value(range), p->ch);
+  p->ch = copysignf( dtgtk_slider_get_value(slider), p->ch);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-angle_callback (GtkRange *range, gpointer user_data)
+angle_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->angle = gtk_range_get_value(range);
+  p->angle = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -343,11 +344,11 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->cx);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->cy);
-  gtk_range_set_value(GTK_RANGE(g->scale3), fabsf(p->cw));
-  gtk_range_set_value(GTK_RANGE(g->scale4), fabsf(p->ch));
-  gtk_range_set_value(GTK_RANGE(g->scale5), p->angle);
+  dtgtk_slider_set_value(g->scale1, p->cx);
+  dtgtk_slider_set_value(g->scale2, p->cy);
+  dtgtk_slider_set_value(g->scale3, fabsf(p->cw));
+  dtgtk_slider_set_value(g->scale4, fabsf(p->ch));
+  dtgtk_slider_set_value(g->scale5, p->angle);
   gtk_spin_button_set_value(g->aspect, fabsf(p->aspect));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
@@ -383,13 +384,6 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
-}
-
-static gchar*
-fv_callback(GtkScale *scale, gdouble value)
-{
-  int digits = gtk_scale_get_digits(scale);
-  return g_strdup_printf("%# *.*f", 4+1+digits, digits, value);
 }
 
 static void
@@ -471,26 +465,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  g->scale3 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  g->scale4 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  g->scale5 = GTK_HSCALE(gtk_hscale_new_with_range(-180.0, 180.0, 0.5));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale2), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale3), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale4), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale5), 2);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale3), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale4), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale5), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->cx);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->cy);
-  gtk_range_set_value(GTK_RANGE(g->scale3), p->cw);
-  gtk_range_set_value(GTK_RANGE(g->scale4), p->ch);
-  gtk_range_set_value(GTK_RANGE(g->scale5), p->angle);
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->cx,2));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->cy,2));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->cw,2));
+  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->ch,2));
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-180.0, 180.0, 0.5,p->angle,2));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
@@ -512,16 +491,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->aspect), "value-changed",
                     G_CALLBACK (aspect_callback), self);
 
-  g_signal_connect (G_OBJECT (g->scale1), "format-value",
-                    G_CALLBACK (fv_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "format-value",
-                    G_CALLBACK (fv_callback), self);
-  g_signal_connect (G_OBJECT (g->scale3), "format-value",
-                    G_CALLBACK (fv_callback), self);
-  g_signal_connect (G_OBJECT (g->scale4), "format-value",
-                    G_CALLBACK (fv_callback), self);
-  g_signal_connect (G_OBJECT (g->scale5), "format-value",
-                    G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (cx_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
@@ -582,7 +551,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     float old_angle = atan2f(g->button_down_zoom_y, g->button_down_zoom_x);
     float angle     = atan2f(zoom_y, zoom_x);
     angle = fmaxf(-180.0, fminf(180.0, g->button_down_angle + 180.0/M_PI * (angle - old_angle)));
-    gtk_range_set_value(GTK_RANGE(g->scale5), angle);
+    dtgtk_slider_set_value(g->scale5, angle);
     dt_control_gui_queue_draw();
     return 1;
   }

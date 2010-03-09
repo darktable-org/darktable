@@ -19,6 +19,7 @@
 #define DT_IOP_LENS_H
 
 #include "develop/imageop.h"
+#include "dtgtk/slider.h"
 #include <lensfun.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -48,7 +49,7 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkMenu *lens_menu;
   GtkComboBox *target_geom;
   GtkCheckButton *reverse;
-  GtkHScale *scale;
+  GtkDarktableSlider *scale;
 }
 dt_iop_lensfun_gui_data_t;
 
