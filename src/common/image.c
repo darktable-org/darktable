@@ -625,7 +625,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   int ret = 0;
   char filename[1024];
   dt_image_full_path(img, filename, 1024);
-  if(img->force_reimport || img->width == 0 || img->height == 0)
+  if(mip != DT_IMAGE_FULL &&
+    (img->force_reimport || img->width == 0 || img->height == 0))
   {
     ret = dt_image_reimport(img, filename);
     dt_image_release(img, mip, 'w');
@@ -961,8 +962,9 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   {
     if(img->pixels == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
   }
-  if(mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport)
-    mip = DT_IMAGE_NONE;
+  if((mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport) ||
+     (img == darktable.develop->image && darktable.develop->image_force_reload))
+        mip = DT_IMAGE_NONE;
   if(mip != DT_IMAGE_NONE)
   {
     if(mode == 'w')

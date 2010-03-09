@@ -96,16 +96,16 @@ static void *_fswatch_thread(void *data) {
           {	//  Something wrote on image externally and closed it, lets tag item as dirty...
             dt_image_t *img=(dt_image_t *)item->data;
             img->force_reimport = 1;
-            // if(darktable.develop->image==img)
-              // dt_dev_raw_reload(darktable.develop);
+            if(darktable.develop->image==img)
+              dt_dev_raw_reload(darktable.develop);
             item->events=0;
           } 
           else if( (event_hdr->mask&IN_ATTRIB) && (item->events&IN_DELETE_SELF) && (item->events&IN_IGNORED))
           { // This pattern showed up when another file is replacing the orginal...
             dt_image_t *img=(dt_image_t *)item->data;
             img->force_reimport = 1;
-            // if(darktable.develop->image==img)
-              // dt_dev_raw_reload(darktable.develop);
+            if(darktable.develop->image==img)
+              dt_dev_raw_reload(darktable.develop);
             item->events=0;
           }
         } break;

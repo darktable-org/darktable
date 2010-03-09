@@ -229,6 +229,10 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
     if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
   }
+  // if image has changed, stop now.
+  if(pipe == dev->pipe && dev->image_force_reload) return 1;
+  if(pipe == dev->preview_pipe && dev->preview_loading) return 1;
+  if(dev->gui_leaving) return 1;
 
   // input -> output
   if(!modules)
