@@ -1,4 +1,7 @@
 0.5 release:
+- dt file format:
+  - ext.dt
+  - write module versions
 - decapitalize icc profile names
 - busy indicators of some simple kind
 - multiselect film import
