@@ -353,6 +353,7 @@ void dt_dev_raw_reload(dt_develop_t *dev)
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
   dt_dev_pixelpipe_flush_caches(dev->pipe);
+  dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
