@@ -27,6 +27,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/database_cache_quality</key>
+      <applyto>/apps/darktable/database_cache_quality</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>89</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>jpeg quality of on-disk thumbnails</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/database_cache_thumbnails</key>
       <applyto>/apps/darktable/database_cache_thumbnails</applyto>
       <owner>darktable</owner>

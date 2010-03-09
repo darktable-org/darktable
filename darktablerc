@@ -1,5 +1,6 @@
 database=.darktabledb
-cache_memory=1610612736
+cache_memory=536870912
+database_cache_quality=89
 database_cache_thumbnails=2500
 database_cache_thumbnails0=10000
 mipmap_cache_thumbnails=500

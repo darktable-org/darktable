@@ -108,7 +108,7 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   /*uint8_t *blob = img->mip[mip];
   size_t length = 4*wd*ht*sizeof(uint8_t);*/
   uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
-  int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, 97);
+  int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
   rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
   HANDLE_SQLITE_ERR(rc);
   //rc = sqlite3_bind_blob(stmt, 1, blob, sizeof(uint8_t)*length, SQLITE_STATIC);
