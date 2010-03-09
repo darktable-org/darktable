@@ -1190,7 +1190,7 @@ void dt_control_update_recent_films()
   sqlite3_stmt *stmt;
   int rc, num = 1;
   const char *filename, *cnt;
-  const int label_cnt = 50;
+  const int label_cnt = 256;
   char label[256];
   rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1207,14 +1207,15 @@ void dt_control_update_recent_films()
       cnt = filename + MIN(512,strlen(filename));
       int i;
       for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
-      while(cnt > filename && *cnt > 127 && *(cnt-1) < 128+64) cnt--; // maintain utf-8 characters together
-      if(cnt > filename && *cnt != '/') snprintf(label, label_cnt, "...%s", cnt-1);
-      else if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
+      if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
       else snprintf(label, label_cnt, "%s", cnt);
     }
     snprintf(wdname, 20, "recent_film_%d", num);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_button_set_label(GTK_BUTTON(widget), label);
+    GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)));
+    gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
+    gtk_label_set_max_width_chars (label, 30);
     g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
     gtk_widget_show(widget);
     num++;
