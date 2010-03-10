@@ -1,8 +1,10 @@
 0.5 release:
+- reimport after db-cache-drop with preview buffer => completely overexposed?
 - dt file format:
   - ext.dt
   - write module versions
     to check history stack params compatibility (also do this in db)
+  - use module: integer as module version in db
   - write dttags doesn't work if stack is discarded (should remove the file)
 - database future proof:
   - image caption, description, license, tag description?

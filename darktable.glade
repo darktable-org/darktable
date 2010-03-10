@@ -557,7 +557,7 @@ recently used film rolls</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
                                                 <property name="no_show_all">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -571,7 +571,7 @@ recently used film rolls</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
                                                 <property name="no_show_all">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -585,7 +585,7 @@ recently used film rolls</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
                                                 <property name="no_show_all">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -599,7 +599,7 @@ recently used film rolls</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
                                                 <property name="no_show_all">True</property>
-                                                <property name="xalign">0.05000000074505806</property>
+                                                <property name="xalign">0</property>
                                               </widget>
                                               <packing>
                                                 <property name="expand">False</property>
