@@ -21,10 +21,12 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
+typedef void (*DTGTKCairoPaintIconFunc)(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean flag);
+
 /** Paint a arrow left or right */
 void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean left);
 /** Paint a reset icon */
-void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h);
+void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean notused);
 /** Paint a flip icon */
 void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean horizontal);
 

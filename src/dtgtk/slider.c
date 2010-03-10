@@ -319,7 +319,6 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   static GtkStyle *style=NULL;
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
   int state = gtk_widget_get_state(widget);
-
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
@@ -356,14 +355,15 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
     style->fg[state].blue/65535.0
   );
   
+  
   dtgtk_cairo_paint_arrow(cr,
     DTGTK_SLIDER_BORDER_WIDTH*2, DTGTK_SLIDER_BORDER_WIDTH*2,
-    DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH), DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH),
+    DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH), height-(DTGTK_SLIDER_BORDER_WIDTH*4),
     TRUE);
 
   dtgtk_cairo_paint_arrow(cr,
     width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, DTGTK_SLIDER_BORDER_WIDTH*2,
-    DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH), DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH),
+    DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH), height-(DTGTK_SLIDER_BORDER_WIDTH*4),
     FALSE);
 
   gfloat value = gtk_adjustment_get_value( slider->adjustment );
