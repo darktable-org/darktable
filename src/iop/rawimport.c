@@ -201,12 +201,6 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static gchar *fv_callback(GtkScale *scale, gdouble value)
-{
-  int digits = gtk_scale_get_digits(scale);
-  return g_strdup_printf("%#*.*f", 4+1+digits, digits, value);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_rawimport_gui_data_t));
@@ -272,7 +266,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->demosaic_method), "changed", G_CALLBACK (demosaic_callback), self);
   g_signal_connect (G_OBJECT (g->med_passes), "value-changed", G_CALLBACK (median_callback), self);
   g_signal_connect (G_OBJECT (g->denoise_threshold),     "value-changed", G_CALLBACK (scale_callback), self);
-  g_signal_connect (G_OBJECT (g->denoise_threshold),     "format-value", G_CALLBACK (fv_callback), self);
   g_signal_connect (G_OBJECT (reload),     "clicked", G_CALLBACK (reimport_button_callback), self);
   g_signal_connect (G_OBJECT (reset),      "clicked", G_CALLBACK (resetbutton_callback), self);
 }
