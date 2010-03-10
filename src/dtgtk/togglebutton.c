@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c)2010 Henrik Andersson.
+    copyright (c) 2010 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,8 +54,8 @@ static void  _togglebutton_size_request(GtkWidget *widget,GtkRequisition *requis
   g_return_if_fail(widget != NULL);
   g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
   g_return_if_fail(requisition != NULL);
-  requisition->width = 18;
-  requisition->height = 18;
+  requisition->width = 17;
+  requisition->height = 17;
 }
 
 static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
@@ -131,18 +131,31 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkToggleButton", GTK_TYPE_BUTTON);
   }
  
-  // Widget bakground
-  gtk_paint_box(style,widget->window, state,
-   GTK_SHADOW_ETCHED_IN,
-   NULL,
-   widget,
-   "button",
-   x,y,width,height);
-
   // Begin cairo drawing 
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
-   cairo_set_source_rgb(cr,
+  
+  if( state != GTK_STATE_NORMAL )
+  {
+    cairo_rectangle(cr,x,y,width,height);
+    // bg
+    cairo_set_source_rgba(cr,
+      style->bg[state].red/65535.0, 
+      style->bg[state].green/65535.0, 
+      style->bg[state].blue/65535.0,1.0
+    );
+    cairo_fill(cr);
+    
+    // border
+    cairo_rectangle(cr,x,y,width,height);
+    cairo_set_line_width(cr,1.0);
+    cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+    cairo_set_source_rgba(cr,0,0,0,0.2);
+    cairo_stroke(cr);
+    
+  }
+  
+  cairo_set_source_rgb(cr,
     style->fg[state].red/65535.0, 
     style->fg[state].green/65535.0, 
     style->fg[state].blue/65535.0

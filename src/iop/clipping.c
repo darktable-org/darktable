@@ -31,6 +31,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -56,7 +57,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkHBox *hbox1, *hbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
   GtkDarktableSlider *scale1, *scale2, *scale3, *scale4, *scale5;
-  GtkToggleButton *hflip,*vflip;
+  GtkDarktableToggleButton *hflip,*vflip;
   GtkSpinButton *aspect;
   GtkCheckButton *aspect_on;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
@@ -412,19 +413,19 @@ aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
 }
 
 static void
-toggled_callback(GtkToggleButton *widget, dt_iop_module_t *self)
+toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   if(widget==g->hflip)
   {
-    if(gtk_toggle_button_get_active(widget)) p->cw = copysignf(p->cw, -1.0);
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) p->cw = copysignf(p->cw, -1.0);
     else                                     p->cw = copysignf(p->cw,  1.0);
   }
   else if(widget==g->vflip)
   {
-    if(gtk_toggle_button_get_active(widget)) p->ch = copysignf(p->ch, -1.0);
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) p->ch = copysignf(p->ch, -1.0);
     else                                     p->ch = copysignf(p->ch,  1.0);
   }
   if(self->off) gtk_toggle_button_set_active(self->off, 1);
@@ -440,16 +441,16 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  g->hbox1 = GTK_HBOX(gtk_hbox_new(TRUE, 0));
+  g->hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 4));
   g->hbox2 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox2), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->hflip = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("horizontal flip")));
-  g->vflip = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("vertical flip")));
-  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->hflip), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->vflip), TRUE, TRUE, 0);
+  g->hflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,FALSE));
+  g->vflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,TRUE));
+  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->hflip), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->vflip), FALSE, FALSE, 0);
   g->label1 = GTK_LABEL(gtk_label_new(_("crop x")));
   g->label2 = GTK_LABEL(gtk_label_new(_("crop y")));
   g->label3 = GTK_LABEL(gtk_label_new(_("crop w")));
@@ -478,6 +479,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->hflip), "toggled", G_CALLBACK(toggled_callback), self);
   g_signal_connect (G_OBJECT (g->vflip), "toggled", G_CALLBACK(toggled_callback), self);
+
+  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("horizontal flip"), NULL);
+  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("vertical flip"), NULL);
 
   g->aspect_on = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("aspect")));
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);

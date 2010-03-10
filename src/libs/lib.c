@@ -17,6 +17,7 @@
 */
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <glade/glade.h>
@@ -153,7 +154,8 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkButton *resetbutton = GTK_BUTTON(gtk_button_new());
+  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset,0));
+  gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);

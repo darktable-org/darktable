@@ -19,6 +19,7 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 
 #include <lcms.h>
 #include <strings.h>
@@ -428,7 +429,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   // GtkWidget *image = gtk_image_new_from_file(filename);
   // gtk_button_set_image(GTK_BUTTON(button), image);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkButton *resetbutton = GTK_BUTTON(gtk_button_new());
+  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset,0));
+  gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
