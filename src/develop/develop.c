@@ -229,7 +229,11 @@ restart:
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width*dev->preview_downsampling, dev->preview_pipe->processed_height*dev->preview_downsampling, dev->preview_downsampling)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width*dev->preview_downsampling, dev->preview_pipe->processed_height*dev->preview_downsampling, dev->preview_downsampling))
+  {
+    if(dev->preview_loading) return;
+    else goto restart;
+  }
 
   dev->preview_dirty = 0;
   dt_control_queue_draw_all();
@@ -329,7 +333,11 @@ restart:
   assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
 #endif
  
-  if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale)) goto restart;
+  if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale))
+  {
+    if(dev->image_force_reload) return;
+    else goto restart;
+  }
 
   // maybe we got zoomed/panned in the meantime?
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
@@ -340,21 +348,24 @@ restart:
 
 void dt_dev_raw_reload(dt_develop_t *dev)
 {
-  dev->image_force_reload = dev->image_loading = 1;
+  dev->image_force_reload = dev->image_loading = dev->preview_loading = 1;
+  dev->image->output_width = dev->image->output_height = 0;
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
   dt_dev_pixelpipe_flush_caches(dev->pipe);
+  dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 {
   // only load if not already there.
-  if(dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r') || dev->image_force_reload)
+  if(dev->image_force_reload || dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r'))
   {
     int err;
 restart:
     dev->image_loading = 1;
     // not loaded from cache because it is obviously not there yet.
+    if(dev->image_force_reload) dt_image_release(img, DT_IMAGE_FULL, 'r');
     err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
     if(err)
     {

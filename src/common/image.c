@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/fswatch.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -449,6 +450,8 @@ int dt_image_import(const int32_t film_id, const char *filename)
   img->id = id;
   img->film_id = film_id;
 
+  dt_fswatch_add(darktable.fswatch, DT_FSWATCH_IMAGE, img);
+  
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
   char dtfilename[1024];
@@ -502,6 +505,9 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 
 void dt_image_init(dt_image_t *img)
 {
+  if( strlen(img->filename) && strcmp(img->filename,"(unknown)")!=0)  // Reuse of img object...
+    dt_fswatch_remove(darktable.fswatch,DT_FSWATCH_IMAGE,img);
+  
   for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) img->mip[k] = NULL;
   bzero(img->lock, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
   img->import_lock = 0;
@@ -599,6 +605,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(darktable.db));
   rc = sqlite3_finalize(stmt);
   if(ret) return ret;
+  // add watch for file
+  dt_fswatch_add( darktable.fswatch, DT_FSWATCH_IMAGE, img);
   // read mip 0:
   rc = dt_imageio_preview_read(img, DT_IMAGE_MIP0);
   if(!rc) dt_image_release(img, DT_IMAGE_MIP0, 'r');
@@ -617,7 +625,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   int ret = 0;
   char filename[1024];
   dt_image_full_path(img, filename, 1024);
-  if(img->force_reimport || img->width == 0 || img->height == 0)
+  if(mip != DT_IMAGE_FULL &&
+    (img->force_reimport || img->width == 0 || img->height == 0))
   {
     ret = dt_image_reimport(img, filename);
     dt_image_release(img, mip, 'w');
@@ -734,11 +743,28 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   }
   if(ptr)
   {
-    // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
-    img->lock[mip].write = 1; // write lock
-    img->lock[mip].users = 1; // read lock
-    pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    return 0; // all good, already alloc'ed.
+    if(size != img->mip_buf_size[mip])
+    {
+      // can't happen?
+      if(0)//img->lock[mip].write || img->lock[mip].users)
+      { // in use, can't free this buffer now.
+        dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d of wrong dimensions is still locked! (w:%d u:%d)\n", mip, img->lock[mip].write, img->lock[mip].users);
+        pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+        return 1;
+      }
+      else
+      { // free buffer, alter cache size stats, and continue below.
+        dt_image_free(img, mip);
+      }
+    }
+    else
+    {
+      // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
+      img->lock[mip].write = 1; // write lock
+      img->lock[mip].users = 1; // read lock
+      pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+      return 0; // all good, already alloc'ed.
+    }
   }
 
   // printf("allocing %d x %d x %d for %s (%d)\n", wd, ht, size/(wd*ht), img->filename, mip);
@@ -827,7 +853,7 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip)
   // printf("[image_free] freed %d bytes\n", img->mip_buf_size[mip]);
 #ifdef _DEBUG
   if(darktable.control->running)
-    assert(img->lock[mip].users == 0 && img->lock[mip].write == 0);
+    assert(img->lock[mip].users == 0);
 #endif
   img->mip_buf_size[mip] = 0;
 }
@@ -941,8 +967,9 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   {
     if(img->pixels == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
   }
-  if(mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport)
-    mip = DT_IMAGE_NONE;
+  if((mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport) ||
+     (img == darktable.develop->image && darktable.develop->image_force_reload))
+        mip = DT_IMAGE_NONE;
   if(mip != DT_IMAGE_NONE)
   {
     if(mode == 'w')

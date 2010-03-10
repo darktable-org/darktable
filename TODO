@@ -12,6 +12,7 @@
 - thumbnail regeneration trigger: expose after image loaded not enough?
 - multiselect film import
 - give tag for each film roll during import, make editing easy after
+- compare sha1sum in db with image on open.
 - all phat sliders
 - whitebalance finetune presets: interpolate if not all in wb_presets.c
 - develop bottom panel: color picker:

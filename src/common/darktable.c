@@ -19,6 +19,7 @@
   #include "../config.h"
 #endif
 #include "common/darktable.h"
+#include "common/fswatch.h"
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -74,6 +75,7 @@ int dt_init(int argc, char *argv[])
         if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
         if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
+        if(!strcmp(argv[k+1], "fswatch"))     darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
         k ++;
       }
     }
@@ -95,6 +97,9 @@ int dt_init(int argc, char *argv[])
   char filename[512];
   snprintf(filename, 512, "%s/.darktablerc", homedir);
 
+  // Initialize the filesystem watcher  
+  darktable.fswatch=dt_fswatch_new();	
+  
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
@@ -194,6 +199,8 @@ void dt_cleanup()
   free(darktable.control);
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
+
+  dt_fswatch_destroy(darktable.fswatch);
 
   sqlite3_close(darktable.db);
   pthread_mutex_destroy(&(darktable.db_insert));
