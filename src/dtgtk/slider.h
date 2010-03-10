@@ -45,6 +45,7 @@ typedef struct _GtkDarktableSlider
   gint digits;
   gfloat default_value;
   darktable_slider_type_t type;
+  guint key_snooper_id;
 } GtkDarktableSlider;
 
 typedef void  (* ValueChanged)  (GtkRange *,gpointer user_data);
