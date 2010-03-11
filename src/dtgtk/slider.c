@@ -141,7 +141,6 @@ static void _slider_init (GtkDarktableSlider *slider)
   slider->is_dragging=FALSE;
   slider->is_sensibility_key_pressed=FALSE;
   slider->entry=gtk_entry_new();
-  gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
   
   gtk_widget_add_events (GTK_WIDGET (slider),
     GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | 
@@ -150,6 +149,7 @@ static void _slider_init (GtkDarktableSlider *slider)
     GDK_POINTER_MOTION_MASK);
   
   GtkWidget *hbox=gtk_hbox_new(TRUE,0);
+  slider->hbox = GTK_HBOX(hbox);
   GtkWidget *left=gtk_label_new("");
   GtkWidget *right=gtk_label_new("");
   gtk_widget_set_size_request(left,20,0);
@@ -553,6 +553,11 @@ static void _slider_destroy(GtkObject *object)
   g_return_if_fail(DTGTK_IS_SLIDER(object));
 
   slider = DTGTK_SLIDER(object);
+  // this is a very annoying workaround for a weird bug in gtk2.0-0 2.19.6 in ubuntu lucid:
+  if(GTK_IS_WIDGET(slider->hbox))
+    gtk_widget_destroy(GTK_WIDGET(slider->hbox));
+  // but at least the hbox seems to destroy the entry as well:
+  g_assert( !GTK_IS_WIDGET(slider->entry));
   if( slider->key_snooper_id > 0 )
     gtk_key_snooper_remove(slider->key_snooper_id);
   

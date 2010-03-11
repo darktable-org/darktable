@@ -35,8 +35,9 @@ typedef enum _darktable_slider_type {
 
 typedef struct _GtkDarktableSlider
 {
-  GtkHBox widget;
+  GtkEventBox widget;
   GtkWidget *entry;
+  GtkHBox *hbox;
   GtkAdjustment *adjustment;
   gboolean is_dragging;
   gboolean is_ctrl_key_pressed;
@@ -79,4 +80,4 @@ void dtgtk_slider_set_type(GtkDarktableSlider *slider,darktable_slider_type_t ty
 /** Set digits to use when displaying value*/
 void dtgtk_slider_set_digits(GtkDarktableSlider *slider, gint digits);
 G_END_DECLS
-#endif 
+#endif
