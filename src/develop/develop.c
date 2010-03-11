@@ -512,7 +512,7 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
   rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   rc = sqlite3_bind_text(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
   rc = sqlite3_bind_blob(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
-  rc = sqlite3_bind_int (stmt, 3, h->module->instance);
+  rc = sqlite3_bind_int (stmt, 3, h->module->version());
   rc = sqlite3_bind_int (stmt, 4, h->enabled);
   rc = sqlite3_bind_int (stmt, 5, image->id);
   rc = sqlite3_bind_int (stmt, 6, num);
@@ -733,7 +733,6 @@ void dt_dev_read_history(dt_develop_t *dev)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
     hist->enabled = sqlite3_column_int(stmt, 5);
 
-#if 1
     GList *modules = dev->iop;
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
     hist->module = NULL;
@@ -753,19 +752,17 @@ void dt_dev_read_history(dt_develop_t *dev)
       free(hist);
       continue;
     }
-#else
-    int instance = sqlite3_column_int(stmt, 2);
-    // FIXME: this is static pipeline: TODO: load module "operation" and insert in glist, get instance and set here!
-    GList *modules = g_list_nth(dev->iop, instance);
-    assert(modules);
-    hist->module = (dt_iop_module_t *)modules->data;
-    // FIXME: find operation in dev->iop and set instance.
+    int modversion = sqlite3_column_int(stmt, 2);
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
-#endif
 
-    if(hist->module->params_size != sqlite3_column_bytes(stmt, 4))
+    if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
+       strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
-      fprintf(stderr, "[dev_read_history] parameter size of module `%s' seem to have changed!\n", hist->module->op);
+      fprintf(stderr, "[dev_read_history] module `%s' version missmatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
+      const char *fname = dev->image->filename + strlen(dev->image->filename);
+      while(fname > dev->image->filename && *fname != '/') fname --;
+      if(fname > dev->image->filename) fname++;
+      dt_control_log("%s: module `%s' version missmatch: %d != %d", fname, hist->module->op, hist->module->version(), modversion);
       free(hist);
       continue;
     }

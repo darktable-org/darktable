@@ -31,7 +31,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 const char *name()
 {
@@ -43,13 +43,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   float *in =  (float *)i;
   float *out = (float *)o;
-  float scale = d->scale;
   float black = d->black;
+  float white = exp2f(-d->exposure)*self->dev->image->maximum;
+
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
   { // path for already exposed preview buffer
+    white /= self->dev->image->maximum;
     black -= self->dev->image->black;
-    scale /= self->dev->image->maximum;
   }
+  float scale = 1.0/(white - black); 
   if(fabsf(d->gain - 1.0) < 0.001)
   {
     for(int k=0;k<roi_out->width*roi_out->height;k++)
@@ -75,11 +77,11 @@ void reload_defaults (struct dt_iop_module_t *self)
   dt_iop_exposure_params_t *fp = (dt_iop_exposure_params_t *)self->factory_params;
   int cp = memcmp(self->default_params, self->params, self->params_size);
   fp->black = p->black = self->dev->image->black;
-  fp->white = p->white = self->dev->image->maximum;
   // FIXME: this function is called from render threads, but these values
   // should be written by gui threads. but it is only a matter of gui synching..
   if(!cp) memcpy(self->params, self->default_params, self->params_size);
 }
+
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -91,7 +93,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   d->black = p->black;
   d->gain = 2.0 - p->gain;
-  d->scale = 1.0/(p->white - p->black); 
+  d->exposure = p->exposure;
 #endif
 }
 
@@ -125,7 +127,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
   phat_slider_button_set_value(g->scale1, p->black);
-  phat_slider_button_set_value(g->scale2, -log2f(p->white/self->dev->image->maximum));
+  phat_slider_button_set_value(g->scale2, p->exposure);
   phat_slider_button_set_value(g->scale3, p->gain);
 }
 
@@ -142,7 +144,7 @@ void init(dt_iop_module_t *module)
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};
 
   tmp.black = module->dev->image->black;
-  tmp.white = module->dev->image->maximum;
+  tmp.exposure = 0.0f;
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
@@ -165,7 +167,7 @@ void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
 float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  return p->white;
+  return exp2f(-p->exposure)*self->dev->image->maximum;
 }
 
 static void
@@ -185,9 +187,10 @@ white_callback (PhatSliderButton *range, gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->white = exp2f(-phat_slider_button_get_value(range))*self->dev->image->maximum;
+  p->exposure = phat_slider_button_get_value(range);
+  const float white = exp2f(-p->exposure)*self->dev->image->maximum;
   float black = phat_slider_button_get_value(g->scale1);
-  if(p->white < black) phat_slider_button_set_value(g->scale1, p->white);
+  if(white < black) phat_slider_button_set_value(g->scale1, white);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -221,7 +224,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  p->white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]) * (1.0-gtk_range_get_value(GTK_RANGE(g->autoexpp)));
+  p->exposure = - log2f(fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]) * (1.0-gtk_range_get_value(GTK_RANGE(g->autoexpp))));
   darktable.gui->reset = 1;
   self->gui_update(self);
   darktable.gui->reset = 0;
@@ -259,7 +262,7 @@ void gui_init(struct dt_iop_module_t *self)
   // g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .0005));
   g->scale1 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(p->black, -.5, 1.0, .001, 3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
-  g->scale2 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(-log2f(p->white/self->dev->image->maximum), -3.0, 6.0, .02, 3));
+  g->scale2 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(p->exposure, -3.0, 6.0, .02, 3));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), NULL);
   g->scale3 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(p->gain, 0.0, 2.0, .005, 3));
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("leave black and white,\nbut compress brighter\nvalues (non-linear)"), NULL);

@@ -123,7 +123,6 @@ void dt_control_write_dt_files_job_run(dt_job_t *job)
     char dtfilename[520];
     dt_image_full_path(img, dtfilename, 512);
     char *c = dtfilename + strlen(dtfilename);
-    for(;c>dtfilename && *c != '.';c--);
     sprintf(c, ".dt");
     dt_imageio_dt_write(imgid, dtfilename);
     sprintf(c, ".dttags");

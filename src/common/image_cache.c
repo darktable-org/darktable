@@ -50,7 +50,8 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
   // free mipmap cache lines
   for(int k=0;k<cache->num_lines;k++)
   {
-    // TODO: update images set !!
+    dt_image_cache_flush(&(cache->line[k].image));
+    dt_image_write_dt_files(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
   }
   free(cache->line);
@@ -131,7 +132,8 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
       pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }
-    // TODO: update images set !!
+    dt_image_cache_flush(&(cache->line[k].image));
+    dt_image_write_dt_files(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
     dt_image_init(&(cache->line[k].image));
     cache->line[k].image.id = id;
@@ -233,6 +235,7 @@ void dt_image_cache_print(dt_image_cache_t *cache)
 
 void dt_image_cache_flush(dt_image_t *img)
 {
+  if(img->id <= 0) return;
   int rc;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18, raw_black = ?19, raw_maximum = ?20 where id = ?21", -1, &stmt, NULL);

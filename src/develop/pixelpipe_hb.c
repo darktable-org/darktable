@@ -332,7 +332,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     }
 
     // if module requested color statistics, get mean in box from preview pipe
-    if(dev->gui_attached && pipe == dev->preview_pipe && module == dev->gui_module && module->request_color_pick)
+    if(!(dev->image->flags & DT_IMAGE_THUMBNAIL) && // converted jpg is useless.
+        dev->gui_attached && pipe == dev->preview_pipe && module == dev->gui_module && module->request_color_pick)
     {
       int box[4];
       float rgb[3], Lab[3], *in = (float *)input;

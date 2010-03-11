@@ -35,13 +35,12 @@
 void dt_image_write_dt_files(dt_image_t *img)
 {
   // write .dt file
-  if(dt_conf_get_bool("write_dt_files"))
+  if(img->id > 0 && dt_conf_get_bool("write_dt_files"))
   {
     char filename[520];
     dt_image_full_path(img, filename, 512);
     dt_image_path_append_version(img, filename, 512);
     char *c = filename + strlen(filename);
-    for(;c>filename && *c != '.';c--);
     sprintf(c, ".dt");
     dt_imageio_dt_write(img->id, filename);
     sprintf(c, ".dttags");
@@ -379,7 +378,6 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
   strncpy(dtfilename, filename, 1024);
   dt_image_path_append_version(img, dtfilename, 1024);
   char *c = dtfilename + strlen(dtfilename);
-  for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dttags");
   (void)dt_imageio_dttags_read(img, dtfilename);
   sprintf(c, ".dt");

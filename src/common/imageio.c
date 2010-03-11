@@ -42,6 +42,7 @@
 #include <assert.h>
 #include <string.h>
 #include <strings.h>
+#include <glib/gstdio.h>
 
 
 int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
@@ -1089,19 +1090,29 @@ int dt_imageio_dt_write (const int imgid, const char *filename)
   rc = sqlite3_bind_int (stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(!f) f = fopen(filename, "wb");
+    if(!f)
+    {
+      f = fopen(filename, "wb");
+      const uint32_t magic = 0xd731337;
+      rd = fwrite(&magic, sizeof(uint32_t), 1, f);
+    }
     if(!f) break;
+    int32_t modversion = sqlite3_column_int(stmt, 2); 
     int32_t enabled = sqlite3_column_int(stmt, 5);
     rd = fwrite(&enabled, sizeof(int32_t), 1, f);
     snprintf(op, 20, "%s", (const char *)sqlite3_column_text(stmt, 3));
     rd = fwrite(op, 1, sizeof(op), f);
+    rd = fwrite(&modversion, sizeof(int32_t), 1, f);
     int32_t len = sqlite3_column_bytes(stmt, 4);
     rd = fwrite(&len, sizeof(int32_t), 1, f);
     rd = fwrite(sqlite3_column_blob(stmt, 4), len, 1, f);
   }
   rc = sqlite3_finalize (stmt);
   if(f) fclose(f);
-  else return 1;
+  else
+  { // nothing in history, delete the file
+    return g_unlink(filename);
+  }
   return 0;
 }
 
@@ -1118,19 +1129,26 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   sqlite3_step(stmt);
   rc = sqlite3_finalize (stmt);
 
+  uint32_t magic = 0;
+  rd = fread(&magic, 1, sizeof(int32_t), f);
+  if(rd != 1 || magic != 0xd731337)
+    goto delete_old_config;
+
   while(!feof(f))
   {
-    int32_t enabled, len;
+    int32_t enabled, len, modversion;
     dt_dev_operation_t op;
     rd = fread(&enabled, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) break;
+    if(rd < sizeof(int32_t)) goto delete_old_config;
     rd = fread(op, 1, sizeof(dt_dev_operation_t), f);
-    if(rd < sizeof(dt_dev_operation_t)) break;
+    if(rd < sizeof(dt_dev_operation_t)) goto delete_old_config;
+    rd = fread(&modversion, 1, sizeof(int32_t), f);
+    if(rd < sizeof(int32_t)) goto delete_old_config;
     rd = fread(&len, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) break;
+    if(rd < sizeof(int32_t)) goto delete_old_config;
     char *params = (char *)malloc(len);
     rd = fread(params, 1, len, f);
-    if(rd < len) { free(params); break; }
+    if(rd < len) { free(params); goto delete_old_config; }
     rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
     rc = sqlite3_bind_int (stmt, 1, imgid);
     rc = sqlite3_bind_int (stmt, 2, num);
@@ -1146,7 +1164,7 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
     rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
     rc = sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
     rc = sqlite3_bind_blob(stmt, 2, params, len, SQLITE_TRANSIENT);
-    rc = sqlite3_bind_int (stmt, 3, 666);
+    rc = sqlite3_bind_int (stmt, 3, modversion);
     rc = sqlite3_bind_int (stmt, 4, enabled);
     rc = sqlite3_bind_int (stmt, 5, imgid);
     rc = sqlite3_bind_int (stmt, 6, num);
@@ -1155,8 +1173,11 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
     free(params);
     num ++;
   }
-  return 0;
   fclose(f);
+  return 0;
+delete_old_config:
+  fclose(f);
+  return g_unlink(filename);
 }
 
 

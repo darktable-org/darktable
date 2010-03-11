@@ -25,7 +25,7 @@
 
 typedef struct dt_iop_exposure_params_t
 {
-  float black, white, gain;
+  float black, exposure, gain;
 }
 dt_iop_exposure_params_t;
 
@@ -40,7 +40,7 @@ dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
 {
-  float black, scale, gain;
+  float black, exposure, gain;
 }
 dt_iop_exposure_data_t;
 
