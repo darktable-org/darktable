@@ -112,8 +112,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_gamma_gui_data_t *g = (dt_iop_gamma_gui_data_t *)self->gui_data;
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)module->params;
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->linear);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->gamma);
+  dtgtk_slider_set_value(g->scale1, p->linear);
+  dtgtk_slider_set_value(g->scale2, p->gamma);
 }
 
 void init(dt_iop_module_t *module)
@@ -155,14 +155,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  g->scale2 = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 1.0, 0.01));
-  gtk_scale_set_digits(GTK_SCALE(g->scale1), 2);
-  gtk_scale_set_digits(GTK_SCALE(g->scale2), 2);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale1), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale2), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale1), p->linear);
-  gtk_range_set_value(GTK_RANGE(g->scale2), p->gamma);
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->linear,2));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->gamma,2));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -178,20 +172,20 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-void gamma_callback (GtkRange *range, gpointer user_data)
+void gamma_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)self->params;
-  p->gamma = gtk_range_get_value(range);
+  p->gamma = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void linear_callback (GtkRange *range, gpointer user_data)
+void linear_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_gamma_params_t *p = (dt_iop_gamma_params_t *)self->params;
-  p->linear = gtk_range_get_value(range);
+  p->linear = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }

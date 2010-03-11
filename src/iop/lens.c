@@ -1064,12 +1064,12 @@ static void reverse_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-static void scale_changed(GtkRange *range, gpointer user_data)
+static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   if(darktable.gui->reset) return;
-  p->scale = gtk_range_get_value(range);
+  p->scale = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -1109,7 +1109,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   const float scale = get_autoscale(self);
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  gtk_range_set_value(GTK_RANGE(g->scale), scale);
+  dtgtk_slider_set_value(g->scale, scale);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1205,10 +1205,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
 
   // scale
-  g->scale = GTK_HSCALE(gtk_hscale_new_with_range(0.1, 2.0, 0.005));
-  gtk_scale_set_digits(GTK_SCALE(g->scale), 3);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale), p->scale);
+  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.1, 2.0, 0.005,p->scale,3));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
   hbox = gtk_hbox_new(FALSE, 0);
@@ -1244,7 +1241,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_entry_set_text(g->lens_model, p->lens);
   gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  gtk_range_set_value(GTK_RANGE(g->scale), p->scale);
+  dtgtk_slider_set_value(g->scale, p->scale);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])

@@ -20,6 +20,7 @@
 #include "control/jobs.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "dtgtk/slider.h"
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
@@ -32,7 +33,7 @@ typedef struct dt_lib_export_t
 {
   GtkSpinButton *width, *height;
   GtkComboBox *format, *profile, *intent;
-  GtkScale *quality;
+  GtkDarktableSlider *quality;
   GList *profiles;
 }
 dt_lib_export_t;
@@ -66,10 +67,10 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 static void
-export_quality_changed (GtkRange *range, gpointer user_data)
+export_quality_changed (GtkDarktableSlider *slider, gpointer user_data)
 {
   GtkWidget *widget;
-  int quality = (int)gtk_range_get_value(range);
+  int quality = (int)dtgtk_slider_get_value(slider);
   dt_conf_set_int ("plugins/lighttable/export/quality", quality);
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
@@ -96,7 +97,7 @@ gui_reset (dt_lib_module_t *self)
   int quality = MIN(100, MAX(1, dt_conf_get_int ("plugins/lighttable/export/quality")));
   gtk_spin_button_set_value(d->width,  dt_conf_get_int("plugins/lighttable/export/width"));
   gtk_spin_button_set_value(d->height, dt_conf_get_int("plugins/lighttable/export/height"));
-  gtk_range_set_value(GTK_RANGE(d->quality), quality);
+  dtgtk_slider_set_value(d->quality, quality);
   int k = dt_conf_get_int ("plugins/lighttable/export/format");
   int i = 0;
   if     (k == DT_DEV_EXPORT_JPG)   i = 0;
@@ -174,10 +175,8 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  d->quality = GTK_SCALE(gtk_hscale_new_with_range(0, 100, 1));
-  gtk_scale_set_value_pos(d->quality, GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(d->quality), 97);
-  gtk_scale_set_digits(d->quality, 0);
+  d->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 100, 1,97,0));
+
   gtk_box_pack_start(hbox, gtk_label_new(_("quality")), FALSE, FALSE, 5);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->quality), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);

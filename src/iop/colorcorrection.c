@@ -104,7 +104,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)module->params;
-  gtk_range_set_value(GTK_RANGE(g->scale5), p->saturation);
+  dtgtk_slider_set_value(g->scale5, p->saturation);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -130,7 +130,7 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static void sat_callback (GtkRange *range, gpointer user_data);
+static void sat_callback (GtkDarktableSlider *slider, gpointer user_data);
 static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -177,10 +177,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->label5 = GTK_LABEL(gtk_label_new(_("saturation")));
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale5 = GTK_HSCALE(gtk_hscale_new_with_range(-3.0, 3.0, 0.01));
-  gtk_scale_set_digits(GTK_SCALE(g->scale5), 2);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale5), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale5), p->saturation);
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation,2));
+
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
 
@@ -198,12 +196,12 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-static void sat_callback (GtkRange *range, gpointer user_data)
+static void sat_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  p->saturation = gtk_range_get_value(range);
+  p->saturation = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
   gtk_widget_queue_draw(self->widget);
 }
@@ -377,7 +375,7 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   if(event->direction == GDK_SCROLL_UP   && p->saturation > -3.0) p->saturation -= 0.1;
   if(event->direction == GDK_SCROLL_DOWN && p->saturation <  3.0) p->saturation += 0.1;
-  gtk_range_set_value(GTK_RANGE(g->scale5), p->saturation);
+  dtgtk_slider_set_value(g->scale5, p->saturation);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }

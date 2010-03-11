@@ -21,6 +21,7 @@
 // this wraps gegl:whitebalance
 
 #include "develop/imageop.h"
+#include "dtgtk/slider.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <lcms.h>
@@ -37,7 +38,8 @@ typedef struct dt_iop_colorcorrection_gui_data_t
   GtkHBox *hbox;
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
-  GtkHScale *scale1, *scale2, *scale3, *scale4, *scale5;
+  GtkHScale *scale1, *scale2, *scale3, *scale4;
+  GtkDarktableSlider *scale5;
   float press_x, press_y, mouse_x, mouse_y;
   int selected, dragging;
   dt_iop_colorcorrection_params_t press_params;

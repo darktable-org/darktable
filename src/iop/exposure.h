@@ -21,7 +21,7 @@
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <phat/phat.h>
+#include "dtgtk/slider.h"
 
 typedef struct dt_iop_exposure_params_t
 {
@@ -34,7 +34,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2, *label3;
   GtkCheckButton *autoexp;
-  PhatSliderButton *scale1, *scale2, *scale3, *autoexpp;
+  GtkDarktableSlider *scale1, *scale2, *scale3, *autoexpp;
 }
 dt_iop_exposure_gui_data_t;
 

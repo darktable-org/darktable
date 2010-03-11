@@ -205,12 +205,13 @@ void gui_update (struct dt_iop_module_t *self)
   float temp, tint, mul[3];
   for(int k=0;k<3;k++) mul[k] = p->coeffs[k]/fp->coeffs[k];
   convert_rgb_to_k(mul, p->temp_out, &temp, &tint);
-  gtk_range_set_value(GTK_RANGE(g->scale_k_out), p->temp_out);
-  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]);
-  gtk_range_set_value(GTK_RANGE(g->scale_k), temp);
-  gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
+  
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_k_out), p->temp_out);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_r), p->coeffs[0]);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_g), p->coeffs[1]);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_b), p->coeffs[2]);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_k), temp);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_tint), tint);
   if(fabsf(p->coeffs[0]-fp->coeffs[0]) + fabsf(p->coeffs[1]-fp->coeffs[1]) + fabsf(p->coeffs[2]-fp->coeffs[2]) < 0.01)
     gtk_combo_box_set_active(g->presets, 0);
   else
@@ -261,15 +262,15 @@ gui_update_from_coeffs (dt_iop_module_t *self)
   float temp, tint, mul[3];
 
   for(int k=0;k<3;k++) mul[k] = p->coeffs[k]/fp->coeffs[k];
-  p->temp_out = gtk_range_get_value(GTK_RANGE(g->scale_k_out));
+  p->temp_out = dtgtk_slider_get_value(DTGTK_SLIDER(g->scale_k_out));
   convert_rgb_to_k(mul, p->temp_out, &temp, &tint);
 
   darktable.gui->reset = 1;
-  gtk_range_set_value(GTK_RANGE(g->scale_k),    temp);
-  gtk_range_set_value(GTK_RANGE(g->scale_tint), tint);
-  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_k),    temp);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_tint), tint);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_r), p->coeffs[0]);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_g), p->coeffs[1]);
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale_b), p->coeffs[2]);
   darktable.gui->reset = 0;
 }
 
@@ -313,25 +314,19 @@ void gui_init (struct dt_iop_module_t *self)
   g->label2 = GTK_LABEL(gtk_label_new(_("temperature out")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  g->scale_tint  = GTK_HSCALE(gtk_hscale_new_with_range(0.1, 3.0, .001));
-  g->scale_k     = GTK_HSCALE(gtk_hscale_new_with_range(DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.));
-  g->scale_k_out = GTK_HSCALE(gtk_hscale_new_with_range(DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.));
-  g->scale_r     = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 3.0, .001));
-  g->scale_g     = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 3.0, .001));
-  g->scale_b     = GTK_HSCALE(gtk_hscale_new_with_range(0.0, 3.0, .001));
-  gtk_scale_set_digits(GTK_SCALE(g->scale_tint),  3);
-  gtk_scale_set_digits(GTK_SCALE(g->scale_k),     0);
-  gtk_scale_set_digits(GTK_SCALE(g->scale_k_out), 0);
-  gtk_scale_set_digits(GTK_SCALE(g->scale_r),     3);
-  gtk_scale_set_digits(GTK_SCALE(g->scale_g),     3);
-  gtk_scale_set_digits(GTK_SCALE(g->scale_b),     3);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale_tint),  GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale_k),     GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale_k_out), GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale_r),     GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale_g),     GTK_POS_LEFT);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale_b),     GTK_POS_LEFT);
-
+  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 3.0, .001,0,0));
+  g->scale_k     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,0,0));
+  g->scale_k_out = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,0,0));
+  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 3.0, .001,0,0));
+  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 3.0, .001,0,0));
+  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 3.0, .001,0,0));
+  dtgtk_slider_set_digits((g->scale_tint),  3);
+  dtgtk_slider_set_digits((g->scale_k),     0);
+  dtgtk_slider_set_digits((g->scale_k_out), 0);
+  dtgtk_slider_set_digits((g->scale_r),     3);
+  dtgtk_slider_set_digits((g->scale_g),     3);
+  dtgtk_slider_set_digits((g->scale_b),     3);
+  
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);
@@ -430,9 +425,9 @@ temp_changed(dt_iop_module_t *self)
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
   dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->factory_params;
 
-  const float temp_out = gtk_range_get_value(GTK_RANGE(g->scale_k_out));
-  const float temp_in  = gtk_range_get_value(GTK_RANGE(g->scale_k));
-  const float tint     = gtk_range_get_value(GTK_RANGE(g->scale_tint));
+  const float temp_out = dtgtk_slider_get_value(DTGTK_SLIDER(g->scale_k_out));
+  const float temp_in  = dtgtk_slider_get_value(DTGTK_SLIDER(g->scale_k));
+  const float tint     = dtgtk_slider_get_value(DTGTK_SLIDER(g->scale_tint));
 
   float original_temperature_rgb[3], intended_temperature_rgb[3];
   convert_k_to_rgb (temp_in,  original_temperature_rgb);
@@ -444,15 +439,15 @@ temp_changed(dt_iop_module_t *self)
   p->coeffs[2] = fp->coeffs[2] *        intended_temperature_rgb[2] / original_temperature_rgb[2];
 
   darktable.gui->reset = 1;
-  gtk_range_set_value(GTK_RANGE(g->scale_r), p->coeffs[0]);
-  gtk_range_set_value(GTK_RANGE(g->scale_g), p->coeffs[1]);
-  gtk_range_set_value(GTK_RANGE(g->scale_b), p->coeffs[2]);
+  dtgtk_slider_set_value(g->scale_r, p->coeffs[0]);
+  dtgtk_slider_set_value(g->scale_g, p->coeffs[1]);
+  dtgtk_slider_set_value(g->scale_b, p->coeffs[2]);
   darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-tint_callback (GtkRange *range, gpointer user_data)
+tint_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -460,7 +455,7 @@ tint_callback (GtkRange *range, gpointer user_data)
 }
 
 static void
-temp_callback (GtkRange *range, gpointer user_data)
+temp_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -468,7 +463,7 @@ temp_callback (GtkRange *range, gpointer user_data)
 }
 
 static void
-temp_out_callback (GtkRange *range, gpointer user_data)
+temp_out_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -476,16 +471,17 @@ temp_out_callback (GtkRange *range, gpointer user_data)
 }
 
 static void
-rgb_callback (GtkRange *range, gpointer user_data)
+rgb_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  const float value = gtk_range_get_value(range);
-  if     (range == GTK_RANGE(g->scale_r)) p->coeffs[0] = value;
-  else if(range == GTK_RANGE(g->scale_g)) p->coeffs[1] = value;
-  else if(range == GTK_RANGE(g->scale_b)) p->coeffs[2] = value;
+  const float value = dtgtk_slider_get_value( slider );
+  if     (slider == DTGTK_SLIDER(g->scale_r)) p->coeffs[0] = value;
+  else if(slider == DTGTK_SLIDER(g->scale_g)) p->coeffs[1] = value;
+  else if(slider == DTGTK_SLIDER(g->scale_b)) p->coeffs[2] = value;
+ 
 
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);

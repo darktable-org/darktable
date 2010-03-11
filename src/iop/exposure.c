@@ -22,7 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include <phat/phat.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
@@ -126,9 +125,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
-  phat_slider_button_set_value(g->scale1, p->black);
-  phat_slider_button_set_value(g->scale2, p->exposure);
-  phat_slider_button_set_value(g->scale3, p->gain);
+  dtgtk_slider_set_value(g->scale1, p->black);
+  dtgtk_slider_set_value(g->scale2, p->exposure);
+  dtgtk_slider_set_value(g->scale3, p->gain);
 }
 
 void init(dt_iop_module_t *module)
@@ -161,7 +160,7 @@ void cleanup(dt_iop_module_t *module)
 void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  gtk_range_set_value(GTK_RANGE(g->scale2), -log2f(white/self->dev->image->maximum));
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -log2f(white/self->dev->image->maximum));
 }
 
 float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
@@ -181,39 +180,39 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 }
 
 static void
-white_callback (PhatSliderButton *range, gpointer user_data)
+white_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->exposure = phat_slider_button_get_value(range);
+  p->exposure = dtgtk_slider_get_value(slider);
   const float white = exp2f(-p->exposure)*self->dev->image->maximum;
-  float black = phat_slider_button_get_value(g->scale1);
-  if(white < black) phat_slider_button_set_value(g->scale1, white);
+  float black = dtgtk_slider_get_value(g->scale1);
+  if(white < black) dtgtk_slider_set_value(g->scale1, white);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-black_callback (PhatSliderButton *range, gpointer user_data)
+black_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->black = phat_slider_button_get_value(range);
-  float white = exp2f(-phat_slider_button_get_value(g->scale2))*self->dev->image->maximum;
-  if(white < p->black) phat_slider_button_set_value(g->scale2, - log2f(p->black/self->dev->image->maximum));
+  p->black = dtgtk_slider_get_value(slider);
+  float white = exp2f(-dtgtk_slider_get_value(g->scale2))*self->dev->image->maximum;
+  if(white < p->black) dtgtk_slider_set_value(g->scale2, - log2f(p->black/self->dev->image->maximum));
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
-gain_callback (PhatSliderButton *range, gpointer user_data)
+gain_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->gain = phat_slider_button_get_value(range);
+  p->gain = dtgtk_slider_get_value(DTGTK_SLIDER(slider));
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -224,7 +223,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  p->exposure = - log2f(fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]) * (1.0-gtk_range_get_value(GTK_RANGE(g->autoexpp))));
+  p->exposure = - log2f(fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]) * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp))));
   darktable.gui->reset = 1;
   self->gui_update(self);
   darktable.gui->reset = 0;
@@ -260,11 +259,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   // g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .0005));
-  g->scale1 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(p->black, -.5, 1.0, .001, 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -.5, 1.0, .001,p->black,3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
-  g->scale2 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(p->exposure, -3.0, 6.0, .02, 3));
+  
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -3.0, 6.0, .02, p->exposure,3));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), NULL);
-  g->scale3 = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(p->gain, 0.0, 2.0, .005, 3));
+  
+  
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.0, 2.0, .005, p->gain,3));
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("leave black and white,\nbut compress brighter\nvalues (non-linear)"), NULL);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
@@ -272,7 +274,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  g->autoexpp = PHAT_SLIDER_BUTTON(phat_slider_button_new_with_range(0.01, 0.0, 0.2, .001, 3));
+  g->autoexpp = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.0, 0.2, .001, 0.01,3));
   gtk_object_set(GTK_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out"), NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->autoexp), TRUE, TRUE, 0);

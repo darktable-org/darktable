@@ -28,6 +28,7 @@
 #endif
 #include "develop/develop.h"
 #include "control/control.h"
+#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include "develop/imageop.h"
 
@@ -48,7 +49,7 @@ typedef struct dt_iop_monochrome_gui_data_t
   GtkHBox *hbox;
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label;
-  GtkHScale *scale;
+  GtkDarktableSlider *scale;
   int dragging;
   cmsHPROFILE hsRGB;
   cmsHPROFILE hLab;
@@ -124,7 +125,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)module->params;
-  gtk_range_set_value(GTK_RANGE(g->scale), p->size);
+  dtgtk_slider_set_value(g->scale, p->size);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -150,12 +151,12 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void size_callback (GtkRange *range, gpointer user_data)
+void size_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-  p->size = gtk_range_get_value(range);
+  p->size = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
   gtk_widget_queue_draw(self->widget);
 }
@@ -272,7 +273,7 @@ gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   if(event->direction == GDK_SCROLL_UP   && p->size >   .5) p->size -= 0.1;
   if(event->direction == GDK_SCROLL_DOWN && p->size <  1.0) p->size += 0.1;
-  gtk_range_set_value(GTK_RANGE(g->scale), p->size);
+  dtgtk_slider_set_value(g->scale, p->size);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -316,10 +317,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->label = GTK_LABEL(gtk_label_new(_("filter size")));
   gtk_misc_set_alignment(GTK_MISC(g->label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label), TRUE, TRUE, 0);
-  g->scale = GTK_HSCALE(gtk_hscale_new_with_range(.5, 1.0, 0.01));
-  gtk_scale_set_digits(GTK_SCALE(g->scale), 2);
-  gtk_scale_set_value_pos(GTK_SCALE(g->scale), GTK_POS_LEFT);
-  gtk_range_set_value(GTK_RANGE(g->scale), p->size);
+  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,.5, 1.0, 0.01,p->size,2));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
 
 

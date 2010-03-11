@@ -1,5 +1,6 @@
 0.5 release:
 - some `no float buffer available yet' process_to_mip crash at random?
+- have notifications disappear after a while?
 - database future proof:
   - image caption, description, license, tag description?
 - remove gamma correction at end completely
@@ -9,7 +10,6 @@
 - multiselect film import
 - give tag for each film roll during import, make editing easy after
 - compare sha1sum in db with image on open.
-- all phat sliders
 - whitebalance finetune presets: interpolate if not all in wb_presets.c
 - develop bottom panel: color picker:
   - also pick output profile and zone
