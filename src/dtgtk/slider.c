@@ -266,6 +266,7 @@ static void _slider_entry_commit(GtkDarktableSlider *slider) {
   gdouble value=atof(gtk_entry_get_text(GTK_ENTRY(slider->entry)));
   slider->is_entry_active=FALSE;
   dtgtk_slider_set_value(slider,value);
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
@@ -295,7 +296,7 @@ static gboolean _slider_entry_focus_out(GtkWidget *widget,GdkEventFocus *event,g
 
 static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, gpointer data)
 {
-  if (event->keyval == GDK_Return)
+  if (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
     _slider_entry_commit(DTGTK_SLIDER(data));
   else if( // Masking allowed keys...
               event->keyval == GDK_minus || event->keyval == GDK_KP_Subtract ||
