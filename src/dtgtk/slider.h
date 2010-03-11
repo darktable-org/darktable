@@ -35,11 +35,13 @@ typedef enum _darktable_slider_type {
 
 typedef struct _GtkDarktableSlider
 {
-  GtkWidget widget;
+  GtkHBox widget;
+  GtkWidget *entry;
   GtkAdjustment *adjustment;
   gboolean is_dragging;
   gboolean is_ctrl_key_pressed;
   gboolean is_sensibility_key_pressed;
+  gboolean is_entry_active;
   gint prev_x_root;
   gint motion_direction;		
   gint digits;
@@ -52,7 +54,7 @@ typedef void  (* ValueChanged)  (GtkRange *,gpointer user_data);
 
 typedef struct _GtkDarktableSliderClass
 {
-  GtkWidgetClass parent_class;
+  GtkEventBoxClass parent_class;
   ValueChanged *value_changed;
 }GtkDarktableSliderClass;
 
