@@ -205,6 +205,7 @@ create_tables:
   int width  = dt_conf_get_int("ui_last/window_w");
   int height = dt_conf_get_int("ui_last/window_h");
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  gtk_window_set_position(GTK_WINDOW(widget),GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
   if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
