@@ -180,6 +180,14 @@ const wb_data wb_preset[] = {
   { "Canon", "PowerShot S70", Flash, 0,		{ 2.389189, 1, 1.147297, 0 } },
   { "Canon", "PowerShot S70", Underwater, 0,	{ 3.110565, 1, 1.162162, 0 } },
 
+  { "Canon", "PowerShot S90", Daylight, 0,        { 1.955056, 1, 1.797753, 0 } },
+  { "Canon", "PowerShot S90", Cloudy, 0,          { 1.945067, 1, 1.795964, 0 } },
+  { "Canon", "PowerShot S90", Tungsten, 0,        { 2,        1, 1.828018, 0 } },
+  { "Canon", "PowerShot S90", Fluorescent, 0,     { 2.019473, 1, 1.841924, 0 } },
+  { "Canon", "PowerShot S90", FluorescentHigh, 0, { 2.009143, 1, 1.84,     0 } },
+  { "Canon", "PowerShot S90", Flash, 0,           { 2.045784, 1, 1.671692, 0 } },
+  { "Canon", "PowerShot S90", Underwater, 0,      { 2.022297, 1, 1.830546, 0 } },
+
   { "Canon", "PowerShot Pro1", Daylight, 0,	{ 1.829238, 1, 1.571253, 0 } },
   { "Canon", "PowerShot Pro1", Cloudy, 0,	{ 1.194139, 1, 2.755800, 0 } },
   { "Canon", "PowerShot Pro1", Tungsten, 0,	{ 1.701416, 1, 2.218790, 0 } },
@@ -2807,6 +2815,13 @@ const wb_data wb_preset[] = {
   { "SONY", "DSLR-A380", Flash, -3,		{ 2.574219, 1, 1.664063, 0 } },
   { "SONY", "DSLR-A380", Flash, 0,		{ 2.816406, 1, 1.453125, 0 } },
   { "SONY", "DSLR-A380", Flash, 3,		{ 3.070312, 1, 1.273437, 0 } },
+
+  { "SONY", "DSLR-A550", Daylight, 0,		{ 2.160156, 1, 1.496094, 0 } },
+  { "SONY", "DSLR-A550", Shade, 0,		{ 2.519531, 1, 1.234375, 0 } },
+  { "SONY", "DSLR-A550", Cloudy, 0,		{ 2.3125,   1, 1.375,    0 } },
+  { "SONY", "DSLR-A550", Tungsten, 0,		{ 1.367188, 1, 2.632813, 0 } },
+  { "SONY", "DSLR-A550", Fluorescent, 0,	{ 1.902344, 1, 2.117188, 0 } },
+  { "SONY", "DSLR-A550", Flash, 0,		{ 2.390625, 1, 1.335938, 0 } },
 
   /* Sony A700 presets - firmware v2 */
   { "SONY", "DSLR-A700", Daylight, -3,		{ 1.937500, 1, 1.640625, 0 } },
