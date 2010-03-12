@@ -408,7 +408,7 @@ aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
     p->aspect =   gtk_spin_button_get_value(g->aspect);
   else
     p->aspect = - gtk_spin_button_get_value(g->aspect);
-  if(self->off) gtk_toggle_button_set_active(self->off, 1);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -428,7 +428,7 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) p->ch = copysignf(p->ch, -1.0);
     else                                     p->ch = copysignf(p->ch,  1.0);
   }
-  if(self->off) gtk_toggle_button_set_active(self->off, 1);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
 

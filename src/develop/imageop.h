@@ -23,7 +23,7 @@
 #include "develop/pixelpipe.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
-
+#include "dtgtk/togglebutton.h"
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
@@ -84,7 +84,7 @@ typedef struct dt_iop_module_t
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
-  GtkToggleButton *off;
+  GtkDarktableToggleButton *off;
   /** popup menu with rarely used options common to all plugins. */
   GtkMenu *menu;
   /** this widget contains all of the module: expander and label decoration. */

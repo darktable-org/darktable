@@ -522,7 +522,7 @@ apply_preset(dt_iop_module_t *self)
       }
       break;
   }
-  if(self->off) gtk_toggle_button_set_active(self->off, 1);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);
 }

@@ -228,7 +228,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
   module->gui_update(module);
-  if(module->off) gtk_toggle_button_set_active(module->off, module->enabled);
+  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
 }
 
 void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
@@ -376,11 +376,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   if(!module->hide_enable_button)
   {
     // GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
-    GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_check_button_new());
+    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch,0));
     char tooltip[512];
     snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
     gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, NULL);
-    gtk_toggle_button_set_active(button, module->enabled);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (button), "toggled",
                       G_CALLBACK (dt_iop_gui_off_callback), module);
