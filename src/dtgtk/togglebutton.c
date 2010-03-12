@@ -161,19 +161,22 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     style->fg[state].blue/65535.0
   );
  
-  DTGTK_TOGGLEBUTTON(widget)->icon(cr,x+4,y+4,width-8,height-8,DTGTK_TOGGLEBUTTON(widget)->icon_flag);
+  gint paint_flags=DTGTK_TOGGLEBUTTON(widget)->icon_flags;
+  
+  paint_flags=(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))==TRUE)? (paint_flags|CPF_ACTIVE) : (paint_flags&~CPF_ACTIVE);
+  DTGTK_TOGGLEBUTTON(widget)->icon(cr,x+4,y+4,width-8,height-8,paint_flags);
 
   cairo_destroy(cr);
   return FALSE;
 }
 
 // Public functions
-GtkWidget* dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gboolean paintflag)
+GtkWidget* dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableToggleButton *button;	
   button = gtk_type_new(dtgtk_togglebutton_get_type());
   button->icon=paint;
-  button->icon_flag=paintflag;
+  button->icon_flags=paintflags;
   return (GtkWidget *)button;
 }
 

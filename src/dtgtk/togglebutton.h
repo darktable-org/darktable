@@ -30,7 +30,7 @@ typedef struct _GtkDarktableToggleButton
 {
   GtkToggleButton widget;
   DTGTKCairoPaintIconFunc icon;
-  gboolean icon_flag;
+  gint icon_flags;
 } GtkDarktableToggleButton;
 
 typedef struct _GtkDarktableToggleButtonClass
@@ -41,6 +41,6 @@ typedef struct _GtkDarktableToggleButtonClass
 GType dtgtk_togglebutton_get_type (void);
 
 /** Instansiate a new darktable slider control passing adjustment as range */
-GtkWidget* dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gboolean paintflag);
+GtkWidget* dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
 G_END_DECLS
 #endif 

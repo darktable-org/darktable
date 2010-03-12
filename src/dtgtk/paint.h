@@ -21,13 +21,24 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-typedef void (*DTGTKCairoPaintIconFunc)(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean flag);
+typedef enum dtgtk_cairo_paint_flags_t {
+	CPF_DIRECTION_UP=1,
+	CPF_DIRECTION_DOWN=2,
+	CPF_DIRECTION_LEFT=4,
+	CPF_DIRECTION_RIGHT=8,
+	CPF_ACTIVE=16,
+	CPF_PRELIGHT=32,
+	
+} dtgtk_cairo_paint_flags_t;
+
+
+typedef void (*DTGTKCairoPaintIconFunc)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 
 /** Paint a arrow left or right */
-void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean left);
+void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a reset icon */
-void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean notused);
+void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a flip icon */
-void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean horizontal);
+void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 
 #endif

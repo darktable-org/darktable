@@ -19,7 +19,7 @@
 #include <math.h>
 #include "paint.h"
 
-void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean left)
+void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gint left)
 {
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix,-1,0,0,1,1,0);
@@ -37,7 +37,7 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean le
   cairo_identity_matrix(cr);
 }
 
-void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean horizontal) 
+void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags) 
 {
   double C=cos(-1.570796327),S=sin(-1.570796327);
   cairo_matrix_t rotation_matrix;
@@ -45,10 +45,12 @@ void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean hor
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
+ 
   cairo_set_line_width(cr,0.1);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  if( !horizontal ) // Rotate -90 degrees
+  if( (flags&CPF_DIRECTION_UP) ) // Rotate -90 degrees
     cairo_transform(cr,&rotation_matrix);
+  
   cairo_move_to(cr,0.15,0.50);
   cairo_line_to(cr,0.15,0);
   cairo_line_to(cr,0.85,0.50);
@@ -62,7 +64,7 @@ void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean hor
   cairo_identity_matrix(cr);
 }
 
-void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h,gboolean notused) 
+void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags) 
 {
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
