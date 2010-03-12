@@ -38,6 +38,9 @@ typedef struct _watch_t {
   int events;				// events occured..
 } _watch_t;
 
+
+#ifdef  HAVE_INOTIFY
+
 typedef struct inotify_event_t {
   uint32_t wd;       /* Watch descriptor */
   uint32_t mask;     /* Mask of events */
@@ -79,10 +82,6 @@ static void *_fswatch_thread(void *data) {
       name[res]='\0';
     }
 
-    //dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Got event for %ld mask %x with name: %s\n", event_hdr->wd, event_hdr->mask, ((event_hdr->len>0)?name:""));
-
-    // when event is read pass it to an handler..
-    // _fswatch_handler(fswatch,event);
     pthread_mutex_lock(&fswatch->mutex);
     GList *gitem=g_list_find_custom(fswatch->items,&event_hdr->wd,&_fswatch_items_by_descriptor);
     if( gitem ) {
@@ -203,3 +202,13 @@ void dt_fswatch_remove(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void
   pthread_mutex_unlock(&ctx->mutex);
 }
 
+#else	// HAVE_INOTIFY
+const dt_fswatch_t* dt_fswatch_new() 
+{
+  dt_print(DT_DEBUG_FSWATCH,"[fswatch_new] fswatch not supported on your platform\n",(unsigned long int)data,type);
+  return NULL;
+}
+void dt_fswatch_destroy(const dt_fswatch_t *fswatch) {}
+void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data) {}
+void dt_fswatch_remove(const dt_fswatch_t * fswatch, dt_fswatch_type_t type, void *data) {}
+#endif
