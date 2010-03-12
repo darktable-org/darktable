@@ -117,6 +117,8 @@ int  dt_control_key_pressed_override(uint16_t which);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_gui_queue_draw();
 void dt_control_log(const char* msg, ...);
+void dt_control_log_busy_enter();
+void dt_control_log_busy_leave();
 void dt_control_change_cursor(dt_cursor_t cursor);
 void dt_control_write_dt_files();
 void dt_control_delete_images();
@@ -175,6 +177,7 @@ typedef struct dt_control_t
   // message log
   int  log_pos, log_ack;
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
+  int  log_busy;
   pthread_mutex_t log_mutex;
   
   // gui settings

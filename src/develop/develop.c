@@ -198,12 +198,17 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
+  dt_control_log_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_dirty = 1;
   if(dev->preview_loading)
   { 
     // prefetch and lock
-    if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF) return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
+    if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+    {
+      dt_control_log_busy_leave();
+      return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
+    }
     dev->mipf = dev->image->mipf;
     // drop reference again, we were just testing. dev holds one already.
     dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
@@ -225,18 +230,27 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
 
   // always process the whole downsampled mipf buffer, to allow for fast scrolling and mip4 write-through.
 restart:
-  if(dev->gui_leaving) return;
+  if(dev->gui_leaving)
+  {
+    dt_control_log_busy_leave();
+    return;
+  }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width*dev->preview_downsampling, dev->preview_pipe->processed_height*dev->preview_downsampling, dev->preview_downsampling))
   {
-    if(dev->preview_loading) return;
+    if(dev->preview_loading)
+    {
+      dt_control_log_busy_leave();
+      return;
+    }
     else goto restart;
   }
 
   dev->preview_dirty = 0;
   dt_control_queue_draw_all();
+  dt_control_log_busy_leave();
 }
 
 // process preview to gain ldr-mipmaps:
@@ -302,6 +316,7 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
+  dt_control_log_busy_enter();
   dev->image_dirty = 1;
   if(dev->image_loading) dt_dev_raw_load(dev, dev->image);
 
@@ -312,7 +327,11 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   // printf("process: %d %d -> %d %d scale %f\n", x, y, dev->capwidth, dev->capheight, scale);
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
-  if(dev->gui_leaving) return;
+  if(dev->gui_leaving)
+  {
+    dt_control_log_busy_leave();
+    return;
+  }
   dev->pipe->input_timestamp = dev->timestamp;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
@@ -335,7 +354,11 @@ restart:
  
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale))
   {
-    if(dev->image_force_reload) return;
+    if(dev->image_force_reload)
+    {
+      dt_control_log_busy_leave();
+      return;
+    }
     else goto restart;
   }
 
@@ -344,6 +367,7 @@ restart:
   dev->image_dirty = 0;
 
   dt_control_queue_draw_all();
+  dt_control_log_busy_leave();
 }
 
 void dt_dev_raw_reload(dt_develop_t *dev)
