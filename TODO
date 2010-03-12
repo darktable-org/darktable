@@ -1,11 +1,11 @@
 0.5 release:
+- database future proof:
+  - image caption, description, license, tag description, sha1sum?
+- remove gamma correction at end completely
+- busy indicators of some simple kind
 - some `no float buffer available yet' process_to_mip crash at random?
 - have notifications disappear after a while?
-- database future proof:
-  - image caption, description, license, tag description?
-- remove gamma correction at end completely
 - decapitalize icc profile names
-- busy indicators of some simple kind
 - thumbnail regeneration trigger: expose after image loaded not enough?
 - multiselect film import
 - give tag for each film roll during import, make editing easy after
