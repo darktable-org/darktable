@@ -341,22 +341,25 @@ void enter(dt_view_t *self)
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-    module->showhide = gtk_toggle_button_new();
-    char filename[1024], datadir[1024];
-    dt_get_datadir(datadir, 1024);
-    snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
-    if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-      snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
-    GtkWidget *image = gtk_image_new_from_file(filename);
-    gtk_button_set_image(GTK_BUTTON(module->showhide), image);
-    g_signal_connect(G_OBJECT(module->showhide), "toggled",
-                     G_CALLBACK(module_show_callback), module);
-    gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
-        GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-        GTK_SHRINK,
-        0, 0);
-    if(ti < 5) ti++;
-    else { ti = 0; tj ++; }
+    if(strcmp(module->op, "gamma"))
+    {
+      module->showhide = gtk_toggle_button_new();
+      char filename[1024], datadir[1024];
+      dt_get_datadir(datadir, 1024);
+      snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
+      if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+        snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
+      GtkWidget *image = gtk_image_new_from_file(filename);
+      gtk_button_set_image(GTK_BUTTON(module->showhide), image);
+      g_signal_connect(G_OBJECT(module->showhide), "toggled",
+                       G_CALLBACK(module_show_callback), module);
+      gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
+          GTK_FILL | GTK_EXPAND | GTK_SHRINK,
+          GTK_SHRINK,
+          0, 0);
+      if(ti < 5) ti++;
+      else { ti = 0; tj ++; }
+    }
     modules = g_list_previous(modules);
   }
   // end marker widget:
@@ -373,15 +376,22 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    char option[1024];
-    snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
-    gboolean active = dt_conf_get_bool (option);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+    if(strcmp(module->op, "gamma"))
+    {
+      char option[1024];
+      snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+      gboolean active = dt_conf_get_bool (option);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
 
-    snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-    active = dt_conf_get_bool (option);
-    gtk_expander_set_expanded (module->expander, active);
+      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+      active = dt_conf_get_bool (option);
+      gtk_expander_set_expanded (module->expander, active);
+    }
+    else
+    {
+      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+    }
     modules = g_list_next(modules);
   }
   // synch gui and flag gegl pipe as dirty

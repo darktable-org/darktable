@@ -601,6 +601,7 @@ gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider)
 
 void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value) {
   gtk_adjustment_set_value( slider->adjustment, value );
+  gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
 void dtgtk_slider_set_type(GtkDarktableSlider *slider,darktable_slider_type_t type) 

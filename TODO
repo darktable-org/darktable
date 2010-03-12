@@ -1,7 +1,5 @@
 0.5 release:
-- database future proof:
-  - image caption, description, license, tag description, sha1sum?
-- remove gamma correction at end completely
+- compress history stack: can't remove off plugins if they are on by default!
 - busy indicators of some simple kind
 - some `no float buffer available yet' process_to_mip crash at random?
 - have notifications disappear after a while?
