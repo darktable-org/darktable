@@ -205,7 +205,7 @@ void dt_fswatch_remove(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void
 #else	// HAVE_INOTIFY
 const dt_fswatch_t* dt_fswatch_new() 
 {
-  dt_print(DT_DEBUG_FSWATCH,"[fswatch_new] fswatch not supported on your platform\n",(unsigned long int)data,type);
+  dt_print(DT_DEBUG_FSWATCH,"[fswatch_new] fswatch not supported on your platform\n");
   return NULL;
 }
 void dt_fswatch_destroy(const dt_fswatch_t *fswatch) {}
