@@ -200,8 +200,8 @@ gui_init (dt_lib_module_t *self)
 
   d->profiles = NULL;
   dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
-  strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, _("sRGB (web-safe)"));
+  strcpy(prof->filename, "srgb");
+  strcpy(prof->name, _("srgb (web-safe)"));
   int pos;
   prof->pos = 1;
   d->profiles = g_list_append(d->profiles, prof);

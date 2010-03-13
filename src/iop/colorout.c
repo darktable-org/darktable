@@ -291,8 +291,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, "sRGB");
+  strcpy(prof->filename, "srgb");
+  strcpy(prof->name, "srgb");
   int pos;
   prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);

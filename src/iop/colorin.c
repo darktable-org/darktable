@@ -369,7 +369,7 @@ void gui_init(struct dt_iop_module_t *self)
     if(!strcmp(prof->name, "linear_rgb"))
       gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
     else if(!strcmp(prof->name, "sRGB"))
-      gtk_combo_box_append_text(g->cbox2, _("sRGB (e.g. jpg)"));
+      gtk_combo_box_append_text(g->cbox2, _("srgb (e.g. jpg)"));
     else if(!strcmp(prof->name, "cmatrix"))
       gtk_combo_box_append_text(g->cbox2, _("color matrix"));
     else
