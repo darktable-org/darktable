@@ -199,16 +199,24 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(vbox2, GTK_WIDGET(d->intent), TRUE, TRUE, 0);
 
   d->profiles = NULL;
+
   dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "srgb");
   strcpy(prof->name, _("srgb (web-safe)"));
   int pos;
   prof->pos = 1;
   d->profiles = g_list_append(d->profiles, prof);
+
+  prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  strcpy(prof->filename, "adobergb");
+  strcpy(prof->name, _("adobergb"));
+  prof->pos = 2;
+  d->profiles = g_list_append(d->profiles, prof);
+
   prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "X profile");
   strcpy(prof->name, "X profile");
-  pos = prof->pos = 2;
+  pos = prof->pos = 3;
   d->profiles = g_list_append(d->profiles, prof);
 
   // read datadir/color/out/*.icc

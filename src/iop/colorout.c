@@ -164,7 +164,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->output)
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
     else
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->intent, 0);
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, create_srgb_profile(), TYPE_RGB_DBL, p->intent, 0);
   }
   else
   {
@@ -189,7 +189,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->output)
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
     else
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->displayintent, 0);
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, create_srgb_profile(), TYPE_RGB_DBL, p->displayintent, 0);
   }
 #endif
   g_free(overprofile);
@@ -296,10 +296,17 @@ void gui_init(struct dt_iop_module_t *self)
   int pos;
   prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
+
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "adobergb");
+  strcpy(prof->name, "adobergb");
+  pos = prof->pos = 1;
+  g->profiles = g_list_append(g->profiles, prof);
+
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "X profile");
   strcpy(prof->name, "X profile");
-  pos = prof->pos = 1;
+  pos = prof->pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/out/*.icc
