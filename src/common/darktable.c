@@ -85,9 +85,6 @@ int dt_init(int argc, char *argv[])
     }
   }
 
-#ifdef HAVE_MAGICK
-  MagickCoreGenesis(*argv, MagickTrue);
-#endif
 #ifdef HAVE_GEGL
   (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
@@ -157,9 +154,10 @@ int dt_init(int argc, char *argv[])
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
+  int id = 0;
   if(image_to_load)
   {
-    int id = dt_image_import(1, image_to_load);
+    id = dt_image_import(1, image_to_load);
     if(id)
     {
       dt_film_open(darktable.film, 1);
@@ -171,6 +169,12 @@ int dt_init(int argc, char *argv[])
       // TODO: gtk window!
       fprintf(stderr, "[dt_init] could not open image file `%s'!\n", image_to_load);
     }
+  }
+  if(!id)
+  {
+    // dummy selection:
+    dt_conf_set_string ("plugins/lighttable/query", "select * from images where film_id = -1 and (flags & 7) >= 1 order by filename limit ?1, ?2");
+    dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
   return 0;
@@ -206,9 +210,6 @@ void dt_cleanup()
   pthread_mutex_destroy(&(darktable.db_insert));
   pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 
-#ifdef HAVE_MAGICK
-  MagickCoreTerminus();
-#endif
 #ifdef HAVE_GEGL
   gegl_exit();
 #endif

@@ -357,7 +357,7 @@ void dt_control_init(dt_control_t *s)
   s->progress = 200.0f;
 
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
-
+  
   // if config is old, replace with new defaults.
   if(DT_CONFIG_VERSION > dt_conf_get_int("config_version"))
     dt_ctl_settings_default(s);
