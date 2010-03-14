@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "common/colorspaces.h"
 
 DT_MODULE(1)
 
@@ -145,7 +146,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(overintent >= 0) p->intent = overintent;
     if(!strcmp(p->iccprofile, "sRGB"))
     { // default: sRGB
-      d->output = NULL;
+      d->output = create_srgb_profile();
+    }
+    else if(!strcmp(p->iccprofile, "adobergb"))
+    {
+      d->output = create_adobergb_profile();
     }
     else if(!strcmp(p->iccprofile, "X profile"))
     { // x default
@@ -164,13 +169,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->output)
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
     else
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, create_srgb_profile(), TYPE_RGB_DBL, p->intent, 0);
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->intent, 0);
   }
   else
   {
     if(!strcmp(p->displayprofile, "sRGB"))
     { // default: sRGB
-      d->output = NULL;
+      d->output = create_srgb_profile();
+    }
+    else if(!strcmp(p->displayprofile, "adobergb"))
+    {
+      d->output = create_adobergb_profile();
     }
     else if(!strcmp(p->displayprofile, "X profile"))
     { // x default
@@ -291,7 +300,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "srgb");
+  strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "srgb");
   int pos;
   prof->pos = 0;
@@ -373,6 +382,21 @@ void gui_init(struct dt_iop_module_t *self)
     {
       gtk_combo_box_append_text(g->cbox2, _("system display profile"));
       gtk_combo_box_append_text(g->cbox3, _("system display profile"));
+    }
+    else if(!strcmp(prof->name, "linear_rgb"))
+    {
+      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
+      gtk_combo_box_append_text(g->cbox3, _("linear rgb"));
+    }
+    else if(!strcmp(prof->name, "sRGB"))
+    {
+      gtk_combo_box_append_text(g->cbox2, _("srgb"));
+      gtk_combo_box_append_text(g->cbox3, _("srgb"));
+    }
+    else if(!strcmp(prof->name, "adobergb"))
+    {
+      gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
+      gtk_combo_box_append_text(g->cbox3, _("adobe rgb"));
     }
     else
     {

@@ -11,7 +11,7 @@ Options:
 
     --help        
     --version
-    -d {cache,control,dev}
+    -d {cache,control,dev,fswatch}
 
 =head1 DESCRIPTION
 

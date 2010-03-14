@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
+#include "common/colorspaces.h"
 
 DT_MODULE(1)
 
@@ -194,7 +195,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     libraw_close(raw);
   }
-  else if(strcmp(p->iccprofile, "sRGB"))
+  else if(!strcmp(p->iccprofile, "sRGB"))
+  {
+    d->input = create_srgb_profile();
+  }
+  else if(!strcmp(p->iccprofile, "adobergb"))
+  {
+    d->input = create_adobergb_profile();
+  }
+  else
   {
     snprintf(filename, 1024, "%s/color/in/%s", datadir, p->iccprofile);
     d->input = cmsOpenProfileFromFile(filename, "r");
@@ -309,11 +318,17 @@ void gui_init(struct dt_iop_module_t *self)
   strcpy(prof->name, "sRGB");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = 1;
+  // adobe rgb built-in
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "adobergb");
+  strcpy(prof->name, "adobergb");
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = 2;
   // get color matrix from raw image:
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "cmatrix");
   strcpy(prof->name, "cmatrix");
-  int pos = prof->pos = 2;
+  int pos = prof->pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/in/*.icc
@@ -370,6 +385,8 @@ void gui_init(struct dt_iop_module_t *self)
       gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
     else if(!strcmp(prof->name, "sRGB"))
       gtk_combo_box_append_text(g->cbox2, _("srgb (e.g. jpg)"));
+    else if(!strcmp(prof->name, "adobergb"))
+      gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
     else if(!strcmp(prof->name, "cmatrix"))
       gtk_combo_box_append_text(g->cbox2, _("color matrix"));
     else

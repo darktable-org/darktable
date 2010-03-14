@@ -72,7 +72,7 @@ build_adobergb_gamma(void)
   return cmsBuildParametricGamma(1024, 1, Parameters);
 }
 
-// Create the ICC virtual profile for sRGB space
+// Create the ICC virtual profile for adobe rgb space
 cmsHPROFILE LCMSEXPORT 
 create_adobergb_profile(void)
 {
