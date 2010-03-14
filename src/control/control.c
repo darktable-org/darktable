@@ -177,7 +177,7 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar)", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
     rc = sqlite3_exec(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, foreign key (id1) references tags(id) foreign key (id2) references tags(id) primary key(id1, id2))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, foreign key(imgid) references images(id) foreign key(tagid) references tags(id) primary key(imgid, tagid))", NULL, NULL, NULL);

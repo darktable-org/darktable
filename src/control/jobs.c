@@ -363,7 +363,7 @@ void dt_control_export_job_run(dt_job_t *job)
     printf("[export_job] exported to `%s'\n", filename);
     char *trunc = filename + strlen(filename) - 32;
     if(trunc < filename) trunc = filename;
-    dt_control_log("exported to `%s%s'", trunc != filename ? ".." : "", trunc);
+    dt_control_log(_("exported to `%s%s'"), trunc != filename ? ".." : "", trunc);
     t = g_list_delete_link(t, t);
   }
 }

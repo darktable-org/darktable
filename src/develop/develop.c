@@ -786,7 +786,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       const char *fname = dev->image->filename + strlen(dev->image->filename);
       while(fname > dev->image->filename && *fname != '/') fname --;
       if(fname > dev->image->filename) fname++;
-      dt_control_log("%s: module `%s' version missmatch: %d != %d", fname, hist->module->op, hist->module->version(), modversion);
+      dt_control_log(_("%s: module `%s' version missmatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
       free(hist);
       continue;
     }

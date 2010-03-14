@@ -279,6 +279,8 @@ static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 { // capture gui color picked event.
   if(darktable.gui->reset) return FALSE;
+  if(self->picked_color_max[0] < self->picked_color_min[0]) return FALSE;
+  if(!self->request_color_pick) return FALSE;
   static float old[3] = {0, 0, 0};
   const float *grayrgb = self->picked_color;
   if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
@@ -304,6 +306,7 @@ void gui_init (struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
+  self->request_color_pick = 0;
   GtkWidget *label;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
@@ -414,6 +417,7 @@ void gui_init (struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  self->request_color_pick = 0;
   free(self->gui_data);
   self->gui_data = NULL;
 }
