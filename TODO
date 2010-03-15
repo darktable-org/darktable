@@ -1,5 +1,4 @@
 0.5 release:
-- add flags to tag: public/private/flickr only etc
 - some `no float buffer available yet' process_to_mip crash at random?
 - have notifications disappear after a while?
 - decapitalize icc profile names
