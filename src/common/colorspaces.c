@@ -17,6 +17,9 @@
 */
 
 #include <lcms.h>
+#include "iop/colorout.h"
+#include "control/conf.h"
+#include "control/control.h"
 
 static LPGAMMATABLE
 build_srgb_gamma(void)
@@ -32,7 +35,7 @@ build_srgb_gamma(void)
   return cmsBuildParametricGamma(1024, 4, Parameters);
 }
 
-cmsHPROFILE LCMSEXPORT 
+cmsHPROFILE
 create_srgb_profile(void)
 {
   cmsCIExyY       D65;
@@ -73,7 +76,7 @@ build_adobergb_gamma(void)
 }
 
 // Create the ICC virtual profile for adobe rgb space
-cmsHPROFILE LCMSEXPORT 
+cmsHPROFILE
 create_adobergb_profile(void)
 {
   cmsCIExyY       D65;
@@ -99,5 +102,50 @@ create_adobergb_profile(void)
   cmsAddTag(hAdobeRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable AdobeRGB");
 
   return hAdobeRGB;
+}
+
+cmsHPROFILE
+create_output_profile(const int imgid)
+{
+  char profile[1024];
+  profile[0] = '\0';
+  // db lookup colorout params, and dt_conf_() for override
+  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  if(!strcmp(overprofile, "image"))
+  {
+    const dt_iop_colorout_params_t *params;
+    // sqlite:
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select op_params from history where imgid=?1 and operation='colorout'", -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      params = sqlite3_column_blob(stmt, 0);
+      strncpy(profile, params->iccprofile, 1024);
+    }
+    sqlite3_finalize(stmt);
+  }
+  if(profile[0] == '\0')
+    strncpy(profile, overprofile, 1024);
+  g_free(overprofile);
+
+  cmsHPROFILE output = NULL;
+
+  if(!strcmp(profile, "sRGB"))
+    output = create_srgb_profile();
+  else if(!strcmp(profile, "adobergb"))
+    output = create_adobergb_profile();
+  else if(!strcmp(profile, "X profile") && darktable.control->xprofile_data)
+    output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
+  else
+  { // else: load file name
+    char datadir[1024];
+    char filename[1024];
+    dt_get_datadir(datadir, 1024);
+    snprintf(filename, 1024, "%s/color/out/%s", datadir, profile);
+    output = cmsOpenProfileFromFile(filename, "r");
+  }
+  if(!output) output = create_srgb_profile();
+  return output;
 }
 

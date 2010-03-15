@@ -18,10 +18,15 @@
 #ifndef DT_COLORSPACES_H
 #define DT_COLORSPACES_H
 
-/** create the ICC virtual profile for adobe rgb space. */
-cmsHPROFILE LCMSEXPORT create_srgb_profile(void);
+#include <lcms.h>
 
-/** Create the ICC virtual profile for adobe rgb space. */
-cmsHPROFILE LCMSEXPORT create_adobergb_profile(void);
+/** create the ICC virtual profile for adobe rgb space. */
+cmsHPROFILE create_srgb_profile(void);
+
+/** create the ICC virtual profile for adobe rgb space. */
+cmsHPROFILE create_adobergb_profile(void);
+
+/** get the icc profile this image would be exported with. */
+cmsHPROFILE create_output_profile(const int imgid);
 
 #endif

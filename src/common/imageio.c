@@ -841,127 +841,6 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
-#ifdef HAVE_MAGICK
-  dt_develop_t dev;
-  dt_dev_init(&dev, 0);
-  dt_dev_load_image(&dev, img);
-  const int wd = dev.image->width;
-  const int ht = dev.image->height;
-  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
-
-  dt_dev_pixelpipe_t pipe;
-  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
-  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-  dt_dev_pixelpipe_synch_all(&pipe, &dev);
-  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, wd, ht, 1.0);
-  uint8_t *buf8 = pipe.backbuf;
-  for(int k=0;k<wd*ht;k++) for(int i=0;i<3;i++) buf8[3*k+i] = buf8[4*k+2-i];
-
-  // MagickCore write
-  ImageInfo *image_info;
-  ExceptionInfo *exception;
-  Image *image;
-  exception = AcquireExceptionInfo();
-  image_info = CloneImageInfo((ImageInfo *) NULL);
-  image = ConstituteImage(wd, ht, "RGB", CharPixel, buf8, exception);
-  if (image == (Image *) NULL)
-  {
-    image_info = DestroyImageInfo(image_info);
-    exception = DestroyExceptionInfo(exception);
-    dt_dev_cleanup(&dev);
-    free(buf8);
-    return 1;
-  }
-
-  // set image properties!
-  ExifRational rat;
-  int length;
-  uint8_t *exif_profile;
-  ExifData *exif_data = exif_data_new();
-  exif_data_set_byte_order(exif_data, EXIF_BYTE_ORDER_INTEL);
-  ExifContent *exif_content = exif_data->ifd[0];
-  ExifEntry *entry;
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_MAKE);
-  entry->components = strlen (img->exif_maker) + 1;
-  entry->format = EXIF_FORMAT_ASCII;
-  entry->size = exif_format_get_size (entry->format) * entry->components;
-  entry->data = realloc(entry->data, entry->size);
-  strncpy((char *)entry->data, img->exif_maker, entry->components);
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_MODEL);
-  entry->components = strlen (img->exif_model) + 1;
-  entry->format = EXIF_FORMAT_ASCII;
-  entry->size = exif_format_get_size (entry->format) * entry->components;
-  entry->data = realloc(entry->data, entry->size);
-  strncpy((char *)entry->data, img->exif_model, entry->components);
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_DATE_TIME_ORIGINAL);
-  entry->components = 20;
-  entry->format = EXIF_FORMAT_ASCII;
-  entry->size = exif_format_get_size (entry->format) * entry->components;
-  entry->data = realloc(entry->data, entry->size);
-  strncpy((char *)(entry->data), img->exif_datetime_taken, entry->components);
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_ISO_SPEED_RATINGS);
-  exif_set_short(entry->data, EXIF_BYTE_ORDER_INTEL, (int16_t)(img->exif_iso));
-  entry->size = 2;
-  entry->components = 1;
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_FNUMBER);
-  dt_imageio_to_fractional(img->exif_aperture, &rat.numerator, &rat.denominator);
-  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
-  entry->size = 8;
-  entry->components = 1;
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_EXPOSURE_TIME);
-  dt_imageio_to_fractional(img->exif_exposure, &rat.numerator, &rat.denominator);
-  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
-  entry->size = 8;
-  entry->components = 1;
-
-  entry = exif_entry_new();
-  exif_content_add_entry(exif_content, entry);
-  exif_entry_initialize(entry, EXIF_TAG_FOCAL_LENGTH);
-  dt_imageio_to_fractional(img->exif_focal_length, &rat.numerator, &rat.denominator);
-  exif_set_rational(entry->data, EXIF_BYTE_ORDER_INTEL, rat);
-  entry->size = 8;
-  entry->components = 1;
-
-  exif_data_save_data(exif_data, &exif_profile, (uint32_t *)&length);
-
-  exif_data_free(exif_data);
-  StringInfo *profile = AcquireStringInfo(length);
-  SetStringInfoDatum(profile, exif_profile);
-  (void)SetImageProfile(image, "exif", profile);
-  profile = DestroyStringInfo(profile);
-  free(exif_profile);
-
-  image_info->quality = 97;
-  (void) strcpy(image->filename, filename);
-  WriteImage(image_info, image);
-
-  image = DestroyImage(image);
-  image_info = DestroyImageInfo(image_info);
-  exception = DestroyExceptionInfo(exception);
-
-  dt_dev_pixelpipe_cleanup(&pipe);
-  dt_dev_cleanup(&dev);
-  return 0;
-#else
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, img);
@@ -1010,7 +889,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
   const int processed_width  = scale*pipe.processed_width  + .5f;
   const int processed_height = scale*pipe.processed_height + .5f;
-  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
+  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   char pathname[1024];
   dt_image_full_path(img, pathname, 1024);
   const char *suffix = filename + strlen(filename) - 3;
@@ -1032,8 +911,9 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   int quality = dt_conf_get_int ("plugins/lighttable/export/quality");
   if(quality <= 0 || quality > 100) quality = 100;
-  if((!export_png && dt_imageio_jpeg_write(filename, buf8,             processed_width, processed_height, quality, exif_profile, length)) ||
-     ( export_png && dt_imageio_png_write (filename, buf8,             processed_width, processed_height)))
+  if((!export_png && dt_imageio_jpeg_write_with_icc_profile(
+         filename, buf8, processed_width, processed_height, quality, exif_profile, length, img->id)) ||
+     ( export_png && dt_imageio_png_write (filename, buf8, processed_width, processed_height)))
   {
     dt_dev_pixelpipe_cleanup(&pipe);
     dt_dev_cleanup(&dev);
@@ -1042,7 +922,6 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return 0;
-#endif
 }
 
 // =================================================
