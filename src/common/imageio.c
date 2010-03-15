@@ -23,7 +23,9 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_pfm.h"
+#include "common/imageio_ppm.h"
 #include "common/imageio_rgbe.h"
+#include "common/imageio_tiff.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -800,24 +802,26 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   float *buf = (float *)pipe.backbuf;
 
   int status = 1;
-  FILE *f = fopen(filename, "wb");
-  if(f)
-  {
-    (void)fprintf(f, "P6\n%d %d\n65535\n", processed_width, processed_height);
-    for(int y=0;y<processed_height;y++)
-    for(int x=0;x<processed_width ;x++)
-    {
-      const int k = x + processed_width*y;
-      uint16_t tmp[3];
-      for(int i=0;i<3;i++) tmp[i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
-      for(int i=0;i<3;i++) tmp[i] = (0xff00 & (tmp[i]<<8))|(tmp[i]>>8);
-      int cnt = fwrite(tmp, sizeof(uint16_t)*3, 1, f);
-      if(cnt != 1) break;
-    }
-    fclose(f);
-    status = 0;
-  }
+  int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
+  
+  // Generate the 16 bit image buffer out of internal floatbuffer
+  uint32_t imgsize=((processed_width*processed_height)*3)*sizeof(uint16_t);
+  uint16_t *imgdata=(uint16_t *)malloc(imgsize);
+  for(int y=0;y<processed_height;y++)
+      for(int x=0;x<processed_width ;x++)
+      {
+        const int k = x + processed_width*y;
+        for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
+        if( export_format == DT_DEV_EXPORT_PPM16 ) // Swap bytes if ppm
+          for(int i=0;i<3;i++) imgdata[3*k+i] = (0xff00 & (imgdata[3*k+i]<<8))|(imgdata[3*k+i]>>8);
+      }
 
+  if( export_format==DT_DEV_EXPORT_PPM16)
+    status=dt_imageio_ppm_write_16(filename,imgdata,processed_width, processed_height);
+  else if( export_format==DT_DEV_EXPORT_TIFF16 ) 
+    status=dt_imageio_tiff_write_16(filename,imgdata,processed_width, processed_height, NULL, 0);
+
+  free(imgdata);
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return status;
@@ -892,9 +896,6 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   char pathname[1024];
   dt_image_full_path(img, pathname, 1024);
-  const char *suffix = filename + strlen(filename) - 3;
-  int export_png = 0;
-  if(suffix > filename && strncmp(suffix, "png", 3) == 0) export_png = 1;
   uint8_t *buf8 = pipe.backbuf;
   for(int y=0;y<processed_height;y++)
   for(int x=0;x<processed_width ;x++)
@@ -908,20 +909,20 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   int length;
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
   length = dt_exif_read_blob(exif_profile, pathname, sRGB);
-
+  int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
   int quality = dt_conf_get_int ("plugins/lighttable/export/quality");
   if(quality <= 0 || quality > 100) quality = 100;
-  if((!export_png && dt_imageio_jpeg_write_with_icc_profile(
-         filename, buf8, processed_width, processed_height, quality, exif_profile, length, img->id)) ||
-     ( export_png && dt_imageio_png_write (filename, buf8, processed_width, processed_height)))
-  {
-    dt_dev_pixelpipe_cleanup(&pipe);
-    dt_dev_cleanup(&dev);
-    return 1;
-  }
+  int res=0;
+  if(export_format==DT_DEV_EXPORT_JPG)
+    res=dt_imageio_jpeg_write_with_icc_profile(filename, buf8,processed_width, processed_height, quality, exif_profile, length,img->id);
+  else if(export_format==DT_DEV_EXPORT_PNG)
+    res=dt_imageio_png_write(filename, buf8,processed_width, processed_height);
+  else if(export_format==DT_DEV_EXPORT_TIFF8)
+    res=dt_imageio_tiff_write_8(filename, buf8,processed_width, processed_height,exif_profile, length);
+
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  return 0;
+  return res;
 }
 
 // =================================================

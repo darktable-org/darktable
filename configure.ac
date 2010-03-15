@@ -32,7 +32,6 @@ AC_ARG_WITH([inotify],
 	fi
 fi 
 
-
 # Enable silent build rules by default, requires at least
 # Automake-1.11. Disable by either passing --disable-silent-rules to
 # configure or passing V=1 to make
@@ -126,6 +125,10 @@ AC_ARG_ENABLE(lensfun,
 AC_CHECK_LIB(jpeg, jpeg_destroy_decompress,
    [JPEG_LIBS="-ljpeg"], AC_MSG_FAILURE([libjpeg is required!]))
 AC_SUBST(JPEG_LIBS)
+
+AC_CHECK_LIB(tiff, TIFFOpen,
+   [TIFF_LIBS="-ltiff"], AC_MSG_FAILURE([libtiff is required!]))
+AC_SUBST(TIFF_LIBS)
 
 
 dnl *** Check for LittleCMS ***

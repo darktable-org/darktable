@@ -61,8 +61,10 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   int i = gtk_combo_box_get_active(d->format);
   if     (i == 0)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_JPG);
   else if(i == 1)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PNG);
-  else if(i == 2)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PPM16);
-  else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PFM);
+  else if(i == 2)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF8);
+  else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PPM16);
+  else if(i == 4)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF16);
+  else if(i == 5)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PFM);
   dt_control_export();
 }
 
@@ -102,8 +104,10 @@ gui_reset (dt_lib_module_t *self)
   int i = 0;
   if     (k == DT_DEV_EXPORT_JPG)   i = 0;
   else if(k == DT_DEV_EXPORT_PNG)   i = 1;
-  else if(k == DT_DEV_EXPORT_PPM16) i = 2;
-  else if(k == DT_DEV_EXPORT_PFM)   i = 3;
+  else if(k == DT_DEV_EXPORT_TIFF8)   i = 2;
+  else if(k == DT_DEV_EXPORT_PPM16) i = 3;
+  else if(k == DT_DEV_EXPORT_TIFF16) i = 4;
+  else if(k == DT_DEV_EXPORT_PFM)   i = 5;
   gtk_combo_box_set_active(d->format, i);
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
@@ -275,8 +279,10 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(d->format, _("8-bit jpg"));
+  gtk_combo_box_append_text(d->format, _("8-bit tiff"));
   gtk_combo_box_append_text(d->format, _("8-bit png"));
   gtk_combo_box_append_text(d->format, _("16-bit ppm"));
+  gtk_combo_box_append_text(d->format, _("16-bit tiff"));
   gtk_combo_box_append_text(d->format, _("float pfm"));
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->format), TRUE, TRUE, 0);
