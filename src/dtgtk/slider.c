@@ -455,6 +455,8 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
+  if(width<=1) return FALSE;	// VERY STRANGE, expose seemed to be called before a widgetallocation has been made...
+	
   if (!style) {
     style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
   }
@@ -468,7 +470,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
    NULL,
    widget,
    "button",
-   0,0,width,height);
+   0,0,width,height); 
   
   // Value background
   GdkRectangle vr;
@@ -503,7 +505,6 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
     FALSE);
 
   if(slider->is_entry_active) {
-    //GTK_WIDGET_CLASS (_slider_parent_class)->expose_event (widget, event);
     gtk_widget_draw(slider->entry, NULL);
     return TRUE;
   } else {
