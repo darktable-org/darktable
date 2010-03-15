@@ -266,7 +266,6 @@ static void _slider_entry_commit(GtkDarktableSlider *slider) {
   gdouble value=atof(gtk_entry_get_text(GTK_ENTRY(slider->entry)));
   slider->is_entry_active=FALSE;
   dtgtk_slider_set_value(slider,value);
-  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
@@ -601,6 +600,7 @@ gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider)
 
 void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value) {
   gtk_adjustment_set_value( slider->adjustment, value );
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 

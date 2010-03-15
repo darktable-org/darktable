@@ -140,7 +140,8 @@ gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event
   dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
   if(n->dragging && n->exposure && n->set_white)
   {
-    float white = n->white - (event->x - n->button_down_x)/(float)widget->allocation.width; 
+    float white = n->white - (event->x - n->button_down_x)*
+      darktable.develop->image->maximum/(float)widget->allocation.width; 
     n->set_white(n->exposure, white);
   }
   gint x, y; // notify gtk for motion_hint.
