@@ -48,6 +48,8 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
 
 /** write jpeg to file, with exif if not NULL. */
 int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len);
+/** this will collect the images icc profile (or the global export override) and append it during write. */
+int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len, int imgid);
 /** read jpeg header from file, leave file descriptor open until jpeg_read is called. */
 int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg);
 /** reads the jpeg to the (sufficiently allocated) buffer, closes file. */
