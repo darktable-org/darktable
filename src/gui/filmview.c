@@ -115,12 +115,10 @@ button_callback(GtkWidget *button, gpointer user_data)
         gtk_widget_destroy(dialog);
         if(res != GTK_RESPONSE_YES) return;
       }
-      if(darktable.film->id == id)
-        dt_ctl_switch_mode_to(DT_MODE_NONE);
       dt_film_remove(id);
       break;
     default: // open this film id.
-      (void)dt_film_open(darktable.film, id);
+      (void)dt_film_open(id);
       dt_ctl_switch_mode_to(DT_LIBRARY);
       break;
   }
@@ -166,7 +164,7 @@ row_activated_callback (GtkTreeView        *view,
   gtk_tree_model_get (model, &iter, 
                       DT_GUI_FILM_COL_ID, &id,
                       -1);
-  (void)dt_film_open(darktable.film, id);
+  (void)dt_film_open(id);
   dt_ctl_switch_mode_to(DT_LIBRARY);
 }
 

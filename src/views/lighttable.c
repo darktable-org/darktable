@@ -794,7 +794,6 @@ void enter(dt_view_t *self)
     else         gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
-  self->reset(self);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -917,12 +916,12 @@ void key_pressed(dt_view_t *self, uint16_t which)
     case KEYCODE_2:
       if(zoom <= 1) zoom = 1;
       else zoom --;
-      lib->center = 1;
+      if(layout == 0) lib->center = 1;
       break;
     case KEYCODE_3:
       if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
       else zoom ++;
-      lib->center = 1;
+      if(layout == 0) lib->center = 1;
       break;
     case KEYCODE_4:
       zoom = DT_LIBRARY_MAX_ZOOM;

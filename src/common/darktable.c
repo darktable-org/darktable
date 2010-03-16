@@ -139,9 +139,6 @@ int dt_init(int argc, char *argv[])
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)));
 
-  darktable.film = (dt_film_t *)malloc(sizeof(dt_film_t));
-  dt_film_init(darktable.film);
-
   darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
   dt_lib_init(darktable.lib);
 
@@ -160,7 +157,7 @@ int dt_init(int argc, char *argv[])
     id = dt_image_import(1, image_to_load);
     if(id)
     {
-      dt_film_open(darktable.film, 1);
+      dt_film_open(1);
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
       dt_ctl_switch_mode_to(DT_DEVELOP);
     }
@@ -193,8 +190,6 @@ void dt_cleanup()
   free(darktable.view_manager);
   dt_gui_gtk_cleanup(darktable.gui);
   free(darktable.gui);
-  dt_film_cleanup(darktable.film);
-  free(darktable.film);
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);

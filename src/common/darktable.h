@@ -73,7 +73,6 @@ static inline int dt_version()
     return 1; \
   } \
 
-struct dt_film_t;
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;
@@ -96,7 +95,6 @@ typedef struct darktable_t
   int32_t unmuted;
   struct dt_conf_t         *conf;
   struct dt_develop_t      *develop;
-  struct dt_film_t         *film;
   struct dt_lib_t          *lib;
   struct dt_view_manager_t *view_manager;
   struct dt_control_t      *control;

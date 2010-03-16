@@ -512,7 +512,7 @@ static void
 film_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   long int num = (long int)user_data;
-  (void)dt_film_open_recent(darktable.film, num);
+  (void)dt_film_open_recent(num);
   dt_ctl_switch_mode_to(DT_LIBRARY);
 }
 
@@ -575,13 +575,27 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
 				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
 				      NULL);
 
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
+
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filename;
-    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    dt_film_import(darktable.film, filename);
-    dt_ctl_switch_mode_to(DT_LIBRARY);
-    g_free (filename);
+    GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
+    GSList *it = list;
+    int id = 0;
+    while(it)
+    {
+      filename = (char *)it->data;
+      id = dt_film_import(filename);
+      g_free (filename);
+      it = g_slist_next(it);
+    }
+    if(id)
+    {
+      dt_film_open(id);
+      dt_ctl_switch_mode_to(DT_LIBRARY);
+    }
+    g_slist_free (list);
   }
   gtk_widget_destroy (filechooser);
   win = glade_xml_get_widget (darktable.gui->main_window, "center");
@@ -626,7 +640,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
     int id = dt_image_import(1, filename);
     if(id)
     {
-      dt_film_open(darktable.film, 1);
+      dt_film_open(1);
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
       dt_ctl_switch_mode_to(DT_DEVELOP);
     }

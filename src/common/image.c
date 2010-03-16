@@ -62,10 +62,6 @@ void dt_image_full_path(dt_image_t *img, char *pathname, int len)
   {
     snprintf(pathname, len, "%s", img->filename);
   }
-  else if(darktable.film->id == img->film_id)
-  {
-    snprintf(pathname, len, "%s/%s", darktable.film->dirname, img->filename);
-  }
   else
   {
     int rc;
@@ -86,10 +82,6 @@ void dt_image_export_path(dt_image_t *img, char *pathname, int len)
   if(img->film_id == 1)
   {
     snprintf(pathname, len, "%s", img->filename);
-  }
-  else if(darktable.film->id == img->film_id)
-  {
-    snprintf(pathname, len, "%s/darktable_exported/%s", darktable.film->dirname, img->filename);
   }
   else
   {

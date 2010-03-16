@@ -39,6 +39,7 @@ void dt_film_init(dt_film_t *film)
   film->dirname[0] = '\0';
   film->dir = NULL;
   film->id = -1;
+  film->ref = 0;
 }
 
 void dt_film_import1(dt_film_t *film)
@@ -82,6 +83,11 @@ void dt_film_import1(dt_film_t *film)
 void dt_film_cleanup(dt_film_t *film)
 {
   pthread_mutex_destroy(&film->images_mutex);
+  if(film->dir)
+  {
+    g_dir_close(film->dir);
+    film->dir = NULL;
+  }
 }
 
 void dt_film_set_query(const int32_t id)
@@ -104,7 +110,7 @@ void dt_film_set_query(const int32_t id)
   dt_conf_set_string ("plugins/lighttable/query", query);
 }
 
-int dt_film_open(dt_film_t *film, const int32_t id)
+int dt_film_open(const int32_t id)
 {
   int rc;
   sqlite3_stmt *stmt;
@@ -114,8 +120,6 @@ int dt_film_open(dt_film_t *film, const int32_t id)
   HANDLE_SQLITE_ERR(rc);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    film->id = sqlite3_column_int(stmt, 0);
-    strncpy(film->dirname, (char *)sqlite3_column_text(stmt, 1), 512);
     rc = sqlite3_finalize(stmt);
     char datetime[20];
     dt_gettime(datetime);
@@ -135,7 +139,7 @@ int dt_film_open(dt_film_t *film, const int32_t id)
   return 0;
 }
 
-int dt_film_open_recent(dt_film_t *film, const int num)
+int dt_film_open_recent(const int num)
 {
   int32_t rc;
   sqlite3_stmt *stmt;
@@ -147,7 +151,7 @@ int dt_film_open_recent(dt_film_t *film, const int num)
   {
     int id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    if(dt_film_open(film, id)) return 1;
+    if(dt_film_open(id)) return 1;
     char datetime[20];
     dt_gettime(datetime);
     rc = sqlite3_prepare_v2(darktable.db, "update film_rolls set datetime_accessed = ?1 where id = ?2", -1, &stmt, NULL);
@@ -162,8 +166,11 @@ int dt_film_open_recent(dt_film_t *film, const int num)
   return 0;
 }
 
-int dt_film_import(dt_film_t *film, const char *dirname)
+int dt_film_import(const char *dirname)
 {
+  // init film and give each thread a pointer, last one cleans up.
+  dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
+  dt_film_init(film);
   film->id = -1;
   int rc;
   sqlite3_stmt *stmt;
@@ -190,7 +197,12 @@ int dt_film_import(dt_film_t *film, const char *dirname)
     film->id = sqlite3_last_insert_rowid(darktable.db);
     pthread_mutex_unlock(&(darktable.db_insert));
   }
-  if(film->id <= 0) return 1;
+  if(film->id <= 0)
+  {
+    dt_film_cleanup(film);
+    free(film);
+    return 0;
+  }
 
   film->last_loaded = 0;
   strncpy(film->dirname, dirname, 512);
@@ -198,16 +210,16 @@ int dt_film_import(dt_film_t *film, const char *dirname)
 
   // TODO: set film->num_images for progress bar!
 
+  const int ret = film->id;
   // darktable.control->progress = .001f;
   for(int k=0;k<MAX(1,dt_ctl_get_num_procs()-1);k++) // keep one proc for the user.
   {
+    // last job will destroy film struct.
     dt_job_t j;
     dt_film_import1_init(&j, film);
     dt_control_add_job(darktable.control, &j);
   }
-  dt_film_set_query(film->id);
-  dt_control_update_recent_films();
-  return 0;
+  return ret;
 }
 
 void dt_film_remove(const int id)

@@ -49,7 +49,6 @@ name ()
 void
 gui_reset (dt_lib_module_t *self)
 {
-  dt_film_set_query(darktable.film->id);
 }
 
 static void
