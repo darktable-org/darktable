@@ -67,7 +67,7 @@ typedef struct dt_library_t
   int button;
   uint32_t modifiers;
   uint32_t center, pan;
-  int32_t track, offset;
+  int32_t track, offset, first_visible_zoomable, first_visible_filemanager;
   float zoom_x, zoom_y;
   dt_library_image_over_t image_over;
 }
@@ -378,12 +378,19 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   cairo_set_source_rgb (cr, .9, .9, .9);
   cairo_paint(cr);
 
+  if(lib->first_visible_zoomable >= 0)
+  {
+    lib->offset = lib->first_visible_zoomable;
+  }
+  lib->first_visible_zoomable = -1;
+
   if(lib->track >  2) lib->offset += iir;
   if(lib->track < -2) lib->offset -= iir;
   lib->track = 0;
   if(lib->center) lib->offset = 0;
   lib->center = 0;
   int offset = lib->offset;
+  lib->first_visible_filemanager = offset;
   static int oldpan = 0;
   const int pan = lib->pan;
 
@@ -488,7 +495,6 @@ static void
 expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  static int last_offset = 0x7fffffff;
   float zoom, zoom_x, zoom_y;
   int32_t mouse_over_id, pan, track, center;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -557,7 +563,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     {
       zoom_x = (int)oldx*wd;
       zoom_y = (int)oldy*ht;
-      last_offset = 0x7fffffff;
+      lib->offset = 0x7fffffff;
     }
     else
     {
@@ -567,6 +573,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
   oldzoom = zoom;
 
+  // TODO: replace this with center on top of selected/developed image
   if(center)
   {
     if(mouse_over_id >= 0)
@@ -594,13 +601,36 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
-  if(zoom_x < -wd*DT_LIBRARY_MAX_ZOOM/2)  zoom_x = -wd*DT_LIBRARY_MAX_ZOOM/2;
-  if(zoom_x >  wd*DT_LIBRARY_MAX_ZOOM-wd) zoom_x =  wd*DT_LIBRARY_MAX_ZOOM-wd;
-  if(zoom_y < -height+ht)                 zoom_y = -height+ht;
-  if(zoom_y >  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht)          zoom_y =  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
+  if(count == 0)
+  {
+    zoom_x = zoom_y = 0.0f;
+  }
+  else if(zoom < 1.01)
+  {
+    if(zoom_x < 0)                         zoom_x = 0;
+    if(zoom_x > wd*DT_LIBRARY_MAX_ZOOM-wd) zoom_x = wd*DT_LIBRARY_MAX_ZOOM-wd;
+    if(zoom_y < 0)                         zoom_y = 0;
+    if(zoom_y > ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht)
+                                           zoom_y =  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
+  }
+  else
+  {
+    if(zoom_x < -wd*DT_LIBRARY_MAX_ZOOM/2)  zoom_x = -wd*DT_LIBRARY_MAX_ZOOM/2;
+    if(zoom_x >  wd*DT_LIBRARY_MAX_ZOOM-wd) zoom_x =  wd*DT_LIBRARY_MAX_ZOOM-wd;
+    if(zoom_y < -height+ht)                 zoom_y = -height+ht;
+    if(zoom_y >  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht)
+                                            zoom_y =  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
+  }
 
   int offset_i = (int)(zoom_x/wd);
   int offset_j = (int)(zoom_y/ht);
+  if(lib->first_visible_filemanager >= 0)
+  {
+    offset_i = lib->first_visible_filemanager % DT_LIBRARY_MAX_ZOOM;
+    offset_j = lib->first_visible_filemanager / DT_LIBRARY_MAX_ZOOM;
+  }
+  lib->first_visible_filemanager = -1;
+  lib->first_visible_zoomable = offset_i + DT_LIBRARY_MAX_ZOOM*offset_j;
   // arbitrary 1000 to avoid bug due to round towards zero using (int)
   int seli = zoom == 1 ? 0 : (int)(1000 + (pointerx + zoom_x)/wd) - MAX(offset_i, 0) - 1000;
   int selj = zoom == 1 ? 0 : (int)(1000 + (pointery + zoom_y)/ht) - offset_j         - 1000;
@@ -614,13 +644,13 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   int img_pointery = zoom == 1 ? pointery : fmodf(pointery + zoom_y, ht);
 
   // assure 1:1 is not switching images on resize/tab events:
-  if(!track && last_offset != 0x7fffffff && zoom == 1)
+  if(!track && lib->offset != 0x7fffffff && zoom == 1)
   {
-    offset = last_offset;
+    offset = lib->offset;
     zoom_x = wd*(offset % DT_LIBRARY_MAX_ZOOM);
     zoom_y = ht*(offset / DT_LIBRARY_MAX_ZOOM);
   }
-  else last_offset = offset;
+  else lib->offset = offset;
 
   int id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
@@ -764,6 +794,7 @@ void enter(dt_view_t *self)
     else         gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
+  self->reset(self);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -789,6 +820,9 @@ void reset(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->center = 1;
   lib->track = lib->pan = 0;
+  lib->offset = 0x7fffffff;
+  lib->first_visible_zoomable    = -1;
+  lib->first_visible_filemanager = -1;
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 }
 

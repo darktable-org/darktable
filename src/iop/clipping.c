@@ -130,11 +130,11 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   float ach = d->ch-d->cy, acw = d->cw-d->cx;
   if(pm->aspect > 0.0)
   {
-    const float ch = roi_in->width / pm->aspect  / (roi_in->height);
-    const float cw = pm->aspect * roi_in->height / (roi_in->width);
-    if     (acw >= cw) acw = cw; 
-    else if(ach >= ch) ach = ch;
-    else               acw *= ach/ch;
+    const float ch = acw * roi_in->width / pm->aspect  / (roi_in->height);
+    const float cw = pm->aspect * ach * roi_in->height / (roi_in->width);
+    if     (acw >= cw) acw = cw; // width  smaller
+    else if(ach >= ch) ach = ch; // height smaller
+    else               acw *= ach/ch; // should never happen.
   }
 
   // rotate and clip to max extent
@@ -236,7 +236,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0;j<roi_out->height;j++)
   {
-    // const float tmppi[2] = {pi[0], pi[1]};
     out = ((float *)o)+3*roi_out->width*j;
     for(int k=0;k<2;k++) pi[k] = p0[k] + j*dy[k];
     for(int i=0;i<roi_out->width;i++)
@@ -255,8 +254,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int k=0;k<2;k++) pi[k] += dx[k];
       out += 3;
     }
-    // for(int k=0;k<2;k++) pi[k] = tmppi[k];
-    // for(int k=0;k<2;k++) pi[k] += dy[k];
   }
 }
 
@@ -446,16 +443,19 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  g->hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 4));
+  g->hbox1 = GTK_HBOX(gtk_hbox_new(TRUE, 0));
   g->hbox2 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox2), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->hflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
-  g->vflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_DIRECTION_UP));
-  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->hflip), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->vflip), FALSE, FALSE, 0);
+  g->hflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_DIRECTION_UP));
+  g->vflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
+  GtkWidget *label = gtk_label_new(_("flip"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->hbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->hflip), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->vflip), TRUE, TRUE, 0);
   g->label1 = GTK_LABEL(gtk_label_new(_("crop x")));
   g->label2 = GTK_LABEL(gtk_label_new(_("crop y")));
   g->label3 = GTK_LABEL(gtk_label_new(_("crop w")));

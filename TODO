@@ -1,6 +1,8 @@
 0.5 release:
+- ship color profiles with dt?
 - export with more than one thread?
 - export started: log msg
+- remember visible image/center image for each film and mode
 - some `no float buffer available yet' process_to_mip crash at random?
 - have notifications disappear after a while?
 - decapitalize icc profile names
