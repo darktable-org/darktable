@@ -74,10 +74,6 @@ static const char BlackNWhite[] = N_("black & white");
 
 const wb_data wb_preset[] = {
 
-  { "", "", N_("manual wb"), 0,	{ 0, 0, 0, 0 } },
-  { "", "", N_("camera wb"), 0,	{ 0, 0, 0, 0 } },
-  { "", "", N_("auto wb"), 0,	{ 0, 0, 0, 0 } },
-
   { "Canon", "PowerShot A630", Daylight, 0,	{ 1.831422, 1, 1.245671, 0 } },
   { "Canon", "PowerShot A630", Cloudy, 0,	{ 1.669924, 1, 1.326299, 0 } },
   { "Canon", "PowerShot A630", Tungsten, 0,	{ 1.696768, 1, 1.268658, 0 } },
