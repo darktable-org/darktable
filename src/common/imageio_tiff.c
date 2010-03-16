@@ -46,24 +46,24 @@ int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16
     cmsCloseProfile(out_profile);
   }
   
-  TIFF *tif=TIFFOpen(filename,"w");
-  
-  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
-  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
+   // Create tiff image
+  TIFF *tif=TIFFOpen(filename,"w");  
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
-  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
   if(profile!=NULL)
     TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
+  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
+  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
+  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
   
   uint32_t rowsize=(width*3)*sizeof(uint16_t);
   uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
@@ -112,22 +112,22 @@ int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t
 
   // Create tiff image
   TIFF *tif=TIFFOpen(filename,"w");  
-  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
-  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
-  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
   if(profile!=NULL)
     TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
+  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
+  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
+  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
   
   uint32_t rowsize=width*3;
   uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;

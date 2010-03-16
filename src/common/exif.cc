@@ -248,15 +248,20 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
     Exiv2::ExifData::const_iterator end = blobExifData.end();
     for (Exiv2::ExifData::const_iterator i = blobExifData.begin(); i != end; ++i)
     {
-      try 
-      {
-        imgExifData[i->key()]=i->value();
-      } 
-      catch (Exiv2::AnyError &e)
-      {
+      Exiv2::ExifKey key(i->key());
+      if( imgExifData.findKey(key) == imgExifData.end() )
         imgExifData.add(Exiv2::ExifKey(i->key()),&i->value());
-      }
     }
+    // Remove thumbnail
+    Exiv2::ExifData::iterator it;
+    if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.Compression"))) !=imgExifData.end() ) imgExifData.erase(it);
+    if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.XResolution"))) !=imgExifData.end() ) imgExifData.erase(it);
+    if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.YResolution"))) !=imgExifData.end() ) imgExifData.erase(it);
+    if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.ResolutionUnit"))) !=imgExifData.end() ) imgExifData.erase(it);
+    if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.JPEGInterchangeFormat"))) !=imgExifData.end() ) imgExifData.erase(it);
+    if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.JPEGInterchangeFormatLength"))) !=imgExifData.end() ) imgExifData.erase(it);
+    
+    imgExifData.sortByTag();
     image->writeMetadata();
   }
   catch (Exiv2::AnyError& e)
