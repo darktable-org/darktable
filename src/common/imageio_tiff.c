@@ -17,6 +17,7 @@
 */
 #include <memory.h>
 #include "imageio_tiff.h"
+#include "common/exif.h"
 #define DT_TIFFIO_STRIPE 20
 
 int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len)
@@ -29,6 +30,8 @@ int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
@@ -51,8 +54,11 @@ int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int
   memcpy(last_stripe,stripedata,(in8+insize)-stripedata);
   TIFFWriteEncodedStrip(tif,stripe++,last_stripe,stripesize);
   free(last_stripe);
-
   TIFFClose(tif);
+  
+  if(exif)
+    dt_exif_write_blob(exif,exif_len,filename);
+  
   return 1;
 }
 
@@ -65,16 +71,16 @@ int dt_imageio_tiff_write_8(const char *filename, const uint8_t *in, const int w
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
-
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-
   TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  
+ 
   uint32_t rowsize=width*3;
   uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
   uint8_t *rowdata=malloc(stripesize);
@@ -96,6 +102,10 @@ int dt_imageio_tiff_write_8(const char *filename, const uint8_t *in, const int w
     }
   }	
   TIFFClose(tif);
+  
+  if(exif)
+    dt_exif_write_blob(exif,exif_len,filename);
+  
   return 1;
 }
 

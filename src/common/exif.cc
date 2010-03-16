@@ -30,7 +30,7 @@
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
-	Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
+  Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
   // std::stringstream ss;
@@ -233,6 +233,39 @@ int dt_exif_read(dt_image_t *img, const char* path)
     std::cerr << "[exiv2] " << s << std::endl;
     return 1;
   }
+}
+
+int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
+{
+  try
+  {
+    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(path);
+    assert (image.get() != 0);
+    image->readMetadata();
+    Exiv2::ExifData &imgExifData = image->exifData();
+    Exiv2::ExifData blobExifData;
+    Exiv2::ExifParser::decode(blobExifData, blob+6, size);
+    Exiv2::ExifData::const_iterator end = blobExifData.end();
+    for (Exiv2::ExifData::const_iterator i = blobExifData.begin(); i != end; ++i)
+    {
+      try 
+      {
+        imgExifData[i->key()]=i->value();
+      } 
+      catch (Exiv2::AnyError &e)
+      {
+        imgExifData.add(Exiv2::ExifKey(i->key()),&i->value());
+      }
+    }
+    image->writeMetadata();
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return 0;
+  }
+  return 1;
 }
 
 int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)

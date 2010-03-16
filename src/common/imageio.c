@@ -801,9 +801,38 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
+  // find output color profile for this image:
+  int sRGB = 1;
+  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  if(!strcmp(overprofile, "sRGB"))
+  {
+    sRGB = 1;
+  }
+  else if(!strcmp(overprofile, "image"))
+  {
+    GList *modules = dev.iop;
+    dt_iop_module_t *colorout = NULL;
+    while (modules)
+    {
+      colorout = (dt_iop_module_t *)modules->data;
+      if (strcmp(colorout->op, "colorout") == 0)
+      {
+        dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)colorout->params;
+        if(!strcmp(p->iccprofile, "sRGB")) sRGB = 1;
+        else sRGB = 0;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+  else
+  {
+    sRGB = 0;
+  }
+  g_free(overprofile);
+  
   int status = 1;
   int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
-  
+
   // Generate the 16 bit image buffer out of internal floatbuffer
   uint32_t imgsize=((processed_width*processed_height)*3)*sizeof(uint16_t);
   uint16_t *imgdata=(uint16_t *)malloc(imgsize);
@@ -814,10 +843,13 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
       for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
     }
 
+  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+  uint32_t length = dt_exif_read_blob(exif_profile, filename, sRGB);
+  
   if( export_format==DT_DEV_EXPORT_PPM16)
     status=dt_imageio_ppm_write_16(filename,imgdata,processed_width, processed_height);
   else if( export_format==DT_DEV_EXPORT_TIFF16 ) 
-    status=dt_imageio_tiff_write_16(filename,imgdata,processed_width, processed_height, NULL, 0);
+    status=dt_imageio_tiff_write_16(filename,imgdata,processed_width, processed_height, exif_profile, length);
 
   free(imgdata);
   dt_dev_pixelpipe_cleanup(&pipe);

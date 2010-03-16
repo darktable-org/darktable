@@ -33,6 +33,9 @@ int dt_exif_read(dt_image_t *img, const char* path);
 /** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. sRGB should be true if sRGB colorspace is used as output. */
 int dt_exif_read_blob(uint8_t *blob, const char* path, const int sRGB);
 
+/** write blob to file exif. merges with existing exif information.*/
+int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path);
+
 #ifdef __cplusplus
 }
 #endif
