@@ -16,12 +16,36 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <memory.h>
+#include <lcms.h> 
 #include "imageio_tiff.h"
 #include "common/exif.h"
+#include "common/colorspaces.h"
 #define DT_TIFFIO_STRIPE 20
+
+
 
 int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len)
 {
+  return dt_imageio_tiff_write_with_icc_profile_16(filename,in,width,height,exif,exif_len,0);
+}
+
+int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len, int imgid)
+{
+  // Fetch colorprofile into buffer if wanted
+  uint8_t *profile=NULL;
+  size_t profile_len = 0;
+  if(imgid > 0)
+  {
+    cmsHPROFILE out_profile = create_output_profile(imgid);
+    _cmsSaveProfileToMem(out_profile, 0, &profile_len);
+    if (profile_len > 0)
+    {
+      profile=malloc(profile_len);
+      _cmsSaveProfileToMem(out_profile, profile, &profile_len);
+    }
+    cmsCloseProfile(out_profile);
+  }
+  
   TIFF *tif=TIFFOpen(filename,"w");
   
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
@@ -38,7 +62,9 @@ int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int
   TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-
+  if(profile!=NULL)
+    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
+  
   uint32_t rowsize=(width*3)*sizeof(uint16_t);
   uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
   const uint8_t *in8=(const uint8_t *)in;
@@ -64,8 +90,28 @@ int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int
 
 int dt_imageio_tiff_write_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len)
 {
-  TIFF *tif=TIFFOpen(filename,"w");
-  
+  return dt_imageio_tiff_write_with_icc_profile_8(filename,in,width,height,exif,exif_len,0);
+}
+
+int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len, int imgid)
+{
+  // Fetch colorprofile into buffer if wanted
+  uint8_t *profile=NULL;
+  size_t profile_len = 0;
+  if(imgid > 0)
+  {
+    cmsHPROFILE out_profile = create_output_profile(imgid);
+    _cmsSaveProfileToMem(out_profile, 0, &profile_len);
+    if (profile_len > 0)
+    {
+      profile=malloc(profile_len);
+      _cmsSaveProfileToMem(out_profile, profile, &profile_len);
+    }
+    cmsCloseProfile(out_profile);
+  }
+
+  // Create tiff image
+  TIFF *tif=TIFFOpen(filename,"w");  
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
@@ -80,7 +126,9 @@ int dt_imageio_tiff_write_8(const char *filename, const uint8_t *in, const int w
   TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
- 
+  if(profile!=NULL)
+    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
+  
   uint32_t rowsize=width*3;
   uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
   uint8_t *rowdata=malloc(stripesize);

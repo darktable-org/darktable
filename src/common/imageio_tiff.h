@@ -31,8 +31,10 @@ typedef struct dt_imageio_tiff_t
 
 /** write 8-bit tiff file, with exif if not NULL. */
 int dt_imageio_tiff_write_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len);
+int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len,int imgid);
 /** write 16-bit tiff file, with exif if not NULL. */
 int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len);
+int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len,int imgid);
 /** read tiff header from file, leave file descriptor open until tiff_read is called. */
 int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *jpg);
 /** reads the jpeg to the (sufficiently allocated) buffer, closes file. */

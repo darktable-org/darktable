@@ -948,7 +948,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   else if(export_format==DT_DEV_EXPORT_PNG)
     res=dt_imageio_png_write(filename, buf8,processed_width, processed_height);
   else if(export_format==DT_DEV_EXPORT_TIFF8)
-    res=dt_imageio_tiff_write_8(filename, buf8,processed_width, processed_height,exif_profile, length);
+    res=dt_imageio_tiff_write_with_icc_profile_8(filename, buf8,processed_width, processed_height,exif_profile, length,img->id);
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
