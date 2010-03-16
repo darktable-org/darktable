@@ -357,12 +357,12 @@ void dt_control_export_job_run(dt_job_t *job)
         break;
       case DT_DEV_EXPORT_TIFF8:
       case DT_DEV_EXPORT_TIFF16:
-	if(img->film_id == 1 && !strcmp(c, ".tif")) { strncpy(c, "_dt", 3); c += 3; }
+        if(img->film_id == 1 && !strcmp(c, ".tif")) { strncpy(c, "_dt", 3); c += 3; }
         strncpy(c, ".tif", 4);
-	if(fmt==DT_DEV_EXPORT_TIFF8)
-		dt_imageio_export_8(img, filename);
-	else if(fmt==DT_DEV_EXPORT_TIFF16)
-		dt_imageio_export_16(img, filename);
+        if(fmt==DT_DEV_EXPORT_TIFF8)
+          dt_imageio_export_8(img, filename);
+        else if(fmt==DT_DEV_EXPORT_TIFF16)
+          dt_imageio_export_16(img, filename);
         break;
       default:
         break;

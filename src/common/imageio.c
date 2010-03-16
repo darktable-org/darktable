@@ -808,13 +808,11 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   uint32_t imgsize=((processed_width*processed_height)*3)*sizeof(uint16_t);
   uint16_t *imgdata=(uint16_t *)malloc(imgsize);
   for(int y=0;y<processed_height;y++)
-      for(int x=0;x<processed_width ;x++)
-      {
-        const int k = x + processed_width*y;
-        for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
-        if( export_format == DT_DEV_EXPORT_PPM16 ) // Swap bytes if ppm
-          for(int i=0;i<3;i++) imgdata[3*k+i] = (0xff00 & (imgdata[3*k+i]<<8))|(imgdata[3*k+i]>>8);
-      }
+    for(int x=0;x<processed_width ;x++)
+    {
+      const int k = x + processed_width*y;
+      for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
+    }
 
   if( export_format==DT_DEV_EXPORT_PPM16)
     status=dt_imageio_ppm_write_16(filename,imgdata,processed_width, processed_height);

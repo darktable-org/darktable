@@ -78,12 +78,12 @@ dt_dev_operation_params_t;
 
 typedef enum dt_dev_export_format_t
 {
-  DT_DEV_EXPORT_JPG   = 0,
-  DT_DEV_EXPORT_PNG   = 1,
-  DT_DEV_EXPORT_PPM16 = 2,
-  DT_DEV_EXPORT_PFM   = 3,
-  DT_DEV_EXPORT_TIFF8   = 4,
-  DT_DEV_EXPORT_TIFF16   = 5
+  DT_DEV_EXPORT_JPG    = 0,
+  DT_DEV_EXPORT_PNG    = 1,
+  DT_DEV_EXPORT_PPM16  = 2,
+  DT_DEV_EXPORT_PFM    = 3,
+  DT_DEV_EXPORT_TIFF8  = 4,
+  DT_DEV_EXPORT_TIFF16 = 5
 }
 dt_dev_export_format_t;
 

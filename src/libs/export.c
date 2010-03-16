@@ -102,12 +102,12 @@ gui_reset (dt_lib_module_t *self)
   dtgtk_slider_set_value(d->quality, quality);
   int k = dt_conf_get_int ("plugins/lighttable/export/format");
   int i = 0;
-  if     (k == DT_DEV_EXPORT_JPG)   i = 0;
-  else if(k == DT_DEV_EXPORT_PNG)   i = 1;
-  else if(k == DT_DEV_EXPORT_TIFF8)   i = 2;
-  else if(k == DT_DEV_EXPORT_PPM16) i = 3;
+  if     (k == DT_DEV_EXPORT_JPG)    i = 0;
+  else if(k == DT_DEV_EXPORT_PNG)    i = 1;
+  else if(k == DT_DEV_EXPORT_TIFF8)  i = 2;
+  else if(k == DT_DEV_EXPORT_PPM16)  i = 3;
   else if(k == DT_DEV_EXPORT_TIFF16) i = 4;
-  else if(k == DT_DEV_EXPORT_PFM)   i = 5;
+  else if(k == DT_DEV_EXPORT_PFM)    i = 5;
   gtk_combo_box_set_active(d->format, i);
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
@@ -279,8 +279,8 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(d->format, _("8-bit jpg"));
-  gtk_combo_box_append_text(d->format, _("8-bit tiff"));
   gtk_combo_box_append_text(d->format, _("8-bit png"));
+  gtk_combo_box_append_text(d->format, _("8-bit tiff"));
   gtk_combo_box_append_text(d->format, _("16-bit ppm"));
   gtk_combo_box_append_text(d->format, _("16-bit tiff"));
   gtk_combo_box_append_text(d->format, _("float pfm"));

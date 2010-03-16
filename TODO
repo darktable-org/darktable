@@ -1,4 +1,6 @@
 0.5 release:
+- export with more than one thread?
+- export started: log msg
 - some `no float buffer available yet' process_to_mip crash at random?
 - have notifications disappear after a while?
 - decapitalize icc profile names
