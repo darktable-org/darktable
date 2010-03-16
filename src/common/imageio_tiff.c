@@ -75,11 +75,7 @@ int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16
     TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
     stripedata+=stripesize;  
   }
-  uint8_t *last_stripe=(uint8_t *)malloc(stripesize);
-  memset(last_stripe,0,stripesize);
-  memcpy(last_stripe,stripedata,(in8+insize)-stripedata);
-  TIFFWriteEncodedStrip(tif,stripe++,last_stripe,stripesize);
-  free(last_stripe);
+  TIFFWriteEncodedStrip(tif,stripe++,stripedata,(in8+insize)-stripedata);
   TIFFClose(tif);
   
   if(exif)
@@ -149,6 +145,8 @@ int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t
       wdata=rowdata;
     }
   }	
+  if((wdata-stripesize)!=rowdata)
+	TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
   TIFFClose(tif);
   
   if(exif)

@@ -282,13 +282,14 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
+    /* Dont bail, lets return a blob with UserComment and ProcessingSoftware
     if (exifData.empty())
     {
       std::string error(path);
       error += ": no exif data found in ";
       error += path;
       throw Exiv2::Error(1, error);
-    }
+    }*/
     exifData["Exif.Image.Orientation"] = uint16_t(1);
     exifData["Exif.Photo.UserComment"]
         = "developed using "PACKAGE_NAME"-"PACKAGE_VERSION;
