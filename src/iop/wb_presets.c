@@ -79,10 +79,6 @@ const char uf_auto_wb[] = N_("Auto WB");
 
 const wb_data wb_preset[] = {
 
-  { "", "", uf_camera_wb, 0,	{ 0, 0, 0, 0 } },
-  { "", "", uf_manual_wb, 0,	{ 0, 0, 0, 0 } },
-  { "", "", uf_auto_wb, 0,	{ 0, 0, 0, 0 } },
-
   { "Canon", "PowerShot A630", Daylight, 0,	{ 1.831422, 1, 1.245671, 0 } },
   { "Canon", "PowerShot A630", Cloudy, 0,	{ 1.669924, 1, 1.326299, 0 } },
   { "Canon", "PowerShot A630", Tungsten, 0,	{ 1.696768, 1, 1.268658, 0 } },
