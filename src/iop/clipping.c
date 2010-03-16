@@ -232,12 +232,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   pi[0] = p0[0]; pi[1] = p0[1];
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) firstprivate(pi,out) shared(o,dx,dy,in,roi_in,roi_out)
+  #pragma omp parallel for schedule(static) default(none) firstprivate(pi,out) shared(o,p0,dx,dy,in,roi_in,roi_out)
 #endif
   for(int j=0;j<roi_out->height;j++)
   {
+    // const float tmppi[2] = {pi[0], pi[1]};
     out = ((float *)o)+3*roi_out->width*j;
-    const float tmppi[2] = {pi[0], pi[1]};
+    for(int k=0;k<2;k++) pi[k] = p0[k] + j*dy[k];
     for(int i=0;i<roi_out->width;i++)
     {
       const int ii = (int)pi[0], jj = (int)pi[1];
@@ -254,8 +255,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int k=0;k<2;k++) pi[k] += dx[k];
       out += 3;
     }
-    for(int k=0;k<2;k++) pi[k] = tmppi[k];
-    for(int k=0;k<2;k++) pi[k] += dy[k];
+    // for(int k=0;k<2;k++) pi[k] = tmppi[k];
+    // for(int k=0;k<2;k++) pi[k] += dy[k];
   }
 }
 
