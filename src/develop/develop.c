@@ -782,11 +782,11 @@ void dt_dev_read_history(dt_develop_t *dev)
     if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
        strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
-      fprintf(stderr, "[dev_read_history] module `%s' version missmatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
+      fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
       const char *fname = dev->image->filename + strlen(dev->image->filename);
       while(fname > dev->image->filename && *fname != '/') fname --;
       if(fname > dev->image->filename) fname++;
-      dt_control_log(_("%s: module `%s' version missmatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
+      dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
       free(hist);
       continue;
     }

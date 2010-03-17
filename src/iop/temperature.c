@@ -75,7 +75,7 @@ static const float dt_iop_temperature_rgb_r55[][12] =
 
 const char *name()
 {
-  return C_("modulename", "whitebalance");
+  return C_("modulename", "white balance");
 }
 
 static void
@@ -373,8 +373,8 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   g->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->presets, _("camera whitebalance"));
-  gtk_combo_box_append_text(g->presets, _("spot whitebalance"));
+  gtk_combo_box_append_text(g->presets, _("camera white balance"));
+  gtk_combo_box_append_text(g->presets, _("spot white balance"));
   gtk_combo_box_append_text(g->presets, _("passthrough"));
   g->preset_cnt = 3;
   const char *wb_name = NULL;
@@ -398,7 +398,7 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_spin_button_set_value (g->finetune, 0);
   gtk_spin_button_set_digits(g->finetune, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune whitebalance preset"), NULL);
+  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), NULL);
 
   self->gui_update(self);
 

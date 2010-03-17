@@ -224,7 +224,7 @@ update_colorpicker_panel()
     char colstring[512];
     GtkWidget *w;
     w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
-    snprintf(colstring, 512, C_("colorpicker module", "`%s'"), module->name());
+    snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
     gtk_label_set_label(GTK_LABEL(w), colstring);
     w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
     darktable.gui->reset = 1;

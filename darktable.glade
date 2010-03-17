@@ -41,7 +41,7 @@
                         <property name="has_tooltip">True</property>
                         <property name="tooltip" translatable="yes">switch to darkroom mode</property>
                         <property name="ypad">7</property>
-                        <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;lighttable mode&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
+                        <property name="label" translatable="yes">&lt;span color="#7f7f7f"&gt;&lt;big&gt;&lt;b&gt;light table mode&lt;/b&gt;&lt;/big&gt;&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                       </widget>
                     </child>
@@ -379,7 +379,7 @@ max</property>
                               <widget class="GtkComboBox" id="lighttable_layout_combobox">
                                 <property name="visible">True</property>
                                 <property name="active">0</property>
-                                <property name="items" translatable="yes">zoomable lighttable
+                                <property name="items" translatable="yes">zoomable light table
 file manager</property>
                               </widget>
                               <packing>
@@ -675,7 +675,7 @@ all film rolls</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="receives_default">True</property>
                                                     <property name="has_tooltip">True</property>
-                                                    <property name="tooltip" translatable="yes">open selected film roll in lighttable</property>
+                                                    <property name="tooltip" translatable="yes">open selected film roll in light table</property>
                                                   </widget>
                                                   <packing>
                                                     <property name="position">1</property>
@@ -944,7 +944,7 @@ all film rolls</property>
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="xpad">5</property>
-                                            <property name="label" translatable="yes">datetime</property>
+                                            <property name="label" translatable="yes">date/time</property>
                                           </widget>
                                           <packing>
                                             <property name="top_attach">7</property>
@@ -1255,7 +1255,7 @@ all film rolls</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
-                                                <property name="tooltip" translatable="yes">create a minmal history stack which produces the same image</property>
+                                                <property name="tooltip" translatable="yes">create a minimal history stack which produces the same image</property>
                                                 <property name="xalign">0</property>
                                               </widget>
                                               <packing>

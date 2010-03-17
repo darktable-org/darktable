@@ -1192,7 +1192,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->target_geom), "tooltip-text",
       _("target geometry"), NULL);
   gtk_combo_box_append_text(g->target_geom, _("rectilinear"));
-  gtk_combo_box_append_text(g->target_geom, _("fisheye"));
+  gtk_combo_box_append_text(g->target_geom, _("fish-eye"));
   gtk_combo_box_append_text(g->target_geom, _("panoramic"));
   gtk_combo_box_append_text(g->target_geom, _("equirectangular"));
   gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);

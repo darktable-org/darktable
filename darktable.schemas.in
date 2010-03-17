@@ -153,7 +153,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>version of these dt-gconf entries</short>
-        <long>if this number is smaller than the darktable internal version number, the values here will be syched with the new defaults.</long>
+        <long>if this number is smaller than the darktable internal version number, the values here will be synched with the new defaults.</long>
       </locale>
     </schema>
 
@@ -581,7 +581,7 @@
       <default>image</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>iccprofile to use for export</short>
+        <short>icc profile to use for export</short>
         <long>this overrides the per-image settings, if not set to `image'.</long>
       </locale>
     </schema>
