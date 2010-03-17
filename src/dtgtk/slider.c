@@ -254,7 +254,7 @@ static gboolean _slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
   inc*= (DTGTK_SLIDER(widget)->is_ctrl_key_pressed==TRUE) ? 1.0 : DTGTK_VALUE_SENSITIVITY;
   gtk_adjustment_set_value( 
     DTGTK_SLIDER(widget)->adjustment,
-    gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?inc:-inc)
+    gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?-inc:inc)
   );
   gtk_widget_draw( widget, NULL);
   g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
