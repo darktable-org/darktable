@@ -374,7 +374,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->cbox1, _("perceptual"));
   gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox1, _("saturation"));
+  gtk_combo_box_append_text(g->cbox1,C_("rendering intent", "saturation"));
   gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *l = g->profiles;

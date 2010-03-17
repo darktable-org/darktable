@@ -196,7 +196,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(d->intent, _("image settings"));
   gtk_combo_box_append_text(d->intent, _("perceptual"));
   gtk_combo_box_append_text(d->intent, _("relative colorimetric"));
-  gtk_combo_box_append_text(d->intent, _("saturation"));
+  gtk_combo_box_append_text(d->intent, C_("rendering intent", "saturation"));
   gtk_combo_box_append_text(d->intent, _("absolute colorimetric"));
   gtk_box_pack_start(vbox2, GTK_WIDGET(d->intent), TRUE, TRUE, 0);
 

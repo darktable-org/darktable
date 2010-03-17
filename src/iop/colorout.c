@@ -365,12 +365,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->cbox1, _("perceptual"));
   gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox1, _("saturation"));
+  gtk_combo_box_append_text(g->cbox1, C_("rendering intent", "saturation"));
   gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
   g->cbox4 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->cbox4, _("perceptual"));
   gtk_combo_box_append_text(g->cbox4, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox4, _("saturation"));
+  gtk_combo_box_append_text(g->cbox4, C_("rendering intent", "saturation"));
   gtk_combo_box_append_text(g->cbox4, _("absolute colorimetric"));
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->cbox3 = GTK_COMBO_BOX(gtk_combo_box_new_text());
