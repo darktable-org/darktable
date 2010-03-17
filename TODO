@@ -1,6 +1,8 @@
 0.5 release:
 - decapitalize icc profile names
 - wb invalidate presets on change.
+- export plugin layout cleanup.
+- basecurve on THUMBNAIL images??
 
 later:
 - embed custom exif data in export plugin

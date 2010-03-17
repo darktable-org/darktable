@@ -79,6 +79,10 @@ Zoom out to fit all images in one row inside viewport, center on image under cur
 
 Move around (arrows also work)
 
+=item B<alt-1, 2, 3, 4>
+
+Star rating
+
 =back
 
 Darkroom mode:

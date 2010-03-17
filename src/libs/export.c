@@ -161,36 +161,34 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_hbox_new(FALSE, 0);
   
-  GtkBox *hbox;
+  GtkBox *hbox, *vbox1, *vbox2;
   GtkWidget *label;
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
+
   d->width  = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
   label = gtk_label_new(_("maximum size"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(hbox, label, TRUE, TRUE, 5);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->width), FALSE, FALSE, 5);
-  gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 5);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->height), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox1, label, TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->width), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 100, 1,97,0));
+  label = gtk_label_new(_("quality"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(d->quality), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(hbox, gtk_label_new(_("quality")), FALSE, FALSE, 5);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->quality), TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(FALSE, 0));
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(FALSE, 0));
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);
   label = gtk_label_new(_("rendering intent"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox1, label, TRUE, TRUE, 0);
@@ -276,7 +274,6 @@ gui_init (dt_lib_module_t *self)
                     G_CALLBACK (profile_changed),
                     (gpointer)d);
 
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(d->format, _("8-bit jpg"));
   gtk_combo_box_append_text(d->format, _("8-bit png"));
@@ -285,9 +282,8 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(d->format, _("16-bit tiff"));
   gtk_combo_box_append_text(d->format, _("float pfm"));
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->format), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(button), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox1, GTK_WIDGET(d->format), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(button), FALSE, FALSE, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (export_button_clicked),
