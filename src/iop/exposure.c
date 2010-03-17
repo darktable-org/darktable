@@ -160,7 +160,7 @@ void cleanup(dt_iop_module_t *module)
 void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -log2f(white/self->dev->image->maximum));
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -log2f(fmaxf(0.001, white/self->dev->image->maximum)));
 }
 
 float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
@@ -220,14 +220,12 @@ static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
+  if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  p->exposure = - log2f(fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]) * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp))));
-  darktable.gui->reset = 1;
-  self->gui_update(self);
-  darktable.gui->reset = 0;
-  dt_dev_add_history_item(self->dev, self);
+  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
+    * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
+  dt_iop_exposure_set_white(self, white);
   return FALSE;
 }
 

@@ -19,6 +19,7 @@
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "common/film.h"
+#include "views/view.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,6 +137,7 @@ int dt_film_open(const int32_t id)
   dt_control_update_recent_films();
   dt_film_set_query(id);
   dt_control_queue_draw_all();
+  dt_view_manager_reset(darktable.view_manager);
   return 0;
 }
 
