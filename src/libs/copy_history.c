@@ -108,6 +108,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int32_t imgid = sqlite3_column_int(stmt, 0);
+    if(imgid == d->imageid) continue;
     int32_t offs = 0; // current history stack height
     // if stacking is requested, count history items.
     int i = gtk_combo_box_get_active(d->pastemode);
