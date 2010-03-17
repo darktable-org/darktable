@@ -321,7 +321,7 @@ void dt_control_export_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   const int total = g_list_length(t);
-  dt_control_log(_("exporting %d images.."), total);
+  dt_control_log(ngettext ("exporting %d image..", "exporting %d images.."), total);
   while(t)
   {
     imgid = (long int)t->data;
