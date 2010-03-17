@@ -1,7 +1,4 @@
 0.5 release:
-- export with more than one thread (cache bufs?)?
-- export started: log msg
-- have notifications disappear after a while?
 - decapitalize icc profile names
 - wb invalidate presets on change.
 

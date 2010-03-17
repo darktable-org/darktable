@@ -320,6 +320,8 @@ void dt_control_export_job_run(dt_job_t *job)
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
+  const int total = g_list_length(t);
+  dt_control_log(_("exporting %d images.."), total);
   while(t)
   {
     imgid = (long int)t->data;
@@ -383,8 +385,8 @@ void dt_control_export_job_run(dt_job_t *job)
     printf("[export_job] exported to `%s'\n", filename);
     char *trunc = filename + strlen(filename) - 32;
     if(trunc < filename) trunc = filename;
-    dt_control_log(_("exported to `%s%s'"), trunc != filename ? ".." : "", trunc);
     t = g_list_delete_link(t, t);
+    dt_control_log(_("%d/%d exported to `%s%s'"), total-g_list_length(t), total, trunc != filename ? ".." : "", trunc);
   }
 }
 
