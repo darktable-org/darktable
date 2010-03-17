@@ -456,6 +456,8 @@ tint_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  gtk_combo_box_set_active(g->presets, -1);
 }
 
 static void
@@ -464,6 +466,8 @@ temp_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  gtk_combo_box_set_active(g->presets, -1);
 }
 
 static void
@@ -472,6 +476,8 @@ temp_out_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   temp_changed(self);
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  gtk_combo_box_set_active(g->presets, -1);
 }
 
 static void
@@ -486,9 +492,9 @@ rgb_callback (GtkDarktableSlider *slider, gpointer user_data)
   else if(slider == DTGTK_SLIDER(g->scale_g)) p->coeffs[1] = value;
   else if(slider == DTGTK_SLIDER(g->scale_b)) p->coeffs[2] = value;
  
-
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);
+  gtk_combo_box_set_active(g->presets, -1);
 }
 
 static void
