@@ -158,6 +158,7 @@ void dt_control_job_print(dt_job_t *j);
 
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
+#define DT_CTL_LOG_TIMEOUT 2000
 /**
  * this manages everything time-consuming.
  * distributes the jobs on all processors,
@@ -177,6 +178,7 @@ typedef struct dt_control_t
   // message log
   int  log_pos, log_ack;
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
+  guint log_message_timeout_id;
   int  log_busy;
   pthread_mutex_t log_mutex;
   

@@ -856,6 +856,17 @@ void dt_ctl_switch_mode()
   dt_ctl_switch_mode_to(mode);
 }
 
+static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
+{
+  pthread_mutex_lock(&darktable.control->log_mutex);
+  darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
+  darktable.control->log_message_timeout_id=0;
+  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_control_queue_draw_all();
+  return FALSE;
+}
+
+
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state)
 {
   float tb = darktable.control->tabborder;
@@ -872,6 +883,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   if(darktable.control->log_ack != darktable.control->log_pos)
   if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
   {
+    if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
     darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
     pthread_mutex_unlock(&darktable.control->log_mutex);
     return;
@@ -892,8 +904,10 @@ void dt_control_log(const char* msg, ...)
   va_start(ap, msg);
   vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
   va_end(ap);
+  if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
   darktable.control->log_ack = darktable.control->log_pos;
   darktable.control->log_pos = (darktable.control->log_pos+1)%DT_CTL_LOG_SIZE;
+  darktable.control->log_message_timeout_id=g_timeout_add(DT_CTL_LOG_TIMEOUT,_dt_ctl_log_message_timeout_callback,NULL);
   pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_draw_all();
 }
