@@ -237,7 +237,12 @@ void init (dt_iop_module_t *module)
   dt_image_full_path(module->dev->image, filename, 1024);
   libraw_data_t *raw = libraw_init(0);
   ret = libraw_open_file(raw, filename);
-  if(!ret) for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.cam_mul[k]/1024.0;
+  if(!ret)
+  {
+    for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.cam_mul[k];
+    tmp.coeffs[0] /= tmp.coeffs[1];
+    tmp.coeffs[2] /= tmp.coeffs[1];
+  }
   libraw_close(raw);
 
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
