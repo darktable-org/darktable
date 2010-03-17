@@ -158,7 +158,7 @@ void dt_control_job_print(dt_job_t *j);
 
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
-#define DT_CTL_LOG_TIMEOUT 2000
+#define DT_CTL_LOG_TIMEOUT 20000
 /**
  * this manages everything time-consuming.
  * distributes the jobs on all processors,

@@ -161,12 +161,12 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
-  self->widget = gtk_hbox_new(FALSE, 0);
+  self->widget = gtk_hbox_new(FALSE, 5);
   
   GtkBox *hbox, *vbox1, *vbox2;
   GtkWidget *label;
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
 
