@@ -39,6 +39,7 @@
 #include <strings.h>
 #include <errno.h>
 #include <assert.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -756,6 +757,33 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
 }
 
+static void
+star_key_accel_callback(void *data)
+{
+  long int num = (long int)data;
+  switch (num)
+  {
+    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4:
+    { 
+      int32_t mouse_over_id;
+      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+      if(num == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+      else
+      {
+        image->flags &= ~0x7;
+        image->flags |= num;
+      }
+      dt_image_cache_flush(image);
+      dt_image_cache_release(image, 'r');
+      dt_control_queue_draw_all();
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 void enter(dt_view_t *self)
 {
   // add expanders
@@ -794,6 +822,10 @@ void enter(dt_view_t *self)
     else         gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, star_key_accel_callback, (void *)DT_LIB_STAR_1);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_LIB_STAR_2);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_LIB_STAR_3);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_LIB_STAR_4);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -803,6 +835,7 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  dt_gui_key_accel_unregister(star_key_accel_callback);
   GList *it = darktable.lib->plugins;
   while(it)
   {

@@ -738,11 +738,10 @@ void dt_gui_key_accel_unregister(void (*callback)(void *))
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
+    GList *ii = g_list_next(i);
     if(a->callback == callback)
-    {
       darktable.gui->key_accels = g_list_delete_link(darktable.gui->key_accels, i);
-    }
-    i = g_list_next(i);
+    i = ii;
   }
 }
 

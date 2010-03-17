@@ -1,13 +1,16 @@
 0.5 release:
-- ship color profiles with dt?
-- export with more than one thread?
+- export with more than one thread (cache bufs?)?
 - export started: log msg
-- remember visible image/center image for each film and mode
-- some `no float buffer available yet' process_to_mip crash at random?
 - have notifications disappear after a while?
 - decapitalize icc profile names
+- wb invalidate presets on change.
+
+later:
+- embed custom exif data in export plugin
+- ship color profiles with dt?
+- remember visible image/center image for each film and mode
+- some `no float buffer available yet' process_to_mip crash at random?
 - thumbnail regeneration trigger: expose after image loaded not enough?
-- multiselect film import
 - give tag for each film roll during import, make editing easy after
 - compare sha1sum in db with image on open.
 - whitebalance finetune presets: interpolate if not all in wb_presets.c
@@ -19,7 +22,6 @@
 - custom presets with name
 - exposure pipe:
   - implement cool highlight reconstruction with new information above max.
-- wb invalidate presets on change.
 - embedded profiles?
 - aspect ratio presets
 - save custom defaults (sqlite table iop_defaults) to external file as well
@@ -41,8 +43,6 @@
 - mirror horizontal/vertical in crop/rotate, drag crop box, bypass angle==0
 - gnome-color-manager dbus interaction
 - highlight reconstruction/tonemapping (reinhard 02)
-- write dttags on image_cache_flush?
-- ctrl + 01234 in lighttable => stars
 - esc -> unfullscreen -> center
 - automatic re-import in raw import on button press?
 - auto center/filter to 1 star/filename if new film is loaded
@@ -54,8 +54,6 @@
   - gconf option for maximum number of jobs?
   - gconf performance presets (memory/preview subsample)
 - scroll to opened expander in darkroom mode.
-
-later:
 - views/browse.c: browse by similar tag:
   inner 1:1 lighttable image, border with smaller images with
   related tags, 2*k+2 many.
@@ -72,10 +70,6 @@ later:
 - try gegl 0.1.2
 - mac bitch: gegl.h and Carbon.h are not friends.
 - exr io
-- tiff io
-  TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-  TIFFSetField(out, TIFFTAG_ZIPQUALITY, 9);
-  TIFFSetField(out, TIFFTAG_PREDICTOR, 2);
 - progress bars for coresponding widgets (export)?
 - efficiency:
   - dt_image_expose: check history cached in flags?
@@ -84,7 +78,6 @@ later:
 bugs:
 - develop left without mipf loaded => output_width messed up.
 - open_raw has img cleaned up before finished during dt_exit
-- import while still importing crashes.
 
 cleanup:
 - keep stdout clean! (shut up exiv2 and jpg)
