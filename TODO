@@ -3,6 +3,7 @@
 - black images bug
 - color picker delay (in color zones)
 - color picker picks outside image area?
+- box width < -1 still there.
 
 later:
 - built-in XYZ color profile support?

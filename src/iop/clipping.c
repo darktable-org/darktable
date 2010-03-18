@@ -108,6 +108,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   dt_iop_clipping_params_t *pm = (dt_iop_clipping_params_t *)self->params;
 
+
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle),-sinf(d->angle),
                  sinf(d->angle), cosf(d->angle)};
