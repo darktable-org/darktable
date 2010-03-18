@@ -116,7 +116,7 @@
                 </child>
                 <child>
                   <widget class="GtkEventBox" id="module_list_eventbox">
-                    <property name="visible">True</property>
+                    <property name="no_show_all">True</property>
                     <child>
                       <widget class="GtkExpander" id="module_list_expander">
                         <property name="visible">True</property>

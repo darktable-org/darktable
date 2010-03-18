@@ -327,6 +327,10 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
   gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
+  gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  gtk_widget_set_visible(widget, TRUE);
 
   // get top level vbox containing all expanders, plugins_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
@@ -428,6 +432,10 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
   gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
+  gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  gtk_widget_set_visible(widget, FALSE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db
