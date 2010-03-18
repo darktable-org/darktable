@@ -242,6 +242,7 @@ void init (dt_iop_module_t *module)
     for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.cam_mul[k];
     tmp.coeffs[0] /= tmp.coeffs[1];
     tmp.coeffs[2] /= tmp.coeffs[1];
+    tmp.coeffs[1] = 1.0f;
   }
   libraw_close(raw);
 
