@@ -67,6 +67,7 @@ dt_iop_clipping_gui_data_t;
 typedef struct dt_iop_clipping_data_t
 {
   float angle;              // rotation angle
+  float aspect;             // forced aspect ratio
   float m[4];               // rot matrix
   float tx, ty;             // rotation center
   float cx, cy, cw, ch;     // crop window
@@ -106,8 +107,6 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 {
   *roi_out = *roi_in;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
-  dt_iop_clipping_params_t *pm = (dt_iop_clipping_params_t *)self->params;
-
 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle),-sinf(d->angle),
@@ -129,10 +128,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
   // enforce aspect ratio, only make area smaller
   float ach = d->ch-d->cy, acw = d->cw-d->cx;
-  if(pm->aspect > 0.0)
+  if(d->aspect > 0.0)
   {
-    const float ch = acw * roi_in->width / pm->aspect  / (roi_in->height);
-    const float cw = pm->aspect * ach * roi_in->height / (roi_in->width);
+    const float ch = acw * roi_in->width / d->aspect  / (roi_in->height);
+    const float cw = d->aspect * ach * roi_in->height / (roi_in->width);
     if     (acw >= cw) acw = cw; // width  smaller
     else if(ach >= ch) ach = ch; // height smaller
     else               acw *= ach/ch; // should never happen.
@@ -271,6 +270,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->cy = p->cy;
   d->cw = fabsf(p->cw);
   d->ch = fabsf(p->ch);
+  d->aspect = p->aspect;
   d->flags = (p->ch < 0 ? FLAG_FLIP_VERTICAL : 0) | (p->cw < 0 ? FLAG_FLIP_HORIZONTAL : 0);
 #endif
 }
