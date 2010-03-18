@@ -20,20 +20,19 @@
     	<div class="listtext">
     	<img src="images/clouds.jpg" alt="contributing" class="img" /><h1>contributing</h1>
       <ul>
-        <li>use it! and then leave your bugreports, feature requests, suggestions, patches ... at <a href="http://sourceforge.net/apps/phpbb/darktable/">the forums</a>.</li>
-        <li>post a patch to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>.</li>
+        <li>use it! and then discuss your bugreports, feature requests, suggestions, translations, patches ..
+            on the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>.</li>
+        <li>post documentation, tutorials, your experiences at <a href="http://sourceforge.net/apps/phpbb/darktable/">the forums</a>.</li>
         <li>post beta: write image operation plug-ins.</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/mushroom.jpg" alt="imprint" class="img" /><h1>imprint</h1>
       <ul>
-        <li><em>alexandre prokudine</em> russian translation</li>
-        <li><em>christian himpel</em> aur packaging</li>
-        <li><em>gregor quade</em> mac osx packaging</li>
-        <li><em>henrik andersson</em> swedish translation</li>
         <li><em>johannes hanika</em> darktable development</li>
         <li><em>thorsten mahler</em> [<a href="http://medien.informatik.uni-ulm.de/~mahler">homepage</a>] webdesign</li>
+        <li><em>alexander rabtchevich, alexandre prokoudine, christian himpel, gregor quade, henrik andersson, pascal de bruijn, richard hughes, thomas costis</em>
+        contributors of ideas, ethusiasm, translations, aur ubuntu macintosh packaging, git support, feature and bugfix patches, as well as excessive battle-testing :)</li>
       </ul>
     	</div>
     </div> <!-- page -->

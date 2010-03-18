@@ -12,6 +12,30 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
+    	<img src="images/rock1.jpg" class="img" alt="dreggn" /><h1>released 0.5</h1>
+      <em>(2010-03-18)</em>features, features, features ;)
+      <ul>
+        <li>image tagging</li>
+        <li>flexible database queries by exif and custom tags</li>
+        <li>powerful color zones plug-in, to selectively alter only some colors</li>
+        <li>french translation</li>
+        <li>libraw 0.8.5</li>
+        <li>new light table mode layout: file manager</li>
+        <li>inotify support</li>
+        <li>tiff 8-bit and 16-bit export</li>
+        <li>new, more powerful widgets to replace sliders and spin buttons (derived from libphat)</li>
+        <li>reworked, fully color managed processing pipeline</li>
+        <li>supplied some useful base curves</li>
+        <li>image cache can now enforce a strict memory limit</li>
+        <li>snapshots: side-by-side comparisons in darkroom mode</li>
+        <li>fixed aspect ratio and horizontal/vertical flipping in crop module</li>
+        <li>spot auto exposure</li>
+        <li>white balance presets with fine-tuning (from ufraw)</li>
+        <li>..countless small improvements</li>
+      </ul>
+      </div>
+
+      <div class="listtext">
     	<img src="images/rock1.jpg" class="img" alt="dreggn" /><h1>released 0.4</h1>
       <em>(2010-01-11)</em>as usual, the new release comes with lots of new features:
       <ul>

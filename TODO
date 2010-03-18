@@ -1,7 +1,11 @@
 0.5 release:
 - decapitalize icc profile names
+- black images bug
+- color picker delay (in color zones)
+- color picker picks outside image area?
 
 later:
+- built-in XYZ color profile support?
 - embed custom exif data in export plugin
 - ship color profiles with dt?
 - remember visible image/center image for each film and mode

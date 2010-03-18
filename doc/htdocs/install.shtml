@@ -17,36 +17,38 @@
     	<div class="listtext">
     	<img src="images/bee.jpg" alt="prerequisites" class="img" /><h1>prerequisites</h1>
       <ul>
-        <li>*nix (tested: ubuntu jaunty+karmic, arch linux, gentoo, fedora, mac osx with macports)</li>
-        <li>required packages: sqlite3, libjpeg, libpng, libraw (supplied), gtk+-2, cairo, libglade2, lcms, gegl (optional), exiv2, gconf</li>
+        <li>*nix (tested: ubuntu jaunty karmic lucid, arch linux, funtoo, gentoo, fedora, macintosh osx with macports)</li>
+        <li>required packages: sqlite3, libjpeg, libpng, libraw (supplied), gtk+-2, cairo, libglade2, lcms, gegl (optional), exiv2, gconf, tiff</li>
         <li>optional: gcc&gt;=4.4 (openmp, earlier versions could not handle openmp statements in non-main threads)</li>
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/firering.jpg" alt="release" class="img" /><h1>current release for ubuntu amd64</h1>
+    	<img src="images/firering.jpg" alt="release" class="img" /><h1>ubuntu packages</h1>
       <ul>
-        <li>get the .deb file <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable_0.4_amd64.deb/download">darktable_0.4_amd64.deb</a>.
-        <li>dpkg -i darktable_0.4_amd64.deb</li>
+        <li>get an appropriate <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release">darktable*.deb</a>.
+        <li>or a <a href="https://launchpad.net/~pmjdebruijn/+archive/ppa">nightly git package</a>.
+        <li>dpkg -i darktable*.deb</li>
         <li>Applications - Graphics - darktable</li>
+        <li>you may also be interested in downloading a few icc profiles from there.</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.tar.bz2/download">0.4 source .bz2</a></li>
-        <li>tar xvjf darktable-0.4.tar.bz2 &amp;&amp; cd darktable-0.4</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.5/darktable-0.5.tar.bz2/download">0.5 source .bz2</a></li>
+        <li>tar xvjf darktable-0.5.tar.bz2 &amp;&amp; cd darktable-0.5</li>
         <li>./autogen.sh</li>
-        <li>./configure [--enable-debug] [--prefix=$(pwd)/install]</li>
+        <li>./configure [--enable-debug] [--prefix=/usr]</li>
         <li>make all &amp;&amp; make install</li>
-        <li>[install/bin/]darktable</li>
+        <li>darktable</li>
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/sun.jpg" alt="release" class="img" /><h1>gentoo linux</h1>
+    	<img src="images/sun.jpg" alt="release" class="img" /><h1>funtoo/gentoo linux</h1>
       <ul>
         <li>unfortunately darktable is not in portage, so you have to:</li>
         <li>download this <a href="darktable-9999.ebuild">ebuild for the git version</a></li>
-        <li>or this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.ebuild/download">ebuild for the 0.4 release</a></li>
+        <li>or this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.5/darktable-0.5.ebuild/download">ebuild for the 0.5 release</a></li>
         <li># mkdir -p /usr/portage/media-gfx/darktable/</li>
         <li># cp darktable-*.ebuild /usr/portage/media-gfx/darktable/</li>
         <li># ebuild /usr/portage/media-gfx/darktable/darktable-*.ebuild digest</li>
@@ -65,7 +67,7 @@
     	<div class="listtext">
       <img src="images/macosx.jpg" alt="release" class="img" /><h1>current release for mac osx</h1>
       <ul>
-        <li>download this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.dmg/download">disk image</a></li>
+        <li>download the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.dmg/download">0.4 disk image</a></li>
         <li>mount the thing</li>
         <li>pull the darktable icon into your applications folder</li>
         <li>it worked on a few macs (100%) so far, good luck :)</li>
@@ -80,9 +82,9 @@
         <li>git clone git://darktable.git.sf.net/gitroot/darktable/darktable or<br/>
             git pull</li>
         <li>./autogen.sh</li>
-        <li>./configure [--enable-debug] [--disable-gegl] [--prefix=$(pwd)/install]</li>
+        <li>./configure [--enable-debug] [--disable-gegl] [--prefix=/usr]</li>
         <li>make install</li>
-        <li>install/bin/darktable</li>
+        <li>darktable</li>
         <li>let's rock!</li>
       </ul>
     	</div>

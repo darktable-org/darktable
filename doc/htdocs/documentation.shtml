@@ -64,9 +64,6 @@
       contrary, it might look better if the rock had a sharper, high-contrast look. to accentuate holds of a certain size,
       pull up the Y-curve over the middle at a certain position.
       </div>
-      <div class="text">
-      still this is really just a programmer's example, suggestions welcome.
-      </div>
 
       <div class="text">
     	<h1>keyboard shortcuts</h1>
@@ -79,7 +76,8 @@
       <em>lighttable mode</em>
       <ul>
         <li>1 -- zoom in on image under cursor</li>
-        <li>q -- zoom out to fit all images in one row inside viewport, center on image under cursor</li>
+        <li>2, 3, 4 -- zoom out</li>
+        <li>alt-1,2,3,4 -- star rating
         <li>a, s, d, w -- move around</li>
       </ul>
       <em>darkroom mode</em>
@@ -87,7 +85,7 @@
         <li>1, 2, 3 -- zoom to 1:1, fill, and fit, respectively</li>
       </ul>
       <em>hint for dvorak etc users</em>
-      <p>the keys are chosen by location on the qwerty layout, not by label.</p>
+      <p>the keys are chosen by location on the qwerty layout, not by keysym.</p>
     	</div>
 
 
@@ -95,7 +93,7 @@
     	<h1>speed hack</h1>
       <ul>
         <li> $ cp ~/.darktabledb /dev/shm</li>
-        <li> $ echo -n "/dev/shm/.darktabledb" &gt; ~/.darktablerc</li>
+        <li> $ gconftool-2 --type string --set /apps/darktable/database "/dev/shm/.darktabledb"</li>
         <li> $ darktable</li>
         <li> $ cp /dev/shm/.darktabledb ~/</li>
         <li> :)</li>
