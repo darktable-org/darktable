@@ -30,7 +30,7 @@ void dt_gui_metadata_update()
   
   if(mouse_over_id >= 0)
   {
-    const int ll = 20;
+    const int ll = 100;
     char lbl[ll];
     dt_image_t *img = dt_image_cache_use(mouse_over_id, 'r');
     if(!img || img->film_id == -1)
