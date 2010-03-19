@@ -57,26 +57,6 @@ typedef struct dt_iop_sharpen_data_t
 }
 dt_iop_sharpen_data_t;
 
-#if 0
-void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
-{
-  *roi_out = *roi_in;
-  // roi_out->x      = roi_in->x + (int)(MAXR/piece->iscale);
-  // roi_out->y      = roi_in->y + (int)(MAXR/piece->iscale);
-  roi_out->width  = roi_in->width  - 2*(int)(MAXR/piece->iscale);
-  roi_out->height = roi_in->height - 2*(int)(MAXR/piece->iscale);
-  printf("mod roiout : xy: %d %d => %d %d\n", roi_in->x, roi_in->y, roi_out->x, roi_out->y);
-}
-
-void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
-{
-  *roi_in = *roi_out;
-  roi_in->width  = roi_out->width  + 2*(int)(MAXR/piece->iscale);
-  roi_in->height = roi_out->height + 2*(int)(MAXR/piece->iscale);
-  printf("mod roiin : xy: %d %d <= %d %d\n", roi_in->x, roi_in->y, roi_out->x, roi_out->y);
-}
-#endif
-
 const char *name()
 {
   return _("sharpen");
@@ -108,7 +88,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // gauss blur the image
   for(int j=rad;j<roi_out->height-rad;j++)
   {
-    in  = ((float *)ivoid) + 3*((rad+j)*roi_in->width + rad);
+    // in  = ((float *)ivoid) + 3*((rad+j)*roi_in->width + rad);
+    // out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
+    in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
     out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
     for(int i=rad;i<roi_out->width-rad;i++)
     {
@@ -121,7 +103,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   in  = (float *)ivoid;
   out = (float *)ovoid;
 
-#if 1 // fill unsharpened border
+  // fill unsharpened border
   for(int j=0;j<rad;j++)
     memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad;j<roi_out->height;j++)
@@ -133,7 +115,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=roi_out->width-rad;i<roi_out->width;i++)
       for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
   }
-#endif
 
   // subtract blurred image, if diff > thrs, add *amount to orginal image
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)

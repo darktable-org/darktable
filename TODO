@@ -4,6 +4,7 @@
 - color picker delay (in color zones)
 - color picker picks outside image area?
 - box width < -1 still there.
+- lock zoom/pan checkbox in darkroom mode
 
 later:
 - built-in XYZ color profile support?

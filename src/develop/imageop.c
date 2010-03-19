@@ -503,11 +503,11 @@ void dt_iop_clip_and_zoom_hq_downsample(const float *i, int32_t ix, int32_t iy, 
   int32_t oy2 = MAX(oy, 0);
   int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
   int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
-  assert((int)(ix2 + ow2*scalex) <= ibw);
-  assert((int)(iy2 + oh2*scaley) <= ibh);
-  assert(ox2 + ow2 <= obw);
-  assert(oy2 + oh2 <= obh);
-  assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
+  g_assert((int)(ix2 + ow2*scalex) <= ibw);
+  g_assert((int)(iy2 + oh2*scaley) <= ibh);
+  g_assert(ox2 + ow2 <= obw);
+  g_assert(oy2 + oh2 <= obh);
+  g_assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
   float x = ix2, y = iy2;
   for(int s=0;s<oh2;s++)
   {
@@ -539,25 +539,41 @@ void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, in
   int32_t oy2 = MAX(oy, 0);
   int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
   int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
-  assert((int)(ix2 + ow2*scalex) <= ibw);
-  assert((int)(iy2 + oh2*scaley) <= ibh);
-  assert(ox2 + ow2 <= obw);
-  assert(oy2 + oh2 <= obh);
-  assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
+  g_assert((int)(ix2 + ow2*scalex) <= ibw);
+  g_assert((int)(iy2 + oh2*scaley) <= ibh);
+  g_assert(ox2 + ow2 <= obw);
+  g_assert(oy2 + oh2 <= obh);
+  g_assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
   float x = ix2, y = iy2;
-  for(int s=0;s<oh2;s++)
+  if(fabsf(scalex - 1.0) < 0.001f && fabsf(scaley - 1.0) < 0.001f)
   {
-    int idx = ox2 + obw*(oy2+s);
-    for(int t=0;t<ow2;t++)
+    for(int s=0;s<oh2;s++)
     {
-      for(int k=0;k<3;k++) o[3*idx + k] =  //i[3*(ibw* (int)y +             (int)x             ) + k)];
-             (i[(3*(ibw*(int32_t) y +            (int32_t) (x + .5f*scalex)) + k)] +
-              i[(3*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x + .5f*scalex)) + k)] +
-              i[(3*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x             )) + k)] +
-              i[(3*(ibw*(int32_t) y +            (int32_t) (x             )) + k)])*0.25;
-      x += scalex; idx++;
+      int idx = ox2 + obw*(oy2+s);
+      for(int t=0;t<ow2;t++)
+      {
+        for(int k=0;k<3;k++) o[3*idx + k] = i[3*(ibw* (int32_t)y + (int)x) + k];
+        x ++; idx++;
+      }
+      y ++; x = ix2;
     }
-    y += scaley; x = ix2;
+  }
+  else
+  {
+    for(int s=0;s<oh2;s++)
+    {
+      int idx = ox2 + obw*(oy2+s);
+      for(int t=0;t<ow2;t++)
+      {
+        for(int k=0;k<3;k++) o[3*idx + k] =  //i[3*(ibw* (int)y +             (int)x             ) + k)];
+               (i[(3*(ibw*(int32_t) y +            (int32_t) (x + .5f*scalex)) + k)] +
+                i[(3*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x + .5f*scalex)) + k)] +
+                i[(3*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x             )) + k)] +
+                i[(3*(ibw*(int32_t) y +            (int32_t) (x             )) + k)])*0.25;
+        x += scalex; idx++;
+      }
+      y += scaley; x = ix2;
+    }
   }
 }
 

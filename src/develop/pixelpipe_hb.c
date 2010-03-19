@@ -245,6 +245,10 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       // printf("[process] scale/pan\n");
       // reserve new cache line: output
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+      if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+        bzero(*output, 3*sizeof(float)*pipe->iwidth*pipe->iwidth);
+      else
+        bzero(*output, 3*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE);
       if(roi_out->scale < 0.5)
       {
         dt_iop_clip_and_zoom_hq_downsample(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,

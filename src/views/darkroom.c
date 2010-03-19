@@ -693,6 +693,12 @@ void key_pressed(dt_view_t *self, uint16_t which)
       if(zoom == DT_ZOOM_1) closeup ^= 1;
       DT_CTL_SET_GLOBAL(dev_closeup, closeup);
       DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
+      /*if(!closeup)
+      { // doesn't quite work as expected:
+        dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, 0, NULL, NULL);
+        DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+        DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+      }*/
       dt_dev_invalidate(dev);
       break;
     case KEYCODE_2:
