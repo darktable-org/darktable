@@ -1,8 +1,7 @@
 0.5 release:
 - decapitalize icc profile names
-- black images bug
+- black images bug...??
 - color picker delay (in color zones)
-- color picker picks outside image area?
 - box width < -1 still there.
 - lock zoom/pan checkbox in darkroom mode
 

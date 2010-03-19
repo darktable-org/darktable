@@ -158,6 +158,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/ui_last/film_roll</key>
+      <applyto>/apps/darktable/ui_last/film_roll</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/ui_last/colorpicker_mean</key>
       <applyto>/apps/darktable/ui_last/colorpicker_mean</applyto>
       <owner>darktable</owner>

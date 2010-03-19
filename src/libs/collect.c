@@ -49,6 +49,8 @@ name ()
 void
 gui_reset (dt_lib_module_t *self)
 {
+  int last_film = dt_conf_get_int ("ui_last/film_roll");
+  dt_film_open(last_film);
 }
 
 static void
