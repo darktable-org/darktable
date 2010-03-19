@@ -57,3 +57,44 @@ Or open your PO file in poEdit and in menu choose "Catalog > Update from POT fil
 5. Update translation, send it to the list.
 
 That's all.
+
+
+
+________________________________________________________________________________
+A1. some more git magic:
+________________________________________________________________________________
+
+this might be handy if you want to send a patch instead of the whole file:
+
+create a new branch `yourlanguage':
+
+$ git checkout -b yourlanguage
+
+then make your translation changes as above,
+
+$ git add po/XX.po
+$ git commit -a
+
+
+in case the master branch changed, do a 
+
+$ git pull
+
+
+if your master and origin/master diverged:
+
+$ git checkout master
+$ git reset --hard origin master
+
+
+rebase your patch to the current master:
+
+$ git checkout yourlanguage
+$ git rebase master
+
+
+create patches relative to current master:
+
+$ git format-patch master
+
+:)
