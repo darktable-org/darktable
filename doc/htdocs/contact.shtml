@@ -20,10 +20,36 @@
     	<div class="listtext">
     	<img src="images/clouds.jpg" alt="contributing" class="img" /><h1>contributing</h1>
       <ul>
-        <li>use it! and then discuss your bugreports, feature requests, suggestions, translations, patches ..
+        <li>use it! and then discuss your <em>bugreports, feature requests, suggestions, translations, patches</em> ..
             on the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>.</li>
-        <li>post documentation, tutorials, your experiences at <a href="http://sourceforge.net/apps/phpbb/darktable/">the forums</a>.</li>
-        <li>post beta: write image operation plug-ins.</li>
+        <li>post <em>documentation</em>, tutorials, your experiences at <a href="http://sourceforge.net/apps/phpbb/darktable/">the forums</a>.</li>
+        <li>post beta: write image operation <em>plug-ins</em>.</li>
+        <li>produce <em>helpful stacktraces</em> for bugreports (minimal steps):<br/>
+            $ ./configure --prefix=/usr --enable-debug<br/>
+            $ make &amp;&amp; sudo make install<br/>
+            $ gdb darktable<br/>
+            ..crash dt here..<br/>
+            (gdb) bt<br/>
+            and post the backtrace. even better: try a few prints and figure out
+            what seems to be the problem. best: fix it and supply a patch!
+        </li>
+        <li><em>supply a patch</em> to current, possibly changed master:<br/>
+        $ git checkout -b yourbranch<br/>
+
+        ..make your important changes..<br/>
+
+        $ git pull<br/>
+        $ git rebase master<br/>
+        $ git format-patch master<br/>
+        </li>
+
+        <li>maybe you want your <em>name and email</em> in your .git/config, so it will appear
+        in dt's log:<br/>
+
+        $ git config --global user.name "alfons"<br/>
+        $ git config --global user.email "dreggn@gmx.at"<br/>
+
+        </li>
       </ul>
     	</div>
     	<div class="listtext">

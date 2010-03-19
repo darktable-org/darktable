@@ -168,7 +168,7 @@ style "clearlooks-checkbutton" = "clearlooks-default"
 
 style "scale-fixed-font" = "clearlooks-default"
 {
-  font_name = "Monospace"
+  font_name = "Monospace 8"
 }
 
 style "metacity-frame"
