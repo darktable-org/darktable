@@ -1,11 +1,10 @@
 0.5 release:
 - decapitalize icc profile names
 - black images bug...??
-- color picker delay (in color zones)
-- box width < -1 still there.
 - lock zoom/pan checkbox in darkroom mode
 
 later:
+- more transparent custom default handling
 - built-in XYZ color profile support?
 - embed custom exif data in export plugin
 - ship color profiles with dt?
