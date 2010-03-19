@@ -336,13 +336,13 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     }
 
     // if module requested color statistics, get mean in box from preview pipe
-    for(int k=0;k<3;k++) module->picked_color_min[k] =  666.0f;
-    for(int k=0;k<3;k++) module->picked_color_max[k] = -666.0f;
-    for(int k=0;k<3;k++) module->picked_color_min_Lab[k] =  666.0f;
-    for(int k=0;k<3;k++) module->picked_color_max_Lab[k] = -666.0f;
     if(!(dev->image->flags & DT_IMAGE_THUMBNAIL) && // converted jpg is useless.
         dev->gui_attached && pipe == dev->preview_pipe && module == dev->gui_module && module->request_color_pick)
     {
+      for(int k=0;k<3;k++) module->picked_color_min[k] =  666.0f;
+      for(int k=0;k<3;k++) module->picked_color_max[k] = -666.0f;
+      for(int k=0;k<3;k++) module->picked_color_min_Lab[k] =  666.0f;
+      for(int k=0;k<3;k++) module->picked_color_max_Lab[k] = -666.0f;
       int box[4];
       float rgb[3], Lab[3], *in = (float *)input;
       for(int k=0;k<3;k++) Lab[k] = rgb[k] = 0.0f;
