@@ -59,10 +59,17 @@ void cleanup(dt_view_t *self)
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
   // if width or height > max pipeline pixels: center the view and clamp.
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
-  if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   int32_t width  = MIN(width_i,  DT_IMAGE_WINDOW_SIZE);
   int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
+
+  cairo_set_source_rgb (cri, .2, .2, .2);
+  cairo_rectangle(cri, 0, 0, fmaxf(0, width_i-DT_IMAGE_WINDOW_SIZE) *.5f, height);
+  cairo_fill (cri);
+  cairo_rectangle(cri, fmaxf(0.0, width_i-DT_IMAGE_WINDOW_SIZE) *.5f + width, 0, width_i, height);
+  cairo_fill (cri);
+
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
+  if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -488,19 +495,26 @@ void leave(dt_view_t *self)
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  int handled = 0;
   dt_control_t *ctl = darktable.control;
+#if 1 // FIXME: x, y needs( to be moved and clamped to DT_WINDOW_SIZE as in expose!!
+  const int32_t width_i  = ctl->width  - ctl->tabborder*2;
+  const int32_t height_i = ctl->height - ctl->tabborder*2;
+  int32_t offx = 0.0f, offy = 0.0f;
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) offx =   (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
+  if(height_i > DT_IMAGE_WINDOW_SIZE) offy = - (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+#endif
+  int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick &&
      ctl->button_down &&
      ctl->button_down_which == 1)
   { // module requested a color box
     float zoom_x, zoom_y, bzoom_x, bzoom_y;
-    dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
-    dt_dev_get_pointer_zoom_pos(dev, ctl->button_x, ctl->button_y, &bzoom_x, &bzoom_y);
-    dev->gui_module->color_picker_box[0] = fminf(.5f+bzoom_x, .5f+zoom_x);
-    dev->gui_module->color_picker_box[1] = fminf(.5f+bzoom_y, .5f+zoom_y);
-    dev->gui_module->color_picker_box[2] = fmaxf(.5f+bzoom_x, .5f+zoom_x);
-    dev->gui_module->color_picker_box[3] = fmaxf(.5f+bzoom_y, .5f+zoom_y);
+    dt_dev_get_pointer_zoom_pos(dev, x+offx, y+offy, &zoom_x, &zoom_y);
+    dt_dev_get_pointer_zoom_pos(dev, ctl->button_x+offx, ctl->button_y+offy, &bzoom_x, &bzoom_y);
+    dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f+bzoom_x, .5f+zoom_x));
+    dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f+bzoom_y, .5f+zoom_y));
+    dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f+bzoom_x, .5f+zoom_x));
+    dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f+bzoom_y, .5f+zoom_y));
     
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
@@ -544,6 +558,13 @@ void button_released(dt_view_t *self, double x, double y, int which, uint32_t st
 void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+#if 1 // FIXME: x, y needs( to be moved and clamped to DT_WINDOW_SIZE as in expose!!
+  const int32_t width_i  = darktable.control->width  - darktable.control->tabborder*2;
+  const int32_t height_i = darktable.control->height - darktable.control->tabborder*2;
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
+  if(height_i > DT_IMAGE_WINDOW_SIZE) y -= (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+#endif
+
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick)
   {
