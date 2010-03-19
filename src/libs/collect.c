@@ -192,8 +192,20 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+    const char *folder = (const char*)sqlite3_column_text(stmt, 0);
+    if(property == 0) // film roll
+    {
+      if(!strcmp("single images", folder)) folder = _("single images");
+      else
+      {
+        const char *trunc = folder + strlen(folder);
+        for(;*trunc != '/' && trunc > folder;trunc--);
+        if(trunc != folder) trunc++;
+        folder = trunc;
+      }
+    }
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-                        DT_LIB_COLLECT_COL_TEXT, sqlite3_column_text(stmt, 0),
+                        DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                         -1);
   }

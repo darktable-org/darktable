@@ -1003,10 +1003,10 @@ int dt_imageio_dt_write (const int imgid, const char *filename)
     if(!f)
     {
       f = fopen(filename, "wb");
+      if(!f) break;
       const uint32_t magic = 0xd731337;
       rd = fwrite(&magic, sizeof(uint32_t), 1, f);
     }
-    if(!f) break;
     int32_t modversion = sqlite3_column_int(stmt, 2); 
     int32_t enabled = sqlite3_column_int(stmt, 5);
     rd = fwrite(&enabled, sizeof(int32_t), 1, f);
