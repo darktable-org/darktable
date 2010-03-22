@@ -27,7 +27,7 @@
 
 #define DT_MODULE_VERSION 1   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
-#define DT_CONFIG_VERSION 33  // dt gconf var version
+#define DT_CONFIG_VERSION 34  // dt gconf var version
 
 // every module has to define this:
 #ifdef _DEBUG
