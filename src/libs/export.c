@@ -297,6 +297,8 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (d->height), "value-changed",
                     G_CALLBACK (height_changed),
                     (gpointer)0);
+
+  self->gui_reset(self);
 }
 
 void

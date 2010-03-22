@@ -793,7 +793,6 @@ void enter(dt_view_t *self)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     module->gui_init(module);
-    module->gui_reset(module);
     // add the widget created by gui_init to an expander and both to list.
     GtkWidget *expander = dt_lib_gui_get_expander(module);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
