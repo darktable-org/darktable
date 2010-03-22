@@ -247,6 +247,7 @@ void cleanup(dt_iop_module_t *module)
 static void
 presets_changed (GtkComboBox *widget, gpointer user_data)
 {
+  if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   
@@ -304,7 +305,9 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
     default: // custom
       return;
   }
+  darktable.gui->reset = 1;
   self->gui_update(self);
+  darktable.gui->reset = 0;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
   gtk_widget_queue_draw(self->widget);
