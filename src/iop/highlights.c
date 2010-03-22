@@ -94,11 +94,9 @@ rgb_to_lch(float rgb[3], float lch[3])
   lab[1] = 500 * (xyz[0] - xyz[1]);
   lab[2] = 200 * (xyz[1] - xyz[2]);
 
-#if 1// TODO: remove?
   lch[0] = lab[0];
   lch[1] = sqrtf(lab[1]*lab[1]+lab[2]*lab[2]);
   lch[2] = atan2f(lab[2], lab[1]);
-#endif
 }
 
 // convert CIE-LCh to linear RGB
@@ -107,11 +105,9 @@ lch_to_rgb(float lch[3], float rgb[3])
 {
   float xyz[3], fx, fy, fz, kappa, epsilon, tmpf, lab[3];
   epsilon = 0.008856; kappa = 903.3;
-#if 1// TODO: remove..?
   lab[0] = lch[0];
   lab[1] = lch[1] * cosf(lch[2]);
   lab[2] = lch[1] * sinf(lch[2]);
-#endif
   xyz[1] = (lab[0]<=kappa*epsilon) ?
     (lab[0]/kappa) : (powf((lab[0]+16.0)/116.0, 3.0));
   fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0)/116.0) : ((lab[0]+16.0)/116.0);
@@ -142,20 +138,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   switch(data->mode)
   {
     case DT_IOP_HIGHLIGHTS_LCH:
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data) private(in, out, inc, lch, lchc, lchi)
+#endif
       for(int j=0;j<roi_out->height;j++)
       {
         out = (float *)ovoid + 3*roi_out->width*j;
         in  = (float *)ivoid + 3*roi_out->width*j;
         for(int i=0;i<roi_out->width;i++)
         {
-          for(int c=0;c<3;c++) inc[c] = fminf(clip, in[c]);
-          rgb_to_lch(in, lchi);
-          rgb_to_lch(inc, lchc);
-          // TODO if we leave this as 1, 0, 0 why not just use lab?
-          lch[0] = lchc[0] + data->blendL * (lchi[0] - lchc[0]);
-          lch[1] = lchc[1] + data->blendC * (lchi[1] - lchc[1]);
-          lch[2] = lchc[2] + data->blendh * (lchi[2] - lchc[2]);
-          lch_to_rgb(lch, out);
+          if(in[0] <= clip && in[1] <= clip && in[2] <= clip)
+          { // fast path for well-exposed pixels.
+            for(int c=0;c<3;c++) out[c] = in[c];
+          }
+          else
+          {
+            for(int c=0;c<3;c++) inc[c] = fminf(clip, in[c]);
+            rgb_to_lch(in, lchi);
+            rgb_to_lch(inc, lchc);
+            lch[0] = lchc[0] + data->blendL * (lchi[0] - lchc[0]);
+            lch[1] = lchc[1] + data->blendC * (lchi[1] - lchc[1]);
+            lch[2] = lchc[2] + data->blendh * (lchi[2] - lchc[2]);
+            lch_to_rgb(lch, out);
+          }
           out += 3; in += 3;
         }
       }
@@ -186,17 +191,22 @@ static void
 mode_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   int active = gtk_combo_box_get_active(combo);
 
   switch(active)
   {
     case DT_IOP_HIGHLIGHTS_CLIP:
       p->mode = DT_IOP_HIGHLIGHTS_CLIP;
-      // TODO: disable controls
+      gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), FALSE);
+      gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), FALSE);
+      gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), FALSE);
       break;
     default: case DT_IOP_HIGHLIGHTS_LCH:
-      // TODO: enable controls
       p->mode = DT_IOP_HIGHLIGHTS_LCH;
+      gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), TRUE);
+      gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), TRUE);
+      gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), TRUE);
       break;
   }
   dt_dev_add_history_item(darktable.develop, self);
@@ -247,6 +257,18 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->blendL, p->blendL);
   dtgtk_slider_set_value(g->blendC, p->blendC);
   dtgtk_slider_set_value(g->blendh, p->blendh);
+  if(p->mode == DT_IOP_HIGHLIGHTS_CLIP)
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), FALSE);
+  }
+  else
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), TRUE);
+  }
   gtk_combo_box_set_active(g->mode, p->mode);
 }
 
@@ -280,20 +302,22 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-  g->blendL = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendL, 3));
-  g->blendC = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendC, 3));
-  g->blendh = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendh, 3));
-  gtk_object_set(GTK_OBJECT(g->blendL), "tooltip-text", _("blend L"), NULL);
-  gtk_object_set(GTK_OBJECT(g->blendC), "tooltip-text", _("blend C"), NULL);
-  gtk_object_set(GTK_OBJECT(g->blendh), "tooltip-text", _("blend h"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendL), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendC), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendh), TRUE, TRUE, 0);
 
   g->mode = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->mode, _("clip highlights"));
   gtk_combo_box_append_text(g->mode, _("reconstruct in LCh"));
+  gtk_object_set(GTK_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
+
+  g->blendL = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendL, 3));
+  g->blendC = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendC, 3));
+  g->blendh = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendh, 3));
+  gtk_object_set(GTK_OBJECT(g->blendL), "tooltip-text", _("blend L (0 is same as clipping)"), NULL);
+  gtk_object_set(GTK_OBJECT(g->blendC), "tooltip-text", _("blend C (0 is same as clipping)"), NULL);
+  gtk_object_set(GTK_OBJECT(g->blendh), "tooltip-text", _("blend h (0 is same as clipping)"), NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendL), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendC), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendh), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->blendL), "value-changed",
                     G_CALLBACK (blend_callback), self);
