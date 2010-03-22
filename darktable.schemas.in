@@ -418,6 +418,45 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/expanded</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/expanded</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/tagging/expanded</key>
       <applyto>/apps/darktable/plugins/lighttable/tagging/expanded</applyto>
       <owner>darktable</owner>

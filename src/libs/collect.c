@@ -138,17 +138,6 @@ update_query(dt_lib_collect_t *d)
 static gboolean
 entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
 { // update related list
-  /*if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->text)) == 0)
-  {
-    GtkTreeView *view = d->view;
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-    g_object_ref(model);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
-    gtk_list_store_clear(GTK_LIST_STORE(model));
-    gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-    g_object_unref(model);
-    return FALSE;
-  }*/
   sqlite3_stmt *stmt;
   GtkTreeIter iter;
   GtkTreeView *view = d->view;
@@ -159,6 +148,8 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
   char query[1024];
   int property = gtk_combo_box_get_active(d->combo);
   gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->text));
+  dt_conf_set_string("plugins/lighttable/collect/string", text);
+  dt_conf_set_int ("plugins/lighttable/collect/item", property);
   switch(property)
   {
     case 0: // film roll
@@ -271,11 +262,17 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("tag"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("date"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("history"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(w), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(w), dt_conf_get_int("plugins/lighttable/collect/item"));
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d);
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
   w = gtk_combo_box_entry_new_text();
   d->text = GTK_COMBO_BOX_ENTRY(w);
+  gchar *text = dt_conf_get_string("plugins/lighttable/collect/string");;
+  if(text)
+  {
+    gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->text))), text);
+    g_free(text);
+  }
   d->scrolledwindow = GTK_SCROLLED_WINDOW(sw);
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("matches selected images"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
@@ -298,6 +295,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   gtk_object_set(GTK_OBJECT(view), "tooltip-text", _("doubleclick to select"), NULL);
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
+  entry_key_press (NULL, NULL, d);
 }
 
 void
