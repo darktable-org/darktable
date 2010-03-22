@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-03-19 00:45+0300\n"
-"PO-Revision-Date: 2010-03-19 02:46+0300\n"
+"PO-Revision-Date: 2010-03-22 04:28+0300\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -71,7 +71,7 @@ msgstr "Диафрагма"
 
 #: ../darktable.glade.h:16
 msgid "before module"
-msgstr "перед модулем"
+msgstr "значение перед модулем"
 
 #: ../darktable.glade.h:17
 msgid "button"
@@ -135,7 +135,7 @@ msgstr "Импортировать съёмку"
 
 #: ../darktable.glade.h:33
 msgid "import single image"
-msgstr "Импортировать отдельный снимок"
+msgstr "Импортировать отдельное фото"
 
 #: ../darktable.glade.h:34
 msgid "iso"
@@ -217,7 +217,7 @@ msgstr "Искать среди съёмок по названию"
 
 #: ../darktable.glade.h:54
 msgid "snapshots"
-msgstr "Версии"
+msgstr "Мгновенные снимки"
 
 #: ../darktable.glade.h:55
 msgid "switch to darkroom mode"
@@ -225,7 +225,7 @@ msgstr "Переключиться в режим проявки"
 
 #: ../darktable.glade.h:56
 msgid "take snapshot"
-msgstr "Создать версию"
+msgstr "Сделать снимок"
 
 #: ../darktable.glade.h:57
 msgid "togglebutton"
@@ -255,12 +255,12 @@ msgstr "0: среднее, 1: мин, 2: макс"
 
 #: ../darktable.schemas.in.h:3
 msgid "always ask the user before any image file is deleted."
-msgstr "Всегда спрашивать пользователя перед удалением любого снимка"
+msgstr "Всегда спрашивать пользователя перед удалением любой фотографии"
 
 #: ../darktable.schemas.in.h:4
 msgid "always ask the user before any image is removed from db."
 msgstr ""
-"Всегда спрашивать пользователя перед удалением любого снимка из коллекции"
+"Всегда спрашивать пользователя перед удалением любой фотографии из коллекции"
 
 #: ../darktable.schemas.in.h:5
 msgid "append or replace history stack if pasted"
@@ -270,11 +270,11 @@ msgstr ""
 
 #: ../darktable.schemas.in.h:6
 msgid "ask before deleting images"
-msgstr "Спрашивать подтверждение перед удалением снимков"
+msgstr "Спрашивать подтверждение перед удалением фотографий"
 
 #: ../darktable.schemas.in.h:7
 msgid "ask before removing images"
-msgstr "Запрашивать подтверждение перед удалением снимков"
+msgstr "Запрашивать подтверждение на удаление фотографий"
 
 #: ../darktable.schemas.in.h:8
 msgid "database file"
@@ -282,23 +282,23 @@ msgstr "Файл базы данных"
 
 #: ../darktable.schemas.in.h:9
 msgid "downsample the preview pixels"
-msgstr ""
+msgstr "Уменьшать разрешение миниатюр"
 
 #: ../darktable.schemas.in.h:10
 msgid "filename relative to your home directory, or starting with a slash."
-msgstr ""
+msgstr "Имя файла базы данных в домашнем каталоге"
 
 #: ../darktable.schemas.in.h:11
 msgid "full resolution image buffers to keep in main memory cache"
-msgstr "Буферы полноразмерных снимков в основном кэше памяти"
+msgstr "Буферы полноразмерных фотографий в основном кэше памяти"
 
 #: ../darktable.schemas.in.h:12
 msgid "height of the exported image"
-msgstr "Высота экспортируемого снимка"
+msgstr "Высота экспортируемой фотографии"
 
 #: ../darktable.schemas.in.h:13
 msgid "height of the exported image, or 0 if no scaling should be done."
-msgstr "Высота экспортируемого снимка, при значении 0 размер не меняется"
+msgstr "Высота экспортируемой фотографии, при значении 0 размер не меняется"
 
 #: ../darktable.schemas.in.h:14
 msgid ""
@@ -306,12 +306,12 @@ msgid ""
 "in main memory at maximum. only read at startup."
 msgstr ""
 "Максимальное количество полноразмерных буферов с плавающей точкой для "
-"загруженных снимков, которые нужно хранить в памяти. Значение читается "
+"загруженных фотографий, которые нужно хранить в памяти. Значение читается "
 "только при запуске программы."
 
 #: ../darktable.schemas.in.h:15
 msgid "how many images are in one row"
-msgstr "Количество снимков в ряду"
+msgstr "Количество фотографий в ряду"
 
 #: ../darktable.schemas.in.h:16
 msgid ""
@@ -327,6 +327,9 @@ msgid ""
 "in the database cache when darktable closes. these do not need a lot of "
 "memory and provide fast visual feedback for lighttable mode."
 msgstr ""
+"Как много самых маленьких мипмапов миниатюр должно сохраняться в кэше базы "
+"данных, когда работа с darktable завершается. Они не расходуют много памяти "
+"и позволяют быстро получать доступ к фотографиям в режиме светового стола."
 
 #: ../darktable.schemas.in.h:18
 msgid ""
@@ -334,6 +337,9 @@ msgid ""
 "also affects larger mipmap counts, these get fewer by size. only read at "
 "startup."
 msgstr ""
+"Максимальное количество самых маленьких мипмапов миниатюр, которые должны "
+"храниться в памяти. Это параметр затрагивает и мипмапы большего размера, "
+"которые читаются только при запуске программы."
 
 #: ../darktable.schemas.in.h:19
 msgid "icc profile to use for export"
@@ -354,6 +360,9 @@ msgid ""
 "if this number is smaller than the darktable internal version number, the "
 "values here will be synched with the new defaults."
 msgstr ""
+"Если это число меньше числа внутренней версии darktable, значение этого "
+"параметра будет синхронизировано с новыми параметрами, используемыми по "
+"умолчанию."
 
 #: ../darktable.schemas.in.h:23
 msgid "jpeg quality of on-disk thumbnails"
@@ -375,11 +384,11 @@ msgstr ""
 
 #: ../darktable.schemas.in.h:27
 msgid "small thumbnails to keep in main memory cache"
-msgstr ""
+msgstr "Маленькие миниатюры, хранимые в основном кэше памяти"
 
 #: ../darktable.schemas.in.h:28
 msgid "sql query to select images for current view"
-msgstr ""
+msgstr "Запрос SQL для выбора просматриваемых изображений"
 
 #: ../darktable.schemas.in.h:29
 msgid ""
@@ -398,6 +407,8 @@ msgid ""
 "this value smaller than 1.0 downsamples the preview pixels for faster "
 "feedback."
 msgstr ""
+"Если значение меньше 1.0, разрешение миниатюр уменьшается для более быстрой "
+"загрузки фотографий."
 
 #: ../darktable.schemas.in.h:32
 msgid "thumbnails to keep in database"
@@ -409,7 +420,7 @@ msgstr "Версия этих записей DT в GConf"
 
 #: ../darktable.schemas.in.h:34
 msgid "very small thumbnails to keep in database"
-msgstr ""
+msgstr "Очень маленькие миниатюры, хранимые в базе данных"
 
 #: ../darktable.schemas.in.h:35
 msgid "which layout should lighttable mode show"
@@ -417,15 +428,15 @@ msgstr "Какой тип светового стола использовать
 
 #: ../darktable.schemas.in.h:36
 msgid "width of the exported image"
-msgstr "Ширина экспортируемого снимка"
+msgstr "Ширина экспортируемой фотографии"
 
 #: ../darktable.schemas.in.h:37
 msgid "width of the exported image, or 0 if no scaling should be done."
-msgstr "Ширина экспортируемого снимка, при значении 0 размер не меняется"
+msgstr "Ширина экспортируемой фотографии, при значении 0 размер не меняется"
 
 #: ../darktable.schemas.in.h:38
 msgid "write a redundant file for each image"
-msgstr "Записывать файлы .dt для каждого снимка"
+msgstr "Записывать файлы .dt для каждой фотографии"
 
 #: ../src/control/control.c:757 ../src/control/control.c:760
 msgid "working.."
@@ -450,32 +461,32 @@ msgstr "0 - Исходный вариант"
 #: ../src/gui/filmview.c:50 ../src/gui/filmview.c:54 ../src/gui/filmview.c:56
 #, c-format
 msgid "single images"
-msgstr "Отдельные снимки"
+msgstr "Отдельные фотографии"
 
 #: ../src/control/jobs.c:285
 msgid "do you really want to remove all selected images from the collection?"
-msgstr "Вы действительно хотите удалить все выбранные снимки из коллекции?"
+msgstr "Вы действительно хотите удалить все выбранные фотографии из коллекции?"
 
 #: ../src/control/jobs.c:286
 msgid "remove images?"
-msgstr "Удалить снимки?"
+msgstr "Удалить фотографии?"
 
 #: ../src/control/jobs.c:306
 msgid "do you really want to physically delete all selected images from disk?"
 msgstr ""
-"Вы действительно хотите физически удалить все выбранные снимки с диска?"
+"Вы действительно хотите физически удалить все выбранные фотографии с диска?"
 
 #: ../src/control/jobs.c:307
 msgid "delete images?"
-msgstr "Удалить снимки?"
+msgstr "Удалить фотографии?"
 
 #: ../src/control/jobs.c:324
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "Экспортируется %d снимок..."
-msgstr[1] "Экспортируется %d снимка..."
-msgstr[2] "Экспортируется %d снимков..."
+msgstr[0] "Экспортируется %d фотография..."
+msgstr[1] "Экспортируется %d фотографии..."
+msgstr[2] "Экспортируется %d фотографий..."
 
 #: ../src/control/jobs.c:389
 #, c-format
@@ -544,7 +555,7 @@ msgid ""
 "first selected image"
 msgstr ""
 "Скопировать параметры обработки\n"
-"первого выделенного снимка"
+"первой выделенной фотографии"
 
 #: ../src/libs/copy_history.c:174
 msgid "discard"
@@ -556,7 +567,7 @@ msgid ""
 "first selected image"
 msgstr ""
 "Отбросить параметры обработки\n"
-"первого выделенного снимка"
+"первой выделенной фотографии"
 
 #: ../src/libs/copy_history.c:182
 msgid "append"
@@ -580,7 +591,7 @@ msgid ""
 "all selected images"
 msgstr ""
 "Вставить параметры обработки\n"
-"во все выделенные снимки"
+"во все выделенные фотографии"
 
 #: ../src/libs/export.c:52
 msgid "export selected"
@@ -591,7 +602,7 @@ msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
 msgstr ""
-"Максимальная ширина конечного снимка,\n"
+"Максимальная ширина конечной фотографии,\n"
 "при значении 0 размер не меняется"
 
 #: ../src/libs/export.c:176
@@ -599,7 +610,7 @@ msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
 msgstr ""
-"Максимальная высота конечного снимка,\n"
+"Максимальная высота конечной фотографии,\n"
 "при значении 0 размер не меняется"
 
 #: ../src/libs/export.c:177
@@ -696,11 +707,11 @@ msgstr "Экспортировать"
 
 #: ../src/libs/image.c:37
 msgid "selected image[s]"
-msgstr "Выбранные снимки"
+msgstr "Выбранные фотографии"
 
 #: ../src/libs/image.c:67
 msgid "remove from the collection"
-msgstr "Удалить из коллекции снимков"
+msgstr "Удалить из коллекции фотографий"
 
 #: ../src/libs/image.c:71 ../src/libs/tagging.c:487
 msgid "delete"
@@ -737,7 +748,7 @@ msgid ""
 "this will also strip the tag off all tagged images!"
 msgstr ""
 "Вы действительно хотите удалить метку «%s»?\n"
-"При этом она будет снята со всех помеченных снимков."
+"При этом она будет снята со всех помеченных фотографий."
 
 #: ../src/libs/tagging.c:361
 msgid "delete tag?"
@@ -757,7 +768,7 @@ msgstr "Назначить"
 
 #: ../src/libs/tagging.c:434
 msgid "attach tag to all selected images"
-msgstr "Назначить метку всем выбранным снимкам"
+msgstr "Назначить метку всем выбранным фотографиям"
 
 #: ../src/libs/tagging.c:439
 msgid "detach"
@@ -765,7 +776,7 @@ msgstr "Снять"
 
 #: ../src/libs/tagging.c:440
 msgid "detach tag from all selected images"
-msgstr "Снять метку со всех выбранных снимков"
+msgstr "Снять метку со всех выбранных фотографий"
 
 #: ../src/libs/tagging.c:453
 msgid "enter tag name"
@@ -803,7 +814,7 @@ msgstr "Выделить всё"
 
 #: ../src/libs/select.c:107
 msgid "select all images in current collection (ctrl-a)"
-msgstr "Выделить все снимки в текущей коллекции (Ctrl+A)"
+msgstr "Выделить все фотографии в текущей коллекции (Ctrl+A)"
 
 #: ../src/libs/select.c:112
 msgid "select none"
@@ -822,7 +833,7 @@ msgid ""
 "select unselected images\n"
 "in current collection (ctrl-!)"
 msgstr ""
-"Выделить невыделенные снимки\n"
+"Выделить невыделенные фотографии\n"
 "в текущей коллекции (ctrl-!)"
 
 #: ../src/libs/select.c:127
@@ -834,8 +845,8 @@ msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
 msgstr ""
-"Выделить все снимки из съёмки, к которой\n"
-"относятся выделенные сейчас снимки"
+"Выделить все фотографии из съёмки, к которой\n"
+"относятся выделенные сейчас фотографии"
 
 #: ../src/libs/select.c:135
 msgid "select untouched"
@@ -846,12 +857,12 @@ msgid ""
 "select untouched images in\n"
 "current collection"
 msgstr ""
-"Выделить необработанные снимки\n"
+"Выделить необработанные фотографии\n"
 "в текущей коллекции"
 
 #: ../src/libs/collect.c:46
 msgid "collect images"
-msgstr "Подборка снимков"
+msgstr "Подборка фотографий"
 
 #. history
 #: ../src/libs/collect.c:79 ../src/libs/collect.c:174
@@ -880,7 +891,7 @@ msgstr "Дата"
 
 #: ../src/libs/collect.c:266
 msgid "matches selected images"
-msgstr "Совпадают с выбранными снимками"
+msgstr "Совпадают с выбранными фотографиями"
 
 #: ../src/libs/collect.c:285
 msgid "doubleclick to select"
@@ -888,7 +899,7 @@ msgstr "Выберите двойным щелчком"
 
 #: ../src/iop/clipping.c:101
 msgid "clipping"
-msgstr "Кадрирование и вращение"
+msgstr "Трансформации"
 
 #: ../src/iop/clipping.c:454
 msgid "flip"
@@ -1401,24 +1412,20 @@ msgstr "Флюоресцентная лампа"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
-#, fuzzy
 msgid "fluorescent high"
 msgstr "Высокофлюоресцентный"
 
 #: ../src/iop/wb_presets.c:58
-#, fuzzy
 msgid "cool white fluorescent"
 msgstr "Холодный белый флюоресцентный"
 
 #: ../src/iop/wb_presets.c:59
-#, fuzzy
 msgid "warm white fluorescent"
 msgstr "Тёплый белый флюоресцентный"
 
 #: ../src/iop/wb_presets.c:60
-#, fuzzy
 msgid "daylight fluorescent"
-msgstr "Флюоресцентный дневного света"
+msgstr "Флюоресцентная дневного света"
 
 #: ../src/iop/wb_presets.c:61
 msgid "neutral fluorescent"
@@ -1430,17 +1437,14 @@ msgstr "Белый флюоресцентный"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
-#, fuzzy
 msgid "sodium-vapor fluorescent"
-msgstr "Натриевый флюоресцентный"
+msgstr "Натриевая флюоресцентная"
 
 #: ../src/iop/wb_presets.c:65
-#, fuzzy
 msgid "day white fluorescent"
-msgstr "Флюоресцентный дневного света"
+msgstr "Флюоресцентная дневного света"
 
 #: ../src/iop/wb_presets.c:66
-#, fuzzy
 msgid "high temp. mercury-vapor fluorescent"
 msgstr "Высокотемпературный ртутный флюоресцентный"
 
@@ -1462,7 +1466,6 @@ msgid "underwater"
 msgstr "Под водой"
 
 #: ../src/iop/wb_presets.c:73
-#, fuzzy
 msgid "black & white"
 msgstr "Чёрно-белый"
 
@@ -1524,7 +1527,7 @@ msgstr "Выбирать цвета по:"
 
 #: ../src/iop/colorzones.c:799
 msgid "pick gui color from image"
-msgstr "Взять цвет со снимка"
+msgstr "Взять цвет с фотографии"
 
 #: ../src/iop/colorzones.c:808
 msgid "black white red"
@@ -1560,7 +1563,7 @@ msgstr "Импортировать съёмку"
 
 #: ../src/gui/gtk.c:609
 msgid "import image"
-msgstr "Импортировать снимок"
+msgstr "Импортировать фотографию"
 
 #: ../src/gui/gtk.c:628
 msgid "supported images"
@@ -1585,14 +1588,14 @@ msgstr ""
 
 #: ../src/gui/filmview.c:101
 msgid "single images are persistent"
-msgstr "Отдельные снимки постоянны"
+msgstr "Отдельные фотографии постоянны"
 
 #: ../src/gui/filmview.c:112
 msgid ""
 "do you really want to remove this film roll and all its images from the "
 "collection?"
 msgstr ""
-"Вы действительно хотите удалить эту съёмку и все её снимки из коллекции?"
+"Вы действительно хотите удалить эту съёмку и все её фотографии из коллекции?"
 
 #: ../src/gui/filmview.c:113
 msgid "remove film roll?"
@@ -1615,11 +1618,11 @@ msgstr "Показать модуль «%s»"
 #. fail :(
 #: ../src/views/darkroom.c:283
 msgid "no image selected!"
-msgstr "Не выбранных снимков!"
+msgstr "Не выбранных фотографий!"
 
 #: ../src/views/darkroom.c:294
 msgid "image does no longer exist"
-msgstr "Снимок больше не существует"
+msgstr "Фотография больше не существует"
 
 #: ../src/views/lighttable.c:79
 msgid "lighttable"
