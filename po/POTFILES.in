@@ -20,6 +20,7 @@ src/iop/colorout.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/gamma.c
+src/iop/highlights.c
 src/iop/lens.c
 src/iop/monochrome.c
 src/iop/rawimport.c
