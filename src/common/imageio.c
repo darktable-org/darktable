@@ -753,7 +753,9 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
   const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
   const int height = dt_conf_get_int ("plugins/lighttable/export/height");
-  const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
+  const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
+  const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
+  const float scale = fminf(scalex, scaley);
   const int processed_width  = scale*pipe.processed_width  + .5f;
   const int processed_height = scale*pipe.processed_height + .5f;
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
@@ -795,7 +797,9 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
   const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
   const int height = dt_conf_get_int ("plugins/lighttable/export/height");
-  const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
+  const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
+  const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
+  const float scale = fminf(scalex, scaley);
   const int processed_width  = scale*pipe.processed_width  + .5f;
   const int processed_height = scale*pipe.processed_height + .5f;
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
@@ -920,7 +924,9 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
 
   const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
   const int height = dt_conf_get_int ("plugins/lighttable/export/height");
-  const float scale = width > 0 && height > 0 ? fminf(1.0, fminf(width/(float)pipe.processed_width, height/(float)pipe.processed_height)) : 1.0f;
+  const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
+  const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
+  const float scale = fminf(scalex, scaley);
   const int processed_width  = scale*pipe.processed_width  + .5f;
   const int processed_height = scale*pipe.processed_height + .5f;
   dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
