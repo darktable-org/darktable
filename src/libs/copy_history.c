@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <glade/glade.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -159,6 +160,20 @@ gui_reset (dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
 }
 
+static void
+key_accel_copy_callback(void *user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  copy_button_clicked(NULL, self);
+}
+
+static void
+key_accel_paste_callback(void *user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  paste_button_clicked(NULL, self);
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -168,7 +183,8 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
-  gtk_object_set(GTK_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image"), NULL);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, key_accel_copy_callback, (void *)self);
+  gtk_object_set(GTK_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), NULL);
   gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
@@ -186,7 +202,8 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
-  gtk_object_set(GTK_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images"), NULL);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, key_accel_paste_callback, (void *)self);
+  gtk_object_set(GTK_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->paste), TRUE, TRUE, 0);
