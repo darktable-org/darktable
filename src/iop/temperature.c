@@ -139,9 +139,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-  // this is null-highlight reconstruction (clipping):
   piece->pipe->processed_maximum = fminf(d->coeffs[0], fminf(d->coeffs[1], d->coeffs[2])) * piece->pipe->processed_maximum;
-  const float clip = piece->pipe->processed_maximum;
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
   { // mipf from thumbnail is already whitebalanced.
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
@@ -150,7 +148,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      for(int c=0;c<3;c++) out[c] = fminf(clip, in[c]*d->coeffs[c]);
+      for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
       out += 3; in += 3;
     }
   }

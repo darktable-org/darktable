@@ -133,7 +133,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
-void radius_callback (GtkDarktableSlider *slider, gpointer user_data)
+static void
+radius_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -142,7 +143,8 @@ void radius_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void amount_callback (GtkDarktableSlider *slider, gpointer user_data)
+static void
+amount_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -151,7 +153,8 @@ void amount_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-void threshold_callback (GtkDarktableSlider *slider, gpointer user_data)
+static void
+threshold_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
