@@ -267,7 +267,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
   w = gtk_combo_box_entry_new_text();
   d->text = GTK_COMBO_BOX_ENTRY(w);
-  gchar *text = dt_conf_get_string("plugins/lighttable/collect/string");;
+  gchar *text = dt_conf_get_string("plugins/lighttable/collect/string");
   if(text)
   {
     gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->text))), text);

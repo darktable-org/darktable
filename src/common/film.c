@@ -122,6 +122,9 @@ int dt_film_open(const int32_t id)
   HANDLE_SQLITE_ERR(rc);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    // FIXME: this is a hack to synch the duplicate gui elements all film rolls/collect by film roll:
+    dt_conf_set_string("plugins/lighttable/collect/string", (gchar *)sqlite3_column_text(stmt, 1));
+    dt_conf_set_int ("plugins/lighttable/collect/item", 0);
     rc = sqlite3_finalize(stmt);
     char datetime[20];
     dt_gettime(datetime);
