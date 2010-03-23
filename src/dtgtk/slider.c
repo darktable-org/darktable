@@ -171,7 +171,9 @@ static void _slider_init (GtkDarktableSlider *slider)
 }
 
 static gboolean _slider_postponed_value_change(gpointer data) {
+  gdk_threads_enter();
   g_signal_emit_by_name(G_OBJECT(data),"value-changed");
+  gdk_threads_leave();
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
 }
 
