@@ -301,23 +301,45 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
 
+  GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  GtkWidget *label;
+  label = gtk_label_new(_("mode"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
   g->mode = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->mode, _("clip highlights"));
   gtk_combo_box_append_text(g->mode, _("reconstruct in LCh"));
   gtk_object_set(GTK_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->mode), TRUE, TRUE, 0);
+
+  hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  label = gtk_label_new(_("blend L"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
+  label = gtk_label_new(_("blend C"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
+  label = gtk_label_new(_("blend h"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
 
   g->blendL = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendL, 3));
   g->blendC = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendC, 3));
   g->blendh = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendh, 3));
-  gtk_object_set(GTK_OBJECT(g->blendL), "tooltip-text", _("blend L (0 is same as clipping)"), NULL);
-  gtk_object_set(GTK_OBJECT(g->blendC), "tooltip-text", _("blend C (0 is same as clipping)"), NULL);
-  gtk_object_set(GTK_OBJECT(g->blendh), "tooltip-text", _("blend h (0 is same as clipping)"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendL), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendC), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->blendh), TRUE, TRUE, 0);
+  gtk_object_set(GTK_OBJECT(g->blendL), "tooltip-text", _("blend lightness (0 is same as clipping)"), NULL);
+  gtk_object_set(GTK_OBJECT(g->blendC), "tooltip-text", _("blend colorness (0 is same as clipping)"), NULL);
+  gtk_object_set(GTK_OBJECT(g->blendh), "tooltip-text", _("blend hue (0 is same as clipping)"), NULL);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendL), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendC), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendh), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->blendL), "value-changed",
                     G_CALLBACK (blend_callback), self);
