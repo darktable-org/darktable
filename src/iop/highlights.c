@@ -306,7 +306,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
   GtkWidget *label;
-  label = gtk_label_new(_("mode"));
+  label = gtk_label_new(_("method"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
   g->mode = GTK_COMBO_BOX(gtk_combo_box_new_text());
