@@ -30,6 +30,7 @@
         <li>snapshots: side-by-side comparisons in darkroom mode</li>
         <li>fixed aspect ratio and horizontal/vertical flipping in crop module</li>
         <li>spot auto exposure</li>
+        <li>highlight reconstruction</li>
         <li>white balance presets with fine-tuning (from ufraw)</li>
         <li>..countless small improvements</li>
       </ul>

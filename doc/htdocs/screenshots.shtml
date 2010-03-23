@@ -17,6 +17,11 @@
       range.
     	</div>
       <div class="text">
+      <a href="images/highlights.jpg"><img src="images/highlights-thumb.jpg" alt="scr0" class="img"/></a><h1>highlights and side-by-side view</h1>
+      </div>
+      reconstruct highlights, view your changes in a side-by-side comparison
+      with any other image at any other editing status.
+      <div class="text">
       <a href="images/Screenshot-0.jpg"><img src="images/Screenshot-0-thumb.jpg" alt="scr0" class="img"/></a><h1>screenshot 0</h1>
       </div>
       fit images to row width and center around selected by pressing q (dvorak users: the key that got q painted

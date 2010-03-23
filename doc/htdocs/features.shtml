@@ -38,7 +38,6 @@
       <ul>
         <li>more powerful export system, with modules connecting to web collections.</li>
         <li>tethered shooting.</li>
-        <li>more sophisticated highlight handling, various modes of reconstruction.</li>
         <li>tonemapping for hdr input.</li>
         <li>artistic image postprocessing: vignetting and grain simulation.</li>
         <li>...?</li>
