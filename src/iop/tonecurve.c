@@ -189,7 +189,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
   for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
   c->mouse_x = c->mouse_y = -1.0;
-  c->selected = -1; c->selected_offset = 0.0;
+  c->selected = -1; c->selected_offset = c->selected_y = c->selected_min = c->selected_max = 0.0;
   c->dragging = 0;
   c->x_move = -1;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));

@@ -21,6 +21,7 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include <glade/glade.h>
+#include <gdk/gdkkeysyms.h>
 #include <math.h>
 
 DT_MODULE(1)
@@ -136,15 +137,6 @@ expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   int imgsel = -1;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   if(imgsel != d->imgsel) update (self, 0);
-  return FALSE;
-}
-
-static gboolean
-tag_name_changed (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  set_related_query(self, d);
   return FALSE;
 }
 
@@ -320,6 +312,18 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
   update(self, 1);
+}
+
+static gboolean
+tag_name_changed (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+  if (event->keyval == GDK_KP_Enter || event->keyval == GDK_Return)
+    new_button_clicked (NULL, user_data);
+  else
+    set_related_query(self, d);
+  return FALSE;
 }
 
 static void
