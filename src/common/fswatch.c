@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <glib.h>
+#include <strings.h>
 #ifdef  HAVE_INOTIFY
 #include <sys/inotify.h>
 #endif
@@ -66,6 +67,7 @@ static void *_fswatch_thread(void *data) {
   uint32_t res=0;
   uint32_t event_hdr_size=sizeof(inotify_event_t);
   inotify_event_t *event_hdr=g_malloc(sizeof(inotify_event_t));
+  bzero(event_hdr, event_hdr_size);
   char *name=g_malloc(2048);
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Starting thread of context %lx\n",(unsigned long int)data);
   while(1) {

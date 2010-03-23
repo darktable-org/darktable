@@ -354,6 +354,7 @@ void dt_control_init(dt_control_t *s)
 
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
+  s->log_message_timeout_id = 0;
   pthread_mutex_init(&(s->log_mutex), NULL);
   s->progress = 200.0f;
 
