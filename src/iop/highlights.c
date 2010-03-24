@@ -132,14 +132,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  const float clip = piece->pipe->processed_maximum;
+  const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   float inc[3], lch[3], lchc[3], lchi[3];
 
   switch(data->mode)
   {
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data) private(in, out, inc, lch, lchc, lchi)
+  #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data, piece) private(in, out, inc, lch, lchc, lchi)
 #endif
       for(int j=0;j<roi_out->height;j++)
       {
@@ -147,7 +147,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         in  = (float *)ivoid + 3*roi_out->width*j;
         for(int i=0;i<roi_out->width;i++)
         {
-          if(in[0] <= clip && in[1] <= clip && in[2] <= clip)
+          if(in[0] <= piece->pipe->processed_maximum[0] &&
+             in[1] <= piece->pipe->processed_maximum[1] &&
+             in[2] <= piece->pipe->processed_maximum[2]) 
           { // fast path for well-exposed pixels.
             for(int c=0;c<3;c++) out[c] = in[c];
           }
@@ -166,10 +168,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       break;
     default: case DT_IOP_HIGHLIGHTS_CLIP:
-      for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out) private(in, out, inc, lch, lchc, lchi)
+#endif
+      for(int j=0;j<roi_out->height;j++)
       {
-        for(int c=0;c<3;c++) out[c] = fminf(clip, in[c]);
-        out += 3; in += 3;
+        out = (float *)ovoid + 3*roi_out->width*j;
+        in  = (float *)ivoid + 3*roi_out->width*j;
+        for(int i=0;i<roi_out->width;i++)
+        {
+          for(int c=0;c<3;c++) out[c] = fminf(clip, in[c]);
+          out += 3; in += 3;
+        }
       }
       break;
   }

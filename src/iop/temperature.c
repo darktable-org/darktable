@@ -139,7 +139,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-  piece->pipe->processed_maximum = fminf(d->coeffs[0], fminf(d->coeffs[1], d->coeffs[2])) * piece->pipe->processed_maximum;
+  for(int k=0;k<3;k++)
+    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
   { // mipf from thumbnail is already whitebalanced.
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
