@@ -463,24 +463,27 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     gtk_combo_box_set_active(c->presets, -1);
     dt_dev_add_history_item(darktable.develop, self);
   }
-  else if(event->y > height)
-  {
-    c->x_move = 1;
-    const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
-    float dist = fabsf(p->tonecurve_x[1] - mx);
-    for(int k=2;k<5;k++)
-    {
-      float d2 = fabsf(p->tonecurve_x[k] - mx);
-      if(d2 < dist)
-      {
-        c->x_move = k;
-        dist = d2;
-      }
-    }
-  }
   else
   {
-    c->x_move = -1;
+    if(event->y > height)
+    {
+      c->x_move = 1;
+      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+      float dist = fabsf(p->tonecurve_x[1] - mx);
+      for(int k=2;k<5;k++)
+      {
+        float d2 = fabsf(p->tonecurve_x[k] - mx);
+        if(d2 < dist)
+        {
+          c->x_move = k;
+          dist = d2;
+        }
+      }
+    }
+    else
+    {
+      c->x_move = -1;
+    }
     float pos = (event->x - inset)/width;
     float min = 100.0;
     int nearest = 0;

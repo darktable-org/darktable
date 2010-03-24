@@ -1,10 +1,6 @@
 0.5 release:
 - decapitalize icc profile names
-- black images bug...??
 - lock zoom/pan checkbox in darkroom mode
-- reproduce tonecurve bug:
-  - select a preset without mouse over the drawingarea
-  - then hover over the drawing area
 
 later:
 - more transparent custom default handling
