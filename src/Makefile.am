@@ -3,7 +3,7 @@ include shared.am
 AM_CFLAGS+=-Werror -rdynamic -Wno-deprecated-declarations
 lib_LTLIBRARIES=libdarktable.la
 libdarktable_la_LDFLAGS=-avoid-version -fPIC
-libdarktable_la_LIBADD=$(srcdir)/LibRaw/libraw_r.la
+libdarktable_la_LIBADD=LibRaw/libraw_r.la
 libdarktable_la_SOURCES=control/jobs.c gui/gtk.c gui/navigation.c gui/histogram.c gui/filmview.c develop/develop.c develop/imageop.c common/imageio.c common/darktable.c control/control.c common/film.c common/image.c common/image_cache.c common/image_compression.c gui/metadata.c develop/pixelpipe.c common/exif.cc common/imageio_jpeg.c common/imageio_png.c common/imageio_pfm.c common/imageio_rgbe.c common/imageio_tiff.c common/imageio_ppm.c views/view.c libs/lib.c dtgtk/togglebutton.c dtgtk/slider.c dtgtk/button.c dtgtk/paint.c common/fswatch.c common/colorspaces.c
 bin_PROGRAMS=darktable
 darktable_SOURCES=main.c
