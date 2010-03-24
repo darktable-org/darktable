@@ -514,6 +514,8 @@ apply_preset(dt_iop_module_t *self)
   const int pos = gtk_combo_box_get_active(g->presets);
   switch(pos)
   {
+    case -1: // just un-setting.
+      return;
     case 0: // camera wb
       for(int k=0;k<3;k++) p->coeffs[k] = fp->coeffs[k];
       break;
