@@ -24,6 +24,9 @@
             on the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>.</li>
         <li>post <em>documentation</em>, tutorials, your experiences at <a href="http://sourceforge.net/apps/phpbb/darktable/">the forums</a>.</li>
         <li>post beta: write image operation <em>plug-ins</em>.</li>
+        <li><em>translate</em> dt into your language (in case it didn't already happen:<br/>
+            read the short instructions in the file <a href="http://darktable.git.sourceforge.net/git/gitweb.cgi?p=darktable/darktable;a=blob;f=TRANSLATORS;h=8b55a4f319d2a255eedd17b596f3fa4171ab58ff;hb=HEAD">TRANSLATORS</a> in git.
+        </li>
         <li>produce <em>helpful stacktraces</em> for bugreports (minimal steps):<br/>
             $ ./configure --prefix=/usr --enable-debug<br/>
             $ make &amp;&amp; sudo make install<br/>
