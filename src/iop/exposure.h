@@ -32,9 +32,9 @@ dt_iop_exposure_params_t;
 typedef struct dt_iop_exposure_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2, *label3;
+  GtkLabel *label1, *label2;
   GtkCheckButton *autoexp;
-  GtkDarktableSlider *scale1, *scale2, *scale3, *autoexpp;
+  GtkDarktableSlider *scale1, *scale2, *autoexpp;
 }
 dt_iop_exposure_gui_data_t;
 

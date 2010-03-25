@@ -51,7 +51,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     black -= self->dev->image->black;
   }
   float scale = 1.0/(white - black); 
-  if(fabsf(d->gain - 1.0) < 0.001)
+  // if(fabsf(d->gain - 1.0) < 0.001)
   {
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
@@ -59,6 +59,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out += 3; in += 3;
     }
   }
+#if 0 // non-linear doesn't make sense before white balance :(
   else
   {
     for(int k=0;k<roi_out->width*roi_out->height;k++)
@@ -67,6 +68,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out += 3; in += 3;
     }
   }
+#endif
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = powf(fmaxf(0.0, fminf(1.0, (piece->pipe->processed_maximum[k]-black))*scale), d->gain);
 }
@@ -128,7 +130,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
   dtgtk_slider_set_value(g->scale1, p->black/self->dev->image->maximum);
   dtgtk_slider_set_value(g->scale2, p->exposure);
-  dtgtk_slider_set_value(g->scale3, p->gain);
+  // dtgtk_slider_set_value(g->scale3, p->gain);
 }
 
 void init(dt_iop_module_t *module)
@@ -207,6 +209,7 @@ black_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+#if 0
 static void
 gain_callback (GtkWidget *slider, gpointer user_data)
 {
@@ -216,6 +219,7 @@ gain_callback (GtkWidget *slider, gpointer user_data)
   p->gain = dtgtk_slider_get_value(DTGTK_SLIDER(slider));
   dt_dev_add_history_item(darktable.develop, self);
 }
+#endif
 
 static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
@@ -250,14 +254,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("black")));
   g->label2 = GTK_LABEL(gtk_label_new(_("exposure")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("gain")));
+  // g->label3 = GTK_LABEL(gtk_label_new(_("gain")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
+  // gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  // g->scale1 = GTK_HSCALE(gtk_hscale_new_with_range(-.5, 1.0, .0005));
+  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -.5, 1.0, .001,p->black/self->dev->image->maximum,3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
   
@@ -265,11 +268,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), NULL);
   
   
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.0, 2.0, .005, p->gain,3));
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("leave black and white,\nbut compress brighter\nvalues (non-linear)"), NULL);
+  // g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.0, 2.0, .005, p->gain,3));
+  // gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("leave black and white,\nbut compress brighter\nvalues (non-linear)"), NULL);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
@@ -287,8 +290,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (black_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (white_callback), self);
-  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (gain_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale3), "value-changed",
+                    // G_CALLBACK (gain_callback), self);
   g_signal_connect (G_OBJECT (g->autoexp), "toggled",
                     G_CALLBACK (autoexp_callback), self);
   g_signal_connect (G_OBJECT(self->widget), "expose-event",
