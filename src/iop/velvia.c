@@ -67,35 +67,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_velvia_data_t *data = (dt_iop_velvia_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
-	
-  // Get max and min pixel luminocity value in image
-  double plummin=1.0;
-  double plummax=0.0;
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-  {
-	double plum=(in[0]+in[1]+in[2])/3;					
-	if( plummin > plum ) plummin=plum;
-	if( plummax < plum ) plummax=plum;
-	in += 3;
-  }
   
   // Apply velvia saturation
- in  = (float *)ivoid;
- for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  in  = (float *)ivoid;
+  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     // calculate vibrance, and apply boost velvia saturation at least saturated pixles
-   double pmax=fmax(in[0],fmax(in[1],in[2]));			// Max value amonug RGB set
-   double pmin=fmin(in[0],fmin(in[1],in[2]));			// Min value among RGB set
-   double plum = (pmax+pmin)/2.0;					// Pixel luminocity
-   double psat =(plum<=0.5) ? (pmax-pmin)/(pmax+pmin): (pmax-pmin)/(2-pmax-pmin);
-   //plum= (plum-plummin)*(1.0/(plummax-plummin));	        // translate plum and scale to dynamic lumin range
+    double pmax=fmax(in[0],fmax(in[1],in[2]));			// Max value amonug RGB set
+    double pmin=fmin(in[0],fmin(in[1],in[2]));			// Min value among RGB set
+    double plum = (pmax+pmin)/2.0;					// Pixel luminocity
+    double psat =(plum<=0.5) ? (pmax-pmin)/(pmax+pmin): (pmax-pmin)/(2-pmax-pmin);
 
-   double pweight=((1.0- (2.0*psat)) + (1+(fabs(plum-0.5)*2.0))) / 2.0;		// The weight of pixel
-   double saturation = (data->saturation*pweight)*data->vibrance;
-   
-   // Apply velvia saturation values
-   double sba=1.0+saturation;
-   double sda=(sba/2.0)-0.5;
+    double pweight=((1.0- (1.5*psat)) + (1+(fabs(plum-0.5)*2.0))) / 2.0;		// The weight of pixel
+    double saturation = (data->saturation*pweight)*data->vibrance;			// So lets calculate the final affection of filter on pixel
+
+    // Apply velvia saturation values
+    double sba=1.0+saturation;
+    double sda=(sba/2.0)-0.5;
     out[0]=(in[0]*(sba))-(in[1]*(sda))-(in[2]*(sda));
     out[1]=(in[1]*(sba))-(in[0]*(sda))-(in[2]*(sda));
     out[2]=(in[2]*(sba))-(in[0]*(sda))-(in[1]*(sda));  
@@ -214,7 +202,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (saturation_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-		    G_CALLBACK (vibrance_callback), self);
+        G_CALLBACK (vibrance_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
