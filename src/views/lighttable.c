@@ -85,6 +85,7 @@ void init(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_id = -1;
+  lib->first_visible_zoomable = lib->first_visible_filemanager = 0;
   lib->button = 0;
   lib->modifiers = 0;
   lib->center = lib->pan = lib->track = 0;
