@@ -3,13 +3,11 @@
 # $Header: $
 
 # ebuild for darktable by jo hanika (hanatos@gmail.com)
-inherit eutils git
+inherit eutils
 
 DESCRIPTION="Utility to organize and develop raw images"
 HOMEPAGE="http://darktable.sf.net/"
-EGIT_REPO_URI="git://darktable.git.sf.net/gitroot/darktable/darktable"
-EGIT_BRANCH="master"
-EGIT_COMMIT="master"
+SRC_URI="http://switch.dl.sourceforge.net/sourceforge/darktable/${P}.tar.bz2"
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
@@ -21,13 +19,7 @@ DEPEND=">=x11-libs/gtk+-2.18.0 >=gnome-base/libglade-2.6.3
 >=media-libs/lensfun-0.2.4 >=gnome-base/gconf-2.24.0 >=media-libs/tiff-3.9.2"
 RDEPEND="${DEPEND}"
 
-src_unpack() {
-	git_src_unpack
-	cd "${S}"
-}
-
 src_compile() {
-	./autogen.sh
 	econf $(use_enable openmp) --disable-schemas-install
 	emake || die "emake failed."
 }
