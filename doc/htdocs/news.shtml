@@ -13,7 +13,7 @@
 
       <div class="listtext">
     	<img src="images/redice.jpg" class="img" alt="dreggn" /><h1>released 0.5</h1>
-      <em>(2010-03-18)</em>features, features, features ;)
+      <em>(2010-03-26)</em> features, features, features ;)
       <ul>
         <li>image tagging</li>
         <li>flexible database queries by exif and custom tags</li>
@@ -38,7 +38,7 @@
 
       <div class="listtext">
     	<img src="images/rock1.jpg" class="img" alt="dreggn" /><h1>released 0.4</h1>
-      <em>(2010-01-11)</em>as usual, the new release comes with lots of new features:
+      <em>(2010-01-11)</em> as usual, the new release comes with lots of new features:
       <ul>
         <li>lens defect correction (lensfun)</li>
         <li>internationalization (russian and swedish translation)</li>
