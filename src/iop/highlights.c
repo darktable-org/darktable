@@ -132,7 +132,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+  const float clip = self->dev->image->flags & DT_IMAGE_THUMBNAIL ? 1.0 :
+    fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   float inc[3], lch[3], lchc[3], lchi[3];
 
   switch(data->mode)
