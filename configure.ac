@@ -1,4 +1,4 @@
-AC_INIT([darktable], [0.5], [hanatos@gmail.com])
+AC_INIT([darktable], [0.5+git], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_CONFIG_MACRO_DIR([m4])
