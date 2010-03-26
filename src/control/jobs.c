@@ -202,7 +202,6 @@ void dt_control_delete_images_job_run(dt_job_t *job)
     // remove from disk:
     (void)g_unlink(dtfilename);
     char *c = dtfilename + strlen(dtfilename);
-    for(;c>dtfilename && *c != '.';c--);
     sprintf(c, ".dt");
     (void)g_unlink(dtfilename);
     sprintf(c, ".dttags");
