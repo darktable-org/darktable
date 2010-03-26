@@ -166,7 +166,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(al), module->widget);
 
-  g_signal_connect (G_OBJECT (resetbutton), "pressed",
+  g_signal_connect (G_OBJECT (resetbutton), "clicked",
                     G_CALLBACK (dt_lib_gui_reset_callback), module);
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
                   G_CALLBACK (dt_lib_gui_expander_callback), module);

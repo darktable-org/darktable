@@ -1,5 +1,3 @@
-- button to import .dt
-
 0.6 release:
 - decapitalize icc profile names
 - lock zoom/pan checkbox in darkroom mode
