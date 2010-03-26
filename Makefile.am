@@ -7,6 +7,8 @@ dtdatarootdir=$(datarootdir)/darktable
 dtdataroot_DATA=darktable.gtkrc darktable.glade
 dtapprootdir=$(datarootdir)/applications
 dtapproot_DATA=darktable.desktop
+dtdocdir=$(datarootdir)/doc/darktable
+dtdoc_DATA=README AUTHORS TRANSLATORS LICENSE
 man1_MANS=darktable.1
 if HAVE_GCONF
 schemadir=$(GCONF_SCHEMA_FILE_DIR)
