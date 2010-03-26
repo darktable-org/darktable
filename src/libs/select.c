@@ -94,6 +94,12 @@ gui_reset (dt_lib_module_t *self)
 {
 }
 
+int
+position ()
+{
+  return 800;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {

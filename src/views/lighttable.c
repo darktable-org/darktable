@@ -85,6 +85,7 @@ void init(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_id = -1;
+  lib->first_visible_zoomable = lib->first_visible_filemanager = 0;
   lib->button = 0;
   lib->modifiers = 0;
   lib->center = lib->pan = lib->track = 0;
@@ -379,11 +380,20 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   cairo_set_source_rgb (cr, .9, .9, .9);
   cairo_paint(cr);
 
+  // zoom to one case:
+  static int oldzoom = -1;
+  static int firstsel = -1;
+
   if(lib->first_visible_zoomable >= 0)
   {
     lib->offset = lib->first_visible_zoomable;
   }
   lib->first_visible_zoomable = -1;
+
+  if(iir == 1 && oldzoom != 1 && firstsel >= 0)
+    lib->offset = firstsel;
+  oldzoom = iir;
+  firstsel = -1;
 
   if(lib->track >  2) lib->offset += iir;
   if(lib->track < -2) lib->offset -= iir;
@@ -447,6 +457,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           // set mouse over id
           if(seli == col && selj == row)
           {
+            firstsel = lib->offset + selj*iir + seli;
             mouse_over_id = image->id;
             DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
           }

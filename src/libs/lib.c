@@ -27,7 +27,9 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_lib_module_t *am = (const dt_lib_module_t *)a;
   const dt_lib_module_t *bm = (const dt_lib_module_t *)b;
-  return am->priority - bm->priority;
+  const int apos = am->position ? am->position() : 0;
+  const int bpos = bm->position ? bm->position() : 0;
+  return apos - bpos;
 }
 
 int
@@ -35,7 +37,6 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
 {
   module->dt = &darktable;
   module->widget = NULL;
-  module->priority = 0;
   strncpy(module->plugin_name, plugin_name, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
@@ -59,6 +60,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "key_pressed",            (gpointer)&(module->key_pressed)))            module->key_pressed = NULL;
   if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
+  if(!g_module_symbol(module->module, "position",               (gpointer)&(module->position)))               module->position = NULL;
 
   return 0;
 error:

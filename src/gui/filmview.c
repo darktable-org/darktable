@@ -140,13 +140,16 @@ focus_in_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
   gtk_widget_set_size_request(view, -1, win->allocation.height/2);
 }
 
-#if 0 // results in jumpy gui :(
 static void
-focus_out_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
+hide_callback (GObject    *object,
+                   GParamSpec *param_spec,
+                   GtkWidget *view)
 {
-  gtk_widget_set_size_request(view, -1, -1);
+  GtkExpander *expander;
+  expander = GTK_EXPANDER (object);
+  if (!gtk_expander_get_expanded (expander))
+    gtk_widget_set_size_request(view, -1, -1);
 }
-#endif
 
 static void
 row_activated_callback (GtkTreeView        *view,
@@ -192,7 +195,9 @@ dt_gui_filmview_init()
   dt_gui_filmview_update("");
 
   g_signal_connect(view, "focus-in-event",  G_CALLBACK(focus_in_callback), view);
-  // g_signal_connect(view, "focus-out-event", G_CALLBACK(focus_out_callback), view);
+  GtkWidget *expander = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
+  g_signal_connect (expander, "notify::expanded", G_CALLBACK (hide_callback), view);
+
 
   GtkWidget *entry = glade_xml_get_widget (darktable.gui->main_window, "entry_film");
   g_signal_connect(entry, "key-release-event", G_CALLBACK(entry_callback), NULL);

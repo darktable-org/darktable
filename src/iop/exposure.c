@@ -186,13 +186,14 @@ static void
 white_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   p->exposure = dtgtk_slider_get_value(slider);
-  const float white = exp2f(-p->exposure)*self->dev->image->maximum;
-  float black = dtgtk_slider_get_value(g->scale1)*self->dev->image->maximum;
-  if(white < black) dtgtk_slider_set_value(g->scale1, white);
+  // these lines seem to produce bad black points during auto exposure:
+  // dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  // const float white = exp2f(-p->exposure)*self->dev->image->maximum;
+  // float black = dtgtk_slider_get_value(g->scale1)*self->dev->image->maximum;
+  // if(white < black) dtgtk_slider_set_value(g->scale1, white);
   dt_dev_add_history_item(darktable.develop, self);
 }
 

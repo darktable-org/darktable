@@ -53,6 +53,12 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_draw_all();
 }
 
+int
+position ()
+{
+  return 700;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {

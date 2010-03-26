@@ -35,8 +35,6 @@ typedef struct dt_lib_module_t
 {
   /** opened module. */
   GModule *module;
-  /** order in which plugins are stacked. */
-  int32_t priority;
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** other stuff that may be needed by the module, not only in gui mode. */
@@ -68,6 +66,7 @@ typedef struct dt_lib_module_t
   int  (*key_pressed)     (struct dt_lib_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_lib_module_t *self, double x, double y, int up);
   void (*configure)       (struct dt_lib_module_t *self, int width, int height);
+  int  (*position)        ();
   
   // TODO: gui only?
   // void (*init) (struct dt_lib_module_t *self);

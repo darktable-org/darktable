@@ -1046,22 +1046,26 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   rc = sqlite3_finalize (stmt);
 
   uint32_t magic = 0;
-  rd = fread(&magic, 1, sizeof(int32_t), f);
+  rd = fread(&magic, sizeof(int32_t), 1, f);
   if(rd != 1 || magic != 0xd731337)
+  {
+    printf("1\n");
     goto delete_old_config;
+  }
 
   while(!feof(f))
   {
     int32_t enabled, len, modversion;
     dt_dev_operation_t op;
-    rd = fread(&enabled, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) goto delete_old_config;
-    rd = fread(op, 1, sizeof(dt_dev_operation_t), f);
-    if(rd < sizeof(dt_dev_operation_t)) goto delete_old_config;
-    rd = fread(&modversion, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) goto delete_old_config;
-    rd = fread(&len, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) goto delete_old_config;
+    rd = fread(&enabled, sizeof(int32_t), 1, f);
+    if(feof(f)) break;
+    if(rd < 1) goto delete_old_config;
+    rd = fread(op, sizeof(dt_dev_operation_t), 1, f);
+    if(rd < 1) goto delete_old_config;
+    rd = fread(&modversion, sizeof(int32_t), 1, f);
+    if(rd < 1) goto delete_old_config;
+    rd = fread(&len, sizeof(int32_t), 1, f);
+    if(rd < 1) goto delete_old_config;
     char *params = (char *)malloc(len);
     rd = fread(params, 1, len, f);
     if(rd < len) { free(params); goto delete_old_config; }
