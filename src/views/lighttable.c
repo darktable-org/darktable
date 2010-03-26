@@ -380,11 +380,20 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   cairo_set_source_rgb (cr, .9, .9, .9);
   cairo_paint(cr);
 
+  // zoom to one case:
+  static int oldzoom = -1;
+  static int firstsel = -1;
+
   if(lib->first_visible_zoomable >= 0)
   {
     lib->offset = lib->first_visible_zoomable;
   }
   lib->first_visible_zoomable = -1;
+
+  if(iir == 1 && oldzoom != 1 && firstsel >= 0)
+    lib->offset = firstsel;
+  oldzoom = iir;
+  firstsel = -1;
 
   if(lib->track >  2) lib->offset += iir;
   if(lib->track < -2) lib->offset -= iir;
@@ -448,6 +457,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           // set mouse over id
           if(seli == col && selj == row)
           {
+            firstsel = lib->offset + selj*iir + seli;
             mouse_over_id = image->id;
             DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
           }
