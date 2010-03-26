@@ -44,6 +44,80 @@ name ()
   return _("history stack");
 }
 
+#if 0
+static void
+load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
+				      GTK_WINDOW (win),
+				      GTK_FILE_CHOOSER_ACTION_OPEN,
+				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+				      NULL);
+
+  char *cp, **extensions, ext[1024];
+  GtkFileFilter *filter;
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  extensions = g_strsplit(dt_supported_extensions, ",", 100);
+  for(char **i=extensions;*i!=NULL;i++)
+  {
+    snprintf(ext, 1024, "*.%s", *i);
+    gtk_file_filter_add_pattern(filter, ext);
+    gtk_file_filter_add_pattern(filter, cp=g_ascii_strup(ext, -1));
+    g_free(cp);
+  }
+  g_strfreev(extensions);
+  gtk_file_filter_set_name(filter, _("dt sidecar files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*");
+  gtk_file_filter_set_name(filter, _("all files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename;
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+    int id = dt_image_import(1, filename);
+    if(id)
+    {
+      sqlite3_stmt *stmt;
+      sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        int imgid = sqlite3_column_int(stmt, 0);
+        dt_imageio_dt_read(imgid, dtfilename);
+      }
+      sqlite3_finalize(stmt);
+      dt_image_t *img = dt_image_cache_use(imgid, 'r');
+      img->force_reimport = 1;
+      dt_image_cache_flush(img);
+      dt_image_write_dt_files(img);
+      dt_image_cache_release(img, 'r');
+    }
+    else
+    {
+      GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
+                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                  GTK_MESSAGE_ERROR,
+                                  GTK_BUTTONS_CLOSE,
+                                  _("error loading file '%s'"),
+                                  filename);
+       gtk_dialog_run (GTK_DIALOG (dialog));
+       gtk_widget_destroy (dialog);
+    }
+    g_free (filename);
+  }
+  gtk_widget_destroy (filechooser);
+  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(win);
+}
+#endif
+
 static void
 copy_button_clicked (GtkWidget *widget, gpointer user_data)
 {
@@ -172,6 +246,12 @@ key_accel_paste_callback(void *user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   paste_button_clicked(NULL, self);
+}
+
+int
+position ()
+{
+  return 600;
 }
 
 void

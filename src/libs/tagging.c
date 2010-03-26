@@ -394,6 +394,12 @@ gui_reset (dt_lib_module_t *self)
   set_related_query(self, d);
 }
 
+int
+position ()
+{
+  return 500;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {

@@ -240,6 +240,12 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   g_free(text);
 }
 
+int
+position ()
+{
+  return 400;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {

@@ -156,6 +156,12 @@ intent_changed (GtkComboBox *widget, dt_lib_export_t *d)
   dt_conf_set_int("plugins/lighttable/export/iccintent", pos-1);
 }
 
+int
+position ()
+{
+  return 0;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
