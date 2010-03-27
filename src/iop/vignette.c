@@ -91,7 +91,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     pv.y=-1.0+(((double)j/roi_out->height)*2.0);
     
     // Calculate the pixel weight in vinjett
-    double v=tan(pv.y/pv.x);                        // get the pixel v of tan opp. / adj.
+    double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
+    if(pv.x==0)
+	    v=(pv.y>0)?0:M_PI;
+    
     double sinv=sin(v);
     double cosv=cos(v);
     vv.x=cosv*data->scale;                        // apply uniformity and scale vignette to radie 
