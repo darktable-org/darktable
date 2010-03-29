@@ -30,6 +30,15 @@
  */
 struct dt_iop_module_t;
 struct dt_dev_pixelpipe_t;
+
+/** region of interest */
+typedef struct dt_iop_roi_t
+{
+  int x, y, width, height;
+  float scale;
+}
+dt_iop_roi_t;
+
 typedef struct dt_dev_pixelpipe_iop_t
 {
   struct dt_iop_module_t *module;  // the module in the dev operation stack
@@ -39,6 +48,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   float iscale;                    // input actually just downscaled buffer? iscale*iwidth = actual width
   int iwidth, iheight;             // width and height of input buffer
   uint64_t hash;                   // hash of params and enabled.
+  dt_iop_roi_t buf_in, buf_out;    // theoretical full buffer regions of interest, as passed through modify_roi_out
 }
 dt_dev_pixelpipe_iop_t;
 
