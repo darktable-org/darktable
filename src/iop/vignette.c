@@ -78,7 +78,39 @@ const char *name()
 {
   return _("vignette");
 }
+static void rgb2hsl(float r,float g,float b, float *h,float *s,float *l) {
+  float pmax=fmax(r,fmax(g,b));
+  float pmin=fmin(r,fmin(g,b));
+  *h=*s=0.0;
+  *l=(pmax+pmin)/2.0;
+  if( pmax!=pmin )
+  {
+    *s=(*l<0.5)?(pmax-pmin)/(pmax+pmin):(pmax-pmin)/(2.0-pmax-pmin);
+    *h= (pmax==r) ? ((g-b)/(pmax-pmin)) : ( (pmax==g)?2.0+(b-r)/(pmax-pmin):4.0+(r-g)/(pmax-pmin) );
+    *h= (*h*60.0>0.0)?*h*60.0:(*h*60.0)+360.0;
+  }
+}
 
+static void hsl2rgb(float *r,float *g,float *b, float h,float s,float l)  {
+  *r=*g=*b=l;
+  if(s!=0)
+  {
+    float temp2=(l<0.5)?l*(1.0+s):l+s-l*s;
+    float temp1=2.0*l-temp2;
+    float th=h/360.0;
+    float temp3[3];
+    temp3[0]=th+1.0/3.0;
+    temp3[1]=th;
+    temp3[2]=th-1.0/3.0;
+    temp3[0] += (temp3[0]<0)?1.0:(temp3[0]>1)?-1.0:0.0;
+    temp3[1] += (temp3[1]<0)?1.0:(temp3[1]>1)?-1.0:0.0;
+    temp3[2] += (temp3[2]<0)?1.0:(temp3[2]>1)?-1.0:0.0;
+    *r=(6.0*temp3[0])<1?temp1+(temp2-temp1)*6.0*temp3[0]:(2.0*temp3[0])<1.0?temp2:(3.0*temp3[0])<2.0?temp1+(temp2-temp1)*((2.0/3.0)-temp3[0])*6.0:temp1;
+    *g=(6.0*temp3[1])<1?temp1+(temp2-temp1)*6.0*temp3[1]:(2.0*temp3[1])<1.0?temp2:(3.0*temp3[1])<2.0?temp1+(temp2-temp1)*((2.0/3.0)-temp3[1])*6.0:temp1;
+    *b=((6.0*temp3[2])<1.0) ? (temp1+(temp2-temp1)*6.0*temp3[2]) : ( ((2.0*temp3[2])<1.0) ? (temp2) : ((3.0*temp3[2])<2.0) ? (temp1+(temp2-temp1)*((2.0/3.0)-temp3[2])*6.0) : temp1);
+    
+  }
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -116,7 +148,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     
     // Let's apply weighted effect on brightness and desaturation
-    double col[3];
+    float col[3];
     for(int c=0;c<3;c++) col[c]=in[c];
     if( weight > 0 ) {
       double bs=1.0;
@@ -127,28 +159,34 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       else
         ss-=fabs(data->bsratio);
       
-      // First off apply saturation
-      double mv=(in[0]+in[1]+in[2])/3.0;
+      float H,S,L;
+      rgb2hsl(in[0],in[1],in[2],&H,&S,&L);
+      
+     
+      
+      // Then apply brightness
+      L=L*(1.0-(CLIP(weight*bs)*data->strength));
+      
+      // Lets convert back to RGB
+      hsl2rgb(&col[0],&col[1],&col[2],H,S,L);	
+      
+      // apply saturation
+      double mv=(col[0]+col[1]+col[2])/3.0;
       double wss=CLIP(weight*ss)*data->strength;
       if(data->invert_saturation==FALSE)
       { // Desaturate
-        col[0]=CLIP( in[0]+((mv-in[0])* wss) );
-        col[1]=CLIP( in[1]+((mv-in[1])* wss) );
-        col[2]=CLIP( in[2]+((mv-in[2])* wss) );    
+        col[0]=CLIP( col[0]+((mv-col[0])* wss) );
+        col[1]=CLIP( col[1]+((mv-col[1])* wss) );
+        col[2]=CLIP( col[2]+((mv-col[2])* wss) );    
       } 
       else
       {
         wss*=2.0;	// Double effect if we gonna saturate
-        col[0]=CLIP( in[0]-((mv-in[0])* wss) );
-        col[1]=CLIP( in[1]-((mv-in[1])* wss) );
-        col[2]=CLIP( in[2]-((mv-in[2])* wss) );    
+        col[0]=CLIP( col[0]-((mv-col[0])* wss) );
+        col[1]=CLIP( col[1]-((mv-col[1])* wss) );
+        col[2]=CLIP( col[2]-((mv-col[2])* wss) );    
       }
       
-      // Then apply brightness
-      double wbs=CLIP(weight*bs)*data->strength;
-      col[0]=CLIP( col[0]*(1.0-wbs) );
-      col[1]=CLIP( col[1]*(1.0-wbs) );
-      col[2]=CLIP( col[2]*(1.0-wbs) );
     }
     for(int c=0;c<3;c++) out[c]=col[c];
     out += 3; in += 3;
