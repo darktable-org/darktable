@@ -95,19 +95,29 @@ void dt_film_set_query(const int32_t id)
 {
   dt_lib_sort_t   sort   = dt_conf_get_int ("ui_last/combo_sort");
   dt_lib_filter_t filter = dt_conf_get_int ("ui_last/combo_filter");
-  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
-  int sortindex = 3;
+  char *sortstring[5] = {"datetime_taken", "flags & 7 desc", "filename", "id", "color, filename"};
+  int sortindex = 4;
   if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
   else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
   else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
-  // else (sort == DT_LIB_SORT_ID)
+  else if(sort == DT_LIB_SORT_ID)       sortindex = 3;
 
   char query[512];
   // order by and where clauses from sort widget.
-  if(filter == DT_LIB_FILTER_STAR_NO)
-    snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) < 1 order by %s limit ?1, ?2", id, sortstring[sortindex]);
+  if(sortindex == 4)
+  {
+    if(filter == DT_LIB_FILTER_STAR_NO)
+      snprintf(query, 512, "select * from (select * from images where film_id = %d and (flags & 7) < 1) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", id, sortstring[sortindex]);
+    else
+      snprintf(query, 512, "select * from (select * from images where film_id = %d and (flags & 7) >= %d) as a join color_labels as b order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
+  }
   else
-    snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
+  {
+    if(filter == DT_LIB_FILTER_STAR_NO)
+      snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) < 1 order by %s limit ?1, ?2", id, sortstring[sortindex]);
+    else
+      snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
+  }
   dt_conf_set_string ("plugins/lighttable/query", query);
   dt_conf_set_int ("ui_last/film_roll", id);
 }

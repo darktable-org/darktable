@@ -103,7 +103,8 @@ typedef enum dt_lib_sort_t
   DT_LIB_SORT_FILENAME = 0,
   DT_LIB_SORT_DATETIME = 1,
   DT_LIB_SORT_RATING = 2,
-  DT_LIB_SORT_ID = 3
+  DT_LIB_SORT_ID = 3,
+  DT_LIB_SORT_COLOR = 4
 }
 dt_lib_sort_t;
 

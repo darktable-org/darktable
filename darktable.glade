@@ -250,7 +250,8 @@ no star
                             <property name="items" translatable="yes">filename
 time
 rating
-id</property>
+id
+color label</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
