@@ -53,7 +53,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_float("preview_subsample", .5f);
   dt_conf_set_int  ("mipmap_cache_thumbnails", 500);
   dt_conf_set_int  ("mipmap_cache_full_images", 2);
-  dt_conf_set_int  ("cache_memory", 1610612736);
+  dt_conf_set_int  ("cache_memory", 536870912);
   dt_conf_set_int  ("database_cache_thumbnails", 2500);
   dt_conf_set_int  ("database_cache_thumbnails0", 10000);
   dt_conf_set_int  ("database_cache_quality", 89);
@@ -152,16 +152,13 @@ int dt_control_load_config(dt_control_t *c)
     {
       // insert new tables, if not there (statement will just fail if so):
       sqlite3_exec(darktable.db, "create table iop_defaults (operation varchar, op_params blob, enabled integer, model varchar, maker varchar, primary key(operation, model, maker))", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "create table color_labels (imgid integer primary key, color integer)", NULL, NULL, NULL);
       pthread_mutex_unlock(&(darktable.control->global_mutex));
-      // TODO: get last from sql query!
-      // dt_film_roll_open(darktable.library->film, film_id);
-      // weg: dt_film_roll_import(darktable.library->film, darktable.control->global_settings.lib_last_film);
     }
 #endif
   }
   else
   { // db not yet there, create it
-    // dt_ctl_settings_default(darktable.control);
     rc = sqlite3_finalize(stmt);
 create_tables:
     rc = sqlite3_exec(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);

@@ -1,7 +1,19 @@
 0.6 release:
+
+big new features:
+- tethered shooting?
+- filmstrip?
+- print mode?
+
+- better crop
+- color labels:
+  - add sort condition to top panel.
+  - global add sort/filter dreggn!
+- splash screen
+
+
 - decapitalize icc profile names
 - lock zoom/pan checkbox in darkroom mode
-- draggable crop
 - sliders for C/A in lensfun
 - lensfun + crop: preview/full image differ in zoom/pan?
 - more transparent custom default handling

@@ -362,6 +362,39 @@ lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
 }
 
 static void
+update_query()
+{
+  const int i = dt_conf_get_int("ui_last/combo_sort");
+  const int j = dt_conf_get_int("ui_last/combo_filter");
+  // replace sort part
+  char *sortstring[5] = {"datetime_taken, filename", "flags & 7 desc", "filename", "id", "color, filename"};
+  int sortindex = 3;
+  if     (i == 1) sortindex = 0;
+  else if(i == 2) sortindex = 1;
+  else if(i == 0) sortindex = 2;
+  else if(i == 4) sortindex = 4;
+  // else (i == 3)
+  gchar *query = dt_conf_get_string("plugins/lighttable/query");
+  if (query == NULL)
+    return;
+  gchar *q = query;
+  if(!strncmp(query, "select * from (", 15)) q = query + 15;
+  gchar **split = g_regex_split_simple("flags & 7", q, 0, 0);
+  char newquery[1024], filter[512];
+  if(j == 1) snprintf(filter, 512, "flags & 7) < 1");
+  else       snprintf(filter, 512, "flags & 7) >= %d", j-1);
+  if(i == 4)
+    snprintf(newquery, 1024, "select * from (%s %s) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
+  else
+    snprintf(newquery, 1024, "%s %s order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
+  g_strfreev(split);
+  g_free(query);
+  dt_conf_set_string("plugins/lighttable/query", newquery);
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(win);
+}
+
+static void
 image_filter_changed (GtkComboBox *widget, gpointer user_data)
 {
   // image_filter
@@ -372,20 +405,8 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 3)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_2);
   else if(i == 4)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_3);
   else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
 
-  // replace filter part
-  gchar *query = dt_conf_get_string("plugins/lighttable/query");
-  if (query == NULL)
-    return;
-  gchar **split = g_regex_split_simple("flags .* order", query, 0, 0);
-  char newquery[1024];
-  if(i == 1) snprintf(newquery, 1024, "%sflags & 7) < 1 order%s", split[0], split[1]);
-  else       snprintf(newquery, 1024, "%sflags & 7) >= %d order%s", split[0], i-1, split[1]);
-  g_strfreev(split);
-  g_free(query);
-  dt_conf_set_string("plugins/lighttable/query", newquery);
-  gtk_widget_queue_draw(win);
+  update_query();
 }
 
 
@@ -398,25 +419,11 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 1)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_DATETIME);
   else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
   else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
-  // replace sort part
-  char *sortstring[4] = {"datetime_taken, filename", "flags & 7 desc", "filename", "id"};
-  int sortindex = 3;
-  if     (i == 1) sortindex = 0;
-  else if(i == 2) sortindex = 1;
-  else if(i == 0) sortindex = 2;
-  // else (i == 3)
-  gchar *query = dt_conf_get_string("plugins/lighttable/query");
-  if (query == NULL)
-    return;
-  gchar **split = g_regex_split_simple("order by .* limit", query, 0, 0);
-  char newquery[1024];
-  snprintf(newquery, 1024, "%sorder by %s limit%s", split[0], sortstring[sortindex], split[1]);
-  g_strfreev(split);
-  g_free(query);
-  dt_conf_set_string("plugins/lighttable/query", newquery);
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(win);
+  else if(i == 4)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_COLOR);
+
+  update_query();
 }
+
 
 static void
 snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)

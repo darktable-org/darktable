@@ -13,6 +13,7 @@ src/libs/image.c
 src/libs/tagging.c
 src/libs/select.c
 src/libs/collect.c
+src/libs/colorlabels.c
 src/iop/clipping.c
 src/iop/colorcorrection.c
 src/iop/colorin.c

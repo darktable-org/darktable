@@ -119,19 +119,30 @@ update_query(dt_lib_collect_t *d)
   // TODO: similar tagxtag query!
   dt_lib_sort_t   sort   = dt_conf_get_int ("ui_last/combo_sort");
   dt_lib_filter_t filter = dt_conf_get_int ("ui_last/combo_filter");
-  char *sortstring[4] = {"datetime_taken", "flags & 7 desc", "filename", "id"};
-  int sortindex = 3;
+  char *sortstring[5] = {"datetime_taken", "flags & 7 desc", "filename", "id", "color, filename"};
+  int sortindex = 4;
   if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
   else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
   else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
-  // else (sort == DT_LIB_SORT_ID)
+  else if(sort == DT_LIB_SORT_ID)       sortindex = 3;
 
-  if(filter == DT_LIB_FILTER_STAR_NO)
-    sprintf(query+strlen(query), " and (flags & 7) < 1 order by %s limit ?1, ?2", sortstring[sortindex]);
+  char newquery[1024];
+  if(sortindex == 4)
+  {
+    if(filter == DT_LIB_FILTER_STAR_NO)
+      sprintf(newquery, "select * from (%s and (flags & 7) < 1) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", query, sortstring[sortindex]);
+    else
+      sprintf(newquery, "select * from (%s and (flags & 7) >= %d) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", query, filter-1, sortstring[sortindex]);
+  }
   else
-    sprintf(query+strlen(query), " and (flags & 7) >= %d order by %s limit ?1, ?2", filter-1, sortstring[sortindex]);
+  {
+    if(filter == DT_LIB_FILTER_STAR_NO)
+      sprintf(newquery, "%s and (flags & 7) < 1 order by %s limit ?1, ?2", query, sortstring[sortindex]);
+    else
+      sprintf(newquery, "%s and (flags & 7) >= %d order by %s limit ?1, ?2", query, filter-1, sortstring[sortindex]);
+  }
   // printf("query `%s'\n", query);
-  dt_conf_set_string ("plugins/lighttable/query", query);
+  dt_conf_set_string ("plugins/lighttable/query", newquery);
   dt_control_queue_draw_all();
 }
 
@@ -273,6 +284,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
   w = gtk_combo_box_entry_new_text();
   d->text = GTK_COMBO_BOX_ENTRY(w);
+  gtk_object_set(GTK_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), NULL);
   gchar *text = dt_conf_get_string("plugins/lighttable/collect/string");
   if(text)
   {
