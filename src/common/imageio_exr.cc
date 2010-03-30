@@ -28,6 +28,31 @@
 #include "common/colorspaces.h"
 #include "imageio_exr.h"
 
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
+
+/** Special BLOB attribute implementation.*/
+namespace Imf {
+  typedef struct Blob {
+    uint32_t size;
+    uint8_t *data;
+  } Blob;
+  typedef Imf::TypedAttribute<Imf::Blob> BlobAttribute;
+  template <> const char *BlobAttribute::staticTypeName(){ return "blob"; }
+  template <> void BlobAttribute::writeValueTo (OStream &os, int version) const 
+  {
+    Xdr::write <StreamIO> (os, _value.size);
+    Xdr::write <StreamIO> (os, (char *)_value.data,_value.size);
+  }
+
+  template <> void BlobAttribute::readValueFrom (IStream &is, int size, int version)
+  {
+    Xdr::read <StreamIO> (is, _value.size);
+    Xdr::read <StreamIO> (is, (char *)_value.data, _value.size);
+  }
+}
+ 
 int dt_imageio_exr_write_f(const char *filename, const float *in, const int width, const int height, void *exif, int exif_len)
 {
   return dt_imageio_exr_write_with_icc_profile_f(filename,in,width,height,exif,exif_len,0);
@@ -35,20 +60,25 @@ int dt_imageio_exr_write_f(const char *filename, const float *in, const int widt
 
 int dt_imageio_exr_write_with_icc_profile_f(const char *filename, const float *in, const int width, const int height, void *exif, int exif_len,int imgid)
 {
-  Imf::Header header(width,height);
-  header.insert("comment",Imf::StringAttribute("My test comment..."));
+  Imf::BlobAttribute::registerAttributeType();
+  Imf::Blob exif_blob={0};
+  exif_blob.size=exif_len;
+  exif_blob.data=(uint8_t *)exif;
+  Imf::Header header(width,height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
+  header.insert("comment",Imf::StringAttribute("developed using "PACKAGE_NAME"-"PACKAGE_VERSION));
+  header.insert("exif", Imf::BlobAttribute(exif_blob));
   header.channels().insert("R",Imf::Channel(Imf::FLOAT));
   header.channels().insert("B",Imf::Channel(Imf::FLOAT));
   header.channels().insert("G",Imf::Channel(Imf::FLOAT));
   header.setTileDescription(Imf::TileDescription(100, 100, Imf::ONE_LEVEL));
   Imf::TiledOutputFile file(filename, header);	
   Imf::FrameBuffer data;
-	
+  
   uint32_t channelsize=(width*height);
   float *red=(float *)malloc(channelsize*sizeof(float));
   float *green=(float *)malloc(channelsize*sizeof(float));
   float *blue=(float *)malloc(channelsize*sizeof(float));
-	
+  
   for(uint32_t j=0;j<channelsize;j++) { red[j]=in[j*3+0]; }
   data.insert("R",Imf::Slice(Imf::FLOAT,(char *)red,sizeof(float)*1,sizeof(float)*width));
   
