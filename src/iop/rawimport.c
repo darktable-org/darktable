@@ -42,7 +42,7 @@ DT_MODULE(1)
 typedef struct dt_iop_rawimport_params_t
 { // exactly matches dt_image_raw_parameters_t + two floats as in dt_image_t
   float raw_denoise_threshold, raw_auto_bright_threshold;
-  unsigned raw_wb_auto : 1, raw_wb_cam : 1, raw_cmatrix : 1,
+  unsigned raw_wb_auto : 1, raw_wb_cam : 1, raw_greeneq : 1,
            raw_no_auto_bright : 1, raw_demosaic_method : 2,
            raw_med_passes : 4, raw_four_color_rgb : 1,
            raw_highlight : 4,
@@ -53,7 +53,7 @@ dt_iop_rawimport_params_t;
 
 typedef struct dt_iop_rawimport_gui_data_t
 {
-  GtkCheckButton *four_color_rgb;
+  GtkCheckButton *four_color_rgb, *greeneq;
   GtkComboBox *demosaic_method, *highlight;
   GtkDarktableSlider *denoise_threshold;
   GtkSpinButton *med_passes;
@@ -95,11 +95,11 @@ static void reimport_button_callback (GtkButton *button, gpointer user_data)
   module->dev->image->raw_auto_bright_threshold  = p->raw_auto_bright_threshold;
   module->dev->image->raw_params.wb_auto         = p->raw_wb_auto;
   module->dev->image->raw_params.wb_cam          = p->raw_wb_cam;
-  module->dev->image->raw_params.cmatrix         = p->raw_cmatrix;
   module->dev->image->raw_params.no_auto_bright  = p->raw_no_auto_bright;
   module->dev->image->raw_params.demosaic_method = p->raw_demosaic_method;
   module->dev->image->raw_params.med_passes      = p->raw_med_passes;
   module->dev->image->raw_params.four_color_rgb  = p->raw_four_color_rgb;
+  module->dev->image->raw_params.greeneq         = p->raw_greeneq;
   module->dev->image->raw_params.highlight       = p->raw_highlight;
   module->dev->image->raw_params.user_flip       = p->raw_user_flip;
   // also write to db
@@ -108,6 +108,15 @@ static void reimport_button_callback (GtkButton *button, gpointer user_data)
   dt_dev_raw_reload(module->dev);
   pthread_mutex_unlock(&module->dev->history_mutex);
   dt_control_gui_queue_draw();
+}
+
+static void togglegreeneq_callback (GtkToggleButton *toggle, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
+  int active = gtk_toggle_button_get_active(toggle);
+  p->raw_greeneq = active;
 }
 
 static void togglebutton_callback (GtkToggleButton *toggle, gpointer user_data)
@@ -150,6 +159,7 @@ void gui_update(struct dt_iop_module_t *self)
   // update gui info from params.
   dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->raw_greeneq);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
@@ -165,6 +175,7 @@ static void resetbutton_callback (GtkButton *button, gpointer user_data)
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->raw_greeneq);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
@@ -183,11 +194,11 @@ void init(dt_iop_module_t *module)
   p->raw_auto_bright_threshold = module->dev->image->raw_auto_bright_threshold;
   p->raw_wb_auto               = module->dev->image->raw_params.wb_auto;
   p->raw_wb_cam                = module->dev->image->raw_params.wb_cam;
-  p->raw_cmatrix               = module->dev->image->raw_params.cmatrix;
   p->raw_no_auto_bright        = module->dev->image->raw_params.no_auto_bright;
   p->raw_demosaic_method       = module->dev->image->raw_params.demosaic_method;
   p->raw_med_passes            = module->dev->image->raw_params.med_passes;
   p->raw_four_color_rgb        = module->dev->image->raw_params.four_color_rgb;
+  p->raw_greeneq               = module->dev->image->raw_params.greeneq;
   p->raw_highlight             = module->dev->image->raw_params.highlight;
   p->raw_user_flip             = module->dev->image->raw_params.user_flip;
   memcpy(module->default_params, p, sizeof(dt_iop_rawimport_params_t));
@@ -248,6 +259,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->four_color_rgb), TRUE, TRUE, 0);
 
+  g->greeneq = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("green equilibration")));
+  gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("work around unequal green channels in some mid-range\ncameras, e.g. canon eos 400d"), NULL);
+  gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->greeneq), TRUE, TRUE, 0);
+
   GtkWidget *reset = gtk_button_new_with_label(_("reset"));
   gtk_object_set(GTK_OBJECT(reset), "tooltip-text", _("reset raw loading parameters\nto darktable's defaults"), NULL);
   gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(reset), TRUE, TRUE, 0);
@@ -263,6 +279,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 
   g_signal_connect (G_OBJECT (g->four_color_rgb), "toggled", G_CALLBACK (togglebutton_callback), self);
+  g_signal_connect (G_OBJECT (g->greeneq), "toggled", G_CALLBACK (togglegreeneq_callback), self);
   g_signal_connect (G_OBJECT (g->demosaic_method), "changed", G_CALLBACK (demosaic_callback), self);
   g_signal_connect (G_OBJECT (g->med_passes), "value-changed", G_CALLBACK (median_callback), self);
   g_signal_connect (G_OBJECT (g->denoise_threshold),     "value-changed", G_CALLBACK (scale_callback), self);
