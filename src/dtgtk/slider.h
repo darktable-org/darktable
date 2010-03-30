@@ -43,6 +43,7 @@ typedef struct _GtkDarktableSlider
   gboolean is_ctrl_key_pressed;
   gboolean is_sensibility_key_pressed;
   gboolean is_entry_active;
+  gboolean is_changed;
   gint prev_x_root;
   gint motion_direction;		
   gint digits;
