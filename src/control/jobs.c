@@ -376,6 +376,12 @@ void dt_control_export_job_run(dt_job_t *job)
         else if(fmt==DT_DEV_EXPORT_TIFF16)
           dt_imageio_export_16(img, filename);
         break;
+      case DT_DEV_EXPORT_EXR:
+        if(img->film_id == 1 && !strcmp(c, ".exr")) { strncpy(c, "_dt", 3); c += 3; }
+        strncpy(c, ".exr", 4);
+        dt_imageio_export_f(img, filename);
+        break;
+      
       default:
         break;
     }
