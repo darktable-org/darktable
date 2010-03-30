@@ -172,12 +172,15 @@ static void _slider_init (GtkDarktableSlider *slider)
 
 static gboolean _slider_postponed_value_change(gpointer data) {
   gdk_threads_enter();
-  g_signal_emit_by_name(G_OBJECT(data),"value-changed");
+  if(DTGTK_SLIDER(data)->is_changed==TRUE)
+  {
+    g_signal_emit_by_name(G_OBJECT(data),"value-changed");
+    DTGTK_SLIDER(data)->is_changed=FALSE;
+  }
   gdk_threads_leave();
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
 }
 
-static gdouble _slider_log=1.0;
 static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
 {
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
@@ -209,7 +212,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
     {
       slider->is_dragging=TRUE;
       slider->prev_x_root=event->x_root;
-      _slider_log=1.0;
+      if( slider->type==DARKTABLE_SLIDER_BAR) slider->is_changed=TRUE;
       g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change,widget);
     }
   }
@@ -244,7 +247,6 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
         slider->prev_x_root = event->x_root;
       }
       slider->is_dragging=FALSE;
-      _slider_log=1.0;
     }
   }  
   return TRUE;
@@ -276,19 +278,6 @@ static void _slider_entry_abort(GtkDarktableSlider *slider) {
   slider->is_entry_active=FALSE;
   gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
-
-/*static void _slider_entry_size_allocate(GtkWidget *widget,GtkAllocation *allocation,gpointer data) {
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(allocation != NULL);
-
-  if (GTK_WIDGET_REALIZED(widget)) {
-     gdk_window_move_resize(
-         widget->window,
-         allocation->x+20, allocation->y+2,
-         allocation->width-40, allocation->height
-     );
-  }
-}*/
 
 static gboolean _slider_entry_focus_out(GtkWidget *widget,GdkEventFocus *event,gpointer data) {
   _slider_entry_abort(DTGTK_SLIDER(data));
@@ -354,19 +343,20 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
     vr.width-=(DTGTK_SLIDER_BORDER_WIDTH*4);
     gint vmx = event->x-vr.x;
       
-    if( slider->type==DARKTABLE_SLIDER_VALUE || ( slider->type==DARKTABLE_SLIDER_BAR && slider->is_sensibility_key_pressed==TRUE ) ) {
+    if( slider->type==DARKTABLE_SLIDER_VALUE || ( slider->type==DARKTABLE_SLIDER_BAR && slider->is_sensibility_key_pressed==TRUE ) ) 
+    {
       gdouble inc = gtk_adjustment_get_step_increment( slider->adjustment );
-      if(DARKTABLE_SLIDER_VALUE &&  !slider->is_sensibility_key_pressed)
-        inc*=DTGTK_VALUE_SENSITIVITY;
-      
+      if(DARKTABLE_SLIDER_VALUE &&  !slider->is_sensibility_key_pressed) inc*=DTGTK_VALUE_SENSITIVITY;
       gdouble value = gtk_adjustment_get_value(slider->adjustment);
       gtk_adjustment_set_value( slider->adjustment, value + ( ((slider->prev_x_root <= (gint)event->x_root) && slider->motion_direction==1 )?(inc):-(inc)) );
+      slider->is_changed=TRUE;
     } 
     else if( slider->type==DARKTABLE_SLIDER_BAR )
     {
       if( vmx >= 0 && vmx <= vr.width)
         gtk_adjustment_set_value(slider->adjustment, _slider_translate_pos_to_value(slider->adjustment, &vr, vmx));
     }
+      
       
     gtk_widget_draw(widget,NULL);
     slider->prev_x_root = event->x_root;
