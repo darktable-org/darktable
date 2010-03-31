@@ -535,7 +535,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
         gdouble max=gtk_adjustment_get_upper(slider->adjustment);
         gdouble value=gtk_adjustment_get_value(slider->adjustment);
         double f= (value-min)/(max-min);
-        sprintf(sv,"%.1f/%.1f",100.0*(1.0-f),100.0*f);
+        sprintf(sv,"%.*f / %.*f",slider->digits,100.0*(1.0-f),slider->digits,100.0*f);
       }
       break;
       case DARKTABLE_SLIDER_FORMAT_NONE:
