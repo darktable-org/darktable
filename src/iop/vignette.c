@@ -85,21 +85,31 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   
+  int iw=piece->buf_in.width*roi_out->scale;
+  int ih=piece->buf_in.height*roi_out->scale;
+  int ix= (roi_in->x)*roi_out->scale;
+  int iy= (roi_in->y)*roi_out->scale;
+  	
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     dt_iop_vector_2d_t pv, vv;
 	  
     // Lets translate current pixel coord to local coord
-    pv.x=-1.0+(((double)i/roi_out->width)*2.0);
-    pv.y=-1.0+(((double)j/roi_out->height)*2.0);
+    
+	  
+    pv.x=-1.0+(((double) (ix+i)/iw)*2.0);
+    pv.y=-1.0+(((double) (iy+j)/ih)*2.0);
+	
+    /*pv.x=-1.0+(((double) roi_in->x+i / piece->buf_out.width)*2.0);
+    pv.y=-1.0+(((double) roi_in->y+j / piece->buf_out.height )*2.0);*/
      
     // Calculate the pixel weight in vinjett
     double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
     if(pv.x==0)
 	    v=(pv.y>0)?0:M_PI;
     
-    double sinv=sin(v);
-    double cosv=cos(v);
+    double sinv=sin(v)+data->center.x;
+    double cosv=cos(v)+data->center.y;
     vv.x=cosv*data->scale;                        // apply uniformity and scale vignette to radie 
     vv.y=sinv*data->scale;
     double weight=0.0;
@@ -108,12 +118,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     if( cplen>=cvlen ) // pixel is outside the inner vingett circle, lets calculate weight of vignette
     {
-      double ox=cosv*1.5;    // scale outer vignette circle
-      double oy=sinv*1.5;
+      double ox=cosv*(1.2+(0.2*(data->scale)));    // scale outer vignette circle
+      double oy=sinv*(1.2+(0.2*(data->scale)));
       double blen=sqrt(((vv.x-ox)*(vv.x-ox))+((vv.y-oy)*(vv.y-oy)));             // lenght between vv and outer circle
       weight=((cplen-cvlen)/blen);
-      weight=1.0-( 1.0+sin( ((M_PI/2.0)+(M_PI*weight)) ) )/2.0;
-
+      if(weight <=1.0) 
+	weight=1.0-( 1.0+sin( ((M_PI/2.0)+(M_PI*weight)) ) )/2.0;
+      else
+		weight=1.0;
+      //weight=( 1.0+tan( (M_PI-(M_PI/4.0) +((M_PI/4.0)*weight)) ) )/2.0;
     }
     
     // Let's apply weighted effect on brightness and desaturation
