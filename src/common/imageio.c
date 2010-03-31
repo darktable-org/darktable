@@ -793,8 +793,10 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   }
   g_free(overprofile);
   
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  uint32_t length = dt_exif_read_blob(exif_profile, filename, sRGB);
+  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
   
   int status = 1;
   int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
@@ -887,9 +889,11 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
       const int k = x + processed_width*y;
       for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
     }
-
+    
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  uint32_t length = dt_exif_read_blob(exif_profile, filename, sRGB);
+  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
   
   if( export_format==DT_DEV_EXPORT_PPM16)
     status=dt_imageio_ppm_write_16(filename,imgdata,processed_width, processed_height);
