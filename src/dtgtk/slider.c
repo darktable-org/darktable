@@ -448,7 +448,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   int height = widget->allocation.height;
 
   if(width<=1) return FALSE;	// VERY STRANGE, expose seemed to be called before a widgetallocation has been made...
-	
+  
   if (!style) {
     style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
   }
@@ -526,7 +526,25 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
     layout = gtk_widget_create_pango_layout(widget,NULL);
     pango_layout_set_font_description(layout,style->font_desc);
     char sv[32]={0};
-    sprintf(sv,"%.*f",slider->digits,value);
+    switch(slider->fmt_type) 
+    {
+      case DARKTABLE_SLIDER_FORMAT_RATIO:
+      {
+        gdouble min=gtk_adjustment_get_lower(slider->adjustment);
+        gdouble max=gtk_adjustment_get_upper(slider->adjustment);
+        gdouble value=gtk_adjustment_get_value(slider->adjustment);
+        double f= (value-min)/(max-min);
+        sprintf(sv,"%.1f/%.1f",100.0*(1.0-f),100.0*f);
+      }
+      break;
+      case DARKTABLE_SLIDER_FORMAT_NONE:
+      break;
+      case DARKTABLE_SLIDER_FORMAT_FLOAT:
+      default:
+        sprintf(sv,"%.*f",slider->digits,value);
+      break;
+      
+    }
     pango_layout_set_text(layout,sv,strlen(sv));
     GdkRectangle t={0,0,width,height};
     int pw,ph;
@@ -583,6 +601,11 @@ GtkWidget *dtgtk_slider_new_with_range (darktable_slider_type_t type,gdouble min
 
 void dtgtk_slider_set_digits(GtkDarktableSlider *slider, gint digits) {
   slider->digits = digits;
+}
+
+void dtgtk_slider_set_format_type(GtkDarktableSlider *slider, darktable_slider_format_type_t type)
+{
+  slider->fmt_type=type;
 }
 
 

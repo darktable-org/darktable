@@ -97,8 +97,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if(pv.x==0)
 	    v=(pv.y>0)?0:M_PI;
     
-    double sinv=sin(v);
-    double cosv=cos(v);
+    double sinv=sin(v)+data->center.y;
+    double cosv=cos(v)+data->center.x;
     vv.x=cosv*data->scale;                        // apply uniformity and scale vignette to radie 
     vv.y=sinv*data->scale;
     double weight=0.0;
@@ -319,6 +319,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("uniformity of vignette"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - Only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - Only saturation"), NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), NULL);
+ 
+ dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale4),DARKTABLE_SLIDER_FORMAT_RATIO);
  
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);
