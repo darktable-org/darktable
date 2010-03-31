@@ -88,17 +88,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     dt_iop_vector_2d_t pv, vv;
+	  
     // Lets translate current pixel coord to local coord
     pv.x=-1.0+(((double)i/roi_out->width)*2.0);
     pv.y=-1.0+(((double)j/roi_out->height)*2.0);
-    
+     
     // Calculate the pixel weight in vinjett
     double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
     if(pv.x==0)
 	    v=(pv.y>0)?0:M_PI;
     
-    double sinv=sin(v)+data->center.y;
-    double cosv=cos(v)+data->center.x;
+    double sinv=sin(v);
+    double cosv=cos(v);
     vv.x=cosv*data->scale;                        // apply uniformity and scale vignette to radie 
     vv.y=sinv*data->scale;
     double weight=0.0;
@@ -107,11 +108,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     if( cplen>=cvlen ) // pixel is outside the inner vingett circle, lets calculate weight of vignette
     {
-      double ox=cosv*2.0;    // scale outer vignette circle
-      double oy=sinv*2.0;
+      double ox=cosv*1.5;    // scale outer vignette circle
+      double oy=sinv*1.5;
       double blen=sqrt(((vv.x-ox)*(vv.x-ox))+((vv.y-oy)*(vv.y-oy)));             // lenght between vv and outer circle
       weight=((cplen-cvlen)/blen);
-      weight=(sin((M_PI/2.0))*2.5)*weight;
+      weight=1.0-( 1.0+sin( ((M_PI/2.0)+(M_PI*weight)) ) )/2.0;
+
     }
     
     // Let's apply weighted effect on brightness and desaturation
@@ -126,12 +128,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       else
         ss-=fabs(data->bsratio);
       
-      
       // Then apply brightness
-      col[0]=in[0]*(1.0-(CLIP(weight*bs)*data->strength));
-      col[1]=in[1]*(1.0-(CLIP(weight*bs)*data->strength));
-      col[2]=in[2]*(1.0-(CLIP(weight*bs)*data->strength));
-      
+      col[0]=in[0]*(1.0-CLIP(weight*bs*data->strength));
+      col[1]=in[1]*(1.0-CLIP(weight*bs*data->strength));
+      col[2]=in[2]*(1.0-CLIP(weight*bs*data->strength));
       
       // apply saturation
       double mv=(col[0]+col[1]+col[2])/3.0;
@@ -150,7 +150,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         col[2]=CLIP( col[2]-((mv-col[2])* wss) );    
       }
       
-    }
+    } 
     for(int c=0;c<3;c++) out[c]=col[c];
     out += 3; in += 3;
   }
