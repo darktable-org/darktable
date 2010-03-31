@@ -175,7 +175,8 @@ static gboolean _slider_postponed_value_change(gpointer data) {
   if(DTGTK_SLIDER(data)->is_changed==TRUE)
   {
     g_signal_emit_by_name(G_OBJECT(data),"value-changed");
-    DTGTK_SLIDER(data)->is_changed=FALSE;
+    if(DTGTK_SLIDER(data)->type==DARKTABLE_SLIDER_VALUE)
+	DTGTK_SLIDER(data)->is_changed=FALSE;
   }
   gdk_threads_leave();
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
