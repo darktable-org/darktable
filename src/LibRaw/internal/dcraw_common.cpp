@@ -3184,11 +3184,12 @@ void CLASS green_matching()
   const int margin = 3;
   int oj = 2, oi = 2;
   float f;
+  const float thr = 0.1f;
   if(FC(oj, oi) != 3) oj++;
   if(FC(oj, oi) != 3) oi++;
 
   img = (ushort (*)[4]) calloc (iheight*iwidth, sizeof *image);
-  merror (img, "eq_greens()");
+  merror (img, "green_matching()");
   memcpy(img,image,iheight*iwidth*sizeof *image);
 
   for(j=oj;j<height-margin;j+=2)
@@ -3211,8 +3212,11 @@ void CLASS green_matching()
       // if((img[j*iwidth+i][3]<maximum*0.95)&&(m2>m1)&&(c1<maximum/threshold)&&(c2<maximum/threshold))
         // image[j*iwidth+i][3]*=m1/m2;
       // this looks better:
-      f = image[j*width+i][3]*m1/m2;
-      image[j*iwidth+i][3]=f>0xffff?0xffff:f;
+      if((img[j*iwidth+i][3]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
+      {
+        f = image[j*width+i][3]*m1/m2;
+        image[j*iwidth+i][3]=f>0xffff?0xffff:f;
+      }
     }
   free(img);
 }
