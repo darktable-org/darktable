@@ -85,7 +85,7 @@ static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_BUTTON(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
-  static GtkStyle *style=NULL;
+  GtkStyle *style=gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
   int x = widget->allocation.x;
@@ -93,9 +93,7 @@ static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
-  if (!style) {
-    style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
-  }
+
  
   // Begin cairo drawing 
   cairo_t *cr;
@@ -115,6 +113,7 @@ static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
   }
 
   // draw icon
+  if( DTGTK_BUTTON(widget)->icon_flag & CPF_IGNORE_FG_STATE ) state = GTK_STATE_NORMAL;
   cr = gdk_cairo_create(widget->window);
    cairo_set_source_rgb(cr,
     style->fg[state].red/65535.0, 

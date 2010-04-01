@@ -19,6 +19,19 @@
 #include <math.h>
 #include "paint.h"
 
+void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  cairo_translate(cr, x, y);
+  cairo_scale(cr,w,h);
+  cairo_set_line_width(cr,0.1);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  cairo_rectangle(cr,0.1,0.1,0.8,0.8);
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr,0,0,0,0.6);
+  cairo_stroke(cr);
+   cairo_identity_matrix(cr);
+}
+
 void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gint left)
 {
   cairo_matrix_t hflip_matrix;

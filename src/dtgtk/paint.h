@@ -28,6 +28,7 @@ typedef enum dtgtk_cairo_paint_flags_t {
 	CPF_DIRECTION_RIGHT=8,
 	CPF_ACTIVE=16,
 	CPF_PRELIGHT=32,
+	CPF_IGNORE_FG_STATE=64	// Ignore state when setting foregroundcolor 
 	
 } dtgtk_cairo_paint_flags_t;
 
@@ -42,5 +43,7 @@ void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a switch icon */
 void dtgtk_cairo_paint_switch(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a color rect icon */
+void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 
 #endif

@@ -538,6 +538,15 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
         sprintf(sv,"%.*f / %.*f",slider->digits,100.0*(1.0-f),slider->digits,100.0*f);
       }
       break;
+      case DARKTABLE_SLIDER_FORMAT_PERCENT:
+      {
+	 gdouble min=gtk_adjustment_get_lower(slider->adjustment);
+         gdouble max=gtk_adjustment_get_upper(slider->adjustment);
+         gdouble value=gtk_adjustment_get_value(slider->adjustment);
+         double f= (value-min)/(max-min);   
+         sprintf(sv,"%.*f %%",slider->digits,100.0*f);
+      }
+      break;
       case DARKTABLE_SLIDER_FORMAT_NONE:
       break;
       case DARKTABLE_SLIDER_FORMAT_FLOAT:
