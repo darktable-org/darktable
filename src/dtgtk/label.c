@@ -107,7 +107,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
     style->fg[state].red/65535.0, 
     style->fg[state].green/65535.0, 
     style->fg[state].blue/65535.0,
-    0.25
+    0.15
   );
   
   cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
@@ -128,7 +128,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   GdkRectangle t={x,y,x+width,y+height};
   int pw,ph;
   pango_layout_get_pixel_size(layout,&pw,&ph);
-  gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"label",x+2,y+((height/2.0)-(ph/2.0))-1,layout);
+  gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"label",x+2,y+((height/2.0)-(ph/2.0)),layout);
     
   return FALSE;
 }
