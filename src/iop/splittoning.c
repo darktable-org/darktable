@@ -64,25 +64,77 @@ typedef struct dt_iop_splittoning_data_t
   float highlight_saturation;
   float balance;						// center luminance of gradient}
 } 
-	dt_iop_splittoning_data_t;
+dt_iop_splittoning_data_t;
 
 const char *name()
 {
   return _("splittoning");
 }
 
+void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
+{
+  float pmax=fmax(r,fmax(g,b));
+  float pmin=fmin(r,fmin(g,b));
+  *h=*s=*l=0;
+  *l=(pmin+pmax)/2.0;
+ 
+  if(pmax!=pmin) 
+  {
+    *s=*l<0.5?(pmax-pmin)/(pmax+pmin):(pmax-pmin)/(2.0-pmax-pmin);
+  
+    if(pmax==r) *h=(g-b)/(pmax-pmin);
+    if(pmax==g) *h=2.0+(b-r)/(pmax-pmin);
+    if(pmax==b) *h=4.0+(r-g)/(pmax-pmin);
+    *h*=60;
+    if(*h<0.0) *h+=360;
+  }
+}
+
+void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
+{
+  *r=*g=*b=l;
+  if(s==0.0) return;
+  float temp2= l<0.5?l*(1.0+s):l+s-l*s;
+  float temp1=2.0*l-temp2;
+  h/=360;
+  
+  float rtemp3=h+1.0/3.0;
+  float gtemp3=h;
+  float btemp3=h-1.0/3.0;
+  rtemp3=rtemp3<0?rtemp3+1.0:rtemp3>1.0?rtemp3-1.0:rtemp3;
+  gtemp3=gtemp3<0?gtemp3+1.0:gtemp3>1.0?gtemp3-1.0:gtemp3;
+  btemp3=btemp3<0?btemp3+1.0:btemp3>1.0?btemp3-1.0:btemp3;
+
+  *r= 6.0*rtemp3<1.0?temp1+(temp2-temp1)*6.0*rtemp3: 2.0*rtemp3<1?temp2: 3.0*rtemp3<2?temp1+(temp2-temp1)*((2.0/3.0)-rtemp3)*6.0:temp1;
+  *g= 6.0*gtemp3<1.0?temp1+(temp2-temp1)*6.0*gtemp3: 2.0*gtemp3<1?temp2: 3.0*gtemp3<2?temp1+(temp2-temp1)*((2.0/3.0)-gtemp3)*6.0:temp1;
+  *b= 6.0*btemp3<1.0?temp1+(temp2-temp1)*6.0*btemp3: 2.0*btemp3<1?temp2: 3.0*btemp3<2?temp1+(temp2-temp1)*((2.0/3.0)-btemp3)*6.0:temp1;
+  
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-//  dt_iop_splittoning_data_t *data = (dt_iop_splittoning_data_t *)piece->data;
+  dt_iop_splittoning_data_t *data = (dt_iop_splittoning_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   
   // Apply velvia saturation
   in  = (float *)ivoid;
   out = (float *)ovoid;
+
+  float sh,ss,sl;
+  float hh,hs,hl;
+  float h,s,l;
+  
+  rgb2hsl(data->shadow_color[0],data->shadow_color[1],data->shadow_color[2],&sh,&ss,&sl);
+  rgb2hsl(data->hightlight_color[0],data->hightlight_color[1],data->hightlight_color[2],&hh,&hs,&hl);
+  
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
-    for(int c=0;c<3;c++) out[c]=in[c];
+    //for(int c=0;c<3;c++) out[c]=in[c];
+    rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+    h+= l<0.5?fabs(h-sh)/2.0:fabs(h-hh)/2.0;
+    //s= l<0.5?ss:hs;
+    hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
     out += 3; in += 3;
   }
 }
@@ -167,6 +219,15 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale1, p->shadow_saturation);
   dtgtk_slider_set_value(g->scale2, p->highlight_saturation);
   dtgtk_slider_set_value(g->scale3, p->balance);
+  GdkColor rgb;
+  char color[32];
+  sprintf(color,"#%.4X%.4X%.4X",(gint)(65535*p->shadow_color[0]),(gint)(65535*p->shadow_color[1]),(gint)(65535*p->shadow_color[2]));
+  gdk_color_parse(color,&rgb);
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&rgb);
+  sprintf(color,"#%.4X%.4X%.4X",(gint)(65535*p->hightlight_color[0]),(gint)(65535*p->hightlight_color[1]),(gint)(65535*p->hightlight_color[2]));
+  gdk_color_parse(color,&rgb);
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&rgb);
+  
 }
 
 void init(dt_iop_module_t *module)
@@ -177,7 +238,7 @@ void init(dt_iop_module_t *module)
   module->priority = 970;
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
-  dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ {0,0,0},0.0,{0.9,0.9,1},1.0, 0};
+  dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ {0.7,0.7,0.9},50.0,{0.9,0.9,0.7},50.0, 0.5};
   memcpy(module->params, &tmp, sizeof(dt_iop_splittoning_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_splittoning_params_t));
 }
@@ -203,7 +264,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("shadow")));
   g->label2 = GTK_LABEL(gtk_label_new(_("highlight")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("balance")));
+  g->label3 = GTK_LABEL(gtk_label_new(_("balance")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
@@ -212,23 +273,31 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   
   GtkWidget *hbox=gtk_hbox_new(TRUE,0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->shadow_saturation, 3));
-  g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,TRUE));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, p->shadow_saturation, 2));
+  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick1),32,17);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->colorpick1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->colorpick1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  	
+    
   hbox=gtk_hbox_new(TRUE,0);
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->highlight_saturation, 3));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, p->highlight_saturation, 2));
+  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  g->colorpick2 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick2),32,17);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->colorpick2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->colorpick2), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->balance, 3));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->balance, 3));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the amount of saturation to apply to shadows"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the amount of saturation to apply to highlights"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the balance of center of splittoning"), NULL);
+  
+  gtk_object_set(GTK_OBJECT(g->colorpick1), "tooltip-text", _("select the color for shadows"), NULL);
+  gtk_object_set(GTK_OBJECT(g->colorpick2), "tooltip-text", _("select the color for highlights"), NULL);
   
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (shadow_saturation_callback), self);  
