@@ -614,6 +614,7 @@ void dt_image_cleanup(dt_image_t *img)
 
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
+  if(!img) return 1;
   int ret = 0;
   char filename[1024];
   dt_image_full_path(img, filename, 1024);
