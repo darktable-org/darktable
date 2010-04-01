@@ -26,6 +26,7 @@
 #include "common/imageio_ppm.h"
 #include "common/imageio_rgbe.h"
 #include "common/imageio_tiff.h"
+#include "common/imageio_exr.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -272,7 +273,8 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.gamm[1] = 1.0;
   raw->params.user_qual = 0; // linear
   raw->params.four_color_rgb = img->raw_params.four_color_rgb;
-  raw->params.use_camera_matrix = 0;//img->raw_params.cmatrix;
+  raw->params.use_camera_matrix = 0;
+  raw->params.green_matching =  img->raw_params.greeneq;
   raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
@@ -479,7 +481,8 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.gamm[1] = 1.0;
   raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
   raw->params.four_color_rgb = img->raw_params.four_color_rgb;
-  raw->params.use_camera_matrix = 0;//img->raw_params.cmatrix;
+  raw->params.use_camera_matrix = 0;
+  raw->params.green_matching =  img->raw_params.greeneq;
   raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
@@ -761,20 +764,60 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
-  int status = 1;
-  FILE *f = fopen(filename, "wb");
-  if(f)
+  // find output color profile for this image:
+  int sRGB = 1;
+  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  if(!strcmp(overprofile, "sRGB"))
   {
-    (void)fprintf(f, "PF\n%d %d\n-1.0\n", processed_width, processed_height);
-    for(int j=processed_height-1;j>=0;j--)
-    {
-      int cnt = fwrite(buf + 3*processed_width*j, sizeof(float)*3, processed_width, f);
-      if(cnt != processed_width) status = 1;
-      else status = 0;
-    }
-    fclose(f);
+    sRGB = 1;
   }
-
+  else if(!strcmp(overprofile, "image"))
+  {
+    GList *modules = dev.iop;
+    dt_iop_module_t *colorout = NULL;
+    while (modules)
+    {
+      colorout = (dt_iop_module_t *)modules->data;
+      if (strcmp(colorout->op, "colorout") == 0)
+      {
+        dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)colorout->params;
+        if(!strcmp(p->iccprofile, "sRGB")) sRGB = 1;
+        else sRGB = 0;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+  else
+  {
+    sRGB = 0;
+  }
+  g_free(overprofile);
+  
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
+  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
+  
+  int status = 1;
+  int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
+  if( export_format==DT_DEV_EXPORT_PFM)
+  {
+    FILE *f = fopen(filename, "wb");
+    if(f)
+    {
+      (void)fprintf(f, "PF\n%d %d\n-1.0\n", processed_width, processed_height);
+      for(int j=processed_height-1;j>=0;j--)
+      {
+        int cnt = fwrite(buf + 3*processed_width*j, sizeof(float)*3, processed_width, f);
+        if(cnt != processed_width) status = 1;
+        else status = 0;
+      }
+      fclose(f);
+    }
+  }    
+  else if( export_format==DT_DEV_EXPORT_EXR ) 
+    status=dt_imageio_exr_write_f(filename,buf,processed_width, processed_height, exif_profile, length);
+ 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return status;
@@ -846,9 +889,11 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
       const int k = x + processed_width*y;
       for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
     }
-
+    
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  uint32_t length = dt_exif_read_blob(exif_profile, filename, sRGB);
+  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
   
   if( export_format==DT_DEV_EXPORT_PPM16)
     status=dt_imageio_ppm_write_16(filename,imgdata,processed_width, processed_height);
@@ -1046,22 +1091,26 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   rc = sqlite3_finalize (stmt);
 
   uint32_t magic = 0;
-  rd = fread(&magic, 1, sizeof(int32_t), f);
+  rd = fread(&magic, sizeof(int32_t), 1, f);
   if(rd != 1 || magic != 0xd731337)
+  {
+    printf("1\n");
     goto delete_old_config;
+  }
 
   while(!feof(f))
   {
     int32_t enabled, len, modversion;
     dt_dev_operation_t op;
-    rd = fread(&enabled, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) goto delete_old_config;
-    rd = fread(op, 1, sizeof(dt_dev_operation_t), f);
-    if(rd < sizeof(dt_dev_operation_t)) goto delete_old_config;
-    rd = fread(&modversion, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) goto delete_old_config;
-    rd = fread(&len, 1, sizeof(int32_t), f);
-    if(rd < sizeof(int32_t)) goto delete_old_config;
+    rd = fread(&enabled, sizeof(int32_t), 1, f);
+    if(feof(f)) break;
+    if(rd < 1) goto delete_old_config;
+    rd = fread(op, sizeof(dt_dev_operation_t), 1, f);
+    if(rd < 1) goto delete_old_config;
+    rd = fread(&modversion, sizeof(int32_t), 1, f);
+    if(rd < 1) goto delete_old_config;
+    rd = fread(&len, sizeof(int32_t), 1, f);
+    if(rd < 1) goto delete_old_config;
     char *params = (char *)malloc(len);
     rd = fread(params, 1, len, f);
     if(rd < len) { free(params); goto delete_old_config; }

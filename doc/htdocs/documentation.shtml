@@ -111,6 +111,15 @@
       </ul>
     	</div>
 
+      <div class="text">
+    	<h1>memory usage hack</h1>
+      <ul>
+        <li> $ gconftool-2 --type int --set /apps/darktable/mipmap_cache_full_images 1</li>
+        <li> this will allow only one full image in memory at the same time.</li>
+        <li> <em>warning:</em> this won't let you edit and export images at the same time!</li>
+      </ul>
+    	</div>
+
 
     </div> <!-- page -->
     <!--#include virtual="footer.html" -->

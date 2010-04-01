@@ -17,6 +17,7 @@
 */
 #include "common/darktable.h"
 #include "common/image_cache.h"
+#include "common/imageio.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
@@ -42,6 +43,63 @@ const char*
 name ()
 {
   return _("history stack");
+}
+
+static void
+load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
+{
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open dt sidecar file"),
+				      GTK_WINDOW (win),
+				      GTK_FILE_CHOOSER_ACTION_OPEN,
+				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+				      NULL);
+
+  GtkFileFilter *filter;
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*.dt");
+  gtk_file_filter_set_name(filter, _("dt sidecar files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*");
+  gtk_file_filter_set_name(filter, _("all files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *dtfilename;
+    dtfilename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      int imgid = sqlite3_column_int(stmt, 0);
+      if (dt_imageio_dt_read(imgid, dtfilename))
+      {
+        GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_ERROR,
+            GTK_BUTTONS_CLOSE,
+            _("error loading file '%s'"),
+            dtfilename);
+        gtk_dialog_run (GTK_DIALOG (dialog));
+        gtk_widget_destroy (dialog);
+        break;
+      }
+      dt_image_t *img = dt_image_cache_use(imgid, 'r');
+      img->force_reimport = 1;
+      dt_image_cache_flush(img);
+      dt_image_write_dt_files(img);
+      dt_image_cache_release(img, 'r');
+    }
+    sqlite3_finalize(stmt);
+    g_free (dtfilename);
+  }
+  gtk_widget_destroy (filechooser);
+  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_queue_draw(win);
 }
 
 static void
@@ -174,6 +232,12 @@ key_accel_paste_callback(void *user_data)
   paste_button_clicked(NULL, self);
 }
 
+int
+position ()
+{
+  return 600;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -210,14 +274,24 @@ gui_init (dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  g_signal_connect (G_OBJECT (copy), "pressed",
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  GtkWidget *loadbutton = gtk_button_new_with_label(_("load dt file"));
+  gtk_object_set(GTK_OBJECT(loadbutton), "tooltip-text", _("open a dt sidecar file\nand apply it to selected images"), NULL);
+  gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, gtk_label_new(""), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+  g_signal_connect (G_OBJECT (copy), "clicked",
                     G_CALLBACK (copy_button_clicked),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (delete), "pressed",
+  g_signal_connect (G_OBJECT (delete), "clicked",
                     G_CALLBACK (delete_button_clicked),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (d->paste), "pressed",
+  g_signal_connect (G_OBJECT (d->paste), "clicked",
                     G_CALLBACK (paste_button_clicked),
+                    (gpointer)self);
+  g_signal_connect (G_OBJECT (loadbutton), "clicked",
+                    G_CALLBACK (load_button_clicked),
                     (gpointer)self);
 }
 

@@ -448,11 +448,13 @@ int dt_image_import(const int32_t film_id, const char *filename)
   strncpy(dtfilename, filename, 1024);
   dt_image_path_append_version(img, dtfilename, 1024);
   char *c = dtfilename + strlen(dtfilename);
-  for(;c>dtfilename && *c != '.';c--);
   sprintf(c, ".dttags");
   (void)dt_imageio_dttags_read(img, dtfilename);
 
   dt_image_cache_flush(img);
+
+  sprintf(c, ".dt");
+  (void)dt_imageio_dt_read(img->id, dtfilename);
 
   g_free(imgfname);
 
@@ -512,7 +514,7 @@ void dt_image_init(dt_image_t *img)
   img->raw_params.med_passes = 0;
   img->raw_params.wb_auto = 0;
   img->raw_params.wb_cam = 1;
-  img->raw_params.cmatrix = 0;
+  img->raw_params.greeneq = 0;
   img->raw_params.no_auto_bright = 1;
   img->raw_params.highlight = 0;
   img->raw_params.demosaic_method = 2;

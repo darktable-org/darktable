@@ -65,6 +65,7 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PPM16);
   else if(i == 4)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF16);
   else if(i == 5)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PFM);
+  else if(i == 6)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_EXR);
   dt_control_export();
 }
 
@@ -108,6 +109,7 @@ gui_reset (dt_lib_module_t *self)
   else if(k == DT_DEV_EXPORT_PPM16)  i = 3;
   else if(k == DT_DEV_EXPORT_TIFF16) i = 4;
   else if(k == DT_DEV_EXPORT_PFM)    i = 5;
+  else if(k == DT_DEV_EXPORT_EXR)    i = 6;
   gtk_combo_box_set_active(d->format, i);
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
@@ -154,6 +156,12 @@ intent_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
   int pos = gtk_combo_box_get_active(widget);
   dt_conf_set_int("plugins/lighttable/export/iccintent", pos-1);
+}
+
+int
+position ()
+{
+  return 0;
 }
 
 void
@@ -281,6 +289,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(d->format, _("16-bit ppm"));
   gtk_combo_box_append_text(d->format, _("16-bit tiff"));
   gtk_combo_box_append_text(d->format, _("float pfm"));
+  gtk_combo_box_append_text(d->format, _("float exr"));
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   gtk_box_pack_start(vbox1, GTK_WIDGET(d->format), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox2, GTK_WIDGET(button), FALSE, FALSE, 0);

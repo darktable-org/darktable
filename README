@@ -1,9 +1,8 @@
 this is darktable, a free raw photo viewer and organiser.
-darktable is not a lighttable.
 
 to build it, you need:
 
- - lcms gtk+-2.0 libglade-2.0 libgthread-2.0 cairo libjpeg libpng gconf lensfun
+ - lcms gtk+-2.0 libglade-2.0 libgthread-2.0 cairo libjpeg libpng gconf lensfun tiff exiv2
 
 other used packages (supplied in the source tree):
 
@@ -12,31 +11,14 @@ other used packages (supplied in the source tree):
 then, type:
 
  $ ./autogen.sh
- $ ./configure [--enable-debug] --prefix=$(pwd)/install
- $ make install
- $ ./install/bin/darktable
+ $ ./configure [--enable-debug] --prefix=/usr
+ # make install
+ $ darktable
 
 (the first step is only necessary when building from git for the first time)
 and enjoy!
 
 
-speedhack:
-
- $ cp ~/.darktabledb /dev/shm
- $ echo -n "/dev/shm/.darktabledb" > ~/.darktablerc
- $ darktable
- $ cp /dev/shm/.darktabledb ~/
- :)
-
-sizehack:
-
- $ sqlite3 ~/.darktabledb
- > delete from mipmaps;
- > delete from mipmap_timestamps;
- > vacuum;
-
- darktable will re-generate cached mipmaps in db on demand.
-
-send any bugreports to me: hanatos@gmail.com
+send any bugreports to the mailing list: darktable-devel@lists.sf.net
 find more information on the web: http://darktable.sf.net/
 

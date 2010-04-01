@@ -258,68 +258,84 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
   if(imgsel == img->id)
   { // draw mouseover hover effects, set event hook for mouse button down!
     lib->image_over = DT_LIB_DESERT;
-    // commented out, so stars are also on mouse over for zoom == 1
-    // if(zoom != 1 || (zoom == 1 && selected))
+    cairo_set_line_width(cr, 1.5);
+    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+    cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
+    float r1, r2;
+    if(zoom != 1) 
     {
-      cairo_set_line_width(cr, 1.5);
-      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-      cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-      float r1, r2;
+      r1 = 0.06*width;
+      r2 = 0.025*width;
+    }
+    else
+    {
+      r1 = 0.02*fscale;
+      r2 = 0.0083*fscale;
+    }
+    for(int k=0;k<5;k++)
+    {
+      float x, y;
       if(zoom != 1) 
       {
-        r1 = 0.06*width;
-        r2 = 0.025*width;
+        x = (0.15+k*0.15)*width;
+        y = 0.88*height;
       }
       else
       {
-        r1 = 0.02*fscale;
-        r2 = 0.0083*fscale;
+        x = (.04+k*0.04)*fscale;
+        y = .12*fscale;
       }
-      for(int k=0;k<5;k++)
+      if(k == 4)
       {
-        float x, y;
-        if(zoom != 1) 
+        if(altered) 
         {
-          x = (0.15+k*0.15)*width;
-          y = 0.88*height;
+          // Align to right
+          float s = (r1+r2)*.5;
+          if(zoom != 1) x = width*0.85;
+          dt_draw_altered(cr, x, y, s);
         }
-        else
+      }
+      else
+      {
+        dt_library_star(cr, x, y, r1, r2);
+        if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
         {
-          x = (.04+k*0.04)*fscale;
-          y = .12*fscale;
+          lib->image_over = DT_LIB_STAR_1 + k;
+          cairo_fill(cr);
         }
-        if(k == 4)
+        else if((img->flags & 0x7) > k)
         {
-          if(altered) 
-          {
-            // Align to right
-            float s = (r1+r2)*.5;
-            if(zoom != 1) x = width*0.85-0.15;
-            dt_draw_altered(cr, x, y, s);
-          }
+          cairo_fill_preserve(cr);
+          cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
+          cairo_stroke(cr);
+          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
         }
-        else
-        {
-          dt_library_star(cr, x, y, r1, r2);
-          if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
-          {
-            lib->image_over = DT_LIB_STAR_1 + k;
-            cairo_fill(cr);
-          }
-          else if((img->flags & 0x7) > k)
-          {
-            cairo_fill_preserve(cr);
-            cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
-            cairo_stroke(cr);
-            cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-          }
-          else cairo_stroke(cr);
-        }
+        else cairo_stroke(cr);
       }
     }
   }
 
-  // if(selected && (zoom == 1))
+  { // color labels:
+    const int x = zoom == 1 ? (0.04+5*0.04)*fscale : 0.9*width;
+    const int y = zoom == 1 ? 0.12*fscale: 0.1*height;
+    const int r = zoom == 1 ? 0.02*fscale : 0.06*width;
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1, img->id);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      int col = sqlite3_column_int(stmt, 0);
+      if     (col == 0) cairo_set_source_rgb(cr, 1.0, 0.2, 0.2);
+      else if(col == 1) cairo_set_source_rgb(cr, 1.0, 1.0, 0.2);
+      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 1.0, 0.2);
+      cairo_arc(cr, x, y, r, 0.0, 2.0*M_PI);
+      cairo_fill_preserve(cr);
+      cairo_set_line_width(cr, 1.0);
+      cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+      cairo_stroke(cr);
+    }
+  }
+
   if(zoom == 1)
   { // some exif data
     cairo_set_source_rgb(cr, .7, .7, .7);
@@ -380,11 +396,20 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   cairo_set_source_rgb (cr, .9, .9, .9);
   cairo_paint(cr);
 
+  // zoom to one case:
+  static int oldzoom = -1;
+  static int firstsel = -1;
+
   if(lib->first_visible_zoomable >= 0)
   {
     lib->offset = lib->first_visible_zoomable;
   }
   lib->first_visible_zoomable = -1;
+
+  if(iir == 1 && oldzoom != 1 && firstsel >= 0)
+    lib->offset = firstsel;
+  oldzoom = iir;
+  firstsel = -1;
 
   if(lib->track >  2) lib->offset += iir;
   if(lib->track < -2) lib->offset -= iir;
@@ -448,6 +473,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           // set mouse over id
           if(seli == col && selj == row)
           {
+            firstsel = lib->offset + selj*iir + seli;
             mouse_over_id = image->id;
             DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
           }

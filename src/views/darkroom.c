@@ -311,6 +311,24 @@ int try_enter(dt_view_t *self)
 void enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  // select this image, if no multiple selection:
+  int count = 0;
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  if(count < 2)
+  {
+    sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1, dev->image->id);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
   DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
