@@ -33,6 +33,14 @@ typedef enum _darktable_slider_type {
   DARKTABLE_SLIDER_VALUE
 } darktable_slider_type_t;
 
+typedef enum _darktable_slider_format_type {
+  /** Default format type , value is displayed as float*/
+  DARKTABLE_SLIDER_FORMAT_FLOAT=0,
+  /** Value is displayed as ratio  eg. 50/50*/
+  DARKTABLE_SLIDER_FORMAT_RATIO,
+  DARKTABLE_SLIDER_FORMAT_NONE
+} darktable_slider_format_type_t;
+
 typedef struct _GtkDarktableSlider
 {
   GtkEventBox widget;
@@ -43,11 +51,13 @@ typedef struct _GtkDarktableSlider
   gboolean is_ctrl_key_pressed;
   gboolean is_sensibility_key_pressed;
   gboolean is_entry_active;
+  gboolean is_changed;
   gint prev_x_root;
   gint motion_direction;		
   gint digits;
   gfloat default_value;
   darktable_slider_type_t type;
+  darktable_slider_format_type_t fmt_type;
   guint key_snooper_id;
 } GtkDarktableSlider;
 
@@ -79,5 +89,8 @@ void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value);
 void dtgtk_slider_set_type(GtkDarktableSlider *slider,darktable_slider_type_t type);
 /** Set digits to use when displaying value*/
 void dtgtk_slider_set_digits(GtkDarktableSlider *slider, gint digits);
+/** Set value display format */
+void dtgtk_slider_set_format_type(GtkDarktableSlider *slider, darktable_slider_format_type_t type);
+
 G_END_DECLS
 #endif

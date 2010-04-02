@@ -33,9 +33,6 @@
 #include <string.h>
 #include <glib.h>
 #include <lcms.h>
-#ifdef HAVE_MAGICK
-  #include <magick/MagickCore.h>
-#endif
 #include <string.h>
 #ifdef _OPENMP
 #  include <omp.h>
@@ -75,7 +72,7 @@ int dt_init(int argc, char *argv[])
         if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
         if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        if(!strcmp(argv[k+1], "fswatch"))     darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
+        if(!strcmp(argv[k+1], "fswatch")) darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
         k ++;
       }
     }

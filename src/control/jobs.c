@@ -38,6 +38,7 @@ void dt_image_load_job_run(dt_job_t *job)
 {
   dt_image_load_t *t = (dt_image_load_t *)job->param;
   dt_image_t *img = dt_image_cache_get(t->imgid, 'r');
+  if(!img) return;
   int ret = dt_image_load(img, t->mip);
   // drop read lock, as this is only speculative async loading.
   if(!ret) dt_image_release(img, t->mip, 'r');
@@ -376,6 +377,12 @@ void dt_control_export_job_run(dt_job_t *job)
         else if(fmt==DT_DEV_EXPORT_TIFF16)
           dt_imageio_export_16(img, filename);
         break;
+      case DT_DEV_EXPORT_EXR:
+        if(img->film_id == 1 && !strcmp(c, ".exr")) { strncpy(c, "_dt", 3); c += 3; }
+        strncpy(c, ".exr", 4);
+        dt_imageio_export_f(img, filename);
+        break;
+      
       default:
         break;
     }

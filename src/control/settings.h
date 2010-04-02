@@ -83,7 +83,8 @@ typedef enum dt_dev_export_format_t
   DT_DEV_EXPORT_PPM16  = 2,
   DT_DEV_EXPORT_PFM    = 3,
   DT_DEV_EXPORT_TIFF8  = 4,
-  DT_DEV_EXPORT_TIFF16 = 5
+  DT_DEV_EXPORT_TIFF16 = 5,
+  DT_DEV_EXPORT_EXR =6
 }
 dt_dev_export_format_t;
 

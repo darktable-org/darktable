@@ -83,6 +83,10 @@ Move around (arrows also work)
 
 Star rating
 
+=item B<ctrl-1, 2, 3>
+
+color labels: toggle red, yellow, green
+
 =back
 
 Darkroom mode:

@@ -33,6 +33,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
 
 typedef struct dt_iop_velvia_params_t
@@ -40,6 +41,7 @@ typedef struct dt_iop_velvia_params_t
   float saturation;
   float vibrance;
   float luminance;
+  float clarity;
 }
 dt_iop_velvia_params_t;
 
@@ -47,7 +49,7 @@ typedef struct dt_iop_velvia_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkLabel  *label1,*label2,*label3;
-  GtkDarktableSlider *scale1,*scale2,*scale3;
+  GtkDarktableSlider *scale1,*scale2,*scale3;       // saturation, vibrance, luminance
 }
 dt_iop_velvia_gui_data_t;
 
@@ -72,26 +74,31 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   
   // Apply velvia saturation
   in  = (float *)ivoid;
+  out = (float *)ovoid;
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
-    // calculate vibrance, and apply boost velvia saturation at least saturated pixles
-    double pmax=fmax(in[0],fmax(in[1],in[2]));			// Max value amonug RGB set
-    double pmin=fmin(in[0],fmin(in[1],in[2]));			// Min value among RGB set
-    double plum = (pmax+pmin)/2.0;					// Pixel luminocity
-    double psat =(plum<=0.5) ? (pmax-pmin)/(pmax+pmin): (pmax-pmin)/(2-pmax-pmin);
+    if(data->saturation > 0.0)
+    {
+      // calculate vibrance, and apply boost velvia saturation at least saturated pixles
+      double pmax=fmax(in[0],fmax(in[1],in[2]));			// Max value amonug RGB set
+      double pmin=fmin(in[0],fmin(in[1],in[2]));			// Min value among RGB set
+      double plum = (pmax+pmin)/2.0;					// Pixel luminocity
+      double psat =(plum<=0.5) ? (pmax-pmin)/(pmax+pmin): (pmax-pmin)/(2-pmax-pmin);
 
-    double pweight=((1.0- (1.5*psat)) + ((1+(fabs(plum-0.5)*2.0))*(1.0-data->luminance))) / (1.0+(1.0-data->luminance));		// The weight of pixel
-    double saturation = (data->saturation*pweight)*data->vibrance;			// So lets calculate the final affection of filter on pixel
+      double pweight=((1.0- (1.5*psat)) + ((1+(fabs(plum-0.5)*2.0))*(1.0-data->luminance))) / (1.0+(1.0-data->luminance));		// The weight of pixel
+      double saturation = (data->saturation*pweight)*data->vibrance;			// So lets calculate the final affection of filter on pixel
 
-    // Apply velvia saturation values
-    double sba=1.0+saturation;
-    double sda=(sba/2.0)-0.5;
-    out[0]=(in[0]*(sba))-(in[1]*(sda))-(in[2]*(sda));
-    out[1]=(in[1]*(sba))-(in[0]*(sda))-(in[2]*(sda));
-    out[2]=(in[2]*(sba))-(in[0]*(sda))-(in[1]*(sda));  
+      // Apply velvia saturation values
+      double sba=1.0+saturation;
+      double sda=(sba/2.0)-0.5;
+      out[0]=(in[0]*(sba))-(in[1]*(sda))-(in[2]*(sda));
+      out[1]=(in[1]*(sba))-(in[0]*(sda))-(in[2]*(sda));
+      out[2]=(in[2]*(sba))-(in[0]*(sda))-(in[1]*(sda));  
+    }
+    else
+      for(int c=0;c<3;c++) out[c]=in[c];
     out += 3; in += 3;
   }
-  
 }
 
 static void
@@ -124,6 +131,7 @@ luminance_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)p1;
@@ -145,6 +153,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = NULL;
 #else
   piece->data = malloc(sizeof(dt_iop_velvia_data_t));
+  memset(piece->data,0,sizeof(dt_iop_velvia_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -165,9 +174,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)module->params;
-   dtgtk_slider_set_value(g->scale1, p->saturation);
-   dtgtk_slider_set_value(g->scale2, p->vibrance);
-   dtgtk_slider_set_value(g->scale3, p->luminance);
+  dtgtk_slider_set_value(g->scale1, p->saturation);
+  dtgtk_slider_set_value(g->scale2, p->vibrance);
+  dtgtk_slider_set_value(g->scale3, p->luminance);
 }
 
 void init(dt_iop_module_t *module)
@@ -178,7 +187,7 @@ void init(dt_iop_module_t *module)
   module->priority = 970;
   module->params_size = sizeof(dt_iop_velvia_params_t);
   module->gui_data = NULL;
-  dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){.5,.5,.0};
+  dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){.5,.5,.5};
   memcpy(module->params, &tmp, sizeof(dt_iop_velvia_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_velvia_params_t));
 }
@@ -217,14 +226,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the amount of saturation to apply"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the vibrance amount"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to spare highlights and shadows"), NULL);
- 
+  
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (saturation_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
         G_CALLBACK (vibrance_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-        G_CALLBACK (luminance_callback), self);
+        G_CALLBACK (luminance_callback), self);  
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

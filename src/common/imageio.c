@@ -26,6 +26,7 @@
 #include "common/imageio_ppm.h"
 #include "common/imageio_rgbe.h"
 #include "common/imageio_tiff.h"
+#include "common/imageio_exr.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -763,20 +764,60 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   float *buf = (float *)pipe.backbuf;
 
-  int status = 1;
-  FILE *f = fopen(filename, "wb");
-  if(f)
+  // find output color profile for this image:
+  int sRGB = 1;
+  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  if(!strcmp(overprofile, "sRGB"))
   {
-    (void)fprintf(f, "PF\n%d %d\n-1.0\n", processed_width, processed_height);
-    for(int j=processed_height-1;j>=0;j--)
-    {
-      int cnt = fwrite(buf + 3*processed_width*j, sizeof(float)*3, processed_width, f);
-      if(cnt != processed_width) status = 1;
-      else status = 0;
-    }
-    fclose(f);
+    sRGB = 1;
   }
-
+  else if(!strcmp(overprofile, "image"))
+  {
+    GList *modules = dev.iop;
+    dt_iop_module_t *colorout = NULL;
+    while (modules)
+    {
+      colorout = (dt_iop_module_t *)modules->data;
+      if (strcmp(colorout->op, "colorout") == 0)
+      {
+        dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)colorout->params;
+        if(!strcmp(p->iccprofile, "sRGB")) sRGB = 1;
+        else sRGB = 0;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+  else
+  {
+    sRGB = 0;
+  }
+  g_free(overprofile);
+  
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
+  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
+  
+  int status = 1;
+  int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
+  if( export_format==DT_DEV_EXPORT_PFM)
+  {
+    FILE *f = fopen(filename, "wb");
+    if(f)
+    {
+      (void)fprintf(f, "PF\n%d %d\n-1.0\n", processed_width, processed_height);
+      for(int j=processed_height-1;j>=0;j--)
+      {
+        int cnt = fwrite(buf + 3*processed_width*j, sizeof(float)*3, processed_width, f);
+        if(cnt != processed_width) status = 1;
+        else status = 0;
+      }
+      fclose(f);
+    }
+  }    
+  else if( export_format==DT_DEV_EXPORT_EXR ) 
+    status=dt_imageio_exr_write_f(filename,buf,processed_width, processed_height, exif_profile, length);
+ 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return status;
@@ -848,9 +889,11 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
       const int k = x + processed_width*y;
       for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
     }
-
+    
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  uint32_t length = dt_exif_read_blob(exif_profile, filename, sRGB);
+  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
   
   if( export_format==DT_DEV_EXPORT_PPM16)
     status=dt_imageio_ppm_write_16(filename,imgdata,processed_width, processed_height);
