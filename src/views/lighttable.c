@@ -923,6 +923,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   lib->select_offset_y += y;
   lib->pan = 1;
   if(which == 1) dt_control_change_cursor(GDK_HAND1);
+  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
   // image button pressed?
   switch(lib->image_over)
   {

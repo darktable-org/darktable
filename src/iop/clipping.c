@@ -61,7 +61,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkSpinButton *aspect;
   GtkCheckButton *aspect_on;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
-  float clip_x, clip_y, clip_w, clip_h;
+  float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
   int cropping;
 }
 dt_iop_clipping_gui_data_t;
@@ -392,16 +392,17 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-#if 0
 static void
 aspect_callback(GtkSpinButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  // if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->aspect = gtk_spin_button_get_value(widget);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on));
+  if(active) p->aspect =   gtk_spin_button_get_value(widget);
+  else       p->aspect = - gtk_spin_button_get_value(widget);
+  // dt_dev_add_history_item(darktable.develop, self);
 }
-#endif
 
 static void
 aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
@@ -445,7 +446,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
-  g->clip_x = g->clip_y = 0.0;
+  g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
   g->clip_w = g->clip_h = 1.0;
   g->cropping = 0;
 
@@ -507,8 +508,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_spin_button_set_digits(g->aspect, 2);
   gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), FALSE);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->aspect), FALSE, FALSE, 0);
-  // g_signal_connect (G_OBJECT (g->aspect), "value-changed",
-                    // G_CALLBACK (aspect_callback), self);
+  g_signal_connect (G_OBJECT (g->aspect), "value-changed",
+                    G_CALLBACK (aspect_callback), self);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (cx_callback), self);
@@ -574,10 +575,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f; pzy += 0.5f;
-  cairo_set_source_rgb(cr, .8, .2, .2);
-  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
-  cairo_stroke (cr);
   cairo_set_dash (cr, &dashes, 0, 0);
+  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_rectangle (cr, 0, 0, wd, ht);
+  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
+  cairo_fill (cr);
+  cairo_set_line_width(cr, 2.0/zoom_scale);
+  cairo_set_source_rgb(cr, .3, .3, .3);
   const int border = 30.0/zoom_scale;
   int grab = g->cropping ? g->cropping : get_grab (pzx, pzy, g, border, wd, ht);
   if(grab == 1)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, g->clip_h*ht);
@@ -607,15 +612,22 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
-    if(!g->cropping) g->cropping = grab;
-    grab = g->cropping;
     float bzx, bzy;
     bzx = g->button_down_zoom_x + .5f; bzy = g->button_down_zoom_y + .5f;
+    if(!g->cropping)
+    {
+      g->cropping = grab;
+      if(grab & 1) g->handle_x = bzx-g->clip_x;
+      if(grab & 2) g->handle_y = bzy-g->clip_y;
+      if(grab & 4) g->handle_x = bzx-(g->clip_w + g->clip_x);
+      if(grab & 8) g->handle_y = bzy-(g->clip_h + g->clip_y);
+    }
+    grab = g->cropping;
 
-    if(grab & 1) g->clip_x = fmaxf(0.0, pzx);
-    if(grab & 2) g->clip_y = fmaxf(0.0, pzy);
-    if(grab & 4) g->clip_w = fminf(1.0, pzx - g->clip_x);
-    if(grab & 8) g->clip_h = fminf(1.0, pzy - g->clip_y);
+    if(grab & 1) g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+    if(grab & 2) g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+    if(grab & 4) g->clip_w = fminf(1.0, pzx - g->clip_x - g->handle_x);
+    if(grab & 8) g->clip_h = fminf(1.0, pzy - g->clip_y - g->handle_y);
 
     if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
     if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
@@ -666,16 +678,17 @@ static void
 commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p)
 {
   g->cropping = 0;
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on)))
-    p->aspect = gtk_spin_button_get_value(g->aspect);
-  else
-    p->aspect = -gtk_spin_button_get_value(g->aspect);
-  p->cx += g->clip_x*p->cw;
-  p->cy += g->clip_y*p->ch;
-  p->cw *= g->clip_w;
-  p->ch *= g->clip_h;
+  p->aspect = -gtk_spin_button_get_value(g->aspect);
+  const float cx = p->cx, cy = p->cy;
+  p->cx += g->clip_x*(p->cw-cx);
+  p->cy += g->clip_y*(p->ch-cy);
+  p->cw = p->cx + (p->cw - cx)*g->clip_w;
+  p->ch = p->cy + (p->ch - cy)*g->clip_h;
   g->clip_x = g->clip_y = 0.0f;
   g->clip_w = g->clip_h = 1.0;
+  darktable.gui->reset = 1;
+  self->gui_update(self);
+  darktable.gui->reset = 0;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
 }

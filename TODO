@@ -7,6 +7,10 @@ big new features:
 - presets for all ops through db access
 
 - better crop
+  - aspect ration presets combo box
+  - draw straight line button
+  - swap aspect ratio hotkey
+  - flip cropped box..?
 - splash screen
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 
