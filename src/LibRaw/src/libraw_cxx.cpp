@@ -171,6 +171,7 @@ LibRaw:: LibRaw(unsigned int flags)
     imgdata.params.output_bps=8;
     imgdata.params.use_fuji_rotate=1;
     imgdata.params.auto_bright_thr = 0.01;
+    imgdata.params.green_matching = 0;
     imgdata.parent_class = this;
     imgdata.progress_flags = 0;
     tls = new LibRaw_TLS;
@@ -1447,7 +1448,7 @@ int LibRaw::rotate_fuji_raw(void)
 
 int LibRaw::dcraw_process(void)
 {
-    int quality,i;
+    int quality;//,i;
 
 
     CHECK_ORDER_LOW(LIBRAW_PROGRESS_LOAD_RAW);
@@ -1490,6 +1491,11 @@ int LibRaw::dcraw_process(void)
         if (O.user_black >= 0) C.black = O.user_black;
         if (O.user_sat > 0) C.maximum = O.user_sat;
 
+        if (O.green_matching)
+            {
+                green_matching();
+            }
+
         if (P1.is_foveon && !O.document_mode) 
             {
                 foveon_interpolate();
@@ -1517,12 +1523,12 @@ int LibRaw::dcraw_process(void)
                     ahd_interpolate();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_INTERPOLATE);
             }
-        if (IO.mix_green)
-            {
-                for (P1.colors=3, i=0; i < S.height * S.width; i++)
-                    imgdata.image[i][1] = (imgdata.image[i][1] + imgdata.image[i][3]) >> 1;
-                SET_PROC_FLAG(LIBRAW_PROGRESS_MIX_GREEN);
-            }
+        // if (IO.mix_green)
+        //     {
+        //         for (P1.colors=3, i=0; i < S.height * S.width; i++)
+        //             imgdata.image[i][1] = (imgdata.image[i][1] + imgdata.image[i][3]) >> 1;
+        //         SET_PROC_FLAG(LIBRAW_PROGRESS_MIX_GREEN);
+        //     }
 
         if(!P1.is_foveon)
             {
