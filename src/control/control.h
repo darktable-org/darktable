@@ -101,6 +101,7 @@
 #define KEYCODE_Left       113  
 #define KEYCODE_Right      114  
 #define KEYCODE_Tab         23  
+#define KEYCODE_Return      36
 #endif
 
 typedef GdkCursorType dt_cursor_t;
@@ -171,7 +172,7 @@ typedef struct dt_control_t
   int32_t width, height;
   float progress;
   pthread_t gui_thread;
-  int button_down, button_down_which;
+  int button_down, button_down_which, button_type;
   double button_x, button_y;
   int history_start;
 
