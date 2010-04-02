@@ -514,21 +514,21 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_control_t *ctl = darktable.control;
-#if 1 // FIXME: x, y needs( to be moved and clamped to DT_WINDOW_SIZE as in expose!!
   const int32_t width_i  = ctl->width  - ctl->tabborder*2;
   const int32_t height_i = ctl->height - ctl->tabborder*2;
   int32_t offx = 0.0f, offy = 0.0f;
   if(width_i  > DT_IMAGE_WINDOW_SIZE) offx =   (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
   if(height_i > DT_IMAGE_WINDOW_SIZE) offy = - (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
-#endif
   int handled = 0;
+  x += offx;
+  y += offy;
   if(dev->gui_module && dev->gui_module->request_color_pick &&
      ctl->button_down &&
      ctl->button_down_which == 1)
   { // module requested a color box
     float zoom_x, zoom_y, bzoom_x, bzoom_y;
-    dt_dev_get_pointer_zoom_pos(dev, x+offx, y+offy, &zoom_x, &zoom_y);
-    dt_dev_get_pointer_zoom_pos(dev, ctl->button_x+offx, ctl->button_y+offy, &bzoom_x, &bzoom_y);
+    dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
+    dt_dev_get_pointer_zoom_pos(dev, ctl->button_x, ctl->button_y, &bzoom_x, &bzoom_y);
     dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f+bzoom_x, .5f+zoom_x));
     dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f+bzoom_y, .5f+zoom_y));
     dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f+bzoom_x, .5f+zoom_x));
@@ -698,9 +698,12 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 }
 
 
-void key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, uint16_t which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  int handled = 0;
+  if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
+  if(handled) return handled;
   int zoom, closeup;
   float zoom_x, zoom_y;
   switch (which)
@@ -735,8 +738,10 @@ void key_pressed(dt_view_t *self, uint16_t which)
       dt_dev_invalidate(dev);
       break;
     default:
+      return 0;
       break;
   }
+  return 1;
 }
 
 

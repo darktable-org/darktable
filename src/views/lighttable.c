@@ -903,15 +903,16 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 }
 
 
-void button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
+int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->pan = 0;
   if(which == 1) dt_control_change_cursor(GDK_ARROW);
+  return 1;
 }
 
 
-void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->modifiers = state;
@@ -942,12 +943,13 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
       break;
     }
     default:
-      break;
+      return 0;
   }
+  return 1;
 }
 
 
-void key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, uint16_t which)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
@@ -989,9 +991,10 @@ void key_pressed(dt_view_t *self, uint16_t which)
       lib->center = 1;
       break;
     default:
-      break;
+      return 0;
   }
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
+  return 1;
 }
 
 void border_scrolled(dt_view_t *view, double x, double y, int which, int up)

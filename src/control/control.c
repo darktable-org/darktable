@@ -879,6 +879,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   float tb = darktable.control->tabborder;
   darktable.control->button_down = 1;
   darktable.control->button_down_which = which;
+  darktable.control->button_type = type;
   darktable.control->button_x = x - tb;
   darktable.control->button_y = y - tb;
   float wd = darktable.control->width;
@@ -899,8 +900,8 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
 
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
   {
+    if(!dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state))
     if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
-    else dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state);
   }
 }
 

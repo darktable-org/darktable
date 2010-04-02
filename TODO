@@ -11,6 +11,9 @@ big new features:
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 
 
+- mouse wheel zoom in navigation
+- splines: linear interpolation check box
+- auto select image if there is only one on the light table
 - decapitalize icc profile names
 - lock zoom/pan checkbox in darkroom mode
 - sliders for C/A in lensfun
