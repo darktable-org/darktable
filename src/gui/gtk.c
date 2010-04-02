@@ -807,28 +807,6 @@ gboolean center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_
   return TRUE;
 }
 
-static gboolean
-expose_splash (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-  float width = widget->allocation.width, height = widget->allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create (cst);
-  cairo_set_source_rgb (cr, .13, .13, .13);
-  cairo_paint (cr);
-
-  cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
-  cairo_set_line_width (cr, 1.0);
-  cairo_arc (cr, width*0.5f, height*0.5f, height*0.4f, 0.0f, 2.0f*M_PI);
-  cairo_fill (cr);
-
-  cairo_destroy (cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
-  cairo_surface_destroy(cst);
-  return TRUE;
-}
 
 int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
@@ -845,30 +823,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gdk_threads_init();
   gdk_threads_enter();
   gtk_init (&argc, &argv);
-
-  // GtkWidget *image;
-  darktable.gui->splash = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title (GTK_WINDOW (darktable.gui->splash), PACKAGE_STRING);
-  gtk_container_set_border_width (GTK_CONTAINER (darktable.gui->splash), 0);
-  gtk_widget_set_size_request (darktable.gui->splash, 485, 300);
-  gtk_window_set_decorated(GTK_WINDOW (darktable.gui->splash), FALSE);
-  gtk_window_set_position(GTK_WINDOW(darktable.gui->splash), GTK_WIN_POS_CENTER);
-  gtk_window_set_resizable(GTK_WINDOW(darktable.gui->splash), FALSE);
-  // image=gtk_image_new_from_file("wait.png");
-  // GtkWidget *splashda = gtk_drawing_area_new();
-  gtk_widget_set_events (darktable.gui->splash, GDK_EXPOSURE_MASK);
-  // gtk_container_add(GTK_CONTAINER(darktable.gui->splash), splashda);
-  g_signal_connect(G_OBJECT(darktable.gui->splash), "expose-event", G_CALLBACK(expose_splash), NULL);
-  // g_signal_connect(G_OBJECT(splashda), "expose-event", G_CALLBACK(expose_splash), NULL);
-  // gtk_container_add(GTK_CONTAINER(darktable.gui->splash), image);
-  GTK_WIDGET_SET_FLAGS (darktable.gui->splash, GTK_APP_PAINTABLE);
-  // GTK_WIDGET_SET_FLAGS (splashda, GTK_APP_PAINTABLE);
-  // GTK_WIDGET_UNSET_FLAGS (darktable.gui->splash, GTK_DOUBLE_BUFFERED);
-  gtk_widget_show (darktable.gui->splash);
-  gtk_widget_draw (darktable.gui->splash, NULL);
-  // gtk_widget_draw (splashda, NULL);
-  // gtk_widget_queue_draw (darktable.gui->splash);
-  // gtk_main_iteration_do(FALSE);
 
   char path[1024], datadir[1024];
   dt_get_datadir(datadir, 1024);

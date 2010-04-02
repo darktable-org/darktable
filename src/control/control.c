@@ -659,7 +659,6 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 
 void *dt_control_expose(void *voidptr)
 {
-  if(darktable.gui->splash) gtk_widget_draw (darktable.gui->splash, NULL);
   // darktable.control->gui_thread = pthread_self();
   while(1)
   {
@@ -779,13 +778,6 @@ void *dt_control_expose(void *voidptr)
     // ! gdk_threads_leave();
 
     cairo_surface_destroy(cst);
-    if(darktable.gui->splash)
-    {
-      gtk_widget_hide_all(darktable.gui->splash);
-      gtk_widget_destroy(darktable.gui->splash);
-      // gtk_object_sink(GTK_OBJECT(darktable.gui->splash));
-      darktable.gui->splash = NULL;
-    }
     return NULL;
   }
   return NULL;

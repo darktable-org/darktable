@@ -45,7 +45,6 @@ struct cairo_surface_t;
 typedef struct dt_gui_gtk_t
 {
   GladeXML *main_window;
-  GtkWidget *splash;
   GdkPixmap *pixmap;
   GList *redraw_widgets;
   GList *key_accels;
