@@ -573,7 +573,7 @@ void button_released(dt_view_t *self, double x, double y, int which, uint32_t st
 }
 
 
-void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 #if 1 // FIXME: x, y needs( to be moved and clamped to DT_WINDOW_SIZE as in expose!!
@@ -593,12 +593,17 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
     dev->gui_module->color_picker_box[2] = .5f+zoom_x;
     dev->gui_module->color_picker_box[3] = .5f+zoom_y;
     dt_control_queue_draw_all();
-    return;
+    return 1;
   }
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
-  if(handled) return;
+  if(handled) return handled;
 
-  if(which == 1) dt_control_change_cursor(GDK_HAND1);
+  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
+  if(which == 1)
+  {
+    dt_control_change_cursor(GDK_HAND1);
+    return 1;
+  }
   if(which == 2)
   {
     // zoom to 1:1 2:1 and back
@@ -630,7 +635,9 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
     DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
     dt_dev_invalidate(dev);
+    return 1;
   }
+  return 0;
 }
 
 
