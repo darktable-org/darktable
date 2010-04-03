@@ -735,10 +735,11 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   g->cropping = 0;
   p->aspect = -gtk_spin_button_get_value(g->aspect);
   const float cx = p->cx, cy = p->cy;
-  p->cx += g->clip_x*(p->cw-cx);
-  p->cy += g->clip_y*(p->ch-cy);
-  p->cw = p->cx + (p->cw - cx)*g->clip_w;
-  p->ch = p->cy + (p->ch - cy)*g->clip_h;
+  const float cw = fabsf(p->cw), ch = fabsf(p->ch);
+  p->cx += g->clip_x*(cw-cx);
+  p->cy += g->clip_y*(ch-cy);
+  p->cw = copysignf(p->cx + (cw - cx)*g->clip_w, p->cw);
+  p->ch = copysignf(p->cy + (ch - cy)*g->clip_h, p->ch);
   g->clip_x = g->clip_y = 0.0f;
   g->clip_w = g->clip_h = 1.0;
   darktable.gui->reset = 1;

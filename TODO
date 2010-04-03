@@ -6,12 +6,10 @@ big new features:
 - print mode?
 
 - better crop
-  - cropping breaks preview window??
   - draw straight line button
-- splash screen
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 
-
+- optimize control_cleanup sql query for speed
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
 - auto select image if there is only one on the light table
