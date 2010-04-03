@@ -24,6 +24,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
@@ -332,7 +333,6 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   if (which >= 0 && which < 6)
   {
     gtk_spin_button_set_value(g->aspect, g->aspect_ratios[which]);
-    apply_box_aspect(self, 5);
     dt_control_queue_draw_all();
     self->dev->gui_module = self;
   }
@@ -438,6 +438,7 @@ void cleanup(dt_iop_module_t *module)
 static void
 aspect_callback(GtkSpinButton *widget, dt_iop_module_t *self)
 {
+  apply_box_aspect(self, 5);
   if(darktable.gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -451,9 +452,13 @@ aspect_callback(GtkSpinButton *widget, dt_iop_module_t *self)
 static void
 aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
 {
+  apply_box_aspect(self, 5);
+  if(darktable.gui->reset) return;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), active);
+  self->dev->gui_module = self;
+  dt_control_queue_draw_all();
 }
 
 static void
@@ -474,6 +479,13 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void
+key_accel_callback(void *d)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)d;
+  gtk_spin_button_set_value(g->aspect, 1.0/gtk_spin_button_get_value(g->aspect));
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -549,6 +561,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->aspect), "value-changed",
                     G_CALLBACK (aspect_callback), self);
+  gtk_object_set(GTK_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w/h)\npress x to swap sides"), NULL);
   g->aspect_presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->aspect_presets, _("image"));
   gtk_combo_box_append_text(g->aspect_presets, _("golden cut"));
@@ -556,6 +569,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
   gtk_combo_box_append_text(g->aspect_presets, _("square"));
   gtk_combo_box_append_text(g->aspect_presets, _("din"));
+  dt_gui_key_accel_register(0, GDK_x, key_accel_callback, (void *)g);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);
@@ -582,6 +596,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_gui_key_accel_unregister(key_accel_callback);
   free(self->gui_data);
   self->gui_data = NULL;
 }

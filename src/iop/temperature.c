@@ -300,7 +300,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
-  for(int k=0;k<3;k++) p->coeffs[k] = fmaxf(0.0f, fminf(3.0, p->coeffs[k]));
+  for(int k=0;k<3;k++) p->coeffs[k] = fmaxf(0.0f, fminf(5.0, p->coeffs[k]));
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self);
   return FALSE;
@@ -322,12 +322,12 @@ void gui_init (struct dt_iop_module_t *self)
   g->label2 = GTK_LABEL(gtk_label_new(_("temperature out")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 3.0, .001,0,0));
+  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 5.0, .001,0,0));
   g->scale_k     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,0,0));
   g->scale_k_out = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,0,0));
-  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 3.0, .001,0,0));
-  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 3.0, .001,0,0));
-  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 3.0, .001,0,0));
+  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,0,0));
+  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,0,0));
+  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,0,0));
   dtgtk_slider_set_digits((g->scale_tint),  3);
   dtgtk_slider_set_digits((g->scale_k),     0);
   dtgtk_slider_set_digits((g->scale_k_out), 0);

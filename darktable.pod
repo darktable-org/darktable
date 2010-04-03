@@ -83,9 +83,13 @@ Move around (arrows also work)
 
 Star rating
 
+=item B<backspace>
+
+Strip all stars (reject image)
+
 =item B<ctrl-1, 2, 3>
 
-color labels: toggle red, yellow, green
+Color labels: toggle red, yellow, green
 
 =back
 

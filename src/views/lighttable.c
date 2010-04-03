@@ -790,12 +790,13 @@ star_key_accel_callback(void *data)
   long int num = (long int)data;
   switch (num)
   {
-    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4:
+    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4: case 666:
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-      if(num == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+      if(num == 666) image->flags &= ~0xf;
+      else if(num == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else
       {
         image->flags &= ~0x7;
@@ -852,6 +853,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_LIB_STAR_2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_LIB_STAR_3);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_LIB_STAR_4);
+  dt_gui_key_accel_register(0, GDK_BackSpace, star_key_accel_callback, (void *)666);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
