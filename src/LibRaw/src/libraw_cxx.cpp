@@ -172,6 +172,7 @@ LibRaw:: LibRaw(unsigned int flags)
     imgdata.params.use_fuji_rotate=1;
     imgdata.params.auto_bright_thr = 0.01;
     imgdata.params.green_matching = 0;
+    imgdata.params.pre_interpolate_median_filter = 0;
     imgdata.parent_class = this;
     imgdata.progress_flags = 0;
     tls = new LibRaw_TLS;
@@ -1494,6 +1495,10 @@ int LibRaw::dcraw_process(void)
         if (O.green_matching)
             {
                 green_matching();
+            }
+        if (O.pre_interpolate_median_filter);
+            {
+                pre_interpolate_median_filter();
             }
 
         if (P1.is_foveon && !O.document_mode) 

@@ -259,6 +259,7 @@ typedef struct
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
     int         green_matching;
+    int         pre_interpolate_median_filter;
     enum LibRaw_filtering    filtering_mode; 
     int         dont_scale;     /* demosaic, but no black/max */
 }libraw_output_params_t;

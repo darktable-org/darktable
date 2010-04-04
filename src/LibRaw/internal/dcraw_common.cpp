@@ -3173,6 +3173,50 @@ void CLASS wavelet_denoise()
 
 #endif
 
+void CLASS pre_interpolate_median_filter()
+{
+  ushort (*pixo)[4];
+  ushort (*pixi)[4];
+  ushort (*img )[4];
+  int c, i, j, k, row, col, rows, med[9];
+  static const uchar opt[] =	/* Optimal 9-element median search */
+  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
+    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
+
+  img = (ushort (*)[4]) calloc (height*width, sizeof *image);
+  merror (img, "pre_interpolate_median_filter()");
+  memcpy(img,image,height*width*sizeof *image);
+  // for (pass=1; pass <= med_passes; pass++)
+  // {
+    for (c=0; c < 3; c+=2)
+    {
+      rows = 3;
+      if(FC(rows,3) != c && FC(rows,4) != c) rows++;
+#pragma omp parallel for default(none) shared(width,height,image,c,rows) private(pixo,pixi,row,col,med,opt,k,i,j)
+      for (row=rows;row<height-3;row+=2)
+      {
+        pixo = image + width * row;
+        pixi = img   + width * row;
+        col = 3;
+        if(FC(row,col) != c) col++;
+        for(;col<width-3;col+=2)
+        {
+          for (k=0, i = -2*width; i <= 2*width; i += 2*width)
+            for (j = i-2; j <= i+2; j+=2)
+              med[k++] = pixi[j][c];
+          for (i=0; i < (int)(sizeof opt); i+=2)
+            if     (med[opt[i]] > med[opt[i+1]])
+              SWAP (med[opt[i]] , med[opt[i+1]]);
+          pixo[0][c] = med[4];
+          pixo++;
+          pixi++;
+        }
+      }
+    }
+  // }
+  free (img);
+}
+
 // green equilibration
 void CLASS green_matching()
 {
