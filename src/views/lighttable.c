@@ -115,6 +115,7 @@ void dt_library_star(cairo_t *cr, float x, float y, float r1, float r2)
 
 void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
 {
+  cairo_save (cr);
   float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
@@ -355,6 +356,7 @@ void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t 
     cairo_stroke(cr);
   }
 
+  cairo_restore(cr);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 #endif
 }

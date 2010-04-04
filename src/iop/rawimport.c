@@ -134,6 +134,7 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   int active = gtk_combo_box_get_active(box);
+  if(active < 4) p->raw_four_color_rgb = 0;
   if(active == 4)
   {
     active = 0;
