@@ -146,7 +146,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out += 3; in += 3;
   }
   
-  float lscale=1.0+(1.0-(lhigh-llow));
+  //float lscale=1.0+(1.0-(lhigh-llow));
   
   in  = (float *)ivoid;
   out = (float *)ovoid;
@@ -154,30 +154,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
-    l*=lscale;
+    //l*=lscale;
     
     h=l<data->balance?sh:hh;
     s=l<data->balance?data->shadow_saturation/100.0:data->highlight_saturation/100.0;
-    
+    double ra=CLIP((fabs((-data->balance+l))*2.0));
+    double la=(1.0-ra);
+     
     hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
     
-    out[0]=in[0]*(1.0-(fabs((-0.5+l))*2.0)) + mixrgb[0]*(fabs((-0.5+l))*2.0);
-    out[1]=in[1]*(1.0-(fabs((-0.5+l))*2.0)) + mixrgb[1]*(fabs((-0.5+l))*2.0);
-    out[2]=in[2]*(1.0-(fabs((-0.5+l))*2.0)) + mixrgb[2]*(fabs((-0.5+l))*2.0);
-    
-    /*float tss=l<data->balance?ssa:hsa;
-    float th=l<data->balance?sh:hh;
-    float ts=l<data->balance?ss:hs;*/
-    
-   /*float thlen=fabs((h-th))<fabs((th-h))?(h-th):(th-h);
-    h+=(thlen*((fabs((-0.5+l))*2.0)));
-    //s+=((s-ts)*(fabs((-0.5+l))*2.0))*tss;
-    
-    // Map around 360 degrees
-    if(h<0.0) h+=1.0;
-    else if(h>1.0) h-=1.0;
-    
-    hsl2rgb(&out[0],&out[1],&out[2],h,s,l);*/
+    out[0]=in[0]*la + mixrgb[0]*ra;
+    out[1]=in[1]*la + mixrgb[1]*ra;
+    out[2]=in[2]*la + mixrgb[2]*ra;
+  
     out += 3; in += 3;
   }
 }
