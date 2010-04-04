@@ -41,7 +41,7 @@ typedef struct dt_iop_splittoning_params_t
 {
   float shadow_color[3];					// rgb gradient start color
   float shadow_saturation;
-  float hightlight_color[3];				// rgb gradient stop color
+  float highlight_color[3];				// rgb gradient stop color
   float highlight_saturation;
   float balance;						// center luminance of gradient
 }
@@ -60,7 +60,7 @@ typedef struct dt_iop_splittoning_data_t
 {
   float shadow_color[3];					// rgb gradient start color
   float shadow_saturation;
-  float hightlight_color[3];				// rgb gradient stop color
+  float highlight_color[3];				// rgb gradient stop color
   float highlight_saturation;
   float balance;						// center luminance of gradient}
 } 
@@ -75,40 +75,44 @@ void rgb2hsl(float r,float g,float b,float *h,float *s,float *l)
 {
   float pmax=fmax(r,fmax(g,b));
   float pmin=fmin(r,fmin(g,b));
+  float delta=(pmax-pmin);
+  
   *h=*s=*l=0;
   *l=(pmin+pmax)/2.0;
  
   if(pmax!=pmin) 
   {
-    *s=*l<0.5?(pmax-pmin)/(pmax+pmin):(pmax-pmin)/(2.0-pmax-pmin);
+    *s=*l<0.5?delta/(pmax+pmin):delta/(2.0-pmax-pmin);
   
-    if(pmax==r) *h=(g-b)/(pmax-pmin);
-    if(pmax==g) *h=2.0+(b-r)/(pmax-pmin);
-    if(pmax==b) *h=4.0+(r-g)/(pmax-pmin);
-    *h*=60;
-    if(*h<0.0) *h+=360;
+    if(pmax==r) *h=(g-b)/delta;
+    if(pmax==g) *h=2.0+(b-r)/delta;
+    if(pmax==b) *h=4.0+(r-g)/delta;
+    *h/=6.0;
+    if(*h<0.0) *h+=1.0;
+    else if(*h>1.0) *h-=1.0;
   }
 }
-
+void hue2rgb(float m1,float m2,float hue,float *channel)
+{
+  if(hue<0.0) hue+=1.0;
+  else if(hue>1.0) hue-=1.0;
+  
+  if( (6.0*hue) < 1.0) *channel=(m1+(m2-m1)*hue*6.0);
+  else if((2.0*hue) < 1.0) *channel=m2;
+  else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
+  else *channel=m1;
+}
 void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
 {
+  float m1,m2;
   *r=*g=*b=l;
-  if(s==0.0) return;
-  float temp2= l<0.5?l*(1.0+s):l+s-l*s;
-  float temp1=2.0*l-temp2;
-  h/=360;
-  
-  float rtemp3=h+1.0/3.0;
-  float gtemp3=h;
-  float btemp3=h-1.0/3.0;
-  rtemp3=rtemp3<0?rtemp3+1.0:rtemp3>1.0?rtemp3-1.0:rtemp3;
-  gtemp3=gtemp3<0?gtemp3+1.0:gtemp3>1.0?gtemp3-1.0:gtemp3;
-  btemp3=btemp3<0?btemp3+1.0:btemp3>1.0?btemp3-1.0:btemp3;
+  if( s==0) return;
+  m2=l<0.5?l*(1.0+s):l+s-l*s;
+  m1=(2.0*l-m2);
+  hue2rgb(m1,m2,h +(1.0/3.0), r);
+  hue2rgb(m1,m2,h, g);
+  hue2rgb(m1,m2,h - (1.0/3.0), b);
 
-  *r= 6.0*rtemp3<1.0?temp1+(temp2-temp1)*6.0*rtemp3: 2.0*rtemp3<1?temp2: 3.0*rtemp3<2?temp1+(temp2-temp1)*((2.0/3.0)-rtemp3)*6.0:temp1;
-  *g= 6.0*gtemp3<1.0?temp1+(temp2-temp1)*6.0*gtemp3: 2.0*gtemp3<1?temp2: 3.0*gtemp3<2?temp1+(temp2-temp1)*((2.0/3.0)-gtemp3)*6.0:temp1;
-  *b= 6.0*btemp3<1.0?temp1+(temp2-temp1)*6.0*btemp3: 2.0*btemp3<1?temp2: 3.0*btemp3<2?temp1+(temp2-temp1)*((2.0/3.0)-btemp3)*6.0:temp1;
-  
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -126,15 +130,54 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float h,s,l;
   
   rgb2hsl(data->shadow_color[0],data->shadow_color[1],data->shadow_color[2],&sh,&ss,&sl);
-  rgb2hsl(data->hightlight_color[0],data->hightlight_color[1],data->hightlight_color[2],&hh,&hs,&hl);
+  rgb2hsl(data->highlight_color[0],data->highlight_color[1],data->highlight_color[2],&hh,&hs,&hl);
+  //float ssa=data->shadow_saturation/100.0;
+  //float hsa=data->highlight_saturation/100.0;
+  
+  // Get lowest/highest l in image
+  float lhigh=0.0;
+  float llow=1.0;
   
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
-    //for(int c=0;c<3;c++) out[c]=in[c];
+     rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+    lhigh=fmax(lhigh,l);
+    llow=fmin(llow,l);
+    out += 3; in += 3;
+  }
+  
+  float lscale=1.0+(1.0-(lhigh-llow));
+  
+  in  = (float *)ivoid;
+  out = (float *)ovoid;
+  float mixrgb[3];
+  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  {
     rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
-    h+= l<0.5?fabs(h-sh)/2.0:fabs(h-hh)/2.0;
-    //s= l<0.5?ss:hs;
-    hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+    l*=lscale;
+    
+    h=l<data->balance?sh:hh;
+    s=l<data->balance?data->shadow_saturation/100.0:data->highlight_saturation/100.0;
+    
+    hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
+    
+    out[0]=in[0]*(1.0-(fabs((-0.5+l))*2.0)) + mixrgb[0]*(fabs((-0.5+l))*2.0);
+    out[1]=in[1]*(1.0-(fabs((-0.5+l))*2.0)) + mixrgb[1]*(fabs((-0.5+l))*2.0);
+    out[2]=in[2]*(1.0-(fabs((-0.5+l))*2.0)) + mixrgb[2]*(fabs((-0.5+l))*2.0);
+    
+    /*float tss=l<data->balance?ssa:hsa;
+    float th=l<data->balance?sh:hh;
+    float ts=l<data->balance?ss:hs;*/
+    
+   /*float thlen=fabs((h-th))<fabs((th-h))?(h-th):(th-h);
+    h+=(thlen*((fabs((-0.5+l))*2.0)));
+    //s+=((s-ts)*(fabs((-0.5+l))*2.0))*tss;
+    
+    // Map around 360 degrees
+    if(h<0.0) h+=1.0;
+    else if(h>1.0) h-=1.0;
+    
+    hsl2rgb(&out[0],&out[1],&out[2],h,s,l);*/
     out += 3; in += 3;
   }
 }
@@ -156,7 +199,7 @@ shadow_saturation_callback(GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->highlight_saturation= dtgtk_slider_get_value(slider);
+  p->shadow_saturation= dtgtk_slider_get_value(slider);
   // update foreground color and redraw colorpick1 button
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -171,6 +214,57 @@ balance_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+static void colorpick_button_callback(GtkButton *button,gpointer user_data)  
+{
+ GtkColorSelectionDialog  *csd=(GtkColorSelectionDialog  *)user_data;
+  
+  gtk_dialog_response(GTK_DIALOG(csd),(GTK_WIDGET(button)==csd->ok_button)?GTK_RESPONSE_ACCEPT:0);
+}
+
+static void
+colorpick_callback (GtkDarktableButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
+  
+  GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("Select tone color")));
+  g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
+      G_CALLBACK (colorpick_button_callback), csd);
+  g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",
+      G_CALLBACK (colorpick_button_callback), csd);
+  
+  GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
+  GdkColor c;
+  
+  c.red= 65535 * ((button==g->colorpick1)?p->shadow_color[0]:p->highlight_color[0]);
+  c.green= 65535 * ((button==g->colorpick1)?p->shadow_color[1]:p->highlight_color[1]);
+  c.blue= 65535 * ((button==g->colorpick1)?p->shadow_color[2]:p->highlight_color[2]);
+  gtk_color_selection_set_current_color(cs,&c);
+  if(gtk_dialog_run(GTK_DIALOG(csd))==GTK_RESPONSE_ACCEPT) 
+  {
+    gtk_color_selection_get_current_color(cs,&c);
+    if(button==g->colorpick1)
+    {
+      p->shadow_color[0]=c.red/65535.0;
+      p->shadow_color[1]=c.green/65535.0;
+      p->shadow_color[2]=c.blue/65535.0;
+      gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
+    } 
+    else
+    {
+      p->highlight_color[0]=c.red/65535.0;
+      p->highlight_color[1]=c.green/65535.0;
+      p->highlight_color[2]=c.blue/65535.0;
+      gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
+    }
+    gtk_widget_hide(GTK_WIDGET(csd));
+  }
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -182,7 +276,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
   memcpy(&d->shadow_color,&p->shadow_color,sizeof(float)*3);
   d->shadow_saturation = p->shadow_saturation;
-  memcpy(&d->hightlight_color,&p->hightlight_color,sizeof(float)*3);
+  memcpy(&d->highlight_color,&p->highlight_color,sizeof(float)*3);
   d->highlight_saturation = p->highlight_saturation;
   d->balance = p->balance;
 #endif
@@ -224,7 +318,7 @@ void gui_update(struct dt_iop_module_t *self)
   sprintf(color,"#%.4X%.4X%.4X",(gint)(65535*p->shadow_color[0]),(gint)(65535*p->shadow_color[1]),(gint)(65535*p->shadow_color[2]));
   gdk_color_parse(color,&rgb);
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&rgb);
-  sprintf(color,"#%.4X%.4X%.4X",(gint)(65535*p->hightlight_color[0]),(gint)(65535*p->hightlight_color[1]),(gint)(65535*p->hightlight_color[2]));
+  sprintf(color,"#%.4X%.4X%.4X",(gint)(65535*p->highlight_color[0]),(gint)(65535*p->highlight_color[1]),(gint)(65535*p->highlight_color[2]));
   gdk_color_parse(color,&rgb);
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&rgb);
   
@@ -238,7 +332,7 @@ void init(dt_iop_module_t *module)
   module->priority = 970;
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
-  dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ {0.7,0.7,0.9},50.0,{0.9,0.9,0.7},50.0, 0.5};
+  dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ {0.2,0.2,0.9},50.0,{0.2,0.9,0.2},50.0, 0.5};
   memcpy(module->params, &tmp, sizeof(dt_iop_splittoning_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_splittoning_params_t));
 }
@@ -305,6 +399,12 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (highlight_saturation_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
         G_CALLBACK (balance_callback), self);
+        
+  g_signal_connect (G_OBJECT (g->colorpick1), "clicked",
+        G_CALLBACK (colorpick_callback), self);
+  g_signal_connect (G_OBJECT (g->colorpick2), "clicked",
+        G_CALLBACK (colorpick_callback), self);
+        
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
