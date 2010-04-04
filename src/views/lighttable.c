@@ -790,12 +790,13 @@ star_key_accel_callback(void *data)
   long int num = (long int)data;
   switch (num)
   {
-    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4:
+    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4: case 666:
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-      if(num == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+      if(num == 666) image->flags &= ~0xf;
+      else if(num == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else
       {
         image->flags &= ~0x7;
@@ -852,6 +853,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_LIB_STAR_2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_LIB_STAR_3);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_LIB_STAR_4);
+  dt_gui_key_accel_register(0, GDK_BackSpace, star_key_accel_callback, (void *)666);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -903,15 +905,16 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 }
 
 
-void button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
+int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->pan = 0;
   if(which == 1) dt_control_change_cursor(GDK_ARROW);
+  return 1;
 }
 
 
-void button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->modifiers = state;
@@ -922,6 +925,7 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
   lib->select_offset_y += y;
   lib->pan = 1;
   if(which == 1) dt_control_change_cursor(GDK_HAND1);
+  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
   // image button pressed?
   switch(lib->image_over)
   {
@@ -942,12 +946,13 @@ void button_pressed(dt_view_t *self, double x, double y, int which, int type, ui
       break;
     }
     default:
-      break;
+      return 0;
   }
+  return 1;
 }
 
 
-void key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, uint16_t which)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
@@ -989,9 +994,10 @@ void key_pressed(dt_view_t *self, uint16_t which)
       lib->center = 1;
       break;
     default:
-      break;
+      return 0;
   }
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
+  return 1;
 }
 
 void border_scrolled(dt_view_t *view, double x, double y, int which, int up)

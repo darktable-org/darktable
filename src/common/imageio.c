@@ -276,7 +276,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.use_camera_matrix = 0;
   raw->params.green_matching =  img->raw_params.greeneq;
   raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
-  raw->params.threshold = img->raw_denoise_threshold;
+  raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
@@ -484,7 +484,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.use_camera_matrix = 0;
   raw->params.green_matching =  img->raw_params.greeneq;
   raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
-  raw->params.threshold = img->raw_denoise_threshold;
+  raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);

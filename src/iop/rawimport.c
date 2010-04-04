@@ -55,7 +55,7 @@ typedef struct dt_iop_rawimport_gui_data_t
 {
   GtkCheckButton *four_color_rgb, *greeneq;
   GtkComboBox *demosaic_method, *highlight;
-  GtkDarktableSlider *denoise_threshold;
+  // GtkDarktableSlider *denoise_threshold;
   GtkSpinButton *med_passes;
 }
 dt_iop_rawimport_gui_data_t;
@@ -144,6 +144,7 @@ static void median_callback (GtkSpinButton *spin, gpointer user_data)
   p->raw_med_passes = gtk_spin_button_get_value(spin);
 }
 
+#if 0
 static void scale_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -151,13 +152,14 @@ static void scale_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   p->raw_denoise_threshold = dtgtk_slider_get_value(slider);
 }
+#endif
 
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_rawimport_gui_data_t *g = (dt_iop_rawimport_gui_data_t *)self->gui_data;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   // update gui info from params.
-  dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
+  // dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->raw_greeneq);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
@@ -173,7 +175,7 @@ static void resetbutton_callback (GtkButton *button, gpointer user_data)
   memcpy(self->params, &tmp, sizeof(dt_iop_rawimport_params_t));
   dt_iop_rawimport_gui_data_t *g = (dt_iop_rawimport_gui_data_t *)self->gui_data;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
-  dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
+  // dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->raw_greeneq);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
@@ -231,11 +233,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 5);
 
+#if 0
   label = gtk_label_new(_("denoise"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
   g->denoise_threshold = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1000.0, 1.0,0,1));
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->denoise_threshold), TRUE, TRUE, 0);
+#endif
 
   label = gtk_label_new(_("median passes"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -273,7 +277,7 @@ void gui_init(struct dt_iop_module_t *self)
   
   // self->gui_update(self);
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
-  dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
+  // dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
@@ -282,7 +286,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->greeneq), "toggled", G_CALLBACK (togglegreeneq_callback), self);
   g_signal_connect (G_OBJECT (g->demosaic_method), "changed", G_CALLBACK (demosaic_callback), self);
   g_signal_connect (G_OBJECT (g->med_passes), "value-changed", G_CALLBACK (median_callback), self);
-  g_signal_connect (G_OBJECT (g->denoise_threshold),     "value-changed", G_CALLBACK (scale_callback), self);
+  // g_signal_connect (G_OBJECT (g->denoise_threshold),     "value-changed", G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (reload),     "clicked", G_CALLBACK (reimport_button_callback), self);
   g_signal_connect (G_OBJECT (reset),      "clicked", G_CALLBACK (resetbutton_callback), self);
 }

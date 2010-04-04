@@ -6,10 +6,13 @@ big new features:
 - print mode?
 
 - better crop
-- splash screen
+  - draw straight line button
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 
-
+- optimize control_cleanup sql query for speed
+- mouse wheel zoom in navigation
+- splines: linear interpolation check box
+- auto select image if there is only one on the light table
 - decapitalize icc profile names
 - lock zoom/pan checkbox in darkroom mode
 - sliders for C/A in lensfun

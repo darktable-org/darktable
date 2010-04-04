@@ -38,6 +38,7 @@ void dt_image_load_job_run(dt_job_t *job)
 {
   dt_image_load_t *t = (dt_image_load_t *)job->param;
   dt_image_t *img = dt_image_cache_get(t->imgid, 'r');
+  if(!img) return;
   int ret = dt_image_load(img, t->mip);
   // drop read lock, as this is only speculative async loading.
   if(!ret) dt_image_release(img, t->mip, 'r');

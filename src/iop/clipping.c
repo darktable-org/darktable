@@ -24,6 +24,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
@@ -60,7 +61,11 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkDarktableToggleButton *hflip,*vflip;
   GtkSpinButton *aspect;
   GtkCheckButton *aspect_on;
+  GtkComboBox *aspect_presets;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
+  float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
+  int cropping;
+  float aspect_ratios[6];
 }
 dt_iop_clipping_gui_data_t;
 
@@ -295,6 +300,45 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 }
 
 static void
+apply_box_aspect(dt_iop_module_t *self, int grab)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  float wd = self->dev->preview_pipe->backbuf_width;
+  float ht = self->dev->preview_pipe->backbuf_height;
+  // enforce aspect ratio.
+  const float aspect = gtk_spin_button_get_value(g->aspect);
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on)))
+  {
+    // aspect = wd*w/ht*h
+    if(grab &  5) g->clip_h = wd*g->clip_w/(ht*aspect);
+    if(grab & 10) g->clip_w = ht*g->clip_h*aspect/wd;
+    if(g->clip_x + g->clip_w > 1.0)
+    {
+      g->clip_h *= (1.0 - g->clip_x)/g->clip_w;
+      g->clip_w  =  1.0 - g->clip_x;
+    }
+    if(g->clip_y + g->clip_h > 1.0)
+    {
+      g->clip_w *= (1.0 - g->clip_y)/g->clip_h;
+      g->clip_h  =  1.0 - g->clip_y;
+    }
+  }
+}
+
+static void
+aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  int which = gtk_combo_box_get_active(combo);
+  if (which >= 0 && which < 6)
+  {
+    gtk_spin_button_set_value(g->aspect, g->aspect_ratios[which]);
+    dt_control_queue_draw_all();
+    self->dev->gui_module = self;
+  }
+}
+
+static void
 cx_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -378,6 +422,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 950;
   dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, -1.0};
+  tmp.aspect = -module->dev->image->width/(float)module->dev->image->height;
   memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
 }
@@ -393,26 +438,27 @@ void cleanup(dt_iop_module_t *module)
 static void
 aspect_callback(GtkSpinButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  apply_box_aspect(self, 5);
+  if(darktable.gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->aspect = gtk_spin_button_get_value(widget);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on));
+  if(active) p->aspect =   gtk_spin_button_get_value(widget);
+  else       p->aspect = - gtk_spin_button_get_value(widget);
+  self->dev->gui_module = self;
+  dt_control_queue_draw_all();
 }
 
 static void
 aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  apply_box_aspect(self, 5);
+  if(darktable.gui->reset) return;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), active);
-  if(active)
-    p->aspect =   gtk_spin_button_get_value(g->aspect);
-  else
-    p->aspect = - gtk_spin_button_get_value(g->aspect);
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
+  self->dev->gui_module = self;
+  dt_control_queue_draw_all();
 }
 
 static void
@@ -435,11 +481,22 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+static void
+key_accel_callback(void *d)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)d;
+  gtk_spin_button_set_value(g->aspect, 1.0/gtk_spin_button_get_value(g->aspect));
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_clipping_gui_data_t));
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+
+  g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
+  g->clip_w = g->clip_h = 1.0;
+  g->cropping = 0;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
@@ -486,21 +543,38 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->hflip), "toggled", G_CALLBACK(toggled_callback), self);
   g_signal_connect (G_OBJECT (g->vflip), "toggled", G_CALLBACK(toggled_callback), self);
 
-  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("horizontal flip"), NULL);
-  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("vertical flip"), NULL);
+  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("vertical flip"), NULL);
+  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("horizontal flip"), NULL);
 
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   g->aspect_on = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("aspect")));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
   gtk_object_set (GTK_OBJECT(g->aspect_on), "tooltip-text", _("fixed aspect ratio"), NULL);
   g_signal_connect (G_OBJECT (g->aspect_on), "toggled",
                     G_CALLBACK (aspect_on_callback), self);
+
   g->aspect = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0.1, 10.0, 0.01));
   gtk_spin_button_set_increments(g->aspect, 0.01, 0.2);
-  gtk_spin_button_set_digits(g->aspect, 2);
+  gtk_spin_button_set_digits(g->aspect, 3);
   gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), FALSE);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->aspect), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->aspect), "value-changed",
                     G_CALLBACK (aspect_callback), self);
+  gtk_object_set(GTK_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w/h)\npress x to swap sides"), NULL);
+  g->aspect_presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->aspect_presets, _("image"));
+  gtk_combo_box_append_text(g->aspect_presets, _("golden cut"));
+  gtk_combo_box_append_text(g->aspect_presets, _("3:2"));
+  gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
+  gtk_combo_box_append_text(g->aspect_presets, _("square"));
+  gtk_combo_box_append_text(g->aspect_presets, _("din"));
+  dt_gui_key_accel_register(0, GDK_x, key_accel_callback, (void *)g);
+  g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
+                    G_CALLBACK (aspect_presets_changed), self);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox2), hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (cx_callback), self);
@@ -512,18 +586,37 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (ch_callback), self);
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
+  g->aspect_ratios[0] = self->dev->image->width/(float)self->dev->image->height;
+  g->aspect_ratios[1] = 1.6280;
+  g->aspect_ratios[2] = 3.0/2.0;
+  g->aspect_ratios[3] = 4.0/3.0;
+  g->aspect_ratios[4] = 1.0;
+  g->aspect_ratios[5] = sqrtf(2.0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_gui_key_accel_unregister(key_accel_callback);
   free(self->gui_data);
   self->gui_data = NULL;
+}
+
+static int
+get_grab (float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float border, const float wd, const float ht)
+{
+  int grab = 0;
+  if(pzx >= g->clip_x && pzx*wd < g->clip_x*wd + border) grab |= 1;
+  if(pzy >= g->clip_y && pzy*ht < g->clip_y*ht + border) grab |= 2;
+  if(pzx <= g->clip_x+g->clip_w && pzx*wd > (g->clip_w+g->clip_x)*wd - border) grab |= 4;
+  if(pzy <= g->clip_y+g->clip_h && pzy*ht > (g->clip_h+g->clip_y)*ht - border) grab |= 8;
+  return grab;
 }
 
 // draw 3x3 grid over the image
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_develop_t *dev = self->dev;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   int32_t zoom, closeup;
   float zoom_x, zoom_y;
   float wd = dev->preview_pipe->backbuf_width;
@@ -549,36 +642,143 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   double dashes = 5.0/zoom_scale;
   cairo_set_dash(cr, &dashes, 1, 0);
   dt_draw_grid(cr, 9, wd, ht);
+
+  // draw cropping window handles:
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+  pzx += 0.5f; pzy += 0.5f;
+  cairo_set_dash (cr, &dashes, 0, 0);
+  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_rectangle (cr, 0, 0, wd, ht);
+  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
+  cairo_fill (cr);
+  cairo_set_line_width(cr, 2.0/zoom_scale);
+  cairo_set_source_rgb(cr, .3, .3, .3);
+  const int border = 30.0/zoom_scale;
+  int grab = g->cropping ? g->cropping : get_grab (pzx, pzy, g, border, wd, ht);
+  if(grab == 1)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, g->clip_h*ht);
+  if(grab == 2)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, border);
+  if(grab == 3)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, border);
+  if(grab == 4)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, g->clip_h*ht);
+  if(grab == 8)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, g->clip_w*wd, border);
+  if(grab == 12) cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, (g->clip_y+g->clip_h)*ht-border, border, border);
+  if(grab == 6)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, border);
+  if(grab == 9)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, border, border);
+  cairo_stroke (cr);
 }
 
-// TODO: if mode crop
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 {
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  int32_t zoom, closeup;
+  float wd = self->dev->preview_pipe->backbuf_width;
+  float ht = self->dev->preview_pipe->backbuf_height;
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+  pzx += 0.5f; pzy += 0.5f;
+  int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
+
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
-    dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-    float zoom_x, zoom_y;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &zoom_x, &zoom_y);
-    float old_angle = atan2f(g->button_down_zoom_y, g->button_down_zoom_x);
-    float angle     = atan2f(zoom_y, zoom_x);
-    angle = fmaxf(-180.0, fminf(180.0, g->button_down_angle + 180.0/M_PI * (angle - old_angle)));
-    dtgtk_slider_set_value(g->scale5, angle);
+    float bzx, bzy;
+    bzx = g->button_down_zoom_x + .5f; bzy = g->button_down_zoom_y + .5f;
+    if(!g->cropping)
+    {
+      g->cropping = grab;
+      if(grab & 1) g->handle_x = bzx-g->clip_x;
+      if(grab & 2) g->handle_y = bzy-g->clip_y;
+      if(grab & 4) g->handle_x = bzx-(g->clip_w + g->clip_x);
+      if(grab & 8) g->handle_y = bzy-(g->clip_h + g->clip_y);
+    }
+    grab = g->cropping;
+
+    if(grab & 1) g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+    if(grab & 2) g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+    if(grab & 4) g->clip_w = fminf(1.0, pzx - g->clip_x - g->handle_x);
+    if(grab & 8) g->clip_h = fminf(1.0, pzy - g->clip_y - g->handle_y);
+
+    if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
+    if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
+    apply_box_aspect(self, grab);
+    
+    if (!g->cropping && grab == 0) // rotate
+    {
+      float zoom_x = pzx - .5f, zoom_y = pzy - .5f;
+      dt_dev_get_pointer_zoom_pos(self->dev, x, y, &zoom_x, &zoom_y);
+      float old_angle = atan2f(g->button_down_zoom_y, g->button_down_zoom_x);
+      float angle     = atan2f(zoom_y, zoom_x);
+      angle = fmaxf(-180.0, fminf(180.0, g->button_down_angle + 180.0/M_PI * (angle - old_angle)));
+      dtgtk_slider_set_value(g->scale5, angle);
+    }
     dt_control_gui_queue_draw();
     return 1;
   }
-  else return 0;
+  else if (grab)
+  { // hover over active borders
+    dt_control_gui_queue_draw();
+  }
+  else
+  { // somewhere besides borders. maybe rotate?
+    g->cropping = 0;
+    dt_control_gui_queue_draw();
+  }
+  return 0;
+}
+
+static void
+commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p)
+{
+  g->cropping = 0;
+  p->aspect = -gtk_spin_button_get_value(g->aspect);
+  const float cx = p->cx, cy = p->cy;
+  const float cw = fabsf(p->cw), ch = fabsf(p->ch);
+  p->cx += g->clip_x*(cw-cx);
+  p->cy += g->clip_y*(ch-cy);
+  p->cw = copysignf(p->cx + (cw - cx)*g->clip_w, p->cw);
+  p->ch = copysignf(p->cy + (ch - cy)*g->clip_h, p->ch);
+  g->clip_x = g->clip_y = 0.0f;
+  g->clip_w = g->clip_h = 1.0;
+  darktable.gui->reset = 1;
+  self->gui_update(self);
+  darktable.gui->reset = 0;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_dev_add_history_item(darktable.develop, self);
 }
 
 int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
 {
-  if(which == 1)
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
+  if(which == 1 && darktable.control->button_type == GDK_2BUTTON_PRESS)
   {
-    dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-    dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
+    commit_box(self, g, p);
+    return 1;
+  }
+  else if(which == 1)
+  {
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
     g->button_down_angle = p->angle;
     return 1;
   }
   else return 0;
+}
+
+int key_pressed (struct dt_iop_module_t *self, uint16_t which)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
+  switch (which)
+  {
+    case KEYCODE_Return:
+      commit_box(self, g, p);
+      return TRUE;
+    default:
+      break;
+  }
+  return FALSE;
 }
 

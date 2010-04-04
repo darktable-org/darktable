@@ -180,25 +180,28 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
   if(v->mouse_moved) v->mouse_moved(v, x, y, which);
 }
 
-void dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, int which, uint32_t state)
+int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, int which, uint32_t state)
 {
-  if(vm->current_view < 0) return;
+  if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->button_released) v->button_released(v, x, y, which, state);
+  if(v->button_released) return v->button_released(v, x, y, which, state);
+  return 0;
 }
 
-void dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state)
+int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state)
 {
-  if(vm->current_view < 0) return;
+  if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->button_pressed) v->button_pressed(v, x, y, which, type, state);
+  if(v->button_pressed) return v->button_pressed(v, x, y, which, type, state);
+  return 0;
 }
 
-void dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
+int dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
 {
-  if(vm->current_view < 0) return;
+  if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_pressed) v->key_pressed(v, which);
+  if(v->key_pressed) return v->key_pressed(v, which);
+  return 0;
 }
 
 void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
