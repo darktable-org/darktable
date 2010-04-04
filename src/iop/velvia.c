@@ -86,7 +86,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       double psat =(plum<=0.5) ? (pmax-pmin)/(pmax+pmin): (pmax-pmin)/(2-pmax-pmin);
 
       double pweight=((1.0- (1.5*psat)) + ((1+(fabs(plum-0.5)*2.0))*(1.0-data->luminance))) / (1.0+(1.0-data->luminance));		// The weight of pixel
-      double saturation = (data->saturation*pweight)*data->vibrance;			// So lets calculate the final affection of filter on pixel
+      double saturation = ((data->saturation/100.0)*pweight)*(data->vibrance/100.0);			// So lets calculate the final affection of filter on pixel
 
       // Apply velvia saturation values
       double sba=1.0+saturation;
@@ -187,7 +187,7 @@ void init(dt_iop_module_t *module)
   module->priority = 970;
   module->params_size = sizeof(dt_iop_velvia_params_t);
   module->gui_data = NULL;
-  dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){.5,.5,.5};
+  dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){50,50,.5};
   memcpy(module->params, &tmp, sizeof(dt_iop_velvia_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_velvia_params_t));
 }
@@ -220,9 +220,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->saturation, 3));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->vibrance, 3));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->luminance, 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->saturation, 2));
+  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->vibrance, 2));
+  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->luminance, 0));
+  dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_RATIO);
+  
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
