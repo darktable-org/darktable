@@ -512,10 +512,10 @@ void dt_image_init(dt_image_t *img)
   img->maximum = 1.0f;
   img->raw_params.user_flip = -1;
   img->raw_params.med_passes = 0;
-  img->raw_params.wb_auto = 0;
-  img->raw_params.wb_cam = 1;
+  img->raw_params.wb_cam = 0;
+  img->raw_params.pre_median = 0;
   img->raw_params.greeneq = 0;
-  img->raw_params.no_auto_bright = 1;
+  img->raw_params.no_auto_bright = 0;
   img->raw_params.highlight = 0;
   img->raw_params.demosaic_method = 2;
   img->raw_params.med_passes = 0;

@@ -264,9 +264,10 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
   raw->params.use_camera_wb = img->raw_params.wb_cam;
-  raw->params.use_auto_wb = img->raw_params.wb_auto;
+  raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
   raw->params.med_passes = img->raw_params.med_passes;
-  raw->params.no_auto_bright = img->raw_params.no_auto_bright;
+  raw->params.no_auto_bright = 1;//img->raw_params.no_auto_bright;
+  raw->params.dont_scale = 1;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
   raw->params.gamm[0] = 1.0;
@@ -274,7 +275,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.user_qual = 0; // linear
   raw->params.four_color_rgb = img->raw_params.four_color_rgb;
   raw->params.use_camera_matrix = 0;
-  raw->params.green_matching =  img->raw_params.greeneq;
+  raw->params.green_matching = 0;// img->raw_params.greeneq;
   raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
@@ -469,6 +470,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.half_size = 0; /* dcraw -h */
   raw->params.use_camera_wb = 0;//img->raw_params.wb_cam;
   raw->params.use_auto_wb = 0;//img->raw_params.wb_auto;
+  raw->params.pre_interpolate_median_filter = img->raw_params.pre_median;
   raw->params.med_passes = img->raw_params.med_passes;
   raw->params.no_auto_bright = 1;//img->raw_params.no_auto_bright;
   // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;

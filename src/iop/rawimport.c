@@ -42,7 +42,7 @@ DT_MODULE(1)
 typedef struct dt_iop_rawimport_params_t
 { // exactly matches dt_image_raw_parameters_t + two floats as in dt_image_t
   float raw_denoise_threshold, raw_auto_bright_threshold;
-  unsigned raw_wb_auto : 1, raw_wb_cam : 1, raw_greeneq : 1,
+  unsigned raw_pre_median : 1, raw_wb_cam : 1, raw_greeneq : 1,
            raw_no_auto_bright : 1, raw_demosaic_method : 2,
            raw_med_passes : 4, raw_four_color_rgb : 1,
            raw_highlight : 4,
@@ -53,7 +53,7 @@ dt_iop_rawimport_params_t;
 
 typedef struct dt_iop_rawimport_gui_data_t
 {
-  GtkCheckButton *four_color_rgb, *greeneq;
+  GtkCheckButton *pre_median, *greeneq;
   GtkComboBox *demosaic_method, *highlight;
   // GtkDarktableSlider *denoise_threshold;
   GtkSpinButton *med_passes;
@@ -93,7 +93,7 @@ static void reimport_button_callback (GtkButton *button, gpointer user_data)
   // set image params
   module->dev->image->raw_denoise_threshold      = p->raw_denoise_threshold;
   module->dev->image->raw_auto_bright_threshold  = p->raw_auto_bright_threshold;
-  module->dev->image->raw_params.wb_auto         = p->raw_wb_auto;
+  module->dev->image->raw_params.pre_median      = p->raw_pre_median;
   module->dev->image->raw_params.wb_cam          = p->raw_wb_cam;
   module->dev->image->raw_params.no_auto_bright  = p->raw_no_auto_bright;
   module->dev->image->raw_params.demosaic_method = p->raw_demosaic_method;
@@ -125,7 +125,7 @@ static void togglebutton_callback (GtkToggleButton *toggle, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   int active = gtk_toggle_button_get_active(toggle);
-  p->raw_four_color_rgb = active;
+  p->raw_pre_median = active;
 }
 
 static void demosaic_callback (GtkComboBox *box, gpointer user_data)
@@ -133,7 +133,18 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
-  p->raw_demosaic_method = gtk_combo_box_get_active(box);
+  int active = gtk_combo_box_get_active(box);
+  if(active == 4)
+  {
+    active = 0;
+    p->raw_four_color_rgb = 1;
+  }
+  if(active == 5)
+  {
+    active = 1;
+    p->raw_four_color_rgb = 1;
+  }
+  p->raw_demosaic_method = active;
 }
 
 static void median_callback (GtkSpinButton *spin, gpointer user_data)
@@ -160,9 +171,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   // update gui info from params.
   // dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pre_median), p->raw_pre_median);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->raw_greeneq);
-  gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
+  int dm = p->raw_demosaic_method;
+  if(p->raw_four_color_rgb && dm == 0) dm = 4;
+  if(p->raw_four_color_rgb && dm == 1) dm = 5;
+  gtk_combo_box_set_active(g->demosaic_method, dm);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
 
@@ -176,9 +190,12 @@ static void resetbutton_callback (GtkButton *button, gpointer user_data)
   dt_iop_rawimport_gui_data_t *g = (dt_iop_rawimport_gui_data_t *)self->gui_data;
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   // dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pre_median), p->raw_pre_median);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->raw_greeneq);
-  gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
+  int dm = p->raw_demosaic_method;
+  if(p->raw_four_color_rgb && dm == 0) dm = 4;
+  if(p->raw_four_color_rgb && dm == 1) dm = 5;
+  gtk_combo_box_set_active(g->demosaic_method, dm);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
 
@@ -194,7 +211,7 @@ void init(dt_iop_module_t *module)
   module->hide_enable_button = 1;
   p->raw_denoise_threshold     = module->dev->image->raw_denoise_threshold;
   p->raw_auto_bright_threshold = module->dev->image->raw_auto_bright_threshold;
-  p->raw_wb_auto               = module->dev->image->raw_params.wb_auto;
+  p->raw_pre_median            = module->dev->image->raw_params.pre_median;
   p->raw_wb_cam                = module->dev->image->raw_params.wb_cam;
   p->raw_no_auto_bright        = module->dev->image->raw_params.no_auto_bright;
   p->raw_demosaic_method       = module->dev->image->raw_params.demosaic_method;
@@ -256,12 +273,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->demosaic_method, _("VNG"));
   gtk_combo_box_append_text(g->demosaic_method, _("PPG"));
   gtk_combo_box_append_text(g->demosaic_method, _("AHD"));
+  gtk_combo_box_append_text(g->demosaic_method, _("linear4"));
+  gtk_combo_box_append_text(g->demosaic_method, _("VNG4"));
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->demosaic_method), TRUE, TRUE, 0);
 
-  g->four_color_rgb = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("four color rgb")));
-  gtk_object_set(GTK_OBJECT(g->four_color_rgb), "tooltip-text", _("demosaic treating RGGB as\nfour distinct colors,\nuse if you get mazing artifacts"), NULL);
+  g->pre_median = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("hot pixels")));
+  gtk_object_set(GTK_OBJECT(g->pre_median), "tooltip-text", _("median filter before demosaicing"), NULL);
   gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->four_color_rgb), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->pre_median), TRUE, TRUE, 0);
 
   g->greeneq = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("green equilibration")));
   gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("work around unequal green channels in some mid-range\ncameras, e.g. canon eos 400d"), NULL);
@@ -278,11 +297,11 @@ void gui_init(struct dt_iop_module_t *self)
   // self->gui_update(self);
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   // dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->four_color_rgb), p->raw_four_color_rgb);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pre_median), p->raw_pre_median);
   gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 
-  g_signal_connect (G_OBJECT (g->four_color_rgb), "toggled", G_CALLBACK (togglebutton_callback), self);
+  g_signal_connect (G_OBJECT (g->pre_median), "toggled", G_CALLBACK (togglebutton_callback), self);
   g_signal_connect (G_OBJECT (g->greeneq), "toggled", G_CALLBACK (togglegreeneq_callback), self);
   g_signal_connect (G_OBJECT (g->demosaic_method), "changed", G_CALLBACK (demosaic_callback), self);
   g_signal_connect (G_OBJECT (g->med_passes), "value-changed", G_CALLBACK (median_callback), self);

@@ -67,7 +67,7 @@ dt_image_lock_t;
 
 typedef struct dt_image_raw_parameters_t
 {
-  unsigned wb_auto : 1, wb_cam : 1, greeneq : 1,
+  unsigned pre_median : 1, wb_cam : 1, greeneq : 1,
            no_auto_bright : 1, demosaic_method : 2,
            med_passes : 4, four_color_rgb : 1,
            highlight : 4,
