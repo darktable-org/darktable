@@ -3178,7 +3178,8 @@ void CLASS pre_interpolate_median_filter()
   ushort (*pixo)[4];
   ushort (*pixi)[4];
   ushort (*img )[4];
-  int c, i, j, k, row, col, rows, med[9];
+  int pass, c, i, j, k, row, col, rows, med[9];
+  const int num_passes = 3;
   static const uchar opt[] =	/* Optimal 9-element median search */
   { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
     0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
@@ -3186,8 +3187,8 @@ void CLASS pre_interpolate_median_filter()
   img = (ushort (*)[4]) calloc (height*width, sizeof *image);
   merror (img, "pre_interpolate_median_filter()");
   memcpy(img,image,height*width*sizeof *image);
-  // for (pass=1; pass <= med_passes; pass++)
-  // {
+  for (pass=0; pass < num_passes; pass++)
+  {
     for (c=0; c < 3; c+=2)
     {
       rows = 3;
@@ -3195,10 +3196,10 @@ void CLASS pre_interpolate_median_filter()
 #pragma omp parallel for default(none) shared(width,height,image,c,rows) private(pixo,pixi,row,col,med,opt,k,i,j)
       for (row=rows;row<height-3;row+=2)
       {
-        pixo = image + width * row;
-        pixi = img   + width * row;
         col = 3;
         if(FC(row,col) != c) col++;
+        pixo = &image[width * row + col];
+        pixi = &img  [width * row + col];
         for(;col<width-3;col+=2)
         {
           for (k=0, i = -2*width; i <= 2*width; i += 2*width)
@@ -3208,12 +3209,40 @@ void CLASS pre_interpolate_median_filter()
             if     (med[opt[i]] > med[opt[i+1]])
               SWAP (med[opt[i]] , med[opt[i+1]]);
           pixo[0][c] = med[4];
-          pixo++;
-          pixi++;
+          pixo+=2;
+          pixi+=2;
         }
       }
     }
-  // }
+  }
+  // now green:
+  const int lim[6] = {0, 1, 2, 1, 0};
+  int cx[6];
+  for (pass=0; pass < num_passes; pass++)
+  {
+#pragma omp parallel for default(none) shared(width,height,image,c,rows) private(cx,pixo,pixi,row,col,med,opt,k,i,j)
+    for (row=3;row<height-3;row++)
+    {
+      col = 3;
+      if(FC(row,col) != 1 && FC(row,col) != 3) col++;
+      c = FC(row,col);
+      for(k=0;k<6;k++) cx[k] = (c == 1) ? ((k & 1) ? 3 : 1) : ((k & 1) ? 1 : 3);
+      pixo = &image[width * row + col];
+      pixi = &img  [width * row + col];
+      for(;col<width-3;col+=2)
+      {
+        for (k=0, i = 0; i < 6; i ++)
+          for (j = -lim[i]; j <= lim[i]; j+=2)
+            med[k++] = pixi[width*(i-2) + j][cx[i]];
+        for (i=0; i < (int)(sizeof opt); i+=2)
+          if     (med[opt[i]] > med[opt[i+1]])
+            SWAP (med[opt[i]] , med[opt[i+1]]);
+        pixo[0][c] = med[4];
+        pixo+=2;
+        pixi+=2;
+      }
+    }
+  }
   free (img);
 }
 

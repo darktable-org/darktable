@@ -1496,7 +1496,7 @@ int LibRaw::dcraw_process(void)
             {
                 green_matching();
             }
-        if (O.pre_interpolate_median_filter);
+        if (O.pre_interpolate_median_filter)
             {
                 pre_interpolate_median_filter();
             }
