@@ -412,40 +412,19 @@ void dt_control_cleanup(dt_control_t *s)
 {
   int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
   int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
-  int rc;
   // delete mipmaps
   // ubuntu compiles a lame sqlite3, else we could simply:
   // rc = sqlite3_exec(darktable.db, "delete from mipmaps order by imgid desc limit 2500,-1)", NULL, NULL, NULL);
-  printf("[control_cleanup] freeing unused database chunks...\n");
-  sqlite3_stmt *stmt, *stmt2;
-  rc = sqlite3_prepare_v2(darktable.db, "select imgid, level from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, keep);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int imgid = sqlite3_column_int (stmt, 0);
-    int level = sqlite3_column_int (stmt, 1);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1 and level = ?2", -1, &stmt2, NULL);
-    rc = sqlite3_bind_int (stmt2, 1, imgid);
-    rc = sqlite3_bind_int (stmt2, 2, level);
-    rc = sqlite3_step(stmt2);
-    rc = sqlite3_finalize(stmt2);
-  }
-  rc = sqlite3_finalize(stmt);
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, keep);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
-  rc = sqlite3_prepare_v2(darktable.db, "select imgid, level from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, keep0);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int imgid = sqlite3_column_int (stmt, 0);
-    int level = sqlite3_column_int (stmt, 1);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1 and level = ?2", -1, &stmt2, NULL);
-    rc = sqlite3_bind_int (stmt2, 1, imgid);
-    rc = sqlite3_bind_int (stmt2, 2, level);
-    rc = sqlite3_step(stmt2);
-    rc = sqlite3_finalize(stmt2);
-  }
-  rc = sqlite3_finalize(stmt);
-  printf("[control_cleanup] done.\n");
+  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, keep0);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);

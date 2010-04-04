@@ -658,7 +658,18 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 
 void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip)
 {
-  // TODO: alloc buf, dispatch loader job (which will release the rw lock)
+  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  if(mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
+  dt_job_t j;
+  dt_image_load_job_init(&j, img->id, mip);
+  dt_control_revive_job(darktable.control, &j);
+  if(!img->lock[mip].write)
+  { // start job to load this buf in bg.
+    img->lock[mip].write = 1;
+    if(dt_control_add_job(darktable.control, &j))
+      img->lock[mip].write = 0;
+  }
+  pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
 }
 
 
@@ -990,7 +1001,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
         img->lock[mip_in].write = 0;
     }
     if(mip_in == DT_IMAGE_MIP4)
-    {
+    { // prefetch mipf, don't call prefetch, as we already locked the mutex.
       dt_job_t j;
       dt_image_load_job_init(&j, img->id, DT_IMAGE_MIPF);
       dt_control_revive_job(darktable.control, &j);

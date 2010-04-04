@@ -567,9 +567,14 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 }
 
 
-void button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
+int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
+  dt_develop_t *dev = darktable.develop;
+  int handled = 0;
+  if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
+  if(handled) return handled;
   if(which == 1) dt_control_change_cursor(GDK_ARROW);
+  return 1;
 }
 
 

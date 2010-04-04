@@ -83,7 +83,7 @@ Move around (arrows also work)
 
 Star rating
 
-=item B<backspace>
+=item B<ctrl-backspace>
 
 Strip all stars (reject image)
 

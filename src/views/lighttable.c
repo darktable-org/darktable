@@ -498,6 +498,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
             }
           }
           cairo_save(cr);
+          if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
           dt_image_expose(image, lib, image->id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
@@ -741,6 +742,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
             }
           }
           cairo_save(cr);
+          if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
           dt_image_expose(image, lib, image->id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
@@ -853,7 +855,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_LIB_STAR_2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_LIB_STAR_3);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_LIB_STAR_4);
-  dt_gui_key_accel_register(0, GDK_BackSpace, star_key_accel_callback, (void *)666);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)

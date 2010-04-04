@@ -64,7 +64,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkComboBox *aspect_presets;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
-  int cropping;
+  int cropping, straightening;
   float aspect_ratios[6];
 }
 dt_iop_clipping_gui_data_t;
@@ -497,6 +497,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
   g->clip_w = g->clip_h = 1.0;
   g->cropping = 0;
+  g->straightening = 0;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
@@ -656,16 +657,30 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_set_line_width(cr, 2.0/zoom_scale);
   cairo_set_source_rgb(cr, .3, .3, .3);
   const int border = 30.0/zoom_scale;
-  int grab = g->cropping ? g->cropping : get_grab (pzx, pzy, g, border, wd, ht);
-  if(grab == 1)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, g->clip_h*ht);
-  if(grab == 2)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, border);
-  if(grab == 3)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, border);
-  if(grab == 4)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, g->clip_h*ht);
-  if(grab == 8)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, g->clip_w*wd, border);
-  if(grab == 12) cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, (g->clip_y+g->clip_h)*ht-border, border, border);
-  if(grab == 6)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, border);
-  if(grab == 9)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, border, border);
-  cairo_stroke (cr);
+  if(g->straightening)
+  {
+    float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
+    cairo_arc (cr, bzx*wd, bzy*ht, 3, 0, 2.0*M_PI);
+    cairo_stroke (cr);
+    cairo_arc (cr, pzx*wd, pzy*ht, 3, 0, 2.0*M_PI);
+    cairo_stroke (cr);
+    cairo_move_to (cr, bzx*wd, bzy*ht);
+    cairo_line_to (cr, pzx*wd, pzy*ht);
+    cairo_stroke (cr);
+  }
+  else
+  {
+    int grab = g->cropping ? g->cropping : get_grab (pzx, pzy, g, border, wd, ht);
+    if(grab == 1)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, g->clip_h*ht);
+    if(grab == 2)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, border);
+    if(grab == 3)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, border);
+    if(grab == 4)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, g->clip_h*ht);
+    if(grab == 8)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, g->clip_w*wd, border);
+    if(grab == 12) cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, (g->clip_y+g->clip_h)*ht-border, border, border);
+    if(grab == 6)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, border);
+    if(grab == 9)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, border, border);
+    cairo_stroke (cr);
+  }
 }
 
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
@@ -684,35 +699,28 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
-    float bzx, bzy;
-    bzx = g->button_down_zoom_x + .5f; bzy = g->button_down_zoom_y + .5f;
-    if(!g->cropping)
+    float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
+    if(!g->cropping && !g->straightening)
     {
       g->cropping = grab;
       if(grab & 1) g->handle_x = bzx-g->clip_x;
       if(grab & 2) g->handle_y = bzy-g->clip_y;
       if(grab & 4) g->handle_x = bzx-(g->clip_w + g->clip_x);
       if(grab & 8) g->handle_y = bzy-(g->clip_h + g->clip_y);
+      if(!grab) g->straightening = 1;
     }
-    grab = g->cropping;
-
-    if(grab & 1) g->clip_x = fmaxf(0.0, pzx - g->handle_x);
-    if(grab & 2) g->clip_y = fmaxf(0.0, pzy - g->handle_y);
-    if(grab & 4) g->clip_w = fminf(1.0, pzx - g->clip_x - g->handle_x);
-    if(grab & 8) g->clip_h = fminf(1.0, pzy - g->clip_y - g->handle_y);
-
-    if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
-    if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
-    apply_box_aspect(self, grab);
-    
-    if (!g->cropping && grab == 0) // rotate
+    if(!g->straightening)
     {
-      float zoom_x = pzx - .5f, zoom_y = pzy - .5f;
-      dt_dev_get_pointer_zoom_pos(self->dev, x, y, &zoom_x, &zoom_y);
-      float old_angle = atan2f(g->button_down_zoom_y, g->button_down_zoom_x);
-      float angle     = atan2f(zoom_y, zoom_x);
-      angle = fmaxf(-180.0, fminf(180.0, g->button_down_angle + 180.0/M_PI * (angle - old_angle)));
-      dtgtk_slider_set_value(g->scale5, angle);
+      grab = g->cropping;
+
+      if(grab & 1) g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+      if(grab & 2) g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+      if(grab & 4) g->clip_w = fminf(1.0, pzx - g->clip_x - g->handle_x);
+      if(grab & 8) g->clip_h = fminf(1.0, pzy - g->clip_y - g->handle_y);
+
+      if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
+      if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
+      apply_box_aspect(self, grab);
     }
     dt_control_gui_queue_draw();
     return 1;
@@ -723,7 +731,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   }
   else
   { // somewhere besides borders. maybe rotate?
-    g->cropping = 0;
+    g->straightening = g->cropping = 0;
     dt_control_gui_queue_draw();
   }
   return 0;
@@ -747,6 +755,29 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   darktable.gui->reset = 0;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
+}
+
+int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  if(g->straightening)
+  {
+    float dx = x - darktable.control->button_x, dy = y - darktable.control->button_y;
+    if(dx < 0) { dx = -dx; dy = - dy; }
+    const float angle = atan2f(dy, dx);
+    assert(angle >= - M_PI/2.0 && angle <= M_PI/2.0);
+    float close = angle;
+    if     (close >  M_PI/4.0) close =  M_PI/2.0 - close;
+    else if(close < -M_PI/4.0) close = -M_PI/2.0 - close;
+    else close = - close;
+    float a = 180.0/M_PI*close + g->button_down_angle;
+    if(a < -180.0) a += 360.0;
+    if(a >  180.0) a -= 360.0;
+    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+    dtgtk_slider_set_value(g->scale5, a);
+  }
+  g->straightening = g->cropping = 0;
+  return 1;
 }
 
 int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)

@@ -407,6 +407,8 @@ restart:
   }
   if(dev->gui_attached)
   {
+    // reset output width
+    dev->image->output_width = dev->image->output_height = 0;
     // init pixel pipeline
     dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height, 1.0);
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
