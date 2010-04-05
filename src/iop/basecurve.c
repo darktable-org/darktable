@@ -122,7 +122,7 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
       p->tonecurve_x[5] = 1.000000;
       p->tonecurve_y[5] = 1.000000;
       break;
-    case 2: // pascals eos curve:
+    case 2: // pascals canon eos curve:
       p->tonecurve_x[0] = 0.000000;
       p->tonecurve_y[0] = 0.000000;
       p->tonecurve_x[1] = 0.028226;
@@ -136,7 +136,21 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
       p->tonecurve_x[5] = 1.000000;
       p->tonecurve_y[5] = 1.000000;
       break;
-    case 3: // Fotogenic - Point and shoot v4.1
+    case 3: // pascals sony alpha curve:
+      p->tonecurve_x[0] = 0.000000;
+      p->tonecurve_y[0] = 0.000000;
+      p->tonecurve_x[1] = 0.020161;
+      p->tonecurve_y[1] = 0.018548;
+      p->tonecurve_x[2] = 0.137097;
+      p->tonecurve_y[2] = 0.146258;
+      p->tonecurve_x[3] = 0.161290;
+      p->tonecurve_y[3] = 0.191430;
+      p->tonecurve_x[4] = 0.798387;
+      p->tonecurve_y[4] = 0.918397;
+      p->tonecurve_x[5] = 1.000000;
+      p->tonecurve_y[5] = 1.000000;
+      break;
+    case 4: // Fotogenic - Point and shoot v4.1
       p->tonecurve_x[0] = 0.000000;
       p->tonecurve_y[0] = 0.000000;
       p->tonecurve_x[1] = 0.087879;	// Added this point to make a 6 point curve
@@ -150,7 +164,7 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
       p->tonecurve_x[5] = 1.000000;
       p->tonecurve_y[5] = 0.876573;
       break;
-    case 4: // Fotogenic - EV3 v4.2
+    case 5: // Fotogenic - EV3 v4.2
       p->tonecurve_x[0] = 0.000000;
       p->tonecurve_y[0] = 0.000000;
       p->tonecurve_x[1] = 0.100943;	// Added this point to make a 6 point curve
@@ -579,8 +593,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("linear"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("dark contrast"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("canon eos like"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sony alpha like"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("fotogenetic - point and shoot v4.1"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("fotogenetic - EV3 v4.2"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("fotogenetic - ev3 v4.2"));
   // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(c->presets), FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (c->presets), "changed",
