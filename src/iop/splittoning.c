@@ -183,10 +183,22 @@ static void
 highlight_saturation_callback(GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   p->highlight_saturation= dtgtk_slider_get_value(slider);
   // update foreground color and redraw colorpick1 button
+  float h,s,l;
+  rgb2hsl(p->highlight_color[0],p->highlight_color[1],p->highlight_color[2],&h,&s,&l);
+  l=0.5; // Always use 0.5 lightness to represent tone
+  s= p->highlight_saturation/100.0;
+  hsl2rgb(&p->highlight_color[0],&p->highlight_color[1],&p->highlight_color[2],h,s,l);
+  GdkColor c;
+  c.red=p->highlight_color[0]*65535.0;
+  c.green=p->highlight_color[1]*65535.0;
+  c.blue=p->highlight_color[2]*65535.0;
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
+  gtk_widget_queue_draw(GTK_WIDGET(g->colorpick2));
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -194,10 +206,22 @@ static void
 shadow_saturation_callback(GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   p->shadow_saturation= dtgtk_slider_get_value(slider);
   // update foreground color and redraw colorpick1 button
+  float h,s,l;
+  rgb2hsl(p->shadow_color[0],p->shadow_color[1],p->shadow_color[2],&h,&s,&l);
+  l=0.5; // Always use 0.5 lightness to represent tone
+  s= p->shadow_saturation/100.0;
+  hsl2rgb(&p->shadow_color[0],&p->shadow_color[1],&p->shadow_color[2],h,s,l);
+  GdkColor c;
+  c.red=p->shadow_color[0]*65535.0;
+  c.green=p->shadow_color[1]*65535.0;
+  c.blue=p->shadow_color[2]*65535.0;
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
+  gtk_widget_queue_draw(GTK_WIDGET(g->colorpick1));
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -256,6 +280,15 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
       p->shadow_color[0]=c.red/65535.0;
       p->shadow_color[1]=c.green/65535.0;
       p->shadow_color[2]=c.blue/65535.0;
+  
+      float h,s,l;
+      rgb2hsl(p->shadow_color[0],p->shadow_color[1],p->shadow_color[2],&h,&s,&l);
+      l=0.5; // Always use 0.5 lightness to represent tone
+      s=p->shadow_saturation/100.0;
+      hsl2rgb(&p->shadow_color[0],&p->shadow_color[1],&p->shadow_color[2],h,s,l);
+      c.red=p->shadow_color[0]*65535.0;
+      c.green=p->shadow_color[1]*65535.0;
+      c.blue=p->shadow_color[2]*65535.0;
       gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
     } 
     else
@@ -263,6 +296,14 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
       p->highlight_color[0]=c.red/65535.0;
       p->highlight_color[1]=c.green/65535.0;
       p->highlight_color[2]=c.blue/65535.0;
+      float h,s,l;
+      rgb2hsl(p->highlight_color[0],p->highlight_color[1],p->highlight_color[2],&h,&s,&l);
+      l=0.5; // Always use 0.5 lightness to represent tone
+      s=p->highlight_saturation/100.0;
+      hsl2rgb(&p->highlight_color[0],&p->highlight_color[1],&p->highlight_color[2],h,s,l);
+      c.red=p->highlight_color[0]*65535.0;
+      c.green=p->highlight_color[1]*65535.0;
+      c.blue=p->highlight_color[2]*65535.0;
       gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
     }
   }
