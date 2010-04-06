@@ -570,16 +570,16 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 int32_t dt_control_get_threadid()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread[threadid] != pthread_self()) threadid++;
-  assert(threadid < darktable.control->num_threads);
+  while(darktable.control->thread[threadid] != pthread_self() && threadid < darktable.control->num_threads) threadid++;
+  assert(darktable.control->thread[threadid] == pthread_self());
   return threadid;
 }
 
 int32_t dt_control_get_threadid_res()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread_res[threadid] != pthread_self()) threadid++;
-  assert(threadid < DT_CTL_WORKER_RESERVED);
+  while(darktable.control->thread_res[threadid] != pthread_self() && threadid < DT_CTL_WORKER_RESERVED) threadid++;
+  assert(darktable.control->thread_res[threadid] == pthread_self());
   return threadid;
 }
 
