@@ -61,6 +61,7 @@
 #define KEYCODE_Left        78
 #define KEYCODE_Right       74
 #define KEYCODE_Tab         56
+#define KEYCODE_Return      36
 #else
 #define KEYCODE_a           0   // mac keycodes carbon :)
 #define KEYCODE_o           1   // s
@@ -81,6 +82,7 @@
 #define KEYCODE_Right      124
 #define KEYCODE_Tab         48
 #define KEYCODE_space       49
+#define KEYCODE_Return      36
 #endif
 #else
 #define KEYCODE_a           38
