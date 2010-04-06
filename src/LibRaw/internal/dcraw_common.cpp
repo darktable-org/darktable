@@ -3193,7 +3193,9 @@ void CLASS pre_interpolate_median_filter()
     {
       rows = 3;
       if(FC(rows,3) != c && FC(rows,4) != c) rows++;
-#pragma omp parallel for default(none) shared(width,height,image,c,rows) private(pixo,pixi,row,col,med,opt,k,i,j)
+#ifdef _OPENMP
+  #pragma omp parallel for default(shared) private(pixo,pixi,row,col,med,opt,k,i,j) schedule(static)
+#endif
       for (row=rows;row<height-3;row+=2)
       {
         col = 3;
@@ -3220,7 +3222,9 @@ void CLASS pre_interpolate_median_filter()
   int cx[6];
   for (pass=0; pass < num_passes; pass++)
   {
-#pragma omp parallel for default(none) shared(width,height,image,c,rows) private(cx,pixo,pixi,row,col,med,opt,k,i,j)
+#ifdef _OPENMP
+  #pragma omp parallel for default(shared) private(lim,cx,pixo,pixi,row,col,med,opt,k,i,j)
+#endif
     for (row=3;row<height-3;row++)
     {
       col = 3;
