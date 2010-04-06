@@ -160,13 +160,13 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *button;
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("red"));
+  button = gtk_button_new_with_label(C_("color label", "red"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("toggle red label\nof selected images (ctrl-1)"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_1, key_accel_callback, (void *)0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
-  button = gtk_button_new_with_label(_("yellow"));
+  button = gtk_button_new_with_label(C_("color label", "yellow"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("toggle yellow label\nof selected images (ctrl-2)"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_2, key_accel_callback, (void *)1);
@@ -175,7 +175,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("green"));
+  button = gtk_button_new_with_label(C_("color label", "green"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("toggle green label\nof selected images (ctrl-3)"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_3, key_accel_callback, (void *)2);
