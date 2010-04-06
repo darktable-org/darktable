@@ -30,7 +30,7 @@ typedef struct _GtkDarktableButton
 {
   GtkButton widget;
   DTGTKCairoPaintIconFunc icon;
-  gboolean icon_flag;
+  gint icon_flag;
 } GtkDarktableButton;
 
 typedef struct _GtkDarktableButtonClass
@@ -41,6 +41,6 @@ typedef struct _GtkDarktableButtonClass
 GType dtgtk_button_get_type (void);
 
 /** Instansiate a new darktable button control passing paint function as content */
-GtkWidget* dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gboolean paintflag);
+GtkWidget* dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
 G_END_DECLS
 #endif 

@@ -38,6 +38,7 @@ typedef enum _darktable_slider_format_type {
   DARKTABLE_SLIDER_FORMAT_FLOAT=0,
   /** Value is displayed as ratio  eg. 50/50*/
   DARKTABLE_SLIDER_FORMAT_RATIO,
+  DARKTABLE_SLIDER_FORMAT_PERCENT,
   DARKTABLE_SLIDER_FORMAT_NONE
 } darktable_slider_format_type_t;
 
