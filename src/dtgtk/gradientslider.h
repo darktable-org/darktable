@@ -26,12 +26,19 @@ G_BEGIN_DECLS
 #define DTGTK_IS_GRADIENT_SLIDER(obj) GTK_CHECK_TYPE(obj, dtgtk_gradient_slider_get_type())
 #define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
 
+enum {
+  GRADIENT_SLIDER_VALUE_CHANGED,
+  GRADIENT_SLIDER_LAST_SIGNAL
+};
+
 typedef struct _GtkDarktableGradientSlider
 {
   GtkWidget widget;
   GList *colors;
   gdouble position;
   gint prev_x_root;
+  gboolean is_dragging;
+  gboolean is_changed;	
 } GtkDarktableGradientSlider;
 
 typedef struct _GtkDarktableGradientSliderClass
@@ -47,6 +54,10 @@ GtkWidget* dtgtk_gradient_slider_new_with_color(GdkColor start,GdkColor end);
 
 /** Set a color at specified stop */
 void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider,gfloat position,GdkColor color);
+
+/** Get the slider value 0 - 1.0*/
+gdouble dtgtk_gradient_slider_get_value(GtkDarktableGradientSlider *gslider);
+void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider,gdouble value);
 
 G_END_DECLS
 #endif 
