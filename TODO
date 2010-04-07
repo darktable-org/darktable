@@ -1,4 +1,9 @@
 0.6 release:
+- forum: opensuse compilation
+- thumbnail mipmap exposure applied twice?
+- openmp in median filter broken
+- bsd threads vs pthreads?
+- forum gamma nikon hack
 
 big new features:
 - tethered shooting?

@@ -3089,7 +3089,7 @@ void CLASS wavelet_denoise()
   temp = fimg + size*3;
   if ((nc = colors) == 3 && filters) nc++;
 #ifdef LIBRAW_LIBRARY_BUILD
-#pragma omp parallel default(shared) private(i,col,row,thold,lev,lpass,hpass,temp) firstprivate(c,scale,size) 
+#pragma omp parallel default(shared) private(i,col,row,thold,lev,lpass,hpass,temp,c) firstprivate(scale,size) 
 #endif
   {
       temp = (float*)malloc( (iheight + iwidth) * sizeof *fimg);
@@ -3179,7 +3179,7 @@ void CLASS pre_interpolate_median_filter()
   ushort (*pixi)[4];
   ushort (*img )[4];
   int pass, c, i, j, k, row, col, rows, med[9];
-  const int num_passes = 3;
+  const int num_passes = 2;
   static const uchar opt[] =	/* Optimal 9-element median search */
   { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
     0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
@@ -3194,7 +3194,7 @@ void CLASS pre_interpolate_median_filter()
       rows = 3;
       if(FC(rows,3) != c && FC(rows,4) != c) rows++;
 #ifdef _OPENMP
-  #pragma omp parallel for default(shared) private(pixo,pixi,row,col,med,opt,k,i,j) schedule(static)
+  #pragma omp parallel for default(shared) private(pixo,pixi,row,col,med,k,i,j) schedule(static)
 #endif
       for (row=rows;row<height-3;row+=2)
       {
@@ -3223,7 +3223,7 @@ void CLASS pre_interpolate_median_filter()
   for (pass=0; pass < num_passes; pass++)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for default(shared) private(lim,cx,pixo,pixi,row,col,med,opt,k,i,j)
+  #pragma omp parallel for default(shared) private(cx,pixo,pixi,row,col,med,k,i,j)
 #endif
     for (row=3;row<height-3;row++)
     {
