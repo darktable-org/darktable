@@ -490,12 +490,12 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   dtgtk_cairo_paint_arrow(cr,
     DTGTK_SLIDER_BORDER_WIDTH*2, DTGTK_SLIDER_BORDER_WIDTH*2,
     DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH), height-(DTGTK_SLIDER_BORDER_WIDTH*4),
-    TRUE);
+    CPF_DIRECTION_LEFT);
 
   dtgtk_cairo_paint_arrow(cr,
     width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, DTGTK_SLIDER_BORDER_WIDTH*2,
     DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH), height-(DTGTK_SLIDER_BORDER_WIDTH*4),
-    FALSE);
+    CPF_DIRECTION_RIGHT);
 
   if(slider->is_entry_active) {
     gtk_widget_draw(slider->entry, NULL);
