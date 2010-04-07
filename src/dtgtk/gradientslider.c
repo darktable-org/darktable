@@ -103,7 +103,7 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
   {
     // First get some dimention info
     gslider->is_changed=TRUE;
-    gslider->position=event->x / widget->allocation.width;
+    gslider->position = event->x / widget->allocation.width;
     gslider->position  = gslider->position > 1.0 ? 1.0:gslider->position <0.0?0:gslider->position ;
     
     gtk_widget_draw(widget,NULL);
@@ -235,7 +235,7 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
 
   // First build the cairo gradient and then fill the gradient
   float gheight=height/2.0;
-  float gwidth=width;
+  float gwidth=width-1;
   GList *current=NULL;
   cairo_pattern_t *gradient=NULL;
   if((current=g_list_first(DTGTK_GRADIENT_SLIDER(widget)->colors)) != NULL)
@@ -364,7 +364,7 @@ void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider,gdouble
 {
   gslider->position=value;
   g_signal_emit_by_name(G_OBJECT(gslider),"value-changed");
-  //gtk_widget_draw(GTK_WIDGET(gslider),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }
 
 gboolean dtgtk_gradient_slider_is_dragging(GtkDarktableGradientSlider *gslider) {

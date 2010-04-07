@@ -276,9 +276,6 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   c.green=color[1]*65535.0;
   c.blue=color[2]*65535.0;
   
-  /*dtgtk_gradient_slider_set_stop(sslider,1.0,c);  // update
-  gtk_widget_draw(GTK_WIDGET(sslider),NULL);*/
-  
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // Update color preview
   
   if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
@@ -406,6 +403,24 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->gslider2,p->shadow_saturation);
   dtgtk_slider_set_value(g->scale1, p->balance);
   dtgtk_slider_set_value(g->scale2, p->compress);
+	
+  float color[3];
+  hsl2rgb(&color[0],&color[1],&color[2],p->shadow_hue,p->shadow_saturation,0.5);
+  
+  GdkColor c;
+  c.red=color[0]*65535.0;
+  c.green=color[1]*65535.0;
+  c.blue=color[2]*65535.0;
+  
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
+ 
+  hsl2rgb(&color[0],&color[1],&color[2],p->highlight_hue,p->highlight_saturation,0.5);
+  c.red=color[0]*65535.0;
+  c.green=color[1]*65535.0;
+  c.blue=color[2]*65535.0;
+  	
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
+	
 }
 
 void init(dt_iop_module_t *module)
