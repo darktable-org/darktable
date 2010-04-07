@@ -246,7 +246,7 @@ void nc_merror(void *ptr, char *where)
     g_error("Out of memory in %s\n", where);
 #else
     fprintf(stderr, "Out of memory in %s\n", where);
-    exit(1);
+    // exit(1);
 #endif
 }
 

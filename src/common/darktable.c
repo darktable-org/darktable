@@ -60,12 +60,12 @@ int dt_init(int argc, char *argv[])
       if(!strcmp(argv[k], "--help"))
       {
         printf("usage: %s [-d {cache,control,dev}] [IMG_1234.{RAW,..}]\n", argv[0]);
-        exit(0);
+        return 1;
       }
       else if(!strcmp(argv[k], "--version"))
       {
         printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2010 johannes hanika\n"PACKAGE_BUGREPORT"\n");
-        exit(0);
+        return 1;
       }
       if(argv[k][1] == 'd' && argc > k+1)
       {
@@ -118,7 +118,7 @@ int dt_init(int argc, char *argv[])
 #endif
     sqlite3_close(darktable.db);
     g_free(dbname);
-    exit(1);
+    return 1;
   }
   g_free(dbname);
   pthread_mutex_init(&(darktable.db_insert), NULL);
@@ -143,7 +143,7 @@ int dt_init(int argc, char *argv[])
   dt_view_manager_init(darktable.view_manager);
 
   darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
-  dt_gui_gtk_init(darktable.gui, argc, argv);
+  if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
 
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.

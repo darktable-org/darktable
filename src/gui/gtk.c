@@ -835,7 +835,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     else
     {
       fprintf(stderr, "[gtk_init] could not find darktable.gtkrc in . or %s!\n", DATADIR);
-      exit(1);
+      return 1;
     }
   }
 
@@ -849,7 +849,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     else
     {
       fprintf(stderr, "[gtk_init] could not find darktable.glade in . or %s!\n", DATADIR);
-      exit(1);
+      return 1;
     }
   }
 
