@@ -282,7 +282,7 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
 	dt_dev_add_history_item(darktable.develop, self);
 }
 
-/*
+
 static void colorpick_button_callback(GtkButton *button,gpointer user_data)  
 {
   GtkColorSelectionDialog  *csd=(GtkColorSelectionDialog  *)user_data;
@@ -295,7 +295,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
+//  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("Select tone color")));
   g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
@@ -305,51 +305,30 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   
   GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
   GdkColor c;
+  float color[3],h,s,l;
   
-  c.red= 65535 * ((button==g->colorpick1)?p->shadow_color[0]:p->highlight_color[0]);
+  /*c.red= 65535 * ((button==g->colorpick1)?p->shadow_color[0]:p->highlight_color[0]);
   c.green= 65535 * ((button==g->colorpick1)?p->shadow_color[1]:p->highlight_color[1]);
   c.blue= 65535 * ((button==g->colorpick1)?p->shadow_color[2]:p->highlight_color[2]);
-  gtk_color_selection_set_current_color(cs,&c);
+  gtk_color_selection_set_current_color(cs,&c);*/
   if(gtk_dialog_run(GTK_DIALOG(csd))==GTK_RESPONSE_ACCEPT) 
   {
     gtk_color_selection_get_current_color(cs,&c);
-    if(button==g->colorpick1)
-    {
-      p->shadow_color[0]=c.red/65535.0;
-      p->shadow_color[1]=c.green/65535.0;
-      p->shadow_color[2]=c.blue/65535.0;
-  
-      float h,s,l;
-      rgb2hsl(p->shadow_color[0],p->shadow_color[1],p->shadow_color[2],&h,&s,&l);
-      l=0.5; // Always use 0.5 lightness to represent tone
-      s=p->shadow_saturation/100.0;
-      hsl2rgb(&p->shadow_color[0],&p->shadow_color[1],&p->shadow_color[2],h,s,l);
-      c.red=p->shadow_color[0]*65535.0;
-      c.green=p->shadow_color[1]*65535.0;
-      c.blue=p->shadow_color[2]*65535.0;
-      gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
-    } 
-    else
-    {
-      p->highlight_color[0]=c.red/65535.0;
-      p->highlight_color[1]=c.green/65535.0;
-      p->highlight_color[2]=c.blue/65535.0;
-      float h,s,l;
-      rgb2hsl(p->highlight_color[0],p->highlight_color[1],p->highlight_color[2],&h,&s,&l);
-      l=0.5; // Always use 0.5 lightness to represent tone
-      s=p->highlight_saturation/100.0;
-      hsl2rgb(&p->highlight_color[0],&p->highlight_color[1],&p->highlight_color[2],h,s,l);
-      c.red=p->highlight_color[0]*65535.0;
-      c.green=p->highlight_color[1]*65535.0;
-      c.blue=p->highlight_color[2]*65535.0;
-      gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
-    }
+    color[0]=c.red/65535.0;
+    color[1]=c.green/65535.0;
+    color[2]=c.blue/65535.0;
+    rgb2hsl(color[0],color[1],color[2],&h,&s,&l);
+    l=0.5;
+    hsl2rgb(&color[0],&color[1],&color[2],h,s,l);
+
+    dtgtk_gradient_slider_set_value( (button==g->colorpick1)? g->gslider1: g->gslider3 ,h );
+    dtgtk_gradient_slider_set_value( (button==g->colorpick1)? g->gslider2: g->gslider4 ,s );
   }
   gtk_widget_destroy(GTK_WIDGET(csd));
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-*/
+
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -548,10 +527,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the balance of center of splittoning"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("compress the effect on highlighs/shadows and\npreserve midtones"), NULL);
 
-/*
-  gtk_object_set(GTK_OBJECT(g->colorpick1), "tooltip-text", _("select the color for shadows"), NULL);
-  gtk_object_set(GTK_OBJECT(g->colorpick2), "tooltip-text", _("select the color for highlights"), NULL);
-  */  
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
         G_CALLBACK (hue_callback), self);
   g_signal_connect (G_OBJECT (g->gslider3), "value-changed",
@@ -567,12 +542,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
         G_CALLBACK (compress_callback), self);
        
-  /*       
+        
   g_signal_connect (G_OBJECT (g->colorpick1), "clicked",
         G_CALLBACK (colorpick_callback), self);
   g_signal_connect (G_OBJECT (g->colorpick2), "clicked",
         G_CALLBACK (colorpick_callback), self);
-    */    
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
