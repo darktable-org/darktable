@@ -236,7 +236,9 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // update color preview
   
-  dt_dev_add_history_item(darktable.develop, self);
+  
+  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
+	dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
@@ -279,7 +281,8 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // Update color preview
   
-  dt_dev_add_history_item(darktable.develop, self);
+  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
+	dt_dev_add_history_item(darktable.develop, self);
 }
 
 /*

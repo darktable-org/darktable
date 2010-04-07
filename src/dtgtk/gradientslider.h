@@ -58,6 +58,6 @@ void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider,gfloat p
 /** Get the slider value 0 - 1.0*/
 gdouble dtgtk_gradient_slider_get_value(GtkDarktableGradientSlider *gslider);
 void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider,gdouble value);
-
+gboolean dtgtk_gradient_slider_is_dragging(GtkDarktableGradientSlider *gslider);
 G_END_DECLS
 #endif 
