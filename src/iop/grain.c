@@ -33,7 +33,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.0625
+#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.25
 #define GRAIN_HUE_STRENGTH_SCALE 0.25
 #define GRAIN_SATURATION_STRENGTH_SCALE 0.25
 #define GRAIN_RGB_STRENGTH_SCALE 0.0625
@@ -53,7 +53,7 @@ _dt_iop_grain_channel_t;
 typedef struct dt_iop_grain_params_t
 {
   _dt_iop_grain_channel_t channel;
-  float smooth;
+  float scale;
   float strength;
 }
 dt_iop_grain_params_t;
@@ -61,19 +61,70 @@ dt_iop_grain_params_t;
 typedef struct dt_iop_grain_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1/*,*label2*/,*label3;	           // channel, smooth, strength
+  GtkLabel  *label1,*label2,*label3;	           // channel, scale, strength
   GtkComboBox *combo1;			                      // channel
-  GtkDarktableSlider /**scale1,*/*scale2;        // smooth, strength
+  GtkDarktableSlider *scale1,*scale2;        // scale, strength
 }
 dt_iop_grain_gui_data_t;
 
 typedef struct dt_iop_grain_data_t
 {
   _dt_iop_grain_channel_t channel;
-  float smooth;
+  float scale;
   float strength;
 }
 dt_iop_grain_data_t;
+
+double __perlin_noise(uint32_t x,uint32_t y) 
+{
+  uint32_t n = x + y * 57;
+  n = (n<<13) ^ n;
+  return ( 1.0 - (( (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0));   
+}
+
+double __perline_smooth_noise(double x,double y) 
+{
+  double corners = ( __perlin_noise(x-1, y-1)+__perlin_noise(x+1, y-1)+__perlin_noise(x-1, y+1)+__perlin_noise(x+1, y+1) ) / 16;
+  double sides   = ( __perlin_noise(x-1, y)  +__perlin_noise(x+1, y)  +__perlin_noise(x, y-1)  +__perlin_noise(x, y+1) ) /  8;
+  double center  =  __perlin_noise(x, y) / 4;
+  return corners + sides + center;
+}
+
+double __preline_cosine_interpolate(double a,double b,double x)
+{
+  double ft = x * 3.1415927;
+	double f = (1 - cos(ft)) * .5;
+	return  a*(1-f) + b*f;
+}
+
+double __perlin_interpolate(double x,double y) 
+{
+  double fx = x - (uint32_t)x;
+  double fy = y - (uint32_t)y;
+
+  double v1 = __perline_smooth_noise((uint32_t)x,     (uint32_t)y);
+  double v2 = __perline_smooth_noise((uint32_t)x + 1, (uint32_t)y);
+  double v3 = __perline_smooth_noise((uint32_t)x,     (uint32_t)y + 1);
+  double v4 = __perline_smooth_noise((uint32_t)x + 1, (uint32_t)y + 1);
+
+  double i1 = __preline_cosine_interpolate(v1 , v2 , fx);
+  double i2 = __preline_cosine_interpolate(v3 , v4 , fx);
+
+  return __preline_cosine_interpolate(i1 , i2 , fy);
+}
+
+double _perlin_2d_noise(double x,double y,uint32_t octaves,double persistance) 
+{
+  double f,a,total=0;
+  
+  for(int o=1;o<=octaves;o++) {
+    f=2*o;
+    a=persistance*o;
+    total+= fabs((__perlin_interpolate(x*f,y*f)*a));
+  }
+  return total;
+}
+
 
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
 {
@@ -106,6 +157,7 @@ void hue2rgb(float m1,float m2,float hue,float *channel)
   else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
   else *channel=m1;
 }
+
 void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
 {
   float m1,m2;
@@ -116,7 +168,6 @@ void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
   hue2rgb(m1,m2,h +(1.0/3.0), r);
   hue2rgb(m1,m2,h, g);
   hue2rgb(m1,m2,h - (1.0/3.0), b);
-
 }
 
 
@@ -131,27 +182,34 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   
+  
   // Allocate and generate noise map, TODO: reuse as static object to speed up 
-  int noisesize=((roi_out->width*roi_out->height)*sizeof(float));
+  /*int noisesize=((roi_out->width*roi_out->height)*sizeof(float));
   float *noise = malloc(noisesize);
   for(int i=0;i<(noisesize/sizeof(float));i++) {
     noise[i]=(float)(rand()/(double)RAND_MAX);
-  }
+  }*/
   
   // Apply grain to image
   in  = (float *)ivoid;
   out = (float *)ovoid;
-  float *nmap = noise;
+  //float *nmap = noise;
   float h,s,l;
   double strength=(data->strength/100.0);
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
+    double x=(i/(double)roi_out->width) * (128+(256*(data->scale/100.0)));
+    double y=(j/(double)roi_out->height) * (128+(256*(data->scale/100.0)));
+    double octaves=3;
+    double noise=_perlin_2d_noise(x,y,octaves,1.0/(octaves-1));
+      
     if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION) 
     {
       rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
-      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)? ((-0.5+nmap[0])*2.0)*(strength*GRAIN_HUE_STRENGTH_SCALE) : 0;
-      s+=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? ((-0.5+nmap[0])*2.0)*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
-      l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? ((-0.5+nmap[0])*2.0)*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
+    
+      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)? ((-0.5+noise)*2.0)*(strength*GRAIN_HUE_STRENGTH_SCALE) : 0;
+      s+=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? ((-0.5+noise)*2.0)*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
+      l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? ((-0.5+noise)*2.0)*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
       s=CLIP(s); 
       l=CLIP(l);
       if(h<0.0) h+=1.0;
@@ -160,9 +218,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     } 
     else if( data->channel==DT_GRAIN_CHANNEL_RGB )
     {
-      out[0]=in[0]+(((-0.5+nmap[0])*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
-      out[1]=in[1]+(((-0.5+nmap[0])*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
-      out[2]=in[2]+(((-0.5+nmap[0])*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
+      out[0]=in[0]+(((-0.5+noise)*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
+      out[1]=in[1]+(((-0.5+noise)*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
+      out[2]=in[2]+(((-0.5+noise)*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
     } 
     else
     { // No noisemethod lets jsut copy source to dest
@@ -171,11 +229,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[2]=in[2];
     }  
     //out[0]=out [1]=out[2]=nmap[0];
-    nmap++;
+    //nmap++;
     out += 3; in += 3;
   }
-  
-  free(noise);
   
 }
 
@@ -189,15 +245,15 @@ channel_changed (GtkComboBox *combo, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-/*static void
-smooth_callback (GtkDarktableSlider *slider, gpointer user_data)
+static void
+scale_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->smooth = dtgtk_slider_get_value(slider);
+  p->scale= dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
-}*/
+}
 
 static void
 strength_callback (GtkDarktableSlider *slider, gpointer user_data)
@@ -219,7 +275,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_grain_data_t *d = (dt_iop_grain_data_t *)piece->data;
   d->channel = p->channel;
-  d->smooth = p->smooth;
+  d->scale = p->scale;
   d->strength = p->strength;
 #endif
 }
@@ -253,7 +309,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)module->params;
   gtk_combo_box_set_active(g->combo1, p->channel);
-  //dtgtk_slider_set_value(g->scale1, p->smooth);
+  dtgtk_slider_set_value(g->scale1, p->scale);
   dtgtk_slider_set_value(g->scale2, p->strength);
 }
 
@@ -290,13 +346,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("channel")));
-  //g->label2 = GTK_LABEL(gtk_label_new(_("smooth")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("scale")));
   g->label3 = GTK_LABEL(gtk_label_new(_("strength")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  //gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
- // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   
   g->combo1=GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -307,19 +363,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_set_active(g->combo1,p->channel);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->combo1), TRUE, TRUE, 0);
   
-  //g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->smooth, 2));
-  //dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->scale, 2));
+  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->strength, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  //gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  //gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the smooth amount of the noise"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the scale of the noise"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the the strength of applied grain"), NULL);
   
  g_signal_connect (G_OBJECT (g->combo1), "changed",
             G_CALLBACK (channel_changed), self);
- /*g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (smooth_callback), self);*/
+ g_signal_connect (G_OBJECT (g->scale1), "value-changed",
+                    G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
         G_CALLBACK (strength_callback), self);
  
