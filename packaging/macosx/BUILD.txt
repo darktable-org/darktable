@@ -11,21 +11,23 @@ Installing:
 	!!! default install is /opt/local/ change this below if you have different macport dir !!!
 
 
-2) add +quartz +atsui +no_x11 -x11 to /opt/local/etc/macports/variants.conf
+2) (Optional) add +quartz +atsui +no_x11 -x11 to /opt/local/etc/macports/variants.conf
+   (There have been some problems with DT when using GTK Quartz; X11 seems to work better, at least on my machine)
    set "buildmakejobs" to more than 1 in /opt/local/etc/macports/macports.conf to use multiple threads 
 
 3) run:
    sudo port -d sync
-   sudo port install gtk2 sqlite3 libglade2 lcms gegl exiv2 gtk2-clearlooks hicolor-icon-theme
+   sudo port install gtk2 sqlite3 libglade2 lcms exiv2 gtk2-clearlooks hicolor-icon-theme
 
 	take a walk ! !
 
-4) compile dt from svn:
+4) compile dt from git:
 
-	svn co https://darktable.svn.sourceforge.net/svnroot/darktable darktable
+	git clone git://darktable.git.sf.net/gitroot/darktable/darktable
 	cd darktable
-	autoreconf --install
-	LDFLAGS="-L/opt/local/lib -llcms" CC=gcc-4.2 CXX=g++-4.2 ./configure --prefix=/opt/local 
+	./autogen.sh
+	LDFLAGS="-L/opt/local/lib -llcms" CC=gcc-4.2 CXX=g++-4.2 ./configure --prefix=/opt/local --disable-lensfun --enable-debug
+	(Optional -- you don't need to enable debug, and if youhave compiled the lensfun package manually you don't need to disable it either)
 	sudo make install
 
 	if you don't want a bundle just type "darktable" in console now ;) !
