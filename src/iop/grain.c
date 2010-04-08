@@ -313,20 +313,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   in  = (float *)ivoid;
   out = (float *)ovoid;
   float h,s,l;
-  double strength=(data->strength/100.0);
+  double strength=0.5*(data->strength/100.0);
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     double xscale=piece->buf_in.width>piece->buf_in.height?(piece->buf_in.width/piece->buf_in.height):1.0;
     double yscale=piece->buf_in.width<piece->buf_in.height?(piece->buf_in.height/piece->buf_in.width):1.0;
 	  
-    double x=((roi_out->x+i)/(double)(roi_out->x+roi_out->width)) *512;	// * (32+(256*(data->scale/100.0)));
-    double y=((roi_out->y+j)/(double)(roi_out->y+roi_out->height)) *512;	// * (32+(256*(data->scale/100.0)));
+    double x=((roi_out->x+i)/(double)(roi_out->x+roi_out->width)) *512;
+    double y=((roi_out->y+j)/(double)(roi_out->y+roi_out->height)) *512;
     x*=xscale;
     y*=yscale;
 	  
     double octaves=2;
-    double zoom=8*(data->scale/100.0);
-  //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
+    double zoom=4*(data->scale/100.0);
+    //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
     double noise=_simplex_2d_noise(x, y, octaves,0.5, zoom);
     if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION) 
     {
