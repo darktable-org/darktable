@@ -318,9 +318,10 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
     return;
 
   ProfileTransfer transfer = { NULL, 0 };
-  Boolean foo;
-  CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
-  CMCloseProfile(prof);
+  // FIXME: apple disabled this, so there will be no screen profiling for macs for now:
+  // Boolean foo;
+  // CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
+  // CMCloseProfile(prof);
 
   *buffer = transfer.data;
   *buffer_size = transfer.len;
