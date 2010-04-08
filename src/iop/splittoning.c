@@ -295,7 +295,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
-//  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
+  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("Select tone color")));
   g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
@@ -306,11 +306,15 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
   GdkColor c;
   float color[3],h,s,l;
-  
-  /*c.red= 65535 * ((button==g->colorpick1)?p->shadow_color[0]:p->highlight_color[0]);
-  c.green= 65535 * ((button==g->colorpick1)?p->shadow_color[1]:p->highlight_color[1]);
-  c.blue= 65535 * ((button==g->colorpick1)?p->shadow_color[2]:p->highlight_color[2]);
-  gtk_color_selection_set_current_color(cs,&c);*/
+  h=(button==g->colorpick1)?p->shadow_hue:p->highlight_hue;
+  s=(button==g->colorpick1)?p->shadow_saturation:p->highlight_saturation;
+  l=0.5;	
+  hsl2rgb(&color[0],&color[1],&color[2],h,s,l);
+	
+  c.red= 65535 * color[0];
+  c.green= 65535 * color[1];
+  c.blue= 65535 * color[2];
+  gtk_color_selection_set_current_color(cs,&c);
   if(gtk_dialog_run(GTK_DIALOG(csd))==GTK_RESPONSE_ACCEPT) 
   {
     gtk_color_selection_get_current_color(cs,&c);
