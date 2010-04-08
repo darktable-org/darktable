@@ -1,10 +1,6 @@
 0.6 release:
 - thumbnail mipmap exposure applied twice?
-- bsd threads vs pthreads?
 - forum gamma nikon hack
-  cmsAddTag(hICC, icSigRedTRCTag,   (LPVOID) TransferFunction[0]);
-  ..Green/Blue
-  with linear gamma.
 
 big new features:
 - tethered shooting?

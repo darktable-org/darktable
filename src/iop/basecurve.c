@@ -37,6 +37,37 @@
 
 DT_MODULE(1)
 
+static const char linear[] = N_("linear");
+static const char dark_contrast[] = N_("dark contrast");
+static const char canon_eos[] = N_("canon eos like");
+static const char sony_alpha[] = N_("sony alpha like");
+static const char fotogenic_v41[] = N_("fotogenic - point and shoot v4.1");
+static const char fotogenic_v42[] = N_("fotogenic - ev3 v4.2");
+
+typedef struct basecurve_preset_t
+{
+  const char *name;
+  const char *maker;
+  const char *model;
+  int iso;
+  float x[6];
+  float y[6];
+}
+basecurve_preset_t;
+
+static const int basecurve_presets_cnt = 6;
+static const basecurve_preset_t basecurve_presets[] = {
+  {linear, "", "", 0, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}},
+  {dark_contrast, "", "", 0, {0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}},
+  // pascals canon eos curve:
+  {canon_eos, "Canon", "EOS", 0, {0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.983871, 1.000000}},
+  // pascals sony alpha curve:
+  {sony_alpha, "Sony", "Alpha", 0, {0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}},
+  // Fotogenic - Point and shoot v4.1
+  {fotogenic_v41, "", "", 0, {0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}},
+  // Fotogenic - EV3 v4.2
+  {fotogenic_v42, "", "", 0, {0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}}
+};
 
 typedef struct dt_iop_basecurve_params_t
 {
@@ -100,86 +131,12 @@ presets_changed (GtkComboBox *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   
-  float linear[6] = {0.0, 0.08, 0.4, 0.6, 0.92, 1.0};
   int pos = gtk_combo_box_get_active(widget);
-  switch(pos)
+  if(pos < 0 || pos >= basecurve_presets_cnt) return;
+  for(int k=0;k<6;k++)
   {
-    case 0: // linear
-      for(int k=0;k<6;k++) p->tonecurve_x[k] = linear[k];
-      for(int k=0;k<6;k++) p->tonecurve_y[k] = linear[k];
-      break;
-    case 1: // dark regions with more contrast
-      p->tonecurve_x[0] = 0.000000;
-      p->tonecurve_y[0] = 0.000000;
-      p->tonecurve_x[1] = 0.072581;
-      p->tonecurve_y[1] = 0.040000;
-      p->tonecurve_x[2] = 0.157258;
-      p->tonecurve_y[2] = 0.138710;
-      p->tonecurve_x[3] = 0.491935;
-      p->tonecurve_y[3] = 0.491935;
-      p->tonecurve_x[4] = 0.758065;
-      p->tonecurve_y[4] = 0.758065;
-      p->tonecurve_x[5] = 1.000000;
-      p->tonecurve_y[5] = 1.000000;
-      break;
-    case 2: // pascals canon eos curve:
-      p->tonecurve_x[0] = 0.000000;
-      p->tonecurve_y[0] = 0.000000;
-      p->tonecurve_x[1] = 0.028226;
-      p->tonecurve_y[1] = 0.029677;
-      p->tonecurve_x[2] = 0.120968;
-      p->tonecurve_y[2] = 0.232258;
-      p->tonecurve_x[3] = 0.459677;
-      p->tonecurve_y[3] = 0.747581;
-      p->tonecurve_x[4] = 0.858871;
-      p->tonecurve_y[4] = 0.983871;
-      p->tonecurve_x[5] = 1.000000;
-      p->tonecurve_y[5] = 1.000000;
-      break;
-    case 3: // pascals sony alpha curve:
-      p->tonecurve_x[0] = 0.000000;
-      p->tonecurve_y[0] = 0.000000;
-      p->tonecurve_x[1] = 0.020161;
-      p->tonecurve_y[1] = 0.018548;
-      p->tonecurve_x[2] = 0.137097;
-      p->tonecurve_y[2] = 0.146258;
-      p->tonecurve_x[3] = 0.161290;
-      p->tonecurve_y[3] = 0.191430;
-      p->tonecurve_x[4] = 0.798387;
-      p->tonecurve_y[4] = 0.918397;
-      p->tonecurve_x[5] = 1.000000;
-      p->tonecurve_y[5] = 1.000000;
-      break;
-    case 4: // Fotogenic - Point and shoot v4.1
-      p->tonecurve_x[0] = 0.000000;
-      p->tonecurve_y[0] = 0.000000;
-      p->tonecurve_x[1] = 0.087879;	// Added this point to make a 6 point curve
-      p->tonecurve_y[1] = 0.125252;	//	out of orginal Point and shoot curve
-      p->tonecurve_x[2] = 0.175758;
-      p->tonecurve_y[2] = 0.250505;
-      p->tonecurve_x[3] = 0.353535;
-      p->tonecurve_y[3] = 0.501010;
-      p->tonecurve_x[4] = 0.612658;
-      p->tonecurve_y[4] = 0.749495;
-      p->tonecurve_x[5] = 1.000000;
-      p->tonecurve_y[5] = 0.876573;
-      break;
-    case 5: // Fotogenic - EV3 v4.2
-      p->tonecurve_x[0] = 0.000000;
-      p->tonecurve_y[0] = 0.000000;
-      p->tonecurve_x[1] = 0.100943;	// Added this point to make a 6 point curve
-      p->tonecurve_y[1] = 0.125252;	//	out of orginal Point and shoot curve
-      p->tonecurve_x[2] = 0.201886;
-      p->tonecurve_y[2] = 0.250505;
-      p->tonecurve_x[3] = 0.301010;
-      p->tonecurve_y[3] = 0.377778;
-      p->tonecurve_x[4] = 0.404040;
-      p->tonecurve_y[4] = 0.503030;
-      p->tonecurve_x[5] = 1.000000;
-      p->tonecurve_y[5] = 0.876768;
-      break;
-    default:
-      return;
+    p->tonecurve_x[k] = basecurve_presets[pos].x[k];
+    p->tonecurve_y[k] = basecurve_presets[pos].y[k];
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
@@ -260,19 +217,22 @@ void init(dt_iop_module_t *module)
                                                 {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                  0};
   if(!dt_image_is_ldr(module->dev->image))
-  { 
-    tmp.tonecurve_x[0] = 0.000000;
-    tmp.tonecurve_y[0] = 0.000000;
-    tmp.tonecurve_x[1] = 0.028226;
-    tmp.tonecurve_y[1] = 0.029677;
-    tmp.tonecurve_x[2] = 0.120968;
-    tmp.tonecurve_y[2] = 0.232258;
-    tmp.tonecurve_x[3] = 0.459677;
-    tmp.tonecurve_y[3] = 0.747581;
-    tmp.tonecurve_x[4] = 0.858871;
-    tmp.tonecurve_y[4] = 0.983871;
-    tmp.tonecurve_x[5] = 1.000000;
-    tmp.tonecurve_y[5] = 1.000000;
+  {
+    char *c = NULL;
+    for(int k=0;k<basecurve_presets_cnt;k++)
+    {
+      if(basecurve_presets[k].maker[0] == '\0' && basecurve_presets[k].model[0] == '\0') continue;
+      c = strstr(module->dev->image->exif_maker, basecurve_presets[k].maker);
+      if(!c) continue;
+      c = strstr(module->dev->image->exif_model, basecurve_presets[k].model);
+      if(!c) continue;
+      if(basecurve_presets[k].iso && (basecurve_presets[k].iso != module->dev->image->exif_iso)) continue;
+      for(int i=0;i<6;i++)
+      {
+        tmp.tonecurve_x[i] = basecurve_presets[k].x[i];
+        tmp.tonecurve_y[i] = basecurve_presets[k].y[i];
+      }
+    }
   }
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
@@ -590,12 +550,10 @@ void gui_init(struct dt_iop_module_t *self)
   // c->label = GTK_LABEL(gtk_label_new(_("presets")));
   // gtk_box_pack_start(GTK_BOX(c->hbox), GTK_WIDGET(c->label), FALSE, FALSE, 5);
   c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("linear"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("dark contrast"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("canon eos like"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sony alpha like"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("fotogenetic - point and shoot v4.1"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("fotogenetic - ev3 v4.2"));
+  for(int k=0;k<basecurve_presets_cnt;k++)
+  {
+    gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _(basecurve_presets[k].name));
+  }
   // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(c->presets), FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (c->presets), "changed",
