@@ -36,7 +36,7 @@
 #define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.25
 #define GRAIN_HUE_STRENGTH_SCALE 0.25
 #define GRAIN_SATURATION_STRENGTH_SCALE 0.25
-#define GRAIN_RGB_STRENGTH_SCALE 0.0625
+#define GRAIN_RGB_STRENGTH_SCALE 0.25
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -120,7 +120,7 @@ double _perlin_2d_noise(double x,double y,uint32_t octaves,double persistance)
   for(int o=1;o<=octaves;o++) {
     f=2*o;
     a=persistance*o;
-    total+= fabs((__perlin_interpolate(x*f,y*f)*a));
+    total+= (__perlin_interpolate(x*f,y*f)*a);
   }
   return total;
 }
@@ -182,34 +182,24 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   
-  
-  // Allocate and generate noise map, TODO: reuse as static object to speed up 
-  /*int noisesize=((roi_out->width*roi_out->height)*sizeof(float));
-  float *noise = malloc(noisesize);
-  for(int i=0;i<(noisesize/sizeof(float));i++) {
-    noise[i]=(float)(rand()/(double)RAND_MAX);
-  }*/
-  
   // Apply grain to image
   in  = (float *)ivoid;
   out = (float *)ovoid;
-  //float *nmap = noise;
   float h,s,l;
   double strength=(data->strength/100.0);
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     double x=(i/(double)roi_out->width) * (128+(256*(data->scale/100.0)));
     double y=(j/(double)roi_out->height) * (128+(256*(data->scale/100.0)));
-    double octaves=3;
-    double noise=_perlin_2d_noise(x,y,octaves,1.0/(octaves-1));
-      
+    double octaves=4;
+    double noise=_perlin_2d_noise(x,y,octaves,0.25);
     if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION) 
     {
       rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
     
-      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)? ((-0.5+noise)*2.0)*(strength*GRAIN_HUE_STRENGTH_SCALE) : 0;
-      s+=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? ((-0.5+noise)*2.0)*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
-      l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? ((-0.5+noise)*2.0)*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
+      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)? noise*(strength*GRAIN_HUE_STRENGTH_SCALE) : 0;
+      s+=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
+      l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
       s=CLIP(s); 
       l=CLIP(l);
       if(h<0.0) h+=1.0;
@@ -218,9 +208,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     } 
     else if( data->channel==DT_GRAIN_CHANNEL_RGB )
     {
-      out[0]=in[0]+(((-0.5+noise)*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
-      out[1]=in[1]+(((-0.5+noise)*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
-      out[2]=in[2]+(((-0.5+noise)*2.0)*(strength*GRAIN_RGB_STRENGTH_SCALE));
+      out[0]=CLIP(in[0]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+      out[1]=CLIP(in[1]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+      out[2]=CLIP(in[2]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
     } 
     else
     { // No noisemethod lets jsut copy source to dest
@@ -228,8 +218,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[1]=in[1];
       out[2]=in[2];
     }  
-    //out[0]=out [1]=out[2]=nmap[0];
-    //nmap++;
     out += 3; in += 3;
   }
   
