@@ -50,7 +50,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
   dt_conf_set_bool ("write_dt_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
-  dt_conf_set_float("preview_subsample", .5f);
+  dt_conf_set_float("preview_subsample", .125f);
   dt_conf_set_int  ("mipmap_cache_thumbnails", 500);
   dt_conf_set_int  ("mipmap_cache_full_images", 2);
   dt_conf_set_int  ("cache_memory", 536870912);
