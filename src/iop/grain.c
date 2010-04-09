@@ -35,7 +35,8 @@
 
 #define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.25
 // (m_pi/2)/4 = half hue colorspan
-#define GRAIN_HUE_STRENGTH_SCALE 0.392699082
+#define GRAIN_HUE_COLORRANGE 0.392699082
+#define GRAIN_HUE_STRENGTH_SCALE 0.25
 #define GRAIN_SATURATION_STRENGTH_SCALE 0.25
 #define GRAIN_RGB_STRENGTH_SCALE 0.25
 
@@ -313,7 +314,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   in  = (float *)ivoid;
   out = (float *)ovoid;
   float h,s,l;
-  double strength=0.5*(data->strength/100.0);
+  double strength=(data->strength/100.0);
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     double xscale=piece->buf_in.width>piece->buf_in.height?(piece->buf_in.width/piece->buf_in.height):1.0;
@@ -324,21 +325,24 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     x*=xscale;
     y*=yscale;
 	  
-    double octaves=2;
-    double zoom=4*(data->scale/100.0);
+    double octaves=3;
+    double zoom=1.0+(8*(data->scale/100.0));
     //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
-    double noise=_simplex_2d_noise(x, y, octaves,0.5, zoom);
-    if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION) 
+    double noise=_simplex_2d_noise(x, y, octaves,1.0, zoom);
+    if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION || data->channel==DT_GRAIN_CHANNEL_HUE) 
     {
       rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
     
-      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)? noise*(strength*GRAIN_HUE_STRENGTH_SCALE) : 0;
-      s+=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
+      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)?GRAIN_HUE_COLORRANGE*(noise*(strength*GRAIN_HUE_STRENGTH_SCALE)) : 0;
+      s-=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
       l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
+      
+      // Clip and wrapHSL values
       s=CLIP(s); 
       l=CLIP(l);
       if(h<0.0) h+=1.0;
       if(h>1.0) h-=1.0;
+	    
       hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
     } 
     else if( data->channel==DT_GRAIN_CHANNEL_RGB )
@@ -445,7 +449,7 @@ void init(dt_iop_module_t *module)
   module->priority = 965;
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
-  dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS,0.0,50.0};
+  dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS,10.0,12.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
 }
