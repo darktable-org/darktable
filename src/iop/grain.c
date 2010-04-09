@@ -317,13 +317,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   double strength=(data->strength/100.0);
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
-    double xscale=piece->buf_in.width>piece->buf_in.height?(piece->buf_in.width/piece->buf_in.height):1.0;
-    double yscale=piece->buf_in.width<piece->buf_in.height?(piece->buf_in.height/piece->buf_in.width):1.0;
-	  
-    double x=((roi_out->x+i)/(double)(roi_out->x+roi_out->width)) *512;
-    double y=((roi_out->y+j)/(double)(roi_out->y+roi_out->height)) *512;
-    x*=xscale;
-    y*=yscale;
+    double x = (roi_out->x + i)/roi_out->scale;
+    double y = (roi_out->y + j)/roi_out->scale;
 	  
     double octaves=3;
     double zoom=1.0+(8*(data->scale/100.0));
