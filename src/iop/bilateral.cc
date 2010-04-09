@@ -75,46 +75,40 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  float sigma[5], maxs = 0.0f;
-  for(int k=0;k<5;k++)
-  {
-    // TODO: is this really correct ?
-    sigma[k] = data->sigma[k] * roi_in->scale / piece->iscale;
-    maxs = fmaxf(maxs, sigma[k]);
-    sigma[k] = 1.0f/sigma[k];
-  }
-  if(maxs < 1.0)
+  float sigma[5];
+  sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
+  sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
+  sigma[2] = data->sigma[2];
+  sigma[3] = data->sigma[3];
+  sigma[4] = data->sigma[4];
+  if(fmaxf(sigma[0], sigma[1]) < 1.0)
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
+  for(int k=0;k<5;k++) sigma[k] = 1.0f/sigma[k];
 
-	PermutohedralLattice lattice(5, 5, roi_in->width*roi_in->height);
+	PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
 	
-	// Splat into the lattice
-	//printf("Splatting...\n");
-
+	// splat into the lattice
   for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
   {
     float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
-    float val[5] = {i, j, in[0], in[1], in[2]};
+    float val[4] = {in[0], in[1], in[2], 1.0};
     lattice.splat(pos, val);
     in += 3;
 	}
 	
-	// Blur the lattice
-	//printf("Blurring...\n");
+	// blur the lattice
 	lattice.blur();
 	
-	// Slice from the lattice
-	//printf("Slicing...\n");  
-	
+	// slice from the lattice
 	lattice.beginSlice();
   for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
   {
-    float pos[5];
-    lattice.slice(pos);
-    for(int k=0;k<3;k++) out[k] = pos[2+k];
+    float val[4];
+    lattice.slice(val);
+    for(int k=0;k<3;k++) out[k] = val[k]/val[3];
     out += 3;
   }
 }
@@ -124,7 +118,7 @@ sigma_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_bilateral_params_t   *p = (dt_iop_bilateral_params_t *)self->params;
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->params;
+  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
   int i = 0;
   if     (slider == g->scale1) i = 0;
   else if(slider == g->scale2) i = 1;
@@ -187,10 +181,10 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
   module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
   module->default_enabled = 0;
-  module->priority = 200;
+  module->priority = 150;
   module->params_size = sizeof(dt_iop_bilateral_params_t);
   module->gui_data = NULL;
-  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{30.0, 30.0, 0.125, 0.125, 0.125}};
+  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{10.0, 10.0, 0.1, 0.1, 0.1}};
   memcpy(module->params, &tmp, sizeof(dt_iop_bilateral_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilateral_params_t));
 }
@@ -229,11 +223,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0000, 1.0, p->sigma[0], 0));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0000, 1.0, p->sigma[1], 0));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0000, 0.001, p->sigma[2], 3));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0000, 0.001, p->sigma[3], 3));
-  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0000, 0.001, p->sigma[4], 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->sigma[0], 0));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->sigma[1], 0));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.001, p->sigma[2], 3));
+  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.001, p->sigma[3], 3));
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.001, p->sigma[4], 3));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
