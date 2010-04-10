@@ -35,7 +35,7 @@ src/iop/vignette.c
 src/iop/velvia.c
 src/iop/splittoning.c
 src/iop/grain.c
-src/iop/bilateral.c
+src/iop/bilateral.cc
 src/gui/gtk.c
 src/gui/histogram.c
 src/gui/metadata.c

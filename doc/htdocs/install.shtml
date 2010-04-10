@@ -62,7 +62,7 @@
     	<img src="images/oz.jpg" alt="release" class="img" /><h1>arch linux</h1>
       <ul>
         <li>pacman -S darktable</li>
-        <li>thx to chressie for this, arch IS non-ancient :)</li>
+        <li>thx to chressie for this, arch <em>is</em> non-ancient :)</li>
       </ul>
     	</div>
     	<div class="listtext">
