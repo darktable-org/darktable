@@ -107,19 +107,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
     if(pv.x==0)
 	    v=(pv.y>0)?0:M_PI;
+    double dscale=data->scale/100.0;
     
     double sinv=sin(v)+data->center.x;
     double cosv=cos(v)+data->center.y;
-    vv.x=cosv*data->scale;                        // apply uniformity and scale vignette to radie 
-    vv.y=sinv*data->scale;
+    vv.x=cosv*dscale;                        // apply uniformity and scale vignette to radie 
+    vv.y=sinv*dscale;
     double weight=0.0;
     double cvlen=sqrt((vv.x*vv.x)+(vv.y*vv.y));    // Length from center to vv
     double cplen=sqrt((pv.x*pv.x)+(pv.y*pv.y));  // Length from center to pv
     
     if( cplen>=cvlen ) // pixel is outside the inner vingett circle, lets calculate weight of vignette
     {
-      double ox=cosv*(1.2+(0.2*(data->scale)));    // scale outer vignette circle
-      double oy=sinv*(1.2+(0.2*(data->scale)));
+      double ox=cosv*(1.2+(0.2*(dscale)));    // scale outer vignette circle
+      double oy=sinv*(1.2+(0.2*(dscale)));
       double blen=sqrt(((vv.x-ox)*(vv.x-ox))+((vv.y-oy)*(vv.y-oy)));             // lenght between vv and outer circle
       weight=((cplen-cvlen)/blen);
       if(weight <=1.0) 
@@ -140,15 +141,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         bs-=data->bsratio;
       else
         ss-=fabs(data->bsratio);
-      
+      double strength=data->strength/100.0;
       // Then apply brightness
-      col[0]=in[0]*(1.0-CLIP(weight*bs*data->strength));
-      col[1]=in[1]*(1.0-CLIP(weight*bs*data->strength));
-      col[2]=in[2]*(1.0-CLIP(weight*bs*data->strength));
+      col[0]=in[0]*(1.0-CLIP(weight*bs*strength));
+      col[1]=in[1]*(1.0-CLIP(weight*bs*strength));
+      col[2]=in[2]*(1.0-CLIP(weight*bs*strength));
       
       // apply saturation
       double mv=(col[0]+col[1]+col[2])/3.0;
-      double wss=CLIP(weight*ss)*data->strength;
+      double wss=CLIP(weight*ss)*strength;
       if(data->invert_saturation==FALSE)
       { // Desaturate
         col[0]=CLIP( col[0]+((mv-col[0])* wss) );
@@ -278,7 +279,7 @@ void init(dt_iop_module_t *module)
   module->priority = 970;
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
-  dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t){.8,.5,.0,0,FALSE,{0,0}};
+  dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t){80,50,.0,0,FALSE,{0,0}};
   memcpy(module->params, &tmp, sizeof(dt_iop_vignette_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_vignette_params_t));
 }
@@ -317,8 +318,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->scale, 3));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->strength, 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0000, 0.50, p->scale, 2));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0000, 0.50, p->strength, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->uniformity, 3));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0000, 1.0000, 0.010, p->bsratio, 1));
   g->togglebutton1 = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("invert")));
@@ -332,6 +333,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("uniformity of vignette"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - Only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - Only saturation"), NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), NULL);
+ 
+ dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale1),DARKTABLE_SLIDER_FORMAT_PERCENT);
+ dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale2),DARKTABLE_SLIDER_FORMAT_PERCENT);
  
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale4),DARKTABLE_SLIDER_FORMAT_RATIO);
  
