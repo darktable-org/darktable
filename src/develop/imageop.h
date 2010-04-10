@@ -34,9 +34,9 @@ typedef struct dt_iop_params_t
   int keep;
 }
 dt_iop_params_t;
-typedef void* dt_iop_gui_data_t;
-typedef void* dt_iop_data_t;
-typedef void* dt_iop_global_data_t;
+typedef void dt_iop_gui_data_t;
+typedef void dt_iop_data_t;
+typedef void dt_iop_global_data_t;
 
 struct dt_iop_module_t;
 typedef struct dt_iop_module_t

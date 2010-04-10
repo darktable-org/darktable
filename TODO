@@ -6,12 +6,22 @@ big new features:
 - tethered shooting?
 - filmstrip?
 - print mode?
+- ship color profiles with dt: matrix-based hardcoded list for each model/maker
+- more transparent custom default/presets handling:
+  - store named presets along with exif: maker model,
+    ranges for iso, exposure, aperture, ..
+  - management interface: set default/activate matching+default
+  - list of these named presets for each plugin, replace combo boxes
+    in plugins where already there.
+  - copy history stack augmented by list of favorite image styles
+  - simple interface to [de-]activate single operations, or
+    replace them with presets from the list instead.
 
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 
 - mipf not loaded on time in develop for small displays.
 
-- optimize control_cleanup sql query for speed
+- read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
 - auto select image if there is only one on the light table
@@ -19,12 +29,9 @@ big new features:
 - lock zoom/pan checkbox in darkroom mode
 - sliders for C/A in lensfun
 - lensfun + crop: preview/full image differ in zoom/pan?
-- more transparent custom default handling
 - built-in XYZ and linear color profile support?
 - embed custom exif data in export plugin
-- ship color profiles with dt?
 - remember visible image/center image for each film and mode
-- some `no float buffer available yet' process_to_mip crash at random?
 - thumbnail regeneration trigger: expose after image loaded not enough?
 - give tag for each film roll during import, make editing easy after
 - compare sha1sum in db with image on open.
@@ -32,40 +39,22 @@ big new features:
 - develop bottom panel: color picker:
   - also pick output profile and zone
   - remove before label etc
-- redraw problem in basecurve / tonecurve (flat line)
 - gimp code: optimized jpeg + gui for export
-- custom presets with name
-- exposure pipe:
-  - implement cool highlight reconstruction with new information above max.
 - embedded profiles?
-- aspect ratio presets
 - save custom defaults (sqlite table iop_defaults) to external file as well
 - export override for output path (collection)
 - leave corners free (top/bottom scrolling indicators)
-- resource conflict: load jobs reimport and dt
-  gui develop full buf/mipf buf priority!
-  - does dev actually hold a mipf reference?
-  - dev enter while still reimporting crashes.
-- save current settings as preset
-- load only icc profiles which mach current camera and in/out selectively.
-- import small pfm: black border in preview?
-- color picker dont update?
 - export/select by edited/up-to-date exported
-- libs/history
-  - favorites list (custom styles or so)
 - if dir is not found, try known top-levels or ask for new
 - darkroom mode plugin template
-- mirror horizontal/vertical in crop/rotate, drag crop box, bypass angle==0
 - gnome-color-manager dbus interaction
-- highlight reconstruction/tonemapping (reinhard 02)
-- esc -> unfullscreen -> center
+- hdr tonemapping (reinhard 02)
 - automatic re-import in raw import on button press?
 - auto center/filter to 1 star/filename if new film is loaded
   - or: presets for every film in separate db.
 - histogram fill light mouse gesture
 - exposure: highlight clipped parts
 - user preferences
-  - automatic application of history stacks due to pattern matching.
   - gconf option for maximum number of jobs?
   - gconf performance presets (memory/preview subsample)
 - scroll to opened expander in darkroom mode.
@@ -76,19 +65,12 @@ big new features:
   - extract image statistics/compare metric
   - faces (opencv), hist L, hist wtf, hist (a,b)
   - select (random?) representative
-- film strip in develop mode to switch to next image.
-- artistic vignetting (applied after cropping)
 - lighttable side-by-side mode
-- color labels, key shortcuts, sorting by color, bg of image in color.
-- noise/film grain simulator plugin
 - embedded thumbnail as static snapshot
 - try gegl 0.1.2
 - mac bitch: gegl.h and Carbon.h are not friends.
-- exr io
-- progress bars for coresponding widgets (export)?
-- efficiency:
-  - dt_image_expose: check history cached in flags?
-  - dt_dev_process_to_mip: check hash?
+- closeup in 3:1 5:1 or 2:1 ?
+- user profile guided prefetching for full raw load!
 
 bugs:
 - develop left without mipf loaded => output_width messed up.
@@ -112,18 +94,8 @@ cleanup:
 - quickly template for dt plugins (translatable)
 
 feature requests:
- - gphoto2 import (views/acquire)
  - bzip2 compressed content
  - offline media reference in db
  - user orient rotation
  - spot removal brush
- - images of expensive cameras for webpage.
  - libglade => gtkbuilder.
-
-usability:
- - closeup in 3:1 5:1 or 2:1 ?
- - navigation widget for lib?
-
-cache:
- - user profile guided prefetching for full raw load!
-

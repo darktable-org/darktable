@@ -497,6 +497,7 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 
 void dt_image_init(dt_image_t *img)
 {
+  // TODO: this is not initialized, in the general case!
   if(strcmp(img->filename,"(unknown)")!=0)  // Reuse of img object...
     dt_fswatch_remove(darktable.fswatch,DT_FSWATCH_IMAGE,img);
   
