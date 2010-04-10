@@ -8,8 +8,7 @@ big new features:
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
 - more transparent custom default/presets handling:
-  - store named presets along with exif: maker model,
-    ranges for iso, exposure, aperture, ..
+  - store names translated or regular? remove all write protected presets at startup?
   - management interface: set default/activate matching+default
   - list of these named presets for each plugin, replace combo boxes
     in plugins where already there.
@@ -17,10 +16,12 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- gtkaboutdialog
+- gtkentrycompletion for tagging and collect
+- clean-up-gui mode for darkroom: collapse all and hide unused ops
+  when entering darkroom mode
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
-
 - mipf not loaded on time in develop for small displays.
-
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box

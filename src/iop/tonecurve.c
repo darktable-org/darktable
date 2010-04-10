@@ -24,6 +24,7 @@
 #include <string.h>
 #include "iop/tonecurve.h"
 #include "gui/histogram.h"
+#include "gui/presets.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -58,6 +59,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     in += 3; out += 3;
   }
+}
+
+static void
+init_presets (dt_iop_module_t *self)
+{
+  dt_iop_tonecurve_params_t p;
+  p.tonecurve_preset = 0;
+
+  float linear[6] = {0.0, 0.08, 0.4, 0.6, 0.92, 1.0};
+  for(int k=0;k<6;k++) p.tonecurve_x[k] = linear[k];
+  for(int k=0;k<6;k++) p.tonecurve_y[k] = linear[k];
+  dt_gui_presets_add_generic(_("linear"), self->op, &p, self->params_size, 1);
+  
+  for(int k=0;k<6;k++) p.tonecurve_x[k] = linear[k];
+  for(int k=0;k<6;k++) p.tonecurve_y[k] = linear[k];
+  p.tonecurve_y[1] -= 0.03; p.tonecurve_y[4] += 0.03;
+  p.tonecurve_y[2] -= 0.03; p.tonecurve_y[3] += 0.03;
+  dt_gui_presets_add_generic(_("med contrast"), self->op, &p, self->params_size, 1);
+
+  for(int k=0;k<6;k++) p.tonecurve_x[k] = linear[k];
+  for(int k=0;k<6;k++) p.tonecurve_y[k] = linear[k];
+  p.tonecurve_y[1] -= 0.06; p.tonecurve_y[4] += 0.06;
+  p.tonecurve_y[2] -= 0.10; p.tonecurve_y[3] += 0.10;
+  dt_gui_presets_add_generic(_("high contrast"), self->op, &p, self->params_size, 1);
 }
 
 static void presets_changed (GtkComboBox *widget, gpointer user_data)
@@ -185,6 +210,8 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_tonecurve_gui_data_t));
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+
+  init_presets(self);
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
   for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
@@ -476,17 +503,25 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
 
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 { // set active point
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  c->dragging = 1;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+    c->dragging = 1;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean dt_iop_tonecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  c->dragging = 0;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+    c->dragging = 0;
+    return TRUE;
+  }
+  return FALSE;
 }
 

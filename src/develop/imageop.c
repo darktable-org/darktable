@@ -19,6 +19,7 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "dtgtk/button.h"
 
 #include <lcms.h>
@@ -297,13 +298,15 @@ popup_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module
 {
   if(event->button == 3)
   {
-    gtk_menu_popup(module->menu, NULL, NULL, NULL, NULL, event->button, event->time);
-    gtk_widget_show_all(GTK_WIDGET(module->menu));
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, event->button, event->time);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
     return TRUE;
   }
   return FALSE;
 }
 
+#if 0
 static void
 menuitem_store_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
@@ -365,6 +368,7 @@ menuitem_reset_to_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   dt_iop_gui_reset_callback(NULL, module);
 }
+#endif
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
@@ -387,23 +391,36 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     module->off = button;
   }
 
+#if 0
   // popup menu
   module->menu = GTK_MENU(gtk_menu_new());
   GtkWidget *mi;
+  mi = gtk_menu_item_new_with_label(_("preset 1"));
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+  mi = gtk_menu_item_new_with_label(_("preset 2"));
+  char *markup;
+  markup = g_markup_printf_escaped ("<span weight=\"bold\">%s</span>", "preset 2");
+  gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
+  g_free (markup);
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), gtk_separator_menu_item_new());
+  mi = gtk_menu_item_new_with_label(_("edit this preset.."));
+  gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
+#endif
+
+#if 0
   mi = gtk_menu_item_new_with_label(_("reset parameters to default"));
-  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("discard current parameters,\nreset to default"), NULL);
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_reset_to_default), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
 
   mi = gtk_menu_item_new_with_label(_("store parameters as default"));
-  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default for this operation"), NULL);
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
 
   if(strcmp(module->op, "rawimport"))
   { // camera maker and model are not yet known by raw import.
     mi = gtk_menu_item_new_with_label(_("store as default for this camera"));
-    // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_store_default_for_camera), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
   }
@@ -411,23 +428,18 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), gtk_separator_menu_item_new());
 
   mi = gtk_menu_item_new_with_label(_("remove default"));
-  // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("discard custom default, reset\ndefault to factory settings"), NULL);
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default), module);
   gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
 
   if(strcmp(module->op, "rawimport"))
   {
     mi = gtk_menu_item_new_with_label(_("remove default for this camera"));
-    // gtk_object_set(GTK_OBJECT(mi), "tooltip-text", _("make the current parameters\nthe default only for this camera"), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default_for_camera), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(module->menu), mi);
   }
+#endif
 
 
-  // char filename[512];
-  // snprintf(filename, 512, "%s/pixmaps/off.png", DATADIR);
-  // GtkWidget *image = gtk_image_new_from_file(filename);
-  // gtk_button_set_image(GTK_BUTTON(button), image);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset,0));
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
@@ -443,7 +455,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
                     G_CALLBACK (dt_iop_gui_reset_callback), module);
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
                   G_CALLBACK (dt_iop_gui_expander_callback), module);
-  // gtk_widget_add_events(GTK_WIDGET(hbox), GDK_BUTTON_PRESS_MASK);
   gtk_expander_set_spacing(module->expander, 10);
   gtk_widget_hide_all(module->widget);
   gtk_expander_set_expanded(module->expander, FALSE);

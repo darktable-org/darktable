@@ -78,8 +78,6 @@ typedef struct dt_iop_module_t
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkDarktableToggleButton *off;
-  /** popup menu with rarely used options common to all plugins. */
-  GtkMenu *menu;
   /** this widget contains all of the module: expander and label decoration. */
   GtkWidget *topwidget;
   /** button used to show/hide this module in the plugin list. */
