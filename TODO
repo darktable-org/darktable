@@ -8,10 +8,7 @@ big new features:
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
 - more transparent custom default/presets handling:
-  - store names translated or regular? remove all write protected presets at startup?
-  - management interface: set default/activate matching+default
-  - list of these named presets for each plugin, replace combo boxes
-    in plugins where already there.
+  - replace combo boxes in plugins where already there.
   - copy history stack augmented by list of favorite image styles
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
