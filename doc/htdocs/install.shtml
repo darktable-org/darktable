@@ -49,9 +49,11 @@
         <li>unfortunately darktable is not in portage, so you have to:</li>
         <li>download this <a href="darktable-9999.ebuild">ebuild for the git version</a></li>
         <li>or this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.5/darktable-0.5.ebuild/download">ebuild for the 0.5 release</a></li>
-        <li># mkdir -p /usr/portage/media-gfx/darktable/</li>
-        <li># cp darktable-*.ebuild /usr/portage/media-gfx/darktable/</li>
-        <li># ebuild /usr/portage/media-gfx/darktable/darktable-*.ebuild digest</li>
+	<li>create a local portage overlay, if you don't have one already:</li>
+	<li># echo 'PORTDIR_OVERLAY="${PORTDIR_OVERLAY} /usr/local/portage"' &gt;&gt; /etc/make.conf</li> 
+        <li># mkdir -p /usr/local/portage/media-gfx/darktable/</li>
+        <li># cp darktable-*.ebuild /usr/local/portage/media-gfx/darktable/</li>
+        <li># ebuild /usr/local/portage/media-gfx/darktable/darktable-*.ebuild digest</li>
         <li># emerge darktable</li>
         <li>$ darktable</li>
       </ul>
@@ -59,9 +61,8 @@
     	<div class="listtext">
     	<img src="images/oz.jpg" alt="release" class="img" /><h1>arch linux</h1>
       <ul>
-        <li>get the <a href="http://aur.archlinux.org/packages.php?ID=31515">git version through AUR</a></li>
-        <li>or the <a href="http://aur.archlinux.org/packages.php?ID=31518">current release version</a></li>
-        <li>thx to chressie for this.</li>
+        <li>pacman -S darktable</li>
+        <li>thx to chressie for this, arch IS non-ancient :)</li>
       </ul>
     	</div>
     	<div class="listtext">
