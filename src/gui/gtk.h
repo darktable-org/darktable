@@ -41,7 +41,6 @@ typedef struct dt_gui_snapshot_t
 }
 dt_gui_snapshot_t;
 
-struct cairo_surface_t;
 typedef struct dt_gui_gtk_t
 {
   GladeXML *main_window;

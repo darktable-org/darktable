@@ -18,7 +18,9 @@
 #ifndef DARKTABLE_H
 #define DARKTABLE_H
 
-#define _XOPEN_SOURCE 600 // for localtime_r
+#ifndef _XOPEN_SOURCE
+  #define _XOPEN_SOURCE 600 // for localtime_r
+#endif
 #include <time.h>
 #include <inttypes.h>
 #include <sqlite3.h>
