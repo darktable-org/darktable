@@ -493,7 +493,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the scale of the noise"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the the strength of applied grain"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), NULL);
   
  g_signal_connect (G_OBJECT (g->combo1), "changed",
             G_CALLBACK (channel_changed), self);
