@@ -9,11 +9,11 @@
 	<key>CFBundleIconFile</key>
 	<string>Icons.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.rawtherapee.rawtherapee</string>
+	<string>net.sourceforge.darktable</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>RawTherapee</string>
+	<string>Darktable</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
