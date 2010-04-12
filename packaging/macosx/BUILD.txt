@@ -28,16 +28,8 @@ Installing:
 	./autogen.sh
 	LDFLAGS="-L/opt/local/lib -llcms" CC=gcc-4.2 CXX=g++-4.2 ./configure --prefix=`pwd`/release --disable-lensfun --enable-debug
 	(Optional -- you don't need to enable debug, and if youhave compiled the lensfun package manually you don't need to disable it either)
-	sudo make install
+	make install
 
-	if you don't want a bundle just type "darktable" in console now ;) !
+5) to make a disk image, run ./packaging/macosx/make-app-bundle -- this will create DarkTable.dmg in the release directory, which contains a standalone application.
 
-
-Bundlecreation:
-
-
-5) load ScriptExecCocoa/ScriptExec.xcodeproj with Xcode and click build
-
-6) run: . bscript.sh
-
-"Let's rock" u3dreal '09
+"Let's rock" u3dreal '09 (build instructions modified by Wyatt Olson <wyatt@digitalcave.ca> to no longer require a XCode application stub project)
