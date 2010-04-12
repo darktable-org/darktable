@@ -26,7 +26,7 @@ Installing:
 	git clone git://darktable.git.sf.net/gitroot/darktable/darktable
 	cd darktable
 	./autogen.sh
-	LDFLAGS="-L/opt/local/lib -llcms" CC=gcc-4.2 CXX=g++-4.2 ./configure --prefix=/opt/local --disable-lensfun --enable-debug
+	LDFLAGS="-L/opt/local/lib -llcms" CC=gcc-4.2 CXX=g++-4.2 ./configure --prefix=`pwd`/release --disable-lensfun --enable-debug
 	(Optional -- you don't need to enable debug, and if youhave compiled the lensfun package manually you don't need to disable it either)
 	sudo make install
 
