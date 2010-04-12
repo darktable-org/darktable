@@ -1,6 +1,10 @@
 0.6 release:
 - thumbnail mipmap exposure applied twice?
 - forum gamma nikon hack
+- website: cameras list, support
+- hot pixels causes color shift?
+- more intuitive biltaral filter labels
+- wb should reverse cam wb and apply settings for THUMBNAIL buffers
 
 big new features:
 - tethered shooting?
@@ -8,6 +12,8 @@ big new features:
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
 - more transparent custom default/presets handling:
+  - nicer layout of edit preset dialog: border around, combo for ex/ap,
+    indicate ranges, checkboxes for: only show for matching and aut. apply for matching
   - replace combo boxes in plugins where already there.
   - copy history stack augmented by list of favorite image styles
   - simple interface to [de-]activate single operations, or

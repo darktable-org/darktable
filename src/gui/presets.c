@@ -6,18 +6,19 @@
 #include <stdlib.h>
 
 // TODO:
-// - connect some generic presets to operations
-// - connect menu show in imageop.c
-// - clean up old menu stuff
-// - replace all operation preset combo boxes (except white balance..)
+// - show remove default only if default has been stored
+// - tooltips for name/description/min/max values
+// - combo boxes instead of spin boxes for exposure/aperture
+// - replace all operation preset combo boxes (except white balance..?)
 //
 // - copy history: treeview list with to-copy-operations, bind menu there as well, custom callback
 // - list with custom styles to choose from
 //
 typedef struct dt_gui_presets_edit_dialog_t
 {
-  GtkEntry *name;
-  GtkTextBuffer *buffer;
+  dt_iop_module_t *module;
+  GtkEntry *name, *description;
+  GtkCheckButton *autoapply, *filter;
   GtkEntry *model, *maker, *lens;
   GtkSpinButton *iso_min, *iso_max;
   GtkSpinButton *exposure_min, *exposure_max;
@@ -34,7 +35,7 @@ void dt_gui_presets_init()
 "model varchar, maker varchar, lens varchar, "
 "iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, "
 "focal_length_min real, focal_length_max real, "
-"writeprotect integer)", NULL, NULL, NULL);
+"writeprotect integer, autoapply integer, filter integer)", NULL, NULL, NULL);
 }
 
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const void *params, const int32_t params_size, const int32_t enabled)
@@ -45,7 +46,7 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const v
   sqlite3_bind_text(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  sqlite3_prepare_v2(darktable.db, "insert into presets values (?1, '', ?2, ?3, ?4, '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 1)", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "insert into presets values (?1, '', ?2, ?3, ?4, '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
   sqlite3_bind_blob(stmt, 3, params, params_size, SQLITE_TRANSIENT);
@@ -84,7 +85,30 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 static void
 edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
 {
-  // TODO: commit all the user input fields
+  // commit all the user input fields
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "insert into presets values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 0, ?17, ?18)", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 2, gtk_entry_get_text(g->description), strlen(gtk_entry_get_text(g->description)), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 3, g->module->op, strlen(g->module->op), SQLITE_TRANSIENT);
+  sqlite3_bind_blob(stmt, 4, g->module->params, g->module->params_size, SQLITE_TRANSIENT);
+  sqlite3_bind_int (stmt, 5, g->module->enabled);
+  sqlite3_bind_text(stmt, 6, gtk_entry_get_text(g->model), strlen(gtk_entry_get_text(g->model)), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 7, gtk_entry_get_text(g->maker), strlen(gtk_entry_get_text(g->maker)), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 8, gtk_entry_get_text(g->lens), strlen(gtk_entry_get_text(g->lens)), SQLITE_TRANSIENT);
+  sqlite3_bind_double(stmt,  9, gtk_spin_button_get_value(g->iso_min));
+  sqlite3_bind_double(stmt, 10, gtk_spin_button_get_value(g->iso_max));
+  sqlite3_bind_double(stmt, 11, gtk_spin_button_get_value(g->exposure_min));
+  sqlite3_bind_double(stmt, 12, gtk_spin_button_get_value(g->exposure_max));
+  sqlite3_bind_double(stmt, 13, gtk_spin_button_get_value(g->aperture_min));
+  sqlite3_bind_double(stmt, 14, gtk_spin_button_get_value(g->aperture_max));
+  sqlite3_bind_double(stmt, 15, gtk_spin_button_get_value(g->focal_length_min));
+  sqlite3_bind_double(stmt, 16, gtk_spin_button_get_value(g->focal_length_max));
+  sqlite3_bind_int(stmt, 17, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
+  sqlite3_bind_int(stmt, 18, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   gtk_widget_destroy(GTK_WIDGET(dialog));
   free(g);
 }
@@ -126,26 +150,31 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
       GTK_RESPONSE_NONE,
       NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
+  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
+  gtk_container_add (content_area, alignment);
   GtkBox *box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
+  GtkWidget *label;
   // GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   
   GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   GtkBox *vbox3 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   GtkBox *vbox4 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  gtk_container_add (content_area, GTK_WIDGET(box));
 
   dt_gui_presets_edit_dialog_t *g = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
+  g->module = module;
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, name);
   gtk_box_pack_start(box, GTK_WIDGET(g->name), TRUE, TRUE, 0);
 
-  GtkWidget *view = gtk_text_view_new ();
-  g->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
-  gtk_box_pack_start(box, view, FALSE, FALSE, 0);
+  g->description = GTK_ENTRY(gtk_entry_new());
+  gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
 
-  GtkWidget *label = gtk_label_new(_("automatically apply this preset to images matching"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(box, label, FALSE, FALSE, 0);
+  g->autoapply = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
+  gtk_box_pack_start(box, GTK_WIDGET(g->autoapply), FALSE, FALSE, 0);
+  g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
+  gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   gtk_box_pack_start(box,  GTK_WIDGET(hbox),  FALSE, FALSE, 0);
@@ -218,24 +247,33 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->focal_length_max), FALSE, FALSE, 0);
 
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max from presets where name = ?1 and operation = ?2", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "select description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, autoapply, filter from presets where name = ?1 and operation = ?2", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    gtk_text_buffer_set_text (g->buffer, (const char *)sqlite3_column_text(stmt, 0), -1);
+    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 0));
     gtk_entry_set_text(g->model, (const char *)sqlite3_column_text(stmt, 1));
     gtk_entry_set_text(g->maker, (const char *)sqlite3_column_text(stmt, 2));
     gtk_entry_set_text(g->lens,  (const char *)sqlite3_column_text(stmt, 3));
     gtk_spin_button_set_value(g->iso_min, sqlite3_column_double(stmt, 4));
-    gtk_spin_button_set_value(g->iso_max, sqlite3_column_double(stmt, 4));
-    gtk_spin_button_set_value(g->exposure_min, sqlite3_column_double(stmt, 5));
-    gtk_spin_button_set_value(g->exposure_max, sqlite3_column_double(stmt, 6));
-    gtk_spin_button_set_value(g->aperture_min, sqlite3_column_double(stmt, 7));
-    gtk_spin_button_set_value(g->aperture_max, sqlite3_column_double(stmt, 8));
-    gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 9));
-    gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 10));
+    gtk_spin_button_set_value(g->iso_max, sqlite3_column_double(stmt, 5));
+    gtk_spin_button_set_value(g->exposure_min, sqlite3_column_double(stmt, 6));
+    gtk_spin_button_set_value(g->exposure_max, sqlite3_column_double(stmt, 7));
+    gtk_spin_button_set_value(g->aperture_min, sqlite3_column_double(stmt, 8));
+    gtk_spin_button_set_value(g->aperture_max, sqlite3_column_double(stmt, 9));
+    gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 10));
+    gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 11));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 12));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    sqlite3_column_int(stmt, 13));
   }
+  sqlite3_finalize(stmt);
+
+  // now delete preset, so we can re-insert the new values:
+  sqlite3_prepare_v2(darktable.db, "delete from presets where name=?1 and operation=?2", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
@@ -292,7 +330,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   }
   sqlite3_finalize(stmt);
   g_free(name);
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  dt_iop_gui_update(module);
   dt_dev_add_history_item(darktable.develop, module);
   gtk_widget_queue_draw(module->widget);
 }
@@ -402,6 +440,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
 
+    // TODO: first check if iop_defaults already contains anything at all:
     mi = gtk_menu_item_new_with_label(_("remove default"));
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_factory_default), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
