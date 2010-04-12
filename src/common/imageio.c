@@ -769,11 +769,11 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   // find output color profile for this image:
   int sRGB = 1;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!strcmp(overprofile, "sRGB"))
+  if(overprofile && !strcmp(overprofile, "sRGB"))
   {
     sRGB = 1;
   }
-  else if(!strcmp(overprofile, "image"))
+  else if(!overprofile || !strcmp(overprofile, "image"))
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
@@ -853,11 +853,11 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   // find output color profile for this image:
   int sRGB = 1;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!strcmp(overprofile, "sRGB"))
+  if(overprofile && !strcmp(overprofile, "sRGB"))
   {
     sRGB = 1;
   }
-  else if(!strcmp(overprofile, "image"))
+  else if(!overprofile || !strcmp(overprofile, "image"))
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
@@ -943,11 +943,11 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   // find output color profile for this image:
   int sRGB = 1;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!strcmp(overprofile, "sRGB"))
+  if(overprofile && !strcmp(overprofile, "sRGB"))
   {
     sRGB = 1;
   }
-  else if(!strcmp(overprofile, "image"))
+  else if(!overprofile || !strcmp(overprofile, "image"))
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
