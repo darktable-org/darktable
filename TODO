@@ -3,10 +3,19 @@
 - forum gamma nikon hack
 
 big new features:
-- tethered shooting?
-- filmstrip?
+- tethered shooting
+- filmstrip:
+  - is scroll bar handling needed?
+  - is selection needed?
+  - BUG: selection in lighttable mode now broken??
+  - enter/leave functions to be called!
+    - by darkroom enter/leave actually?
+  - register color label callbacks
+  - avoid control->width magic in darkroom!
+
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
+
 - more transparent custom default/presets handling:
   - store named presets along with exif: maker model,
     ranges for iso, exposure, aperture, ..
@@ -16,6 +25,9 @@ big new features:
   - copy history stack augmented by list of favorite image styles
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
+
+- image flag: history changed but not exported
+  - select by this flag
 
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 

@@ -45,16 +45,6 @@ DT_MODULE(1)
 
 #define DT_LIBRARY_MAX_ZOOM 13
 
-typedef enum dt_library_image_over_t
-{
-  DT_LIB_DESERT = 0,
-  DT_LIB_STAR_1 = 1,
-  DT_LIB_STAR_2 = 2,
-  DT_LIB_STAR_3 = 3,
-  DT_LIB_STAR_4 = 4
-}
-dt_library_image_over_t;
-
 
 /**
  * this organises the whole library:
@@ -70,7 +60,7 @@ typedef struct dt_library_t
   uint32_t center, pan;
   int32_t track, offset, first_visible_zoomable, first_visible_filemanager;
   float zoom_x, zoom_y;
-  dt_library_image_over_t image_over;
+  dt_view_image_over_t image_over;
 }
 dt_library_t;
 
@@ -100,298 +90,12 @@ void cleanup(dt_view_t *self)
 }
 
 
-void dt_library_star(cairo_t *cr, float x, float y, float r1, float r2)
-{
-  const float d = 2.0*M_PI*0.1f;
-  const float dx[10] = {sinf(0.0), sinf(d), sinf(2*d), sinf(3*d), sinf(4*d), sinf(5*d), sinf(6*d), sinf(7*d), sinf(8*d), sinf(9*d)};
-  const float dy[10] = {cosf(0.0), cosf(d), cosf(2*d), cosf(3*d), cosf(4*d), cosf(5*d), cosf(6*d), cosf(7*d), cosf(8*d), cosf(9*d)};
-  cairo_move_to(cr, x+r1*dx[0], y-r1*dy[0]);
-  for(int k=1;k<10;k++)
-    if(k&1) cairo_line_to(cr, x+r2*dx[k], y-r2*dy[k]);
-    else    cairo_line_to(cr, x+r1*dx[k], y-r1*dy[k]);
-  cairo_close_path(cr);
-}
-
-
-void dt_image_expose(dt_image_t *img, dt_library_t *lib, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
-{
-  cairo_save (cr);
-  float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
-  int selected = 0, altered = 0, imgsel;
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
-  // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
-  sqlite3_stmt *stmt;
-  int rc;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  if(sqlite3_step(stmt) == SQLITE_ROW) selected = 1;
-  sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
-  sqlite3_finalize(stmt);
-  if(selected == 1)
-  {
-    outlinecol = 0.4;
-    bgcol = 0.6; fontcol = 0.5;
-  }
-  if(imgsel == img->id) { bgcol = 0.8; fontcol = 0.7; outlinecol = 0.6; } // mouse over
-  float imgwd = 0.8f;
-  if(zoom == 1)
-  {
-    imgwd = .97f;
-    // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
-  }
-  else
-  {
-    double x0 = 0.007*width, y0 = 0.007*height, rect_width = 0.986*width, rect_height = 0.986*height, radius = 0.04*width;
-    // double x0 = 0.*width, y0 = 0.*height, rect_width = 1.*width, rect_height = 1.*height, radius = 0.08*width;
-    double x1, y1, off, off1;
-
-    x1=x0+rect_width;
-    y1=y0+rect_height;
-    off=radius*0.666;
-    off1 = radius-off;
-    cairo_move_to  (cr, x0, y0 + radius);
-    cairo_curve_to (cr, x0, y0+off1, x0+off1 , y0, x0 + radius, y0);
-    cairo_line_to (cr, x1 - radius, y0);
-    cairo_curve_to (cr, x1-off1, y0, x1, y0+off1, x1, y0 + radius);
-    cairo_line_to (cr, x1 , y1 - radius);
-    cairo_curve_to (cr, x1, y1-off1, x1-off1, y1, x1 - radius, y1);
-    cairo_line_to (cr, x0 + radius, y1);
-    cairo_curve_to (cr, x0+off1, y1, x0, y1-off1, x0, y1- radius);
-    cairo_close_path (cr);
-    cairo_set_source_rgb(cr, bgcol, bgcol, bgcol);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 0.005*width);
-    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-    cairo_stroke(cr);
-
-#if defined(__MACH__) || defined(__APPLE__) // dreggn
-#else
-    char num[10];
-    cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, .25*width);
-
-    cairo_move_to (cr, .0*width, .24*height);
-    snprintf(num, 10, "%d", index);
-    cairo_show_text (cr, num);
-#endif
-  }
-
-#if 1
-  int32_t iwd = width*imgwd, iht = height*imgwd, stride;
-  float scale = 1.0;
-  dt_image_buffer_t mip;
-  mip = dt_image_get_matching_mip_size(img, imgwd*width, imgwd*height, &iwd, &iht);
-  mip = dt_image_get(img, mip, 'r');
-  dt_image_get_mip_size(img, mip, &iwd, &iht);
-  float fwd, fht;
-  dt_image_get_exact_mip_size(img, mip, &fwd, &fht);
-  cairo_surface_t *surface = NULL;
-  if(mip != DT_IMAGE_NONE)
-  {
-    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, iwd);
-    surface = cairo_image_surface_create_for_data (img->mip[mip], CAIRO_FORMAT_RGB24, iwd, iht, stride); 
-    scale = fminf(width*imgwd/fwd, height*imgwd/fht);
-  }
-
-  // draw centered and fitted:
-  cairo_save(cr);
-  cairo_translate(cr, width/2.0, height/2.0f);
-  cairo_scale(cr, scale, scale);
-  cairo_translate(cr, -.5f*fwd, -.5f*fht);
-
-  if(mip != DT_IMAGE_NONE)
-  {
-    cairo_set_source_surface (cr, surface, 0, 0);
-    cairo_rectangle(cr, 0, 0, fwd, fht);
-    cairo_fill(cr);
-    cairo_surface_destroy (surface);
-    dt_image_release(img, mip, 'r');
-
-    if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-    cairo_rectangle(cr, 0, 0, fwd, fht);
-  }
-
-  // border around image
-  const float border = zoom == 1 ? 16/scale : 2/scale;
-  cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
-  if(mip != DT_IMAGE_NONE && selected)
-  {
-    cairo_set_line_width(cr, 1./scale);
-    if(zoom == 1)
-    { // draw shadow around border
-      cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-      cairo_stroke(cr);
-      // cairo_new_path(cr);
-      cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
-      float alpha = 1.0f;
-      for(int k=0;k<16;k++)
-      {
-        cairo_rectangle(cr, 0, 0, fwd, fht);
-        cairo_new_sub_path(cr);
-        cairo_rectangle(cr, -k/scale, -k/scale, fwd+2.*k/scale, fht+2.*k/scale);
-        cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-        alpha *= 0.6f;
-        cairo_fill(cr);
-      }
-    }
-    else
-    {
-      cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
-      cairo_new_sub_path(cr);
-      cairo_rectangle(cr, -border, -border, fwd+2.*border, fht+2.*border);
-      cairo_stroke_preserve(cr);
-      cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
-      cairo_fill(cr);
-    }
-  }
-  else if(mip != DT_IMAGE_NONE)
-  {
-    cairo_set_line_width(cr, 1);
-    cairo_stroke(cr);
-  }
-  cairo_restore(cr);
-
-  const float fscale = fminf(width, height);
-  if(imgsel == img->id)
-  { // draw mouseover hover effects, set event hook for mouse button down!
-    lib->image_over = DT_LIB_DESERT;
-    cairo_set_line_width(cr, 1.5);
-    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-    cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-    float r1, r2;
-    if(zoom != 1) 
-    {
-      r1 = 0.06*width;
-      r2 = 0.025*width;
-    }
-    else
-    {
-      r1 = 0.02*fscale;
-      r2 = 0.0083*fscale;
-    }
-    for(int k=0;k<5;k++)
-    {
-      float x, y;
-      if(zoom != 1) 
-      {
-        x = (0.15+k*0.15)*width;
-        y = 0.88*height;
-      }
-      else
-      {
-        x = (.04+k*0.04)*fscale;
-        y = .12*fscale;
-      }
-      if(k == 4)
-      {
-        if(altered) 
-        {
-          // Align to right
-          float s = (r1+r2)*.5;
-          if(zoom != 1) x = width*0.85;
-          dt_draw_altered(cr, x, y, s);
-        }
-      }
-      else
-      {
-        dt_library_star(cr, x, y, r1, r2);
-        if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
-        {
-          lib->image_over = DT_LIB_STAR_1 + k;
-          cairo_fill(cr);
-        }
-        else if((img->flags & 0x7) > k)
-        {
-          cairo_fill_preserve(cr);
-          cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
-          cairo_stroke(cr);
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-        }
-        else cairo_stroke(cr);
-      }
-    }
-  }
-
-  { // color labels:
-    const int x = zoom == 1 ? (0.04+5*0.04)*fscale : 0.9*width;
-    const int y = zoom == 1 ? 0.12*fscale: 0.1*height;
-    const int r = zoom == 1 ? 0.02*fscale : 0.06*width;
-    sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, img->id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      int col = sqlite3_column_int(stmt, 0);
-      if     (col == 0) cairo_set_source_rgb(cr, 1.0, 0.2, 0.2);
-      else if(col == 1) cairo_set_source_rgb(cr, 1.0, 1.0, 0.2);
-      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 1.0, 0.2);
-      cairo_arc(cr, x, y, r, 0.0, 2.0*M_PI);
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 1.0);
-      cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-      cairo_stroke(cr);
-    }
-  }
-
-  if(zoom == 1)
-  { // some exif data
-    cairo_set_source_rgb(cr, .7, .7, .7);
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, .025*fscale);
-
-    cairo_move_to (cr, .02*fscale, .04*fscale);
-    // cairo_show_text(cr, img->filename);
-    cairo_text_path(cr, img->filename);
-    char exifline[50];
-    cairo_move_to (cr, .02*fscale, .08*fscale);
-    dt_image_print_exif(img, exifline, 50);
-    cairo_text_path(cr, exifline);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-    cairo_stroke(cr);
-  }
-
-  cairo_restore(cr);
-  // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-#endif
-}
-
-static void
-dt_library_toggle_selection(int iid)
-{
-  int rc;
-  sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, iid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    sqlite3_finalize(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, iid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
-  else
-  {
-    sqlite3_finalize(stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, iid);
-    rc = sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
-}
-
 static void
 expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
-  lib->image_over = DT_LIB_DESERT;
+  lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
@@ -495,13 +199,13 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
                     col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
                (seli == col && selj == row))
             { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
-              dt_library_toggle_selection(image->id);
+              dt_view_toggle_selection(image->id);
               lib->last_selected_id = image->id;
             }
           }
           cairo_save(cr);
           if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-          dt_image_expose(image, lib, image->id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+          dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
           if (iir == 1) goto failure; // only one image in one-image mode ;)
@@ -536,7 +240,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   center = lib->center;
   track  = lib->track;
 
-  lib->image_over = DT_LIB_DESERT;
+  lib->image_over = DT_VIEW_DESERT;
 
   if(zoom == 1) cairo_set_source_rgb (cr, .8, .8, .8);
   else cairo_set_source_rgb (cr, .9, .9, .9);
@@ -739,13 +443,13 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
                     col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
                (seli == col && selj == row))
             { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
-              dt_library_toggle_selection(image->id);
+              dt_view_toggle_selection(image->id);
               lib->last_selected_id = image->id;
             }
           }
           cairo_save(cr);
           if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-          dt_image_expose(image, lib, image->id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
+          dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
           cairo_restore(cr);
           dt_image_cache_release(image, 'r');
         }
@@ -794,13 +498,13 @@ star_key_accel_callback(void *data)
   long int num = (long int)data;
   switch (num)
   {
-    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4: case 666:
+    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case 666:
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       if(num == 666) image->flags &= ~0xf;
-      else if(num == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+      else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else
       {
         image->flags &= ~0x7;
@@ -853,10 +557,10 @@ void enter(dt_view_t *self)
     else         gtk_widget_hide_all(module->widget);
     modules = g_list_next(modules);
   }
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, star_key_accel_callback, (void *)DT_LIB_STAR_1);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_LIB_STAR_2);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_LIB_STAR_3);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_LIB_STAR_4);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
 }
 
@@ -933,13 +637,13 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   // image button pressed?
   switch(lib->image_over)
   {
-    case DT_LIB_DESERT: break;
-    case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4:
+    case DT_VIEW_DESERT: break;
+    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4:
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-      if(lib->image_over == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+      if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else
       {
         image->flags &= ~0x7;

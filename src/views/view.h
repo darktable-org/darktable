@@ -18,6 +18,7 @@
 #ifndef DT_VIEW_H
 #define DT_VIEW_H
 
+#include "common/image.h"
 #include <inttypes.h>
 #include <gmodule.h>
 #include <cairo.h>
@@ -33,6 +34,8 @@ typedef struct dt_view_t
   GModule *module;
   // custom data for module
   void *data;
+  // width and height of allocation
+  uint32_t width, height;
   // scroll bar control
   float vscroll_size, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_viewport_size, hscroll_pos;
@@ -57,6 +60,23 @@ typedef struct dt_view_t
 }
 dt_view_t;
 
+typedef enum dt_view_image_over_t
+{
+  DT_VIEW_DESERT = 0,
+  DT_VIEW_STAR_1 = 1,
+  DT_VIEW_STAR_2 = 2,
+  DT_VIEW_STAR_3 = 3,
+  DT_VIEW_STAR_4 = 4
+}
+dt_view_image_over_t;
+
+/** expose an image, set image over flags. */
+void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
+
+/** toggle selection of given image. */
+void dt_view_toggle_selection(int iid);
+
+
 #define DT_VIEW_MAX_MODULES 10
 /**
  * holds all relevant data needed to manage the view
@@ -64,8 +84,11 @@ dt_view_t;
  */
 typedef struct dt_view_manager_t
 {
+  dt_view_t film_strip;
   dt_view_t view[DT_VIEW_MAX_MODULES];
   int32_t current_view, num_views;
+  int32_t film_strip_on;
+  float film_strip_size;
 }
 dt_view_manager_t;
 
