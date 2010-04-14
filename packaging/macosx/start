@@ -3,7 +3,7 @@
 CWD=`dirname "$0"`
 echo $CWD
 
-export DYLD_FALLBACK_LIBRARY_PATH="${CWD}/lib:{CWD}/lib/darktable/plugins:{CWD}/lib/darktable/views:$DYLD_FALLBACK_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="${CWD}/lib:${CWD}/lib/darktable:${CWD}/lib/darktable/plugins:${CWD}/lib/darktable/plugins/lighttable:${CWD}/lib/darktable/views"
 export GTK_DATA_PREFIX="${CWD}"
 export GTK_DATA_DIRS="${CWD}"
 export GTK_EXE_PREFIX="${CWD}"
