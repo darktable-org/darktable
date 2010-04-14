@@ -31,6 +31,7 @@
 
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
+  vm->film_strip_dragging = 0;
   vm->film_strip_on = 1;
   vm->film_strip_size = 0.15f;
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
@@ -66,6 +67,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->vscroll_size = view->vscroll_viewport_size = 1.0;
   view->hscroll_size = view->hscroll_viewport_size = 1.0;
   view->vscroll_pos = view->hscroll_pos = 0.0;
+  view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   strncpy(view->module_name, module, 64);
   char plugindir[1024];
   dt_get_plugindir(plugindir, 1024);
@@ -181,7 +183,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     cairo_clip(cr);
     cairo_new_path(cr);
     float px = pointerx, py = pointery;
-    if(pointery <= v->height) { px = 10000.0; py = -1.0; }
+    if(pointery <= v->height+darktable.control->tabborder) { px = 10000.0; py = -1.0; }
     vm->film_strip.expose(&(vm->film_strip), cr, vm->film_strip.width, vm->film_strip.height, px, py);
     cairo_restore(cr);
   }
@@ -214,7 +216,14 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.mouse_moved)
+  if(vm->film_strip_on && vm->film_strip_dragging)
+  {
+    vm->film_strip_size = fmaxf(0.1, fminf(0.6, (darktable.control->height - y)/darktable.control->height));
+    const int wd = darktable.control->width - 2*darktable.control->tabborder;
+    const int ht = darktable.control->width - 2*darktable.control->tabborder;
+    dt_view_manager_configure (vm, wd, ht);
+  }
+  else if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.mouse_moved)
     vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which);
   else if(v->mouse_moved) v->mouse_moved(v, x, y, which);
 }
@@ -223,6 +232,8 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
 {
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
+  vm->film_strip_dragging = 0;
+  dt_control_change_cursor(GDK_ARROW);
   if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_released)
     return vm->film_strip.button_released(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, state);
   else if(v->button_released) return v->button_released(v, x, y, which, state);
@@ -233,9 +244,15 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 {
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_pressed)
+
+  if(vm->film_strip_on && y > v->height && y < v->height + darktable.control->tabborder)
+  {
+    vm->film_strip_dragging = 1;
+    dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+  }
+  else if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_pressed)
     return vm->film_strip.button_pressed(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, type, state);
-  if(v->button_pressed) return v->button_pressed(v, x, y, which, type, state);
+  else if(v->button_pressed) return v->button_pressed(v, x, y, which, type, state);
   return 0;
 }
 
@@ -253,6 +270,8 @@ void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
   for(int k=0;k<vm->num_views;k++)
   { // this is necessary for all
     dt_view_t *v = vm->view + k;
+    v->width = width;
+    v->height = height;
     if(v->configure) v->configure(v, width, height);
   }
 }

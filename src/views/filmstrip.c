@@ -75,8 +75,6 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-
-// TODO: remove/ change into film_view expose
 void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
@@ -120,8 +118,8 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
-  if(offset < 0)              strip->offset = offset = 0;
-  if(offset > count-max_cols) strip->offset = offset = count-max_cols;
+  if(offset < 0)                strip->offset = offset = 0;
+  if(offset > count-max_cols+1) strip->offset = offset = count-max_cols+1;
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
 
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);

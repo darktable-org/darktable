@@ -5,6 +5,8 @@
 big new features:
 - tethered shooting
 - filmstrip:
+  - segfault on resize??
+  - change to darkroom mode: blocked mip4..??
   - is scroll bar handling needed?
   - is selection needed?
   - BUG: selection in lighttable mode now broken??

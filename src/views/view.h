@@ -89,6 +89,7 @@ typedef struct dt_view_manager_t
   int32_t current_view, num_views;
   int32_t film_strip_on;
   float film_strip_size;
+  int32_t film_strip_dragging;
 }
 dt_view_manager_t;
 

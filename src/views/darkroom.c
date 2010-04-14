@@ -581,12 +581,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
-#if 1 // FIXME: x, y needs( to be moved and clamped to DT_WINDOW_SIZE as in expose!!
-  const int32_t width_i  = darktable.control->width  - darktable.control->tabborder*2;
-  const int32_t height_i = darktable.control->height - darktable.control->tabborder*2;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
   if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
   if(height_i > DT_IMAGE_WINDOW_SIZE) y -= (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
-#endif
 
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick)
