@@ -48,7 +48,7 @@ typedef struct dt_camctl_t
   GPPortInfoList *gpports;
   CameraAbilitiesList *gpcams;
   
-  dt_camera_t *active_camera;
+  const dt_camera_t *active_camera;
 } 
 dt_camctl_t;
 

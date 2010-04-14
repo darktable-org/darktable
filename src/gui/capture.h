@@ -18,6 +18,7 @@
 #ifndef DT_GUI_CAPTURE
 #define DT_GUI_CAPTURE
 
+void dt_gui_capture_init();
 void dt_gui_capture_update();
 
 #endif

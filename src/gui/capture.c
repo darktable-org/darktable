@@ -15,16 +15,54 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#include <stdio.h>
 #include "gui/gtk.h"
 #include "gui/capture.h"
 #include "develop/develop.h"
 #include "dtgtk/label.h"
+#include "control/control.h"
+#include "common/film.h"
 #include "common/camera_control.h"
 
-static void detect_source_callback(GtkButton *button,gpointer user_data)  
+static dt_camctl_listener_t _gui_camctl_listener;
+
+static void detect_source_callback(GtkButton *button,gpointer data)  
 {
   dt_camctl_detect_cameras(darktable.camctl);
+  dt_gui_capture_update();
+}
+
+static void import_callback(GtkButton *button,gpointer data)  
+{
+  dt_camctl_set_active_camera(darktable.camctl,(dt_camera_t*)data);
+  // Fire up camera import dialog for specified camera
+}
+
+static void tethered_callback(GtkButton *button,gpointer data)  
+{
+  dt_camctl_set_active_camera(darktable.camctl,(dt_camera_t*)data);
+  // Start the capture view with the active camera...
+}
+
+static void _camctl_camera_image_captured_callback(const dt_camera_t *camera,const char *filename,void *data)
+{
+  // import image to darktable single images...
+  int id = dt_image_import(1, filename);
+  if(id)
+  {
+    dt_film_open(1);
+    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+    dt_ctl_switch_mode_to(DT_DEVELOP);
+  }
+}
+
+void dt_gui_capture_init() 
+{
+  // Setup a listener for camera_control
+  memset(&_gui_camctl_listener,0,sizeof(dt_camctl_listener_t));
+  _gui_camctl_listener.captured_image = _camctl_camera_image_captured_callback;
+  dt_camctl_register_listener( darktable.camctl, &_gui_camctl_listener );
+  
   dt_gui_capture_update();
 }
 
@@ -32,21 +70,23 @@ void dt_gui_capture_update()
 {
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander_body");
   GList *citem;
-  if( (citem=g_list_first(darktable.camctl->cameras))!=NULL) 
-  {
-    // Lets clear all items in container...
-    GList *item;
-    if((item=gtk_container_get_children(GTK_CONTAINER(widget)))!=NULL)
-      do {
-        gtk_container_remove(GTK_CONTAINER(widget),GTK_WIDGET(item->data));
-      } while((item=g_list_next(item))!=NULL);
-    
-    // Add detect button
-    GtkWidget *button=gtk_button_new_with_label(_("detect sources"));
-    g_signal_connect (G_OBJECT(button), "clicked",G_CALLBACK (detect_source_callback), NULL);
-    gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("scan and detect sources available for capture"), NULL);
-    gtk_box_pack_start(GTK_BOX(widget),button,FALSE,FALSE,0);
+  
+  // Lets clear all items in container...
+  GList *item;
+  if((item=gtk_container_get_children(GTK_CONTAINER(widget)))!=NULL)
+    do {
+      gtk_container_remove(GTK_CONTAINER(widget),GTK_WIDGET(item->data));
+    } while((item=g_list_next(item))!=NULL);
+
+  // Add detect button
+  GtkWidget *button=gtk_button_new_with_label(_("detect sources"));
+  g_signal_connect (G_OBJECT(button), "clicked",G_CALLBACK (detect_source_callback), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("scan and detect sources available for capture"), NULL);
+  gtk_box_pack_start(GTK_BOX(widget),button,FALSE,FALSE,0);
       
+  
+  if( (citem=g_list_first(darktable.camctl->cameras))!=NULL) 
+  {    
     // Add detected capture sources
     char buffer[512]={0};
     do
@@ -60,11 +100,19 @@ void dt_gui_capture_update()
       gtk_object_set(GTK_OBJECT(label), "tooltip-text", buffer, NULL);
       
       // Add camera action buttons
+      GtkWidget *ib=NULL,*tb=NULL;
       if( camera->can_import==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),gtk_button_new_with_label(_("import")),FALSE,FALSE,0);
+        gtk_box_pack_start(GTK_BOX(widget),(ib=gtk_button_new_with_label(_("import"))),FALSE,FALSE,0);
       if( camera->can_tether==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),gtk_button_new_with_label(_("tethered shoot")),FALSE,FALSE,0);
-            
+        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);
+      
+      if( ib ) {
+        g_signal_connect (G_OBJECT(ib), "clicked",G_CALLBACK (import_callback), camera);
+      }
+      if( tb ) {
+        g_signal_connect (G_OBJECT(tb), "clicked",G_CALLBACK (tethered_callback), camera);
+      }
+      
     } while((citem=g_list_next(citem))!=NULL);
   }
 }

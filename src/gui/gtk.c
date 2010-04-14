@@ -859,8 +859,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
 
   // Update the capture module with available capture sources
-  dt_gui_capture_update();
-
+  dt_gui_capture_init();
+  
+  
   
   /* connect the signals in the interface */
 

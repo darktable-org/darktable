@@ -37,37 +37,26 @@ static void _idle_func_dispatch(GPContext *context, void *data) {
 static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
 //  dt_camctl_t *camctl=(dt_camctl_t *)data;
   char buffer[4096];
-	vsprintf( buffer, format, args );
+  vsprintf( buffer, format, args );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 error: %s .\n",buffer);
 }
 
 static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
   //dt_camctl_t *camctl=(dt_camctl_t *)data;
   char buffer[4096];
-	vsprintf( buffer, format, args );
+  vsprintf( buffer, format, args );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 status: %s .\n",buffer);
 }
 
 static void _message_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
   //dt_camctl_t *camctl=(dt_camctl_t *)data;
   char buffer[4096];
-	vsprintf( buffer, format, args );
+  vsprintf( buffer, format, args );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s .\n",buffer);
 }
 
-/*
-static void *_camera_control_thread(void *data) {
-  dt_camctl_t *camctl=(dt_camctl_t *)data;
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Starting thread %lx of context %lx\n",(unsigned long int)camctl->thread,(unsigned long int)data);
-  while(1) {
-    pthread_mutex_lock(&camctl->mutex);
-    
-    pthread_mutex_unlock(&camctl->mutex);
-  //  usleep(100000);
-  }
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] terminating thread %lx.\n",(unsigned long int)camctl->thread);
-  return NULL;
-}*/
+
+
 
 dt_camctl_t *dt_camctl_new()
 {
@@ -76,22 +65,22 @@ dt_camctl_t *dt_camctl_new()
 
   // Initialize gphoto2 context and setup dispatch callbacks
   camctl->gpcontext = gp_context_new();
-	gp_context_set_idle_func( camctl->gpcontext , _idle_func_dispatch, camctl );
-	gp_context_set_status_func( camctl->gpcontext , _status_func_dispatch, camctl );
-	gp_context_set_error_func( camctl->gpcontext , _error_func_dispatch, camctl );
-	gp_context_set_message_func( camctl->gpcontext , _message_func_dispatch, camctl );
+  gp_context_set_idle_func( camctl->gpcontext , _idle_func_dispatch, camctl );
+  gp_context_set_status_func( camctl->gpcontext , _status_func_dispatch, camctl );
+  gp_context_set_error_func( camctl->gpcontext , _error_func_dispatch, camctl );
+  gp_context_set_message_func( camctl->gpcontext , _message_func_dispatch, camctl );
   
   gp_port_info_list_new( &camctl->gpports );
-	gp_abilities_list_new( &camctl->gpcams );
+  gp_abilities_list_new( &camctl->gpcams );
 
   // Load drivers
   gp_port_info_list_load( camctl->gpports );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Loaded %d port drivers.\n", gp_port_info_list_count( camctl->gpports ) );	
-	
-	// Load all camera drivers we know...
-	gp_abilities_list_load( camctl->gpcams, camctl->gpcontext );
-	dt_print(DT_DEBUG_CAMCTL,"[camera_control] Loaded %d camera drivers.\n", gp_abilities_list_count( camctl->gpcams ) );	
-	
+  
+  // Load all camera drivers we know...
+  gp_abilities_list_load( camctl->gpcams, camctl->gpcontext );
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Loaded %d camera drivers.\n", gp_abilities_list_count( camctl->gpcams ) );	
+  
   pthread_mutex_init(&camctl->mutex, NULL);
   //pthread_create(&camctl->thread, NULL, &_camera_control_thread, camctl);
   
@@ -110,7 +99,10 @@ void dt_camctl_register_listener( const dt_camctl_t *c, dt_camctl_listener_t *li
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   pthread_mutex_lock(&camctl->mutex);
   if( g_list_find(camctl->listeners,listener) == NULL )
+  {
     camctl->listeners=g_list_append(camctl->listeners,listener);
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Registering listener %lx\n",(unsigned long int)listener);
+  }
   else
      dt_print(DT_DEBUG_CAMCTL,"[camera_control] Registering already registered listener %lx\n",(unsigned long int)listener);
   pthread_mutex_unlock(&camctl->mutex);
@@ -137,12 +129,12 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   CameraList *temporary=NULL;
   gp_list_new( &temporary );
   gp_abilities_list_detect (c->gpcams,c->gpports, temporary, c->gpcontext );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( temporary ));
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( temporary )>0?gp_list_count( temporary )-1:0);
 
   pthread_mutex_lock(&camctl->mutex);
     
   // Adding 2 dummy cameras if list = NULL
-  if(camctl->cameras==NULL)
+  /*if(camctl->cameras==NULL)
   { 
     dt_camera_t *dummy=g_malloc(sizeof(dt_camera_t));
     dummy->model="Nikon D90";
@@ -155,15 +147,19 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
     dummy->port="usb:2.3";
     dummy->can_import=TRUE;
     camctl->cameras=g_list_append(camctl->cameras,dummy);  
-  }    
+  }   */
   
   for(int i=0;i<gp_list_count( temporary );i++)
   {
     dt_camera_t *camera=g_malloc(sizeof(dt_camera_t));
+    camera->can_import=TRUE;
+    camera->can_tether=TRUE;
     gp_list_get_name (temporary, i, &camera->model);
-		gp_list_get_value (temporary, i, &camera->port);
+    gp_list_get_value (temporary, i, &camera->port);
+    
+    if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
+    
     GList *citem;
-  
     if( (citem=g_list_find_custom(c->cameras,camera,_compare_camera_by_port)) == NULL || strcmp(((dt_camera_t *)citem->data)->model,camera->model)!=0 ) 
     {
       if(citem==NULL)
@@ -190,33 +186,53 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   pthread_mutex_unlock(&camctl->mutex);
 }
 
+static void *_camera_event_thread(void *data) {
+  dt_camctl_t *camctl=(dt_camctl_t *)data;
+  const dt_camera_t *camera=camctl->active_camera;
+  
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Starting camera event thread %lx of context %lx\n",(unsigned long int)camctl->thread,(unsigned long int)data);
+  while(camera==camctl->active_camera) {
+    pthread_mutex_lock(&camctl->mutex);
+    dt_camera_poll_events(camctl,camera);
+    pthread_mutex_unlock(&camctl->mutex);
+  }
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] exiting camera thread %lx.\n",(unsigned long int)camctl->thread);
+  return NULL;
+}
+
 void dt_camctl_set_active_camera(const dt_camctl_t *c, dt_camera_t *cam)
 {
-  dt_camctl_t *camctl=(dt_camctl_t *)c;
-  
-  CameraAbilities a;
-  GPPortInfo pi;
-  if( cam->gpcam )
+  if( cam != c->active_camera )
   {
-    gp_camera_new(&cam->gpcam);
-    int m = gp_abilities_list_lookup_model( c->gpcams, cam->model );
-    gp_abilities_list_get_abilities (c->gpcams, m, &a);
-    gp_camera_set_abilities (cam->gpcam, a);
-  
-    int p = gp_port_info_list_lookup_path (c->gpports, cam->port);
-    gp_port_info_list_get_info (c->gpports, p, &pi);
-    gp_camera_set_port_info (cam->gpcam , pi);
-  }
-  
-  if( gp_camera_init( cam->gpcam ,  camctl->gpcontext) == GP_OK )
-  {
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera %s on port %s initialized and activated\n", cam->model,cam->port);
-    camctl->active_camera = cam;
+    dt_camctl_t *camctl=(dt_camctl_t *)c;
+    CameraAbilities a;
+    GPPortInfo pi;
+    if( cam->gpcam )
+    {
+      gp_camera_new(&cam->gpcam);
+      int m = gp_abilities_list_lookup_model( c->gpcams, cam->model );
+      gp_abilities_list_get_abilities (c->gpcams, m, &a);
+      gp_camera_set_abilities (cam->gpcam, a);
     
-    return;
+      int p = gp_port_info_list_lookup_path (c->gpports, cam->port);
+      gp_port_info_list_get_info (c->gpports, p, &pi);
+      gp_camera_set_port_info (cam->gpcam , pi);
+      
+       if( gp_camera_init( cam->gpcam ,  camctl->gpcontext) != GP_OK )
+      {
+        dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to initialize camera %s on port %s\n", cam->model,cam->port);
+        return;
+      }
+        
+      dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera %s on port %s initialized\n", cam->model,cam->port);
+    }
+    
+    // Start up camera thread
+    pthread_create(&camctl->thread, NULL, &_camera_event_thread, camctl);
+    
+    // Enshure the no process is using the current active camera
+    camctl->active_camera = cam;
   }    
-
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to initialize camera %s on port %s\n", cam->model,cam->port);
 }
 
 void dt_camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
@@ -224,35 +240,37 @@ void dt_camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   CameraEventType event;
   gpointer data;
-  pthread_mutex_lock(&camctl->mutex);
+ // pthread_mutex_lock(&camctl->mutex);
   if( gp_camera_wait_for_event( cam->gpcam, 1, &event, &data, c->gpcontext ) >= GP_OK ) {
-		switch( event ) {
+    switch( event ) {
       case GP_EVENT_UNKNOWN: 
-			{
-				if( strstr( (char *)data, "4006" ) ); // Property change event occured on camera
-				
-			} break;
+      {
+        if( strstr( (char *)data, "4006" ) ); // Property change event occured on camera
+        
+      } break;
 
       case GP_EVENT_FILE_ADDED:
-			{
-				CameraFilePath *fp = (CameraFilePath *)data;
-				CameraFile *destination;
-        char *filename="/tmp/capture";
-				int handle = open( filename, O_CREAT | O_WRONLY,0666);
-				gp_file_new_from_fd( &destination , handle );
-				gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-				close( handle );
-			
-				 // Notify listerners of captured image
+      {
+        dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera file added event\n");
+        CameraFilePath *fp = (CameraFilePath *)data;
+        CameraFile *destination;
+        char filename[512]="/tmp/";
+        strcat(filename,fp->name);
+        int handle = open( filename, O_CREAT | O_WRONLY,0666);
+        gp_file_new_from_fd( &destination , handle );
+        gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
+        close( handle );
+      
+         // Notify listerners of captured image
         GList *listener;
         if((listener=g_list_first(camctl->listeners))!=NULL)
           do
           {
-            if(((dt_camctl_listener_t*)listener->data)->captured_image)
+            if( ((dt_camctl_listener_t*)listener->data)->captured_image != NULL )
               ((dt_camctl_listener_t*)listener->data)->captured_image(cam,filename,((dt_camctl_listener_t*)listener->data)->data);
           } while((listener=g_list_next(listener))!=NULL);
         
-			} break;
+      } break;
 
       case GP_EVENT_TIMEOUT:
       case GP_EVENT_FOLDER_ADDED:
@@ -261,5 +279,5 @@ void dt_camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
       
     }
   }
-  pthread_mutex_unlock(&camctl->mutex);
+ // pthread_mutex_unlock(&camctl->mutex);
 }
