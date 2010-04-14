@@ -33,6 +33,7 @@ big new features:
 
 - mipf not loaded on time in develop for small displays.
 
+- color labels: colored buttons in a row, more colors.
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
