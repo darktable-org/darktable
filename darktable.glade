@@ -496,6 +496,40 @@ file manager</property>
                             <property name="orientation">vertical</property>
                             <property name="spacing">10</property>
                             <child>
+                              <widget class="GtkEventBox" id="capture_eventbox">
+                                <property name="visible">True</property>
+                                <child>
+                                  <widget class="GtkExpander" id="capture_expander">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="spacing">10</property>
+                                    <child>
+                                      <widget class="GtkVBox" id="capture_expander_body">
+                                        <property name="visible">True</property>
+                                        <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+                                        <property name="border_width">5</property>
+                                      </widget>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkLabel" id="label1">
+                                        <property name="visible">True</property>
+                                        <property name="label" translatable="yes">capture</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="type">label_item</property>
+                                      </packing>
+                                    </child>
+                                  </widget>
+                                </child>
+                              </widget>
+                                <packing>
+                                  <property name="expand">False</property>
+                                  <property name="fill">False</property>
+                                  <property name="position">0</property>
+                                </packing>
+                            </child>
+                            
+                            <child>
                               <widget class="GtkEventBox" id="library_eventbox">
                                 <property name="visible">True</property>
                                 <child>
@@ -525,7 +559,7 @@ file manager</property>
                                               <packing>
                                                 <property name="expand">False</property>
                                                 <property name="fill">False</property>
-                                                <property name="position">0</property>
+                                                <property name="position">1</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -536,7 +570,7 @@ file manager</property>
                                                 <property name="receives_default">True</property>
                                               </widget>
                                               <packing>
-                                                <property name="position">1</property>
+                                                <property name="position">2</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -549,7 +583,7 @@ file manager</property>
 recently used film rolls</property>
                                               </widget>
                                               <packing>
-                                                <property name="position">2</property>
+                                                <property name="position">3</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -563,7 +597,7 @@ recently used film rolls</property>
                                               <packing>
                                                 <property name="expand">False</property>
                                                 <property name="fill">False</property>
-                                                <property name="position">3</property>
+                                                <property name="position">4</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -577,7 +611,7 @@ recently used film rolls</property>
                                               <packing>
                                                 <property name="expand">False</property>
                                                 <property name="fill">False</property>
-                                                <property name="position">4</property>
+                                                <property name="position">5</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -591,7 +625,7 @@ recently used film rolls</property>
                                               <packing>
                                                 <property name="expand">False</property>
                                                 <property name="fill">False</property>
-                                                <property name="position">5</property>
+                                                <property name="position">6</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -605,7 +639,7 @@ recently used film rolls</property>
                                               <packing>
                                                 <property name="expand">False</property>
                                                 <property name="fill">False</property>
-                                                <property name="position">6</property>
+                                                <property name="position">7</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -618,7 +652,7 @@ recently used film rolls</property>
 all film rolls</property>
                                               </widget>
                                               <packing>
-                                                <property name="position">7</property>
+                                                <property name="position">8</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -630,7 +664,7 @@ all film rolls</property>
                                                 <property name="invisible_char">&#x2022;</property>
                                               </widget>
                                               <packing>
-                                                <property name="position">8</property>
+                                                <property name="position">9</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -649,7 +683,7 @@ all film rolls</property>
                                                 </child>
                                               </widget>
                                               <packing>
-                                                <property name="position">9</property>
+                                                <property name="position">10</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -684,7 +718,7 @@ all film rolls</property>
                                                 </child>
                                               </widget>
                                               <packing>
-                                                <property name="position">10</property>
+                                                <property name="position">11</property>
                                               </packing>
                                             </child>
                                           </widget>
@@ -706,7 +740,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">0</property>
+                                <property name="position">1</property>
                               </packing>
                             </child>
                             <child>
@@ -803,7 +837,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                             <child>
@@ -1107,7 +1141,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">2</property>
+                                <property name="position">3</property>
                               </packing>
                             </child>
                             <child>
@@ -1283,7 +1317,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">3</property>
+                                <property name="position">4</property>
                               </packing>
                             </child>
                             <child>
@@ -1295,7 +1329,7 @@ all film rolls</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">4</property>
+                                <property name="position">5</property>
                               </packing>
                             </child>
                           </widget>

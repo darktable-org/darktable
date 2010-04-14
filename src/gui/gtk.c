@@ -26,11 +26,15 @@
 #include <pthread.h>
 
 #include "common/darktable.h"
+#include "common/camera_control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "dtgtk/label.h"
+#include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/metadata.h"
 #include "gui/filmview.h"
+#include "gui/capture.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -307,7 +311,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
   }
 
-	return TRUE;
+  return TRUE;
 }
 
 gboolean
@@ -576,11 +580,11 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
-				      GTK_WINDOW (win),
-				      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
-				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-				      NULL);
+              GTK_WINDOW (win),
+              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
+              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+              NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -614,11 +618,11 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
-				      GTK_WINDOW (win),
-				      GTK_FILE_CHOOSER_ACTION_OPEN,
-				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-				      NULL);
+              GTK_WINDOW (win),
+              GTK_FILE_CHOOSER_ACTION_OPEN,
+              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+              NULL);
 
   char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
@@ -853,6 +857,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
+
+  // Update the capture module with available capture sources
+  dt_gui_capture_update();
+
+  
   /* connect the signals in the interface */
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
@@ -887,39 +896,41 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed), NULL);
-	g_signal_connect (G_OBJECT (widget), "configure-event",
+  g_signal_connect (G_OBJECT (widget), "configure-event",
                     G_CALLBACK (configure), NULL);
-	g_signal_connect (G_OBJECT (widget), "expose-event",
+  g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (expose), NULL);
-	g_signal_connect (G_OBJECT (widget), "motion-notify-event",
+  g_signal_connect (G_OBJECT (widget), "motion-notify-event",
                     G_CALLBACK (mouse_moved), NULL);
-	g_signal_connect (G_OBJECT (widget), "leave-notify-event",
+  g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (center_leave), NULL);
-	g_signal_connect (G_OBJECT (widget), "button-press-event",
+  g_signal_connect (G_OBJECT (widget), "button-press-event",
                     G_CALLBACK (button_pressed), NULL);
-	g_signal_connect (G_OBJECT (widget), "button-release-event",
+  g_signal_connect (G_OBJECT (widget), "button-release-event",
                     G_CALLBACK (button_released), NULL);
-	g_signal_connect (G_OBJECT (widget), "scroll-event",
+  g_signal_connect (G_OBJECT (widget), "scroll-event",
                     G_CALLBACK (scrolled), NULL);
   // TODO: left, right, top, bottom:
   //leave-notify-event
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
-	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)0);
-	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)0);
-	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)0);
+  g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)0);
+  g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)0);
+  g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)0);
   widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
-	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)1);
-	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)1);
-	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)1);
+  g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)1);
+  g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)1);
+  g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
-	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)2);
-	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)2);
-	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)2);
+  g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)2);
+  g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)2);
+  g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)2);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
-	g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)3);
-	g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
-	g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
+  g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)3);
+  g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
+  g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
+
+  
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   dt_gui_navigation_init(&gui->navigation, widget);
@@ -1023,6 +1034,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->redraw_widgets = NULL;
   darktable.gui->key_accels = NULL;
 
+  
   // register ctrl-q to quit:
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
   darktable.gui->reset = 0;

@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/fswatch.h"
+#include "common/camera_control.h"
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -59,7 +60,7 @@ int dt_init(int argc, char *argv[])
     {
       if(!strcmp(argv[k], "--help"))
       {
-        printf("usage: %s [-d {cache,control,dev}] [IMG_1234.{RAW,..}]\n", argv[0]);
+        printf("usage: %s [-d {cache,control,dev,fswatch,camctl}] [IMG_1234.{RAW,..}]\n", argv[0]);
         return 1;
       }
       else if(!strcmp(argv[k], "--version"))
@@ -73,6 +74,7 @@ int dt_init(int argc, char *argv[])
         if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
         if(!strcmp(argv[k+1], "fswatch")) darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
+        if(!strcmp(argv[k+1], "camctl")) darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
         k ++;
       }
     }
@@ -93,6 +95,9 @@ int dt_init(int argc, char *argv[])
 
   // Initialize the filesystem watcher  
   darktable.fswatch=dt_fswatch_new();	
+  
+  // Initialize the camera control 
+  darktable.camctl=dt_camctl_new();
   
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
@@ -196,6 +201,7 @@ void dt_cleanup()
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
 
+  dt_camctl_destroy(darktable.camctl);
   dt_fswatch_destroy(darktable.fswatch);
 
   sqlite3_close(darktable.db);
