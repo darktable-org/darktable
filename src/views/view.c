@@ -32,7 +32,7 @@
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
   vm->film_strip_dragging = 0;
-  vm->film_strip_on = 1;
+  vm->film_strip_on = 0;
   vm->film_strip_size = 0.15f;
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
@@ -214,17 +214,18 @@ void dt_view_manager_mouse_leave (dt_view_manager_t *vm)
 
 void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
 {
+  const float tb = darktable.control->tabborder;
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(vm->film_strip_on && vm->film_strip_dragging)
   {
-    vm->film_strip_size = fmaxf(0.1, fminf(0.6, (darktable.control->height - y)/darktable.control->height));
-    const int wd = darktable.control->width - 2*darktable.control->tabborder;
-    const int ht = darktable.control->width - 2*darktable.control->tabborder;
+    vm->film_strip_size = fmaxf(0.1, fminf(0.6, (darktable.control->height - y - .5*tb)/darktable.control->height));
+    const int wd = darktable.control->width  - 2*tb;
+    const int ht = darktable.control->height - 2*tb;
     dt_view_manager_configure (vm, wd, ht);
   }
-  else if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.mouse_moved)
-    vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which);
+  else if(vm->film_strip_on && v->height + tb < y && vm->film_strip.mouse_moved)
+    vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - tb, which);
   else if(v->mouse_moved) v->mouse_moved(v, x, y, which);
 }
 
@@ -266,7 +267,7 @@ int dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
 
 void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
 {
-  if(vm->film_strip_on) height *= 1.0-vm->film_strip_size;
+  if(vm->film_strip_on) height = height*(1.0-vm->film_strip_size)-darktable.control->tabborder;
   for(int k=0;k<vm->num_views;k++)
   { // this is necessary for all
     dt_view_t *v = vm->view + k;
@@ -611,4 +612,23 @@ void dt_view_toggle_selection(int iid)
     sqlite3_finalize(stmt);
   }
 }
+
+void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(void*), void *data)
+{
+  vm->film_strip_activated = activated;
+  vm->film_strip_data = data;
+  vm->film_strip_on = 1;
+  if(vm->film_strip.enter) vm->film_strip.enter(&vm->film_strip);
+  const int tb = darktable.control->tabborder;
+  const int wd = darktable.control->width  - 2*tb;
+  const int ht = darktable.control->height - 2*tb;
+  dt_view_manager_configure (vm, wd, ht);
+}
+
+void dt_view_film_strip_close(dt_view_manager_t *vm)
+{
+  if(vm->film_strip.leave) vm->film_strip.leave(&vm->film_strip);
+  vm->film_strip_on = 0;
+}
+
 

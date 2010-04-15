@@ -210,8 +210,6 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
       return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
     }
     dev->mipf = dev->image->mipf;
-    // drop reference again, we were just testing. dev holds one already.
-    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
     // init pixel pipeline for preview.
     dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
     dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
@@ -233,6 +231,8 @@ restart:
   if(dev->gui_leaving)
   {
     dt_control_log_busy_leave();
+    dev->mipf = NULL;
+    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
     return;
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -243,6 +243,8 @@ restart:
     if(dev->preview_loading)
     {
       dt_control_log_busy_leave();
+      dev->mipf = NULL;
+      dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
       return;
     }
     else goto restart;
@@ -251,6 +253,8 @@ restart:
   dev->preview_dirty = 0;
   dt_control_queue_draw_all();
   dt_control_log_busy_leave();
+  dev->mipf = NULL;
+  dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
 }
 
 // process preview to gain ldr-mipmaps:

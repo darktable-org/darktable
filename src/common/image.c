@@ -639,6 +639,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
         ret = dt_image_raw_to_preview(img);
         dt_image_release(img, DT_IMAGE_FULL, 'r');
       }
+      dt_image_release(img, mip, 'w');
     }
     else if(mip == DT_IMAGE_FULL)
     {
@@ -659,8 +660,13 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 
 void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip)
 {
-  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   if(mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
+  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  if(img->mip_buf_size[mip] > 0)
+  { // already loaded.
+    pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+    return;
+  }
   dt_job_t j;
   dt_image_load_job_init(&j, img->id, mip);
   dt_control_revive_job(darktable.control, &j);

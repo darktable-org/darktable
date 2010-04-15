@@ -428,6 +428,9 @@ void enter(dt_view_t *self)
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 
+  // TODO: double click callback:
+  dt_view_film_strip_open(darktable.view_manager, NULL, NULL);
+
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -444,6 +447,7 @@ static void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  dt_view_film_strip_close(darktable.view_manager);
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, FALSE);

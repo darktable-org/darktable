@@ -5,15 +5,14 @@
 big new features:
 - tethered shooting
 - filmstrip:
-  - segfault on resize??
-  - change to darkroom mode: blocked mip4..??
-  - is scroll bar handling needed?
-  - is selection needed?
-  - BUG: selection in lighttable mode now broken??
-  - enter/leave functions to be called!
-    - by darkroom enter/leave actually?
+  - scroll to selected image on darkroom enter
+  - prefetch +- a few (full for next neighbor?)
+  - connect events: click star? or just alt-1234?
+  - click or double click to switch to next img?
+  - darkroom mode: load different raw!
+  - is scroll bar handling needed (swtich)?
+  - insert callback
   - register color label callbacks
-  - avoid control->width magic in darkroom!
 
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker

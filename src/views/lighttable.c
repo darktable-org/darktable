@@ -470,8 +470,6 @@ failure:
   lib->zoom_y = zoom_y;
   lib->track  = 0;
   lib->center = center;
-  // dt_mipmap_cache_print(darktable.mipmap_cache);
-  // dt_image_cache_print(darktable.image_cache);
 #ifdef _DEBUG
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
