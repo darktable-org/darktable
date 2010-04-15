@@ -184,26 +184,39 @@ int dt_film_open_recent(const int num)
 
 int dt_film_new(dt_film_t *film,const char *directory)
 {
-  film->id=-1;
-  // Create a new filmroll
+  // Try open filmroll for folder if exists
+  film->id = -1;
   int rc;
   sqlite3_stmt *stmt;
-  char datetime[20];
-  dt_gettime(datetime);
-  rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, ?2)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id from film_rolls where folder = ?1", -1, &stmt, NULL);
   HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
-  rc = sqlite3_bind_text(stmt, 2, directory, strlen(directory), SQLITE_STATIC);
+  rc = sqlite3_bind_text(stmt, 1, directory, strlen(directory), SQLITE_STATIC);
   HANDLE_SQLITE_ERR(rc);
-  pthread_mutex_lock(&(darktable.db_insert));
-  rc = sqlite3_step(stmt);
-  if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
+  if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
   rc = sqlite3_finalize(stmt);
-  film->id = sqlite3_last_insert_rowid(darktable.db);
-  pthread_mutex_unlock(&(darktable.db_insert));
-  if(film->id<=0)
-    return 0;
   
+  if(film->id <= 0)
+  { // Create a new filmroll
+    int rc;
+    sqlite3_stmt *stmt;
+    char datetime[20];
+    dt_gettime(datetime);
+    rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, ?2)", -1, &stmt, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 2, directory, strlen(directory), SQLITE_STATIC);
+    HANDLE_SQLITE_ERR(rc);
+    pthread_mutex_lock(&(darktable.db_insert));
+    rc = sqlite3_step(stmt);
+    if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
+    rc = sqlite3_finalize(stmt);
+    film->id = sqlite3_last_insert_rowid(darktable.db);
+    pthread_mutex_unlock(&(darktable.db_insert));
+   
+  }
+  
+  if(film->id<=0)
+      return 0;
   strcpy(film->dirname,directory);
   film->last_loaded = 0;
   return film->id;

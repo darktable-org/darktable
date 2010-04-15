@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
+#include <stdlib.h>
 #include "gui/gtk.h"
 #include "gui/capture.h"
 #include "gui/camera_import_dialog.h"
@@ -55,8 +56,10 @@ static void import_callback(GtkButton *button,gpointer data)
   dt_camera_import_dialog_new(&list);
   if( list )
   {
+    char path[4096]={0};
+    sprintf(path,"%s/darktable_import/",getenv("HOME"));
     dt_job_t j;
-    dt_camera_import_job_init(&j,list,(dt_camera_t*)data);
+    dt_camera_import_job_init(&j,path,list,(dt_camera_t*)data);
     dt_control_add_job(darktable.control, &j);
   }
 }
@@ -129,7 +132,7 @@ void dt_gui_capture_update()
       // Add camera action buttons
       GtkWidget *ib=NULL,*tb=NULL;
       if( camera->can_import==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),(ib=gtk_button_new_with_label(_("import"))),FALSE,FALSE,0);
+        gtk_box_pack_start(GTK_BOX(widget),(ib=gtk_button_new_with_label(_("import from camera"))),FALSE,FALSE,0);
       /*if( camera->can_tether==TRUE )
         gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_toggle_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);*/
       

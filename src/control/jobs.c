@@ -46,13 +46,14 @@ void dt_image_load_job_run(dt_job_t *job)
   dt_image_cache_release(img, 'r');
 }
 
-void dt_camera_import_job_init(dt_job_t *job, GList *images,dt_camera_t *camera)
+void dt_camera_import_job_init(dt_job_t *job,char *path, GList *images,dt_camera_t *camera)
 {
   dt_control_job_init(job, "import selected images from camera");
   job->execute = &dt_camera_import_job_run;
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
   t->images=g_list_copy(images);
   t->camera=camera;
+  t->import_path=g_strdup(path);
 }
 
 void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
@@ -77,8 +78,12 @@ void dt_camera_import_job_run(dt_job_t *job)
   dt_control_log(_("starting import job of images from camera"));
   
   // Setup a new filmroll to import images to....
+  char buffer[512]={0};
   dt_film_init(&t->film);
-  sprintf(t->film.dirname,"%s/%d","/tmp",(int)time(NULL));
+  const time_t tim=time(NULL);
+  struct tm *ts=localtime(&tim);
+  strftime(buffer,512,"%Y-%m-%d camera import",ts);
+  sprintf(t->film.dirname,"%s/%s",t->import_path,buffer);
   
   // Create recursive directories, abort if no access
   struct stat st;
@@ -99,12 +104,18 @@ void dt_camera_import_job_run(dt_job_t *job)
   // Import path is ok, lets actually create the filmroll in database..
   if(dt_film_new(&t->film,t->film.dirname) != 0)
   {
-  
-    // register listener and start download of images
+    
+    // Switch to new filmroll
+    dt_film_open(t->film.id);
+    dt_ctl_switch_mode_to(DT_LIBRARY);
+    
+    // register listener 
     dt_camctl_listener_t listener= {0};
     listener.data=t;
     listener.image_downloaded=_camera_image_downloaded;
     listener.request_image_path=_camera_request_image_path;
+    
+    //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);
     dt_camctl_import(darktable.camctl,t->camera,t->images);
     dt_camctl_unregister_listener(darktable.camctl,&listener);

@@ -152,7 +152,6 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
           GValue value;
           gtk_tree_model_get_iter(GTK_TREE_MODEL (data->store),&iter,(GtkTreePath*)sp->data);
           gtk_tree_model_get_value(GTK_TREE_MODEL (data->store),&iter,1,&value);
-          fprintf(stderr,"Value: %s\n",g_value_get_string(&value));
           *data->result=g_list_append(*data->result,g_strdup(g_value_get_string(&value)) );
           g_value_unset(&value);
         } while( (sp=g_list_next(sp)) );
