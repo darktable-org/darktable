@@ -61,7 +61,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   dt_film_image_import(&t->film,filename);
-  dt_control_log("File %s imported from camera.", filename);
+  dt_control_log(_("file %s imported from camera."), filename);
 }
 
 

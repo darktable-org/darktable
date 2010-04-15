@@ -41,6 +41,8 @@ src/gui/histogram.c
 src/gui/metadata.c
 src/gui/navigation.c
 src/gui/filmview.c
+src/gui/capture.c
+src/gui/camera_import_dialog.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/view.c

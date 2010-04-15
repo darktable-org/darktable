@@ -36,6 +36,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   {
     case CAMERA_CONTROL_BUSY:
     {
+      //dt_control_log(_("camera control is busy."));
       GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander_body");
       GList *child = gtk_container_get_children(GTK_CONTAINER(widget));
       if(child) 
@@ -47,6 +48,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
     
     case CAMERA_CONTROL_AVAILABLE:
     {
+      //dt_control_log(_("camera control is available."));
       GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander_body");
       GList *child = gtk_container_get_children(GTK_CONTAINER(widget));
       if(child) 
