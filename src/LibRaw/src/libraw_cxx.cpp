@@ -1507,7 +1507,7 @@ int LibRaw::dcraw_process(void)
                 SET_PROC_FLAG(LIBRAW_PROGRESS_FOVEON_INTERPOLATE);
             }
 
-        if (!P1.is_foveon && O.document_mode < 2 && !O.dont_scale)
+        if (!P1.is_foveon && O.document_mode < 2)
             {
                 scale_colors();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_SCALE_COLORS);
