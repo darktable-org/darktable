@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include "gui/gtk.h"
 #include "gui/capture.h"
+#include "gui/camera_import_dialog.h"
 #include "develop/develop.h"
 #include "dtgtk/label.h"
 #include "control/control.h"
@@ -35,7 +36,12 @@ static void detect_source_callback(GtkButton *button,gpointer data)
 static void import_callback(GtkButton *button,gpointer data)  
 {
   dt_camctl_set_active_camera(darktable.camctl,(dt_camera_t*)data);
-  // Fire up camera import dialog for specified camera
+  GList *list=NULL;
+  dt_camera_import_dialog_new(&list);
+  if( list )
+  {
+    // invoke import of camera i cameractl
+  }
 }
 
 static void tethered_callback(GtkButton *button,gpointer data)  
@@ -96,8 +102,17 @@ void dt_gui_capture_update()
       // Add camera label
       GtkWidget *label=GTK_WIDGET(dtgtk_label_new(camera->model,DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
       gtk_box_pack_start(GTK_BOX(widget),label,TRUE,TRUE,0);
-      sprintf(buffer,_("Camera %s connected on port %s"),camera->model,camera->port);
-      gtk_object_set(GTK_OBJECT(label), "tooltip-text", buffer, NULL);
+      
+      // Set summary if exists for tooltip
+      if( camera->summary.text !=NULL && strlen(camera->summary.text) >0 ) 
+      {
+        gtk_object_set(GTK_OBJECT(label), "tooltip-text", camera->summary.text, NULL);
+      }
+      else
+      {
+        sprintf(buffer,_("Device \"%s\" connected on port \"%s\"."),camera->model,camera->port);
+        gtk_object_set(GTK_OBJECT(label), "tooltip-text", buffer, NULL);
+      }
       
       // Add camera action buttons
       GtkWidget *ib=NULL,*tb=NULL;
