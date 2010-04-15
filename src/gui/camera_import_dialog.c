@@ -125,7 +125,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
  
   // Setup a listener for previwes of all files on camera
   // then initiate fetch of all previews from camera
-  dt_camctl_listener_t listener;
+  dt_camctl_listener_t listener={0};
   listener.data=data;
   listener.camera_storage_image_filename=_camera_storage_image_filename;
   dt_camctl_register_listener(darktable.camctl,&listener);
