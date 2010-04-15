@@ -1,4 +1,10 @@
 0.6 release:
+=====================================
+ - max scaling through exposure,
+   wb .. highlights!
+ - wb to reverse cam wb and re-apply
+=====================================
+
 - thumbnail mipmap exposure applied twice?
 - forum gamma nikon hack
 
