@@ -9,6 +9,7 @@ libtemperature_la_SOURCES=temperature.c
 libtemperature_la_CFLAGS=-I$(srcdir)/../LibRaw
 libcolorcorrection_la_SOURCES=colorcorrection.c
 libexposure_la_SOURCES=exposure.c
+libexposure_la_CFLAGS=-I$(srcdir)/../LibRaw
 libequalizer_la_SOURCES=equalizer.c
 libcolorin_la_SOURCES=colorin.c
 libcolorin_la_CFLAGS=-I$(srcdir)/../LibRaw
