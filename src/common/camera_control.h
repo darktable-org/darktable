@@ -44,6 +44,15 @@ typedef struct dt_camera_t {
 } 
 dt_camera_t;
 
+typedef enum dt_camctl_status_t
+{
+	/** Camera control is busy, operations will block */
+	CAMERA_CONTROL_BUSY,
+	/** Camera control is available */
+	CAMERA_CONTROL_AVAILABLE
+}
+dt_camctl_status_t;
+
 typedef enum dt_camera_error_t 
 {
   /** Locking camera failed */
@@ -73,6 +82,9 @@ dt_camctl_t;
 typedef struct dt_camctl_listener_t
 {
   void *data;
+ /** Invoked when a image is downloaded while in tethered mode or  by import */
+  void (*control_status)(dt_camctl_status_t status,void *data);
+
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this... */
   const char * (*request_image_path)(const dt_camera_t *camera,void *data);
   /** Invoked when a image is downloaded while in tethered mode or  by import */

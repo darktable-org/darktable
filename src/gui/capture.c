@@ -30,7 +30,35 @@
 static dt_camctl_listener_t _gui_camctl_listener;
 
 
-static void _camctl_camera_image_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
+static void _camctl_camera_control_status_callback(dt_camctl_status_t status,void *data)
+{
+  switch(status)
+  {
+    case CAMERA_CONTROL_BUSY:
+    {
+      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander_body");
+      GList *child = gtk_container_get_children(GTK_CONTAINER(widget));
+      if(child) 
+        do
+        {
+          gtk_widget_set_sensitive(GTK_WIDGET(child->data),FALSE);
+        } while( (child=g_list_next(child)) );
+    } break;
+    
+    case CAMERA_CONTROL_AVAILABLE:
+    {
+      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander_body");
+      GList *child = gtk_container_get_children(GTK_CONTAINER(widget));
+      if(child) 
+        do
+        {
+          gtk_widget_set_sensitive(GTK_WIDGET(child->data),TRUE);
+        } while( (child=g_list_next(child)) );
+    } break;
+  }
+}
+
+/*static void _camctl_camera_image_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
 {
   // import image to darktable single images...
   int id = dt_image_import(1, filename);
@@ -40,7 +68,7 @@ static void _camctl_camera_image_downloaded_callback(const dt_camera_t *camera,c
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
     dt_ctl_switch_mode_to(DT_DEVELOP);
   }
-}
+}*/
 
 
 static void detect_source_callback(GtkButton *button,gpointer data)  
@@ -70,20 +98,17 @@ static void tethered_callback(GtkToggleButton *button,gpointer data)
   if(gtk_toggle_button_get_active(button))
   {
     // Setup a listener for camera_control
-    memset(&_gui_camctl_listener,0,sizeof(dt_camctl_listener_t));
-    _gui_camctl_listener.image_downloaded = _camctl_camera_image_downloaded_callback;
-    dt_camctl_register_listener( darktable.camctl, &_gui_camctl_listener );
     dt_camctl_tether_mode(darktable.camctl,TRUE);
   } else {
-    dt_camctl_unregister_listener( darktable.camctl, &_gui_camctl_listener );
     dt_camctl_tether_mode(darktable.camctl,FALSE);
   }
-
 }
 
 void dt_gui_capture_init() 
 {
-  
+  memset(&_gui_camctl_listener,0,sizeof(dt_camctl_listener_t));
+  _gui_camctl_listener.control_status= _camctl_camera_control_status_callback;
+  dt_camctl_register_listener( darktable.camctl, &_gui_camctl_listener );
   dt_gui_capture_update();
 }
 
