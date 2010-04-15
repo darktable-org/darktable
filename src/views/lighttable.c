@@ -821,6 +821,11 @@ void enter(dt_view_t *self)
   // add expanders
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GList *modules = g_list_last(darktable.lib->plugins);
+	
+  // Adjust gui
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "capture_eventbox");
+  gtk_widget_set_visible(widget, TRUE);
+	
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
