@@ -21,6 +21,7 @@ big new features:
 
 - mipf not loaded on time in develop for small displays.
 
+- metadata imgfilename etc with ellipzized file names
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
