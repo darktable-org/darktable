@@ -325,6 +325,32 @@
         <long></long>
       </locale>
     </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/filmstrip/size</key>
+      <applyto>/apps/darktable/plugins/filmstrip/size</applyto>
+      <owner>darktable</owner>
+      <type>float</type>
+      <default>0.15</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/filmstrip/on</key>
+      <applyto>/apps/darktable/plugins/filmstrip/on</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
     
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/query</key>

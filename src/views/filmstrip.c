@@ -24,6 +24,7 @@
 #include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/darktable.h"
+#include "common/colorlabels.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -219,10 +220,32 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
+  dt_colorlabels_register_key_accels();
+  // scroll to opened image.
+  dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
+  int imgid = darktable.view_manager->film_strip_scroll_to;
+  char query[1024];
+  gchar *qin = dt_conf_get_string("plugins/lighttable/query");
+  if(qin)
+  {
+    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1,  0);
+    sqlite3_bind_int(stmt, 2, -1);
+    sqlite3_bind_int(stmt, 3, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      strip->offset = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    g_free(qin);
+  }
 }
 
 void leave(dt_view_t *self)
 {
+  dt_colorlabels_register_key_accels();
   dt_gui_key_accel_unregister(star_key_accel_callback);
 }
 

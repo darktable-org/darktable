@@ -34,6 +34,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->film_strip_dragging = 0;
   vm->film_strip_on = 0;
   vm->film_strip_size = 0.15f;
+  vm->film_strip_scroll_to = -1;
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
   vm->num_views = 0;
@@ -545,6 +546,9 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     }
   }
 
+  // kill all paths, in case img was not loaded yet, or is blocked:
+  cairo_new_path(cr);
+
   { // color labels:
     const int x = zoom == 1 ? (0.04+5*0.04)*fscale : 0.9*width;
     const int y = zoom == 1 ? 0.12*fscale: 0.1*height;
@@ -629,6 +633,11 @@ void dt_view_film_strip_close(dt_view_manager_t *vm)
 {
   if(vm->film_strip.leave) vm->film_strip.leave(&vm->film_strip);
   vm->film_strip_on = 0;
+}
+
+void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)
+{
+  vm->film_strip_scroll_to = st;
 }
 
 

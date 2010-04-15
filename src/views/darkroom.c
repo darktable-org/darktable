@@ -322,7 +322,6 @@ void enter(dt_view_t *self)
   if(count < 2)
   {
     sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-    sqlite3_stmt *stmt;
     sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
     sqlite3_bind_int(stmt, 1, dev->image->id);
     sqlite3_step(stmt);
@@ -429,6 +428,7 @@ void enter(dt_view_t *self)
   dt_dev_pop_history_items(dev, dev->history_end);
 
   // TODO: double click callback:
+  dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
   dt_view_film_strip_open(darktable.view_manager, NULL, NULL);
 
   // image should be there now.

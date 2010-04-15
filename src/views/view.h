@@ -89,7 +89,7 @@ typedef struct dt_view_manager_t
   int32_t current_view, num_views;
   int32_t film_strip_on;
   float film_strip_size;
-  int32_t film_strip_dragging;
+  int32_t film_strip_dragging, film_strip_scroll_to;
   void (*film_strip_activated)(void *);
   void *film_strip_data;
 }
@@ -128,5 +128,7 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
 void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(void*), void *data);
 /** close the film strip view. */
 void dt_view_film_strip_close(dt_view_manager_t *vm);
+/** advise the film strip to scroll to imgid at next expose. */
+void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int imgid);
 
 #endif
