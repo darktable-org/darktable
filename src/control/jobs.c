@@ -17,6 +17,7 @@
 */
 #include "control/jobs.h"
 #include "control/conf.h"
+#include "common/camera_control.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -44,6 +45,74 @@ void dt_image_load_job_run(dt_job_t *job)
   if(!ret) dt_image_release(img, t->mip, 'r');
   dt_image_cache_release(img, 'r');
 }
+
+void dt_camera_import_job_init(dt_job_t *job, GList *images,dt_camera_t *camera)
+{
+  dt_control_job_init(job, "import selected images from camera");
+  job->execute = &dt_camera_import_job_run;
+  dt_camera_import_t *t = (dt_camera_import_t *)job->param;
+  t->images=g_list_copy(images);
+  t->camera=camera;
+}
+
+void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
+{
+  // Import downloaded image to import filmroll
+  dt_camera_import_t *t = (dt_camera_import_t *)data;
+  dt_film_image_import(&t->film,filename);
+  dt_control_log("File %s imported from camera.", filename);
+}
+
+
+const char *_camera_request_image_path(const dt_camera_t *camera,void *data)
+{
+  // :) yeap this is kind of stupid yes..
+  dt_camera_import_t *t = (dt_camera_import_t *)data;
+  return t->film.dirname;
+}
+
+void dt_camera_import_job_run(dt_job_t *job)
+{
+  dt_camera_import_t *t = (dt_camera_import_t *)job->param;
+  dt_control_log(_("starting import job of images from camera"));
+  
+  // Setup a new filmroll to import images to....
+  dt_film_init(&t->film);
+  sprintf(t->film.dirname,"%s/%d","/tmp",(int)time(NULL));
+  
+  // Create recursive directories, abort if no access
+  struct stat st;
+  char *p,*copy;
+  p = copy = g_strdup( t->film.dirname);
+	do {
+    p = strchr (p + 1, '/');
+		if(p) *p = '\0';
+     if(stat(copy,&st) != 0)
+			  if (mkdir (copy, 0755) == -1) 
+        {
+          dt_control_log(_("failed to create import path %s, import of images aborted."), t->film.dirname);
+          return;
+			  }
+		if (p) *p = '/';
+	} while (p);
+  
+  // Import path is ok, lets actually create the filmroll in database..
+  if(dt_film_new(&t->film,t->film.dirname) != 0)
+  {
+  
+    // register listener and start download of images
+    dt_camctl_listener_t listener= {0};
+    listener.data=t;
+    listener.image_downloaded=_camera_image_downloaded;
+    listener.request_image_path=_camera_request_image_path;
+    dt_camctl_register_listener(darktable.camctl,&listener);
+    dt_camctl_import(darktable.camctl,t->camera,t->images);
+    dt_camctl_unregister_listener(darktable.camctl,&listener);
+  }
+  else
+    dt_control_log(_("failed to create filmroll for camera import, import of images aborted."));
+}
+
 
 void dt_film_import1_init(dt_job_t *job, dt_film_t *film)
 {

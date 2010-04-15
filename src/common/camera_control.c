@@ -34,7 +34,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam);
 
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
-void _dispatch_camera_captured_image(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename);
+void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename);
 void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_camera_error_t error);
@@ -207,13 +207,13 @@ static void *_camera_event_thread(void *data) {
   const dt_camera_t *camera=camctl->active_camera;
   
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Starting camera event thread %lx of context %lx\n",(unsigned long int)camctl->thread,(unsigned long int)data);
-  while(camera==camctl->active_camera) {
+  while(camera==camctl->active_camera && camera->is_tethering==TRUE) {
     pthread_mutex_lock(&camctl->mutex);
     _camera_poll_events(camctl,camera);
     pthread_mutex_unlock(&camctl->mutex);
   }
   
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] exiting camera thread %lx.\n",(unsigned long int)camctl->thread);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Exiting camera thread %lx.\n",(unsigned long int)camctl->thread);
   return NULL;
 }
 
@@ -267,17 +267,49 @@ void dt_camctl_set_active_camera(const dt_camctl_t *c, dt_camera_t *cam)
       pthread_mutex_unlock(&camctl->mutex);
     }
     
-    //camctl->thread = NULL;
-    
-    // Start up camera event polling thread
-    if(cam->can_tether)
-      pthread_create(&camctl->thread, NULL, &_camera_event_thread, camctl);
-    
     // Enshure the no process is using the current active camera
     camctl->active_camera = cam;
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera %xl active\n",(unsigned long int)cam);
 
   }    
+}
+
+void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images) {
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  pthread_mutex_lock(&camctl->mutex);
+  GList *ifile=g_list_first(images);
+  
+  const char *output_path=_dispatch_request_image_path(c,cam);
+  if(ifile)
+    do
+    {
+      // Split file into folder and filename
+      char *eos;
+      char folder[4096]={0};
+      char filename[4096]={0};
+      char *file=(char *)ifile->data;
+      eos=file+strlen(file);
+      while( --eos>file && *eos!='/' );
+      strncat(folder,file,eos-file);
+      strcat(filename,eos+1);
+      
+      char outputfile[4096]={0};
+      strcat(outputfile,output_path);
+      strcat(outputfile,"/");
+      strcat(outputfile,filename);
+      
+      // Now we have filenames lets download file and notify listener of image download
+      CameraFile *destination;
+      int handle = open( outputfile, O_CREAT | O_WRONLY,0666);
+      if( handle > 0 ) {
+        gp_file_new_from_fd( &destination , handle );
+        gp_camera_file_get( cam->gpcam, folder , filename, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
+        close( handle );
+        _dispatch_camera_image_downloaded(c,cam,outputfile);
+      }
+    } while( (ifile=g_list_next(ifile)) );
+  
+  pthread_mutex_unlock(&camctl->mutex);
 }
 
 void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
@@ -287,29 +319,35 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
   const char *filename;
   const char *foldername;
   
-  //dt_print(DT_DEBUG_CAMCTL,"[camera_control] Processing path %s\n",path);
-  
   gp_list_new (&files);
   gp_list_new (&folders);
+  
   // Process files in current folder...
   if( gp_camera_folder_list_files(c->active_camera->gpcam,path,files,c->gpcontext) == GP_OK ) 
   {
     for(int i=0; i < gp_list_count(files); i++) 
     {
       char file[4096]={0};
-      
       strcat(file,path);
       strcat(file,"/");
       gp_list_get_name (files, i, &filename);
       strcat(file,filename);
       
-      // Let's slurp the preview image
-      CameraFile *cf;
-      gp_file_new(&cf);
-      if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,cf,c->gpcontext) < GP_OK )
-        dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file %s in folder %s on device\n",filename,path);
-  
-      _dispatch_camera_storage_image_filename(c,c->active_camera,file,cf);
+      // Lets check the type of file...
+      CameraFileInfo cfi;
+      
+      if( gp_camera_file_get_info(c->active_camera->gpcam, path, filename,&cfi,c->gpcontext) == GP_OK)
+      {
+        // Let's slurp the preview image
+        CameraFile *cf;
+        gp_file_new(&cf);
+        if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,cf,c->gpcontext) < GP_OK )
+          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file %s in folder %s on device\n",filename,path);
+    
+        _dispatch_camera_storage_image_filename(c,c->active_camera,file,cf);
+      }
+      else
+          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file information of %s in folder %s on device\n",filename,path);
     }
   } 
   
@@ -345,19 +383,28 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, gboolean enable)
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
   pthread_mutex_lock(&camctl->mutex);
-  if( cam ) 
+  if( cam && cam->can_tether ) 
   {
     if((cam->is_tethering=enable)) 
     {
-      if(! pthread_mutex_trylock(&cam->lock) )
+      if( pthread_mutex_trylock(&cam->lock) != 0)
       {
         dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to lock active camera for tethering mode\n");
         _dispatch_camera_error(c,cam,CAMERA_LOCK_FAILED);
       }
-      else 
-        pthread_mutex_unlock(&cam->lock);
+      else
+      {
+        // Start up camera event polling thread
+        pthread_create(&camctl->thread, NULL, &_camera_event_thread, camctl);
+      }
     }
-  }
+    else 
+    { // Turn of tethering
+      cam->is_tethering=FALSE;
+      pthread_mutex_unlock(&cam->lock);
+    }
+  }else
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to set tether mode with reason: %s\n", cam?"device does not support tethered capture":"no active camera");
   pthread_mutex_unlock(&camctl->mutex);
 }
 
@@ -394,7 +441,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
           close( handle );
             
           // Notify listerners of captured image
-          _dispatch_camera_captured_image(c,cam,filename);
+          _dispatch_camera_image_downloaded(c,cam,filename);
           
         }
       } break;
@@ -447,15 +494,15 @@ void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camer
 }
 
 
-void _dispatch_camera_captured_image(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename)
+void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   GList *listener;
   if((listener=g_list_first(camctl->listeners))!=NULL)
   do
   {
-    if( ((dt_camctl_listener_t*)listener->data)->captured_image != NULL )
-      ((dt_camctl_listener_t*)listener->data)->captured_image(camera,filename,((dt_camctl_listener_t*)listener->data)->data);
+    if( ((dt_camctl_listener_t*)listener->data)->image_downloaded != NULL )
+      ((dt_camctl_listener_t*)listener->data)->image_downloaded(camera,filename,((dt_camctl_listener_t*)listener->data)->data);
   } while((listener=g_list_next(listener))!=NULL);
 }
 

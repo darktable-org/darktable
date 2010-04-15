@@ -18,6 +18,8 @@
 #ifndef DT_CONTROL_JOBS_H
 #define DT_CONTROL_JOBS_H
 
+#include <glib.h>
+
 #include "common/image.h"
 #include "control/control.h"
 #include "common/film.h"
@@ -32,6 +34,18 @@ dt_image_load_t;
 
 void dt_image_load_job_run(dt_job_t *job);
 void dt_image_load_job_init(dt_job_t *job, int32_t imgid, dt_image_buffer_t mip);
+
+
+typedef struct dt_camera_import_t
+{
+  GList *images;
+  struct dt_camera_t *camera;
+  dt_film_t film;
+}
+dt_camera_import_t;
+void dt_camera_import_job_run(dt_job_t *job);
+void dt_camera_import_job_init(dt_job_t *job, GList *images, struct dt_camera_t *camera);
+
 
 typedef struct dt_film_import1_t
 {

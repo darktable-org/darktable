@@ -75,8 +75,8 @@ typedef struct dt_camctl_listener_t
   void *data;
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this... */
   const char * (*request_image_path)(const dt_camera_t *camera,void *data);
-  /** Invoked when a image is captured while in tethered mode or when image are fetched by import */
-  void (*captured_image)(const dt_camera_t *camera,const char *filename,void *data);
+  /** Invoked when a image is downloaded while in tethered mode or  by import */
+  void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
   
   /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews() */
   void (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,void *data);
@@ -107,5 +107,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c,gboolean enable);
 /** travers filesystem on camera an retreives previews of images */
 void dt_camctl_get_previews(const dt_camctl_t *c);
 
+/** Imports the images in list from specified camera */
+void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images);
 
 #endif
