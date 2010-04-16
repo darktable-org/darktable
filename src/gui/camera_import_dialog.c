@@ -17,7 +17,7 @@
 */
 
 #include "develop/develop.h"
-
+#include "control/conf.h"
 #include "common/camera_control.h"
 #include "gui/camera_import_dialog.h"
 
@@ -42,12 +42,15 @@ typedef struct _camera_import_dialog_t {
   
   struct {
     GtkWidget *page;
+    GtkEntry *jobname;
     GtkWidget *treeview;
     GtkWidget *info;  
   } import;
   
   struct {
     GtkWidget *page;
+    GtkEntry *basedirectory;
+    GtkEntry *subdirectory;
   } settings;
   
   GtkListStore *store;
@@ -61,15 +64,28 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   data->dialog=gtk_dialog_new_with_buttons(_("import images from camera"),NULL,GTK_DIALOG_MODAL,_("import"),GTK_RESPONSE_ACCEPT,_("cancel"),GTK_RESPONSE_NONE,NULL);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (data->dialog));
   
-  // Build the dialog
+  // List - setup store
+  data->store = gtk_list_store_new (2,GDK_TYPE_PIXBUF,G_TYPE_STRING);
+  
+  // IMPORT PAGE
   data->import.page=gtk_vbox_new(FALSE,5);
+  gtk_container_set_border_width(GTK_CONTAINER(data->import.page),5);
+  
   // Top info
   data->import.info=gtk_label_new( _("please wait while prefetcing thumbnails of images from camera...") );
   gtk_label_set_single_line_mode( GTK_LABEL(data->import.info) , FALSE );
   gtk_box_pack_start(GTK_BOX(data->import.page),data->import.info,FALSE,FALSE,0);
   
-  // List - setup store
-  data->store = gtk_list_store_new (2,GDK_TYPE_PIXBUF,G_TYPE_STRING);
+  // n/v
+  GtkBox *hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
+  data->import.jobname=GTK_ENTRY(gtk_entry_new());
+  if( dt_conf_get_string ("import/jobid") )
+    gtk_entry_set_text( GTK_ENTRY( data->import.jobname),dt_conf_get_string ("import/jobid"));
+  
+  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("Job name:"))),FALSE,FALSE,0);
+  gtk_box_pack_start(hbox,GTK_WIDGET(data->import.jobname),FALSE,FALSE,0);
+  
+  gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
   
   // Create the treview with list model data store
   data->import.treeview=gtk_scrolled_window_new(NULL,NULL);
@@ -91,24 +107,39 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
   gtk_tree_selection_set_mode(selection,GTK_SELECTION_MULTIPLE);
   
-  
   gtk_tree_view_set_model(treeview,GTK_TREE_MODEL(data->store));
   
   gtk_box_pack_start(GTK_BOX(data->import.page),data->import.treeview,TRUE,TRUE,0);
   
   
+  // SETTINGS PAGE
+  data->settings.page=gtk_vbox_new(FALSE,5);
+  gtk_container_set_border_width(GTK_CONTAINER(data->import.page),5);
   
-  // Settings page
-  data->settings.page=gtk_vbox_new(TRUE,5);
+  
+  hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
+  data->settings.basedirectory=GTK_ENTRY(gtk_entry_new());
+  if( dt_conf_get_string ("import/basedirectory") )
+    gtk_entry_set_text( GTK_ENTRY( data->settings.basedirectory),dt_conf_get_string ("import/basedirectory"));
+  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("Base storage:"))),FALSE,FALSE,0);
+  gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.basedirectory),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
+  
+  hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
+  data->settings.subdirectory=GTK_ENTRY(gtk_entry_new());
+  if( dt_conf_get_string ("import/subdirectory") )
+    gtk_entry_set_text( GTK_ENTRY( data->settings.subdirectory),dt_conf_get_string ("import/subdirectory"));
+  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("Subdirectory structure:"))),FALSE,FALSE,0);
+  gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.subdirectory),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
   
   
-  
-  // The noteboook
-  
+  // THE NOTEBOOOK
   data->notebook=gtk_notebook_new();
   gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->import.page,gtk_label_new(_("import images")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->settings.page,gtk_label_new(_("import settings")));
+  //gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->settings.page,gtk_label_new(_("import settings")););
   
+  // end
   gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
   gtk_widget_set_size_request(content,400,400);
 

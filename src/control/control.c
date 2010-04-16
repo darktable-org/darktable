@@ -81,6 +81,11 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
   dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
 
+  // Import settings
+  dt_conf_set_string ("import/basedirectory", "~/Pictures");
+  dt_conf_set_string ("import/jobid", "default");
+  dt_conf_set_string ("import/subdirectory", "${EXIF_YEAR}/${EXIF_MONTH}/${EXIF_YEAR}${EXIF_MONTH} ${JOBID}");
+
   dt_conf_set_float("gamma_linear", .1f);
   dt_conf_set_float("gamma_gamma", .45f);
 }
