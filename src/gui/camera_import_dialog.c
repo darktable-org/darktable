@@ -61,24 +61,28 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   data->store = gtk_list_store_new (2,GDK_TYPE_PIXBUF,G_TYPE_STRING);
   
   // Create the treview with list model data store
-  data->treeview=gtk_tree_view_new();
+  data->treeview=gtk_scrolled_window_new(NULL,NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->treeview),GTK_POLICY_NEVER,GTK_POLICY_ALWAYS);
+  
+  gtk_container_add(GTK_CONTAINER(data->treeview), gtk_tree_view_new());
+  GtkTreeView *treeview=GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->treeview)));  
   
   GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new( );
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer,"pixbuf",0, NULL);
-  gtk_tree_view_append_column( GTK_TREE_VIEW(  data->treeview ), column);
+  gtk_tree_view_append_column( treeview , column);
   
   renderer = gtk_cell_renderer_text_new( );
   column = gtk_tree_view_column_new_with_attributes( _("storage file"), renderer, "text", 1, NULL);
-  gtk_tree_view_append_column( GTK_TREE_VIEW(  data->treeview ), column);
+  gtk_tree_view_append_column( treeview , column);
   gtk_tree_view_column_set_expand( column, TRUE);
   
   
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(data->treeview));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
   gtk_tree_selection_set_mode(selection,GTK_SELECTION_MULTIPLE);
   
   gtk_widget_set_size_request(data->treeview,400,400);
 
-  gtk_tree_view_set_model(GTK_TREE_VIEW(data->treeview),GTK_TREE_MODEL(data->store));
+  gtk_tree_view_set_model(treeview,GTK_TREE_MODEL(data->store));
   
   
   gtk_box_pack_start(GTK_BOX(content),data->treeview,TRUE,TRUE,0);
@@ -91,23 +95,26 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   const char *img;
   unsigned long size;
   GdkPixbuf *pixbuf=NULL;
-    
-  gp_file_get_data_and_size(preview, &img, &size);
-  if( size > 0 )
-  { // we got preview image data lets create a pixbuf from image blob
-    GError *err=NULL;
-    GInputStream *stream;
-    if( (stream = g_memory_input_stream_new_from_data(img, size,NULL)) !=NULL)
-        pixbuf = gdk_pixbuf_new_from_stream( stream, NULL, &err );
-      
-  }
-  
   GdkPixbuf *thumb=NULL;
-  if(pixbuf)
-  { // Scale pixbuf to a thumbnail
-    double sw=gdk_pixbuf_get_width( pixbuf );
-    double scale=75.0/gdk_pixbuf_get_height( pixbuf );
-    thumb = gdk_pixbuf_scale_simple( pixbuf, sw*scale,75 , GDK_INTERP_BILINEAR );
+    
+  if( preview )
+  {
+    gp_file_get_data_and_size(preview, &img, &size);
+    if( size > 0 )
+    { // we got preview image data lets create a pixbuf from image blob
+      GError *err=NULL;
+      GInputStream *stream;
+      if( (stream = g_memory_input_stream_new_from_data(img, size,NULL)) !=NULL)
+          pixbuf = gdk_pixbuf_new_from_stream( stream, NULL, &err );
+        
+    }
+      
+    if(pixbuf)
+    { // Scale pixbuf to a thumbnail
+      double sw=gdk_pixbuf_get_width( pixbuf );
+      double scale=75.0/gdk_pixbuf_get_height( pixbuf );
+      thumb = gdk_pixbuf_scale_simple( pixbuf, sw*scale,75 , GDK_INTERP_BILINEAR );
+    }
   }
   
   gtk_list_store_append(data->store,&iter);
@@ -133,7 +140,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   dt_camctl_unregister_listener(darktable.camctl,&listener);
   
   // Select all images as default
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(data->treeview));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->treeview))));
   gtk_tree_selection_select_all(selection);
   
   // Lets run dialog

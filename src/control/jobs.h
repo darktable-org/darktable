@@ -41,7 +41,7 @@ typedef struct dt_camera_import_t
   GList *images;
   struct dt_camera_t *camera;
   char *import_path;
-  dt_film_t film;
+  dt_film_t *film;
 }
 dt_camera_import_t;
 void dt_camera_import_job_run(dt_job_t *job);

@@ -87,7 +87,7 @@ static void import_callback(GtkButton *button,gpointer data)
   if( list )
   {
     char path[4096]={0};
-    sprintf(path,"%s/darktable_import/",getenv("HOME"));
+    sprintf(path,"%s/darktable_import",getenv("HOME"));
     dt_job_t j;
     dt_camera_import_job_init(&j,path,list,(dt_camera_t*)data);
     dt_control_add_job(darktable.control, &j);

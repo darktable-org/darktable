@@ -140,19 +140,19 @@ gint _compare_camera_by_port(gconstpointer a,gconstpointer b)
 void dt_camctl_detect_cameras(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
-  CameraList *temporary=NULL;
-  gp_list_new( &temporary );
-  gp_abilities_list_detect (c->gpcams,c->gpports, temporary, c->gpcontext );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( temporary )>0?gp_list_count( temporary )-1:0);
+  CameraList *available_cameras=NULL;
+  gp_list_new( &available_cameras );
+  gp_abilities_list_detect (c->gpcams,c->gpports, available_cameras, c->gpcontext );
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( available_cameras )>0?gp_list_count( available_cameras )-1:0);
 
   pthread_mutex_lock(&camctl->mutex);
   
-  for(int i=0;i<gp_list_count( temporary );i++)
+  for(int i=0;i<gp_list_count( available_cameras );i++)
   {
     dt_camera_t *camera=g_malloc(sizeof(dt_camera_t));
     memset( camera,0,sizeof(dt_camera_t));
-    gp_list_get_name (temporary, i, &camera->model);
-    gp_list_get_value (temporary, i, &camera->port);
+    gp_list_get_name (available_cameras, i, &camera->model);
+    gp_list_get_value (available_cameras, i, &camera->port);
     
     if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
     
@@ -245,7 +245,7 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam) {
       
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Device %s on port %s initialized\n", cam->model,cam->port);
   } else
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] FDevice %s on port %s already initialized\n", cam->model,cam->port);
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Device %s on port %s already initialized\n", cam->model,cam->port);
       
   return TRUE;
 }
@@ -297,7 +297,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
       
       char outputfile[4096]={0};
       strcat(outputfile,output_path);
-      strcat(outputfile,"/");
+      if(outputfile[strlen(outputfile)]!='/') strcat(outputfile,"/");
       strcat(outputfile,filename);
       
       // Now we have filenames lets download file and notify listener of image download
@@ -305,9 +305,15 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
       int handle = open( outputfile, O_CREAT | O_WRONLY,0666);
       if( handle > 0 ) {
         gp_file_new_from_fd( &destination , handle );
-        gp_camera_file_get( cam->gpcam, folder , filename, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-        close( handle );
-        _dispatch_camera_image_downloaded(c,cam,outputfile);
+        if( gp_camera_file_get( cam->gpcam, folder , filename, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext) == GP_OK)
+        {
+          close( handle );
+          _dispatch_camera_image_downloaded(c,cam,outputfile);
+        }
+      else
+          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to download file %s\n",outputfile);
+        
+        
       }
     } while( (ifile=g_list_next(ifile)) );
   
@@ -338,15 +344,16 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
       
       // Lets check the type of file...
       CameraFileInfo cfi;
-      
       if( gp_camera_file_get_info(c->active_camera->gpcam, path, filename,&cfi,c->gpcontext) == GP_OK)
       {
         // Let's slurp the preview image
-        CameraFile *cf;
+        CameraFile *cf=NULL;
         gp_file_new(&cf);
         if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,cf,c->gpcontext) < GP_OK )
-          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file %s in folder %s on device\n",filename,path);
-    
+        {
+          cf=NULL;
+          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive preview of file %s\n",filename);
+        }
         _dispatch_camera_storage_image_filename(c,c->active_camera,file,cf);
       }
       else

@@ -60,7 +60,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_film_image_import(&t->film,filename);
+  dt_film_image_import(t->film,filename);
   dt_control_log(_("file %s imported from camera."), filename);
 }
 
@@ -69,7 +69,7 @@ const char *_camera_request_image_path(const dt_camera_t *camera,void *data)
 {
   // :) yeap this is kind of stupid yes..
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  return t->film.dirname;
+  return t->film->dirname;
 }
 
 void dt_camera_import_job_run(dt_job_t *job)
@@ -79,34 +79,40 @@ void dt_camera_import_job_run(dt_job_t *job)
   
   // Setup a new filmroll to import images to....
   char buffer[512]={0};
-  dt_film_init(&t->film);
+  t->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
+  
+  dt_film_init(t->film);
   const time_t tim=time(NULL);
   struct tm *ts=localtime(&tim);
   strftime(buffer,512,"%Y-%m-%d camera import",ts);
-  sprintf(t->film.dirname,"%s/%s",t->import_path,buffer);
+  sprintf(t->film->dirname,"%s/%s",t->import_path,buffer);
+  
+  pthread_mutex_lock(&t->film->images_mutex);
+  t->film->ref++;
+  pthread_mutex_unlock(&t->film->images_mutex);
   
   // Create recursive directories, abort if no access
   struct stat st;
   char *p,*copy;
-  p = copy = g_strdup( t->film.dirname);
-	do {
+  p = copy = g_strdup( t->film->dirname);
+  do {
     p = strchr (p + 1, '/');
-		if(p) *p = '\0';
+    if(p) *p = '\0';
      if(stat(copy,&st) != 0)
-			  if (mkdir (copy, 0755) == -1) 
+        if (mkdir (copy, 0755) == -1) 
         {
-          dt_control_log(_("failed to create import path %s, import of images aborted."), t->film.dirname);
+          dt_control_log(_("failed to create import path %s, import of images aborted."), t->film->dirname);
           return;
-			  }
-		if (p) *p = '/';
-	} while (p);
+        }
+    if (p) *p = '/';
+  } while (p);
   
   // Import path is ok, lets actually create the filmroll in database..
-  if(dt_film_new(&t->film,t->film.dirname) != 0)
+  if(dt_film_new(t->film,t->film->dirname) > 0)
   {
     
     // Switch to new filmroll
-    dt_film_open(t->film.id);
+    dt_film_open(t->film->id);
     dt_ctl_switch_mode_to(DT_LIBRARY);
     
     // register listener 
@@ -122,6 +128,10 @@ void dt_camera_import_job_run(dt_job_t *job)
   }
   else
     dt_control_log(_("failed to create filmroll for camera import, import of images aborted."));
+  
+  pthread_mutex_lock(&t->film->images_mutex);
+  t->film->ref--;
+  pthread_mutex_unlock(&t->film->images_mutex);
 }
 
 
