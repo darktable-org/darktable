@@ -199,8 +199,13 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         }
         
         gp_camera_get_summary(camera->gpcam, &camera->summary, c->gpcontext);
-        
-        camctl->cameras = g_list_append(camctl->cameras,camera);
+	
+	if( camera->summary.text ) {
+		// Remove device property summary:
+		char *eos=strstr(camera->summary.text,"Device Property Summary:\n");
+		eos[0]='\0';
+	}
+	camctl->cameras = g_list_append(camctl->cameras,camera);
       } 
       else
       { // Update camera on port
