@@ -236,7 +236,7 @@ void enter(dt_view_t *self)
     sqlite3_bind_int(stmt, 3, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      strip->offset = sqlite3_column_int(stmt, 0);
+      strip->offset = sqlite3_column_int(stmt, 0) - 1;
     }
     sqlite3_finalize(stmt);
     g_free(qin);
