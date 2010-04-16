@@ -198,9 +198,8 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
           continue;
         }
         
-        gp_camera_get_summary(camera->gpcam, &camera->summary, c->gpcontext);
-	
-	if( camera->summary.text ) {
+        if( gp_camera_get_summary(camera->gpcam, &camera->summary, c->gpcontext) == GP_OK )
+	{
 		// Remove device property summary:
 		char *eos=strstr(camera->summary.text,"Device Property Summary:\n");
 		eos[0]='\0';
@@ -376,8 +375,13 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
         gp_file_new(&cf);
         if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,cf,c->gpcontext) < GP_OK )
         {
-          cf=NULL;
-          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive preview of file %s\n",filename);
+	  // No preview for file lets check image size to se if we should download full image for preview...
+	  if( cfi.file.size > 0  && cfi.file.size < 512000 ) 
+		if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,cf,c->gpcontext) < GP_OK )
+		{
+			cf=NULL;
+			dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive preview of file %s\n",filename);
+		}
         }
         _dispatch_camera_storage_image_filename(c,c->active_camera,file,cf);
       }
