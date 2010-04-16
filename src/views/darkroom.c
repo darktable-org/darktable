@@ -307,6 +307,34 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
+static void
+film_strip_activated(const int imgid, void *data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  // commit image ops to db
+  dt_dev_write_history(dev);
+  // write .dt file
+  dt_image_write_dt_files(dev->image);
+
+  // commit updated mipmaps to db
+  // TODO: bg process?
+  dt_dev_process_to_mip(dev);
+  // release full buffer
+  if(dev->image->pixels)
+    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
+
+  // release image struct with metadata as well.
+  dt_image_cache_flush(dev->image);
+  dt_image_cache_release(dev->image, 'r');
+
+  dev->image = dt_image_cache_get(imgid, 'r');
+  // TODO: this still doesn't work!!
+  dt_dev_pop_history_items(dev, 0);
+  dt_dev_read_history(dev);
+  dt_dev_pop_history_items(dev, dev->history_end);
+  dt_dev_raw_reload(dev);
+}
 
 void enter(dt_view_t *self)
 {
@@ -427,9 +455,9 @@ void enter(dt_view_t *self)
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 
-  // TODO: double click callback:
+  // double click callback:
   dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
-  dt_view_film_strip_open(darktable.view_manager, NULL, NULL);
+  dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
 
   // image should be there now.
   float zoom_x, zoom_y;
@@ -443,7 +471,6 @@ static void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 {
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
-
 
 void leave(dt_view_t *self)
 {

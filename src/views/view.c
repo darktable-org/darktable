@@ -617,7 +617,7 @@ void dt_view_toggle_selection(int iid)
   }
 }
 
-void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(void*), void *data)
+void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data)
 {
   vm->film_strip_activated = activated;
   vm->film_strip_data = data;

@@ -291,12 +291,16 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   // strip->modifiers = state;
   // strip->button = which;
   if(which == 1 && type == GDK_2BUTTON_PRESS)
   {
-    // TODO: emit some selection event.
+    // emit some selection event.
+    if(mouse_over_id > 0 && darktable.view_manager->film_strip_activated)
+      darktable.view_manager->film_strip_activated(mouse_over_id, darktable.view_manager->film_strip_data);
   }
   // image button pressed?
   switch(strip->image_over)
@@ -304,8 +308,6 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     case DT_VIEW_DESERT: break;
     case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4:
     { 
-      int32_t mouse_over_id;
-      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else

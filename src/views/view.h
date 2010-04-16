@@ -90,7 +90,7 @@ typedef struct dt_view_manager_t
   int32_t film_strip_on;
   float film_strip_size;
   int32_t film_strip_dragging, film_strip_scroll_to;
-  void (*film_strip_activated)(void *);
+  void (*film_strip_activated)(const int imgid, void *data);
   void *film_strip_data;
 }
 dt_view_manager_t;
@@ -125,7 +125,7 @@ void dt_view_unload_module(dt_view_t *view);
 /** set scrollbar positions, gui method. */
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize, float vwinsize);
 /** open up the film strip view, with given callback on image activation. */
-void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(void*), void *data);
+void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int, void*), void *data);
 /** close the film strip view. */
 void dt_view_film_strip_close(dt_view_manager_t *vm);
 /** advise the film strip to scroll to imgid at next expose. */
