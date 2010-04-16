@@ -62,16 +62,13 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   }
 }
 
+// This is called by camera poll thread
 static void _camctl_camera_tethered_image_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
 {
   // import image to darktable single images... and open in develop mode
-  int id = dt_image_import(1, filename);
-  if(id)
-  {
-    dt_film_open(1);
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-    dt_ctl_switch_mode_to(DT_DEVELOP);
-  }
+  dt_job_t j;
+  dt_captured_image_import_job_init(&j,filename);
+  dt_control_add_job(darktable.control, &j);
 }
 
 
@@ -101,10 +98,12 @@ static void tethered_callback(GtkToggleButton *button,gpointer data)
   if(gtk_toggle_button_get_active(button))
   {
     // Setup a listener for camera_control
+    memset(&_gui_camctl_tethered_listener,0,sizeof(dt_camctl_listener_t));
     _gui_camctl_tethered_listener.image_downloaded=_camctl_camera_tethered_image_downloaded_callback;
     dt_camctl_register_listener(darktable.camctl,&_gui_camctl_tethered_listener);
     dt_camctl_tether_mode(darktable.camctl,(dt_camera_t*)data,TRUE);
   } else {
+    // Stop tethering mode and unregister listener 
     dt_camctl_tether_mode(darktable.camctl,(dt_camera_t*)data,FALSE);
     dt_camctl_unregister_listener(darktable.camctl,&_gui_camctl_tethered_listener);
   }

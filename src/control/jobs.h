@@ -35,6 +35,14 @@ dt_image_load_t;
 void dt_image_load_job_run(dt_job_t *job);
 void dt_image_load_job_init(dt_job_t *job, int32_t imgid, dt_image_buffer_t mip);
 
+typedef struct dt_captured_image_import_t
+{
+	const char *filename;
+}
+dt_captured_image_import_t;
+
+void dt_captured_image_import_job_run(dt_job_t *job);
+void dt_captured_image_import_job_init(dt_job_t *job, const char *filename);
 
 typedef struct dt_camera_import_t
 {

@@ -46,6 +46,26 @@ void dt_image_load_job_run(dt_job_t *job)
   dt_image_cache_release(img, 'r');
 }
 
+void dt_captured_image_import_job_run(dt_job_t *job)
+{
+  dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
+  int id = dt_image_import(1, t->filename);
+  if(id)
+  {
+    dt_film_open(1);
+    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+    dt_ctl_switch_mode_to(DT_DEVELOP);
+  }
+}
+
+void dt_captured_image_import_job_init(dt_job_t *job, const char *filename)
+{
+  dt_control_job_init(job, "import tethered image");
+  job->execute = &dt_captured_image_import_job_run;
+  dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
+  t->filename=g_strdup(filename);
+}
+
 void dt_camera_import_job_init(dt_job_t *job,char *path, GList *images,dt_camera_t *camera)
 {
   dt_control_job_init(job, "import selected images from camera");
