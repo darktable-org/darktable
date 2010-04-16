@@ -64,7 +64,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   data->treeview=gtk_tree_view_new();
   
   GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new( );
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer, NULL);
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer,"pixbuf",0, NULL);
   gtk_tree_view_append_column( GTK_TREE_VIEW(  data->treeview ), column);
   
   renderer = gtk_cell_renderer_text_new( );
