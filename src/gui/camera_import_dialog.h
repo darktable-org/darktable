@@ -21,9 +21,10 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
+#include "common/camera_control.h"
 
 /** Fires up the camera import dialog, result is a list of images paths on camera to be imported. */
-void dt_camera_import_dialog_new(GList **result);
+void dt_camera_import_dialog_new(GList **result,const dt_camera_t *cam);
 
 #endif
 

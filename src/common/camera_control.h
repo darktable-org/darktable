@@ -112,12 +112,12 @@ void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *l
 /** Detect cameras and update list of available cameras */
 void dt_camctl_detect_cameras(const dt_camctl_t *c);
 /** Activates an camera to be used by cam control, this deactivates previous activated camera.. */
-void dt_camctl_set_active_camera(const dt_camctl_t *c, dt_camera_t *cam);
-/** Enables/Disables the tether mode of active camera. */
-void dt_camctl_tether_mode(const dt_camctl_t *c,gboolean enable);
+//void dt_camctl_set_active_camera(const dt_camctl_t *c, dt_camera_t *cam);
+/** Enables/Disables the tether mode on camera. */
+void dt_camctl_tether_mode(const dt_camctl_t *c,const dt_camera_t *cam,gboolean enable);
 
 /** travers filesystem on camera an retreives previews of images */
-void dt_camctl_get_previews(const dt_camctl_t *c);
+void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam);
 
 /** Imports the images in list from specified camera */
 void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images);

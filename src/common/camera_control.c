@@ -31,6 +31,9 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam);
 void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam);
 
 
+void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam);
+void _camctl_unlock(const dt_camctl_t *c);
+
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename);
@@ -55,19 +58,37 @@ static void _error_func_dispatch(GPContext *context, const char *format, va_list
 }
 
 static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
-  //dt_camctl_t *camctl=(dt_camctl_t *)data;
   char buffer[4096];
   vsprintf( buffer, format, args );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 status: %s\n",buffer);
 }
 
 static void _message_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
-  //dt_camctl_t *camctl=(dt_camctl_t *)data;
   char buffer[4096];
   vsprintf( buffer, format, args );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s\n",buffer);
 }
 
+
+
+void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam) 
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  pthread_mutex_lock(&camctl->mutex);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera control locked for camera %lxs\n",(unsigned long int)cam);
+  camctl->active_camera=cam;
+  _dispatch_control_status(c,CAMERA_CONTROL_BUSY);
+}
+
+void _camctl_unlock(const dt_camctl_t *c)
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  const dt_camera_t *cam=camctl->active_camera;
+  camctl->active_camera=NULL;
+  pthread_mutex_unlock(&camctl->mutex);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera control un-locked for camera %lxs\n",(unsigned long int)cam);
+  _dispatch_control_status(c,CAMERA_CONTROL_AVAILABLE);
+}
 
 dt_camctl_t *dt_camctl_new()
 {
@@ -275,10 +296,9 @@ void dt_camctl_set_active_camera(const dt_camctl_t *c, dt_camera_t *cam)
 }
 
 void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images) {
-  dt_camctl_t *camctl=(dt_camctl_t *)c;
-  pthread_mutex_lock(&camctl->mutex);
-  _dispatch_control_status(c,CAMERA_CONTROL_BUSY);
-  
+  //dt_camctl_t *camctl=(dt_camctl_t *)c;
+  _camctl_lock(c,cam);
+	
   GList *ifile=g_list_first(images);
   
   const char *output_path=_dispatch_request_image_path(c,cam);
@@ -318,7 +338,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
     } while( (ifile=g_list_next(ifile)) );
   
     _dispatch_control_status(c,CAMERA_CONTROL_AVAILABLE);
-  pthread_mutex_unlock(&camctl->mutex);
+  _camctl_unlock(c);
 }
 
 void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
@@ -378,44 +398,36 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
    gp_list_free (folders);
 }
 
-void dt_camctl_get_previews(const dt_camctl_t *c) {
-  dt_camctl_t *camctl=(dt_camctl_t *)c;
-//  dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
-  pthread_mutex_lock(&camctl->mutex);
-  _dispatch_control_status(c,CAMERA_CONTROL_BUSY);
+void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam) {
+  _camctl_lock(c,cam);
   _camctl_recursive_get_previews(c,"/");
-  _dispatch_control_status(c,CAMERA_CONTROL_AVAILABLE);
-  pthread_mutex_unlock(&camctl->mutex);
+  _camctl_unlock(c);
 }
 
-void dt_camctl_tether_mode(const dt_camctl_t *c, gboolean enable)
+void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean enable)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
-  dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
-  pthread_mutex_lock(&camctl->mutex);
-  if( cam && cam->can_tether ) 
+  dt_camera_t *camera=(dt_camera_t *)cam;
+  _camctl_lock(c,cam);
+	
+  if( camera && camera->can_tether ) 
   {
-    if((cam->is_tethering=enable)) 
+    if((camera->is_tethering=enable)) 
     {
-      if( pthread_mutex_trylock(&cam->lock) != 0)
-      {
-        dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to lock active camera for tethering mode\n");
-        _dispatch_camera_error(c,cam,CAMERA_LOCK_FAILED);
-      }
-      else
-      {
         // Start up camera event polling thread
-        pthread_create(&camctl->thread, NULL, &_camera_event_thread, camctl);
-      }
+	pthread_create(&camctl->thread, NULL, &_camera_event_thread, camctl);
+	return;
     }
     else 
-    { // Turn of tethering
-      cam->is_tethering=FALSE;
-      pthread_mutex_unlock(&cam->lock);
-     }
+    { 
+      // Turn of tethering
+      camera->is_tethering=FALSE;
+      _camctl_unlock(c);
+    }
   }else
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to set tether mode with reason: %s\n", cam?"device does not support tethered capture":"no active camera");
-  pthread_mutex_unlock(&camctl->mutex);
+
+  _camctl_unlock(c);
 }
 
 void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)

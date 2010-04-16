@@ -55,6 +55,7 @@ typedef struct _camera_import_dialog_t {
   
   GtkListStore *store;
 
+  const dt_camera_t *camera;
 
   GList **result;
 }
@@ -193,7 +194,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   listener.data=data;
   listener.camera_storage_image_filename=_camera_storage_image_filename;
   dt_camctl_register_listener(darktable.camctl,&listener);
-  dt_camctl_get_previews(darktable.camctl);
+  dt_camctl_get_previews(darktable.camctl,data->camera);
   dt_camctl_unregister_listener(darktable.camctl,&listener);
   
   // Select all images as default
@@ -225,10 +226,11 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   gtk_widget_destroy (data->dialog);
 }
 
-void dt_camera_import_dialog_new(GList **result)
+void dt_camera_import_dialog_new(GList **result,const dt_camera_t *cam)
 {
   _camera_import_dialog_t data;
   data.result = result;
+  data.camera=cam;
   _camera_import_dialog_new(&data);
   _camera_import_dialog_run(&data);
 }

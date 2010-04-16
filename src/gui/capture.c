@@ -28,6 +28,7 @@
 #include "common/camera_control.h"
 
 static dt_camctl_listener_t _gui_camctl_listener;
+static dt_camctl_listener_t _gui_camctl_tethered_listener;
 
 
 static void _camctl_camera_control_status_callback(dt_camctl_status_t status,void *data)
@@ -42,7 +43,8 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
       if(child) 
         do
         {
-          gtk_widget_set_sensitive(GTK_WIDGET(child->data),FALSE);
+          if( !(GTK_IS_TOGGLE_BUTTON(child->data)  && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data))==TRUE) )
+            gtk_widget_set_sensitive(GTK_WIDGET(child->data),FALSE);
         } while( (child=g_list_next(child)) );
     } break;
     
@@ -60,9 +62,9 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   }
 }
 
-/*static void _camctl_camera_image_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
+static void _camctl_camera_tethered_image_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
 {
-  // import image to darktable single images...
+  // import image to darktable single images... and open in develop mode
   int id = dt_image_import(1, filename);
   if(id)
   {
@@ -70,7 +72,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
     dt_ctl_switch_mode_to(DT_DEVELOP);
   }
-}*/
+}
 
 
 static void detect_source_callback(GtkButton *button,gpointer data)  
@@ -81,9 +83,8 @@ static void detect_source_callback(GtkButton *button,gpointer data)
 
 static void import_callback(GtkButton *button,gpointer data)  
 {
-  dt_camctl_set_active_camera(darktable.camctl,(dt_camera_t*)data);
   GList *list=NULL;
-  dt_camera_import_dialog_new(&list);
+  dt_camera_import_dialog_new(&list,(dt_camera_t*)data);
   if( list )
   {
     char path[4096]={0};
@@ -94,15 +95,18 @@ static void import_callback(GtkButton *button,gpointer data)
   }
 }
 
+
 static void tethered_callback(GtkToggleButton *button,gpointer data)  
 {
-  dt_camctl_set_active_camera(darktable.camctl,(dt_camera_t*)data);
   if(gtk_toggle_button_get_active(button))
   {
     // Setup a listener for camera_control
-    dt_camctl_tether_mode(darktable.camctl,TRUE);
+    _gui_camctl_tethered_listener.image_downloaded=_camctl_camera_tethered_image_downloaded_callback;
+    dt_camctl_register_listener(darktable.camctl,&_gui_camctl_tethered_listener);
+    dt_camctl_tether_mode(darktable.camctl,(dt_camera_t*)data,TRUE);
   } else {
-    dt_camctl_tether_mode(darktable.camctl,FALSE);
+    dt_camctl_tether_mode(darktable.camctl,(dt_camera_t*)data,FALSE);
+    dt_camctl_unregister_listener(darktable.camctl,&_gui_camctl_tethered_listener);
   }
 }
 
@@ -160,8 +164,8 @@ void dt_gui_capture_update()
       GtkWidget *ib=NULL,*tb=NULL;
       if( camera->can_import==TRUE )
         gtk_box_pack_start(GTK_BOX(widget),(ib=gtk_button_new_with_label(_("import from camera"))),FALSE,FALSE,0);
-      /*if( camera->can_tether==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_toggle_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);*/
+      if( camera->can_tether==TRUE )
+        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_toggle_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);
       
       if( ib ) {
         g_signal_connect (G_OBJECT(ib), "clicked",G_CALLBACK (import_callback), camera);
