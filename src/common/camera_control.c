@@ -77,7 +77,7 @@ void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam)
 {
 	dt_camctl_t *camctl=(dt_camctl_t *)c;
 	pthread_mutex_lock(&camctl->mutex);
-	dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera control locked for camera %lxs\n",(unsigned long int)cam);
+	dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera control locked for camera %lx\n",(unsigned long int)cam);
 	camctl->active_camera=cam;
 	_dispatch_control_status(c,CAMERA_CONTROL_BUSY);
 }
@@ -88,7 +88,7 @@ void _camctl_unlock(const dt_camctl_t *c)
 	const dt_camera_t *cam=camctl->active_camera;
 	camctl->active_camera=NULL;
 	pthread_mutex_unlock(&camctl->mutex);
-	dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera control un-locked for camera %lxs\n",(unsigned long int)cam);
+	dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera control un-locked for camera %lx\n",(unsigned long int)cam);
 	_dispatch_control_status(c,CAMERA_CONTROL_AVAILABLE);
 }
 
@@ -231,12 +231,18 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
 
 static void *_camera_event_thread(void *data) {
 	dt_camctl_t *camctl=(dt_camctl_t *)data;
+
 	const dt_camera_t *camera=camctl->active_camera;
+	
 	dt_print(DT_DEBUG_CAMCTL,"[camera_control] Starting camera event thread %lx of context %lx\n",(unsigned long int)camctl->thread,(unsigned long int)data);
-	while(camera==camctl->active_camera && camera->is_tethering==TRUE) {
+	
+	while(camera->is_tethering==TRUE) 
+	{
 		_camera_poll_events(camctl,camera);
 	}
+	
 	dt_print(DT_DEBUG_CAMCTL,"[camera_control] Exiting camera thread %lx.\n",(unsigned long int)camctl->thread);
+
 	return NULL;
 }
 
@@ -351,15 +357,15 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
 				gp_file_new(&cf);
 				if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,cf,c->gpcontext) < GP_OK )
 				{
-		// No preview for file lets check image size to se if we should download full image for preview...
-		if( cfi.file.size > 0  && cfi.file.size < 512000 ) 
-		if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,cf,c->gpcontext) < GP_OK )
-		{
-			cf=NULL;
-			dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive preview of file %s\n",filename);
-		}
+					// No preview for file lets check image size to se if we should download full image for preview...
+					if( cfi.file.size > 0  && cfi.file.size < 512000 ) 
+						if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,cf,c->gpcontext) < GP_OK )
+						{
+							cf=NULL;
+							dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive preview of file %s\n",filename);
+						}
 				}
-				_dispatch_camera_storage_image_filename(c,c->active_camera,file,cf);
+					_dispatch_camera_storage_image_filename(c,c->active_camera,file,cf);
 			}
 			else
 					dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file information of %s in folder %s on device\n",filename,path);
@@ -393,28 +399,30 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean
 {
 	if( cam && cam->can_tether ) 
 	{
+		
+		
 		dt_camctl_t *camctl=(dt_camctl_t *)c;
 		dt_camera_t *camera=(dt_camera_t *)cam;
-		_camctl_lock(c,cam);
-	
- 
-		if( (camera->is_tethering=enable) == TRUE ) 
+		
+		if( enable==TRUE)
 		{
+			_camctl_lock(c,cam);
 			// Start up camera event polling thread
 			dt_print(DT_DEBUG_CAMCTL,"[camera_control] Enabling tether mode\n");
-
-			pthread_create(&camctl->thread, NULL, &_camera_event_thread, camctl);
-			return;
-		}
-		
-		_camctl_unlock(c);
+			camctl->active_camera=camera;
+			camera->is_tethering=TRUE;
+			pthread_create(&camctl->thread, NULL, &_camera_event_thread, (void *)c);
+		} 
+		else
+		{
+			camera->is_tethering=FALSE;
 			dt_print(DT_DEBUG_CAMCTL,"[camera_control] Disabling tether mode\n");
-		// Wait for tether thread with join??
-		
+			_camctl_unlock(c);
+			// Wait for tether thread with join??
+		}
 	}else
 		dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to set tether mode with reason: %s\n", cam?"device does not support tethered capture":"no active camera");
 
-	
 }
 
 void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
@@ -422,44 +430,56 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 //  dt_camctl_t *camctl=(dt_camctl_t *)c;
 	CameraEventType event;
 	gpointer data;
-	if( gp_camera_wait_for_event( cam->gpcam, 1, &event, &data, c->gpcontext ) >= GP_OK ) {
-		switch( event ) {
-			case GP_EVENT_UNKNOWN: 
-			{
-				if( strstr( (char *)data, "4006" ) ); // Property change event occured on camera
-				
-			} break;
-
-			case GP_EVENT_FILE_ADDED:
-			{
-				if( cam->is_tethering ) 
+	int res;
+	gboolean wait_timedout=FALSE;
+	while( !wait_timedout )
+	{
+		if( (res=gp_camera_wait_for_event( cam->gpcam, 100, &event, &data, c->gpcontext ) )>= GP_OK ) {
+			switch( event ) {
+				case GP_EVENT_UNKNOWN: 
 				{
-					dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera file added event\n");
-					CameraFilePath *fp = (CameraFilePath *)data;
-					CameraFile *destination;
-					char filename[512]={0};
-					const char *path=_dispatch_request_image_path(c,cam);
-					if( path )
-						strcat(filename,path);
-					else
-						strcat(filename,"/tmp/");
-					strcat(filename,fp->name);
-					int handle = open( filename, O_CREAT | O_WRONLY,0666);
-					gp_file_new_from_fd( &destination , handle );
-					gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-					close( handle );
-						
-					// Notify listerners of captured image
-					_dispatch_camera_image_downloaded(c,cam,filename);
+					if( strstr( (char *)data, "4006" ) ); // Property change event occured on camera
 					
-				}
-			} break;
+				} break;
 
-			case GP_EVENT_TIMEOUT:
-			case GP_EVENT_FOLDER_ADDED:
-			case GP_EVENT_CAPTURE_COMPLETE:
-			break;
-			
+				case GP_EVENT_FILE_ADDED:
+				{
+					if( cam->is_tethering ) 
+					{
+						dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera file added event\n");
+						CameraFilePath *fp = (CameraFilePath *)data;
+						CameraFile *destination;
+						char filename[512]={0};
+						const char *path=_dispatch_request_image_path(c,cam);
+						if( path )
+							strcat(filename,path);
+						else
+							strcat(filename,"/tmp/");
+						strcat(filename,fp->name);
+						int handle = open( filename, O_CREAT | O_WRONLY,0666);
+						gp_file_new_from_fd( &destination , handle );
+						gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
+						close( handle );
+							
+						// Notify listerners of captured image
+						_dispatch_camera_image_downloaded(c,cam,filename);
+						
+					}
+				} break;
+
+				case GP_EVENT_TIMEOUT:
+					wait_timedout=TRUE;
+				break;
+				
+				case GP_EVENT_FOLDER_ADDED:
+				case GP_EVENT_CAPTURE_COMPLETE:
+				break;
+				
+			}
+		} 
+		else
+		{
+			// Catch any error and handle the situation..
 		}
 	}
 }

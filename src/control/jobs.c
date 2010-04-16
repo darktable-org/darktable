@@ -54,7 +54,7 @@ void dt_captured_image_import_job_run(dt_job_t *job)
   {
     dt_film_open(1);
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-    dt_ctl_switch_mode_to(DT_DEVELOP);
+    //dt_ctl_switch_mode_to(DT_DEVELOP);
   }
 }
 
