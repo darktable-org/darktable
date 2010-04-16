@@ -38,9 +38,20 @@
 typedef struct _camera_import_dialog_t {
   GtkWidget *dialog;
   
-  GtkWidget *treeview;
+  GtkWidget *notebook;
+  
+  struct {
+    GtkWidget *page;
+    GtkWidget *treeview;
+    GtkWidget *info;  
+  } import;
+  
+  struct {
+    GtkWidget *page;
+  } settings;
+  
   GtkListStore *store;
-  GtkWidget *info;
+
 
   GList **result;
 }
@@ -51,21 +62,21 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (data->dialog));
   
   // Build the dialog
-  
+  data->import.page=gtk_vbox_new(FALSE,5);
   // Top info
-  data->info=gtk_label_new( _("please wait while prefetcing thumbnails of images from camera...") );
-  gtk_label_set_single_line_mode( GTK_LABEL(data->info) , FALSE );
-  gtk_box_pack_start(GTK_BOX(content),data->info,FALSE,FALSE,0);
+  data->import.info=gtk_label_new( _("please wait while prefetcing thumbnails of images from camera...") );
+  gtk_label_set_single_line_mode( GTK_LABEL(data->import.info) , FALSE );
+  gtk_box_pack_start(GTK_BOX(data->import.page),data->import.info,FALSE,FALSE,0);
   
   // List - setup store
   data->store = gtk_list_store_new (2,GDK_TYPE_PIXBUF,G_TYPE_STRING);
   
   // Create the treview with list model data store
-  data->treeview=gtk_scrolled_window_new(NULL,NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->treeview),GTK_POLICY_NEVER,GTK_POLICY_ALWAYS);
+  data->import.treeview=gtk_scrolled_window_new(NULL,NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->import.treeview),GTK_POLICY_NEVER,GTK_POLICY_ALWAYS);
   
-  gtk_container_add(GTK_CONTAINER(data->treeview), gtk_tree_view_new());
-  GtkTreeView *treeview=GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->treeview)));  
+  gtk_container_add(GTK_CONTAINER(data->import.treeview), gtk_tree_view_new());
+  GtkTreeView *treeview=GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview)));  
   
   GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new( );
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer,"pixbuf",0, NULL);
@@ -80,12 +91,27 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
   gtk_tree_selection_set_mode(selection,GTK_SELECTION_MULTIPLE);
   
-  gtk_widget_set_size_request(data->treeview,400,400);
-
+  
   gtk_tree_view_set_model(treeview,GTK_TREE_MODEL(data->store));
   
+  gtk_box_pack_start(GTK_BOX(data->import.page),data->import.treeview,TRUE,TRUE,0);
   
-  gtk_box_pack_start(GTK_BOX(content),data->treeview,TRUE,TRUE,0);
+  
+  
+  // Settings page
+  data->settings.page=gtk_vbox_new(TRUE,5);
+  
+  
+  
+  // The noteboook
+  
+  data->notebook=gtk_notebook_new();
+  gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->import.page,gtk_label_new(_("import images")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->settings.page,gtk_label_new(_("import settings")));
+  
+  gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
+  gtk_widget_set_size_request(content,400,400);
+
 }
 
 void _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,void *user_data) 
@@ -140,11 +166,11 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   dt_camctl_unregister_listener(darktable.camctl,&listener);
   
   // Select all images as default
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->treeview))));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview))));
   gtk_tree_selection_select_all(selection);
   
   // Lets run dialog
-  gtk_label_set_text(GTK_LABEL(data->info),_("select the images from the list below that you want to import into a new filmroll"));
+  gtk_label_set_text(GTK_LABEL(data->import.info),_("select the images from the list below that you want to import into a new filmroll"));
   gint result = gtk_dialog_run (GTK_DIALOG (data->dialog));
   if( result == GTK_RESPONSE_ACCEPT) 
   {

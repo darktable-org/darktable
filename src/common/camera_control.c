@@ -143,7 +143,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   CameraList *available_cameras=NULL;
   gp_list_new( &available_cameras );
   gp_abilities_list_detect (c->gpcams,c->gpports, available_cameras, c->gpcontext );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( available_cameras )>0?gp_list_count( available_cameras )-1:0);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( available_cameras )>0?gp_list_count( available_cameras ):0);
 
   pthread_mutex_lock(&camctl->mutex);
   
@@ -154,7 +154,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
     gp_list_get_name (available_cameras, i, &camera->model);
     gp_list_get_value (available_cameras, i, &camera->port);
     
-    if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
+   // if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
     
     GList *citem;
     if( (citem=g_list_find_custom(c->cameras,camera,_compare_camera_by_port)) == NULL || strcmp(((dt_camera_t *)citem->data)->model,camera->model)!=0 ) 
