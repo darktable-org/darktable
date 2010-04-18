@@ -184,7 +184,7 @@ void init(dt_iop_module_t *module)
   module->priority = 150;
   module->params_size = sizeof(dt_iop_bilateral_params_t);
   module->gui_data = NULL;
-  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{10.0, 10.0, 0.1, 0.1, 0.1}};
+  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{2.0, 2.0, 0.002, 0.002, 0.002}};
   memcpy(module->params, &tmp, sizeof(dt_iop_bilateral_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilateral_params_t));
 }
@@ -208,11 +208,11 @@ void gui_init(dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("sigma x")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("sigma y")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("sigma r")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("sigma g")));
-  g->label5 = GTK_LABEL(gtk_label_new(_("sigma b")));
+  g->label1 = GTK_LABEL(gtk_label_new(_("Width")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("Height")));
+  g->label3 = GTK_LABEL(gtk_label_new(_("Red")));
+  g->label4 = GTK_LABEL(gtk_label_new(_("Green")));
+  g->label5 = GTK_LABEL(gtk_label_new(_("Blue")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
