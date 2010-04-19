@@ -333,35 +333,14 @@ film_strip_activated(const int imgid, void *data)
 { // switch images in darkroom mode:
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  // commit image ops to db
-  dt_dev_write_history(dev);
-  // write .dt file
-  dt_image_write_dt_files(dev->image);
-
-  // commit updated mipmaps to db
-  // TODO: bg process?
-  dt_dev_process_to_mip(dev);
-  // release full buffer
-  if(dev->image->pixels)
-    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
-
-  // release image struct with metadata as well.
-  dt_image_cache_flush(dev->image);
+  dt_image_t *image = dt_image_cache_get(imgid, 'r');
+  dt_dev_change_image(dev, image);
+  // release image struct with metadata.
   dt_image_cache_release(dev->image, 'r');
-
-  dev->image = dt_image_cache_get(imgid, 'r');
+  // select newly loaded image
   select_this_image(dev->image->id);
-  while(dev->history)
-  { // clear history of old image
-    free(((dt_dev_history_item_t *)dev->history->data)->params);
-    free( (dt_dev_history_item_t *)dev->history->data);
-    dev->history = g_list_delete_link(dev->history, dev->history);
-  }
-  dt_dev_read_history(dev);
-  dt_dev_pop_history_items(dev, dev->history_end);
-  dt_dev_raw_reload(dev);
+  // force redraw
   dt_control_queue_draw_all();
-
   // prefetch next few from first selected image on.
   dt_view_film_strip_prefetch();
 }

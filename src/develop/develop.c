@@ -894,3 +894,31 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
     g_snprintf(label, cnt, "%s", hist->module->name());
 }
 
+void dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
+{
+  // commit image ops to db
+  dt_dev_write_history(dev);
+  // write .dt file
+  dt_image_write_dt_files(dev->image);
+
+  // commit updated mipmaps to db
+  // TODO: bg process?
+  dt_dev_process_to_mip(dev);
+  // release full buffer
+  if(dev->image && dev->image->pixels)
+    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
+
+  dt_image_cache_flush(dev->image);
+
+  dev->image = image;
+  while(dev->history)
+  { // clear history of old image
+    free(((dt_dev_history_item_t *)dev->history->data)->params);
+    free( (dt_dev_history_item_t *)dev->history->data);
+    dev->history = g_list_delete_link(dev->history, dev->history);
+  }
+  dt_dev_read_history(dev);
+  dt_dev_pop_history_items(dev, dev->history_end);
+  dt_dev_raw_reload(dev);
+}
+

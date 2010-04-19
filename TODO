@@ -1,6 +1,8 @@
+webpage updates:
+- freebsd has dt (has had for a while :)
+- list of supported cameras and reverse-engineered basecurves etc
+
 0.6 release:
-- thumbnail mipmap exposure applied twice?
-- forum gamma nikon hack
 
 big new features:
 - tethered shooting
