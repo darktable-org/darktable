@@ -126,6 +126,7 @@ sigma_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
   else if(slider == g->scale4) i = 3;
   else if(slider == g->scale5) i = 4;
   p->sigma[i] = dtgtk_slider_get_value(slider);
+  if(i == 0) p->sigma[1] = p->sigma[0];
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -169,7 +170,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
   dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)module->params;
   dtgtk_slider_set_value(g->scale1, p->sigma[0]);
-  dtgtk_slider_set_value(g->scale2, p->sigma[1]);
+  // dtgtk_slider_set_value(g->scale2, p->sigma[1]);
   dtgtk_slider_set_value(g->scale3, p->sigma[2]);
   dtgtk_slider_set_value(g->scale4, p->sigma[3]);
   dtgtk_slider_set_value(g->scale5, p->sigma[4]);
@@ -208,36 +209,41 @@ void gui_init(dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("Width")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("Height")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("Red")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("Green")));
-  g->label5 = GTK_LABEL(gtk_label_new(_("Blue")));
+  g->label1 = GTK_LABEL(gtk_label_new(_("radius")));
+  // g->label2 = GTK_LABEL(gtk_label_new(_("height")));
+  g->label3 = GTK_LABEL(gtk_label_new(_("red")));
+  g->label4 = GTK_LABEL(gtk_label_new(_("green")));
+  g->label5 = GTK_LABEL(gtk_label_new(_("blue")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
+  // gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->sigma[0], 0));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->sigma[1], 0));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.001, p->sigma[2], 3));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.001, p->sigma[3], 3));
-  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.001, p->sigma[4], 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 30.0, 1.0, p->sigma[0], 0));
+  // g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 30.0, 1.0, p->sigma[1], 0));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, .1, 0.001, p->sigma[2], 3));
+  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, .1, 0.001, p->sigma[3], 3));
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, .1, 0.001, p->sigma[4], 3));
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), NULL);
+  // gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _(""), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), NULL);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (sigma_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (sigma_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale2), "value-changed",
+                    // G_CALLBACK (sigma_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (sigma_callback), self);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
