@@ -48,7 +48,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
   { // path for already exposed preview buffer
-    white *= d->thumb_corr;
+    white /= d->thumb_corr;
   }
   float scale = 1.0/(white - black); 
   float coeff[3];
@@ -139,7 +139,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};
 
-  tmp.black = module->dev->image->black;
+  tmp.black = 0.0f;
   tmp.exposure = 0.0f;
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));

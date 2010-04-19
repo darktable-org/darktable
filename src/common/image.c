@@ -639,6 +639,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
         ret = dt_image_raw_to_preview(img);
         dt_image_release(img, DT_IMAGE_FULL, 'r');
       }
+      dt_image_release(img, mip, 'w');
     }
     else if(mip == DT_IMAGE_FULL)
     {
@@ -659,8 +660,13 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 
 void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip)
 {
-  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   if(mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
+  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  if(img->mip_buf_size[mip] > 0)
+  { // already loaded.
+    pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+    return;
+  }
   dt_job_t j;
   dt_image_load_job_init(&j, img->id, mip);
   dt_control_revive_job(darktable.control, &j);
@@ -973,7 +979,8 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
     if(img->pixels == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
   }
   if((mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport) ||
-     (img == darktable.develop->image && darktable.develop->image_force_reload))
+     // (img == darktable.develop->image && darktable.develop->image_force_reload))
+     (mip != DT_IMAGE_MIPF && img == darktable.develop->image && darktable.develop->image_force_reload))
         mip = DT_IMAGE_NONE;
   if(mip != DT_IMAGE_NONE)
   {
@@ -985,7 +992,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
     else img->lock[mip].users++;
   }
 
-  // dt_print(DT_DEBUG_CACHE, "[image_get] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
+  // dt_print(DT_DEBUG_CACHE, "[image_get] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip_in].users, img->lock[mip_in].write);
 
 #if 1
   if(mip != mip_in) // && !img->lock[mip_in].write)

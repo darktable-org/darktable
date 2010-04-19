@@ -1,18 +1,13 @@
+webpage updates:
+- freebsd has dt (has had for a while :)
+- list of supported cameras and reverse-engineered basecurves etc
+
 0.6 release:
-=====================================
- - max scaling through exposure,
-   wb .. highlights!
- - wb to reverse cam wb and re-apply
-=====================================
-
-- thumbnail mipmap exposure applied twice?
-- forum gamma nikon hack
-
 big new features:
-- tethered shooting?
-- filmstrip?
+- tethered shooting
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
+
 - more transparent custom default/presets handling:
   - store named presets along with exif: maker model,
     ranges for iso, exposure, aperture, ..
@@ -23,11 +18,18 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- image flag: history changed but not exported
+  - select by this flag
+
+- disable for ldr input: exposure,wb,basecurve,highlights
+  - make exposure work with ldr, too.
+
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 
 - mipf not loaded on time in develop for small displays.
 
 - metadata imgfilename etc with ellipzized file names
+- color labels: colored buttons in a row, more colors.
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box

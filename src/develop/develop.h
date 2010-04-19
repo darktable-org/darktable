@@ -94,6 +94,7 @@ void dt_dev_process_preview(dt_develop_t *dev);
 // directly in this thread process mipf->mip4..0
 void dt_dev_process_to_mip(dt_develop_t *dev);
 
+void dt_dev_change_image(dt_develop_t *dev, struct dt_image_t *image);
 void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
 void dt_dev_load_preview(dt_develop_t *dev, struct dt_image_t *image);
 

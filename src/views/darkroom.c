@@ -30,6 +30,7 @@
 #include <string.h>
 #include <math.h>
 #include <glade/glade.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -307,11 +308,9 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-
-void enter(dt_view_t *self)
+static void
+select_this_image(const int imgid)
 {
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
   // select this image, if no multiple selection:
   int count = 0;
   sqlite3_stmt *stmt;
@@ -322,12 +321,41 @@ void enter(dt_view_t *self)
   if(count < 2)
   {
     sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-    sqlite3_stmt *stmt;
     sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, dev->image->id);
+    sqlite3_bind_int(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+}
+
+static void
+film_strip_activated(const int imgid, void *data)
+{ // switch images in darkroom mode:
+  dt_view_t *self = (dt_view_t *)data;
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  dt_image_t *image = dt_image_cache_get(imgid, 'r');
+  dt_dev_change_image(dev, image);
+  // release image struct with metadata.
+  dt_image_cache_release(dev->image, 'r');
+  // select newly loaded image
+  select_this_image(dev->image->id);
+  // force redraw
+  dt_control_queue_draw_all();
+  // prefetch next few from first selected image on.
+  dt_view_film_strip_prefetch();
+}
+
+void film_strip_key_accel(void *data)
+{
+  dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
+  dt_control_queue_draw_all();
+}
+
+void enter(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  select_this_image(dev->image->id);
 
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
   DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
@@ -428,6 +456,15 @@ void enter(dt_view_t *self)
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 
+  if(dt_conf_get_bool("plugins/filmstrip/on"))
+  {
+    // double click callback:
+    dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
+    dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
+    dt_view_film_strip_prefetch();
+  }
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
+
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -441,9 +478,12 @@ static void dt_dev_remove_child(GtkWidget *widget, gpointer data)
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
-
 void leave(dt_view_t *self)
 {
+  if(dt_conf_get_bool("plugins/filmstrip/on"))
+    dt_view_film_strip_close(darktable.view_manager);
+  dt_gui_key_accel_unregister(film_strip_key_accel);
+
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, FALSE);
@@ -581,12 +621,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
-#if 1 // FIXME: x, y needs( to be moved and clamped to DT_WINDOW_SIZE as in expose!!
-  const int32_t width_i  = darktable.control->width  - darktable.control->tabborder*2;
-  const int32_t height_i = darktable.control->height - darktable.control->tabborder*2;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
   if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
   if(height_i > DT_IMAGE_WINDOW_SIZE) y -= (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
-#endif
 
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick)
