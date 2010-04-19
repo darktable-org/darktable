@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "views/view.h"
@@ -633,6 +634,20 @@ void dt_view_film_strip_close(dt_view_manager_t *vm)
 {
   if(vm->film_strip.leave) vm->film_strip.leave(&vm->film_strip);
   vm->film_strip_on = 0;
+}
+
+void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data)
+{
+  if(dt_conf_get_bool("plugins/filmstrip/on"))
+  {
+    dt_view_film_strip_close(vm);
+    dt_conf_set_bool("plugins/filmstrip/on", FALSE);
+  }
+  else
+  {
+    dt_view_film_strip_open(vm, activated, data);
+    dt_conf_set_bool("plugins/filmstrip/on", TRUE);
+  }
 }
 
 void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)

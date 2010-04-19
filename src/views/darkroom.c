@@ -30,6 +30,7 @@
 #include <string.h>
 #include <math.h>
 #include <glade/glade.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -329,7 +330,7 @@ select_this_image(const int imgid)
 
 static void
 film_strip_activated(const int imgid, void *data)
-{
+{ // switch images in darkroom mode:
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db
@@ -351,7 +352,7 @@ film_strip_activated(const int imgid, void *data)
   dev->image = dt_image_cache_get(imgid, 'r');
   select_this_image(dev->image->id);
   while(dev->history)
-  {
+  { // clear history of old image
     free(((dt_dev_history_item_t *)dev->history->data)->params);
     free( (dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
@@ -359,6 +360,11 @@ film_strip_activated(const int imgid, void *data)
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
+}
+
+void film_strip_key_accel(void *data)
+{
+  dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
 }
 
 void enter(dt_view_t *self)
@@ -466,9 +472,13 @@ void enter(dt_view_t *self)
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 
-  // double click callback:
-  dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
-  dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
+  if(dt_conf_get_bool("plugins/filmstrip/on"))
+  {
+    // double click callback:
+    dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
+    dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
+  }
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 
   // image should be there now.
   float zoom_x, zoom_y;
@@ -485,7 +495,10 @@ static void dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
-  dt_view_film_strip_close(darktable.view_manager);
+  if(dt_conf_get_bool("plugins/filmstrip/on"))
+    dt_view_film_strip_close(darktable.view_manager);
+  dt_gui_key_accel_unregister(film_strip_key_accel);
+
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, FALSE);

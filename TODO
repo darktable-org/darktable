@@ -5,7 +5,6 @@
 big new features:
 - tethered shooting
 - filmstrip:
-  - ctrl-f show/hide?
   - prefetch +- a few (full for next neighbor?)
   - is scroll bar handling needed (swtich)?
 

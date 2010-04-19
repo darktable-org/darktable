@@ -128,6 +128,8 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
 void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int, void*), void *data);
 /** close the film strip view. */
 void dt_view_film_strip_close(dt_view_manager_t *vm);
+/** toggles the film strip. */
+void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data);
 /** advise the film strip to scroll to imgid at next expose. */
 void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int imgid);
 
