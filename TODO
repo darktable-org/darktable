@@ -5,12 +5,9 @@
 big new features:
 - tethered shooting
 - filmstrip:
+  - ctrl-f show/hide?
   - prefetch +- a few (full for next neighbor?)
-  - connect events: click star? or just alt-1234?
-  - click or double click to switch to next img?
-  - darkroom mode: load different raw!
   - is scroll bar handling needed (swtich)?
-  - insert callback
 
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
