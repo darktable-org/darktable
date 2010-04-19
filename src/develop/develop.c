@@ -176,7 +176,8 @@ void dt_dev_process_image(dt_develop_t *dev)
 
 void dt_dev_process_preview(dt_develop_t *dev)
 {
-  if(!dev->image || !dev->image->mipf || !dev->gui_attached/* || dev->preview_pipe->processing*/) return;
+  // if(!dev->image || !dev->image->mipf || !dev->gui_attached/* || dev->preview_pipe->processing*/) return;
+  if(!dev->image || !dev->gui_attached) return;
   dt_job_t job;
   dt_dev_process_preview_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_3);

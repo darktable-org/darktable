@@ -360,11 +360,16 @@ film_strip_activated(const int imgid, void *data)
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
+  dt_control_queue_draw_all();
+
+  // prefetch next few from first selected image on.
+  dt_view_film_strip_prefetch();
 }
 
 void film_strip_key_accel(void *data)
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
+  dt_control_queue_draw_all();
 }
 
 void enter(dt_view_t *self)
@@ -477,6 +482,7 @@ void enter(dt_view_t *self)
     // double click callback:
     dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
     dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
+    dt_view_film_strip_prefetch();
   }
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 

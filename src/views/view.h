@@ -132,5 +132,8 @@ void dt_view_film_strip_close(dt_view_manager_t *vm);
 void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data);
 /** advise the film strip to scroll to imgid at next expose. */
 void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int imgid);
+/** prefetch the next few images in film strip, from selected on. */
+void dt_view_film_strip_prefetch();
+
 
 #endif

@@ -635,6 +635,10 @@ void dt_view_film_strip_close(dt_view_manager_t *vm)
 {
   if(vm->film_strip.leave) vm->film_strip.leave(&vm->film_strip);
   vm->film_strip_on = 0;
+  const int tb = darktable.control->tabborder;
+  const int wd = darktable.control->width  - 2*tb;
+  const int ht = darktable.control->height - 2*tb;
+  dt_view_manager_configure (vm, wd, ht);
 }
 
 void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data)
@@ -658,14 +662,18 @@ void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)
 
 void dt_view_film_strip_prefetch()
 {
-  int imgid = darktable.view_manager->film_strip_scroll_to;
   char query[1024];
   gchar *qin = dt_conf_get_string("plugins/lighttable/query");
   int offset = 0;
   if(qin)
   {
-    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
+    int imgid = -1;
     sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select id from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      imgid = sqlite3_column_int(stmt, 0);
+
+    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
     sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
     sqlite3_bind_int(stmt, 1,  0);
     sqlite3_bind_int(stmt, 2, -1);
