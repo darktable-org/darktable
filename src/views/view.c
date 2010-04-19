@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/image_cache.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -655,4 +656,36 @@ void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)
   vm->film_strip_scroll_to = st;
 }
 
+void dt_view_film_strip_prefetch()
+{
+  int imgid = darktable.view_manager->film_strip_scroll_to;
+  char query[1024];
+  gchar *qin = dt_conf_get_string("plugins/lighttable/query");
+  int offset = 0;
+  if(qin)
+  {
+    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1,  0);
+    sqlite3_bind_int(stmt, 2, -1);
+    sqlite3_bind_int(stmt, 3, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      offset = sqlite3_column_int(stmt, 0) - 1;
+    sqlite3_finalize(stmt);
+
+    sqlite3_prepare_v2(darktable.db, qin, -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1, offset+1);
+    sqlite3_bind_int(stmt, 2, 2);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      imgid = sqlite3_column_int(stmt, 0);
+      dt_image_t *image = dt_image_cache_get(imgid, 'r');
+      dt_image_prefetch(image, DT_IMAGE_MIPF);
+      dt_image_cache_release(image, 'r');
+    }
+    sqlite3_finalize(stmt);
+    g_free(qin);
+  }
+}
 

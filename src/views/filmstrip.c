@@ -165,8 +165,6 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
         }
 #endif
         cairo_save(cr);
-        // disabled for now, as it exceeds mem and causes page thrashing:
-        // dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(image, &(strip->image_over), image->id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
         cairo_restore(cr);
         dt_image_cache_release(image, 'r');
@@ -353,4 +351,3 @@ void scrolled(dt_view_t *view, double x, double y, int up)
   // expose will take care of bounds checking
   dt_control_queue_draw_all();
 }
-

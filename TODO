@@ -4,10 +4,6 @@
 
 big new features:
 - tethered shooting
-- filmstrip:
-  - prefetch +- a few (full for next neighbor?)
-  - is scroll bar handling needed (swtich)?
-
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
 
