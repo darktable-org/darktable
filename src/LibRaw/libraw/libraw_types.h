@@ -105,9 +105,9 @@ typedef struct
                 colors,
                 bits;
 #ifdef LIBRAW_LIBRARY_BUILD
-#ifdef _OPENMP
-#pragma omp firstprivate(colors,height,width)
-#endif
+// #ifdef _OPENMP
+// #pragma omp firstprivate(colors,height,width)
+// #endif
 #endif
     unsigned int  data_size; 
     unsigned char data[1]; 
@@ -139,9 +139,9 @@ typedef struct
     ushort      iheight,
                 iwidth;
 #ifdef LIBRAW_LIBRARY_BUILD
-#ifdef _OPENMP
-#pragma omp firstprivate(iheight,iwidth)
-#endif
+// #ifdef _OPENMP
+// #pragma omp firstprivate(iheight,iwidth)
+// #endif
 #endif
     double      pixel_aspect;
     int         flip;
@@ -222,9 +222,9 @@ typedef struct
     float       bright;         /* -b */
     float       threshold;      /*  -n */
 #ifdef LIBRAW_LIBRARY_BUILD
-#ifdef _OPENMP
-#pragma omp firstprivate(threshold)
-#endif
+// #ifdef _OPENMP
+// #pragma omp firstprivate(threshold)
+// #endif
 #endif
     int         half_size;      /* -h */
     int         four_color_rgb; /* -f */
@@ -281,9 +281,9 @@ typedef struct
     libraw_masked_t             masked_pixels;
     ushort                      (*image)[4] ;
 #ifdef LIBRAW_LIBRARY_BUILD
-#ifdef _OPENMP
-#pragma omp shared(image)
-#endif
+// #ifdef _OPENMP
+// #pragma omp shared(image)
+// #endif
 #endif
     libraw_output_params_t     params;
     void                *parent_class;      
