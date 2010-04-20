@@ -18,6 +18,7 @@
 #ifndef DT_VIEW_H
 #define DT_VIEW_H
 
+#include "common/image.h"
 #include <inttypes.h>
 #include <gmodule.h>
 #include <cairo.h>
@@ -33,6 +34,8 @@ typedef struct dt_view_t
   GModule *module;
   // custom data for module
   void *data;
+  // width and height of allocation
+  uint32_t width, height;
   // scroll bar control
   float vscroll_size, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_viewport_size, hscroll_pos;
@@ -57,6 +60,23 @@ typedef struct dt_view_t
 }
 dt_view_t;
 
+typedef enum dt_view_image_over_t
+{
+  DT_VIEW_DESERT = 0,
+  DT_VIEW_STAR_1 = 1,
+  DT_VIEW_STAR_2 = 2,
+  DT_VIEW_STAR_3 = 3,
+  DT_VIEW_STAR_4 = 4
+}
+dt_view_image_over_t;
+
+/** expose an image, set image over flags. */
+void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
+
+/** toggle selection of given image. */
+void dt_view_toggle_selection(int iid);
+
+
 #define DT_VIEW_MAX_MODULES 10
 /**
  * holds all relevant data needed to manage the view
@@ -64,8 +84,14 @@ dt_view_t;
  */
 typedef struct dt_view_manager_t
 {
+  dt_view_t film_strip;
   dt_view_t view[DT_VIEW_MAX_MODULES];
   int32_t current_view, num_views;
+  int32_t film_strip_on;
+  float film_strip_size;
+  int32_t film_strip_dragging, film_strip_scroll_to;
+  void (*film_strip_activated)(const int imgid, void *data);
+  void *film_strip_data;
 }
 dt_view_manager_t;
 
@@ -98,6 +124,16 @@ int dt_view_load_module(dt_view_t *view, const char *module);
 void dt_view_unload_module(dt_view_t *view);
 /** set scrollbar positions, gui method. */
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize, float vwinsize);
+/** open up the film strip view, with given callback on image activation. */
+void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int, void*), void *data);
+/** close the film strip view. */
+void dt_view_film_strip_close(dt_view_manager_t *vm);
+/** toggles the film strip. */
+void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data);
+/** advise the film strip to scroll to imgid at next expose. */
+void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int imgid);
+/** prefetch the next few images in film strip, from selected on. */
+void dt_view_film_strip_prefetch();
 
 
 #endif

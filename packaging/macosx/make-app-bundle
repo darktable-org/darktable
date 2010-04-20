@@ -1,0 +1,101 @@
+#!/bin/bash
+# Function checkLink:
+# args: $1 - file
+#
+# Will loop through all dynamic links for $file, and update each to be relative.
+function checkLink {
+	#echo "checkLink called with $1 $2"
+	local FILE=$1
+
+	otool -L $FILE | grep -v "${APP}" | grep -v '/usr/lib' | grep -v '/System/' | grep -v "@executable_path" | cut -f 1 -d ' ' | while read X
+	do 
+		local NAME=${LIB}/`basename "$X"`
+		if [ ! -f "${NAME}" ]
+		then
+			cp $X "${NAME}"
+		
+			#Recursively update the linkage of libraries
+			checkLink "${NAME}"
+		fi
+	done
+}
+
+APP=DarkTable.app
+CONTENTS=${APP}/Contents
+RESOURCES=${CONTENTS}/Resources
+MACOS=${CONTENTS}/MacOS
+BIN=${MACOS}/bin
+ETC=${MACOS}/etc
+LIB=${MACOS}/lib
+SHARE=${MACOS}/share
+RELEASE=release
+DMG=${RELEASE}/DarkTable.dmg
+EXECUTABLE=bin/darktable
+BUILD_FOLDER=./packaging/macosx
+
+#Find where MacPorts is installed.  We take a known binary (port), which is in <MacPorts>/bin, and 
+# go up a level to get the main install folder.
+MACPORTS_PREFIX=`which port`
+MACPORTS_PREFIX=`dirname $MACPORTS_PREFIX`
+MACPORTS_PREFIX=`dirname $MACPORTS_PREFIX`
+
+if [ ! -d ${RELEASE} ]; then
+	echo "Please run this from the root of the project; i.e. ${BUILD_FOLDER}/`basename $0`."
+	exit
+fi
+
+if [ -d "${APP}" ]; then
+	echo "Removing old application..."
+	rm -rf "${APP}"
+fi
+if [ -f ${DMG} ]; then
+	echo "Removing old disk image..."
+	rm "${DMG}"
+fi
+
+echo "Making application directory structure..."
+mkdir -p "${RESOURCES}"
+mkdir -p "${ETC}"
+mkdir -p "${LIB}"
+mkdir -p "${SHARE}/mime"
+
+#Copy over non-explicitly linked libraries
+echo "Copying libraries from ${MACPORTS_PREFIX}..."
+cp -R ${MACPORTS_PREFIX}/lib/pango ${LIB}
+cp -R ${MACPORTS_PREFIX}/lib/gtk-2.0 ${LIB}
+
+#Copy over mimes (if a mime is copied, and nobody hears, is it really copied?)
+echo "Copying shared files from ${MACPORTS_PREFIX}..."
+cp -R ${MACPORTS_PREFIX}/share/mime/* ${SHARE}/mime
+
+#Copy over etc files, and modify as needed
+echo "Copying configuration files from ${MACPORTS_PREFIX} and modifying for standalone app bundle..."
+cp -R $MACPORTS_PREFIX/etc/gtk-2.0 ${ETC}
+cp -R $MACPORTS_PREFIX/etc/pango ${ETC}
+ESCAPED_MACPORTS_PREFIX=`echo ${MACPORTS_PREFIX} | sed -e 's/\\//\\\\\\//g'`
+sed -i .bak -e "s/${ESCAPED_MACPORTS_PREFIX}/@executable_path\/../g" ${ETC}/gtk-2.0/gdk-pixbuf.loaders ${ETC}/pango/pango.modules
+echo -e "[Pango]\nModuleFiles = /tmp/`basename ${EXECUTABLE}`_pango.modules" > ${ETC}/pango/pangorc
+
+
+#Copy over the release files
+echo "Copying release files..."
+cp -R ${RELEASE}/* ${MACOS}
+
+#Copy application-specific stuff like icons and startup script
+echo "Creating required application bundle files..."
+cp ${BUILD_FOLDER}/Info.plist ${CONTENTS}
+cp ${BUILD_FOLDER}/Icons.icns ${RESOURCES}
+cp ${BUILD_FOLDER}/start ${MACOS}
+
+#Copy and relink the explicitly defined libraries
+echo "Recursively copying libraries referenced by executable..."
+checkLink "${MACOS}/${EXECUTABLE}"
+
+
+#Make a .dmg for distribution and delete the .app
+echo "Creating distribution .dmg..."
+hdiutil create -srcdir ${APP} ${DMG}
+echo "Cleaning up..."
+rm -rf ${APP}
+
+echo "All done!"

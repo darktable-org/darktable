@@ -36,6 +36,7 @@ src/iop/velvia.c
 src/iop/splittoning.c
 src/iop/grain.c
 src/iop/bilateral.cc
+src/iop/profile_gamma.c
 src/gui/gtk.c
 src/gui/histogram.c
 src/gui/metadata.c
@@ -45,4 +46,5 @@ src/gui/capture.c
 src/gui/camera_import_dialog.c
 src/views/darkroom.c
 src/views/lighttable.c
+src/views/filmstrip.c
 src/views/view.c

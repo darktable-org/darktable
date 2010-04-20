@@ -29,6 +29,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "libraw/libraw.h"
 
 DT_MODULE(2)
 
@@ -43,46 +44,36 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in =  (float *)i;
   float *out = (float *)o;
   float black = d->black;
-  float white = exp2f(-d->exposure)*self->dev->image->maximum;
+  float white = exp2f(-d->exposure);
 
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
   { // path for already exposed preview buffer
-    white /= self->dev->image->maximum;
-    black -= self->dev->image->black;
+    white /= d->thumb_corr;
   }
   float scale = 1.0/(white - black); 
-  // if(fabsf(d->gain - 1.0) < 0.001)
+  float coeff[3];
+  for(int k=0;k<3;k++) coeff[k] = d->coeffs[k] * scale;
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
-    {
-      for(int i=0;i<3;i++) out[i] = fminf(1.0, fmaxf(0.0, (in[i]-black)*scale));
-      out += 3; in += 3;
-    }
+    for(int i=0;i<3;i++) out[i] = fmaxf(0.0, (in[i]-black)*coeff[i]);
+    out += 3; in += 3;
   }
-#if 0 // non-linear doesn't make sense before white balance :(
-  else
-  {
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
-    {
-      for(int i=0;i<3;i++) out[i] = powf(fmaxf(0.0, fminf(1.0, (in[i]-black))*scale), d->gain);
-      out += 3; in += 3;
-    }
-  }
-#endif
   for(int k=0;k<3;k++)
-    piece->pipe->processed_maximum[k] = powf(fmaxf(0.0, fminf(1.0, (piece->pipe->processed_maximum[k]-black))*scale), d->gain);
+    piece->pipe->processed_maximum[k] = scale;
 }
 
+#if 0
 void reload_defaults (struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p  = (dt_iop_exposure_params_t *)self->default_params;
   dt_iop_exposure_params_t *fp = (dt_iop_exposure_params_t *)self->factory_params;
   int cp = memcmp(self->default_params, self->params, self->params_size);
-  fp->black = p->black = self->dev->image->black;
+  fp->black = p->black = 0.0f;//self->dev->image->black;
   // FIXME: this function is called from render threads, but these values
   // should be written by gui threads. but it is only a matter of gui synching..
   if(!cp) memcpy(self->params, self->default_params, self->params_size);
 }
+#endif
 
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -96,6 +87,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->black = p->black;
   d->gain = 2.0 - p->gain;
   d->exposure = p->exposure;
+
+  for(int k=0;k<3;k++) d->coeffs[k] = ((float *)(self->data))[k];
+  d->thumb_corr = ((float *)(self->data))[3];
 #endif
 }
 
@@ -128,7 +122,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->black/self->dev->image->maximum);
+  dtgtk_slider_set_value(g->scale1, p->black);
   dtgtk_slider_set_value(g->scale2, p->exposure);
   // dtgtk_slider_set_value(g->scale3, p->gain);
 }
@@ -145,11 +139,39 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};
 
-  tmp.black = module->dev->image->black;
+  tmp.black = 0.0f;
   tmp.exposure = 0.0f;
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
+
+  // get white balance coefficients, as shot
+  float *coeffs = (float *)malloc(4*sizeof(float));
+  module->data = coeffs;
+  coeffs[0] = coeffs[1] = coeffs[2] = 1.0;
+  char filename[1024];
+  int ret;
+  dt_image_full_path(module->dev->image, filename, 1024);
+  libraw_data_t *raw = libraw_init(0);
+  ret = libraw_open_file(raw, filename);
+  if(!ret)
+  {
+    for(int k=0;k<3;k++) coeffs[k] = raw->color.cam_mul[k];
+    coeffs[0] /= coeffs[1];
+    coeffs[2] /= coeffs[1];
+    coeffs[1] = 1.0f;
+  }
+  libraw_close(raw);
+  float dmin=INFINITY, dmax=0.0f;
+  for (int c=0; c < 3; c++)
+  {
+    if (dmin > coeffs[c])
+      dmin = coeffs[c];
+    if (dmax < coeffs[c])
+      dmax = coeffs[c];
+  }
+  for(int k=0;k<3;k++) coeffs[k] = dmax/(dmin*coeffs[k]);
+  coeffs[3] = dmin/dmax; // correction for thumbnail images.
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -158,18 +180,20 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+  free(module->data);
+  module->data = NULL;
 }
 
 void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -log2f(fmaxf(0.001, white/self->dev->image->maximum)));
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -log2f(fmaxf(0.001, white)));
 }
 
 float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  return exp2f(-p->exposure)*self->dev->image->maximum;
+  return exp2f(-p->exposure);
 }
 
 static void
@@ -191,8 +215,8 @@ white_callback (GtkDarktableSlider *slider, gpointer user_data)
   p->exposure = dtgtk_slider_get_value(slider);
   // these lines seem to produce bad black points during auto exposure:
   // dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  // const float white = exp2f(-p->exposure)*self->dev->image->maximum;
-  // float black = dtgtk_slider_get_value(g->scale1)*self->dev->image->maximum;
+  // const float white = exp2f(-p->exposure);
+  // float black = dtgtk_slider_get_value(g->scale1);
   // if(white < black) dtgtk_slider_set_value(g->scale1, white);
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -204,9 +228,9 @@ black_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->black = dtgtk_slider_get_value(slider)*self->dev->image->maximum;
-  float white = exp2f(-dtgtk_slider_get_value(g->scale2))*self->dev->image->maximum;
-  if(white < p->black) dtgtk_slider_set_value(g->scale2, - log2f(p->black/self->dev->image->maximum));
+  p->black = dtgtk_slider_get_value(slider);
+  float white = exp2f(-dtgtk_slider_get_value(g->scale2));
+  if(white < p->black) dtgtk_slider_set_value(g->scale2, - log2f(p->black));
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -262,7 +286,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -.5, 1.0, .001,p->black/self->dev->image->maximum,3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -.5, 1.0, .001,p->black,3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
   
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -3.0, 6.0, .02, p->exposure,3));

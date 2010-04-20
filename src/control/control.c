@@ -261,6 +261,7 @@ enum
   closeSpool     = 5  /* complete data transfer process  */
 };
 
+#ifndef __LP64__
 static OSErr dt_ctl_lcms_flatten_profile(SInt32  command,
     SInt32 *size, void *data, void *refCon)
 {
@@ -285,6 +286,7 @@ static OSErr dt_ctl_lcms_flatten_profile(SInt32  command,
   }
   return 0;
 }
+#endif /* __LP64__ */
 #endif /* GDK_WINDOWING_QUARTZ */
 
 void dt_ctl_get_display_profile(GtkWidget *widget,
@@ -323,11 +325,12 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
     return;
 
   ProfileTransfer transfer = { NULL, 0 };
-  // FIXME: apple disabled this, so there will be no screen profiling for macs for now:
-  // Boolean foo;
-  // CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
-  // CMCloseProfile(prof);
-
+  //The following code does not work on 64bit OSX.  Disable if we are compiling there.
+#ifndef __LP64__  
+  Boolean foo;
+  CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
+  CMCloseProfile(prof);
+#endif
   *buffer = transfer.data;
   *buffer_size = transfer.len;
 

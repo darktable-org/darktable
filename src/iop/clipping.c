@@ -562,7 +562,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->aspect), "value-changed",
                     G_CALLBACK (aspect_callback), self);
-  gtk_object_set(GTK_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w/h)\npress x to swap sides"), NULL);
+  gtk_object_set(GTK_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
   g->aspect_presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->aspect_presets, _("image"));
   gtk_combo_box_append_text(g->aspect_presets, _("golden cut"));
@@ -570,7 +570,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
   gtk_combo_box_append_text(g->aspect_presets, _("square"));
   gtk_combo_box_append_text(g->aspect_presets, _("din"));
-  dt_gui_key_accel_register(0, GDK_x, key_accel_callback, (void *)g);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)g);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);

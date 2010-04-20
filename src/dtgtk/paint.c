@@ -19,7 +19,9 @@
 #include <math.h>
 #include "paint.h"
 
+#ifndef M_PI
 #define M_PI 3.141592654
+#endif
 
 void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {

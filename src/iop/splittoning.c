@@ -502,7 +502,7 @@ void gui_init(struct dt_iop_module_t *self)
   
   g->gslider4=DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color((GdkColor){0,lightness,lightness,lightness},(GdkColor){0,lightness,lightness,lightness}));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->gslider4), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->gslider4), "tooltip-text", _("select the saturation shadow tone"), NULL);
+  gtk_object_set(GTK_OBJECT(g->gslider4), "tooltip-text", _("select the saturation highlights tone"), NULL);
     
   // Additional paramters
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
