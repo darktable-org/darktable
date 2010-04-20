@@ -63,27 +63,63 @@ typedef struct _camera_import_dialog_t {
 }
 _camera_import_dialog_t;
 
+typedef struct _camera_gconf_widget_t
+{
+  GtkWidget *widget;
+  GtkWidget *entry;
+}
+_camera_gconf_widget_t;
+
+static void
+store_callback (GtkDarktableButton *button, gpointer user_data)
+{
+  _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
+  gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
+  const gchar *newvalue=gtk_entry_get_text( GTK_ENTRY( gcw->entry ));
+  if(newvalue && strlen(newvalue) > 0 )
+    dt_conf_set_string(configstring,newvalue);
+}
+
+static void
+reset_callback (GtkDarktableButton *button, gpointer user_data)
+{
+  _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
+  gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
+  gchar *value=dt_conf_get_string(configstring);
+  if(value) {
+    gtk_entry_set_text( GTK_ENTRY( gcw->entry ),value);
+  }
+}
+
 GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring) 
 {
+  
+  _camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
+  
+  
   GtkWidget *vbox,*hbox;
-  vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
+  gcw->widget=vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE,0));
   g_object_set_data(G_OBJECT(vbox),"gconf:string",confstring);
   
-  GtkWidget *entry = gtk_entry_new();
+  gcw->entry=gtk_entry_new();
   if( dt_conf_get_string (confstring) )
-    gtk_entry_set_text( GTK_ENTRY( entry ),dt_conf_get_string (confstring));
-  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(entry),TRUE,TRUE,0);
+    gtk_entry_set_text( GTK_ENTRY( gcw->entry ),dt_conf_get_string (confstring));
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
   
   GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,0);
   g_object_set(button,"tooltip-text",_("store value as default"),NULL);
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
+  g_signal_connect (G_OBJECT (button), "clicked",
+        G_CALLBACK (store_callback), gcw);
   
   button=dtgtk_button_new(dtgtk_cairo_paint_reset,0);
   g_object_set(button,"tooltip-text",_("reset value to default"),NULL);
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
+  g_signal_connect (G_OBJECT (button), "clicked",
+        G_CALLBACK (reset_callback), gcw);
   
   GtkWidget *l=gtk_label_new(label);
   gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
