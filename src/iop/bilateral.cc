@@ -81,35 +81,92 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   sigma[2] = data->sigma[2];
   sigma[3] = data->sigma[3];
   sigma[4] = data->sigma[4];
-  if(fmaxf(sigma[0], sigma[1]) < 1.0)
+  if(fmaxf(sigma[0], sigma[1]) < .1)
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
-  for(int k=0;k<5;k++) sigma[k] = 1.0f/sigma[k];
 
-	PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
-	
-	// splat into the lattice
-  for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+  // if rad <= 6 use naive version!
+  const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
+  if(rad <= 6)
   {
-    float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
-    float val[4] = {in[0], in[1], in[2], 1.0};
-    lattice.splat(pos, val);
-    in += 3;
-	}
-	
-	// blur the lattice
-	lattice.blur();
-	
-	// slice from the lattice
-	lattice.beginSlice();
-  for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+    float mat[2*(6+1)*2*(6+1)];
+    const int wd = 2*rad+1;
+    float *m = mat + rad*wd + rad;
+    float weight = 0.0f;
+    const float isig2col[3] = {1.0/(2.0f*sigma[2]*sigma[2]), 1.0/(2.0f*sigma[3]*sigma[3]), 1.0/(2.0f*sigma[4]*sigma[4])};
+    // init gaussian kernel
+    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+      weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma[0]*sigma[0]));
+    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+      m[l*wd + k] /= weight;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,m,mat,isig2col) private(in,out)
+#endif
+    for(int j=rad;j<roi_out->height-rad;j++)
+    {
+      in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
+      out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
+      float weights[2*(6+1)*2*(6+1)];
+      float *w = weights + rad*wd + rad;
+      float sumw;
+      for(int i=rad;i<roi_out->width-rad;i++)
+      {
+        sumw = 0.0f;
+        for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+          sumw += w[l*wd+k] = m[l*wd+k]*expf(-
+              ((in[0]-in[3*(l*roi_in->width+k)+0])*(in[0]-in[3*(l*roi_in->width+k)+0])*isig2col[0] +
+               (in[1]-in[3*(l*roi_in->width+k)+1])*(in[1]-in[3*(l*roi_in->width+k)+1])*isig2col[1] +
+               (in[2]-in[3*(l*roi_in->width+k)+2])*(in[2]-in[3*(l*roi_in->width+k)+2])*isig2col[2]));
+        for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++) w[l*wd+k] /= sumw;
+        for(int c=0;c<3;c++) out[c] = 0.0f;
+        for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+          for(int c=0;c<3;c++) out[c] += in[3*(l*roi_in->width+k)+c]*w[l*wd+k];
+        out += 3; in += 3;
+      }
+    }
+    // fill unprocessed border
+    in  = (float *)ivoid;
+    out = (float *)ovoid;
+    for(int j=0;j<rad;j++)
+      memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+    for(int j=roi_out->height-rad;j<roi_out->height;j++)
+      memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+    for(int j=rad;j<roi_out->height-rad;j++)
+    {
+      for(int i=0;i<rad;i++)
+        for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+      for(int i=roi_out->width-rad;i<roi_out->width;i++)
+        for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+    }
+  }
+  else
   {
-    float val[4];
-    lattice.slice(val);
-    for(int k=0;k<3;k++) out[k] = val[k]/val[3];
-    out += 3;
+    for(int k=0;k<5;k++) sigma[k] = 1.0f/sigma[k];
+    PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
+    
+    // splat into the lattice
+    for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+    {
+      float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
+      float val[4] = {in[0], in[1], in[2], 1.0};
+      lattice.splat(pos, val);
+      in += 3;
+    }
+    
+    // blur the lattice
+    lattice.blur();
+    
+    // slice from the lattice
+    lattice.beginSlice();
+    for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+    {
+      float val[4];
+      lattice.slice(val);
+      for(int k=0;k<3;k++) out[k] = val[k]/val[3];
+      out += 3;
+    }
   }
 }
 
