@@ -185,6 +185,7 @@ LibRaw:: LibRaw(unsigned int flags)
     imgdata.params.use_fuji_rotate=1;
     imgdata.params.auto_bright_thr = LIBRAW_DEFAULT_AUTO_BRIGHTNESS_THRESHOLD;
     imgdata.params.adjust_maximum_thr= LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD;
+    imgdata.params.green_matching = 0;
     imgdata.parent_class = this;
     imgdata.progress_flags = 0;
     tls = new LibRaw_TLS;
@@ -1454,6 +1455,10 @@ int LibRaw::dcraw_process(void)
         if (O.user_black >= 0) C.black = O.user_black;
         if (O.user_sat > 0) C.maximum = O.user_sat;
 
+        if (O.green_matching)
+            {
+                green_matching();
+            }
 
         if ( O.document_mode < 2)
             {

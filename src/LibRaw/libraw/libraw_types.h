@@ -250,6 +250,7 @@ typedef struct
     float       adjust_maximum_thr;
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
+    int         green_matching;
     enum LibRaw_filtering    filtering_mode; 
 }libraw_output_params_t;
 
