@@ -19,6 +19,7 @@
 #include "develop/develop.h"
 #include "control/conf.h"
 #include "common/camera_control.h"
+#include "dtgtk/button.h"
 #include "gui/camera_import_dialog.h"
 
 /*
@@ -42,16 +43,16 @@ typedef struct _camera_import_dialog_t {
   
   struct {
     GtkWidget *page;
-    GtkEntry *jobname;
+    GtkWidget *jobname;
     GtkWidget *treeview;
     GtkWidget *info;  
   } import;
   
   struct {
     GtkWidget *page;
-    GtkEntry *basedirectory;
-    GtkEntry *subdirectory;
-    GtkEntry *namepattern;
+    GtkWidget *basedirectory;
+    GtkWidget *subdirectory;
+    GtkWidget *namepattern;
   } settings;
   
   GtkListStore *store;
@@ -62,8 +63,39 @@ typedef struct _camera_import_dialog_t {
 }
 _camera_import_dialog_t;
 
+GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring) 
+{
+  GtkWidget *vbox,*hbox;
+  vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
+  hbox=GTK_WIDGET(gtk_hbox_new(FALSE,0));
+  g_object_set_data(G_OBJECT(vbox),"gconf:string",confstring);
+  
+  GtkWidget *entry = gtk_entry_new();
+  if( dt_conf_get_string (confstring) )
+    gtk_entry_set_text( GTK_ENTRY( entry ),dt_conf_get_string (confstring));
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(entry),TRUE,TRUE,0);
+  
+  GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,0);
+  g_object_set(button,"tooltip-text",_("store value as default"),NULL);
+  gtk_widget_set_size_request(button,13,13);
+  gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
+  
+  button=dtgtk_button_new(dtgtk_cairo_paint_reset,0);
+  g_object_set(button,"tooltip-text",_("reset value to default"),NULL);
+  gtk_widget_set_size_request(button,13,13);
+  gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
+  
+  GtkWidget *l=gtk_label_new(label);
+  gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
+  gtk_box_pack_start(GTK_BOX(vbox),l,FALSE,FALSE,0);
+  
+  gtk_box_pack_start(GTK_BOX(vbox),GTK_WIDGET(hbox),FALSE,FALSE,0);
+  
+  return vbox;
+}
+
 void _camera_import_dialog_new(_camera_import_dialog_t *data) {
-  data->dialog=gtk_dialog_new_with_buttons(_("import images from camera"),NULL,GTK_DIALOG_MODAL,_("import"),GTK_RESPONSE_ACCEPT,_("cancel"),GTK_RESPONSE_NONE,NULL);
+  data->dialog=gtk_dialog_new_with_buttons(_("import images from camera"),NULL,GTK_DIALOG_MODAL,_("cancel"),GTK_RESPONSE_NONE,_("import"),GTK_RESPONSE_ACCEPT,NULL);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (data->dialog));
   
   // List - setup store
@@ -79,15 +111,11 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_box_pack_start(GTK_BOX(data->import.page),data->import.info,FALSE,FALSE,0);
   
   // n/v
-  GtkBox *hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
-  data->import.jobname=GTK_ENTRY(gtk_entry_new());
-  if( dt_conf_get_string ("capture/camera/import/jobcode") )
-    gtk_entry_set_text( GTK_ENTRY( data->import.jobname),dt_conf_get_string ("capture/camera/import/jobcode"));
+//  GtkBox *hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
+
+  data->import.jobname=_camera_import_gconf_widget(_("jobcode"),"capture/camera/import/jobcode");
+  gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(data->import.jobname),FALSE,FALSE,0);
   
-  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("jobcode:"))),FALSE,FALSE,0);
-  gtk_box_pack_start(hbox,GTK_WIDGET(data->import.jobname),FALSE,FALSE,0);
-  
-  gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
   
   // Create the treview with list model data store
   data->import.treeview=gtk_scrolled_window_new(NULL,NULL);
@@ -119,30 +147,16 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_container_set_border_width(GTK_CONTAINER(data->import.page),5);
   
   
-  hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
-  data->settings.basedirectory=GTK_ENTRY(gtk_entry_new());
-  if( dt_conf_get_string ("capture/camera/storage/basedirectory") )
-    gtk_entry_set_text( GTK_ENTRY( data->settings.basedirectory),dt_conf_get_string ("capture/camera/storage/basedirectory"));
-  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("storage directory:"))),FALSE,FALSE,0);
-  gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.basedirectory),FALSE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
+  data->settings.basedirectory=_camera_import_gconf_widget(_("storage directory"),"capture/camera/storage/basedirectory");
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.basedirectory),FALSE,FALSE,0);
   
-  hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
-  data->settings.subdirectory=GTK_ENTRY(gtk_entry_new());
-  if( dt_conf_get_string ("capture/camera/storage/subpath") )
-    gtk_entry_set_text( GTK_ENTRY( data->settings.subdirectory),dt_conf_get_string ("capture/camera/storage/subpath"));
-  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("directory structure:"))),FALSE,FALSE,0);
-  gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.subdirectory),FALSE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
+  data->settings.subdirectory=_camera_import_gconf_widget(_("directory structure"),"capture/camera/storage/subpath");
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.subdirectory),FALSE,FALSE,0);
   
   
-  hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
-  data->settings.namepattern=GTK_ENTRY(gtk_entry_new());
-  if( dt_conf_get_string ("capture/camera/storage/namepattern") )
-    gtk_entry_set_text( GTK_ENTRY( data->settings.subdirectory),dt_conf_get_string ("capture/camera/storage/namepattern"));
-  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("filename structure:"))),FALSE,FALSE,0);
-  gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.namepattern),FALSE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
+  data->settings.namepattern=_camera_import_gconf_widget(_("filename structure"),"capture/camera/storage/namepattern");
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.namepattern),FALSE,FALSE,0);
+  
   
   
   // THE NOTEBOOOK
@@ -200,12 +214,15 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
  
   // Setup a listener for previwes of all files on camera
   // then initiate fetch of all previews from camera
-  dt_camctl_listener_t listener={0};
-  listener.data=data;
-  listener.camera_storage_image_filename=_camera_storage_image_filename;
-  dt_camctl_register_listener(darktable.camctl,&listener);
-  dt_camctl_get_previews(darktable.camctl,data->camera);
-  dt_camctl_unregister_listener(darktable.camctl,&listener);
+  if(data->camera!=NULL)
+  {
+    dt_camctl_listener_t listener={0};
+    listener.data=data;
+    listener.camera_storage_image_filename=_camera_storage_image_filename;
+    dt_camctl_register_listener(darktable.camctl,&listener);
+    dt_camctl_get_previews(darktable.camctl,data->camera);
+    dt_camctl_unregister_listener(darktable.camctl,&listener);
+  }
   
   // Select all images as default
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview))));
@@ -225,7 +242,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
         do
         {
           GValue value;
-	  g_value_init(&value, G_TYPE_STRING);
+          g_value_init(&value, G_TYPE_STRING);
           gtk_tree_model_get_iter(GTK_TREE_MODEL (data->store),&iter,(GtkTreePath*)sp->data);
           gtk_tree_model_get_value(GTK_TREE_MODEL (data->store),&iter,1,&value);
           *data->result=g_list_append(*data->result,g_strdup(g_value_get_string(&value)) );
