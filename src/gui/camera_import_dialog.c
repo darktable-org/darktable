@@ -51,6 +51,7 @@ typedef struct _camera_import_dialog_t {
     GtkWidget *page;
     GtkEntry *basedirectory;
     GtkEntry *subdirectory;
+    GtkEntry *namepattern;
   } settings;
   
   GtkListStore *store;
@@ -80,10 +81,10 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   // n/v
   GtkBox *hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
   data->import.jobname=GTK_ENTRY(gtk_entry_new());
-  if( dt_conf_get_string ("import/jobid") )
-    gtk_entry_set_text( GTK_ENTRY( data->import.jobname),dt_conf_get_string ("import/jobid"));
+  if( dt_conf_get_string ("capture/camera/import/jobcode") )
+    gtk_entry_set_text( GTK_ENTRY( data->import.jobname),dt_conf_get_string ("capture/camera/import/jobcode"));
   
-  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("Job name:"))),FALSE,FALSE,0);
+  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("jobcode:"))),FALSE,FALSE,0);
   gtk_box_pack_start(hbox,GTK_WIDGET(data->import.jobname),FALSE,FALSE,0);
   
   gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
@@ -120,25 +121,34 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
   data->settings.basedirectory=GTK_ENTRY(gtk_entry_new());
-  if( dt_conf_get_string ("import/basedirectory") )
-    gtk_entry_set_text( GTK_ENTRY( data->settings.basedirectory),dt_conf_get_string ("import/basedirectory"));
-  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("Base storage:"))),FALSE,FALSE,0);
+  if( dt_conf_get_string ("capture/camera/storage/basedirectory") )
+    gtk_entry_set_text( GTK_ENTRY( data->settings.basedirectory),dt_conf_get_string ("capture/camera/storage/basedirectory"));
+  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("storage directory:"))),FALSE,FALSE,0);
   gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.basedirectory),FALSE,FALSE,0);
   gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
   
   hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
   data->settings.subdirectory=GTK_ENTRY(gtk_entry_new());
-  if( dt_conf_get_string ("import/subdirectory") )
-    gtk_entry_set_text( GTK_ENTRY( data->settings.subdirectory),dt_conf_get_string ("import/subdirectory"));
-  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("Subdirectory structure:"))),FALSE,FALSE,0);
+  if( dt_conf_get_string ("capture/camera/storage/subpath") )
+    gtk_entry_set_text( GTK_ENTRY( data->settings.subdirectory),dt_conf_get_string ("capture/camera/storage/subpath"));
+  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("directory structure:"))),FALSE,FALSE,0);
   gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.subdirectory),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
+  
+  
+  hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
+  data->settings.namepattern=GTK_ENTRY(gtk_entry_new());
+  if( dt_conf_get_string ("capture/camera/storage/namepattern") )
+    gtk_entry_set_text( GTK_ENTRY( data->settings.subdirectory),dt_conf_get_string ("capture/camera/storage/namepattern"));
+  gtk_box_pack_start(hbox,GTK_WIDGET(gtk_label_new(_("filename structure:"))),FALSE,FALSE,0);
+  gtk_box_pack_start(hbox,GTK_WIDGET(data->settings.namepattern),FALSE,FALSE,0);
   gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(hbox),FALSE,FALSE,0);
   
   
   // THE NOTEBOOOK
   data->notebook=gtk_notebook_new();
   gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->import.page,gtk_label_new(_("import images")));
-  //gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->settings.page,gtk_label_new(_("import settings")););
+  gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->settings.page,gtk_label_new(_("import settings")));
   
   // end
   gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
@@ -215,6 +225,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
         do
         {
           GValue value;
+	  g_value_init(&value, G_TYPE_STRING);
           gtk_tree_model_get_iter(GTK_TREE_MODEL (data->store),&iter,(GtkTreePath*)sp->data);
           gtk_tree_model_get_value(GTK_TREE_MODEL (data->store),&iter,1,&value);
           *data->result=g_list_append(*data->result,g_strdup(g_value_get_string(&value)) );

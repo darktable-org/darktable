@@ -158,6 +158,58 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/capture/camera/storage/basedirectory</key>
+      <applyto>/apps/darktable/capture/camera/storage/basedirectory</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>~/Pictures/darktable</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>path of storage for captured camera images</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/capture/camera/storage/subpath</key>
+      <applyto>/apps/darktable/capture/camera/storage/subpath</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>$(EXIF_YEAR)/$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)/$(JOBID)</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>subpath pattern in storage for captured camera images</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/capture/camera/storage/namepattern</key>
+      <applyto>/apps/darktable/capture/camera/storage/namepattern</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)-$(EXIF_HOUR)$(EXIF_MINUTE)_$(IMPORT_SEQUENCE)-f$(EXIF_APERTURE)_iso$(EXIF_ISO)</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>rename pattern for captured images</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/capture/camera/import/jobcode</key>
+      <applyto>/apps/darktable/capture/camera/import/jobcode</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>default</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>jobcode of import job</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/ui_last/film_roll</key>
       <applyto>/apps/darktable/ui_last/film_roll</applyto>
       <owner>darktable</owner>

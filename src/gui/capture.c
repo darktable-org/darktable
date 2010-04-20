@@ -22,6 +22,7 @@
 #include "gui/camera_import_dialog.h"
 #include "develop/develop.h"
 #include "dtgtk/label.h"
+#include "dtgtk/button.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "common/film.h"
@@ -135,7 +136,7 @@ void dt_gui_capture_update()
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("scan and detect sources available for capture"), NULL);
   gtk_box_pack_start(GTK_BOX(widget),button,FALSE,FALSE,0);
       
-  
+    
   if( (citem=g_list_first(darktable.camctl->cameras))!=NULL) 
   {    
     // Add detected capture sources
