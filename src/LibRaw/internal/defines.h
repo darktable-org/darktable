@@ -1,11 +1,13 @@
 /* 
    GENERATED FILE, DO NOT EDIT
-   Generated from dcraw/dcraw.c at Wed Dec 30 14:11:09 2009
+   Generated from dcraw/dcraw.c at Sat Apr 10 12:12:35 2010
    Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
    for copyright information.
 */
 
+#line 27 "dcraw/dcraw.c"
 #define NO_JPEG
+#line 32 "dcraw/dcraw.c"
 #define VERSION "8.99"
 
 #ifndef _GNU_SOURCE
@@ -43,6 +45,7 @@
 #else
 #define _(String) (String)
 #endif
+#line 77 "dcraw/dcraw.c"
 #ifdef __CYGWIN__
 #include <io.h>
 #endif
@@ -53,10 +56,12 @@
 #define snprintf _snprintf
 #define strcasecmp _stricmp
 #define strncasecmp strnicmp
+#line 91 "dcraw/dcraw.c"
 #else
 #include <unistd.h>
 #include <utime.h>
 #include <netinet/in.h>
+#line 99 "dcraw/dcraw.c"
 #endif
 
 #ifdef LJPEG_DECODE
@@ -67,6 +72,7 @@
 #ifndef LONG_BIT
 #define LONG_BIT (8 * sizeof (long))
 #endif
+#line 175 "dcraw/dcraw.c"
 #define FORC(cnt) for (c=0; c < cnt; c++)
 #define FORC3 FORC(3)
 #define FORC4 FORC(4)
@@ -120,6 +126,7 @@
 	3 G R G R G R	3 B G B G B G	3 R G R G R G	3 G B G B G B
  */
 
+#line 233 "dcraw/dcraw.c"
 #define BAYER(row,col) \
 	image[((row) >> shrink)*iwidth + ((col) >> shrink)][FC(row,col)]
 
