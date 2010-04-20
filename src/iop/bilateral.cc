@@ -81,35 +81,92 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   sigma[2] = data->sigma[2];
   sigma[3] = data->sigma[3];
   sigma[4] = data->sigma[4];
-  if(fmaxf(sigma[0], sigma[1]) < 1.0)
+  if(fmaxf(sigma[0], sigma[1]) < .1)
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
-  for(int k=0;k<5;k++) sigma[k] = 1.0f/sigma[k];
 
-	PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
-	
-	// splat into the lattice
-  for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+  // if rad <= 6 use naive version!
+  const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
+  if(rad <= 6)
   {
-    float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
-    float val[4] = {in[0], in[1], in[2], 1.0};
-    lattice.splat(pos, val);
-    in += 3;
-	}
-	
-	// blur the lattice
-	lattice.blur();
-	
-	// slice from the lattice
-	lattice.beginSlice();
-  for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+    float mat[2*(6+1)*2*(6+1)];
+    const int wd = 2*rad+1;
+    float *m = mat + rad*wd + rad;
+    float weight = 0.0f;
+    const float isig2col[3] = {1.0/(2.0f*sigma[2]*sigma[2]), 1.0/(2.0f*sigma[3]*sigma[3]), 1.0/(2.0f*sigma[4]*sigma[4])};
+    // init gaussian kernel
+    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+      weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma[0]*sigma[0]));
+    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+      m[l*wd + k] /= weight;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,m,mat,isig2col) private(in,out)
+#endif
+    for(int j=rad;j<roi_out->height-rad;j++)
+    {
+      in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
+      out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
+      float weights[2*(6+1)*2*(6+1)];
+      float *w = weights + rad*wd + rad;
+      float sumw;
+      for(int i=rad;i<roi_out->width-rad;i++)
+      {
+        sumw = 0.0f;
+        for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+          sumw += w[l*wd+k] = m[l*wd+k]*expf(-
+              ((in[0]-in[3*(l*roi_in->width+k)+0])*(in[0]-in[3*(l*roi_in->width+k)+0])*isig2col[0] +
+               (in[1]-in[3*(l*roi_in->width+k)+1])*(in[1]-in[3*(l*roi_in->width+k)+1])*isig2col[1] +
+               (in[2]-in[3*(l*roi_in->width+k)+2])*(in[2]-in[3*(l*roi_in->width+k)+2])*isig2col[2]));
+        for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++) w[l*wd+k] /= sumw;
+        for(int c=0;c<3;c++) out[c] = 0.0f;
+        for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+          for(int c=0;c<3;c++) out[c] += in[3*(l*roi_in->width+k)+c]*w[l*wd+k];
+        out += 3; in += 3;
+      }
+    }
+    // fill unprocessed border
+    in  = (float *)ivoid;
+    out = (float *)ovoid;
+    for(int j=0;j<rad;j++)
+      memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+    for(int j=roi_out->height-rad;j<roi_out->height;j++)
+      memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+    for(int j=rad;j<roi_out->height-rad;j++)
+    {
+      for(int i=0;i<rad;i++)
+        for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+      for(int i=roi_out->width-rad;i<roi_out->width;i++)
+        for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+    }
+  }
+  else
   {
-    float val[4];
-    lattice.slice(val);
-    for(int k=0;k<3;k++) out[k] = val[k]/val[3];
-    out += 3;
+    for(int k=0;k<5;k++) sigma[k] = 1.0f/sigma[k];
+    PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
+    
+    // splat into the lattice
+    for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+    {
+      float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
+      float val[4] = {in[0], in[1], in[2], 1.0};
+      lattice.splat(pos, val);
+      in += 3;
+    }
+    
+    // blur the lattice
+    lattice.blur();
+    
+    // slice from the lattice
+    lattice.beginSlice();
+    for(int j=0;j<roi_in->height;j++) for(int i=0;i<roi_in->width;i++)
+    {
+      float val[4];
+      lattice.slice(val);
+      for(int k=0;k<3;k++) out[k] = val[k]/val[3];
+      out += 3;
+    }
   }
 }
 
@@ -126,6 +183,7 @@ sigma_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
   else if(slider == g->scale4) i = 3;
   else if(slider == g->scale5) i = 4;
   p->sigma[i] = dtgtk_slider_get_value(slider);
+  if(i == 0) p->sigma[1] = p->sigma[0];
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -169,7 +227,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
   dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)module->params;
   dtgtk_slider_set_value(g->scale1, p->sigma[0]);
-  dtgtk_slider_set_value(g->scale2, p->sigma[1]);
+  // dtgtk_slider_set_value(g->scale2, p->sigma[1]);
   dtgtk_slider_set_value(g->scale3, p->sigma[2]);
   dtgtk_slider_set_value(g->scale4, p->sigma[3]);
   dtgtk_slider_set_value(g->scale5, p->sigma[4]);
@@ -184,7 +242,7 @@ void init(dt_iop_module_t *module)
   module->priority = 150;
   module->params_size = sizeof(dt_iop_bilateral_params_t);
   module->gui_data = NULL;
-  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{10.0, 10.0, 0.1, 0.1, 0.1}};
+  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{2.0, 2.0, 0.002, 0.002, 0.002}};
   memcpy(module->params, &tmp, sizeof(dt_iop_bilateral_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilateral_params_t));
 }
@@ -208,36 +266,41 @@ void gui_init(dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("sigma x")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("sigma y")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("sigma r")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("sigma g")));
-  g->label5 = GTK_LABEL(gtk_label_new(_("sigma b")));
+  g->label1 = GTK_LABEL(gtk_label_new(_("radius")));
+  // g->label2 = GTK_LABEL(gtk_label_new(_("height")));
+  g->label3 = GTK_LABEL(gtk_label_new(_("red")));
+  g->label4 = GTK_LABEL(gtk_label_new(_("green")));
+  g->label5 = GTK_LABEL(gtk_label_new(_("blue")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
+  // gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 30.0, 1.0, p->sigma[0], 1));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 30.0, 1.0, p->sigma[1], 1));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, .5, 0.001, p->sigma[2], 3));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, .5, 0.001, p->sigma[3], 3));
-  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, .5, 0.001, p->sigma[4], 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.1, 30.0, 1.0, p->sigma[0], 1));
+  // g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 30.0, 1.0, p->sigma[1], 0));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[2], 4));
+  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[3], 4));
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[4], 4));
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), NULL);
+  // gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _(""), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), NULL);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (sigma_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (sigma_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale2), "value-changed",
+                    // G_CALLBACK (sigma_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (sigma_callback), self);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",

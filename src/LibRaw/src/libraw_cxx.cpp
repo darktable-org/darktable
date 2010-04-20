@@ -1,9 +1,22 @@
 /* -*- C++ -*-
  * File: libraw_cxx.cpp
- * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
+ * Copyright 2008-2010 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  8 , 2008
  *
  * LibRaw C++ interface (implementation)
+
+LibRaw is free software; you can redistribute it and/or modify
+it under the terms of the one of three licenses as you choose:
+
+1. GNU LESSER GENERAL PUBLIC LICENSE version 2.1
+   (See file LICENSE.LGPL provided in LibRaw distribution archive for details).
+
+2. COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
+   (See file LICENSE.CDDL provided in LibRaw distribution archive for details).
+
+3. LibRaw Software License 27032010
+   (See file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
+
  */
 
 #include <errno.h>
@@ -170,7 +183,8 @@ LibRaw:: LibRaw(unsigned int flags)
     imgdata.params.output_color=1;
     imgdata.params.output_bps=8;
     imgdata.params.use_fuji_rotate=1;
-    imgdata.params.auto_bright_thr = 0.01;
+    imgdata.params.auto_bright_thr = LIBRAW_DEFAULT_AUTO_BRIGHTNESS_THRESHOLD;
+    imgdata.params.adjust_maximum_thr= LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD;
     imgdata.params.green_matching = 0;
     imgdata.params.pre_interpolate_median_filter = 0;
     imgdata.parent_class = this;
@@ -241,6 +255,7 @@ void LibRaw:: recycle()
 #undef FREE
     ZERO(imgdata.masked_pixels);
     ZERO(imgdata.sizes);
+    ZERO(imgdata.color);
     ZERO(libraw_internal_data.internal_output_params);
     memmgr.cleanup();
     imgdata.thumbnail.tformat = LIBRAW_THUMBNAIL_UNKNOWN;
@@ -254,59 +269,84 @@ const char * LibRaw::unpack_function_name()
     if(!load_raw) return "Function not set";
 
     // sorted names order
-    if (load_raw == &LibRaw::adobe_dng_load_raw_lj)     return "adobe_dng_load_raw_lj()";
-    if (load_raw == &LibRaw::adobe_dng_load_raw_nc)     return "adobe_dng_load_raw_nc()";
-    if (load_raw == &LibRaw::canon_600_load_raw)        return "canon_600_load_raw()";
+    if (load_raw == &LibRaw::adobe_dng_load_raw_lj)     return "adobe_dng_load_raw_lj()"; //+
+    if (load_raw == &LibRaw::adobe_dng_load_raw_nc)     return "adobe_dng_load_raw_nc()"; //+
+    if (load_raw == &LibRaw::canon_600_load_raw)        return "canon_600_load_raw()";    //+
 
-    if (load_raw == &LibRaw::canon_compressed_load_raw) return "canon_compressed_load_raw()";
-    if (load_raw == &LibRaw::canon_sraw_load_raw)       return "canon_sraw_load_raw()";
+    if (load_raw == &LibRaw::canon_compressed_load_raw) return "canon_compressed_load_raw()"; //+
+    if (load_raw == &LibRaw::canon_sraw_load_raw)       return "canon_sraw_load_raw()"; //+
 
-    if (load_raw == &LibRaw::eight_bit_load_raw )       return "eight_bit_load_raw()";
-    if (load_raw == &LibRaw::foveon_load_raw )          return "foveon_load_raw()";
-    if (load_raw == &LibRaw::fuji_load_raw )            return "fuji_load_raw()";
+    if (load_raw == &LibRaw::eight_bit_load_raw )       return "eight_bit_load_raw()"; //+
+    if (load_raw == &LibRaw::fuji_load_raw )            return "fuji_load_raw()"; //+
     // 10
-    if (load_raw == &LibRaw::hasselblad_load_raw )      return "hasselblad_load_raw()";
-    if (load_raw == &LibRaw::imacon_full_load_raw )     return "imacon_full_load_raw()";
-    if (load_raw == &LibRaw::kodak_262_load_raw )       return "kodak_262_load_raw()";
+    if (load_raw == &LibRaw::hasselblad_load_raw )      return "hasselblad_load_raw()"; //+
+    if (load_raw == &LibRaw::imacon_full_load_raw )     return "imacon_full_load_raw()"; //+ (untested)
+    if (load_raw == &LibRaw::kodak_262_load_raw )       return "kodak_262_load_raw()"; //+
 
-    if (load_raw == &LibRaw::kodak_65000_load_raw )     return "kodak_65000_load_raw()";
-    if (load_raw == &LibRaw::kodak_dc120_load_raw )     return "kodak_dc120_load_raw()";
-    if (load_raw == &LibRaw::kodak_jpeg_load_raw )      return "kodak_jpeg_load_raw()";
+    if (load_raw == &LibRaw::kodak_65000_load_raw )     return "kodak_65000_load_raw()";//+
+    if (load_raw == &LibRaw::kodak_dc120_load_raw )     return "kodak_dc120_load_raw()"; //+
+    if (load_raw == &LibRaw::kodak_jpeg_load_raw )      return "kodak_jpeg_load_raw()"; //+ (untested)
 
-    if (load_raw == &LibRaw::kodak_radc_load_raw )      return "kodak_radc_load_raw()";
-    if (load_raw == &LibRaw::kodak_rgb_load_raw )       return "kodak_rgb_load_raw()";
-    if (load_raw == &LibRaw::kodak_yrgb_load_raw )      return "kodak_yrgb_load_raw()";
-    if (load_raw == &LibRaw::kodak_ycbcr_load_raw )     return "kodak_ycbcr_load_raw()";
+    if (load_raw == &LibRaw::kodak_radc_load_raw )      return "kodak_radc_load_raw()"; //+
+    if (load_raw == &LibRaw::kodak_rgb_load_raw )       return "kodak_rgb_load_raw()"; //+ (untested)
+    if (load_raw == &LibRaw::kodak_yrgb_load_raw )      return "kodak_yrgb_load_raw()"; //+
+    if (load_raw == &LibRaw::kodak_ycbcr_load_raw )     return "kodak_ycbcr_load_raw()"; //+ (untested)
     // 20
-    if (load_raw == &LibRaw::leaf_hdr_load_raw )        return "leaf_hdr_load_raw()";
-    if (load_raw == &LibRaw::lossless_jpeg_load_raw)    return "lossless_jpeg_load_raw()";
-    if (load_raw == &LibRaw::minolta_rd175_load_raw )   return "minolta_rd175_load_raw()";
+    if (load_raw == &LibRaw::leaf_hdr_load_raw )        return "leaf_hdr_load_raw()"; //+
+    if (load_raw == &LibRaw::lossless_jpeg_load_raw)    return "lossless_jpeg_load_raw()"; //+
+    if (load_raw == &LibRaw::minolta_rd175_load_raw )   return "minolta_rd175_load_raw()"; //+
 
-    if (load_raw == &LibRaw::nikon_compressed_load_raw) return "nikon_compressed_load_raw()";
-    if (load_raw == &LibRaw::nokia_load_raw )           return "nokia_load_raw()";
+    if (load_raw == &LibRaw::nikon_compressed_load_raw) return "nikon_compressed_load_raw()";//+
+    if (load_raw == &LibRaw::nokia_load_raw )           return "nokia_load_raw()";//+ (untested)
 
-    if (load_raw == &LibRaw::olympus_load_raw )    return "olympus_load_raw()";
-    if (load_raw == &LibRaw::packed_load_raw )       return "packed_load_raw()";
-    if (load_raw == &LibRaw::panasonic_load_raw )       return "panasonic_load_raw()";
+    if (load_raw == &LibRaw::olympus_load_raw )    return "olympus_load_raw()"; //+
+    if (load_raw == &LibRaw::packed_load_raw )       return "packed_load_raw()"; //+
+    if (load_raw == &LibRaw::panasonic_load_raw )       return "panasonic_load_raw()";//+
     // 30
-    if (load_raw == &LibRaw::pentax_load_raw )          return "pentax_load_raw()";
-    if (load_raw == &LibRaw::phase_one_load_raw )       return "phase_one_load_raw()";
-    if (load_raw == &LibRaw::phase_one_load_raw_c )     return "phase_one_load_raw_c()";
+    if (load_raw == &LibRaw::pentax_load_raw )          return "pentax_load_raw()"; //+
+    if (load_raw == &LibRaw::phase_one_load_raw )       return "phase_one_load_raw()"; //+
+    if (load_raw == &LibRaw::phase_one_load_raw_c )     return "phase_one_load_raw_c()"; //+
 
-    if (load_raw == &LibRaw::quicktake_100_load_raw )   return "quicktake_100_load_raw()";
-    if (load_raw == &LibRaw::rollei_load_raw )          return "rollei_load_raw()";
-    if (load_raw == &LibRaw::sinar_4shot_load_raw )     return "sinar_4shot_load_raw()";
+    if (load_raw == &LibRaw::quicktake_100_load_raw )   return "quicktake_100_load_raw()";//+ (untested)
+    if (load_raw == &LibRaw::rollei_load_raw )          return "rollei_load_raw()"; //+ (untested)
+    if (load_raw == &LibRaw::sinar_4shot_load_raw )     return "sinar_4shot_load_raw()";//+
 
-    if (load_raw == &LibRaw::smal_v6_load_raw )         return "smal_v6_load_raw()";
-    if (load_raw == &LibRaw::smal_v9_load_raw )         return "smal_v9_load_raw()";
-    if (load_raw == &LibRaw::sony_load_raw )            return "sony_load_raw()";
-    if (load_raw == &LibRaw::sony_arw_load_raw )        return "sony_arw_load_raw()";
+    if (load_raw == &LibRaw::smal_v6_load_raw )         return "smal_v6_load_raw()";//+ (untested)
+    if (load_raw == &LibRaw::smal_v9_load_raw )         return "smal_v9_load_raw()";//+ (untested)
+    if (load_raw == &LibRaw::sony_load_raw )            return "sony_load_raw()"; //+
+    if (load_raw == &LibRaw::sony_arw_load_raw )        return "sony_arw_load_raw()";//+
     // 40
-    if (load_raw == &LibRaw::sony_arw2_load_raw )       return "sony_arw2_load_raw()";
-    if (load_raw == &LibRaw::unpacked_load_raw )        return "unpacked_load_raw()";
+    if (load_raw == &LibRaw::sony_arw2_load_raw )       return "sony_arw2_load_raw()";//+
+    if (load_raw == &LibRaw::unpacked_load_raw )        return "unpacked_load_raw()"; //+
     // 42 total
         
     return "Unknown unpack function";
+}
+
+int LibRaw::adjust_maximum()
+{
+    int i;
+    ushort real_max;
+    float  auto_threshold;
+
+    if(O.adjust_maximum_thr < 0.00001)
+        return LIBRAW_SUCCESS;
+    else if (O.adjust_maximum_thr > 0.99999)
+        auto_threshold = LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD;
+    else
+        auto_threshold = O.adjust_maximum_thr;
+        
+    
+    real_max = C.channel_maximum[0];
+    for(i = 1; i< 4; i++)
+        if(real_max < C.channel_maximum[i])
+            real_max = C.channel_maximum[i];
+
+    if (real_max > 0 && real_max < C.maximum && real_max > C.maximum* auto_threshold)
+        {
+            C.maximum = real_max;
+        }
+    return LIBRAW_SUCCESS;
 }
 
 
@@ -424,7 +464,7 @@ int LibRaw::add_masked_borders_to_bitmap()
     if(S.width != S.iwidth || S.height!=S.iheight)
         return LIBRAW_CANNOT_ADDMASK;
 
-    if(P1.is_foveon || !P1.filters)
+    if(!P1.filters)
         return LIBRAW_CANNOT_ADDMASK;
         
     if(!imgdata.image)
@@ -672,8 +712,6 @@ int LibRaw::unpack(void)
                 merror (libraw_internal_data.internal_data.meta_data, "LibRaw::unpack()");
             }
         ID.input->seek(libraw_internal_data.unpacker_data.data_offset, SEEK_SET);
-        // foveon_load_raw produces different data for document_mode, we'll
-        // deal with it in dcraw_document_mode_processing
         int save_document_mode = O.document_mode;
         O.document_mode = 0;
 
@@ -711,17 +749,6 @@ int LibRaw::dcraw_document_mode_processing(void)
             O.filtering_mode = LIBRAW_FILTERING_AUTOMATIC_BIT; // turn on black and zeroes filtering
 
         O.document_mode = 2;
-        if(P1.is_foveon)
-            {
-                // filter image data for foveon document mode
-                short *iptr = (short *)imgdata.image;
-                for (int i=0; i < S.height*S.width*4; i++)
-                    {
-                        if ((short) iptr[i] < 0) 
-                            iptr[i] = 0;
-                    }
-                SET_PROC_FLAG(LIBRAW_PROGRESS_FOVEON_INTERPOLATE);
-            }
 
         O.use_fuji_rotate = 0;
         if (!(O.filtering_mode & LIBRAW_FILTERING_NOZEROES) && IO.zero_is_bad)
@@ -759,14 +786,14 @@ int LibRaw::dcraw_document_mode_processing(void)
             }
         SET_PROC_FLAG(LIBRAW_PROGRESS_MIX_GREEN);
 
-        if (!P1.is_foveon && P1.colors == 3) 
+        if ( P1.colors == 3) 
             median_filter();
         SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
 
-        if (!P1.is_foveon && O.highlight == 2) 
+        if ( O.highlight == 2) 
             blend_highlights();
 
-        if (!P1.is_foveon && O.highlight > 2) 
+        if ( O.highlight > 2) 
             recover_highlights();
         SET_PROC_FLAG(LIBRAW_PROGRESS_HIGHLIGHTS);
 
@@ -1191,62 +1218,6 @@ void LibRaw::kodak_thumb_loader()
 #undef SWAP
 
 
-void LibRaw::foveon_thumb_loader (void)
-{
-    unsigned bwide, row, col, bitbuf=0, bit=1, c, i;
-    struct decode *dindex;
-    short pred[3];
-    
-    if(T.thumb) free(T.thumb);
-    T.thumb = NULL;
-    
-    bwide = get4();
-    if (bwide > 0) 
-        {
-            if (bwide < (unsigned)T.twidth*3) return;
-            T.thumb = (char*)malloc(3*T.twidth * T.theight);
-            merror (T.thumb, "foveon_thumb()");
-            char *buf = (char*)malloc(bwide); 
-            merror (buf, "foveon_thumb()");
-            for (row=0; row < T.theight; row++) 
-                {
-                    ID.input->read(buf, 1, bwide);
-                    memmove(T.thumb+(row*T.twidth*3),buf,T.twidth*3);
-                }
-            free(buf);
-            T.tlength = 3*T.twidth * T.theight;
-            T.tformat = LIBRAW_THUMBNAIL_BITMAP;
-            return;
-        }
-    else 
-        {
-            foveon_decoder (256, 0);
-            T.thumb = (char*)malloc(3*T.twidth * T.theight);
-            char *bufp = T.thumb;
-            merror (T.thumb, "foveon_thumb()");
-            for (row=0; row < T.theight; row++) 
-                {
-                    memset (pred, 0, sizeof pred);
-                    if (!bit) get4();
-                    for (bit=col=0; col < T.twidth; col++)
-                        for(c=0;c<3;c++) 
-                            {
-                                for (dindex=first_decode; dindex->branch[0]; ) 
-                                    {
-                                        if ((bit = (bit-1) & 31) == 31)
-                                            for (i=0; i < 4; i++)
-                                                bitbuf = (bitbuf << 8) + ID.input->get_char();
-                                        dindex = dindex->branch[bitbuf >> bit & 1];
-                                    }
-                                pred[c] += dindex->leaf;
-                                (*bufp++)=pred[c];
-                            }
-                }
-            T.tformat = LIBRAW_THUMBNAIL_BITMAP;
-            T.tlength = 3*T.twidth * T.theight;
-        }
-    return;
-}
 
 
 // Достает thumbnail из файла, ставит thumb_format в соответствии с форматом
@@ -1295,14 +1266,6 @@ int LibRaw::unpack_thumb(void)
                         SET_PROC_FLAG(LIBRAW_PROGRESS_THUMB_LOAD);
                         return 0;
 
-                    }
-                else if (write_thumb == &LibRaw::foveon_thumb)
-                    {
-                        foveon_thumb_loader();
-                        // may return with error, so format is set in
-                        // foveon thumb loader itself
-                        SET_PROC_FLAG(LIBRAW_PROGRESS_THUMB_LOAD);
-                        return 0;
                     }
                 // else if -- all other write_thumb cases!
                 else
@@ -1457,6 +1420,7 @@ int LibRaw::dcraw_process(void)
 
     try {
 
+        adjust_maximum();
         if(IO.fwidth) 
             rotate_fuji_raw();
 
@@ -1501,13 +1465,7 @@ int LibRaw::dcraw_process(void)
                 pre_interpolate_median_filter();
             }
 
-        if (P1.is_foveon && !O.document_mode) 
-            {
-                foveon_interpolate();
-                SET_PROC_FLAG(LIBRAW_PROGRESS_FOVEON_INTERPOLATE);
-            }
-
-        if (!P1.is_foveon && O.document_mode < 2 && !O.dont_scale)
+        if ( O.document_mode < 2)
             {
                 scale_colors();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_SCALE_COLORS);
@@ -1535,26 +1493,24 @@ int LibRaw::dcraw_process(void)
                 SET_PROC_FLAG(LIBRAW_PROGRESS_MIX_GREEN);
             }
 
-        if(!P1.is_foveon)
+        if (P1.colors == 3) 
             {
-                if (P1.colors == 3) 
-                    {
-                        median_filter();
-                        SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
-                    }
-            
-                if (O.highlight == 2) 
-                    {
-                        blend_highlights();
-                        SET_PROC_FLAG(LIBRAW_PROGRESS_HIGHLIGHTS);
-                    }
-            
-                if (O.highlight > 2) 
-                    {
-                        recover_highlights();
-                        SET_PROC_FLAG(LIBRAW_PROGRESS_HIGHLIGHTS);
-                    }
+                median_filter();
+                SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
             }
+        
+        if (O.highlight == 2) 
+            {
+                blend_highlights();
+                SET_PROC_FLAG(LIBRAW_PROGRESS_HIGHLIGHTS);
+            }
+        
+        if (O.highlight > 2) 
+            {
+                recover_highlights();
+                SET_PROC_FLAG(LIBRAW_PROGRESS_HIGHLIGHTS);
+            }
+        
         if (O.use_fuji_rotate) 
             {
                 fuji_rotate();
@@ -1922,7 +1878,6 @@ static const char  *static_camera_list[] =
 "Phase One P 45",
 "Phase One P 45+",
 "Pixelink A782",
-"Polaroid x530",
 "Rollei d530flex",
 "RoverShot 3320af",
 "Samsung GX-1S",
@@ -1930,9 +1885,6 @@ static const char  *static_camera_list[] =
 "Samsung S85 (hacked)",
 "Samsung S850 (hacked)",
 "Sarnoff 4096x5440",
-"Sigma SD9",
-"Sigma SD10",
-"Sigma SD14",
 "Sinar 3072x2048",
 "Sinar 4080x4080",
 "Sinar 4080x5440",
@@ -1984,8 +1936,6 @@ const char * LibRaw::strprogress(enum LibRaw_progress p)
             return "Removing dead pixels";
         case LIBRAW_PROGRESS_DARK_FRAME:
             return "Subtracting dark frame data";
-        case LIBRAW_PROGRESS_FOVEON_INTERPOLATE:
-            return "Interpolating Foveon sensor data";
         case LIBRAW_PROGRESS_SCALE_COLORS:
             return "Scaling colors";
         case LIBRAW_PROGRESS_PRE_INTERPOLATE:

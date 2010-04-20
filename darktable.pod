@@ -101,6 +101,10 @@ Darkroom mode:
 
 Zoom to 1:1, fill, and fit, respectively
 
+=item B<ctrl-f>
+
+show/hide film strip
+
 =back
 
 =head1 BUGS

@@ -1,41 +1,23 @@
-/*
-    This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-
-    darktable is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    darktable is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
-*/
 /* -*- C++ -*-
  * File: libraw_types.h
- * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
+ * Copyright 2008-2010 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  8 , 2008
  *
  * LibRaw C data structures
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
+
+LibRaw is free software; you can redistribute it and/or modify
+it under the terms of the one of three licenses as you choose:
+
+1. GNU LESSER GENERAL PUBLIC LICENSE version 2.1
+   (See file LICENSE.LGPL provided in LibRaw distribution archive for details).
+
+2. COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
+   (See file LICENSE.CDDL provided in LibRaw distribution archive for details).
+
+3. LibRaw Software License 27032010
+   (See file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
+
  */
 
 #ifndef _LIBRAW_TYPES_H
@@ -47,6 +29,9 @@
 #endif
 #include <stdio.h>
 #ifdef _OPENMP
+#ifdef __MSVCRT_VERSION__
+#error OpenMP is not supported under MS Visual Studio
+#endif
 #include <omp.h>
 #endif
 
@@ -119,8 +104,10 @@ typedef struct
                 width,
                 colors,
                 bits;
-#ifdef _OPENMP
+#ifdef LIBRAW_LIBRARY_BUILD
+// #ifdef _OPENMP
 // #pragma omp firstprivate(colors,height,width)
+// #endif
 #endif
     unsigned int  data_size; 
     unsigned char data[1]; 
@@ -134,7 +121,6 @@ typedef struct
 
     unsigned    raw_count;
     unsigned    dng_version;
-    unsigned    is_foveon;
     int         colors;
 
     unsigned    filters; 
@@ -152,8 +138,10 @@ typedef struct
                 left_margin;
     ushort      iheight,
                 iwidth;
-#ifdef _OPENMP
+#ifdef LIBRAW_LIBRARY_BUILD
+// #ifdef _OPENMP
 // #pragma omp firstprivate(iheight,iwidth)
+// #endif
 #endif
     double      pixel_aspect;
     int         flip;
@@ -191,6 +179,7 @@ typedef struct
     ushort      curve[0x10000]; 
     unsigned    black;
     unsigned    maximum;
+    unsigned    channel_maximum[4];
     struct ph1_t       phase_one_data;
     float       flash_used; 
     float       canon_ev; 
@@ -232,8 +221,10 @@ typedef struct
     unsigned    shot_select;    /* -s */
     float       bright;         /* -b */
     float       threshold;      /*  -n */
-#ifdef _OPENMP
+#ifdef LIBRAW_LIBRARY_BUILD
+// #ifdef _OPENMP
 // #pragma omp firstprivate(threshold)
+// #endif
 #endif
     int         half_size;      /* -h */
     int         four_color_rgb; /* -f */
@@ -256,12 +247,12 @@ typedef struct
 
     int         med_passes;     /* -m */
     float       auto_bright_thr; 
+    float       adjust_maximum_thr;
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
     int         green_matching;
     int         pre_interpolate_median_filter;
     enum LibRaw_filtering    filtering_mode; 
-    int         dont_scale;     /* demosaic, but no black/max */
 }libraw_output_params_t;
 
 typedef struct
@@ -289,8 +280,10 @@ typedef struct
     libraw_thumbnail_t          thumbnail;
     libraw_masked_t             masked_pixels;
     ushort                      (*image)[4] ;
-#ifdef _OPENMP
+#ifdef LIBRAW_LIBRARY_BUILD
+// #ifdef _OPENMP
 // #pragma omp shared(image)
+// #endif
 #endif
     libraw_output_params_t     params;
     void                *parent_class;      

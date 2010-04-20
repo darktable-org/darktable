@@ -15,35 +15,33 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DARKTABLE_IOP_EXPOSURE_H
-#define DARKTABLE_IOP_EXPOSURE_H
+#ifndef DARKTABLE_IOP_PROFILE_GAMMA_H
+#define DARKTABLE_IOP_PROFILE_GAMMA_H
 
 #include "develop/imageop.h"
+#include "dtgtk/slider.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include "dtgtk/slider.h"
 
-typedef struct dt_iop_exposure_params_t
+typedef struct dt_iop_profile_gamma_params_t
 {
-  float black, exposure, gain;
+  float gamma, linear;
 }
-dt_iop_exposure_params_t;
+dt_iop_profile_gamma_params_t;
 
-typedef struct dt_iop_exposure_gui_data_t
+typedef struct dt_iop_profile_gamma_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
   GtkLabel *label1, *label2;
-  GtkCheckButton *autoexp;
-  GtkDarktableSlider *scale1, *scale2, *autoexpp;
+  GtkDarktableSlider *scale1, *scale2;
 }
-dt_iop_exposure_gui_data_t;
+dt_iop_profile_gamma_gui_data_t;
 
-typedef struct dt_iop_exposure_data_t
+typedef struct dt_iop_gamma_data_t
 {
-  float black, exposure, gain;
-  float coeffs[3], thumb_corr;
+  float table[0x10000];
 }
-dt_iop_exposure_data_t;
+dt_iop_profile_gamma_data_t;
 
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
@@ -58,5 +56,8 @@ void gui_init     (struct dt_iop_module_t *self);
 void gui_cleanup  (struct dt_iop_module_t *self);
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
+
+void gamma_callback  (GtkDarktableSlider *slider, gpointer user_data);
+void linear_callback (GtkDarktableSlider *slider, gpointer user_data);
 
 #endif

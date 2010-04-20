@@ -141,17 +141,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)o;
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
-  if((piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
-  { // mipf from thumbnail is already whitebalanced.
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
-  }
-  else
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
-    {
-      for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
-      out += 3; in += 3;
-    }
+    for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
+    out += 3; in += 3;
   }
 }
 

@@ -267,7 +267,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
   raw->params.med_passes = img->raw_params.med_passes;
   raw->params.no_auto_bright = 1;//img->raw_params.no_auto_bright;
-  raw->params.dont_scale = 1;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
   raw->params.gamm[0] = 1.0;
@@ -468,14 +467,13 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = 0;
+  raw->params.use_camera_wb = 1;
   raw->params.use_auto_wb = 0;
   raw->params.pre_interpolate_median_filter = img->raw_params.pre_median;
   raw->params.med_passes = img->raw_params.med_passes;
   raw->params.no_auto_bright = 1;
   // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
   // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
-  raw->params.dont_scale = 1;
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
@@ -485,7 +483,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.four_color_rgb = img->raw_params.four_color_rgb;
   raw->params.use_camera_matrix = 0;
   raw->params.green_matching =  img->raw_params.greeneq;
-  raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
+  raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   ret = libraw_open_file(raw, filename);
@@ -769,11 +767,11 @@ int dt_imageio_export_f(dt_image_t *img, const char *filename)
   // find output color profile for this image:
   int sRGB = 1;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!strcmp(overprofile, "sRGB"))
+  if(overprofile && !strcmp(overprofile, "sRGB"))
   {
     sRGB = 1;
   }
-  else if(!strcmp(overprofile, "image"))
+  else if(!overprofile || !strcmp(overprofile, "image"))
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
@@ -853,11 +851,11 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   // find output color profile for this image:
   int sRGB = 1;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!strcmp(overprofile, "sRGB"))
+  if(overprofile && !strcmp(overprofile, "sRGB"))
   {
     sRGB = 1;
   }
-  else if(!strcmp(overprofile, "image"))
+  else if(!overprofile || !strcmp(overprofile, "image"))
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
@@ -943,11 +941,11 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   // find output color profile for this image:
   int sRGB = 1;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!strcmp(overprofile, "sRGB"))
+  if(overprofile && !strcmp(overprofile, "sRGB"))
   {
     sRGB = 1;
   }
-  else if(!strcmp(overprofile, "image"))
+  else if(!overprofile || !strcmp(overprofile, "image"))
   {
     GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;

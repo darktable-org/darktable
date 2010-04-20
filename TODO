@@ -1,16 +1,18 @@
-0.6 release:
-- thumbnail mipmap exposure applied twice?
-- forum gamma nikon hack
-- website: cameras list, support
-- hot pixels causes color shift?
-- more intuitive biltaral filter labels
-- wb should reverse cam wb and apply settings for THUMBNAIL buffers
+CLAHE:
+  openmp it, how..?
+  8-bit output enough??
+  halos around edges normal?
 
+webpage updates:
+- freebsd has dt (has had for a while :)
+- list of supported cameras and reverse-engineered basecurves etc
+
+0.6 release:
 big new features:
-- tethered shooting?
-- filmstrip?
+- tethered shooting
 - print mode?
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
+
 - more transparent custom default/presets handling:
   - nicer layout of edit preset dialog: border around, combo for ex/ap,
     indicate ranges, checkboxes for: only show for matching and aut. apply for matching
@@ -23,8 +25,17 @@ big new features:
 - gtkentrycompletion for tagging and collect
 - clean-up-gui mode for darkroom: collapse all and hide unused ops
   when entering darkroom mode
+- image flag: history changed but not exported
+  - select by this flag
+
+- disable for ldr input: exposure,wb,basecurve,highlights
+  - make exposure work with ldr, too.
+
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 - mipf not loaded on time in develop for small displays.
+
+- metadata imgfilename etc with ellipzized file names
+- color labels: colored buttons in a row, more colors.
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
