@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "common/film.h"
+#include "common/variables.h"
 #include "common/camera_control.h"
 
 static dt_camctl_listener_t _gui_camctl_listener;
@@ -81,14 +82,21 @@ static void detect_source_callback(GtkButton *button,gpointer data)
 
 static void import_callback(GtkButton *button,gpointer data)  
 {
-  GList *list=NULL;
-  dt_camera_import_dialog_new(&list,(dt_camera_t*)data);
-  if( list )
+  dt_camera_import_dialog_param_t params={0};
+  params.camera = (dt_camera_t*)data;
+  
+  dt_camera_import_dialog_new(&params);
+  if( params.result )
   {
     char path[4096]={0};
-    sprintf(path,"%s/darktable_import",getenv("HOME"));
+    
+    // Let's expand the basedirectory and construct full path of import
+    
+    //sprintf(path,"%s/%s",params.basedirectory,params.jobcode);
+    sprintf(path,"/tmp/import");
+    
     dt_job_t j;
-    dt_camera_import_job_init(&j,path,list,(dt_camera_t*)data);
+    dt_camera_import_job_init(&j,path,params.result,params.camera);
     dt_control_add_job(darktable.control, &j);
   }
 }
@@ -112,6 +120,12 @@ static void tethered_callback(GtkToggleButton *button,gpointer data)
 
 void dt_gui_capture_init() 
 {
+ /* dt_string_params_t params;
+  params.time=time(NULL);
+  params.jobcode="Studio_shoot2";
+  params.source="$(PICTURES_FOLDER)/$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)/HA_$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE)";
+  dt_variables_expand( &params );
+  fprintf(stderr,"result: '%s'\n",params.result);*/
   memset(&_gui_camctl_listener,0,sizeof(dt_camctl_listener_t));
   _gui_camctl_listener.control_status= _camctl_camera_control_status_callback;
   dt_camctl_register_listener( darktable.camctl, &_gui_camctl_listener );

@@ -82,8 +82,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
 
   // Import settings
-  dt_conf_set_string ("capture/camera/storage/basedirectory", "~/Pictures/darktable");
-  dt_conf_set_string ("capture/camera/storage/subpath", "$(EXIF_YEAR)/$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)/$(JOBID)");
+  dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/darktable");
+  dt_conf_set_string ("capture/camera/storage/subpath", "$(EXIF_YEAR)/$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)/$(JOBCODE)");
   dt_conf_set_string ("capture/camera/storage/namepattern", "$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)-$(EXIF_HOUR)$(EXIF_MINUTE)_$(IMPORT_SEQUENCE)-f$(EXIF_APERTURE)_iso$(EXIF_ISO)");
   dt_conf_set_string ("capture/camera/import/jobcode", "default");
   

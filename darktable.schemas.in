@@ -162,7 +162,7 @@
       <applyto>/apps/darktable/capture/camera/storage/basedirectory</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>~/Pictures/darktable</default>
+      <default>$(PICTURES_FOLDER)/darktable</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>path of storage for captured camera images</short>

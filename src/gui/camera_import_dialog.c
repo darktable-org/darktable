@@ -57,9 +57,8 @@ typedef struct _camera_import_dialog_t {
   
   GtkListStore *store;
 
-  const dt_camera_t *camera;
-
-  GList **result;
+  dt_camera_import_dialog_param_t *params;
+  
 }
 _camera_import_dialog_t;
 
@@ -70,6 +69,8 @@ typedef struct _camera_gconf_widget_t
 }
 _camera_gconf_widget_t;
 
+
+
 static void
 store_callback (GtkDarktableButton *button, gpointer user_data)
 {
@@ -77,7 +78,10 @@ store_callback (GtkDarktableButton *button, gpointer user_data)
   gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
   const gchar *newvalue=gtk_entry_get_text( GTK_ENTRY( gcw->entry ));
   if(newvalue && strlen(newvalue) > 0 )
+  {
     dt_conf_set_string(configstring,newvalue);
+    g_object_set_data(G_OBJECT(gcw->widget),"gconf:value",(gchar *)newvalue);
+  }
 }
 
 static void
@@ -88,14 +92,24 @@ reset_callback (GtkDarktableButton *button, gpointer user_data)
   gchar *value=dt_conf_get_string(configstring);
   if(value) {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ),value);
+     g_object_set_data(G_OBJECT(gcw->widget),"gconf:value",value);
   }
 }
+
+
+static gboolean
+entry_keypress_callback(GtkWidget *widget,GdkEventKey *event,gpointer data)
+{
+  fprintf(stderr,"Entry changed: %s\n",gtk_entry_get_text(GTK_ENTRY(widget)));
+  g_object_set_data(G_OBJECT( ((_camera_gconf_widget_t *)data)->widget),"gconf:value",(gchar *)gtk_entry_get_text(GTK_ENTRY(widget)));
+  return FALSE;
+}
+
 
 GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring) 
 {
   
   _camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
-  
   
   GtkWidget *vbox,*hbox;
   gcw->widget=vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
@@ -104,7 +118,14 @@ GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring)
   
   gcw->entry=gtk_entry_new();
   if( dt_conf_get_string (confstring) )
+  {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ),dt_conf_get_string (confstring));
+    g_object_set_data(G_OBJECT(vbox),"gconf:value",dt_conf_get_string (confstring));
+  }
+  
+  g_signal_connect (G_OBJECT (gcw->entry), "key-press-event",
+        G_CALLBACK (entry_keypress_callback), gcw);
+
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
   
   GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,0);
@@ -126,6 +147,7 @@ GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring)
   gtk_box_pack_start(GTK_BOX(vbox),l,FALSE,FALSE,0);
   
   gtk_box_pack_start(GTK_BOX(vbox),GTK_WIDGET(hbox),FALSE,FALSE,0);
+  
   
   return vbox;
 }
@@ -248,15 +270,15 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   
   // Populate store
  
-  // Setup a listener for previwes of all files on camera
+  // Setup a listener for previews of all files on camera
   // then initiate fetch of all previews from camera
-  if(data->camera!=NULL)
+  if(data->params->camera!=NULL)
   {
     dt_camctl_listener_t listener={0};
     listener.data=data;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
     dt_camctl_register_listener(darktable.camctl,&listener);
-    dt_camctl_get_previews(darktable.camctl,data->camera);
+    dt_camctl_get_previews(darktable.camctl,data->params->camera);
     dt_camctl_unregister_listener(darktable.camctl,&listener);
   }
   
@@ -266,35 +288,62 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   
   // Lets run dialog
   gtk_label_set_text(GTK_LABEL(data->import.info),_("select the images from the list below that you want to import into a new filmroll"));
-  gint result = gtk_dialog_run (GTK_DIALOG (data->dialog));
-  if( result == GTK_RESPONSE_ACCEPT) 
+  gboolean all_good=FALSE;
+  while(!all_good) 
   {
-    GtkTreeIter iter;
-    // Now build up result from store into GList **result
-    GtkTreeModel *model=GTK_TREE_MODEL(data->store);
-    GList *sp= gtk_tree_selection_get_selected_rows(selection,&model);
-    if( sp )
+    gint result = gtk_dialog_run (GTK_DIALOG (data->dialog));
+    if( result == GTK_RESPONSE_ACCEPT) 
     {
-        do
-        {
-          GValue value;
-          g_value_init(&value, G_TYPE_STRING);
-          gtk_tree_model_get_iter(GTK_TREE_MODEL (data->store),&iter,(GtkTreePath*)sp->data);
-          gtk_tree_model_get_value(GTK_TREE_MODEL (data->store),&iter,1,&value);
-          *data->result=g_list_append(*data->result,g_strdup(g_value_get_string(&value)) );
-          g_value_unset(&value);
-        } while( (sp=g_list_next(sp)) );
+      GtkTreeIter iter;
+      
+      // Now build up result from store into GList **result
+      if(data->params->result) 
+        g_list_free(data->params->result);
+      data->params->result=NULL;
+      GtkTreeModel *model=GTK_TREE_MODEL(data->store);
+      GList *sp= gtk_tree_selection_get_selected_rows(selection,&model);
+      if( sp )
+      {
+          do
+          {
+            GValue value = { 0, };
+            gtk_tree_model_get_iter(GTK_TREE_MODEL (data->store),&iter,(GtkTreePath*)sp->data);
+            gtk_tree_model_get_value(GTK_TREE_MODEL (data->store),&iter,1,&value);
+            if (G_VALUE_HOLDS_STRING (&value)) 
+              data->params->result = g_list_append(data->params->result,g_strdup(g_value_get_string(&value)) );
+          } while( (sp=g_list_next(sp)) );
+      }
+      
+      // Lets check jobcode, basedir etc..
+      data->params->jobcode = g_object_get_data(G_OBJECT(data->import.jobname),"gconf:value");
+      data->params->basedirectory = g_object_get_data(G_OBJECT(data->settings.basedirectory),"gconf:value");
+      
+      if( data->params->jobcode == NULL || strlen(data->params->jobcode) <=0 )
+        data->params->jobcode = dt_conf_get_string("capture/camera/import/jobcode");
+      
+      if( data->params->basedirectory != NULL && strlen( data->params->basedirectory ) > 0 ) all_good=TRUE;
+      else 
+      {
+        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the basedirectory settings before importing"));
+        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
+        gtk_dialog_run (GTK_DIALOG (dialog));
+      }
+    } 
+    else 
+    {
+      data->params->result=NULL;
+      all_good=TRUE;
     }
   }
+  
   // Destory and quit 
   gtk_widget_destroy (data->dialog);
 }
 
-void dt_camera_import_dialog_new(GList **result,const dt_camera_t *cam)
+void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
 {
   _camera_import_dialog_t data;
-  data.result = result;
-  data.camera=cam;
+  data.params=params;
   _camera_import_dialog_new(&data);
   _camera_import_dialog_run(&data);
 }

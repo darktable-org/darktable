@@ -16,27 +16,27 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DT_CAMERA_IMPORT_DIALOG_H
-#define DT_CAMERA_IMPORT_DIALOG_H
-
+#ifndef VARIABLES_H
+#define VARIABLES_H
 #include <glib.h>
-#include <gtk/gtk.h>
-#include "common/camera_control.h"
-
-typedef struct  dt_camera_import_dialog_param_t
+typedef struct dt_variables_params_t 
 {
-	dt_camera_t *camera;
-	gchar *jobcode;
-	gchar *basedirectory;
-	
-	/** Filenames of selected images to import*/
-	GList *result;
-}
-dt_camera_import_dialog_param_t;
+  gchar *source;
+  gchar *result;
+  
+  /** only validate source */
+  gboolean validate_only;
+  
+  /** Used for expanding variables that uses a image filename. */
+  gchar *image_filename;
+  /** Used for expanding variables that uses a image. */
+  struct dt_image_t *img;
+  time_t time;
+  gchar *jobcode;
+  
+} dt_string_params_t;
 
-/** Fires up the camera import dialog, result is a list of images paths on camera to be imported. */
-void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *param);
+/** expands variables in string into dest, size = size of dest*/
+gboolean dt_variables_expand(dt_string_params_t *params);
 
 #endif
-
-
