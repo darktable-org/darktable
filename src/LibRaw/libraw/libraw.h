@@ -198,6 +198,7 @@ class DllDef LibRaw
     void        blend_highlights();
     void        recover_highlights();
     void        green_matching();
+    void        pre_interpolate_median_filter();
 
     void        fuji_rotate();
     void        stretch();
