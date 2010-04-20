@@ -137,7 +137,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // Params
   int rad=data->radius*roi_in->scale/piece->iscale;
  
-  int bins=0x1000;//256;
+  int bins=256;
   float slope=data->slope;
   
   // CLAHE
