@@ -25,12 +25,13 @@ libvelvia_la_SOURCES=velvia.c
 libvignette_la_SOURCES=vignette.c
 libsplittoning_la_SOURCES=splittoning.c
 libgrain_la_SOURCES=grain.c
+libclahe_la_SOURCES=clahe.c
 libbilateral_la_SOURCES=bilateral.cc
 libprofile_gamma_la_SOURCES=profile_gamma.c
 libprofile_gamma_la_CFLAGS=-I$(srcdir)/../LibRaw
 noinst_HEADERS=tonecurve.h gamma.h temperature.h colorcorrection.h exposure.h equalizer.h equalizer_eaw.h colorin.h colorout.h lens.h wb_presets.c Permutohedral.h profile_gamma.h
 dtpluginsdir=$(libdir)/darktable/plugins
-dtplugins_LTLIBRARIES=libtonecurve.la libgamma.la libtemperature.la libcolorcorrection.la libexposure.la libequalizer.la libcolorin.la libcolorout.la libclipping.la libsharpen.la libmonochrome.la librawimport.la libcolorzones.la libbasecurve.la libhighlights.la libvelvia.la libvignette.la libsplittoning.la libgrain.la libbilateral.la libprofile_gamma.la
+dtplugins_LTLIBRARIES=libtonecurve.la libgamma.la libtemperature.la libcolorcorrection.la libexposure.la libequalizer.la libcolorin.la libcolorout.la libclipping.la libsharpen.la libmonochrome.la librawimport.la libcolorzones.la libbasecurve.la libhighlights.la libvelvia.la libvignette.la libsplittoning.la libgrain.la libbilateral.la libclahe.la libprofile_gamma.la 
 if HAVE_LENSFUN
   liblens_la_SOURCES=lens.c
   liblens_la_CFLAGS=$(LENSFUN_CFLAGS)
