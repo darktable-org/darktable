@@ -291,7 +291,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
 	// end
 	gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
 	gtk_widget_set_size_request(content,400,400);
-
+	_update_example(data);
 }
 
 void _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,void *user_data) 
