@@ -21,6 +21,8 @@
 
 typedef struct dt_variables_data_t 
 {	
+  gchar *source;
+ 
   /** expanded result string */
   gchar *result;
   time_t time;
@@ -128,17 +130,22 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
   return NULL;
 }
 
-gchar *_variable_get_value(dt_string_params_t *params, gchar *variable,gchar *value)
+gchar *_variable_get_value(dt_variables_params_t *params, gchar *variable,gchar *value)
 {
+  const gchar *file_ext=NULL;
   gboolean got_value=FALSE;
   struct tm *tim=localtime(&params->data->time);
- 
+  
+  if(params->filename) file_ext=(g_strrstr(params->filename,".")+1);
+  
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
   else if( g_strcmp0(variable,"$(DAY)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_mday);
   else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.2d",tim->tm_hour);
   else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
+  else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",params->filename);
+  else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
   else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
   else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",g_get_home_dir());
@@ -149,46 +156,47 @@ gchar *_variable_get_value(dt_string_params_t *params, gchar *variable,gchar *va
   return NULL;
 }
 
-void dt_variables_params_init(dt_string_params_t **params)
+void dt_variables_params_init(dt_variables_params_t **params)
 {
-  *params=g_malloc(sizeof(dt_string_params_t));
-  memset(*params ,0,sizeof(dt_string_params_t));
+  *params=g_malloc(sizeof(dt_variables_params_t));
+  memset(*params ,0,sizeof(dt_variables_params_t));
   (*params)->data = g_malloc(sizeof(dt_variables_data_t));
   memset((*params)->data ,0,sizeof(dt_variables_data_t));
   (*params)->data->time=time(NULL);
 }
 
-void dt_variables_params_destroy(dt_string_params_t *params)
+void dt_variables_params_destroy(dt_variables_params_t *params)
 {
   g_free(params->data);
   g_free(params);
 }
 
-const gchar *dt_variables_get_result(dt_string_params_t *params) {
+const gchar *dt_variables_get_result(dt_variables_params_t *params) {
   return params->data->result;
 }
 
-gboolean dt_variables_expand(dt_string_params_t *params)
+gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate)
 {
   gchar *variable=g_malloc(128);
   gchar *value=g_malloc(1024);
-  gchar *token;
-  
+  gchar *token=NULL;
+
   // Increase data..
-  params->data->sequence++;
+  if( iterate ) 
+    params->data->sequence++;
   
   // Lets expand string
   gchar *result;
-  params->data->result=params->source;
-  if( (token=_string_get_first_variable(params->source,variable)) != NULL)
+  params->data->result=params->data->source=string;
+  if( (token=_string_get_first_variable(params->data->source,variable)) != NULL)
   {
     do {
       if( (value=_variable_get_value(params,variable,value)) != NULL )
       {
-        if( (result=_string_substitute(params->data->result,variable,value)) != params->data->result && result != params->source)
+        if( (result=_string_substitute(params->data->result,variable,value)) != params->data->result && result != params->data->source)
         { // we got a result 
           fprintf(stderr,"Got result: %s\n",result);
-          if( params->data->result != params->source)
+          if( params->data->result != params->data->source)
             g_free(params->data->result);
           params->data->result=result;
         }

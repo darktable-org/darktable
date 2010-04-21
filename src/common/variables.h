@@ -21,31 +21,30 @@
 #include <glib.h>
 typedef struct dt_variables_params_t 
 {
-  /** */
-  gchar *source;
-  	
-  /** only validate source */
+    
+  /** only validates string */
   gboolean validate_only;
   
-  /** Used for expanding variables that uses a image filename. */
-  gchar *image_filename;
-	
-  /** Used for expanding variables that uses a image. */
-  struct dt_image_t *img;
+  /** Used for expanding variables that uses filename $(FILE_NAME) and $(FILE_EXTENSION). */
+  gchar *filename;
+  
+  /** Used for expanding variable $(JOBCODE) */
   gchar *jobcode;
+
+  /** Used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGT). */
+  struct dt_image_t *img;
 
   /** Internal variables data */	
   struct dt_variables_data_t *data;
-
   
-} dt_string_params_t;
+} dt_variables_params_t;
 
 /** allocate and init params */
-void dt_variables_params_init(dt_string_params_t **params);
-void dt_variables_params_destroy(dt_string_params_t *params);
+void dt_variables_params_init(dt_variables_params_t **params);
+void dt_variables_params_destroy(dt_variables_params_t *params);
 
 /** expands variables in string */
-gboolean dt_variables_expand(dt_string_params_t *params);
+gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
 /** get the expanded string result*/
-const gchar *dt_variables_get_result(dt_string_params_t *params);
+const gchar *dt_variables_get_result(dt_variables_params_t *params);
 #endif
