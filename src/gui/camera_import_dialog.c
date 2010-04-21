@@ -18,6 +18,7 @@
 
 #include "develop/develop.h"
 #include "control/conf.h"
+#include "common/variables.h"
 #include "common/camera_control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/label.h"
@@ -70,7 +71,7 @@ typedef struct _camera_import_dialog_t {
 	GtkListStore *store;
 
 	dt_camera_import_dialog_param_t *params;
-	
+	dt_variables_params_t *vp;
 }
 _camera_import_dialog_t;
 
@@ -108,7 +109,21 @@ static void
 _update_example(_camera_import_dialog_t *dialog) 
 {
 	// create path/filename and execute a expand..
+	gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",NULL);
+	dt_variables_expand( dialog->vp, path, FALSE);
+	gchar *ep=g_strdup(dt_variables_get_result(dialog->vp));
+	dt_variables_expand( dialog->vp, dialog->settings.namepattern->value, TRUE);
+	gchar *ef=g_strdup(dt_variables_get_result(dialog->vp));
+	
+	gchar *str=g_strdup_printf("%s\n%s",ep,ef);
+	
 	// then set result set 
+	gtk_label_set_text(GTK_LABEL(dialog->settings.example),str);
+	// Clenaup
+	g_free(path);
+	g_free(ep);
+	g_free(ef);
+	g_free(str);
 }
 
 static void 
@@ -118,6 +133,8 @@ _entry_text_changed(_camera_gconf_widget_t *gcw,GtkEntryBuffer *entrybuffer)
 	if(gcw->value) 
 		g_free(gcw->value);
 	gcw->value=g_strdup(value);
+	
+	_update_example(gcw->dialog);
 }
 
 static void
@@ -135,7 +152,6 @@ entry_it_callback(GtkEntryBuffer *entrybuffer,guint a1, gchar *a2, guint a3,gpoi
 
 _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring) 
 {
-	
 	_camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
 	memset(gcw,0,sizeof(_camera_gconf_widget_t));
 	GtkWidget *vbox,*hbox;
@@ -151,11 +167,6 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
 		gcw->value=g_strdup(dt_conf_get_string (confstring));
 	}
 	
-	g_signal_connect (G_OBJECT(gtk_entry_get_buffer(GTK_ENTRY(gcw->entry))), "inserted-text",
-				G_CALLBACK (entry_it_callback), gcw);
-	g_signal_connect (G_OBJECT(gtk_entry_get_buffer(GTK_ENTRY(gcw->entry))), "deleted-text",
-				G_CALLBACK (entry_dt_callback), gcw);
-
 	gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
 	
 	GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,0);
@@ -178,6 +189,10 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
 	
 	gtk_box_pack_start(GTK_BOX(vbox),GTK_WIDGET(hbox),FALSE,FALSE,0);
 	
+	g_signal_connect (G_OBJECT(gtk_entry_get_buffer(GTK_ENTRY(gcw->entry))), "inserted-text",
+				G_CALLBACK (entry_it_callback), gcw);
+	g_signal_connect (G_OBJECT(gtk_entry_get_buffer(GTK_ENTRY(gcw->entry))), "deleted-text",
+				G_CALLBACK (entry_dt_callback), gcw);
 	
 	return gcw;
 }
@@ -191,6 +206,11 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
 	// List - setup store
 	data->store = gtk_list_store_new (2,GDK_TYPE_PIXBUF,G_TYPE_STRING);
 	
+	// Setup variables
+	dt_variables_params_init(&data->vp);
+	data->vp->jobcode=_("My jobcode");
+	data->vp->filename="DSC_0235.JPG";
+	
 	// IMPORT PAGE
 	data->import.page=gtk_vbox_new(FALSE,5);
 	gtk_container_set_border_width(GTK_CONTAINER(data->import.page),5);
@@ -200,9 +220,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
 	gtk_label_set_single_line_mode( GTK_LABEL(data->import.info) , FALSE );
 	gtk_box_pack_start(GTK_BOX(data->import.page),data->import.info,FALSE,FALSE,0);
 	
-	// n/v
-//  GtkBox *hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
-
+	// jobcode
 	data->import.jobname=_camera_import_gconf_widget(data,_("jobcode"),"capture/camera/import/jobcode");
 	gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(data->import.jobname->widget),FALSE,FALSE,0);
 	
@@ -234,7 +252,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
 	
 	// SETTINGS PAGE
 	data->settings.page=gtk_vbox_new(FALSE,5);
-	gtk_container_set_border_width(GTK_CONTAINER(data->import.page),5);
+	gtk_container_set_border_width(GTK_CONTAINER(data->settings.page),5);
 	
 	gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("import storage structure"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
 	GtkWidget *l=gtk_label_new(_("the following three settings describes the directory structure and file renaming for import storage and images, if you dont know how to use this leave the settings by their default values."));
@@ -260,12 +278,10 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
 	gtk_box_pack_start(GTK_BOX(data->settings.page),l,FALSE,FALSE,0);
 	
 	data->settings.example=gtk_label_new("");
-	gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
-	gtk_widget_set_size_request(l,400,-1);
-	gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
-	gtk_box_pack_start(GTK_BOX(data->settings.page),l,FALSE,FALSE,0);
-	
-	_update_example(data);
+	gtk_label_set_line_wrap(GTK_LABEL(data->settings.example),TRUE);
+	gtk_widget_set_size_request(data->settings.example,400,-1);
+	gtk_misc_set_alignment(GTK_MISC(data->settings.example), 0.0, 0.0);
+	gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.example,FALSE,FALSE,0);
 	
 	// THE NOTEBOOOK
 	data->notebook=gtk_notebook_new();

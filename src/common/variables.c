@@ -111,7 +111,7 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
    p=e=string;
   while( p < pend && e < pend) 
   {
-    while( *p!='$' && *(p+1)!='(' && p<pend) p++;
+    while( !(*p=='$' && *(p+1)=='(') && p<=pend) p++;
     if( *p=='$' && *(p+1)=='(' )
     {
       e=p;
@@ -130,7 +130,7 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
   return NULL;
 }
 
-gchar *_variable_get_value(dt_variables_params_t *params, gchar *variable,gchar *value)
+gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gchar *value)
 {
   const gchar *file_ext=NULL;
   gboolean got_value=FALSE;
@@ -165,8 +165,7 @@ gchar *_variable_get_value(dt_variables_params_t *params, gchar *variable,gchar 
   
   g_free(pictures_folder);
   
-  if(got_value==TRUE) return value;
-  return NULL;
+  return got_value;
 }
 
 void dt_variables_params_init(dt_variables_params_t **params)
@@ -199,21 +198,21 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
     params->data->sequence++;
   
   // Lets expand string
-  gchar *result;
+  gchar *result=NULL;
   params->data->result=params->data->source=string;
   if( (token=_string_get_first_variable(params->data->source,variable)) != NULL)
   {
     do {
-      if( (value=_variable_get_value(params,variable,value)) != NULL )
+      //fprintf(stderr,"var: %s\n",variable);
+      if( _variable_get_value(params,variable,value) )
       {
+        //fprintf(stderr,"Substitute variable '%s' with value '%s'\n",variable,value);
         if( (result=_string_substitute(params->data->result,variable,value)) != params->data->result && result != params->data->source)
         { // we got a result 
-          //fprintf(stderr,"Got result: %s\n",result);
           if( params->data->result != params->data->source)
             g_free(params->data->result);
           params->data->result=result;
         }
-        
       }
     } while( (token=_string_get_next_variable(token,variable)) !=NULL );
   }
