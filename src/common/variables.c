@@ -19,6 +19,15 @@
 #include <string.h>
 #include "common/variables.h"
 
+typedef struct dt_variables_data_t 
+{	
+  /** expanded result string */
+  gchar *result;
+  time_t time;
+  guint sequence;
+}
+dt_variables_data_t;
+
 /** Find occurence of string*/
 guint _string_occurence(const gchar *haystack,const gchar *needle);
 /** search and replace, returns new allocated string */
@@ -43,11 +52,12 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
   guint occurences = _string_occurence(string,search);
   if( occurences )
   {
-    guint sl=(strlen(search)-strlen(replace));
+    guint sl=-(strlen(search)-strlen(replace));
     gchar *pend=string+strlen(string);
-    gchar *nstring=g_malloc(strlen(string)+(sl*occurences));
+    gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
     gchar *np=nstring;
     gchar *s=string,*p=string;
+    fprintf(stderr,"replace %s with %s strdiff %d, occurences %d, oldstring %d, newstring %d\n",search,replace,sl,occurences,strlen(string),strlen(string)+(sl*occurences)+1);
     if( (s=g_strstr_len(s,strlen(s),search)) != NULL) 
     {
       do
@@ -61,7 +71,6 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
     }
     memcpy(np,p,pend-p);
     np[pend-p]='\0';
-    fprintf(stderr,"%s\n",nstring);
     string=nstring;
   } 
   return string;
@@ -122,7 +131,7 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
 gchar *_variable_get_value(dt_string_params_t *params, gchar *variable,gchar *value)
 {
   gboolean got_value=FALSE;
-  struct tm *tim=localtime(&params->time);
+  struct tm *tim=localtime(&params->data->time);
  
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
@@ -130,6 +139,7 @@ gchar *_variable_get_value(dt_string_params_t *params, gchar *variable,gchar *va
   else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.2d",tim->tm_hour);
   else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
+  else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
   else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",g_get_home_dir());
   else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
@@ -139,20 +149,51 @@ gchar *_variable_get_value(dt_string_params_t *params, gchar *variable,gchar *va
   return NULL;
 }
 
+void dt_variables_params_init(dt_string_params_t **params)
+{
+  *params=g_malloc(sizeof(dt_string_params_t));
+  memset(*params ,0,sizeof(dt_string_params_t));
+  (*params)->data = g_malloc(sizeof(dt_variables_data_t));
+  memset((*params)->data ,0,sizeof(dt_variables_data_t));
+  (*params)->data->time=time(NULL);
+}
+
+void dt_variables_params_destroy(dt_string_params_t *params)
+{
+  g_free(params->data);
+  g_free(params);
+}
+
+const gchar *dt_variables_get_result(dt_string_params_t *params) {
+  return params->data->result;
+}
+
 gboolean dt_variables_expand(dt_string_params_t *params)
 {
   gchar *variable=g_malloc(128);
   gchar *value=g_malloc(1024);
   gchar *token;
-  if(params->time==0)
-    params->time=time(NULL);
   
-  params->result=params->source;
+  // Increase data..
+  params->data->sequence++;
+  
+  // Lets expand string
+  gchar *result;
+  params->data->result=params->source;
   if( (token=_string_get_first_variable(params->source,variable)) != NULL)
   {
     do {
       if( (value=_variable_get_value(params,variable,value)) != NULL )
-        params->result = _string_substitute(params->result,variable,value);
+      {
+        if( (result=_string_substitute(params->data->result,variable,value)) != params->data->result && result != params->source)
+        { // we got a result 
+          fprintf(stderr,"Got result: %s\n",result);
+          if( params->data->result != params->source)
+            g_free(params->data->result);
+          params->data->result=result;
+        }
+        
+      }
     } while( (token=_string_get_next_variable(token,variable)) !=NULL );
   }
   return TRUE;

@@ -21,22 +21,31 @@
 #include <glib.h>
 typedef struct dt_variables_params_t 
 {
+  /** */
   gchar *source;
-  gchar *result;
-  
+  	
   /** only validate source */
   gboolean validate_only;
   
   /** Used for expanding variables that uses a image filename. */
   gchar *image_filename;
+	
   /** Used for expanding variables that uses a image. */
   struct dt_image_t *img;
-  time_t time;
   gchar *jobcode;
+
+  /** Internal variables data */	
+  struct dt_variables_data_t *data;
+
   
 } dt_string_params_t;
 
-/** expands variables in string into dest, size = size of dest*/
-gboolean dt_variables_expand(dt_string_params_t *params);
+/** allocate and init params */
+void dt_variables_params_init(dt_string_params_t **params);
+void dt_variables_params_destroy(dt_string_params_t *params);
 
+/** expands variables in string */
+gboolean dt_variables_expand(dt_string_params_t *params);
+/** get the expanded string result*/
+const gchar *dt_variables_get_result(dt_string_params_t *params);
 #endif
