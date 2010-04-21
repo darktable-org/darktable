@@ -369,13 +369,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton2), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radii scale of vignette for start of falloff"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("the radii scale of vignette for end of falloff"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radii scale of vignette for start of fall-off"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("the radii scale of vignette for end of fall-off"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of effect"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("uniformity of vignette"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - only saturation"), NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), NULL);
-  gtk_object_set(GTK_OBJECT(g->togglebutton2), "tooltip-text", _("inverts effect of falloff, default is dark falloff..."), NULL);
+  gtk_object_set(GTK_OBJECT(g->togglebutton2), "tooltip-text", _("inverts effect of fall-off, default is dark fall-off..."), NULL);
  
  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale1),DARKTABLE_SLIDER_FORMAT_PERCENT);
  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale2),DARKTABLE_SLIDER_FORMAT_PERCENT);
