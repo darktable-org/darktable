@@ -80,7 +80,7 @@ dt_iop_vignette_data_t;
 
 const char *name()
 {
-  return _("vignette");
+  return _("vignetting");
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -335,12 +335,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("scale")));
-  g->label7 = GTK_LABEL(gtk_label_new(_("falloff strength")));
+  g->label7 = GTK_LABEL(gtk_label_new(_("fall-off strength")));
   g->label2 = GTK_LABEL(gtk_label_new(_("strength")));
   g->label3 = GTK_LABEL(gtk_label_new(_("uniformity")));
   g->label4 = GTK_LABEL(gtk_label_new(_("b/s ratio")));
   g->label5 = GTK_LABEL(gtk_label_new(_("saturation")));
-  g->label6 = GTK_LABEL(gtk_label_new(_("falloff")));
+  g->label6 = GTK_LABEL(gtk_label_new(_("fall-off")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label7), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
@@ -369,11 +369,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton2), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radie scale of vignette for start of falloff"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("the radie scale of vignette for end of falloff"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radii scale of vignette for start of falloff"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("the radii scale of vignette for end of falloff"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of effect"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("uniformity of vignette"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - Only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - Only saturation"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - only saturation"), NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton2), "tooltip-text", _("inverts effect of falloff, default is dark falloff..."), NULL);
  
