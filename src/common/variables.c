@@ -136,6 +136,17 @@ gchar *_variable_get_value(dt_variables_params_t *params, gchar *variable,gchar 
   gboolean got_value=FALSE;
   struct tm *tim=localtime(&params->data->time);
   
+  const gchar *homedir=g_getenv("HOME");
+  if( !homedir ) 
+    homedir=g_get_home_dir();
+  
+  gchar *pictures_folder=NULL;
+  
+  if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) == NULL)
+    pictures_folder=g_build_path(G_DIR_SEPARATOR_S,homedir,"Pictures",NULL);
+  else 
+    pictures_folder=g_strdup( g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) );
+  
   if(params->filename) file_ext=(g_strrstr(params->filename,".")+1);
   
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
@@ -148,9 +159,11 @@ gchar *_variable_get_value(dt_variables_params_t *params, gchar *variable,gchar 
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
   else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
-  else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",g_get_home_dir());
-  else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
+  else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir);
+  else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",pictures_folder);
   else if( g_strcmp0(variable,"$(DESKTOP_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+  
+  g_free(pictures_folder);
   
   if(got_value==TRUE) return value;
   return NULL;
