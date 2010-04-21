@@ -36,6 +36,15 @@
   
 */
 
+typedef struct _camera_gconf_widget_t
+{
+  GtkWidget *widget;
+  GtkWidget *entry;
+  gchar *value;
+}
+_camera_gconf_widget_t;
+
+
 typedef struct _camera_import_dialog_t {
   GtkWidget *dialog;
   
@@ -43,16 +52,16 @@ typedef struct _camera_import_dialog_t {
   
   struct {
     GtkWidget *page;
-    GtkWidget *jobname;
+    _camera_gconf_widget_t *jobname;
     GtkWidget *treeview;
     GtkWidget *info;  
   } import;
   
   struct {
     GtkWidget *page;
-    GtkWidget *basedirectory;
-    GtkWidget *subdirectory;
-    GtkWidget *namepattern;
+    _camera_gconf_widget_t *basedirectory;
+    _camera_gconf_widget_t *subdirectory;
+    _camera_gconf_widget_t *namepattern;
   } settings;
   
   GtkListStore *store;
@@ -62,12 +71,6 @@ typedef struct _camera_import_dialog_t {
 }
 _camera_import_dialog_t;
 
-typedef struct _camera_gconf_widget_t
-{
-  GtkWidget *widget;
-  GtkWidget *entry;
-}
-_camera_gconf_widget_t;
 
 
 
@@ -80,7 +83,8 @@ store_callback (GtkDarktableButton *button, gpointer user_data)
   if(newvalue && strlen(newvalue) > 0 )
   {
     dt_conf_set_string(configstring,newvalue);
-    g_object_set_data(G_OBJECT(gcw->widget),"gconf:value",(gchar *)newvalue);
+    if(gcw->value) g_free(gcw->value);
+    gcw->value=g_strdup(newvalue);
   }
 }
 
@@ -92,21 +96,35 @@ reset_callback (GtkDarktableButton *button, gpointer user_data)
   gchar *value=dt_conf_get_string(configstring);
   if(value) {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ),value);
-     g_object_set_data(G_OBJECT(gcw->widget),"gconf:value",value);
+    if(gcw->value) g_free(gcw->value);
+    gcw->value=g_strdup(value);
   }
 }
 
 
-static gboolean
-entry_keypress_callback(GtkWidget *widget,GdkEventKey *event,gpointer data)
+static void 
+_entry_text_changed(_camera_gconf_widget_t *gcw,GtkEntryBuffer *entrybuffer) 
 {
-  fprintf(stderr,"Entry changed: %s\n",gtk_entry_get_text(GTK_ENTRY(widget)));
-  g_object_set_data(G_OBJECT( ((_camera_gconf_widget_t *)data)->widget),"gconf:value",(gchar *)gtk_entry_get_text(GTK_ENTRY(widget)));
-  return FALSE;
+	const gchar *value=gtk_entry_buffer_get_text(entrybuffer);
+	//fprintf(stderr,"Entry changed: %s\n",value);
+  	if(gcw->value) g_free(gcw->value);
+		gcw->value=g_strdup(value);
+}
+
+static void
+entry_dt_callback(GtkEntryBuffer *entrybuffer,guint a1, guint a2,gpointer user_data)
+{
+  _entry_text_changed((_camera_gconf_widget_t*)user_data,entrybuffer);
+}
+
+static void
+entry_it_callback(GtkEntryBuffer *entrybuffer,guint a1, gchar *a2, guint a3,gpointer user_data)
+{
+  _entry_text_changed((_camera_gconf_widget_t*)user_data,entrybuffer);
 }
 
 
-GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring) 
+_camera_gconf_widget_t *_camera_import_gconf_widget(gchar *label,gchar *confstring) 
 {
   
   _camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
@@ -120,11 +138,13 @@ GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring)
   if( dt_conf_get_string (confstring) )
   {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ),dt_conf_get_string (confstring));
-    g_object_set_data(G_OBJECT(vbox),"gconf:value",dt_conf_get_string (confstring));
+    gcw->value=g_strdup(dt_conf_get_string (confstring));
   }
   
-  g_signal_connect (G_OBJECT (gcw->entry), "key-press-event",
-        G_CALLBACK (entry_keypress_callback), gcw);
+  g_signal_connect (G_OBJECT(gtk_entry_get_buffer(GTK_ENTRY(gcw->entry))), "inserted-text",
+        G_CALLBACK (entry_it_callback), gcw);
+  g_signal_connect (G_OBJECT(gtk_entry_get_buffer(GTK_ENTRY(gcw->entry))), "deleted-text",
+        G_CALLBACK (entry_dt_callback), gcw);
 
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
   
@@ -149,7 +169,7 @@ GtkWidget *_camera_import_gconf_widget(gchar *label,gchar *confstring)
   gtk_box_pack_start(GTK_BOX(vbox),GTK_WIDGET(hbox),FALSE,FALSE,0);
   
   
-  return vbox;
+  return gcw;
 }
 
 void _camera_import_dialog_new(_camera_import_dialog_t *data) {
@@ -172,7 +192,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
 //  GtkBox *hbox=GTK_BOX(gtk_hbox_new(FALSE,2));
 
   data->import.jobname=_camera_import_gconf_widget(_("jobcode"),"capture/camera/import/jobcode");
-  gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(data->import.jobname),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(data->import.jobname->widget),FALSE,FALSE,0);
   
   
   // Create the treview with list model data store
@@ -206,14 +226,14 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   
   data->settings.basedirectory=_camera_import_gconf_widget(_("storage directory"),"capture/camera/storage/basedirectory");
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.basedirectory),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.basedirectory->widget),FALSE,FALSE,0);
   
   data->settings.subdirectory=_camera_import_gconf_widget(_("directory structure"),"capture/camera/storage/subpath");
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.subdirectory),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.subdirectory->widget),FALSE,FALSE,0);
   
   
   data->settings.namepattern=_camera_import_gconf_widget(_("filename structure"),"capture/camera/storage/namepattern");
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.namepattern),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.namepattern->widget),FALSE,FALSE,0);
   
   
   
@@ -295,7 +315,8 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
     if( result == GTK_RESPONSE_ACCEPT) 
     {
       GtkTreeIter iter;
-      
+      all_good=TRUE;
+	    
       // Now build up result from store into GList **result
       if(data->params->result) 
         g_list_free(data->params->result);
@@ -315,19 +336,36 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       }
       
       // Lets check jobcode, basedir etc..
-      data->params->jobcode = g_object_get_data(G_OBJECT(data->import.jobname),"gconf:value");
-      data->params->basedirectory = g_object_get_data(G_OBJECT(data->settings.basedirectory),"gconf:value");
+      data->params->jobcode = data->import.jobname->value;
+      data->params->basedirectory = data->settings.basedirectory->value;
+      data->params->subdirectory = data->settings.subdirectory->value;
+      data->params->filenamepattern = data->settings.namepattern->value;
       
       if( data->params->jobcode == NULL || strlen(data->params->jobcode) <=0 )
         data->params->jobcode = dt_conf_get_string("capture/camera/import/jobcode");
       
-      if( data->params->basedirectory != NULL && strlen( data->params->basedirectory ) > 0 ) all_good=TRUE;
-      else 
+      if( data->params->basedirectory == NULL || strlen( data->params->basedirectory ) <= 0 ) 
       {
         GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the basedirectory settings before importing"));
         g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
         gtk_dialog_run (GTK_DIALOG (dialog));
+	all_good=FALSE;
+      } 
+      else if( data->params->subdirectory == NULL || strlen( data->params->subdirectory ) <= 0 ) 
+      {
+        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the subdirectory settings before importing"));
+        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
+        gtk_dialog_run (GTK_DIALOG (dialog));
+	all_good=FALSE;
+      } 
+      else if( data->params->filenamepattern == NULL || strlen( data->params->filenamepattern ) <= 0 ) 
+      {
+        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the filenamepattern settings before importing"));
+        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
+        gtk_dialog_run (GTK_DIALOG (dialog));
+	all_good=FALSE;
       }
+      
     } 
     else 
     {

@@ -66,14 +66,18 @@ void dt_captured_image_import_job_init(dt_job_t *job, const char *filename)
   t->filename=g_strdup(filename);
 }
 
-void dt_camera_import_job_init(dt_job_t *job,char *path, GList *images,dt_camera_t *camera)
+void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera)
 {
   dt_control_job_init(job, "import selected images from camera");
   job->execute = &dt_camera_import_job_run;
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
+  dt_variables_params_init(&t->vp);
+  
   t->images=g_list_copy(images);
   t->camera=camera;
-  t->import_path=g_strdup(path);
+  t->vp->jobcode=g_strdup(jobcode);
+  t->path=g_strdup(path);
+  t->filename=g_strdup(filename);
 }
 
 void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
@@ -82,8 +86,18 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   dt_film_image_import(t->film,filename);
   dt_control_log(_("file %s imported from camera."), filename);
+  fprintf(stderr,"File downloaded: %s\n",filename);
 }
 
+
+
+const char *_camera_request_image_filename(const dt_camera_t *camera,const char *filename,void *data) 
+{
+  dt_camera_import_t *t = (dt_camera_import_t *)data;
+  t->vp->filename=filename;
+  dt_variables_expand( t->vp, t->filename, TRUE );
+  return dt_variables_get_result(t->vp);
+}
 
 const char *_camera_request_image_path(const dt_camera_t *camera,void *data)
 {
@@ -98,14 +112,12 @@ void dt_camera_import_job_run(dt_job_t *job)
   dt_control_log(_("starting import job of images from camera"));
   
   // Setup a new filmroll to import images to....
-  char buffer[512]={0};
   t->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
   
   dt_film_init(t->film);
-  const time_t tim=time(NULL);
-  struct tm *ts=localtime(&tim);
-  strftime(buffer,512,"%Y-%m-%d camera import",ts);
-  sprintf(t->film->dirname,"%s/%s",t->import_path,buffer);
+  
+  dt_variables_expand( t->vp, t->path, FALSE );
+  sprintf(t->film->dirname,"%s",dt_variables_get_result(t->vp));
   
   pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref++;
@@ -140,11 +152,15 @@ void dt_camera_import_job_run(dt_job_t *job)
     listener.data=t;
     listener.image_downloaded=_camera_image_downloaded;
     listener.request_image_path=_camera_request_image_path;
+    listener.request_image_filename=_camera_request_image_filename;
     
     //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);
     dt_camctl_import(darktable.camctl,t->camera,t->images);
     dt_camctl_unregister_listener(darktable.camctl,&listener);
+    
+    dt_variables_params_destroy(t->vp);
+
   }
   else
     dt_control_log(_("failed to create filmroll for camera import, import of images aborted."));

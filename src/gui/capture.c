@@ -82,22 +82,19 @@ static void detect_source_callback(GtkButton *button,gpointer data)
 
 static void import_callback(GtkButton *button,gpointer data)  
 {
-  dt_camera_import_dialog_param_t params={0};
-  params.camera = (dt_camera_t*)data;
+  dt_camera_import_dialog_param_t *params=(dt_camera_import_dialog_param_t *)g_malloc(sizeof(dt_camera_import_dialog_param_t));
+  params->camera = (dt_camera_t*)data;
   
-  dt_camera_import_dialog_new(&params);
-  if( params.result )
+  dt_camera_import_dialog_new(params);
+  if( params->result )
   {
-    char path[4096]={0};
-    
     // Let's expand the basedirectory and construct full path of import
-    
-    //sprintf(path,"%s/%s",params.basedirectory,params.jobcode);
-    sprintf(path,"/tmp/import");
-    
+    gchar *path = g_build_path(G_DIR_SEPARATOR_S,params->basedirectory,params->subdirectory,NULL);
     dt_job_t j;
-    dt_camera_import_job_init(&j,path,params.result,params.camera);
+    dt_camera_import_job_init(&j,params->jobcode,path,params->filenamepattern,params->result,params->camera);
     dt_control_add_job(darktable.control, &j);
+    g_free(path);
+    g_free(params);
   }
 }
 
@@ -120,12 +117,6 @@ static void tethered_callback(GtkToggleButton *button,gpointer data)
 
 void dt_gui_capture_init() 
 {
- /* dt_string_params_t params;
-  params.time=time(NULL);
-  params.jobcode="Studio_shoot2";
-  params.source="$(PICTURES_FOLDER)/$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)/HA_$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE)";
-  dt_variables_expand( &params );
-  fprintf(stderr,"result: '%s'\n",params.result);*/
   memset(&_gui_camctl_listener,0,sizeof(dt_camctl_listener_t));
   _gui_camctl_listener.control_status= _camctl_camera_control_status_callback;
   dt_camctl_register_listener( darktable.camctl, &_gui_camctl_listener );

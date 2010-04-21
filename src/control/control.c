@@ -83,9 +83,9 @@ void dt_ctl_settings_default(dt_control_t *c)
 
   // Import settings
   dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/darktable");
-  dt_conf_set_string ("capture/camera/storage/subpath", "$(EXIF_YEAR)/$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)/$(JOBCODE)");
-  dt_conf_set_string ("capture/camera/storage/namepattern", "$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)-$(EXIF_HOUR)$(EXIF_MINUTE)_$(IMPORT_SEQUENCE)-f$(EXIF_APERTURE)_iso$(EXIF_ISO)");
-  dt_conf_set_string ("capture/camera/import/jobcode", "default");
+  dt_conf_set_string ("capture/camera/storage/subpath", "$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)");
+  dt_conf_set_string ("capture/camera/storage/namepattern", "$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)");
+  dt_conf_set_string ("capture/camera/import/jobcode", "noname");
   
   dt_conf_set_float("gamma_linear", .1f);
   dt_conf_set_float("gamma_gamma", .45f);

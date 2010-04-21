@@ -26,10 +26,10 @@ typedef struct dt_variables_params_t
   gboolean validate_only;
   
   /** Used for expanding variables that uses filename $(FILE_NAME) and $(FILE_EXTENSION). */
-  gchar *filename;
+  const gchar *filename;
   
   /** Used for expanding variable $(JOBCODE) */
-  gchar *jobcode;
+  const gchar *jobcode;
 
   /** Used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGT). */
   struct dt_image_t *img;

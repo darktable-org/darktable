@@ -175,7 +175,7 @@
       <applyto>/apps/darktable/capture/camera/storage/subpath</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>$(EXIF_YEAR)/$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)/$(JOBID)</default>
+      <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>subpath pattern in storage for captured camera images</short>
@@ -188,7 +188,7 @@
       <applyto>/apps/darktable/capture/camera/storage/namepattern</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>$(EXIF_YEAR)$(EXIF_MONTH)$(EXIF_DAY)-$(EXIF_HOUR)$(EXIF_MINUTE)_$(IMPORT_SEQUENCE)-f$(EXIF_APERTURE)_iso$(EXIF_ISO)</default>
+      <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>rename pattern for captured images</short>
@@ -201,7 +201,7 @@
       <applyto>/apps/darktable/capture/camera/import/jobcode</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>default</default>
+      <default>noname</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>jobcode of import job</short>

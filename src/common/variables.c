@@ -59,7 +59,7 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
     gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
     gchar *np=nstring;
     gchar *s=string,*p=string;
-    fprintf(stderr,"replace %s with %s strdiff %d, occurences %d, oldstring %d, newstring %d\n",search,replace,sl,occurences,strlen(string),strlen(string)+(sl*occurences)+1);
+    //fprintf(stderr,"replace %s with %s strdiff %d, occurences %d, oldstring %d, newstring %d\n",search,replace,sl,occurences,strlen(string),strlen(string)+(sl*occurences)+1);
     if( (s=g_strstr_len(s,strlen(s),search)) != NULL) 
     {
       do
@@ -195,7 +195,7 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
       {
         if( (result=_string_substitute(params->data->result,variable,value)) != params->data->result && result != params->data->source)
         { // we got a result 
-          fprintf(stderr,"Got result: %s\n",result);
+          //fprintf(stderr,"Got result: %s\n",result);
           if( params->data->result != params->data->source)
             g_free(params->data->result);
           params->data->result=result;

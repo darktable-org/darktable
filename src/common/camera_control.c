@@ -36,6 +36,7 @@ void _camctl_unlock(const dt_camctl_t *c);
 
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
+const char *_dispatch_request_image_filename(const dt_camctl_t *c,const char *filename,const dt_camera_t *camera);
 void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename);
 void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camera);
@@ -301,23 +302,28 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
 			strncat(folder,file,eos-file);
 			strcat(filename,eos+1);
 			
-			char outputfile[4096]={0};
+			const char *fname = _dispatch_request_image_filename(c,filename,cam);
+			if(!fname) fname=filename;
+			
+			/*char outputfile[4096]={0};
 			strcat(outputfile,output_path);
 			if(outputfile[strlen(outputfile)]!='/') strcat(outputfile,"/");
-			strcat(outputfile,filename);
+			strcat(outputfile,filename);*/
+			
+			char *output = g_build_filename(output_path,fname,NULL);
 			
 			// Now we have filenames lets download file and notify listener of image download
 			CameraFile *destination;
-			int handle = open( outputfile, O_CREAT | O_WRONLY,0666);
+			int handle = open( output, O_CREAT | O_WRONLY,0666);
 			if( handle > 0 ) {
 				gp_file_new_from_fd( &destination , handle );
 				if( gp_camera_file_get( cam->gpcam, folder , filename, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext) == GP_OK)
 				{
 					close( handle );
-					_dispatch_camera_image_downloaded(c,cam,outputfile);
+					_dispatch_camera_image_downloaded(c,cam,output);
 				}
 			else
-					dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to download file %s\n",outputfile);
+					dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to download file %s\n",output);
 				
 				
 			}
@@ -483,6 +489,21 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 		}
 	}
 }
+
+const char *_dispatch_request_image_filename(const dt_camctl_t *c,const char *filename,const dt_camera_t *camera)
+{
+	dt_camctl_t *camctl=(dt_camctl_t *)c;
+	GList *listener;
+	const char *path=NULL;
+	if((listener=g_list_first(camctl->listeners))!=NULL)
+	do
+	{
+		if( ((dt_camctl_listener_t*)listener->data)->request_image_filename != NULL )
+			path=((dt_camctl_listener_t*)listener->data)->request_image_filename(camera,filename,((dt_camctl_listener_t*)listener->data)->data);
+	} while((listener=g_list_next(listener))!=NULL);
+	return path;
+}
+
 
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera)
 {

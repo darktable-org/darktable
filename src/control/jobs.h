@@ -21,6 +21,7 @@
 #include <glib.h>
 
 #include "common/image.h"
+#include "common/variables.h"
 #include "control/control.h"
 #include "common/film.h"
 #include "develop/develop.h"
@@ -48,12 +49,14 @@ typedef struct dt_camera_import_t
 {
   GList *images;
   struct dt_camera_t *camera;
-  char *import_path;
+  dt_variables_params_t *vp;
   dt_film_t *film;
+  gchar *path;
+  gchar *filename;
 }
 dt_camera_import_t;
 void dt_camera_import_job_run(dt_job_t *job);
-void dt_camera_import_job_init(dt_job_t *job, char *path,GList *images, struct dt_camera_t *camera);
+void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera);
 
 
 typedef struct dt_film_import1_t
