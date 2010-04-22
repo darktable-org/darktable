@@ -76,8 +76,9 @@ static void _camctl_camera_tethered_image_downloaded_callback(const dt_camera_t 
 
 static void detect_source_callback(GtkButton *button,gpointer data)  
 {
-  dt_camctl_detect_cameras(darktable.camctl);
-  dt_gui_capture_update();
+  //dt_camctl_detect_cameras(darktable.camctl);
+  //dt_gui_capture_update();
+  dt_ctl_switch_mode_to(DT_CAPTURE);
 }
 
 static void import_callback(GtkButton *button,gpointer data)  
