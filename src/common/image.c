@@ -527,7 +527,7 @@ void dt_image_init(dt_image_t *img)
 
   // try to get default raw parameters from db:
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params from iop_defaults where operation = 'rawimport'", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "select op_params from presets where operation = 'rawimport' and def=1", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const void *blob = sqlite3_column_blob(stmt, 0);

@@ -1152,6 +1152,11 @@ delete_old_config:
 
 int dt_imageio_dttags_write (const int imgid, const char *filename)
 { // write out human-readable file containing images stars and tags.
+  // refuse to write dttags for non-existent image:
+  char imgfname[1024];
+  snprintf(imgfname, 1024, "%s", filename);
+  *(imgfname + strlen(imgfname) - 7) = '\0';
+  if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
   FILE *f = fopen(filename, "wb");
   if(!f) return 1;
   int stars = 1, rc = 1, raw_params = 0;

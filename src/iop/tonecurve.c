@@ -61,8 +61,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
-static void
-init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_t *self)
 {
   dt_iop_tonecurve_params_t p;
   p.tonecurve_preset = 0;
@@ -85,7 +84,8 @@ init_presets (dt_iop_module_t *self)
   dt_gui_presets_add_generic(_("high contrast"), self->op, &p, self->params_size, 1);
 }
 
-static void presets_changed (GtkComboBox *widget, gpointer user_data)
+static void
+presets_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
@@ -210,8 +210,6 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_tonecurve_gui_data_t));
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-
-  init_presets(self);
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
   for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);

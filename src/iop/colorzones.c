@@ -635,24 +635,32 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
 static gboolean
 colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
-  const int inset = DT_IOP_COLORZONES_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
-  c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
-  c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
-  c->dragging = 1;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+    c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
+    const int inset = DT_IOP_COLORZONES_INSET;
+    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
+    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
+    c->dragging = 1;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean
 colorzones_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  c->dragging = 0;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+    c->dragging = 0;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean
