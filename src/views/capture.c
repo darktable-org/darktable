@@ -101,33 +101,11 @@ const char *name(dt_view_t *self)
   return _("capture");
 }
 
-static void
-select_this_image(const int imgid)
-{
-  // select this image, if no multiple selection:
-  int count = 0;
-  sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-  if(count < 2)
-  {
-    sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-    sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
-}
 
 static void
 film_strip_activated(const int imgid, void *data)
 {
-  dt_view_t *self = (dt_view_t *)data;
-  dt_capture_t *lib=(dt_capture_t*)self->data;
-  lib->image_id=imgid;
-  select_this_image(imgid);
+  dt_view_film_strip_set_active_image(darktable.view_manager,imgid);
   dt_control_queue_draw_all();
   dt_view_film_strip_prefetch();
 }
@@ -195,6 +173,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
     }
   }
   
+#if 0
   // Draw infobar at top
   cairo_set_source_rgb (cr, .30, .05, .05);
   cairo_rectangle(cr, 0, 0, width, BAR_HEIGHT);
@@ -204,7 +183,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   cairo_set_source_rgb (cr, .30, .05, .05);
   cairo_rectangle(cr, 0, height-BAR_HEIGHT, width, BAR_HEIGHT);
   cairo_fill (cr);
-  
+#endif
 }
 
 
@@ -215,9 +194,9 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   int32_t width  = MIN(width_i,  DT_IMAGE_WINDOW_SIZE);
   int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
 
-  //cairo_set_source_rgb (cri, .2, .2, .2);
-  cairo_set_source_rgb (cri, 0,0,0);
-  cairo_rectangle(cri, 0, 0, width, height);
+  cairo_set_source_rgb (cri, .2, .2, .2);
+  //cairo_set_source_rgb (cri, 0,0,0);
+  cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
   
   if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
@@ -245,6 +224,8 @@ void enter(dt_view_t *self)
   // adjust gui:
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  gtk_widget_set_visible(widget, FALSE);
+   widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
   gtk_widget_set_visible(widget, FALSE);
