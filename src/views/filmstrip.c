@@ -297,7 +297,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   if(which == 1 && type == GDK_2BUTTON_PRESS)
   {
     // emit some selection event.
-    if(mouse_over_id > 0 && darktable.view_manager->film_strip_activated)
+    if(mouse_over_id > 0 && darktable.view_manager->film_strip_activated) 
       darktable.view_manager->film_strip_activated(mouse_over_id, darktable.view_manager->film_strip_data);
   }
   // image button pressed?

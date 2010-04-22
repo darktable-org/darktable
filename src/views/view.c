@@ -638,10 +638,8 @@ void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid)
 {
   sqlite3_stmt *stmt;
   // First off clear all selected images...
-  sqlite3_prepare_v2(darktable.db, "delete from selected_images",-1,&stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
+  sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+ 
   // Then insert a selection of image id
   sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, iid);

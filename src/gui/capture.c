@@ -65,12 +65,14 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
 }
 
 
+#if 0
 static void detect_source_callback(GtkButton *button,gpointer data)  
 {
   //dt_camctl_detect_cameras(darktable.camctl);
   //dt_gui_capture_update();
   dt_ctl_switch_mode_to(DT_CAPTURE);
 }
+#endif
 
 static void import_callback(GtkButton *button,gpointer data)  
 {
@@ -119,12 +121,13 @@ void dt_gui_capture_update()
       gtk_container_remove(GTK_CONTAINER(widget),GTK_WIDGET(item->data));
     } while((item=g_list_next(item))!=NULL);
 
+#if 0
   // Add detect button
   GtkWidget *button=gtk_button_new_with_label(_("detect sources"));
   g_signal_connect (G_OBJECT(button), "clicked",G_CALLBACK (detect_source_callback), NULL);
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("scan and detect sources available for capture"), NULL);
   gtk_box_pack_start(GTK_BOX(widget),button,FALSE,FALSE,0);
-      
+#endif
     
   if( (citem=g_list_first(darktable.camctl->cameras))!=NULL) 
   {    
