@@ -21,8 +21,11 @@
   which is module extendable but main purpos is to support tethered capture
   using gphoto library.
   
-  Captures are directly added to a capture film roll in the library
+  When entered a session is constructed = one empty filmroll might be same filmroll
+  as earlier created dependet onf capture filesystem structure...
   
+  TODO: How to pass initialized data such as dt_camera_t ?
+
 */
 
 #include "views/view.h"
@@ -33,6 +36,7 @@
 #include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/darktable.h"
+#include "common/camera_control.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -52,6 +56,9 @@
 
 DT_MODULE(1)
 
+/** The modes of capture view
+  \note in the future there will be a scanning mode...
+*/
 typedef enum dt_capture_mode_t
 {
   DT_CAPTURE_MODE_TETHERED          // Only one capture mode to start with...
@@ -61,9 +68,21 @@ dt_capture_mode_t;
 /** data for the capture view */
 typedef struct dt_capture_t
 {
+  /** The current image activated in capture view, either latest tethered shoot
+    or manually picked from filmstrip view...
+  */
   uint32_t image_id;
+  
   dt_view_image_over_t image_over;
+  
+  /** The capture mode, for now only supports TETHERED */
   dt_capture_mode_t mode;
+  
+  /** If capture mode is DT_CAPTURE_MODE_TETHERED this is use for camer control listener. */
+  dt_camctl_listener_t *listener;
+  /** the camera to tether with */
+  dt_camera_t *camera;
+  
 }
 dt_capture_t;
 
@@ -75,6 +94,13 @@ typedef struct dt_capture_session_t
 }
 dt_capture_session_t;
 
+
+static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
+{
+  dt_job_t j;
+  dt_captured_image_import_job_init(&j,filename);
+  dt_control_add_job(darktable.control, &j);
+}
 
 const char *name(dt_view_t *self)
 {
@@ -129,12 +155,14 @@ void film_strip_key_accel(void *data)
   dt_control_queue_draw_all();
 }
 
-
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_capture_t));
+  memset(self->data,0,sizeof(dt_capture_t));
   dt_capture_t *lib = (dt_capture_t *)self->data;
   lib->image_id=-1;
+  lib->listener = malloc(sizeof(dt_camctl_listener_t));
+  
   // initialize capture data struct
   const int i = dt_conf_get_int("plugins/capture/mode");
   lib->mode = i;
@@ -145,11 +173,15 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
+#define BAR_HEIGHT 18
+
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
   lib->image_over = DT_VIEW_DESERT;
   
+  
+  // First of all draw image if availble
   if( lib->image_id >= 0 )
   {
     dt_image_t *image = dt_image_cache_get(lib->image_id, 'r');
@@ -157,19 +189,35 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
     {
       dt_image_prefetch(image, DT_IMAGE_MIPF);
       const float wd = width/1.0;
-      dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, height, 1, pointerx, pointery);
+      cairo_translate(cr,0.0f, BAR_HEIGHT);
+      dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, height-(BAR_HEIGHT*2), 1, pointerx, pointery);
+      cairo_translate(cr,0.0f, -BAR_HEIGHT);
       dt_image_cache_release(image, 'r');
     }
   }
+  
+  // Draw infobar at top
+  cairo_set_source_rgb (cr, .30, .05, .05);
+  cairo_rectangle(cr, 0, 0, width, BAR_HEIGHT);
+  cairo_fill (cr);
+  
+  // Draw control bar at bottom
+  cairo_set_source_rgb (cr, .30, .05, .05);
+  cairo_rectangle(cr, 0, height-BAR_HEIGHT, width, BAR_HEIGHT);
+  cairo_fill (cr);
+  
 }
 
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
+  dt_capture_t *lib = (dt_capture_t *)self->data;
+
   int32_t width  = MIN(width_i,  DT_IMAGE_WINDOW_SIZE);
   int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
 
-  cairo_set_source_rgb (cri, .2, .2, .2);
+  //cairo_set_source_rgb (cri, .2, .2, .2);
+  cairo_set_source_rgb (cri, 0,0,0);
   cairo_rectangle(cri, 0, 0, width, height);
   cairo_fill (cri);
   
@@ -177,8 +225,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   
   cairo_save(cri);  
-  const int i = dt_conf_get_int("plugins/capture/layout");
-  switch(i)
+  switch(lib->mode)
   {
     case DT_CAPTURE_MODE_TETHERED: // tethered mode
     default: 
@@ -189,7 +236,9 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
 void enter(dt_view_t *self)
 {
-  //dt_capture_t *lib = (dt_capture_t *)self->data;
+  dt_capture_t *lib = (dt_capture_t *)self->data;
+
+  lib->mode = dt_conf_get_int("plugins/capture/mode");
 
   // add expanders
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
@@ -197,7 +246,7 @@ void enter(dt_view_t *self)
   // adjust gui:
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
-  gtk_widget_set_visible(widget, TRUE);
+  gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
@@ -209,17 +258,6 @@ void enter(dt_view_t *self)
   widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
   gtk_widget_set_visible(widget, FALSE);
   
-  /*GList *modules = g_list_last(darktable.lib->plugins);
-  while(modules)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    module->gui_init(module);
-    // add the widget created by gui_init to an expander and both to list.
-    GtkWidget *expander = dt_lib_gui_get_expander(module);
-    gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-    modules = g_list_previous(modules);
-  }*/
-
   // end marker widget:
   GtkWidget *endmarker = gtk_drawing_area_new();
   gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
@@ -229,23 +267,55 @@ void enter(dt_view_t *self)
 
   gtk_widget_show_all(GTK_WIDGET(box));
 
-  // Check if we should view the filmstrip
+  // Check if we should enable view of the filmstrip
   if(dt_conf_get_bool("plugins/filmstrip/on"))
   {
-    //dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
+    dt_view_film_strip_scroll_to(darktable.view_manager, lib->image_id);
     dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
     dt_view_film_strip_prefetch();
   }
   
-  // Setup key acceleratrs in capture view...	
+  // Setup key accelerators in capture view...	
   dt_gui_key_accel_register(0,GDK_c,capture_view_switch_key_accel,(void *)self);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 
+  // Setup capture session and initialize with filmroll
+  
+  // Setup camera control listeners and enter tethered 
+  switch( lib->mode )
+  {
+    case DT_CAPTURE_MODE_TETHERED:
+    default:
+    {
+      // intialize listener if not done
+      if( lib->listener == NULL )
+      {
+        memset(lib->listener,0,sizeof(dt_camctl_listener_t));
+        lib->listener->image_downloaded=_camera_tethered_downloaded_callback;
+      }
+      // Register listener and start tethered mode
+      dt_camctl_register_listener(darktable.camctl,lib->listener);
+      dt_camctl_tether_mode(darktable.camctl,NULL,TRUE);
+    } break;
+  }
 }
 
 
 void leave(dt_view_t *self)
 {
+  dt_capture_t *lib = (dt_capture_t *)self->data;
+
+  switch( lib->mode )
+  {
+    case DT_CAPTURE_MODE_TETHERED:
+    default:
+    {
+      // Releae camera control from tether mode..
+      dt_camctl_tether_mode(darktable.camctl,lib->camera,FALSE);
+      dt_camctl_unregister_listener(darktable.camctl,lib->listener);
+    } break;
+  }
+  
   dt_gui_key_accel_unregister(capture_view_switch_key_accel);
   dt_gui_key_accel_unregister(film_strip_key_accel);
 }

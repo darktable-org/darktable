@@ -30,7 +30,6 @@
 #include "common/camera_control.h"
 
 static dt_camctl_listener_t _gui_camctl_listener;
-static dt_camctl_listener_t _gui_camctl_tethered_listener;
 
 
 static void _camctl_camera_control_status_callback(dt_camctl_status_t status,void *data)
@@ -64,15 +63,6 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   }
 }
 
-// This is called by camera poll thread
-static void _camctl_camera_tethered_image_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
-{
-  // import image to darktable single images... and open in develop mode
-  dt_job_t j;
-  dt_captured_image_import_job_init(&j,filename);
-  dt_control_add_job(darktable.control, &j);
-}
-
 
 static void detect_source_callback(GtkButton *button,gpointer data)  
 {
@@ -102,18 +92,9 @@ static void import_callback(GtkButton *button,gpointer data)
 
 static void tethered_callback(GtkToggleButton *button,gpointer data)  
 {
-  if(gtk_toggle_button_get_active(button))
-  {
-    // Setup a listener for camera_control
-    memset(&_gui_camctl_tethered_listener,0,sizeof(dt_camctl_listener_t));
-    _gui_camctl_tethered_listener.image_downloaded=_camctl_camera_tethered_image_downloaded_callback;
-    dt_camctl_register_listener(darktable.camctl,&_gui_camctl_tethered_listener);
-    dt_camctl_tether_mode(darktable.camctl,(dt_camera_t*)data,TRUE);
-  } else {
-    // Stop tethering mode and unregister listener 
-    dt_camctl_tether_mode(darktable.camctl,(dt_camera_t*)data,FALSE);
-    dt_camctl_unregister_listener(darktable.camctl,&_gui_camctl_tethered_listener);
-  }
+  // Set tether mode...
+  dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
+  dt_ctl_switch_mode_to(DT_CAPTURE);
 }
 
 void dt_gui_capture_init() 
@@ -171,13 +152,13 @@ void dt_gui_capture_update()
       if( camera->can_import==TRUE )
         gtk_box_pack_start(GTK_BOX(widget),(ib=gtk_button_new_with_label(_("import from camera"))),FALSE,FALSE,0);
       if( camera->can_tether==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_toggle_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);
+        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);
       
       if( ib ) {
         g_signal_connect (G_OBJECT(ib), "clicked",G_CALLBACK (import_callback), camera);
       }
       if( tb ) {
-        g_signal_connect (G_OBJECT(tb), "toggled",G_CALLBACK (tethered_callback), camera);
+        g_signal_connect (G_OBJECT(tb), "clicked",G_CALLBACK (tethered_callback), camera);
       }
       
     } while((citem=g_list_next(citem))!=NULL);

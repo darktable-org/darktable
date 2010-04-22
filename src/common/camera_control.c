@@ -395,6 +395,13 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
 	 gp_list_free (folders);
 }
 
+void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam)
+{
+	dt_camctl_t *camctl=(dt_camctl_t *)c;
+	camctl->wanted_camera=cam;
+}
+
+
 void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam) {
 	_camctl_lock(c,cam);
 	_camctl_recursive_get_previews(c,"/");
@@ -403,6 +410,9 @@ void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam) {
 
 void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean enable)
 {
+	if( cam == NULL )
+		cam=c->wanted_camera;
+	
 	if( cam && cam->can_tether ) 
 	{
 		
@@ -426,7 +436,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean
 			_camctl_unlock(c);
 			// Wait for tether thread with join??
 		}
-	}else
+	} else
 		dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to set tether mode with reason: %s\n", cam?"device does not support tethered capture":"no active camera");
 
 }
