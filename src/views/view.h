@@ -76,7 +76,6 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 /** toggle selection of given image. */
 void dt_view_toggle_selection(int iid);
 
-
 #define DT_VIEW_MAX_MODULES 10
 /**
  * holds all relevant data needed to manage the view
@@ -89,7 +88,7 @@ typedef struct dt_view_manager_t
   int32_t current_view, num_views;
   int32_t film_strip_on;
   float film_strip_size;
-  int32_t film_strip_dragging, film_strip_scroll_to;
+  int32_t film_strip_dragging, film_strip_scroll_to, film_strip_active_image;
   void (*film_strip_activated)(const int imgid, void *data);
   void *film_strip_data;
 }
@@ -134,6 +133,9 @@ void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const in
 void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int imgid);
 /** prefetch the next few images in film strip, from selected on. */
 void dt_view_film_strip_prefetch();
-
+/** Clears all selection and selects the given image as active image in film strip. */
+void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid);
+/** Gets the active image id in filmstrip */
+uint32_t dt_view_film_strip_get_active_image(dt_view_manager_t *vm);
 
 #endif

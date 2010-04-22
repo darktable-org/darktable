@@ -37,6 +37,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->film_strip_on = 0;
   vm->film_strip_size = 0.15f;
   vm->film_strip_scroll_to = -1;
+  vm->film_strip_active_image = -1;
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
   
@@ -603,6 +604,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 #endif
 }
 
+
+
 void dt_view_toggle_selection(int iid)
 {
   sqlite3_stmt *stmt;
@@ -624,6 +627,27 @@ void dt_view_toggle_selection(int iid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+}
+
+uint32_t dt_view_film_strip_get_active_image(dt_view_manager_t *vm)
+{
+  return vm->film_strip_active_image;
+}
+
+void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid)
+{
+  sqlite3_stmt *stmt;
+  // First off clear all selected images...
+  sqlite3_prepare_v2(darktable.db, "delete from selected_images",-1,&stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // Then insert a selection of image id
+  sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, iid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  vm->film_strip_scroll_to=vm->film_strip_active_image=iid;
 }
 
 void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data)
