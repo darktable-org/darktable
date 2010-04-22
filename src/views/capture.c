@@ -61,7 +61,8 @@ dt_capture_mode_t;
 /** data for the capture view */
 typedef struct dt_capture_t
 {
-  dt_image_t *image;
+  uint32_t image_id;
+  dt_view_image_over_t image_over;
   dt_capture_mode_t mode;
 }
 dt_capture_t;
@@ -105,9 +106,8 @@ film_strip_activated(const int imgid, void *data)
 {
   dt_view_t *self = (dt_view_t *)data;
   dt_capture_t *lib=(dt_capture_t*)self->data;
-  lib->image = dt_image_cache_get(imgid, 'r');
-  select_this_image(lib->image->id);
-  dt_image_cache_release(lib->image, 'r');
+  lib->image_id=imgid;
+  select_this_image(imgid);
   dt_control_queue_draw_all();
   dt_view_film_strip_prefetch();
 }
@@ -134,6 +134,7 @@ void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_capture_t));
   dt_capture_t *lib = (dt_capture_t *)self->data;
+  lib->image_id=-1;
   // initialize capture data struct
   const int i = dt_conf_get_int("plugins/capture/mode");
   lib->mode = i;
@@ -146,7 +147,20 @@ void cleanup(dt_view_t *self)
 
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  dt_capture_t *lib=(dt_capture_t*)self->data;
+  lib->image_over = DT_VIEW_DESERT;
   
+  if( lib->image_id >= 0 )
+  {
+    dt_image_t *image = dt_image_cache_get(lib->image_id, 'r');
+    if( image )
+    {
+      dt_image_prefetch(image, DT_IMAGE_MIPF);
+      const float wd = width/1.0;
+      dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, height, 1, pointerx, pointery);
+      dt_image_cache_release(image, 'r');
+    }
+  }
 }
 
 
@@ -156,11 +170,9 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
 
   cairo_set_source_rgb (cri, .2, .2, .2);
-  cairo_rectangle(cri, 0, 0, fmaxf(0, width_i-DT_IMAGE_WINDOW_SIZE) *.5f, height);
+  cairo_rectangle(cri, 0, 0, width, height);
   cairo_fill (cri);
-  cairo_rectangle(cri, fmaxf(0.0, width_i-DT_IMAGE_WINDOW_SIZE) *.5f + width, 0, width_i, height);
-  cairo_fill (cri);
-
+  
   if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
   if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   

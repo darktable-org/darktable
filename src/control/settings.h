@@ -53,7 +53,7 @@ typedef enum dt_ctl_gui_mode_t
   DT_DEVELOP = 0,
   DT_LIBRARY = 1,
   DT_CAPTURE = 2,
-  DT_MODE_NONE = 3
+  DT_MODE_NONE = 4
 }
 dt_ctl_gui_mode_t;
 
