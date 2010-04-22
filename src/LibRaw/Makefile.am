@@ -1,5 +1,5 @@
 noinst_LTLIBRARIES=libraw_r.la
-libraw_r_la_SOURCES=internal/dcraw_common.cpp src/libraw_cxx.cpp internal/dcraw_fileio.cpp internal/foveon.cpp src/libraw_c_api.cpp
+libraw_r_la_SOURCES=internal/dcraw_common.cpp src/libraw_cxx.cpp internal/dcraw_fileio.cpp src/libraw_c_api.cpp
 libraw_r_la_CPPFLAGS=-I$(srcdir) -Wall $(OPENMP_CFLAGS) -fPIC -g
 libraw_r_la_CFLAGS=-I$(srcdir) -Wall $(OPENMP_CFLAGS) -g
 # libraw_r_a_LIBADD=$(LCMS_LIBS)

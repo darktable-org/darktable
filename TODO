@@ -1,3 +1,8 @@
+CLAHE:
+  radius scale independent?
+  openmp it
+  8-bit output enough??
+
 webpage updates:
 - freebsd has dt (has had for a while :)
 - list of supported cameras and reverse-engineered basecurves etc

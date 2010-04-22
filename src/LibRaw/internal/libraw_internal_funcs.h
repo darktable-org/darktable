@@ -148,20 +148,6 @@ void        canon_black(double *, int nblack);
     void        sony_arw2_load_raw();
     void        parse_minolta (int base);
 
-// Foveon/Sigma
-    void        foveon_load_camf();
-    void        foveon_load_raw();
-    const char* foveon_camf_param (const char *block, const char *param);
-    void *      foveon_camf_matrix (unsigned dim[3], const char *name);
-    int         foveon_fixed (void *ptr, int size, const char *name);
-    float       foveon_avg (short *pix, int range[2], float cfilt);
-    short *     foveon_make_curve (double max, double mul, double filt);
-    void        foveon_make_curves(short **curvep, float dq[3], float div[3], float filt);
-    int         foveon_apply_curve (short *curve, int i);
-    void        foveon_interpolate();
-    char *      foveon_gets (int offset, char *str, int len);
-    void        parse_foveon();
-
 // CAM/RGB
     void        pseudoinverse (double (*in)[3], double (*out)[3], int size);
     void        cam_xyz_coeff (double cam_xyz[4][3]);

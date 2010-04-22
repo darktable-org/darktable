@@ -282,7 +282,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
-    /* Dont bail, lets return a blob with UserComment and ProcessingSoftware
+    /* Dont bail, lets return a blob with UserComment and Software
     if (exifData.empty())
     {
       std::string error(path);
@@ -392,7 +392,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
     if (sRGB)
       exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
 
-    exifData["Exif.Image.ProcessingSoftware"] = PACKAGE_NAME"-"PACKAGE_VERSION;
+    exifData["Exif.Image.Software"] = PACKAGE_NAME"-"PACKAGE_VERSION;
 
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);

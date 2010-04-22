@@ -88,8 +88,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // gauss blur the image
   for(int j=rad;j<roi_out->height-rad;j++)
   {
-    // in  = ((float *)ivoid) + 3*((rad+j)*roi_in->width + rad);
-    // out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
     in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
     out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
     for(int i=rad;i<roi_out->width-rad;i++)
