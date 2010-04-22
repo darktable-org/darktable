@@ -23,6 +23,7 @@
 #include "develop/develop.h"
 #include "dtgtk/label.h"
 #include "dtgtk/button.h"
+#include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "common/film.h"
@@ -93,6 +94,7 @@ static void import_callback(GtkButton *button,gpointer data)
 static void tethered_callback(GtkToggleButton *button,gpointer data)  
 {
   // Set tether mode...
+  dt_conf_set_int("plugins/capture/mode",DT_CAPTURE_MODE_TETHERED);
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
   dt_ctl_switch_mode_to(DT_CAPTURE);
 }

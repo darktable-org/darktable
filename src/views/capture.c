@@ -56,14 +56,7 @@
 
 DT_MODULE(1)
 
-/** The modes of capture view
-  \note in the future there will be a scanning mode...
-*/
-typedef enum dt_capture_mode_t
-{
-  DT_CAPTURE_MODE_TETHERED          // Only one capture mode to start with...
-}
-dt_capture_mode_t;
+
 
 /** data for the capture view */
 typedef struct dt_capture_t
@@ -80,6 +73,7 @@ typedef struct dt_capture_t
   
   /** If capture mode is DT_CAPTURE_MODE_TETHERED this is use for camer control listener. */
   dt_camctl_listener_t *listener;
+	
   /** the camera to tether with */
   dt_camera_t *camera;
   
@@ -162,7 +156,9 @@ void init(dt_view_t *self)
   dt_capture_t *lib = (dt_capture_t *)self->data;
   lib->image_id=-1;
   lib->listener = malloc(sizeof(dt_camctl_listener_t));
-  
+  memset(lib->listener,0,sizeof(dt_camctl_listener_t));
+  lib->listener->image_downloaded=_camera_tethered_downloaded_callback;
+	
   // initialize capture data struct
   const int i = dt_conf_get_int("plugins/capture/mode");
   lib->mode = i;
@@ -179,8 +175,11 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
   lib->image_over = DT_VIEW_DESERT;
-  
-  
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  //lib->image_id=mouse_over_id;
+  lib->image_id	=dt_view_film_strip_get_active_image(darktable.view_manager);
+	
   // First of all draw image if availble
   if( lib->image_id >= 0 )
   {
@@ -287,12 +286,6 @@ void enter(dt_view_t *self)
     case DT_CAPTURE_MODE_TETHERED:
     default:
     {
-      // intialize listener if not done
-      if( lib->listener == NULL )
-      {
-        memset(lib->listener,0,sizeof(dt_camctl_listener_t));
-        lib->listener->image_downloaded=_camera_tethered_downloaded_callback;
-      }
       // Register listener and start tethered mode
       dt_camctl_register_listener(darktable.camctl,lib->listener);
       dt_camctl_tether_mode(darktable.camctl,NULL,TRUE);

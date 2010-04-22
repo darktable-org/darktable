@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "views/view.h"
 #include "gui/gtk.h"
 #include <glade/glade.h>
 #include <glib.h>
@@ -52,8 +53,9 @@ void dt_captured_image_import_job_run(dt_job_t *job)
   int id = dt_image_import(1, t->filename);
   if(id)
   {
-    dt_film_open(1);
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+    // dt_film_open(1);
+    dt_view_film_strip_set_active_image(darktable.view_manager,id);
+    dt_control_queue_draw_all();
     //dt_ctl_switch_mode_to(DT_DEVELOP);
   }
 }
