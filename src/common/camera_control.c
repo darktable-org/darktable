@@ -304,6 +304,9 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam) {
       dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to initialize camera %s on port %s\n", cam->model,cam->port);
       return FALSE;
     }
+    
+    // read a full copy of config to configuration cache
+     gp_camera_get_config( cam->gpcam, &cam->configuration, c->gpcontext );
       
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Device %s on port %s initialized\n", cam->model,cam->port);
   } else
