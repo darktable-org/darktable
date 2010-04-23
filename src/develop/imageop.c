@@ -33,17 +33,30 @@
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
-  // TODO: override with matching!
-  sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from presets where operation = ?1 and def=1", -1, &stmt, NULL);
-  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-
+  const void *blob = NULL;
   memcpy(module->default_params, module->factory_params, module->params_size);
   module->default_enabled = module->factory_enabled;
 
-  const void *blob = NULL;
+  // select matching default:
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from presets where operation = ?1 and "
+      "autoapply=1 and "
+      "?2 like model and ?3 like maker and ?4 like lens and "
+      "?5 between iso_min and iso_max and "
+      "?6 between exposure_min and exposure_max and "
+      "?7 between aperture_min and aperture_max and "
+      "?8 between focal_length_min and focal_length_max", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 2, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 3, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 4, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
+  sqlite3_bind_double(stmt, 5, module->dev->image->exif_iso);
+  sqlite3_bind_double(stmt, 6, module->dev->image->exif_exposure);
+  sqlite3_bind_double(stmt, 7, module->dev->image->exif_aperture);
+  sqlite3_bind_double(stmt, 8, module->dev->image->exif_focal_length);
+
   if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
+  { // try to find matching entry
     blob  = sqlite3_column_blob(stmt, 0);
     int length  = sqlite3_column_bytes(stmt, 0);
     int enabled = sqlite3_column_int(stmt, 1);
@@ -53,6 +66,26 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       module->default_enabled = enabled;
     }
     else blob = (void *)1;
+  }
+  else
+  { // global default
+    sqlite3_finalize(stmt);
+
+    sqlite3_prepare_v2(darktable.db, "select op_params, enabled from presets where operation = ?1 and def=1", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      blob  = sqlite3_column_blob(stmt, 0);
+      int length  = sqlite3_column_bytes(stmt, 0);
+      int enabled = sqlite3_column_int(stmt, 1);
+      if(blob && length == module->params_size)
+      {
+        memcpy(module->default_params, blob, length);
+        module->default_enabled = enabled;
+      }
+      else blob = (void *)1;
+    }
   }
   sqlite3_finalize(stmt);
 

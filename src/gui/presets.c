@@ -50,7 +50,7 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const v
   sqlite3_bind_text(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  sqlite3_prepare_v2(darktable.db, "insert into presets values (?1, '', ?2, ?3, ?4, '', '', '', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0)", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "insert into presets values (?1, '', ?2, ?3, ?4, '%', '%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0)", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
   sqlite3_bind_blob(stmt, 3, params, params_size, SQLITE_TRANSIENT);
@@ -188,8 +188,10 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
 
   g->autoapply = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
   gtk_box_pack_start(box, GTK_WIDGET(g->autoapply), FALSE, FALSE, 0);
-  g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
-  gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
+  // currently disabled this feature, because i'm not sure if it would obscure the otherwise
+  // transparent settings list again (hide stuff that might nontheless be active for other images) --jo
+  // g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
+  // gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   gtk_box_pack_start(box,  GTK_WIDGET(hbox),  FALSE, FALSE, 0);
@@ -340,7 +342,7 @@ menuitem_new_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_bind_text(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  sqlite3_prepare_v2(darktable.db, "insert into presets values (?1, '', ?2, ?3, ?4, '', '', '', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0)", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "insert into presets values (?1, '', ?2, ?3, ?4, '%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0)", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, _("new preset"), strlen(_("new preset")), SQLITE_STATIC);
   sqlite3_bind_text(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
   sqlite3_bind_blob(stmt, 3, module->params, module->params_size, SQLITE_TRANSIENT);

@@ -1,6 +1,4 @@
 CLAHE:
-  openmp it, how..?
-  8-bit output enough??
   halos around edges normal?
 
 webpage updates:
@@ -14,10 +12,16 @@ big new features:
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
 
 - more transparent custom default/presets handling:
-  - make auto apply and only show for work!
-    src/develop/imageop.c: override default with matching presets
   - replace combo boxes in plugins where already there.
-  - out-of-db backup 
+    - implement init_presets callback and clean up:
+     color zones
+     tone curve
+     equalizer
+     base curve
+
+     input matrices as such defaults?
+     white balance out of this system as well?
+
 - fine-grained history stack copying/replacing: 
   - copy history stack augmented by list of favorite image styles
   - simple interface to [de-]activate single operations, or
