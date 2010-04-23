@@ -58,7 +58,7 @@ void _camera_configuration_update(const dt_camctl_t *c,const dt_camera_t *camera
 /** Commit the changes in cached configuration to the camera configuration */
 void _camera_configuration_commit(const dt_camctl_t *c,const dt_camera_t *camera);
 /** Merges source with destination and notifies listeners of the changes. \param notify_all If true every widget is notified as change */
-void _camera_configuration_merge(const dt_camctl_t *c,CameraWidget *source, CameraWidget *destination, gboolean notify_all);
+void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,CameraWidget *source, CameraWidget *destination, gboolean notify_all);
 
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
@@ -556,7 +556,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 }
 
 
-void _camera_configuration_merge(const dt_camctl_t *c,CameraWidget *source, CameraWidget *destination, gboolean notify_all)
+void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,CameraWidget *source, CameraWidget *destination, gboolean notify_all)
 {
   int childs;
   const char *sk,*stv,*dtv;
@@ -569,7 +569,7 @@ void _camera_configuration_merge(const dt_camctl_t *c,CameraWidget *source, Came
 		for( int i = 0 ; i < childs ; i++) 
     {
 			gp_widget_get_child( source, i, &child );
-			_camera_configuration_merge( c, child, destination, notify_all );
+			_camera_configuration_merge( c, camera, child, destination, notify_all );
 		}
 	} 
   else 
@@ -592,8 +592,8 @@ void _camera_configuration_merge(const dt_camctl_t *c,CameraWidget *source, Came
 			if( ( sa != da )  )
 				gp_widget_set_readonly( dw, sa );
       
-      // TODO: signal listeners that this current widget has changed accessibility (read-only/read-write property)
-			// onConfigurationAccessibilityChange( sk, ( ( sa == 1 ) ? true : false ) );
+      // Signal change to listeners
+      _dispatch_camera_property_accessibility_changed(c, camera,sk, ( sa == 1 ) ? TRUE: FALSE) ;
 		}
 		
 		// Lets compare values and notify on change or by notifyAll flag
@@ -614,8 +614,8 @@ void _camera_configuration_merge(const dt_camctl_t *c,CameraWidget *source, Came
 			
 			if( ( stv && dtv )  && ( notify_all || changed ) )
       {
-        // TODO: signale listeners of value change...
-				// onConfigurationChanged( sk, stv );
+        // Signaling the value change of property
+        _dispatch_camera_property_value_changed(c,camera,sk,stv);
       }
       
 		} 		
@@ -642,7 +642,7 @@ void _camera_configuration_update(const dt_camctl_t *c,const dt_camera_t *camera
   CameraWidget *remote; // Copy of remote configuration
   gp_camera_get_config( camera->gpcam, &remote, c->gpcontext );
   // merge remote copy with cache and notify on changed properties to host application
-  _camera_configuration_merge(c, remote, camera->configuration, FALSE );
+  _camera_configuration_merge(c, camera, remote, camera->configuration, FALSE );
   pthread_mutex_unlock(&cam->config_lock);
 }
 
