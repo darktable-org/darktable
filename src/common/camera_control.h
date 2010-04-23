@@ -25,56 +25,83 @@
 #include <gphoto2/gphoto2.h>
 #include "common/darktable.h"
 
+
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t {
-  /** Locks the camera for an operation */
-  pthread_mutex_t lock;
+  /** A pointer to the model string of camera. */
   const char *model;
+  /** A pointer to the port string of camera. */
   const char *port;
+  /** Camera summary text */
   CameraText summary;
  
+  /** Camera configuration cache */
+  CameraWidget *configuration;
+  pthread_mutex_t config_lock;
+  /** This camera/device can import images. */
   gboolean can_import;
+  /** This camera/device can do tethered shoots. */
   gboolean can_tether;
+  /** This camera/device can be remote controlled. */
   gboolean can_config;
   
-  /** Flag camera in tethering mode. \see dt_camera_tether_mode(gboolean *enable) */
+  /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;  
   
+  /** gphoto2 camera pointer */
   Camera *gpcam;
 } 
 dt_camera_t;
 
+/** Camera control status.
+  These enumerations are passed back to host application using
+  listener interface function control_status().
+*/
 typedef enum dt_camctl_status_t
 {
-	/** Camera control is busy, operations will block */
-	CAMERA_CONTROL_BUSY,
-	/** Camera control is available */
-	CAMERA_CONTROL_AVAILABLE
+  /** Camera control is busy, operations will block . \remarks Technically this means that the dt_camctl_t.mutex is locked*/
+  CAMERA_CONTROL_BUSY,
+  /** Camera control is available. \remarks dt_camctl_t.mutex is freed */
+  CAMERA_CONTROL_AVAILABLE
 }
 dt_camctl_status_t;
 
+/** Camera control errors.
+  These enumerations are passed to the host application using
+  listener interface function camera_error().
+*/
 typedef enum dt_camera_error_t 
 {
-  /** Locking camera failed */
+  /** Locking camera failed. \remarks This means that camera control is busy and locking failed. */
   CAMERA_LOCK_FAILED,     
-  /**  Camera conenction is broken and unuseable */
-  CAMERA_CONNECTION_BROKEN        
+  /**  Camera conenction is broken and unuseable. 
+  \remarks Beyond this message references to dt_camera_t pointer is invalid, which means that the host application should remove all references of camera pointer and disallow any opertations onto it.
+ */
+  CAMERA_CONNECTION_BROKEN
 } 
 dt_camera_error_t;
 
 /** Context of camera control */
 typedef struct dt_camctl_t 
 {
-  pthread_mutex_t mutex;
-  pthread_t thread;
+  pthread_mutex_t lock;
+  /** Camera event thread. */
+  pthread_t camera_event_thread;
+  /** List of registered listeners of camera control. \see dt_camctl_register_listener() , dt_camctl_unregister_listener() */
   GList *listeners;
+  /** List of cameras found and initialized by camera control.*/
   GList *cameras;
   
+  /** The actual gphoto2 context */
   GPContext *gpcontext;
+  /** List of gphoto2 port drivers */
   GPPortInfoList *gpports;
+  /** List of gphoto2 camera drivers */
   CameraAbilitiesList *gpcams;
   
+  /** The host application want to use this camera. \see dt_camctl_select_camera() */
   const dt_camera_t *wanted_camera;
+  
   const dt_camera_t *active_camera;
 } 
 dt_camctl_t;
@@ -83,15 +110,15 @@ dt_camctl_t;
 typedef struct dt_camctl_listener_t
 {
   void *data;
- /** Invoked when a image is downloaded while in tethered mode or  by import */
+ /** Invoked when a image is downloaded while in tethered mode or  by import. \see dt_camctl_status_t */
   void (*control_status)(dt_camctl_status_t status,void *data);
 
-  /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this... */
+  /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this at time... */
   const char * (*request_image_path)(const dt_camera_t *camera,void *data);
 
-  /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this... */
+  /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this at time... */
   const char * (*request_image_filename)(const dt_camera_t *camera,const char *filename,void *data);
-	
+  
   /** Invoked when a image is downloaded while in tethered mode or  by import */
   void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
   
@@ -120,11 +147,12 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c);
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Enables/Disables the tether mode on camera. */
 void dt_camctl_tether_mode(const dt_camctl_t *c,const dt_camera_t *cam,gboolean enable);
-
 /** travers filesystem on camera an retreives previews of images */
 void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam);
-
 /** Imports the images in list from specified camera */
 void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images);
+
+/** Get a property valued from chached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
+const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 
 #endif
