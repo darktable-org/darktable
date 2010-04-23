@@ -125,6 +125,11 @@ typedef struct dt_camctl_listener_t
   /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews() */
   void (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,void *data);
   
+  /** Invoked when a value of a property is changed. */
+  void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);
+  /** Invoked when accesibility of a property is changed. */
+  void (*camera_property_accessibility_changed)(const dt_camera_t *camera,const char *name,gboolean read_only,void *data);
+  
   /** Invoked from dt_camctl_detect_cameras() when a new camera is connected */
   void (*camera_connected)(const dt_camera_t *camera,void *data);
   /** Invoked from dt_camctl_detect_cameras() when a new camera is disconnected, or when connection is broken and camera is unuseable */

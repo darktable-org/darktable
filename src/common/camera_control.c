@@ -69,7 +69,8 @@ void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camer
 void _dispatch_control_status(const dt_camctl_t *c,dt_camctl_status_t status);
 void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_camera_error_t error);
 void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview);
-
+void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value);
+void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
 
 
 
@@ -732,6 +733,30 @@ void _dispatch_control_status(const dt_camctl_t *c,dt_camctl_status_t status)
   {
     if( ((dt_camctl_listener_t*)listener->data)->control_status != NULL )
       ((dt_camctl_listener_t*)listener->data)->control_status(status,((dt_camctl_listener_t*)listener->data)->data);
+  } while((listener=g_list_next(listener))!=NULL);
+}
+
+void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value)
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  GList *listener;
+  if((listener=g_list_first(camctl->listeners))!=NULL)
+  do
+  {
+    if( ((dt_camctl_listener_t*)listener->data)->camera_property_value_changed != NULL )
+      ((dt_camctl_listener_t*)listener->data)->camera_property_value_changed(camera,name,value,((dt_camctl_listener_t*)listener->data)->data);
+  } while((listener=g_list_next(listener))!=NULL);
+}
+
+void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only)
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  GList *listener;
+  if((listener=g_list_first(camctl->listeners))!=NULL)
+  do
+  {
+    if( ((dt_camctl_listener_t*)listener->data)->camera_property_accessibility_changed != NULL )
+      ((dt_camctl_listener_t*)listener->data)->camera_property_accessibility_changed(camera,name,read_only,((dt_camctl_listener_t*)listener->data)->data);
   } while((listener=g_list_next(listener))!=NULL);
 }
 
