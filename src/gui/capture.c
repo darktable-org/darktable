@@ -77,6 +77,7 @@ static void detect_source_callback(GtkButton *button,gpointer data)
 static void import_callback(GtkButton *button,gpointer data)  
 {
   dt_camera_import_dialog_param_t *params=(dt_camera_import_dialog_param_t *)g_malloc(sizeof(dt_camera_import_dialog_param_t));
+  memset( params, 0, sizeof(dt_camera_import_dialog_param_t));
   params->camera = (dt_camera_t*)data;
   
   dt_camera_import_dialog_new(params);
