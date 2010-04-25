@@ -130,7 +130,9 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-#define BAR_HEIGHT 18
+
+#define TOP_MARGIN		20
+#define BOTTOM_MARGIN	20
 
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -139,7 +141,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   //lib->image_id=mouse_over_id;
-  lib->image_id	=dt_view_film_strip_get_active_image(darktable.view_manager);
+  lib->image_id=dt_view_film_strip_get_active_image(darktable.view_manager);
   
   // First of all draw image if availble
   if( lib->image_id >= 0 )
@@ -149,24 +151,12 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
     {
       dt_image_prefetch(image, DT_IMAGE_MIPF);
       const float wd = width/1.0;
-      cairo_translate(cr,0.0f, BAR_HEIGHT);
-      dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, height-(BAR_HEIGHT*2), 1, pointerx, pointery);
-      cairo_translate(cr,0.0f, -BAR_HEIGHT);
+      cairo_translate(cr,0.0f, TOP_MARGIN);
+      dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
+      cairo_translate(cr,0.0f, -BOTTOM_MARGIN);
       dt_image_cache_release(image, 'r');
     }
   }
-  
-#if 0
-  // Draw infobar at top
-  cairo_set_source_rgb (cr, .30, .05, .05);
-  cairo_rectangle(cr, 0, 0, width, BAR_HEIGHT);
-  cairo_fill (cr);
-  
-  // Draw control bar at bottom
-  cairo_set_source_rgb (cr, .30, .05, .05);
-  cairo_rectangle(cr, 0, height-BAR_HEIGHT, width, BAR_HEIGHT);
-  cairo_fill (cr);
-#endif
 }
 
 

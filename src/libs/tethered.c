@@ -34,6 +34,7 @@ typedef  struct dt_lib_tethered_t
     GtkDarktableLabel *header1;         // Session settings
     GtkLabel *label1;                           // Jobcode
     GtkEntry *entry1;                         // Jobcode
+    GtkLabel *property[5][2];         // exp. program, focus mode,aperture, shutterspeed, iso
   } gui;
   
   /** Data part of the module */
@@ -67,12 +68,52 @@ position ()
   return 999;
 }
 
+  // exp. program, focus mode,aperture, shutterspeed, iso
+
+/** Invoked when a value of a property is changed. */
+static void _camera_property_value_changed(const dt_camera_t *camera,const char *name,const char *value,void *data)
+{
+  dt_lib_tethered_t *lib=(dt_lib_tethered_t *)data;
+  int i=0;
+  if(strcmp(name,"expprogram")==0) i=0;
+  else if(strcmp(name,"focus mode")==0) i=1;
+  else if(strcmp(name,"f-number")==0) i=2;
+  else if(strcmp(name,"shutterspeed2")==0) i=3;
+  else if(strcmp(name,"iso")==0) i=4;
+  else return;
+
+  gtk_label_set_text( lib->gui.property[i][1],value);
+    
+}
+
+/** Invoked when accesibility of a property is changed. */
+static void _camera_property_accessibility_changed(const dt_camera_t *camera,const char *name,gboolean read_only,void *data)
+{  
+}
+
 /** Listener callback from camera control when image are downloaded from camera. */
 static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
 {
   dt_job_t j;
   dt_captured_image_import_job_init(&j,filename);
   dt_control_add_job(darktable.control, &j);
+}
+
+
+#define BAR_HEIGHT 18
+
+void 
+gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  // Draw infobar at top
+  cairo_set_source_rgb (cr, .0,.0,.0);
+  cairo_rectangle(cr, 0, 0, width, BAR_HEIGHT);
+  cairo_fill (cr);
+  
+  // Draw control bar at bottom
+  cairo_set_source_rgb (cr, .0,.0,.0);
+  cairo_rectangle(cr, 0, height-BAR_HEIGHT, width, BAR_HEIGHT);
+  cairo_fill (cr);
 }
 
 void
@@ -87,7 +128,10 @@ gui_init (dt_lib_module_t *self)
   lib->data.image_id=-1;
   lib->data.listener = malloc(sizeof(dt_camctl_listener_t));
   memset(lib->data.listener,0,sizeof(dt_camctl_listener_t));
+  lib->data.listener->data=lib;
   lib->data.listener->image_downloaded=_camera_tethered_downloaded_callback;
+  lib->data.listener->camera_property_value_changed=_camera_property_value_changed;
+  lib->data.listener->camera_property_accessibility_changed=_camera_property_accessibility_changed;
   
   
   // Setup gui
@@ -107,6 +151,53 @@ gui_init (dt_lib_module_t *self)
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
  
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  
+  
+  // Camera properties
+  gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new("camera live",DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  
+  // exp. program, focus mode,aperture, shutterspeed, iso
+  int i=0;
+  lib->gui.property[i][0] = GTK_LABEL(gtk_label_new(_("program")));
+  gtk_misc_set_alignment(GTK_MISC( lib->gui.property[i][0]  ), 0.0, 0.5);
+  lib->gui.property[i][1] = GTK_LABEL(gtk_label_new(""));
+  gtk_box_pack_start(vbox1, GTK_WIDGET( lib->gui.property[i][0] ), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET( lib->gui.property[i][1] ), TRUE, TRUE, 0);
+  
+  i++;
+  lib->gui.property[i][0] = GTK_LABEL(gtk_label_new(_("focus mode")));
+  gtk_misc_set_alignment(GTK_MISC( lib->gui.property[i][0]  ), 0.0, 0.5);
+  lib->gui.property[i][1] = GTK_LABEL(gtk_label_new(""));
+  gtk_box_pack_start(vbox1, GTK_WIDGET( lib->gui.property[i][0] ), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET( lib->gui.property[i][1] ), TRUE, TRUE, 0);
+  
+  i++;
+  lib->gui.property[i][0] = GTK_LABEL(gtk_label_new(_("aperture")));
+  gtk_misc_set_alignment(GTK_MISC( lib->gui.property[i][0]  ), 0.0, 0.5);
+  lib->gui.property[i][1] = GTK_LABEL(gtk_label_new(""));
+  gtk_box_pack_start(vbox1, GTK_WIDGET( lib->gui.property[i][0] ), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET( lib->gui.property[i][1] ), TRUE, TRUE, 0);
+ 
+   i++;
+  lib->gui.property[i][0] = GTK_LABEL(gtk_label_new(_("shutterspeed")));
+  gtk_misc_set_alignment(GTK_MISC( lib->gui.property[i][0]  ), 0.0, 0.5);
+  lib->gui.property[i][1] = GTK_LABEL(gtk_label_new(""));
+  gtk_box_pack_start(vbox1, GTK_WIDGET( lib->gui.property[i][0] ), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET( lib->gui.property[i][1] ), TRUE, TRUE, 0);
+  
+  i++;
+  lib->gui.property[i][0] = GTK_LABEL(gtk_label_new(_("iso")));
+  gtk_misc_set_alignment(GTK_MISC( lib->gui.property[i][0]  ), 0.0, 0.5);
+  lib->gui.property[i][1] = GTK_LABEL(gtk_label_new(""));
+  gtk_box_pack_start(vbox1, GTK_WIDGET( lib->gui.property[i][0] ), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET( lib->gui.property[i][1] ), TRUE, TRUE, 0);
+  
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
