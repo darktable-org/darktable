@@ -238,6 +238,22 @@ void enter(dt_view_t *self)
   widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
   gtk_widget_set_visible(widget, FALSE);
   
+  
+  GList *modules = g_list_last(darktable.lib->plugins);
+  while(modules)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
+    if( module->views() & DT_CAPTURE_VIEW )
+    { // Module does support this view let's add it to plugin box
+      module->gui_init(module);
+      // add the widget created by gui_init to an expander and both to list.
+      GtkWidget *expander = dt_lib_gui_get_expander(module);
+      gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+    }
+    modules = g_list_previous(modules);
+  }
+
+  
   // end marker widget:
   GtkWidget *endmarker = gtk_drawing_area_new();
   gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
@@ -247,6 +263,23 @@ void enter(dt_view_t *self)
 
   gtk_widget_show_all(GTK_WIDGET(box));
 
+  // close expanders
+  modules = darktable.lib->plugins;
+  while(modules)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
+    if( module->views() & DT_CAPTURE_VIEW )
+    { 
+      char var[1024];
+      snprintf(var, 1024, "plugins/capture/%s/expanded", module->plugin_name);
+      gboolean expanded = dt_conf_get_bool(var);
+      gtk_expander_set_expanded (module->expander, expanded);
+      if(expanded) gtk_widget_show_all(module->widget);
+      else         gtk_widget_hide_all(module->widget);
+    }
+    modules = g_list_next(modules);
+  }
+  
   // Check if we should enable view of the filmstrip
   if(dt_conf_get_bool("plugins/filmstrip/on"))
   {

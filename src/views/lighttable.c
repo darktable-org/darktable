@@ -531,10 +531,13 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    module->gui_init(module);
-    // add the widget created by gui_init to an expander and both to list.
-    GtkWidget *expander = dt_lib_gui_get_expander(module);
-    gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+    if( module->views() & DT_LIGHTTABLE_VIEW )
+    { // Module does support this view let's add it to plugin box
+      module->gui_init(module);
+      // add the widget created by gui_init to an expander and both to list.
+      GtkWidget *expander = dt_lib_gui_get_expander(module);
+      gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+    }
     modules = g_list_previous(modules);
   }
 
@@ -552,12 +555,15 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    char var[1024];
-    snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
-    gboolean expanded = dt_conf_get_bool(var);
-    gtk_expander_set_expanded (module->expander, expanded);
-    if(expanded) gtk_widget_show_all(module->widget);
-    else         gtk_widget_hide_all(module->widget);
+    if( module->views() & DT_LIGHTTABLE_VIEW )
+    { // Module does support this view let's add it to plugin box
+      char var[1024];
+      snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
+      gboolean expanded = dt_conf_get_bool(var);
+      gtk_expander_set_expanded (module->expander, expanded);
+      if(expanded) gtk_widget_show_all(module->widget);
+      else         gtk_widget_hide_all(module->widget);
+    }
     modules = g_list_next(modules);
   }
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
