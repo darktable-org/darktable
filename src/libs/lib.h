@@ -31,6 +31,14 @@ typedef struct dt_lib_t
 }
 dt_lib_t;
 
+typedef enum dt_lib_view_support_t
+{
+	DT_LIGHTTABLE_VIEW=1,
+	DT_DARKTABLE_VIEW=2,
+	DT_CAPTURE_VIEW=4
+}
+dt_lib_view_support_t;
+
 typedef struct dt_lib_module_t
 {
   /** opened module. */
@@ -48,6 +56,9 @@ typedef struct dt_lib_module_t
 
   /** get name of the module, to be translated. */
   const char* (*name)     ();
+  /** get the views which the module should be loaded in. */
+  uint32_t (*views)  ();
+	
   /** callback methods for gui. */
   /** construct widget. */
   void (*gui_init)        (struct dt_lib_module_t *self);

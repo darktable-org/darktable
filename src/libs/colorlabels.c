@@ -31,6 +31,10 @@ name ()
   return _("color labels");
 }
 
+uint32_t views() 
+{
+  return DT_LIGHTTABLE_VIEW;
+}
 
 static void
 button_clicked(GtkWidget *widget, gpointer user_data)

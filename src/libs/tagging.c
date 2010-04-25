@@ -49,6 +49,11 @@ name ()
   return _("tagging");
 }
 
+uint32_t views() 
+{
+  return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
+}
+
 static void 
 update (dt_lib_module_t *self, int which)
 {

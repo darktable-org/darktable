@@ -37,6 +37,11 @@ name ()
   return _("selected image[s]");
 }
 
+uint32_t views() 
+{
+  return DT_LIGHTTABLE_VIEW;
+}
+
 void
 gui_reset (dt_lib_module_t *self)
 {

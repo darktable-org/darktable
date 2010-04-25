@@ -45,6 +45,11 @@ name ()
   return _("history stack");
 }
 
+uint32_t views() 
+{
+  return DT_LIGHTTABLE_VIEW;
+}
+
 static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
