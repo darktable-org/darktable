@@ -22,7 +22,7 @@
   using gphoto library.
   
   When entered a session is constructed = one empty filmroll might be same filmroll
-  as earlier created dependet onf capture filesystem structure...
+  as earlier created dependent on capture filesystem structure...
   
   TODO: How to pass initialized data such as dt_camera_t ?
 
@@ -69,12 +69,6 @@ typedef struct dt_capture_t
   /** The capture mode, for now only supports TETHERED */
   dt_capture_mode_t mode;
   
-  /** If capture mode is DT_CAPTURE_MODE_TETHERED this is use for camer control listener. */
-  dt_camctl_listener_t *listener;
-  
-  /** the camera to tether with */
-  dt_camera_t *camera;
-  
 }
 dt_capture_t;
 
@@ -87,12 +81,7 @@ typedef struct dt_capture_session_t
 dt_capture_session_t;
 
 
-static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
-{
-  dt_job_t j;
-  dt_captured_image_import_job_init(&j,filename);
-  dt_control_add_job(darktable.control, &j);
-}
+
 
 const char *name(dt_view_t *self)
 {
@@ -130,11 +119,7 @@ void init(dt_view_t *self)
   self->data = malloc(sizeof(dt_capture_t));
   memset(self->data,0,sizeof(dt_capture_t));
   dt_capture_t *lib = (dt_capture_t *)self->data;
-  lib->image_id=-1;
-  lib->listener = malloc(sizeof(dt_camctl_listener_t));
-  memset(lib->listener,0,sizeof(dt_camctl_listener_t));
-  lib->listener->image_downloaded=_camera_tethered_downloaded_callback;
-  
+ 
   // initialize capture data struct
   const int i = dt_conf_get_int("plugins/capture/mode");
   lib->mode = i;
@@ -226,7 +211,7 @@ void enter(dt_view_t *self)
    widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
-  gtk_widget_set_visible(widget, FALSE);
+  gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
@@ -244,7 +229,7 @@ void enter(dt_view_t *self)
     if( module->views() & DT_CAPTURE_VIEW )
     { // Module does support this view let's add it to plugin box
       // soo here goes the special cases for capture view
-      if( !( strcmp(module->name(),"tethered")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
+      if( !( strcmp(module->name(),"tethered shoot")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
       {
         module->gui_init(module);
         // add the widget created by gui_init to an expander and both to list.
@@ -255,7 +240,6 @@ void enter(dt_view_t *self)
     modules = g_list_previous(modules);
   }
 
-  
   // end marker widget:
   GtkWidget *endmarker = gtk_drawing_area_new();
   gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
@@ -296,36 +280,13 @@ void enter(dt_view_t *self)
 
   // Setup capture session and initialize with filmroll
   
-  // Setup camera control listeners and enter tethered 
-  switch( lib->mode )
-  {
-    case DT_CAPTURE_MODE_TETHERED:
-    default:
-    {
-      // Register listener and start tethered mode
-      dt_camctl_register_listener(darktable.camctl,lib->listener);
-      dt_camctl_tether_mode(darktable.camctl,NULL,TRUE);
-    } break;
-  }
+  
 }
 
 
 void leave(dt_view_t *self)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
-
-  switch( lib->mode )
-  {
-    case DT_CAPTURE_MODE_TETHERED:
-    default:
-    {
-      // Releae camera control from tether mode..
-      dt_camctl_tether_mode(darktable.camctl,lib->camera,FALSE);
-      dt_camctl_unregister_listener(darktable.camctl,lib->listener);
-    } break;
-  }
-  
-  dt_gui_key_accel_unregister(capture_view_switch_key_accel);
+    dt_gui_key_accel_unregister(capture_view_switch_key_accel);
   dt_gui_key_accel_unregister(film_strip_key_accel);
 }
 
