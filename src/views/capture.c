@@ -56,8 +56,6 @@
 
 DT_MODULE(1)
 
-
-
 /** data for the capture view */
 typedef struct dt_capture_t
 {
@@ -73,7 +71,7 @@ typedef struct dt_capture_t
   
   /** If capture mode is DT_CAPTURE_MODE_TETHERED this is use for camer control listener. */
   dt_camctl_listener_t *listener;
-	
+  
   /** the camera to tether with */
   dt_camera_t *camera;
   
@@ -136,7 +134,7 @@ void init(dt_view_t *self)
   lib->listener = malloc(sizeof(dt_camctl_listener_t));
   memset(lib->listener,0,sizeof(dt_camctl_listener_t));
   lib->listener->image_downloaded=_camera_tethered_downloaded_callback;
-	
+  
   // initialize capture data struct
   const int i = dt_conf_get_int("plugins/capture/mode");
   lib->mode = i;
@@ -157,7 +155,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   //lib->image_id=mouse_over_id;
   lib->image_id	=dt_view_film_strip_get_active_image(darktable.view_manager);
-	
+  
   // First of all draw image if availble
   if( lib->image_id >= 0 )
   {
@@ -245,10 +243,14 @@ void enter(dt_view_t *self)
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     if( module->views() & DT_CAPTURE_VIEW )
     { // Module does support this view let's add it to plugin box
-      module->gui_init(module);
-      // add the widget created by gui_init to an expander and both to list.
-      GtkWidget *expander = dt_lib_gui_get_expander(module);
-      gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+      // soo here goes the special cases for capture view
+      if( !( strcmp(module->name(),"tethered")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
+      {
+        module->gui_init(module);
+        // add the widget created by gui_init to an expander and both to list.
+        GtkWidget *expander = dt_lib_gui_get_expander(module);
+        gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+      }
     }
     modules = g_list_previous(modules);
   }
