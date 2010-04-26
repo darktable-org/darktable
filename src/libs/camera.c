@@ -96,6 +96,8 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
     { // We got a value for property lets construct the gui for the property and add values
       dt_lib_camera_property_t *prop = malloc(sizeof(dt_lib_camera_property_t));
       memset(prop,0,sizeof(dt_lib_camera_property_t));
+      prop->name=label;
+      prop->property_name=propertyname;
       prop->label = GTK_LABEL(gtk_label_new(label));
       gtk_misc_set_alignment(GTK_MISC(prop->label ), 0.0, 0.5);
       prop->values=GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -112,11 +114,38 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
   return NULL;
 }
   
+
+gint _compare_property_by_name(gconstpointer a,gconstpointer b)
+{
+  dt_lib_camera_property_t *ca=(dt_lib_camera_property_t *)a;
+  return strcmp(ca->property_name,(char *)b);
+}
+
 /** Invoked when a value of a property is changed. */
 static void _camera_property_value_changed(const dt_camera_t *camera,const char *name,const char *value,void *data)
 {
-//  dt_lib_camera_t *lib=(dt_lib_camera_t *)data;
+  dt_lib_camera_t *lib=(dt_lib_camera_t *)data;
   // Find the property in lib->data.properties, update value
+  GList *citem;
+  if( (citem=g_list_find_custom(lib->gui.properties,name,_compare_property_by_name)) != NULL ) 
+  {
+    dt_lib_camera_property_t *prop=(dt_lib_camera_property_t*)citem->data;
+    GtkTreeModel *model=gtk_combo_box_get_model(prop->values);
+    GtkTreeIter iter;
+    uint32_t index=0;
+    if( gtk_tree_model_get_iter_first(model,&iter)==TRUE )
+      do
+      {
+        gchar *str;
+        gtk_tree_model_get(model,&iter,0,&str,-1);
+        if(strcmp(str,value)==0)
+        {
+          gtk_combo_box_set_active(prop->values,index);
+          return;
+        }
+        index++;
+      } while( gtk_tree_model_iter_next(model,&iter) == TRUE);
+  }
 }
 
 /** Invoked when accesibility of a property is changed. */
