@@ -46,6 +46,9 @@ typedef struct dt_lib_camera_t
 {
   /** Gui part of the module */
   struct {
+      GtkWidget *label1,*label2,*label3;               // Capture modes, delay, sequenced
+      GtkDarktableToggleButton *tb1,*tb2;        // Delayed capture, Sequenced capture
+      GtkWidget *sb1,*sb2;                         // delay, sequence
       GList *properties;    // a list of dt_lib_camera_property_t
   } gui;
   
@@ -67,7 +70,7 @@ name ()
 
 uint32_t views() 
 {
-  return DT_CAPTURE_VIEW;
+  return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
 }
 
 
@@ -129,7 +132,6 @@ static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const
 
 
 #define BAR_HEIGHT 18
-
 static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr,PangoLayout *layout, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_camera_t *lib=(dt_lib_camera_t *)self->data;
@@ -181,7 +183,7 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
 void
 gui_init (dt_lib_module_t *self)
 {
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, 5);
   self->data = malloc(sizeof(dt_lib_camera_t));
   memset(self->data,0,sizeof(dt_lib_camera_t));
   
@@ -199,10 +201,50 @@ gui_init (dt_lib_module_t *self)
   self->widget = gtk_vbox_new(FALSE, 5);
   GtkBox *hbox, *vbox1, *vbox2;
   
+  // Camera control
+  gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new(_("camera control"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 5);
+  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  
+  lib->gui.label1=gtk_label_new(_("modes"));
+  lib->gui.label2=gtk_label_new(_("timer (s)"));
+  lib->gui.label3=gtk_label_new(_("count"));               
+  gtk_misc_set_alignment(GTK_MISC(lib->gui.label1 ), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(lib->gui.label2 ), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(lib->gui.label3 ), 0.0, 0.5);
+  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label2), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label3), FALSE, FALSE, 0);
+  
+  // capture modes buttons
+  lib->gui.tb1=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_timer,0));
+  lib->gui.tb2=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip,0));
+  
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb1), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb2), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(hbox),FALSE, FALSE, 0);
+  
+  lib->gui.sb1=gtk_spin_button_new_with_range(1,60,1);
+  lib->gui.sb2=gtk_spin_button_new_with_range(1,500,1);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb1), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb2), TRUE, TRUE, 0);
+  
+  
+  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), NULL);
+
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_button_new_with_label(_("capture image(s)"))), FALSE, FALSE, 5);
+  
   // Camera settings
   dt_lib_camera_property_t *prop;
-  
-  //gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new("session settings",DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new(_("settings"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
   vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   
@@ -242,7 +284,7 @@ gui_init (dt_lib_module_t *self)
     gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
   
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
