@@ -49,7 +49,7 @@ typedef struct basecurve_preset_t
   const char *name;
   const char *maker;
   const char *model;
-  int iso;
+  int iso_min, iso_max;
   float x[6];
   float y[6];
 }
@@ -57,16 +57,16 @@ basecurve_preset_t;
 
 static const int basecurve_presets_cnt = 6;
 static const basecurve_preset_t basecurve_presets[] = {
-  {linear, "", "", 0, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}},
-  {dark_contrast, "", "", 0, {0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}},
+  {linear, "", "", 0, 51200, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}},
+  {dark_contrast, "", "", 0, 51200, {0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}},
   // pascals canon eos curve:
-  {canon_eos, "Canon", "EOS", 0, {0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.983871, 1.000000}},
+  {canon_eos, "Canon", "EOS", 0, 51200, {0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.983871, 1.000000}},
   // pascals sony alpha curve:
-  {sony_alpha, "Sony", "Alpha", 0, {0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}},
+  {sony_alpha, "Sony", "Alpha", 0, 51200, {0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}},
   // Fotogenic - Point and shoot v4.1
-  {fotogenic_v41, "", "", 0, {0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}},
+  {fotogenic_v41, "", "", 0, 51200, {0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}},
   // Fotogenic - EV3 v4.2
-  {fotogenic_v42, "", "", 0, {0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}}
+  {fotogenic_v42, "", "", 0, 51200, {0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}}
 };
 
 typedef struct dt_iop_basecurve_params_t
@@ -103,6 +103,12 @@ const char *name()
 {
   return _("base curve");
 }
+
+#if 0
+void init_presets (dt_iop_module_t *self)
+{
+}
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -226,7 +232,7 @@ void init(dt_iop_module_t *module)
       if(!c) continue;
       c = strstr(module->dev->image->exif_model, basecurve_presets[k].model);
       if(!c) continue;
-      if(basecurve_presets[k].iso && (basecurve_presets[k].iso != module->dev->image->exif_iso)) continue;
+      if(basecurve_presets[k].iso_min && (basecurve_presets[k].iso_min != module->dev->image->exif_iso)) continue;
       for(int i=0;i<6;i++)
       {
         tmp.tonecurve_x[i] = basecurve_presets[k].x[i];
@@ -376,11 +382,11 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     cairo_fill(cr);
     // draw mouse focus circle
     cairo_set_source_rgb(cr, .9, .9, .9);
-    const float pos = DT_IOP_TONECURVE_RES * c->mouse_x/(float)width;
+    const float pos = MAX(0, (DT_IOP_TONECURVE_RES-1) * c->mouse_x/(float)width - 1);
     int k = (int)pos; const float f = k - pos;
     if(k >= DT_IOP_TONECURVE_RES-1) k = DT_IOP_TONECURVE_RES - 2;
     float ht = -height*(f*c->draw_ys[k] + (1-f)*c->draw_ys[k+1]);
-    cairo_arc(cr, c->mouse_x, ht+2.5, 4, 0, 2.*M_PI);
+    cairo_arc(cr, c->mouse_x, ht, 4, 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 

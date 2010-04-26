@@ -14,10 +14,10 @@ big new features:
 - more transparent custom default/presets handling:
   - replace combo boxes in plugins where already there.
     - implement init_presets callback and clean up:
+    - implement update iso etc calls!
+    # base curve
      color zones
-     tone curve
      equalizer
-     base curve
 
      input matrices as such defaults?
      white balance out of this system as well?
@@ -29,6 +29,8 @@ big new features:
 
 - filmstrip h/v/match/off
 
+- ppg openmp broken!
+- import from dt/dttags: detect duplicated images
 - check sqlite3 disk speed (remove image: leave mip maps?)
 - backup tables: presets, color labels
 - gtkaboutdialog
