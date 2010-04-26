@@ -42,6 +42,7 @@ pkg_postinst() {
 	export GCONF_CONFIG_SOURCE=xml::/etc/gconf/gconf.xml.defaults
 	einfo "Installing darktable GConf schemas"
 	${ROOT}/usr/bin/gconftool-2 --makefile-install-rule ${S}/darktable.schemas 1>/dev/null
+	killall gconfd-2
 }
 
 pkg_postrm() {
