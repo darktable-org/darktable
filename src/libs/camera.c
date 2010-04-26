@@ -71,7 +71,7 @@ name ()
 
 uint32_t views() 
 {
-  return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
+  return DT_CAPTURE_VIEW;
 }
 
 
@@ -116,6 +116,7 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
 static void _camera_property_value_changed(const dt_camera_t *camera,const char *name,const char *value,void *data)
 {
 //  dt_lib_camera_t *lib=(dt_lib_camera_t *)data;
+  // Find the property in lib->data.properties, update value
 }
 
 /** Invoked when accesibility of a property is changed. */
@@ -147,36 +148,40 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 
 
 #define BAR_HEIGHT 18
-static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr,PangoLayout *layout, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_camera_t *lib=(dt_lib_camera_t *)self->data;
-  int pw,ph;
-  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
-  GdkRectangle t={0,0,width,height};
     
   // Draw infobar background at top
   cairo_set_source_rgb (cr, .0,.0,.0);
   cairo_rectangle(cr, 0, 0, width, BAR_HEIGHT);
   cairo_fill (cr);
   
+  cairo_set_source_rgb (cr,.8,.8,.8);
+  
   // Draw left aligned value camera model value
+  cairo_text_extents_t te;
   char model[4096]={0};
-  sprintf(model+strlen(model),"%s: %s", _("camera"), lib->data.camera_model );
-  pango_layout_set_text(layout,model,strlen(model));
-  pango_layout_get_pixel_size(layout,&pw,&ph);
-  gtk_paint_layout(style,self->widget->window, GTK_STATE_NORMAL,TRUE,&t,self->widget,"label",0,(BAR_HEIGHT/2.0)-(ph/2.0)+1,layout);
+  sprintf(model+strlen(model),"%s", lib->data.camera_model );
+  cairo_text_extents (cr, model, &te);
+  cairo_move_to (cr,5, 1+BAR_HEIGHT - te.height / 2 );
+  cairo_show_text(cr, model);
   
   // Draw right aligned battary value
   const char *battery_value=dt_camctl_camera_get_property(darktable.camctl,NULL,"battery");
   char battery[4096]={0};
-  sprintf(battery+strlen(model),"%s: %s", _("battery"), battery_value?battery_value:_("n/a"));
-  pango_layout_set_text(layout,model,strlen(model));
-  pango_layout_get_pixel_size(layout,&pw,&ph);
-  gtk_paint_layout(style,self->widget->window, GTK_STATE_NORMAL,TRUE,&t,self->widget,"label",0,(BAR_HEIGHT/2.0)-(ph/2.0)+1,layout);
+  sprintf(battery,"%s: %s", _("battery"), battery_value?battery_value:_("n/a"));
+  cairo_text_extents (cr, battery, &te);
+  cairo_move_to(cr,width-te.width-5, 1+BAR_HEIGHT - te.height / 2 );
+  cairo_show_text(cr, battery);
+  
+  // Let's cook up the middle part of infobar
+  
+  
   
 }
 
-static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr,PangoLayout *layout, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr,int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   /*// Draw control bar at bottom
   cairo_set_source_rgb (cr, .0,.0,.0);
@@ -187,12 +192,12 @@ static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr,PangoLayout 
 void 
 gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
-  PangoLayout *layout;    
-  layout = gtk_widget_create_pango_layout(self->widget,NULL);
-  pango_layout_set_font_description(layout,gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON)->font_desc);
+  // Setup cairo font..
+  cairo_set_font_size (cr, 11.5);
+  cairo_select_font_face (cr, "Sans",CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
   
-  _expose_info_bar(self,cr,layout,width,height,pointerx,pointery);
-  _expose_settings_bar(self,cr,layout,width,height,pointerx,pointery);
+  _expose_info_bar(self,cr,width,height,pointerx,pointery);
+  _expose_settings_bar(self,cr,width,height,pointerx,pointery);
 }
 
 void
@@ -263,13 +268,22 @@ gui_init (dt_lib_module_t *self)
   
   // Camera settings
   dt_lib_camera_property_t *prop;
-  gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new(_("settings"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new(_("properties"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
+  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
   
-  if( (prop=_lib_property_add_new(lib, _("program"),"exp.program"))!=NULL )
+  if( (prop=_lib_property_add_new(lib, _("program"),"expprogram"))!=NULL )
   {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  }
+  
+   if( (prop=_lib_property_add_new(lib, _("focus mode"),"focusmode"))!=NULL )
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
@@ -278,16 +292,25 @@ gui_init (dt_lib_module_t *self)
  
   if( (prop=_lib_property_add_new(lib, _("aperture"),"f-number"))!=NULL )
   {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  }
+  
+  if( (prop=_lib_property_add_new(lib, _("focal length"),"focallength"))!=NULL )
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
     gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
  
-  if( (prop=_lib_property_add_new(lib, _("shutter"),"shuttertime2"))!=NULL )
+  if( (prop=_lib_property_add_new(lib, _("exptime"),"exptime"))!=NULL )
   {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
@@ -296,18 +319,46 @@ gui_init (dt_lib_module_t *self)
  
   if( (prop=_lib_property_add_new(lib, _("iso"),"iso"))!=NULL)
   {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
     gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
   
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  if( (prop=_lib_property_add_new(lib, _("wb"),"whitebalance"))!=NULL)
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  }
   
+  if( (prop=_lib_property_add_new(lib, _("quality"),"imgquality"))!=NULL)
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  }
+  
+  if( (prop=_lib_property_add_new(lib, _("size"),"imgsize"))!=NULL)
+  {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  }
+  
+  
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
+
   
   // Register listener 
   dt_camctl_register_listener(darktable.camctl,lib->data.listener);

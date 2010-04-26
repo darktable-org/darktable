@@ -167,14 +167,13 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
 
   cairo_set_source_rgb (cri, .2, .2, .2);
-  //cairo_set_source_rgb (cri, 0,0,0);
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
-  
+ 
+	
   if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
   if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   
-  cairo_save(cri);  
   // Mode dependent expose of center view
   switch(lib->mode)
   {
@@ -186,11 +185,13 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   
   // post expose to modules
   GList *modules = darktable.lib->plugins;
+  
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     if( (module->views() & DT_CAPTURE_VIEW) && module->gui_post_expose )
       module->gui_post_expose(module,cri,width,height,pointerx,pointery);
+    modules = g_list_next(modules);
   }
   
 }
@@ -221,9 +222,8 @@ void enter(dt_view_t *self)
   widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
   gtk_widget_set_visible(widget, FALSE);
   
-  
   GList *modules = g_list_last(darktable.lib->plugins);
-  while(modules)
+  while(modules!=darktable.lib->plugins)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     if( module->views() & DT_CAPTURE_VIEW )
@@ -231,7 +231,7 @@ void enter(dt_view_t *self)
       // soo here goes the special cases for capture view
       if( !( strcmp(module->name(),"tethered shoot")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
       {
-        module->gui_init(module);
+	module->gui_init(module);
         // add the widget created by gui_init to an expander and both to list.
         GtkWidget *expander = dt_lib_gui_get_expander(module);
         gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
@@ -248,8 +248,7 @@ void enter(dt_view_t *self)
                     G_CALLBACK (dt_control_expose_endmarker), 0);
 
   gtk_widget_show_all(GTK_WIDGET(box));
-
-  // close expanders
+   // close expanders
   modules = darktable.lib->plugins;
   while(modules)
   {
@@ -279,8 +278,6 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 
   // Setup capture session and initialize with filmroll
-  
-  
 }
 
 
