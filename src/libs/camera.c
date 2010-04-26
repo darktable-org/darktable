@@ -91,11 +91,16 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       memset(prop,0,sizeof(dt_lib_camera_property_t));
       prop->label = GTK_LABEL(gtk_label_new(label));
       gtk_misc_set_alignment(GTK_MISC(prop->label ), 0.0, 0.5);
-      prop->values=GTK_COMBO_BOX(gtk_combo_box_new());
+      prop->values=GTK_COMBO_BOX(gtk_combo_box_new_text());
+      prop->osd=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye,0));
+      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("view property in center view"), NULL);
+  
       do
       {    
         gtk_combo_box_append_text(prop->values, value);
       } while( (value=dt_camctl_camera_property_get_next_choice(darktable.camctl,NULL,propertyname)) != NULL );
+      
+      return prop;
     }
   }
   return NULL;
@@ -161,34 +166,46 @@ gui_init (dt_lib_module_t *self)
   dt_lib_camera_property_t *prop;
   
   //gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new("session settings",DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   
   if( (prop=_lib_property_add_new(lib, _("program"),"exp.program"))!=NULL )
   {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
  
   if( (prop=_lib_property_add_new(lib, _("aperture"),"f-number"))!=NULL )
   {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
  
   if( (prop=_lib_property_add_new(lib, _("shutter"),"shuttertime2"))!=NULL )
   {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
  
   if( (prop=_lib_property_add_new(lib, _("iso"),"iso"))!=NULL)
   {
+    hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
     gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
   
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
