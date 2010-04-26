@@ -479,7 +479,7 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *c
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   if( !cam && (cam = camctl->active_camera) == NULL )
   {
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get property from camera, camera==NULL\n"); 
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get model of camera, camera==NULL\n"); 
     return NULL;
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
@@ -511,7 +511,7 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c,const dt_camera_t *cam
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   if( !cam && (cam = camctl->active_camera) == NULL )
   {
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get property from camera, camera==NULL\n"); 
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to check if property exists in camera configuration, camera==NULL\n"); 
     return 0;
   }
   
@@ -533,7 +533,7 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,cons
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   if( !cam && (cam = camctl->active_camera) == NULL )
   {
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get property from camera, camera==NULL\n"); 
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get first choice of property from camera, camera==NULL\n"); 
     return NULL;
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
@@ -553,7 +553,7 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   if( !cam && (cam = camctl->active_camera) == NULL )
   {
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get property from camera, camera==NULL\n"); 
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get next choice of property from camera, camera==NULL\n"); 
     return NULL;
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
@@ -575,6 +575,28 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const
   return value;
 }
 
+void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam)
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  if( !cam && (cam = camctl->active_camera) == NULL )
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to capture from camera, camera==NULL\n"); 
+    return;
+  }
+  dt_camera_t *camera=(dt_camera_t *)cam;
+  // Not all cameras support triggered capture...
+  gp_camera_trigger_capture(camera->gpcam,c->gpcontext);
+  
+  
+  //CameraFilePath source;
+  //gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&source, c->gpcontext);
+  
+  /** TODO: Does the event handling GP_EVENT_CAPTURE_COMPLETE trig this completion
+    or do we need to handle filedownload by our self? maybe trig same code as GP_EVENT_FILE_ADDED use...
+    maybe we can emit a GP_EVENT_FILE_ADDED event to the camera from host application?
+    NEEDS INVESTIGATE!!
+  */
+}
 
 void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 {

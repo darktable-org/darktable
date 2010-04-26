@@ -70,6 +70,22 @@ void dt_captured_image_import_job_init(dt_job_t *job, const char *filename)
 
 void dt_camera_capture_job_run(dt_job_t *job)
 {
+  dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
+  for(int i=0;i<t->count;i++)
+  {
+    // Delay if active
+    if(t->delay)
+      g_usleep(t->delay*G_USEC_PER_SEC);
+    
+    for(int b=0;b<=t->brackets;b++)
+    {
+      // if(t->brackets>0 && b==0)
+      //  set starting bracket
+      // else if( t->brackets>0
+      //  set next bracket
+      dt_camctl_camera_capture(darktable.camctl,NULL);
+    }
+  }
 }
 
 void dt_camera_capture_job_init(dt_job_t *job, uint32_t delay, uint32_t count, uint32_t brackets)
