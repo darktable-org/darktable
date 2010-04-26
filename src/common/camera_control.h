@@ -162,6 +162,8 @@ void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam);
 /** Imports the images in list from specified camera */
 void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images);
 
+/** Returns a model string of camera-*/
+const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *cam);
 /** Get a property valued from chached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 /** Check if property exists. */
