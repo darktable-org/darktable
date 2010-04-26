@@ -159,5 +159,11 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
 
 /** Get a property valued from chached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
+/** Check if property exists. */
+int dt_camctl_camera_property_exists(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
+/** Get first value availble for named property. */
+const char *dt_camctl_camera_property_get_first_value(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
+/** Get next value availble for named property. */
+const char *dt_camctl_camera_property_get_next_value(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 
 #endif
