@@ -197,7 +197,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   cairo_show_text(cr, model);
   
   // Draw right aligned battary value
-  const char *battery_value=dt_camctl_camera_get_property(darktable.camctl,NULL,"battery");
+  const char *battery_value=dt_camctl_camera_get_property(darktable.camctl,NULL,"batterylevel");
   char battery[4096]={0};
   sprintf(battery,"%s: %s", _("battery"), battery_value?battery_value:_("n/a"));
   cairo_text_extents (cr, battery, &te);
@@ -337,7 +337,7 @@ gui_init (dt_lib_module_t *self)
     gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
  
-  if( (prop=_lib_property_add_new(lib, _("exptime"),"exptime"))!=NULL )
+  if( (prop=_lib_property_add_new(lib, _("shutterspeed2"),"shutterspeed2"))!=NULL )
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
@@ -364,7 +364,7 @@ gui_init (dt_lib_module_t *self)
     gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
   
-  if( (prop=_lib_property_add_new(lib, _("quality"),"imgquality"))!=NULL)
+  if( (prop=_lib_property_add_new(lib, _("quality"),"imagequality"))!=NULL)
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
@@ -373,7 +373,7 @@ gui_init (dt_lib_module_t *self)
     gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
   }
   
-  if( (prop=_lib_property_add_new(lib, _("size"),"imgsize"))!=NULL)
+  if( (prop=_lib_property_add_new(lib, _("size"),"imagesize"))!=NULL)
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);

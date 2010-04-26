@@ -665,68 +665,68 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 
 void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,CameraWidget *source, CameraWidget *destination, gboolean notify_all)
 {
-  int childs;
-  const char *sk,*stv,*dtv;
-  CameraWidget *dw;
-  CameraWidgetType type;
-    
-  if( ( childs = gp_widget_count_children ( source ) ) > 0 ) 
-  { // recurse into each children 
-    CameraWidget *child = NULL;
-    for( int i = 0 ; i < childs ; i++) 
-    {
-      gp_widget_get_child( source, i, &child );
-      _camera_configuration_merge( c, camera, child, destination, notify_all );
-    }
-  } 
+	int childs = 0; 
+	const char *sk;
+	const char *stv;
+	CameraWidget *dw;
+	const char *dtv;
+	CameraWidgetType type;
+	// If source widget has childs let's recurse into each children
+	if( ( childs = gp_widget_count_children ( source ) ) > 0 ) {
+		CameraWidget *child = NULL;
+		for( int i = 0 ; i < childs ; i++) {
+			gp_widget_get_child( source, i, &child );
+			//gp_widget_get_name( source, &sk );
+			_camera_configuration_merge( c, camera,child, destination, notify_all );
+		}
+	} 
   else 
-  { // Widget does not have childs and is by that a configuration property
-    gboolean changed = FALSE;
-    gp_widget_get_type( source, &type );
-    
-    // Get the two keys to compare
-    gp_widget_get_name( source, &sk );
+  {
+		gboolean changed = TRUE;
+		gp_widget_get_type( source, &type );
+		
+		// Get the two keys to compare
+		gp_widget_get_name( source, &sk );
     gp_widget_get_child_by_name ( destination, sk, &dw);
-    
-    // First of all check if widget has change accessibility
-    int sa,da;
-    gp_widget_get_readonly( source, &sa );
-    gp_widget_get_readonly( dw, &da );
-    
-    if(  notify_all || ( sa != da ) ) 
-    {
-      // update destination widget to new accessibility if differ then notify of the change
-      if( ( sa != da )  )
-        gp_widget_set_readonly( dw, sa );
-      
-      // Signal change to listeners
-      _dispatch_camera_property_accessibility_changed(c, camera,sk, ( sa == 1 ) ? TRUE: FALSE) ;
-    }
-    
-    // Lets compare values and notify on change or by notifyAll flag
-    if( type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO ) 
-    {
-      // Get source and destination value to be compared
-      gp_widget_get_value( source, &stv );
-      gp_widget_get_value( dw, &dtv );
-      
-      // Does the sourc and dest value differ ?
-      if( ( ( stv && dtv ) && strcmp( stv, dtv ) != 0 ) && ( changed = TRUE ) ) 
-      {
-        // Update the new value of destination widget
-        gp_widget_set_value( dw, stv );
-        // Prevent flagging this change as changed, otherwise a read-only widget might try to update the camera configuration...
-        gp_widget_set_changed( dw, 0 );
-      }
-      
-      if( ( stv && dtv )  && ( notify_all || changed ) )
-      {
-        // Signaling the value change of property
+		
+		// 
+		// First of all check if widget has change accessibility
+		//
+		int sa,da;
+		gp_widget_get_readonly( source, &sa );
+		gp_widget_get_readonly( dw, &da );
+		
+		if(  notify_all || ( sa != da ) ) {
+			// update destination widget to new accessibility if differ then notify of the change
+			if( ( sa != da )  )
+				gp_widget_set_readonly( dw, sa );
+			
+			_dispatch_camera_property_accessibility_changed(c, camera,sk, ( sa == 1 ) ? TRUE: FALSE) ;
+		}
+		
+		// 
+		// Lets compare values and notify on change or by notifyAll flag
+		//
+		if( 
+			type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO 
+		) 
+		{
+		
+			// Get source and destination value to be compared
+			gp_widget_get_value( source, &stv );
+			gp_widget_get_value( dw, &dtv );
+			
+			if( ( ( stv && dtv ) && strcmp( stv, dtv ) != 0 ) && ( changed = TRUE ) ) {
+				gp_widget_set_value( dw, stv );
+				// Dont flag this change as changed, otherwise a read-only widget might get tried
+				// to update the camera configuration...
+				gp_widget_set_changed( dw, 0 );
+			}
+			
+			if( ( stv && dtv )  && ( notify_all || changed ) )
         _dispatch_camera_property_value_changed(c,camera,sk,stv);
-      }
-      
-    } 		
-  }
+		} 		
+	}
 }
 
 void _camera_configuration_commit(const dt_camctl_t *c,const dt_camera_t *camera)
