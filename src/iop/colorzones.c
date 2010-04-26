@@ -697,7 +697,6 @@ colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   {
     for(int k=0;k<3;k++) if(c->select_button[k] == GTK_RADIO_BUTTON(togglebutton))
     {
-      printf("### resetting\n");
       memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
       p->channel = (dt_iop_colorzones_channel_t)k;
       dt_dev_add_history_item(darktable.develop, self);
