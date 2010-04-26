@@ -68,6 +68,20 @@ void dt_captured_image_import_job_init(dt_job_t *job, const char *filename)
   t->filename=g_strdup(filename);
 }
 
+void dt_camera_capture_job_run(dt_job_t *job)
+{
+}
+
+void dt_camera_capture_job_init(dt_job_t *job, uint32_t delay, uint32_t count, uint32_t brackets)
+{
+  dt_control_job_init(job, "remote capture of image(s)");
+  job->execute = &dt_camera_capture_job_run;
+  dt_camera_capture_t *t = (dt_camera_capture_t *)job->param;
+  t->delay=delay;
+  t->count=count;
+  t->brackets=brackets;
+}
+
 void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera)
 {
   dt_control_job_init(job, "import selected images from camera");

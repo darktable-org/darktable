@@ -45,6 +45,21 @@ dt_captured_image_import_t;
 void dt_captured_image_import_job_run(dt_job_t *job);
 void dt_captured_image_import_job_init(dt_job_t *job, const char *filename);
 
+typedef struct dt_camera_capture_t
+{
+	/** delay between each capture, 0 no delay */
+	uint32_t delay;
+	/** count of images to capture, 0==1 */
+	uint32_t count;
+	/** bracket capture, 0=no bracket */
+	uint32_t brackets;
+}
+dt_camera_capture_t;
+void dt_camera_capture_job_run(dt_job_t *job);
+void dt_camera_capture_job_init(dt_job_t *job, uint32_t delay, uint32_t count, uint32_t brackets);
+
+
+
 typedef struct dt_camera_import_t
 {
   GList *images;
