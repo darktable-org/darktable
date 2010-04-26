@@ -183,6 +183,16 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
       _expose_tethered_mode(self, cri, width, height, pointerx, pointery);
       break;
   }
+  
+  // post expose to modules
+  GList *modules = darktable.lib->plugins;
+  while(modules)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
+    if( (module->views() & DT_CAPTURE_VIEW) && module->gui_post_expose )
+      module->gui_post_expose(module,cri,width,height,pointerx,pointery);
+  }
+  
 }
 
 void enter(dt_view_t *self)
