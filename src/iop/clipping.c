@@ -103,7 +103,7 @@ void adjust_aabb(const float *p, float *aabb)
 
 const char *name()
 {
-  return _("clipping");
+  return _("crop and rotate");
 }
 
 // 1st pass: how large would the output be, given this input roi?

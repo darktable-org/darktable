@@ -199,6 +199,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->input = create_srgb_profile();
   }
+  else if(!strcmp(p->iccprofile, "XYZ"))
+  {
+    d->input = create_xyz_profile();
+  }
   else if(!strcmp(p->iccprofile, "adobergb"))
   {
     d->input = create_adobergb_profile();
@@ -324,11 +328,17 @@ void gui_init(struct dt_iop_module_t *self)
   strcpy(prof->name, "adobergb");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = 2;
+  // XYZ built-in
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "XYZ");
+  strcpy(prof->name, "XYZ");
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = 3;
   // get color matrix from raw image:
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "cmatrix");
   strcpy(prof->name, "cmatrix");
-  int pos = prof->pos = 3;
+  int pos = prof->pos = 4;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/in/*.icc
@@ -385,6 +395,8 @@ void gui_init(struct dt_iop_module_t *self)
       gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
     else if(!strcmp(prof->name, "sRGB"))
       gtk_combo_box_append_text(g->cbox2, _("srgb (e.g. jpg)"));
+    else if(!strcmp(prof->name, "XYZ"))
+      gtk_combo_box_append_text(g->cbox2, _("linear XYZ"));
     else if(!strcmp(prof->name, "adobergb"))
       gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
     else if(!strcmp(prof->name, "cmatrix"))

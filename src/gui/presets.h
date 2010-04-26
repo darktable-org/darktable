@@ -15,6 +15,10 @@ void dt_gui_presets_update_iso(const char *name, dt_dev_operation_t op, const fl
 void dt_gui_presets_update_av(const char *name, dt_dev_operation_t op, const float min, const float max);
 void dt_gui_presets_update_tv(const char *name, dt_dev_operation_t op, const float min, const float max);
 void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const float min, const float max);
+/** update ldr flag: 0-dont care, 1-low dynamic range, 2-raw */
+void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const int ldrflag);
+/** set auto apply property of preset. */
+void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int autoapply);
 
 /** show a popup menu without initialized module. need a lot of params for that. */
 void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data);

@@ -45,7 +45,8 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       "?5 between iso_min and iso_max and "
       "?6 between exposure_min and exposure_max and "
       "?7 between aperture_min and aperture_max and "
-      "?8 between focal_length_min and focal_length_max", -1, &stmt, NULL);
+      "?8 between focal_length_min and focal_length_max and "
+      "(isldr = 0 or isldr=?9) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
   sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 3, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
@@ -54,6 +55,8 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   sqlite3_bind_double(stmt, 6, module->dev->image->exif_exposure);
   sqlite3_bind_double(stmt, 7, module->dev->image->exif_aperture);
   sqlite3_bind_double(stmt, 8, module->dev->image->exif_focal_length);
+  // 0: dontcare, 1: ldr, 2: raw
+  sqlite3_bind_double(stmt, 9, 2-dt_image_is_ldr(module->dev->image));
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   { // try to find matching entry

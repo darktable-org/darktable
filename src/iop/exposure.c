@@ -162,8 +162,8 @@ void init(dt_iop_module_t *module)
     coeffs[1] = 1.0f;
   }
   libraw_close(raw);
-  float dmin=INFINITY, dmax=0.0f;
-  for (int c=0; c < 3; c++)
+  float dmin=coeffs[0], dmax=coeffs[0];
+  for (int c=1; c < 3; c++)
   {
     if (dmin > coeffs[c])
       dmin = coeffs[c];

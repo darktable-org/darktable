@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -36,6 +37,13 @@
 #define DT_IOP_TONECURVE_RES 64
 
 DT_MODULE(1)
+
+typedef struct dt_iop_basecurve_params_t
+{
+  float tonecurve_x[6], tonecurve_y[6];
+  int tonecurve_preset;
+}
+dt_iop_basecurve_params_t;
 
 static const char linear[] = N_("linear");
 static const char dark_contrast[] = N_("dark contrast");
@@ -50,39 +58,30 @@ typedef struct basecurve_preset_t
   const char *maker;
   const char *model;
   int iso_min, iso_max;
-  float x[6];
-  float y[6];
+  dt_iop_basecurve_params_t params;
+  int autoapply;
 }
 basecurve_preset_t;
 
 static const int basecurve_presets_cnt = 6;
 static const basecurve_preset_t basecurve_presets[] = {
-  {linear, "", "", 0, 51200, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}},
-  {dark_contrast, "", "", 0, 51200, {0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}},
+  {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
+  {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve:
-  {canon_eos, "Canon", "EOS", 0, 51200, {0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.983871, 1.000000}},
+  {canon_eos, "Canon", "EOS", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.983871, 1.000000}, 0}, 1},
   // pascals sony alpha curve:
-  {sony_alpha, "Sony", "Alpha", 0, 51200, {0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}},
+  {sony_alpha, "Sony", "Alpha", 0, 51200, {{0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}, 0}, 1},
   // Fotogenic - Point and shoot v4.1
-  {fotogenic_v41, "", "", 0, 51200, {0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}},
+  {fotogenic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
   // Fotogenic - EV3 v4.2
-  {fotogenic_v42, "", "", 0, 51200, {0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}}
+  {fotogenic_v42, "", "", 0, 51200, {{0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}, 0}, 0}
 };
-
-typedef struct dt_iop_basecurve_params_t
-{
-  float tonecurve_x[6], tonecurve_y[6];
-  int tonecurve_preset;
-}
-dt_iop_basecurve_params_t;
 
 typedef struct dt_iop_basecurve_gui_data_t
 {
   dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
-  // GtkLabel *label;
-  GtkComboBox *presets;
   double mouse_x, mouse_y;
   int selected, dragging, x_move;
   double selected_offset, selected_y, selected_min, selected_max;
@@ -104,11 +103,25 @@ const char *name()
   return _("base curve");
 }
 
-#if 0
 void init_presets (dt_iop_module_t *self)
 {
+  // transform presets above to db entries.
+  // sql begin
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  for(int k=0;k<basecurve_presets_cnt;k++)
+  {
+    // add the preset.
+    dt_gui_presets_add_generic(basecurve_presets[k].name, self->op, &basecurve_presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
+    // and restrict it to model, maker, iso, and raw images
+    dt_gui_presets_update_mml(basecurve_presets[k].name, self->op, basecurve_presets[k].maker, basecurve_presets[k].model, "");
+    dt_gui_presets_update_iso(basecurve_presets[k].name, self->op, basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
+    dt_gui_presets_update_ldr(basecurve_presets[k].name, self->op, 2);
+    // make it auto-apply for matching images:
+    dt_gui_presets_update_autoapply(basecurve_presets[k].name, self->op, basecurve_presets[k].autoapply);
+  }
+  // sql commit
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
-#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -129,24 +142,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       in += 3; out += 3;
     }
   }
-}
-
-static void
-presets_changed (GtkComboBox *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  
-  int pos = gtk_combo_box_get_active(widget);
-  if(pos < 0 || pos >= basecurve_presets_cnt) return;
-  for(int k=0;k<6;k++)
-  {
-    p->tonecurve_x[k] = basecurve_presets[pos].x[k];
-    p->tonecurve_y[k] = basecurve_presets[pos].y[k];
-  }
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
-  gtk_widget_queue_draw(self->widget);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -203,11 +198,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update(struct dt_iop_module_t *self)
 {
   // nothing to do, gui curve is read directly from params during expose event.
-  if(!memcmp(self->params, self->default_params, self->params_size))
-  {
-    dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-    gtk_combo_box_set_active(g->presets, -1);
-  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -215,31 +205,13 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_basecurve_params_t));
-  module->default_enabled = 1;
+  module->default_enabled = 0;
   module->priority = 260;
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t) {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                 {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
                                                  0};
-  if(!dt_image_is_ldr(module->dev->image))
-  {
-    char *c = NULL;
-    for(int k=0;k<basecurve_presets_cnt;k++)
-    {
-      if(basecurve_presets[k].maker[0] == '\0' && basecurve_presets[k].model[0] == '\0') continue;
-      c = strstr(module->dev->image->exif_maker, basecurve_presets[k].maker);
-      if(!c) continue;
-      c = strstr(module->dev->image->exif_model, basecurve_presets[k].model);
-      if(!c) continue;
-      if(basecurve_presets[k].iso_min && (basecurve_presets[k].iso_min != module->dev->image->exif_iso)) continue;
-      for(int i=0;i<6;i++)
-      {
-        tmp.tonecurve_x[i] = basecurve_presets[k].x[i];
-        tmp.tonecurve_y[i] = basecurve_presets[k].y[i];
-      }
-    }
-  }
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
 }
@@ -440,7 +412,6 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
       if(c->selected == 5) p->tonecurve_y[4] = fminf(f, p->tonecurve_y[4]);
       p->tonecurve_y[c->selected] = f;
     }
-    gtk_combo_box_set_active(c->presets, -1);
     dt_dev_add_history_item(darktable.develop, self);
   }
   else
@@ -558,21 +529,6 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_basecurve_leave_notify), self);
-  // init gtk stuff
-  // c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
-  // c->label = GTK_LABEL(gtk_label_new(_("presets")));
-  // gtk_box_pack_start(GTK_BOX(c->hbox), GTK_WIDGET(c->label), FALSE, FALSE, 5);
-  c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  for(int k=0;k<basecurve_presets_cnt;k++)
-  {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _(basecurve_presets[k].name));
-  }
-  // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(c->presets), FALSE, FALSE, 0);
-  g_signal_connect (G_OBJECT (c->presets), "changed",
-                    G_CALLBACK (presets_changed),
-                    (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
