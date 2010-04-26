@@ -104,6 +104,45 @@ create_adobergb_profile(void)
   return hAdobeRGB;
 }
 
+static LPGAMMATABLE
+build_linear_gamma(void)
+{
+  double Parameters[2];
+
+  Parameters[0] = 1.0;
+  Parameters[1] = 0;
+
+  return cmsBuildParametricGamma(1024, 1, Parameters);
+}
+
+cmsHPROFILE
+create_xyz_profile(void)
+{
+  cmsCIExyY       D65;
+  cmsCIExyYTRIPLE XYZPrimaries   = {
+                                   {1.0, 0.0, 1.0},
+                                   {0.0, 1.0, 1.0},
+                                   {0.0, 0.0, 1.0}
+                                   };
+  LPGAMMATABLE Gamma[3];
+  cmsHPROFILE  hXYZ;
+ 
+  cmsWhitePointFromTemp(6504, &D65);
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+           
+  hXYZ = cmsCreateRGBProfile(&D65, &XYZPrimaries, Gamma);
+  cmsFreeGamma(Gamma[0]);
+  if (hXYZ == NULL) return NULL;
+      
+  cmsAddTag(hXYZ, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
+  cmsAddTag(hXYZ, icSigDeviceModelDescTag,    (LPVOID) "linear XYZ");
+
+  // This will only be displayed when the embedded profile is read by for example GIMP
+  cmsAddTag(hXYZ, icSigProfileDescriptionTag, (LPVOID) "Darktable linear XYZ");
+        
+  return hXYZ;
+}
+
 cmsHPROFILE
 create_output_profile(const int imgid)
 {
@@ -133,6 +172,8 @@ create_output_profile(const int imgid)
 
   if(!strcmp(profile, "sRGB"))
     output = create_srgb_profile();
+  else if(!strcmp(profile, "XYZ"))
+    output = create_xyz_profile();
   else if(!strcmp(profile, "adobergb"))
     output = create_adobergb_profile();
   else if(!strcmp(profile, "X profile") && darktable.control->xprofile_data)

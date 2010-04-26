@@ -78,8 +78,6 @@ typedef struct dt_iop_module_t
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkDarktableToggleButton *off;
-  /** popup menu with rarely used options common to all plugins. */
-  GtkMenu *menu;
   /** this widget contains all of the module: expander and label decoration. */
   GtkWidget *topwidget;
   /** button used to show/hide this module in the plugin list. */
@@ -112,6 +110,8 @@ typedef struct dt_iop_module_t
   
   void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup) (struct dt_iop_module_t *self);
+  /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
+  void (*init_presets) (struct dt_iop_module_t *self);
   /** this inits the piece of the pipe, allocing piece->data as necessary. */
   void (*init_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this resets the params to factory defaults. used at the beginning of each history synch. */

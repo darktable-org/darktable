@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 
 #include "iop/equalizer_eaw.h"
 
@@ -189,11 +190,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update(struct dt_iop_module_t *self)
 {
   // nothing to do, gui curve is read directly from params during expose event.
-  if(!memcmp(self->params, self->default_params, self->params_size))
-  {
-    dt_iop_equalizer_gui_data_t *g = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-    gtk_combo_box_set_active(g->presets, -1);
-  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -223,71 +219,58 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static void presets_changed (GtkComboBox *widget, gpointer user_data)
+void init_presets (dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)self->params;
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  dt_iop_equalizer_params_t p;
   
-  int pos = gtk_combo_box_get_active(widget);
-  switch(pos)
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
   {
-    case 0: // sharpen a lot
-      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
-      {
-        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.5f*k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
-        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
-      }
-      break;
-    case 1: // sharpen
-      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
-      {
-        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.25f*k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
-        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
-      }
-      break;
-    case 2: // null
-      for(int ch=0;ch<3;ch++)
-      {
-        for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) p->equalizer_x[ch][k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
-        for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) p->equalizer_y[ch][k] = 0.5f;
-      }
-      break;
-    case 3: // denoise
-      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
-      {
-        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.2f*k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
-        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
-      }
-      break;
-    case 4: // denoise a lot
-      for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
-      {
-        p->equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
-        p->equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.4f*k/(float)DT_IOP_EQUALIZER_BANDS;
-        p->equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
-        p->equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
-      }
-      break;
-    default: // custom
-      return;
+    p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.5f*k/(float)DT_IOP_EQUALIZER_BANDS;
+    p.equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
+    p.equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
   }
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
-  gtk_widget_queue_draw(self->widget);
+  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+  {
+    p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f+.25f*k/(float)DT_IOP_EQUALIZER_BANDS;
+    p.equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
+    p.equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
+  }
+  dt_gui_presets_add_generic(_("sharpen"), self->op, &p, sizeof(p), 1);
+  for(int ch=0;ch<3;ch++)
+  {
+    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) p.equalizer_x[ch][k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
+    for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) p.equalizer_y[ch][k] = 0.5f;
+  }
+  dt_gui_presets_add_generic(_("null"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+  {
+    p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.2f*k/(float)DT_IOP_EQUALIZER_BANDS;
+    p.equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
+    p.equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
+  }
+  dt_gui_presets_add_generic(_("denoise"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
+  {
+    p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_a][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_x[DT_IOP_EQUALIZER_b][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
+    p.equalizer_y[DT_IOP_EQUALIZER_L][k] = .5f-.4f*k/(float)DT_IOP_EQUALIZER_BANDS;
+    p.equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
+    p.equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
+  }
+  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -341,21 +324,6 @@ void gui_init(struct dt_iop_module_t *self)
   // gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[2]), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[1]), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 5);
-
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
-  GtkLabel *label = GTK_LABEL(gtk_label_new(_("presets")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 5);
-  c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sharpen (strong)"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("sharpen"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("null"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("denoise"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("denoise (strong)"));
-  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
-  g_signal_connect (G_OBJECT (c->presets), "changed",
-                    G_CALLBACK (presets_changed),
-                    (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -567,7 +535,6 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
     {
       dt_iop_equalizer_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    gtk_combo_box_set_active(c->presets, -1);
     dt_dev_add_history_item(darktable.develop, self);
   }
   else if(event->y > height)
@@ -596,23 +563,31 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
 
 static gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 { // set active point
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-  c->drag_params = *(dt_iop_equalizer_params_t *)self->params;
-  const int inset = DT_GUI_EQUALIZER_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
-  c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
-  c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
-  c->dragging = 1;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+    c->drag_params = *(dt_iop_equalizer_params_t *)self->params;
+    const int inset = DT_GUI_EQUALIZER_INSET;
+    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
+    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
+    c->dragging = 1;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean dt_iop_equalizer_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
-  c->dragging = 0;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+    c->dragging = 0;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean dt_iop_equalizer_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)

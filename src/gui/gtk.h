@@ -47,6 +47,7 @@ typedef struct dt_gui_gtk_t
   GdkPixmap *pixmap;
   GList *redraw_widgets;
   GList *key_accels;
+  GtkMenu *presets_popup_menu;
   dt_gui_navigation_t navigation;
   dt_gui_histogram_t histogram;
 

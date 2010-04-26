@@ -26,6 +26,9 @@ cmsHPROFILE create_srgb_profile(void);
 /** create the ICC virtual profile for adobe rgb space. */
 cmsHPROFILE create_adobergb_profile(void);
 
+/** create a ICC virtual profile for XYZ. */
+cmsHPROFILE create_xyz_profile(void);
+
 /** get the icc profile this image would be exported with. */
 cmsHPROFILE create_output_profile(const int imgid);
 
