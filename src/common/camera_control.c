@@ -515,14 +515,52 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c,const dt_camera_t *cam
   return exists;
 }
 
-const char *dt_camctl_camera_property_get_first_value(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name)
+const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name)
 {
-  return NULL;
+  const char *value=NULL;
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  if( !cam && (cam = camctl->active_camera) == NULL )
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get property from camera, camera==NULL\n"); 
+    return NULL;
+  }
+  dt_camera_t *camera=(dt_camera_t *)cam;
+  
+  if(  gp_widget_get_child_by_name ( camera->configuration, property_name, &camera->current_choice.widget) ) 
+  {
+    camera->current_choice.index=0;
+    gp_widget_get_choice ( camera->current_choice.widget, camera->current_choice.index , &value);
+  }
+
+  return value;
 }
 
-const char *dt_camctl_camera_property_get_next_value(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name)
+const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name)
 {
-  return NULL;
+  const char *value=NULL;
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  if( !cam && (cam = camctl->active_camera) == NULL )
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get property from camera, camera==NULL\n"); 
+    return NULL;
+  }
+  dt_camera_t *camera=(dt_camera_t *)cam;
+  
+  if( camera->current_choice.widget != NULL )
+  {
+    
+    if( ++camera->current_choice.index < gp_widget_count_choices( camera->current_choice.widget ) )
+    { // get the choice value...
+      gp_widget_get_choice ( camera->current_choice.widget, camera->current_choice.index , &value);
+    } 
+    else
+    { // No more choices, reset current_choices for further use
+      camera->current_choice.index=0;
+      camera->current_choice.widget=NULL;
+    }
+    
+  }
+  return value;
 }
 
 

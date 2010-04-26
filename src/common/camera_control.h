@@ -48,6 +48,11 @@ typedef struct dt_camera_t {
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;  
   
+  struct {
+    CameraWidget *widget;
+    uint32_t index;
+  } current_choice;
+  
   /** gphoto2 camera pointer */
   Camera *gpcam;
 } 
@@ -161,9 +166,9 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 /** Check if property exists. */
 int dt_camctl_camera_property_exists(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
-/** Get first value availble for named property. */
-const char *dt_camctl_camera_property_get_first_value(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
-/** Get next value availble for named property. */
-const char *dt_camctl_camera_property_get_next_value(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
+/** Get first choice availble for named property. */
+const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
+/** Get next choice availble for named property. */
+const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 
 #endif
