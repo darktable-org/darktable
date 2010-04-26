@@ -49,6 +49,7 @@ typedef struct dt_lib_camera_t
       GtkWidget *label1,*label2,*label3;               // Capture modes, delay, sequenced
       GtkDarktableToggleButton *tb1,*tb2;        // Delayed capture, Sequenced capture
       GtkWidget *sb1,*sb2;                         // delay, sequence
+      GtkWidget *button1;
       GList *properties;    // a list of dt_lib_camera_property_t
   } gui;
   
@@ -127,6 +128,20 @@ static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const
 {
   dt_job_t j;
   dt_captured_image_import_job_init(&j,filename);
+  dt_control_add_job(darktable.control, &j);
+}
+
+
+/// TODO: Handle brackets into capture job....
+static void
+_capture_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
+  uint32_t delay= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb1))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb1)):0;
+  uint32_t count= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):0;
+  uint32_t brackets=0;
+  dt_job_t j;
+  dt_camera_capture_job_init(&j,delay,count,brackets);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -230,17 +245,21 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb1), TRUE, TRUE, 0);
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb2), TRUE, TRUE, 0);
   
-  
-  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), NULL);
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_button_new_with_label(_("capture image(s)"))), FALSE, FALSE, 5);
+  lib->gui.button1=gtk_button_new_with_label(_("capture image(s)"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), FALSE, FALSE, 5);
+
+  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), NULL);
+
+  g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(_capture_button_clicked), lib);
+
   
   // Camera settings
   dt_lib_camera_property_t *prop;
