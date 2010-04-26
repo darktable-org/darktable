@@ -140,7 +140,6 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  //lib->image_id=mouse_over_id;
   lib->image_id=dt_view_film_strip_get_active_image(darktable.view_manager);
   
   // First of all draw image if availble
@@ -176,6 +175,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   
   cairo_save(cri);  
+  // Mode dependent expose of center view
   switch(lib->mode)
   {
     case DT_CAPTURE_MODE_TETHERED: // tethered mode

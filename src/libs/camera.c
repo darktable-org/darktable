@@ -31,6 +31,8 @@ typedef struct dt_lib_camera_property_t
 {
   /** label of property */
   GtkLabel *label;
+  /** the visual property name */
+  const gchar *name;
   /** the property name */
   const gchar *property_name;
   /**Combobox of values available for the property*/
@@ -49,6 +51,7 @@ typedef struct dt_lib_camera_t
   
   /** Data part of the module */
   struct  {
+    const gchar *camera_model;
     dt_camctl_listener_t *listener;
   } data;
 }
@@ -93,13 +96,12 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       gtk_misc_set_alignment(GTK_MISC(prop->label ), 0.0, 0.5);
       prop->values=GTK_COMBO_BOX(gtk_combo_box_new_text());
       prop->osd=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye,0));
-      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("view property in center view"), NULL);
-  
+      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), NULL);
       do
       {    
         gtk_combo_box_append_text(prop->values, value);
       } while( (value=dt_camctl_camera_property_get_next_choice(darktable.camctl,NULL,propertyname)) != NULL );
-      
+      lib->gui.properties=g_list_append(lib->gui.properties,prop);
       return prop;
     }
   }
@@ -127,18 +129,53 @@ static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const
 
 
 #define BAR_HEIGHT 18
-void 
-gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+
+static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr,PangoLayout *layout, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
-  // Draw infobar at top
+  dt_lib_camera_t *lib=(dt_lib_camera_t *)self->data;
+  int pw,ph;
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
+  GdkRectangle t={0,0,width,height};
+    
+  // Draw infobar background at top
   cairo_set_source_rgb (cr, .0,.0,.0);
   cairo_rectangle(cr, 0, 0, width, BAR_HEIGHT);
   cairo_fill (cr);
   
-  // Draw control bar at bottom
+  // Draw left aligned value camera model value
+  char model[4096]={0};
+  sprintf(model+strlen(model),"%s: %s", _("camera"), lib->data.camera_model );
+  pango_layout_set_text(layout,model,strlen(model));
+  pango_layout_get_pixel_size(layout,&pw,&ph);
+  gtk_paint_layout(style,self->widget->window, GTK_STATE_NORMAL,TRUE,&t,self->widget,"label",0,(BAR_HEIGHT/2.0)-(ph/2.0)+1,layout);
+  
+  // Draw right aligned battary value
+  const char *battery_value=dt_camctl_camera_get_property(darktable.camctl,NULL,"battery");
+  char battery[4096]={0};
+  sprintf(battery+strlen(model),"%s: %s", _("battery"), battery_value?battery_value:_("n/a"));
+  pango_layout_set_text(layout,model,strlen(model));
+  pango_layout_get_pixel_size(layout,&pw,&ph);
+  gtk_paint_layout(style,self->widget->window, GTK_STATE_NORMAL,TRUE,&t,self->widget,"label",0,(BAR_HEIGHT/2.0)-(ph/2.0)+1,layout);
+  
+}
+
+static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr,PangoLayout *layout, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  /*// Draw control bar at bottom
   cairo_set_source_rgb (cr, .0,.0,.0);
   cairo_rectangle(cr, 0, height-BAR_HEIGHT, width, BAR_HEIGHT);
-  cairo_fill (cr);
+  cairo_fill (cr);*/
+}
+
+void 
+gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  PangoLayout *layout;    
+  layout = gtk_widget_create_pango_layout(self->widget,NULL);
+  pango_layout_set_font_description(layout,gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON)->font_desc);
+  
+  _expose_info_bar(self,cr,layout,width,height,pointerx,pointery);
+  _expose_settings_bar(self,cr,layout,width,height,pointerx,pointery);
 }
 
 void
@@ -214,6 +251,9 @@ gui_init (dt_lib_module_t *self)
   // Register listener 
   dt_camctl_register_listener(darktable.camctl,lib->data.listener);
   dt_camctl_tether_mode(darktable.camctl,NULL,TRUE);
+  
+  // Get camera model name
+  lib->data.camera_model=dt_camctl_camera_get_model(darktable.camctl,NULL);
 }
 
 void
