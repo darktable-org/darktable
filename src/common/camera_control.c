@@ -586,12 +586,9 @@ void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam)
     return;
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
-  // Not all cameras support triggered capture...
-  gp_camera_trigger_capture(camera->gpcam,c->gpcontext);
   
-  
-  //CameraFilePath source;
-  //gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&source, c->gpcontext);
+  CameraFilePath source;
+  gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&source, c->gpcontext);
   
   /** TODO: Does the event handling GP_EVENT_CAPTURE_COMPLETE trig this completion
     or do we need to handle filedownload by our self? maybe trig same code as GP_EVENT_FILE_ADDED use...
@@ -616,7 +613,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
           if( strstr( (char *)data, "4006" ) )
           { // Property change event occured on camera
             // let's update cache and signalling 
-            _camera_configuration_update(c,cam);
+		       _camera_configuration_update(c,cam);
           }
           
         } break;
