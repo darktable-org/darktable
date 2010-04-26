@@ -272,8 +272,11 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
 
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
+  int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
   module->gui_update(module);
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+  darktable.gui->reset = reset;
 }
 
 void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)

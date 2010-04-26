@@ -35,6 +35,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
 {
   char fullq[2048];
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
+  if(!query) return;
   gchar *c = g_strrstr(query, "order by");
   if(c) *c = '\0';
   c = g_strrstr(query, "limit");
@@ -47,6 +48,8 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   strcat(fullq,"where (");
   snprintf(fullq+strlen(fullq), 2048-strlen(fullq), "%s", query+strlen(query) + 6);
   strcat(fullq,")");
+
+  // printf("%s\n", fullq);
   
   switch((long int)user_data)
   {

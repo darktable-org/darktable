@@ -19,9 +19,11 @@ void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const flo
 void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const int ldrflag);
 /** set auto apply property of preset. */
 void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int autoapply);
+/** set filter mode. if 1, the preset will only show for matching images. */
+void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int filter);
 
-/** show a popup menu without initialized module. need a lot of params for that. */
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data);
+/** show a popup menu without initialized module. */
+void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data);
 
 /** show the popup menu for the given module, with default behavior. */
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);

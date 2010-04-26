@@ -12,17 +12,9 @@ big new features:
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
 
 - more transparent custom default/presets handling:
-  - make show-only-for work
-  - checkbox in change presets for show-only-for
-  - checkbox for auto-apply in edit window
-  - replace combo boxes in plugins where already there.
-    - implement init_presets callback and clean up:
-     color zones
-     equalizer
-   - color in: input matrices as such defaults
-   - white balance out of this system as well?
-     show-only-for ticked for these, keep current sys in parallel
-
+  - color in: input matrices as such defaults
+  - white balance out of this system as well?
+    show-only-for ticked for these, keep current sys in parallel
 
 - fine-grained history stack copying/replacing: 
   - copy history stack augmented by list of favorite image styles
@@ -31,6 +23,7 @@ big new features:
 
 - filmstrip h/v/match/off
 
+- ctrl-a broken for sort by color label 
 - gimp-like crop window moving
 - whitebalance temp out: 5K, color input uses 6004 ?
 - lensfun string truncation: lens?

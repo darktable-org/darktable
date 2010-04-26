@@ -5,6 +5,7 @@
 #include "gui/gtk.h"
 #include <stdlib.h>
 
+
 static const int   dt_gui_presets_exposure_value_cnt = 24;
 static const float dt_gui_presets_exposure_value[] =
 {0., 1./8000, 1./4000, 1./2000, 1./1000, 1./1000, 1./500, 1./250, 1./125, 1./60, 1./30, 1./15,
@@ -66,10 +67,13 @@ get_preset_name(GtkMenuItem *menuitem)
 {
   const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
   const gchar *c = name;
+  // remove <-> markup tag at beginning.
   if(*c == '<') { while(*c != '>') c++; c++; }
   gchar *pn = g_strdup(c);
   gchar *c2 = pn;
-  while(*c2 != '<') c2++; *c2 = '\0';
+  // possibly remove trailing <-> markup tag
+  while(*c2 != '<' && *c2 != '\0') c2++;
+  if(*c2 == '<') *c2 = '\0';
   c2 = g_strrstr(pn, _("(default)"));
   if(c2 && c2 > pn) *(c2-1) = '\0';
   return pn;
@@ -201,8 +205,6 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox3), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox4), TRUE, TRUE, 0);
 
-  // TODO: tooltips!
-  //
   // model, maker, lens
   g->model = GTK_ENTRY(gtk_entry_new());
   gtk_object_set(GTK_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"), NULL);
@@ -226,7 +228,6 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->lens), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
 
-  // TODO: tooltips
   // iso
   label = gtk_label_new(_("iso"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -369,7 +370,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
     const void *blob = sqlite3_column_blob(stmt, 0);
     int length  = sqlite3_column_bytes(stmt, 0);
     int enabled = sqlite3_column_int(stmt, 1);
-    if(blob && length == module->params_size)
+    if(blob && (length == module->params_size))
     {
       memcpy(module->params, blob, length);
       module->enabled = enabled;
@@ -413,7 +414,7 @@ menuitem_factory_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
 
 
 static void 
-dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, dt_iop_module_t *module, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
+dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, dt_iop_module_t *module, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
 {
   GtkMenu *menu = darktable.gui->presets_popup_menu;
   if(menu)
@@ -424,8 +425,32 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
   GtkWidget *mi;
   int active_preset = -1, cnt = 0, writeprotect = 0, selected_default = 0;
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select name, op_params, writeprotect from presets where operation=?1", -1, &stmt, NULL);
-  sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
+  // order: get shipped defaults first
+  if(image)
+  { // only matching if filter is on:
+    sqlite3_prepare_v2(darktable.db, "select name, op_params, writeprotect from presets where operation=?1 and "
+        "(filter=0 or ( "
+        "?2 like model and ?3 like maker and ?4 like lens and "
+        "?5 between iso_min and iso_max and "
+        "?6 between exposure_min and exposure_max and "
+        "?7 between aperture_min and aperture_max and "
+        "?8 between focal_length_min and focal_length_max and "
+        "(isldr = 0 or isldr=?9) ) )"
+        "order by writeprotect desc, rowid", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, image->exif_maker, strlen(image->exif_maker), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, image->exif_lens,  strlen(image->exif_lens),  SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 5, image->exif_iso);
+    sqlite3_bind_double(stmt, 6, image->exif_exposure);
+    sqlite3_bind_double(stmt, 7, image->exif_aperture);
+    sqlite3_bind_double(stmt, 8, image->exif_focal_length);
+  }
+  else
+  { // don't know for which image. show all we got:
+    sqlite3_prepare_v2(darktable.db, "select name, op_params, writeprotect from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
+  }
   // collect all presets for op from db
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -510,14 +535,14 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
   }
 }
 
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
+void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
 {
-  dt_gui_presets_popup_menu_show_internal(op, params, params_size, NULL, pick_callback, callback_data);
+  dt_gui_presets_popup_menu_show_internal(op, params, params_size, NULL, image, pick_callback, callback_data);
 }
 
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 {
-  dt_gui_presets_popup_menu_show_internal(module->op, module->params, module->params_size, module, NULL, NULL);
+  dt_gui_presets_popup_menu_show_internal(module->op, module->params, module->params_size, module, module->dev->image, NULL, NULL);
 }
 
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const char *maker, const char *model, const char *lens)
@@ -601,6 +626,17 @@ void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, co
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(darktable.db, "update presets set autoapply=?1 where operation=?2 and name=?3", -1, &stmt, NULL);
   sqlite3_bind_int(stmt, 1, autoapply);
+  sqlite3_bind_text(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 3, name, strlen(name), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_gui_presets_update_filter(const char *name, dt_dev_operation_t op, const int filter)
+{
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "update presets set filter=?1 where operation=?2 and name=?3", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, filter);
   sqlite3_bind_text(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 3, name, strlen(name), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
