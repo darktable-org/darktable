@@ -44,7 +44,7 @@
       <applyto>/apps/darktable/database_cache_thumbnails</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>2500</default>
+      <default>250</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>thumbnails to keep in database</short>
@@ -57,7 +57,7 @@
       <applyto>/apps/darktable/database_cache_thumbnails0</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>10000</default>
+      <default>1000</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>very small thumbnails to keep in database</short>

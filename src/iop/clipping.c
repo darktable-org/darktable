@@ -752,8 +752,8 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   g->clip_w = g->clip_h = 1.0;
   darktable.gui->reset = 1;
   self->gui_update(self);
-  darktable.gui->reset = 0;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
