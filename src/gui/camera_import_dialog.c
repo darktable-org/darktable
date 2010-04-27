@@ -151,10 +151,11 @@ entry_it_callback(GtkEntryBuffer *entrybuffer,guint a1, gchar *a2, guint a3,gpoi
 }
 
 
-_camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring) 
+_camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring,gchar *supported_characters) 
 {
   _camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
   memset(gcw,0,sizeof(_camera_gconf_widget_t));
+  gcw->supported_characters=supported_characters;
   GtkWidget *vbox,*hbox;
   gcw->widget=vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE,0));
@@ -305,7 +306,10 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   unsigned long size;
   GdkPixbuf *pixbuf=NULL;
   GdkPixbuf *thumb=NULL;
-    
+  
+  char exif_info[1024]={0};  
+  char file_info[4096]={0};
+  
   if( preview )
   {
     gp_file_get_data_and_size(preview, &img, &size);
@@ -325,12 +329,14 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
     }
   }
   
-  char file_info[4096]={0};
-  char exif_info[1024]={0};
-  /*char buffer[1024]={0};
+ 
   
   
   
+ #if 0 
+  // libgphoto only supports fetching exif in jpegs, not raw  
+  char buffer[1024]={0};
+
   if ( exif )
   {
     const char *exif_data;
@@ -346,7 +352,8 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
     }
     else fprintf(stderr,"No exifdata read\n");
     
-  }*/
+  }
+  #endif
   
   // filename\n 1/60 f/2.8 24mm iso 160
   sprintf(file_info,"%s%c%s",filename,strlen(exif_info)?'\n':'\0',strlen(exif_info)?exif_info:"");
@@ -362,6 +369,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
 {
   gtk_widget_show_all(data->dialog);
   
+  gtk_main_iteration_do(TRUE);
   // Populate store
  
   // Setup a listener for previews of all files on camera
@@ -437,9 +445,8 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
         GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the filenamepattern settings before importing"));
         g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
         gtk_dialog_run (GTK_DIALOG (dialog));
-  all_good=FALSE;
+        all_good=FALSE;
       }
-      
     } 
     else 
     {

@@ -237,6 +237,35 @@ int dt_exif_read(dt_image_t *img, const char* path)
     return 1;
   }
 }
+
+#if 0
+void *dt_exif_data_new(uint8_t *data,uint32_t size)
+{
+  Exiv2::ExifData *exifData= new Exiv2::ExifData ;
+  Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( (Exiv2::byte *) data, size );
+	image->readMetadata();
+	//_mimeType = image->mimeType();
+	(*exifData) = image->exifData();
+  
+  return exifData;
+}
+
+const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,uint32_t vsize)
+{
+  Exiv2::ExifData *exifData=(Exiv2::ExifData *)exif_data;
+  Exiv2::ExifData::iterator pos;
+  if( (pos=exifData->findKey(Exiv2::ExifKey(key))) != exifData->end() )
+  {
+    std::stringstream vv;
+    vv << (*exifData)[key];
+    sprintf(value,"%s",vv.str().c_str());
+    fprintf(stderr,"Value: %s\n",vv.str().c_str());
+    return value;
+  }
+  return NULL;
+}
+#endif
+
 #include <stdio.h>
 void *dt_exif_data_new(uint8_t *data,uint32_t size)
 {
@@ -270,6 +299,7 @@ const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,
   }
   return NULL;
 }
+
 
 int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
 {
