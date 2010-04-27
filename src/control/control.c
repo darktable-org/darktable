@@ -731,7 +731,7 @@ void *dt_control_expose(void *voidptr)
       const float fontsize = 14;
       cairo_set_font_size (cr, fontsize);
       cairo_text_extents_t ext;
-      cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_pos-1], &ext);
+      cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_ack], &ext);
       const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
       float rad = 14;
       cairo_set_line_width(cr, 1.);
@@ -752,7 +752,7 @@ void *dt_control_expose(void *voidptr)
       }
       cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
       cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
-      cairo_show_text (cr, darktable.control->log_message[darktable.control->log_pos-1]);
+      cairo_show_text (cr, darktable.control->log_message[darktable.control->log_ack]);
     }
     // draw busy indicator
     if(darktable.control->log_busy > 0)
@@ -866,7 +866,8 @@ void dt_ctl_switch_mode()
 static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
 {
   pthread_mutex_lock(&darktable.control->log_mutex);
-  darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
+  if(darktable.control->log_ack != darktable.control->log_pos)
+    darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=0;
   pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_draw_all();
