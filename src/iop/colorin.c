@@ -413,18 +413,18 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "linear_rgb"))
-      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
+    if(!strcmp(prof->name, "cmatrix"))
+      gtk_combo_box_append_text(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
-      gtk_combo_box_append_text(g->cbox2, _("darktable built-in"));
+      gtk_combo_box_append_text(g->cbox2, _("enhanced color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
       gtk_combo_box_append_text(g->cbox2, _("srgb (e.g. jpg)"));
-    else if(!strcmp(prof->name, "XYZ"))
-      gtk_combo_box_append_text(g->cbox2, _("linear XYZ"));
     else if(!strcmp(prof->name, "adobergb"))
       gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
-    else if(!strcmp(prof->name, "cmatrix"))
-      gtk_combo_box_append_text(g->cbox2, _("color matrix"));
+    else if(!strcmp(prof->name, "linear_rgb"))
+      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
+    else if(!strcmp(prof->name, "XYZ"))
+      gtk_combo_box_append_text(g->cbox2, _("linear xyz"));
     else
       gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);
