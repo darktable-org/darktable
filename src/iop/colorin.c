@@ -322,8 +322,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "cmatrix");
   strcpy(prof->name, "cmatrix");
-  int pos = prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
+  int pos = prof->pos = 0;
+
   // darktable built-in, if applicable
   char makermodel[512];
   snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
@@ -339,24 +340,28 @@ void gui_init(struct dt_iop_module_t *self)
       break;
     }
   }
+
   // sRGB for ldr image input
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
+
   // adobe rgb built-in
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "adobergb");
   strcpy(prof->name, "adobergb");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
+
   // add std RGB profile:
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "linear_rgb.icc");
   strcpy(prof->name, "linear_rgb");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
+
   // XYZ built-in
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "XYZ");
@@ -385,9 +390,9 @@ void gui_init(struct dt_iop_module_t *self)
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
         strcpy(prof->name, cmsTakeProductDesc(tmpprof));
         strcpy(prof->filename, d_name);
-        prof->pos = ++pos;
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);
+        prof->pos = ++pos;
       }
     }
     g_dir_close(dir);
