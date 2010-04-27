@@ -7313,6 +7313,13 @@ canon_a5:
     left_margin = 142;
     raw_width *= 4;
     width = 4916;
+  } else if (is_canon && raw_width == 1336) {
+    top_margin = 51;
+    left_margin = 142;
+    raw_width = width *= 4;
+    if (unique_id == 0x80000270)
+      adobe_coeff ("Canon","EOS 550D");
+    goto canon_cr2;
   } else if (is_canon && raw_width == 1340) {
     top_margin = 51;
     left_margin = 158;
