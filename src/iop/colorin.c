@@ -317,12 +317,13 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
-  // add std RGB profile:
+
+  // get color matrix from raw image:
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "linear_rgb.icc");
-  strcpy(prof->name, "linear_rgb");
-  g->profiles = g_list_append(g->profiles, prof);
+  strcpy(prof->filename, "cmatrix");
+  strcpy(prof->name, "cmatrix");
   int pos = prof->pos = 0;
+  g->profiles = g_list_append(g->profiles, prof);
   // darktable built-in, if applicable
   char makermodel[512];
   snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
@@ -350,18 +351,18 @@ void gui_init(struct dt_iop_module_t *self)
   strcpy(prof->name, "adobergb");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
+  // add std RGB profile:
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "linear_rgb.icc");
+  strcpy(prof->name, "linear_rgb");
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = ++pos;
   // XYZ built-in
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "XYZ");
   strcpy(prof->name, "XYZ");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
-  // get color matrix from raw image:
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "cmatrix");
-  strcpy(prof->name, "cmatrix");
-  prof->pos = ++pos;
-  g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/in/*.icc
   char datadir[1024], dirname[1024], filename[1024];
