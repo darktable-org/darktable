@@ -65,6 +65,7 @@ void dt_colorlabels_toggle_label_selection (const int color)
 
 void dt_colorlabels_toggle_label (const int imgid, const int color)
 {
+  if(imgid <= 0) return;
   sqlite3_stmt *stmt, *stmt2;
   sqlite3_prepare_v2(darktable.db, "select * from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
   sqlite3_bind_int(stmt, 1, imgid);
@@ -94,7 +95,7 @@ void dt_colorlabels_key_accel_callback(void *user_data)
   const long int mode = (long int)user_data;
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
-  if(selected < 0)
+  if(selected <= 0)
   {
     switch(mode)
     {

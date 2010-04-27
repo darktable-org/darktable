@@ -193,6 +193,7 @@ star_key_accel_callback(void *data)
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      if(mouse_over_id <= 0) return;
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       if(num == 666) image->flags &= ~0xf;
       else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;

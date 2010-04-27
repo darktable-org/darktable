@@ -23,6 +23,7 @@ big new features:
 
 - filmstrip h/v/match/off
 
+- alt-4 in dev mode kills dt
 - ctrl-a broken for sort by color label 
 - gimp-like crop window moving
 - whitebalance temp out: 5K, color input uses 6004 ?
