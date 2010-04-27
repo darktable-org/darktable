@@ -249,9 +249,11 @@ void *dt_exif_data_new(uint8_t *data,uint32_t size)
     char value[1024]={0};
     int ifd_index=EXIF_IFD_EXIF;
     for(uint32_t i = 0; i < ed->ifd[ifd_index]->count; i++) {
+      char key[1024]="Exif.Photo.";
       exif_entry_get_value(ed->ifd[ifd_index]->entries[i],value,1024);
-      fprintf(stderr,"Adding key '%s' value '%s'\n",exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag),value);
-      (*exifData)[ exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag) ] = value;
+      strcat(key,exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag));
+      fprintf(stderr,"Adding key '%s' value '%s'\n",key,value);
+      (*exifData)[key] = value;
     }
   }
   
@@ -262,7 +264,7 @@ const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,
 {
   Exiv2::ExifData *exifData=(Exiv2::ExifData *)exif_data;
   Exiv2::ExifData::iterator pos;
-  if( (pos=exifData->findKey(Exiv2::ExifKey(key))) == exifData->end() )
+  if( (pos=exifData->findKey(Exiv2::ExifKey(key))) != exifData->end() )
   {
     dt_strlcpy_to_utf8(value, vsize, pos,*exifData);
   }

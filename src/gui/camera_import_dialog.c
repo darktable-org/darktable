@@ -302,7 +302,6 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
   GtkTreeIter iter;
   const char *img;
-  const char *exif_data;
   unsigned long size;
   GdkPixbuf *pixbuf=NULL;
   GdkPixbuf *thumb=NULL;
@@ -328,25 +327,26 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   
   char file_info[4096]={0};
   char exif_info[1024]={0};
-  //char buffer[1024]={0};
+  /*char buffer[1024]={0};
   
   
   
   if ( exif )
   {
-    //char *value=NULL;
+    const char *exif_data;
+    char *value=NULL;
     gp_file_get_data_and_size(exif, &exif_data, &size);
     if( size > 0 )
     {
-    /*      
+          
       void *exif=dt_exif_data_new((uint8_t *)exif_data,size);
-      value=g_strdup( dt_exif_data_get_value(exif,"Exif.Photo.ExposureTime",buffer,1024) );
-      sprintf(exif_info,"exposure: %s\n", value);
-    */  
+      if( (value=g_strdup( dt_exif_data_get_value(exif,"Exif.Photo.ExposureTime",buffer,1024) ) ) != NULL); 
+        sprintf(exif_info,"exposure: %s\n", value);
+      
     }
     else fprintf(stderr,"No exifdata read\n");
     
-  }
+  }*/
   
   // filename\n 1/60 f/2.8 24mm iso 160
   sprintf(file_info,"%s%c%s",filename,strlen(exif_info)?'\n':'\0',strlen(exif_info)?exif_info:"");
@@ -372,7 +372,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
     listener.data=data;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
     dt_camctl_register_listener(darktable.camctl,&listener);
-    dt_camctl_get_previews(darktable.camctl,CAMCTL_IMAGE_EXIF_DATA,data->params->camera);
+    dt_camctl_get_previews(darktable.camctl,CAMCTL_IMAGE_PREVIEW_DATA,data->params->camera);
     dt_camctl_unregister_listener(darktable.camctl,&listener);
   }
   
