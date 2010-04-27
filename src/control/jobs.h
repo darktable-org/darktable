@@ -68,6 +68,7 @@ typedef struct dt_camera_import_t
   dt_film_t *film;
   gchar *path;
   gchar *filename;
+  uint32_t import_count;
 }
 dt_camera_import_t;
 void dt_camera_import_job_run(dt_job_t *job);
