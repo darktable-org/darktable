@@ -20,6 +20,7 @@
 #include "iop/colorout.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "common/colormatrices.c"
 
 static LPGAMMATABLE
 build_srgb_gamma(void)
@@ -36,7 +37,7 @@ build_srgb_gamma(void)
 }
 
 cmsHPROFILE
-create_srgb_profile(void)
+dt_colorspaces_create_srgb_profile(void)
 {
   cmsCIExyY       D65;
   cmsCIExyYTRIPLE Rec709Primaries = {
@@ -77,7 +78,7 @@ build_adobergb_gamma(void)
 
 // Create the ICC virtual profile for adobe rgb space
 cmsHPROFILE
-create_adobergb_profile(void)
+dt_colorspaces_create_adobergb_profile(void)
 {
   cmsCIExyY       D65;
   cmsCIExyYTRIPLE AdobePrimaries = {
@@ -116,7 +117,49 @@ build_linear_gamma(void)
 }
 
 cmsHPROFILE
-create_xyz_profile(void)
+dt_colorspaces_create_darktable_profile(const char *makermodel)
+{
+  dt_profiled_colormatrix_t *preset = NULL;
+  for(int k=0;k<dt_profiled_colormatrix_cnt;k++)
+  {
+    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    {
+      preset = dt_profiled_colormatrices + k;
+      break;
+    }
+  }
+  if(!preset) return NULL;
+
+  const float wxyz = preset->white[0]+preset->white[1]+preset->white[2];
+  const float rxyz = preset->rXYZ[0] +preset->rXYZ[1] +preset->rXYZ[2];
+  const float gxyz = preset->gXYZ[0] +preset->gXYZ[1] +preset->gXYZ[2];
+  const float bxyz = preset->bXYZ[0] +preset->bXYZ[1] +preset->bXYZ[2];
+  cmsCIExyY       WP = {preset->white[0]/wxyz, preset->white[1]/wxyz};
+  cmsCIExyYTRIPLE XYZPrimaries   = {
+                                   {preset->rXYZ[0]/rxyz, preset->rXYZ[1]/rxyz, 1.0},
+                                   {preset->gXYZ[0]/gxyz, preset->gXYZ[1]/gxyz, 1.0},
+                                   {preset->bXYZ[0]/bxyz, preset->bXYZ[1]/bxyz, 1.0}
+                                   };
+  LPGAMMATABLE Gamma[3];
+  cmsHPROFILE  hp;
+ 
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+           
+  hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
+  cmsFreeGamma(Gamma[0]);
+  if (hp == NULL) return NULL;
+      
+  char name[512];
+  snprintf(name, 512, "Darktable profiled %s", makermodel);
+  cmsAddTag(hp, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
+  cmsAddTag(hp, icSigDeviceModelDescTag,    (LPVOID) name);
+  cmsAddTag(hp, icSigProfileDescriptionTag, (LPVOID) name);
+        
+  return hp;
+}
+
+cmsHPROFILE
+dt_colorspaces_create_xyz_profile(void)
 {
   cmsCIExyY       D65;
   cmsCIExyYTRIPLE XYZPrimaries   = {
@@ -143,8 +186,9 @@ create_xyz_profile(void)
   return hXYZ;
 }
 
+
 cmsHPROFILE
-create_output_profile(const int imgid)
+dt_colorspaces_create_output_profile(const int imgid)
 {
   char profile[1024];
   profile[0] = '\0';
@@ -171,11 +215,11 @@ create_output_profile(const int imgid)
   cmsHPROFILE output = NULL;
 
   if(!strcmp(profile, "sRGB"))
-    output = create_srgb_profile();
+    output = dt_colorspaces_create_srgb_profile();
   else if(!strcmp(profile, "XYZ"))
-    output = create_xyz_profile();
+    output = dt_colorspaces_create_xyz_profile();
   else if(!strcmp(profile, "adobergb"))
-    output = create_adobergb_profile();
+    output = dt_colorspaces_create_adobergb_profile();
   else if(!strcmp(profile, "X profile") && darktable.control->xprofile_data)
     output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
   else
@@ -186,7 +230,7 @@ create_output_profile(const int imgid)
     snprintf(filename, 1024, "%s/color/out/%s", datadir, profile);
     output = cmsOpenProfileFromFile(filename, "r");
   }
-  if(!output) output = create_srgb_profile();
+  if(!output) output = dt_colorspaces_create_srgb_profile();
   return output;
 }
 

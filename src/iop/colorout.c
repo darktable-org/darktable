@@ -146,11 +146,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(overintent >= 0) p->intent = overintent;
     if(!strcmp(p->iccprofile, "sRGB"))
     { // default: sRGB
-      d->output = create_srgb_profile();
+      d->output = dt_colorspaces_create_srgb_profile();
     }
     else if(!strcmp(p->iccprofile, "adobergb"))
     {
-      d->output = create_adobergb_profile();
+      d->output = dt_colorspaces_create_adobergb_profile();
     }
     else if(!strcmp(p->iccprofile, "X profile"))
     { // x default
@@ -175,11 +175,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     if(!strcmp(p->displayprofile, "sRGB"))
     { // default: sRGB
-      d->output = create_srgb_profile();
+      d->output = dt_colorspaces_create_srgb_profile();
     }
     else if(!strcmp(p->displayprofile, "adobergb"))
     {
-      d->output = create_adobergb_profile();
+      d->output = dt_colorspaces_create_adobergb_profile();
     }
     else if(!strcmp(p->displayprofile, "X profile"))
     { // x default
@@ -198,7 +198,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->output)
       d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
     else
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, create_srgb_profile(), TYPE_RGB_DBL, p->displayintent, 0);
+      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, dt_colorspaces_create_srgb_profile(), TYPE_RGB_DBL, p->displayintent, 0);
   }
 #endif
   g_free(overprofile);
