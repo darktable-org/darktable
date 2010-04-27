@@ -328,13 +328,13 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   
   char file_info[4096]={0};
   char exif_info[1024]={0};
-  char buffer[1024]={0};
+  //char buffer[1024]={0};
   
   
   
   if ( exif )
   {
-    char *value=NULL;
+    //char *value=NULL;
     gp_file_get_data_and_size(exif, &exif_data, &size);
     if( size > 0 )
     {
