@@ -8,7 +8,6 @@
     <child>
       <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <child>
           <widget class="GtkDrawingArea" id="topborder">
             <property name="height_request">10</property>
@@ -29,7 +28,6 @@
               <widget class="GtkVBox" id="right">
                 <property name="width_request">300</property>
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
                 <child>
                   <widget class="GtkEventBox" id="view_label_eventbox">
@@ -100,7 +98,6 @@
                           <widget class="GtkVBox" id="plugins_vbox">
                             <property name="width_request">210</property>
                             <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
                             <property name="spacing">10</property>
                             <child>
                               <placeholder/>
@@ -195,7 +192,6 @@
             <child>
               <widget class="GtkVBox" id="center_vbox">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
                 <child>
                   <widget class="GtkAspectFrame" id="top">
                     <property name="visible">True</property>
@@ -289,11 +285,9 @@ color label</property>
                     <child>
                       <widget class="GtkVBox" id="vbox2">
                         <property name="visible">True</property>
-                        <property name="orientation">vertical</property>
                         <child>
                           <widget class="GtkVBox" id="bottom_darkroom_box">
                             <property name="no_show_all">True</property>
-                            <property name="orientation">vertical</property>
                             <property name="spacing">5</property>
                             <child>
                               <widget class="GtkHBox" id="bottom_darkroom_hbox">
@@ -424,7 +418,6 @@ file manager</property>
               <widget class="GtkVBox" id="left">
                 <property name="width_request">300</property>
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
                 <child>
                   <widget class="GtkEventBox" id="darktable_label_eventbox">
@@ -493,7 +486,6 @@ file manager</property>
                         <child>
                           <widget class="GtkVBox" id="left_scrolled">
                             <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
                             <property name="spacing">10</property>
                             <child>
                               <widget class="GtkEventBox" id="library_eventbox">
@@ -514,7 +506,6 @@ file manager</property>
                                           <widget class="GtkVBox" id="library_expander_body">
                                             <property name="visible">True</property>
                                             <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-                                            <property name="orientation">vertical</property>
                                             <child>
                                               <widget class="GtkButton" id="button_import">
                                                 <property name="label" translatable="yes">import film roll</property>
@@ -726,7 +717,6 @@ all film rolls</property>
                                         <child>
                                           <widget class="GtkVBox" id="snapshots_body">
                                             <property name="visible">True</property>
-                                            <property name="orientation">vertical</property>
                                             <child>
                                               <widget class="GtkToggleButton" id="snapshot_1_togglebutton">
                                                 <property name="can_focus">True</property>
@@ -828,6 +818,9 @@ all film rolls</property>
                                             <property name="xpad">5</property>
                                             <property name="label" translatable="yes">filename</property>
                                           </widget>
+                                          <packing>
+                                            <property name="x_options">GTK_FILL</property>
+                                          </packing>
                                         </child>
                                         <child>
                                           <widget class="GtkLabel" id="label21">
@@ -839,6 +832,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">1</property>
                                             <property name="bottom_attach">2</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -851,6 +845,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">2</property>
                                             <property name="bottom_attach">3</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -863,6 +858,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">3</property>
                                             <property name="bottom_attach">4</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -875,6 +871,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">4</property>
                                             <property name="bottom_attach">5</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -950,6 +947,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">7</property>
                                             <property name="bottom_attach">8</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -975,6 +973,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">6</property>
                                             <property name="bottom_attach">7</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -1013,6 +1012,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">5</property>
                                             <property name="bottom_attach">6</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -1025,6 +1025,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">8</property>
                                             <property name="bottom_attach">9</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -1050,6 +1051,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">9</property>
                                             <property name="bottom_attach">10</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -1062,6 +1064,7 @@ all film rolls</property>
                                           <packing>
                                             <property name="top_attach">10</property>
                                             <property name="bottom_attach">11</property>
+                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -1129,7 +1132,6 @@ all film rolls</property>
                                           <widget class="GtkVBox" id="history_expander_body">
                                             <property name="visible">True</property>
                                             <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-                                            <property name="orientation">vertical</property>
                                             <child>
                                               <widget class="GtkToggleButton" id="history_09">
                                                 <property name="label" translatable="yes">togglebutton</property>
