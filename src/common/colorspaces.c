@@ -134,7 +134,7 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
   const float rxyz = preset->rXYZ[0] +preset->rXYZ[1] +preset->rXYZ[2];
   const float gxyz = preset->gXYZ[0] +preset->gXYZ[1] +preset->gXYZ[2];
   const float bxyz = preset->bXYZ[0] +preset->bXYZ[1] +preset->bXYZ[2];
-  cmsCIExyY       WP = {preset->white[0]/wxyz, preset->white[1]/wxyz};
+  cmsCIExyY       WP = {preset->white[0]/wxyz, preset->white[1]/wxyz, 1.0};
   cmsCIExyYTRIPLE XYZPrimaries   = {
                                    {preset->rXYZ[0]/rxyz, preset->rXYZ[1]/rxyz, 1.0},
                                    {preset->gXYZ[0]/gxyz, preset->gXYZ[1]/gxyz, 1.0},
@@ -154,7 +154,7 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
   cmsAddTag(hp, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
   cmsAddTag(hp, icSigDeviceModelDescTag,    (LPVOID) name);
   cmsAddTag(hp, icSigProfileDescriptionTag, (LPVOID) name);
-        
+
   return hp;
 }
 
