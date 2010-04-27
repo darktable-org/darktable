@@ -68,7 +68,7 @@ void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_control_status(const dt_camctl_t *c,dt_camctl_status_t status);
 void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_camera_error_t error);
-void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview);
+void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif);
 void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value);
 void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
 
@@ -368,7 +368,8 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
   _camctl_unlock(c);
 }
 
-void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
+
+void _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags,char *path)
 {
   CameraList *files;
   CameraList *folders;
@@ -393,23 +394,42 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
       CameraFileInfo cfi;
       if( gp_camera_file_get_info(c->active_camera->gpcam, path, filename,&cfi,c->gpcontext) == GP_OK)
       {
-        // Let's slurp the preview image
-        CameraFile *cf=NULL;
-        gp_file_new(&cf);
-        if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,cf,c->gpcontext) < GP_OK )
-        {
-          // No preview for file lets check image size to se if we should download full image for preview...
-          if( cfi.file.size > 0  && cfi.file.size < 512000 ) 
-            if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,cf,c->gpcontext) < GP_OK )
-            {
-              cf=NULL;
-              dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive preview of file %s\n",filename);
-            }
+        CameraFile *preview=NULL;
+        CameraFile *exif=NULL;
+        
+        /*
+         * Fetch image preview if flagged...
+         */
+        if( flags & CAMCTL_IMAGE_PREVIEW_DATA )
+        {  
+          gp_file_new(&preview);
+          if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,preview,c->gpcontext) < GP_OK )
+          {
+            // No preview for file lets check image size to se if we should download full image for preview...
+            if( cfi.file.size > 0  && cfi.file.size < 512000 ) 
+              if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,preview,c->gpcontext) < GP_OK )
+              {
+                preview=NULL;
+                dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive preview of file %s\n",filename);
+              }
+          }
         }
-          _dispatch_camera_storage_image_filename(c,c->active_camera,file,cf);
+        
+        if( flags & CAMCTL_IMAGE_EXIF_DATA )
+        {
+          gp_file_new(&exif);
+          if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF,exif,c->gpcontext) < GP_OK )
+          {
+            exif=NULL;
+            dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to retreive exif of file %s\n",filename);
+          }
+        }
+        
+        // let's dispatch to host app..
+        _dispatch_camera_storage_image_filename(c,c->active_camera,file,preview,exif);
       }
       else
-          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file information of %s in folder %s on device\n",filename,path);
+         dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file information of %s in folder %s on device\n",filename,path);
     }
   } 
   
@@ -423,7 +443,7 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,char *path)
       if(path[1]!='\0') strcat(buffer,"/");
       gp_list_get_name (folders, i, &foldername);
       strcat(buffer,foldername);
-      _camctl_recursive_get_previews(c,buffer);
+      _camctl_recursive_get_previews(c,flags,buffer);
     }
   }
    gp_list_free (files);
@@ -437,9 +457,9 @@ void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam)
 }
 
 
-void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam) {
+void dt_camctl_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags,const dt_camera_t *cam) {
   _camctl_lock(c,cam);
-  _camctl_recursive_get_previews(c,"/");
+  _camctl_recursive_get_previews(c,flags,"/");
   _camctl_unlock(c);
 }
 
@@ -543,7 +563,7 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,cons
     camera->current_choice.index=0;
     gp_widget_get_choice ( camera->current_choice.widget, camera->current_choice.index , &value);
   } else
-	 dt_print(DT_DEBUG_CAMCTL,"[camera_control] Property name '%s' not found in camera configuration.\n",property_name); 
+   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Property name '%s' not found in camera configuration.\n",property_name); 
    
 
   return value;
@@ -613,7 +633,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
           if( strstr( (char *)data, "4006" ) )
           { // Property change event occured on camera
             // let's update cache and signalling 
-		       _camera_configuration_update(c,cam);
+           _camera_configuration_update(c,cam);
           }
           
         } break;
@@ -665,68 +685,68 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 
 void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,CameraWidget *source, CameraWidget *destination, gboolean notify_all)
 {
-	int childs = 0; 
-	const char *sk;
-	const char *stv;
-	CameraWidget *dw;
-	const char *dtv;
-	CameraWidgetType type;
-	// If source widget has childs let's recurse into each children
-	if( ( childs = gp_widget_count_children ( source ) ) > 0 ) {
-		CameraWidget *child = NULL;
-		for( int i = 0 ; i < childs ; i++) {
-			gp_widget_get_child( source, i, &child );
-			//gp_widget_get_name( source, &sk );
-			_camera_configuration_merge( c, camera,child, destination, notify_all );
-		}
-	} 
+  int childs = 0; 
+  const char *sk;
+  const char *stv;
+  CameraWidget *dw;
+  const char *dtv;
+  CameraWidgetType type;
+  // If source widget has childs let's recurse into each children
+  if( ( childs = gp_widget_count_children ( source ) ) > 0 ) {
+    CameraWidget *child = NULL;
+    for( int i = 0 ; i < childs ; i++) {
+      gp_widget_get_child( source, i, &child );
+      //gp_widget_get_name( source, &sk );
+      _camera_configuration_merge( c, camera,child, destination, notify_all );
+    }
+  } 
   else 
   {
-		gboolean changed = TRUE;
-		gp_widget_get_type( source, &type );
-		
-		// Get the two keys to compare
-		gp_widget_get_name( source, &sk );
+    gboolean changed = TRUE;
+    gp_widget_get_type( source, &type );
+    
+    // Get the two keys to compare
+    gp_widget_get_name( source, &sk );
     gp_widget_get_child_by_name ( destination, sk, &dw);
-		
-		// 
-		// First of all check if widget has change accessibility
-		//
-		int sa,da;
-		gp_widget_get_readonly( source, &sa );
-		gp_widget_get_readonly( dw, &da );
-		
-		if(  notify_all || ( sa != da ) ) {
-			// update destination widget to new accessibility if differ then notify of the change
-			if( ( sa != da )  )
-				gp_widget_set_readonly( dw, sa );
-			
-			_dispatch_camera_property_accessibility_changed(c, camera,sk, ( sa == 1 ) ? TRUE: FALSE) ;
-		}
-		
-		// 
-		// Lets compare values and notify on change or by notifyAll flag
-		//
-		if( 
-			type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO 
-		) 
-		{
-		
-			// Get source and destination value to be compared
-			gp_widget_get_value( source, &stv );
-			gp_widget_get_value( dw, &dtv );
-			
-			if( ( ( stv && dtv ) && strcmp( stv, dtv ) != 0 ) && ( changed = TRUE ) ) {
-				gp_widget_set_value( dw, stv );
-				// Dont flag this change as changed, otherwise a read-only widget might get tried
-				// to update the camera configuration...
-				gp_widget_set_changed( dw, 0 );
-			}
-			
-			if( ( stv && dtv )  && ( notify_all || changed ) )
+    
+    // 
+    // First of all check if widget has change accessibility
+    //
+    int sa,da;
+    gp_widget_get_readonly( source, &sa );
+    gp_widget_get_readonly( dw, &da );
+    
+    if(  notify_all || ( sa != da ) ) {
+      // update destination widget to new accessibility if differ then notify of the change
+      if( ( sa != da )  )
+        gp_widget_set_readonly( dw, sa );
+      
+      _dispatch_camera_property_accessibility_changed(c, camera,sk, ( sa == 1 ) ? TRUE: FALSE) ;
+    }
+    
+    // 
+    // Lets compare values and notify on change or by notifyAll flag
+    //
+    if( 
+      type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO 
+    ) 
+    {
+    
+      // Get source and destination value to be compared
+      gp_widget_get_value( source, &stv );
+      gp_widget_get_value( dw, &dtv );
+      
+      if( ( ( stv && dtv ) && strcmp( stv, dtv ) != 0 ) && ( changed = TRUE ) ) {
+        gp_widget_set_value( dw, stv );
+        // Dont flag this change as changed, otherwise a read-only widget might get tried
+        // to update the camera configuration...
+        gp_widget_set_changed( dw, 0 );
+      }
+      
+      if( ( stv && dtv )  && ( notify_all || changed ) )
         _dispatch_camera_property_value_changed(c,camera,sk,stv);
-		} 		
-	}
+    } 		
+  }
 }
 
 void _camera_configuration_commit(const dt_camctl_t *c,const dt_camera_t *camera)
@@ -819,7 +839,7 @@ void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *c
   } while((listener=g_list_next(listener))!=NULL);
 }
 
-void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview)
+void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   GList *listener;
@@ -827,7 +847,7 @@ void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camer
   do
   {
     if( ((dt_camctl_listener_t*)listener->data)->camera_storage_image_filename != NULL )
-      ((dt_camctl_listener_t*)listener->data)->camera_storage_image_filename(camera,filename,preview,((dt_camctl_listener_t*)listener->data)->data);
+      ((dt_camctl_listener_t*)listener->data)->camera_storage_image_filename(camera,filename,preview,exif,((dt_camctl_listener_t*)listener->data)->data);
   } while((listener=g_list_next(listener))!=NULL);
 }
 

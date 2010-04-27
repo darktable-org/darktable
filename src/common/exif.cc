@@ -19,13 +19,16 @@
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
+
 #include "common/exif.h"
+#include <libexif/exif-data.h>
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
 #include <exiv2/canonmn.hpp>
 #include <sstream>
 #include <cassert>
 #include <glib.h>
+
 
 // inspired by ufraw_exiv2.cc:
 
@@ -233,6 +236,37 @@ int dt_exif_read(dt_image_t *img, const char* path)
     std::cerr << "[exiv2] " << s << std::endl;
     return 1;
   }
+}
+#include <stdio.h>
+void *dt_exif_data_new(uint8_t *data,uint32_t size)
+{
+  // use libexif to parse the binary exif ifd into a exiv2 metadata
+  Exiv2::ExifData *exifData=new Exiv2::ExifData; 
+  ::ExifData *ed;
+  
+  if( (ed = exif_data_new_from_data((unsigned char *)data, size)) != NULL)
+  {
+    char value[1024]={0};
+    int ifd_index=EXIF_IFD_EXIF;
+    for(uint32_t i = 0; i < ed->ifd[ifd_index]->count; i++) {
+      exif_entry_get_value(ed->ifd[ifd_index]->entries[i],value,1024);
+      fprintf(stderr,"Adding key '%s' value '%s'\n",exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag),value);
+      (*exifData)[ exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag) ] = value;
+    }
+  }
+  
+  return exifData;
+}
+
+const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,uint32_t vsize)
+{
+  Exiv2::ExifData *exifData=(Exiv2::ExifData *)exif_data;
+  Exiv2::ExifData::iterator pos;
+  if( (pos=exifData->findKey(Exiv2::ExifKey(key))) == exifData->end() )
+  {
+    dt_strlcpy_to_utf8(value, vsize, pos,*exifData);
+  }
+  return NULL;
 }
 
 int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)

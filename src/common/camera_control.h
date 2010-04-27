@@ -128,7 +128,7 @@ typedef struct dt_camctl_listener_t
   void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
   
   /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews() */
-  void (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,void *data);
+  void (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *data);
   
   /** Invoked when a value of a property is changed. */
   void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);
@@ -142,6 +142,19 @@ typedef struct dt_camctl_listener_t
   /** Invoked when a error occured \see dt_camera_error_t */
   void (*camera_error)(const dt_camera_t *camera,dt_camera_error_t error,void *data);
 } dt_camctl_listener_t;
+
+
+typedef enum dt_camera_preview_flags_t
+{
+  /** No image data */
+  CAMCTL_IMAGE_NO_DATA=0,
+  /**Get a image  preview. */
+  CAMCTL_IMAGE_PREVIEW_DATA=1,	
+  /**Get the image exif */
+  CAMCTL_IMAGE_EXIF_DATA=2
+}
+dt_camera_preview_flags_t;
+
 
 /** Initializes the gphoto and cam control, returns NULL if failed */
 dt_camctl_t *dt_camctl_new();
@@ -158,7 +171,7 @@ void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Enables/Disables the tether mode on camera. */
 void dt_camctl_tether_mode(const dt_camctl_t *c,const dt_camera_t *cam,gboolean enable);
 /** travers filesystem on camera an retreives previews of images */
-void dt_camctl_get_previews(const dt_camctl_t *c,const dt_camera_t *cam);
+void dt_camctl_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags,const dt_camera_t *cam);
 /** Imports the images in list from specified camera */
 void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images);
 
