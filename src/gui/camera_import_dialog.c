@@ -74,7 +74,7 @@ typedef struct _camera_import_dialog_t {
     } general;
     
     struct {
-      GtkWidget *enable,*folder,*warn;
+      GtkWidget *enable,*foldername,*warn;
       
     } backup;
     
@@ -98,20 +98,29 @@ _camera_import_dialog_t;
 static void
 _check_button_callback(GtkWidget *cb, gpointer user_data)
 {
-  const char *gconf_key=NULL;
   
   _camera_import_dialog_t *cid=(_camera_import_dialog_t*)user_data;
   
-  if( cb == cid->settings.general.delete_originals ) {
-    gconf_key="capture/camera/import/keep_originals";
-    
+  if( cb == cid->settings.general.delete_originals ) 
+  {
+    dt_conf_set_bool ("capture/camera/import/delete_originals", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.delete_originals)));
   } 
   else if (cb==cid->settings.general.date_override ) 
   {
     // Enable/disable the date entry widget
     gtk_widget_set_sensitive( cid->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.date_override)));
   }
-  
+  else if (cb==cid->settings.backup.enable) 
+  {
+    dt_conf_set_bool ("capture/camera/import/backup/enable", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
+    // Enable/disable the date entry widget
+    gtk_widget_set_sensitive( cid->settings.backup.warn, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
+    gtk_widget_set_sensitive( cid->settings.backup.foldername, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
+  }
+  else if (cb==cid->settings.backup.warn) 
+  {
+    dt_conf_set_bool ("capture/camera/import/backup/warning", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
+  }
 }
 
 static void
@@ -359,9 +368,9 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),NULL);
   g_signal_connect (G_OBJECT(data->settings.backup.warn), "clicked",G_CALLBACK (_check_button_callback),data);
    
-  data->settings.backup.folder=(_camera_import_gconf_widget(data,_("backup foldername"),"capture/camera/backup/foldername"))->widget;
-  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.folder,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.folder,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),NULL);
+  data->settings.backup.foldername=(_camera_import_gconf_widget(data,_("backup foldername"),"capture/camera/backup/foldername"))->widget;
+  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.foldername,FALSE,FALSE,0);
+  g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),NULL);
   
   
   // THE NOTEBOOOK
