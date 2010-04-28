@@ -197,6 +197,19 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/capture/camera/import/delete_originals</key>
+      <applyto>/apps/darktable/capture/camera/import/delete_originals</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>false</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>flag if originals on camera should be deleted</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/capture/camera/import/jobcode</key>
       <applyto>/apps/darktable/capture/camera/import/jobcode</applyto>
       <owner>darktable</owner>
@@ -205,6 +218,45 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>jobcode of import job</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/capture/camera/import/backup/enable</key>
+      <applyto>/apps/darktable/capture/camera/import/backup/enable</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>false</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>flag if backup of imported images should be performed</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/capture/camera/import/backup/warn</key>
+      <applyto>/apps/darktable/capture/camera/import/backup/warn</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>false</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>flag if user should be interactivly warned about non present backup destinations</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+     <schema>
+      <key>/schemas/apps/darktable/capture/camera/import/backup/foldername</key>
+      <applyto>/apps/darktable/capture/camera/import/backup/foldername</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>photos</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>the name of backup directory to search for on mounted medias</short>
         <long></long>
       </locale>
     </schema>
