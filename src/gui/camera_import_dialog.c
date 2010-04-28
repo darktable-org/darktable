@@ -306,6 +306,8 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   data->settings.general.delete_originals = gtk_check_button_new_with_label(_("delete orignals after import"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
+  if( dt_conf_get_bool("capture/camera/import/delete_originals") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.general.delete_originals ), TRUE);
+   
   g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),NULL);
   g_signal_connect (G_OBJECT(data->settings.general.delete_originals), "clicked",G_CALLBACK (_check_button_callback),data);
  
@@ -313,10 +315,11 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   data->settings.general.date_override=gtk_check_button_new_with_label(_("override todays date"));
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_override,FALSE,FALSE,0);
   g_object_set(data->settings.general.date_override,"tooltip-text",_("check this if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),NULL);
-  g_signal_connect (G_OBJECT (data->settings.general.date_override), "clicked",G_CALLBACK (_check_button_callback),data);
- 
+  
   data->settings.general.date_entry=gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_entry,TRUE,TRUE,0);
+
+  g_signal_connect (G_OBJECT (data->settings.general.date_override), "clicked",G_CALLBACK (_check_button_callback),data);
   
   gtk_box_pack_start(GTK_BOX(data->settings.page),hbox,FALSE,FALSE,0);
 
@@ -352,7 +355,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   // External backup
   gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("external backup"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
-  l=gtk_label_new(_("external backup is an option to automatic do a backup of the imported image(s) to another physical, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."));
+  l=gtk_label_new(_("external backup is an option to automatic do a backup of the imported image(s) to another physical location, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."));
   gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
   gtk_widget_set_size_request(l,400,-1);
   gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
@@ -361,17 +364,26 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   data->settings.backup.enable=gtk_check_button_new_with_label(_("enable backup"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.enable,FALSE,FALSE,0);
   g_object_set(data->settings.backup.enable,"tooltip-text",_("check this option to enable automatic backup of imported images"),NULL);
-  g_signal_connect (G_OBJECT (data->settings.backup.enable), "clicked",G_CALLBACK (_check_button_callback),data);
   
   data->settings.backup.warn=gtk_check_button_new_with_label(_("warn if no backup destinations are present"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.warn,FALSE,FALSE,0);
   g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),NULL);
-  g_signal_connect (G_OBJECT(data->settings.backup.warn), "clicked",G_CALLBACK (_check_button_callback),data);
    
   data->settings.backup.foldername=(_camera_import_gconf_widget(data,_("backup foldername"),"capture/camera/backup/foldername"))->widget;
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.foldername,FALSE,FALSE,0);
   g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),NULL);
   
+  if( dt_conf_get_bool("capture/camera/import/backup/enable") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.enable ), TRUE);
+  else
+  {
+    gtk_widget_set_sensitive( data->settings.backup.warn, FALSE);
+    gtk_widget_set_sensitive( data->settings.backup.foldername, FALSE);
+  }
+  if( dt_conf_get_bool("capture/camera/import/backup/warn") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.warn ), TRUE);
+
+  g_signal_connect (G_OBJECT (data->settings.backup.enable), "clicked",G_CALLBACK (_check_button_callback),data);
+  g_signal_connect (G_OBJECT(data->settings.backup.warn), "clicked",G_CALLBACK (_check_button_callback),data);
+
   
   // THE NOTEBOOOK
   data->notebook=gtk_notebook_new();
