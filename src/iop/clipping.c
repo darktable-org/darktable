@@ -713,10 +713,20 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     {
       grab = g->cropping;
 
-      if(grab & 1) g->clip_x = fmaxf(0.0, pzx - g->handle_x);
-      if(grab & 2) g->clip_y = fmaxf(0.0, pzy - g->handle_y);
-      if(grab & 4) g->clip_w = fminf(1.0, pzx - g->clip_x - g->handle_x);
-      if(grab & 8) g->clip_h = fminf(1.0, pzy - g->clip_y - g->handle_y);
+      if(grab & 1)
+      {
+        const float old_clip_x = g->clip_x;
+        g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+        g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
+      }
+      if(grab & 2)
+      {
+        const float old_clip_y = g->clip_y;
+        g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+        g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
+      }
+      if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
+      if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
 
       if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
       if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
