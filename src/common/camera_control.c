@@ -340,11 +340,6 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
       if(!fname) fname=filename;
       
-      /*char outputfile[4096]={0};
-      strcat(outputfile,output_path);
-      if(outputfile[strlen(outputfile)]!='/') strcat(outputfile,"/");
-      strcat(outputfile,filename);*/
-      
       char *output = g_build_filename(output_path,fname,NULL);
       
       // Now we have filenames lets download file and notify listener of image download

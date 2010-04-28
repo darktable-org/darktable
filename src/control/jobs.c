@@ -198,8 +198,27 @@ const char *_camera_request_image_filename(const dt_camera_t *camera,const char 
 {
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   t->vp->filename=filename;
+  
+  dt_variables_expand( t->vp, t->path, FALSE );
+  const gchar *storage=dt_variables_get_result(t->vp);
+  
   dt_variables_expand( t->vp, t->filename, TRUE );
-  return dt_variables_get_result(t->vp);
+  const gchar *file = dt_variables_get_result(t->vp);
+  
+  // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
+  gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+  if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
+  {
+    do
+    {
+      g_free(fullfile);
+      dt_variables_expand( t->vp, t->filename, TRUE );
+      file = dt_variables_get_result(t->vp);
+      fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+    } while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
+  }
+  
+  return file;
 }
 
 const char *_camera_request_image_path(const dt_camera_t *camera,void *data)
@@ -247,8 +266,6 @@ void dt_camera_import_job_run(dt_job_t *job)
     listener.image_downloaded=_camera_image_downloaded;
     listener.request_image_path=_camera_request_image_path;
     listener.request_image_filename=_camera_request_image_filename;
-    
-    /// TODO: Detect latest sequence number in dirname to continue on last to prevent overwrites...
     
     //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);

@@ -25,9 +25,6 @@ typedef struct dt_variables_params_t
   /** only validates string */
   gboolean validate_only;
   
-  /** The offset for sequencenumber */
-  guint sequence_offset;
-  
   /** Used for expanding variables that uses filename $(FILE_NAME) and $(FILE_EXTENSION). */
   const gchar *filename;
   
