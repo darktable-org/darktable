@@ -415,14 +415,11 @@ void dt_control_cleanup(dt_control_t *s)
   int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
   int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
   // delete mipmaps
-  // ubuntu compiles a lame sqlite3, else we could simply:
-  // rc = sqlite3_exec(darktable.db, "delete from mipmaps order by imgid desc limit 2500,-1)", NULL, NULL, NULL);
   
-  // sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  double start = dt_get_wtime();
+
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "create table mipmaps_new (imgid int, level int, data blob)", -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
 
   sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level = 0 order by rowid limit ?1,-1)", -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, keep0);
@@ -434,26 +431,14 @@ void dt_control_cleanup(dt_control_t *s)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-#if 1
-  sqlite3_exec(darktable.db, "insert into mipmaps_new select distinct a.imgid, a.level, a.data from mipmaps as a join mipmap_timestamps as b on a.imgid = b.imgid and a.level = b.level", NULL, NULL, NULL);
-
-  sqlite3_exec(darktable.db, "drop table mipmaps", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "alter table mipmaps_new rename to mipmaps", NULL, NULL, NULL);
-#endif
-
-#if 0
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep);
+  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level not in (select imgid*8+level from mipmap_timestamps)", -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep0);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-#endif
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 
-  // sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+  double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[control_cleanup] database cleaning took %.3f secs\n", end - start);
 
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);

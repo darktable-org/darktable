@@ -26,6 +26,9 @@
 #include <sqlite3.h>
 #include <pthread.h>
 #include <glib/gi18n.h>
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
 
 #define DT_MODULE_VERSION 1   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
@@ -84,11 +87,12 @@ struct dt_lib_t;
 struct dt_conf_t;
 
 typedef enum dt_debug_thread_t
-{
+{ // powers of two, masking
   DT_DEBUG_CACHE = 1,
   DT_DEBUG_CONTROL = 2,
-  DT_DEBUG_DEV = 4, // powers of two, masking
-  DT_DEBUG_FSWATCH = 8 
+  DT_DEBUG_DEV = 4,
+  DT_DEBUG_FSWATCH = 8,
+  DT_DEBUG_PERF = 16
 }
 dt_debug_thread_t;
 
@@ -122,5 +126,17 @@ void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
 void dt_get_datadir(char *datadir, size_t bufsize);
 void dt_get_plugindir(char *datadir, size_t bufsize);
+
+static inline double dt_get_wtime()
+{
+#ifdef _OPENMP
+  return omp_get_wtime();
+#else
+  // FIXME: this assumes 2.4 GHz
+  uint64_t val;
+  __asm__ __volatile__("rdtsc": "=A"(val));
+  return val/2400000000.0f;
+#endif
+}
 
 #endif

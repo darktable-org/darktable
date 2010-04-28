@@ -238,6 +238,7 @@ restart:
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
+  double start = dt_get_wtime();
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width*dev->preview_downsampling, dev->preview_pipe->processed_height*dev->preview_downsampling, dev->preview_downsampling))
   {
@@ -250,6 +251,8 @@ restart:
     }
     else goto restart;
   }
+  double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[dev_process_preview] pixel pipeline processing took %.3f secs\n", end - start);
 
   dev->preview_dirty = 0;
   dt_control_queue_draw_all();
@@ -357,6 +360,7 @@ restart:
   assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
 #endif
  
+  double start = dt_get_wtime();
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale))
   {
     if(dev->image_force_reload)
@@ -366,6 +370,8 @@ restart:
     }
     else goto restart;
   }
+  double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[dev_process_image] pixel pipeline processing took %.3f secs\n", end - start);
 
   // maybe we got zoomed/panned in the meantime?
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
@@ -395,7 +401,10 @@ restart:
     dev->image_loading = 1;
     // not loaded from cache because it is obviously not there yet.
     if(dev->image_force_reload) dt_image_release(img, DT_IMAGE_FULL, 'r');
+    double start = dt_get_wtime();
     err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
+    double end = dt_get_wtime();
+    dt_print(DT_DEBUG_PERF, "[dev_raw_load] libraw took %.3f secs to demosaic the image.\n", end - start);
     if(err)
     {
       fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);

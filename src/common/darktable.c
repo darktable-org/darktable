@@ -73,6 +73,7 @@ int dt_init(int argc, char *argv[])
         if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
         if(!strcmp(argv[k+1], "fswatch")) darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
+        if(!strcmp(argv[k+1], "perf"))    darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
         k ++;
       }
     }

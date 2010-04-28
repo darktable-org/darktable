@@ -23,13 +23,10 @@ big new features:
 
 - filmstrip h/v/match/off
 
-- alt-4 in dev mode kills dt
-- ctrl-a broken for sort by color label 
-- gimp-like crop window moving
-- whitebalance temp out: 5K, color input uses 6004 ?
-- lensfun string truncation: lens?
-- import from dt/dttags: detect duplicated images
 - check sqlite3 disk speed (remove image: leave mip maps?)
+- ctrl-a broken for sort by color label 
+- whitebalance temp out: 5K, color input uses 6004 ?
+- import from dt/dttags: detect duplicated images
 - backup tables: presets, color labels
 - gtkaboutdialog
 - gtkentrycompletion for tagging and collect
