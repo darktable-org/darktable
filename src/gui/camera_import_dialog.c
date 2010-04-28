@@ -17,6 +17,7 @@
 */
 
 #include "develop/develop.h"
+#include "control/jobs.h"
 #include "control/conf.h"
 #include "common/exif.h"
 #include "common/variables.h"
@@ -463,7 +464,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
 {
   gtk_widget_show_all(data->dialog);
   
-  gtk_main_iteration_do(TRUE);
+  
   // Populate store
  
   // Setup a listener for previews of all files on camera
@@ -473,14 +474,11 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
     dt_camctl_listener_t listener={0};
     listener.data=data;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
-    dt_camctl_register_listener(darktable.camctl,&listener);
-    dt_camctl_get_previews(darktable.camctl,CAMCTL_IMAGE_PREVIEW_DATA,data->params->camera);
-    dt_camctl_unregister_listener(darktable.camctl,&listener);
+    
+    dt_job_t j;
+    dt_camera_get_previews_job_init(&j,data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA);
+    dt_control_add_job(darktable.control, &j);
   }
-  
-  // Select all images as default
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview))));
-  gtk_tree_selection_select_all(selection);
   
   // Lets run dialog
   gtk_label_set_text(GTK_LABEL(data->import.info),_("select the images from the list below that you want to import into a new filmroll"));
@@ -492,7 +490,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
     {
       GtkTreeIter iter;
       all_good=TRUE;
-      
+      GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview))));
       // Now build up result from store into GList **result
       if(data->params->result) 
         g_list_free(data->params->result);

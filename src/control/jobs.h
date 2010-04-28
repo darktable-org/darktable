@@ -59,6 +59,17 @@ dt_camera_capture_t;
 void dt_camera_capture_job_run(dt_job_t *job);
 void dt_camera_capture_job_init(dt_job_t *job, uint32_t delay, uint32_t count, uint32_t brackets);
 
+/** camera get previews job. */
+typedef struct dt_camera_get_previews_t
+{
+  struct dt_camera_t *camera;
+  uint32_t flags;
+  struct dt_camctl_listener_t *listener;
+}
+dt_camera_get_previews_t;
+void dt_camera_get_previews_job_run(dt_job_t *job);
+void dt_camera_get_previews_job_init(dt_job_t *job,struct dt_camera_t *camera,struct dt_camctl_listener_t *listener,uint32_t flags);
+
 /** Camera import job */
 typedef struct dt_camera_import_t
 {

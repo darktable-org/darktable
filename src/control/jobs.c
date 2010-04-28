@@ -98,6 +98,29 @@ void dt_camera_capture_job_init(dt_job_t *job, uint32_t delay, uint32_t count, u
   t->brackets=brackets;
 }
 
+void dt_camera_get_previews_job_init(dt_job_t *job,dt_camera_t *camera,dt_camctl_listener_t *listener,uint32_t flags)
+{
+  dt_control_job_init(job, "get camera previews job");
+  job->execute = &dt_camera_get_previews_job_run;
+  dt_camera_get_previews_t *t = (dt_camera_get_previews_t *)job->param;
+
+  t->listener=g_malloc(sizeof(dt_camctl_listener_t));
+  memcpy(t->listener,listener,sizeof(dt_camctl_listener_t));
+  
+  t->camera=camera;
+  t->flags=flags;
+}
+
+void dt_camera_get_previews_job_run(dt_job_t *job)
+{
+  dt_camera_get_previews_t *t=(dt_camera_get_previews_t*)job->param;
+  
+  dt_camctl_register_listener(darktable.camctl,t->listener);
+  dt_camctl_get_previews(darktable.camctl,t->flags,t->camera);
+  dt_camctl_unregister_listener(darktable.camctl,t->listener);
+  g_free(t->listener);
+}
+
 void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile, const char *destinationfile)
 {
   dt_control_job_init(job, "backup of imported image from camera");
@@ -105,7 +128,6 @@ void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile, cons
   dt_camera_import_backup_t *t = (dt_camera_import_backup_t *)job->param;
   t->sourcefile=g_strdup(sourcefile);
   t->destinationfile=g_strdup(destinationfile);
-  fprintf(stderr,"Backup job initialized...\n");
 }
 
 void dt_camera_import_backup_job_run(dt_job_t *job)
