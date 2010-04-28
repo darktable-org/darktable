@@ -21,6 +21,13 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- color transfer plugin
+  - histogram matching for L
+  - a, b: find (user specified?) amount of
+    clusters with n-means, find variance
+  - store to presets in database
+  - apply by mean shifting/var scaling
+
 - filmstrip h/v/match/off
 
 - check sqlite3 disk speed (remove image: leave mip maps?)

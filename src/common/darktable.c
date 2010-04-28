@@ -125,6 +125,9 @@ int dt_init(int argc, char *argv[])
   pthread_mutex_init(&(darktable.db_insert), NULL);
   pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
+  darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
+  dt_points_init(darktable.points, dt_get_num_threads());
+
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
   dt_control_init(darktable.control);
 
@@ -196,6 +199,8 @@ void dt_cleanup()
   free(darktable.control);
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
+  dt_points_cleanup(darktable.points);
+  free(darktable.points);
 
   dt_fswatch_destroy(darktable.fswatch);
 

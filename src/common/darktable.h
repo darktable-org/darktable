@@ -85,6 +85,7 @@ struct dt_mipmap_cache_t;
 struct dt_image_cache_t;
 struct dt_lib_t;
 struct dt_conf_t;
+struct dt_points_t;
 
 typedef enum dt_debug_thread_t
 { // powers of two, masking
@@ -109,6 +110,7 @@ typedef struct darktable_t
   struct dt_image_cache_t  *image_cache;
   sqlite3                  *db;
   const struct dt_fswatch_t	*fswatch;
+  struct dt_points_t       *points;
   pthread_mutex_t db_insert;
   pthread_mutex_t plugin_threadsafe;
   char *progname;
@@ -136,6 +138,24 @@ static inline double dt_get_wtime()
   uint64_t val;
   __asm__ __volatile__("rdtsc": "=A"(val));
   return val/2400000000.0f;
+#endif
+}
+
+static inline int dt_get_num_threads()
+{
+#ifdef _OPENMP
+  return omp_get_num_procs();
+#else
+  return 1;
+#endif
+}
+
+static inline int dt_get_thread_num()
+{
+#ifdef _OPENMP
+  return omp_get_thread_num();
+#else
+  return 0;
 #endif
 }
 
