@@ -233,22 +233,6 @@ void dt_camera_import_job_run(dt_job_t *job)
     return;
   }
   
-  /*
-  struct stat st;
-  char *p,*copy;
-  p = copy = g_strdup( t->film->dirname);
-  do {
-    p = strchr (p + 1, '/');
-    if(p) *p = '\0';
-     if(stat(copy,&st) != 0)
-        if (mkdir (copy, 0755) == -1) 
-        {
-          dt_control_log(_("failed to create import path %s, import of images aborted."), t->film->dirname);
-          return;
-        }
-    if (p) *p = '/';
-  } while (p);*/
-  
   // Import path is ok, lets actually create the filmroll in database..
   if(dt_film_new(t->film,t->film->dirname) > 0)
   {
@@ -263,6 +247,8 @@ void dt_camera_import_job_run(dt_job_t *job)
     listener.image_downloaded=_camera_image_downloaded;
     listener.request_image_path=_camera_request_image_path;
     listener.request_image_filename=_camera_request_image_filename;
+    
+    /// TODO: Detect latest sequence number in dirname to continue on last to prevent overwrites...
     
     //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);
