@@ -113,14 +113,12 @@ void dt_camera_import_backup_job_run(dt_job_t *job)
   dt_camera_import_backup_t *t = (dt_camera_import_backup_t *)job->param;
   GVolumeMonitor *vmgr= g_volume_monitor_get();
   GList *mounts=g_volume_monitor_get_mounts(vmgr);
-  fprintf(stderr,"%lx %lx",(unsigned long)vmgr,(unsigned long)mounts);
   GMount *mount=NULL;
   GFile *root=NULL;
   if( mounts !=NULL )
     do
     {
-      fprintf(stderr,"Got a mount...\n");
-      mount=G_MOUNT(mounts->data);
+     mount=G_MOUNT(mounts->data);
       if( ( root=g_mount_get_root( mount ) ) != NULL ) 
       { // Got the mount point lets check for backup folder
         gchar *backuppath=NULL;
@@ -128,15 +126,28 @@ void dt_camera_import_backup_job_run(dt_job_t *job)
         backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("capture/camera/backup/foldername"),NULL);
         g_free(rootpath);
         
-        GFile *backupfile=g_file_new_for_path(backuppath);
-        if( (backuppath=g_file_get_path(backupfile) ) !=NULL )
+        if( g_file_test(backuppath,G_FILE_TEST_EXISTS)==TRUE)
         { // Found a backup storage, lets copy file here..
           gchar *destinationfile=g_build_filename(G_DIR_SEPARATOR_S,backuppath,t->destinationfile,NULL);
-          fprintf(stderr,"Backup file to %s\n",destinationfile);
-          
-          g_free(backuppath);
+          if( g_mkdir_with_parents(g_path_get_dirname(destinationfile),0755) >= 0 )
+          {            
+            gchar *content;
+            gsize size;
+            if( g_file_get_contents(t->sourcefile,&content,&size,NULL) == TRUE )
+            {
+              GError *err=NULL;
+              if( g_file_set_contents(destinationfile,content,size,&err) != TRUE)
+              {
+                fprintf(stderr,"Failed to set content of file with reason: %s\n",err->message);
+                g_error_free(err);
+              }
+              g_free(content);
+            } 
+          }
+          g_free(destinationfile);
         }
-        g_free(backupfile);
+  
+        g_free(backuppath);
       }
     } while( (mounts=g_list_next(mounts)) !=NULL);
     
@@ -216,6 +227,13 @@ void dt_camera_import_job_run(dt_job_t *job)
   pthread_mutex_unlock(&t->film->images_mutex);
   
   // Create recursive directories, abort if no access
+  if( g_mkdir_with_parents(t->film->dirname,0755) == -1 )
+  {
+    dt_control_log(_("failed to create import path %s, import of images aborted."), t->film->dirname);
+    return;
+  }
+  
+  /*
   struct stat st;
   char *p,*copy;
   p = copy = g_strdup( t->film->dirname);
@@ -229,7 +247,7 @@ void dt_camera_import_job_run(dt_job_t *job)
           return;
         }
     if (p) *p = '/';
-  } while (p);
+  } while (p);*/
   
   // Import path is ok, lets actually create the filmroll in database..
   if(dt_film_new(t->film,t->film->dirname) > 0)
