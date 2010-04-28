@@ -49,6 +49,8 @@ typedef struct _camera_gconf_widget_t
 _camera_gconf_widget_t;
 
 
+
+
 typedef struct _camera_import_dialog_t {
   GtkWidget *dialog;
   
@@ -63,10 +65,26 @@ typedef struct _camera_import_dialog_t {
   
   struct {
     GtkWidget *page;
-    GtkWidget *example;
+    
+    struct {
+      GtkWidget *delete_originals;
+      GtkWidget *date_override;
+      GtkWidget *date_entry;
+      
+    } general;
+    
+    struct {
+      GtkWidget *enable,*folder,*warn;
+      
+    } backup;
+    
+    GtkWidget *delete_images;           
+    
     _camera_gconf_widget_t *basedirectory;
     _camera_gconf_widget_t *subdirectory;
     _camera_gconf_widget_t *namepattern;
+    GtkWidget *example;
+    
   } settings;
   
   GtkListStore *store;
@@ -77,7 +95,24 @@ typedef struct _camera_import_dialog_t {
 _camera_import_dialog_t;
 
 
-
+static void
+_check_button_callback(GtkWidget *cb, gpointer user_data)
+{
+  const char *gconf_key=NULL;
+  
+  _camera_import_dialog_t *cid=(_camera_import_dialog_t*)user_data;
+  
+  if( cb == cid->settings.general.delete_originals ) {
+    gconf_key="capture/camera/import/keep_originals";
+    
+  } 
+  else if (cb==cid->settings.general.date_override ) 
+  {
+    // Enable/disable the date entry widget
+    gtk_widget_set_sensitive( cid->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.date_override)));
+  }
+  
+}
 
 static void
 store_callback (GtkDarktableButton *button, gpointer user_data)
@@ -257,7 +292,28 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   data->settings.page=gtk_vbox_new(FALSE,5);
   gtk_container_set_border_width(GTK_CONTAINER(data->settings.page),5);
   
-  //gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("import storage structure"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
+  // general settings
+  gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("general"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
+  
+  data->settings.general.delete_originals = gtk_check_button_new_with_label(_("delete orignals after import"));
+  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
+  g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),NULL);
+  g_signal_connect (G_OBJECT(data->settings.general.delete_originals), "clicked",G_CALLBACK (_check_button_callback),data);
+ 
+  GtkWidget *hbox=gtk_hbox_new(FALSE,5);
+  data->settings.general.date_override=gtk_check_button_new_with_label(_("override todays date"));
+  gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_override,FALSE,FALSE,0);
+  g_object_set(data->settings.general.date_override,"tooltip-text",_("check this if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),NULL);
+  g_signal_connect (G_OBJECT (data->settings.general.date_override), "clicked",G_CALLBACK (_check_button_callback),data);
+ 
+  data->settings.general.date_entry=gtk_entry_new();
+  gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_entry,TRUE,TRUE,0);
+  
+  gtk_box_pack_start(GTK_BOX(data->settings.page),hbox,FALSE,FALSE,0);
+
+
+  // Storage structure
+  gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("storage structure"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
   GtkWidget *l=gtk_label_new(_("the following three settings describes the directory structure and file renaming for import storage and images, if you dont know how to use this leave the settings by their default values."));
   gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
   gtk_widget_set_size_request(l,400,-1);
@@ -274,7 +330,6 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   data->settings.namepattern=_camera_import_gconf_widget(data,_("filename structure"),"capture/camera/storage/namepattern");
   gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.namepattern->widget),FALSE,FALSE,0);
   
-  
   // Add example
   l=gtk_label_new(_("above settings expands to:"));
   gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
@@ -286,6 +341,29 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_misc_set_alignment(GTK_MISC(data->settings.example), 0.0, 0.0);
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.example,FALSE,FALSE,0);
   
+  // External backup
+  gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("external backup"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
+  l=gtk_label_new(_("external backup is an option to automatic do a backup of the imported image(s) to another physical, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."));
+  gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
+  gtk_widget_set_size_request(l,400,-1);
+  gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page),l,FALSE,FALSE,0);
+  
+  data->settings.backup.enable=gtk_check_button_new_with_label(_("enable backup"));
+  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.enable,FALSE,FALSE,0);
+  g_object_set(data->settings.backup.enable,"tooltip-text",_("check this option to enable automatic backup of imported images"),NULL);
+  g_signal_connect (G_OBJECT (data->settings.backup.enable), "clicked",G_CALLBACK (_check_button_callback),data);
+  
+  data->settings.backup.warn=gtk_check_button_new_with_label(_("warn if no backup destinations are present"));
+  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.warn,FALSE,FALSE,0);
+  g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),NULL);
+  g_signal_connect (G_OBJECT(data->settings.backup.warn), "clicked",G_CALLBACK (_check_button_callback),data);
+   
+  data->settings.backup.folder=(_camera_import_gconf_widget(data,_("backup foldername"),"capture/camera/backup/foldername"))->widget;
+  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.folder,FALSE,FALSE,0);
+  g_object_set(data->settings.backup.folder,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),NULL);
+  
+  
   // THE NOTEBOOOK
   data->notebook=gtk_notebook_new();
   gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->import.page,gtk_label_new(_("images")));
@@ -293,7 +371,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   // end
   gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
-  gtk_widget_set_size_request(content,400,400);
+  //gtk_widget_set_size_request(content,400,400);
   _update_example(data);
 }
 
@@ -335,7 +413,6 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
  #if 0 
   // libgphoto only supports fetching exif in jpegs, not raw  
   char buffer[1024]={0};
-
   if ( exif )
   {
     const char *exif_data;
@@ -343,16 +420,13 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
     gp_file_get_data_and_size(exif, &exif_data, &size);
     if( size > 0 )
     {
-          
       void *exif=dt_exif_data_new((uint8_t *)exif_data,size);
       if( (value=g_strdup( dt_exif_data_get_value(exif,"Exif.Photo.ExposureTime",buffer,1024) ) ) != NULL); 
         sprintf(exif_info,"exposure: %s\n", value);
-      
     }
     else fprintf(stderr,"No exifdata read\n");
-    
   }
-  #endif
+#endif
   
   // filename\n 1/60 f/2.8 24mm iso 160
   sprintf(file_info,"%s%c%s",filename,strlen(exif_info)?'\n':'\0',strlen(exif_info)?exif_info:"");
