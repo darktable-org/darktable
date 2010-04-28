@@ -151,11 +151,10 @@ entry_it_callback(GtkEntryBuffer *entrybuffer,guint a1, gchar *a2, guint a3,gpoi
 }
 
 
-_camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring,gchar *supported_characters) 
+_camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring) 
 {
   _camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
   memset(gcw,0,sizeof(_camera_gconf_widget_t));
-  gcw->supported_characters=supported_characters;
   GtkWidget *vbox,*hbox;
   gcw->widget=vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE,0));
