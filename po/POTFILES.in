@@ -1,5 +1,6 @@
 darktable.glade
 darktable.schemas.in
+src/common/darktable.h
 src/common/film.c
 src/common/image.c
 src/control/control.c
