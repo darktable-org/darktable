@@ -23,6 +23,7 @@
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/points.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"

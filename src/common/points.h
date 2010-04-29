@@ -1007,7 +1007,7 @@ void init_by_array(sfmt_state_t *s, uint32_t *init_key, int key_length) {
 
 static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
 {
-  sfmt_state_t *states = (sfmt_state_t *) common_alloc(16, sizeof(sfmt_state_t)*num_threads);
+  sfmt_state_t *states = (sfmt_state_t *) dt_alloc_align(16, sizeof(sfmt_state_t)*num_threads);
   p->s = (sfmt_state_t **) malloc(sizeof(sfmt_state_t *)*num_threads);
   p->num = num_threads;
 
