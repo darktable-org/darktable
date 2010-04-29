@@ -52,4 +52,5 @@ src/gui/presets.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/filmstrip.c
+src/views/capture.c
 src/views/view.c
