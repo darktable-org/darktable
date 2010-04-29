@@ -209,7 +209,7 @@ void enter(dt_view_t *self)
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
   gtk_widget_set_visible(widget, FALSE);
-   widget = glade_xml_get_widget (darktable.gui->main_window, "capture_expander");
+   widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
   gtk_widget_set_visible(widget, TRUE);

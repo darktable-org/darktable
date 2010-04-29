@@ -525,7 +525,7 @@ void enter(dt_view_t *self)
   GList *modules = g_list_last(darktable.lib->plugins);
 	
   // Adjust gui
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "capture_eventbox");
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
   gtk_widget_set_visible(widget, TRUE);
 	
   while(modules)
