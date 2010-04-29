@@ -488,15 +488,15 @@ file manager</property>
                             <property name="visible">True</property>
                             <property name="spacing">10</property>
                             <child>
-                              <widget class="GtkEventBox" id="capture_eventbox">
+                              <widget class="GtkEventBox" id="devices_eventbox">
                                 <property name="visible">True</property>
                                 <child>
-                                  <widget class="GtkExpander" id="capture_expander">
+                                  <widget class="GtkExpander" id="devices_expander">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="spacing">10</property>
                                     <child>
-                                      <widget class="GtkVBox" id="capture_expander_body">
+                                      <widget class="GtkVBox" id="devices_expander_body">
                                         <property name="visible">True</property>
                                         <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                         <property name="border_width">5</property>
@@ -505,7 +505,7 @@ file manager</property>
                                     <child>
                                       <widget class="GtkLabel" id="label1">
                                         <property name="visible">True</property>
-                                        <property name="label" translatable="yes">capture</property>
+                                        <property name="label" translatable="yes">devices</property>
                                       </widget>
                                       <packing>
                                         <property name="type">label_item</property>

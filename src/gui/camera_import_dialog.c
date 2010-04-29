@@ -40,6 +40,7 @@
   
 */
 
+
 typedef struct _camera_gconf_widget_t
 {
   GtkWidget *widget;
@@ -48,9 +49,6 @@ typedef struct _camera_gconf_widget_t
   struct _camera_import_dialog_t *dialog;
 }
 _camera_gconf_widget_t;
-
-
-
 
 typedef struct _camera_import_dialog_t {
   GtkWidget *dialog;
@@ -67,19 +65,17 @@ typedef struct _camera_import_dialog_t {
   struct {
     GtkWidget *page;
     
-    struct {
+    /** Group of general import settings */
+    struct { 
       GtkWidget *delete_originals;
       GtkWidget *date_override;
       GtkWidget *date_entry;
-      
     } general;
     
+    /** Group of  backup settings */
     struct {
       GtkWidget *enable,*foldername,*warn;
-      
     } backup;
-    
-    GtkWidget *delete_images;           
     
     _camera_gconf_widget_t *basedirectory;
     _camera_gconf_widget_t *subdirectory;
@@ -125,7 +121,7 @@ _check_button_callback(GtkWidget *cb, gpointer user_data)
 }
 
 static void
-store_callback (GtkDarktableButton *button, gpointer user_data)
+_gcw_store_callback (GtkDarktableButton *button, gpointer user_data)
 {
   _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
   gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
@@ -139,7 +135,7 @@ store_callback (GtkDarktableButton *button, gpointer user_data)
 }
 
 static void
-reset_callback (GtkDarktableButton *button, gpointer user_data)
+_gcw_reset_callback (GtkDarktableButton *button, gpointer user_data)
 {
   _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
   gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
@@ -195,7 +191,7 @@ entry_it_callback(GtkEntryBuffer *entrybuffer,guint a1, gchar *a2, guint a3,gpoi
   _entry_text_changed((_camera_gconf_widget_t*)user_data,entrybuffer);
 }
 
-
+/** Creates a gconf widget. */
 _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring) 
 {
   _camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
@@ -220,14 +216,14 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
-        G_CALLBACK (store_callback), gcw);
+        G_CALLBACK (_gcw_store_callback), gcw);
   
   button=dtgtk_button_new(dtgtk_cairo_paint_reset,0);
   g_object_set(button,"tooltip-text",_("reset value to default"),NULL);
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
-        G_CALLBACK (reset_callback), gcw);
+        G_CALLBACK (_gcw_reset_callback), gcw);
   
   GtkWidget *l=gtk_label_new(label);
   gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);

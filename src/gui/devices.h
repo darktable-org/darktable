@@ -15,10 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_GUI_CAPTURE
-#define DT_GUI_CAPTURE
+#ifndef DT_GUI_DEVICES
+#define DT_GUI_DEVICES
 
-void dt_gui_capture_init();
-void dt_gui_capture_update();
+void dt_gui_devices_init();
+void dt_gui_devices_update();
 
 #endif

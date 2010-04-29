@@ -34,7 +34,7 @@
 #include "gui/gtk.h"
 #include "gui/metadata.h"
 #include "gui/filmview.h"
-#include "gui/capture.h"
+#include "gui/devices.h"
 #include "gui/presets.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -860,8 +860,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
 
 
-  // Update the capture module with available capture sources
-  dt_gui_capture_init();
+  // Update the devices module with available devices
+  dt_gui_devices_init();
   
   
   
