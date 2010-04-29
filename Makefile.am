@@ -24,7 +24,7 @@ install-data-local:
 		for p in $(schema_DATA) ; do \
 			GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $$p ; \
 		done; \
-		killall gconfd-2; \
+		killall gconfd-2 || true; \
 	fi
 else
 install-data-local:
