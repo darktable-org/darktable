@@ -34,7 +34,7 @@ DT_MODULE(1)
 
 const char *name()
 {
-  return _("un-break input profile");
+  return _("unbreak input profile");
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

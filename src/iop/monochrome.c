@@ -236,25 +236,33 @@ gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *even
 
 gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-  const int inset = DT_COLORCORRECTION_INSET;
-  int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
-  const float mouse_x = CLAMP(event->x - inset, 0, width);
-  const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
-  p->a = 128.0f*(mouse_x - width  * 0.5f)/(float)width;
-  p->b = 128.0f*(mouse_y - height * 0.5f)/(float)height;
-  g->dragging = 1;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+    dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+    const int inset = DT_COLORCORRECTION_INSET;
+    int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+    const float mouse_x = CLAMP(event->x - inset, 0, width);
+    const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+    p->a = 128.0f*(mouse_x - width  * 0.5f)/(float)width;
+    p->b = 128.0f*(mouse_y - height * 0.5f)/(float)height;
+    g->dragging = 1;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  g->dragging = 0;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+    g->dragging = 0;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 gboolean dt_iop_monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)

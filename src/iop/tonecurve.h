@@ -38,7 +38,6 @@ typedef struct dt_iop_tonecurve_gui_data_t
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkLabel *label;
-  GtkComboBox *presets;
   double mouse_x, mouse_y;
   int selected, dragging, x_move;
   double selected_offset, selected_y, selected_min, selected_max;

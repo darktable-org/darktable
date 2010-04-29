@@ -36,7 +36,7 @@ int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16
   size_t profile_len = 0;
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = create_output_profile(imgid);
+    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
     _cmsSaveProfileToMem(out_profile, 0, &profile_len);
     if (profile_len > 0)
     {
@@ -96,7 +96,7 @@ int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t
   size_t profile_len = 0;
   if(imgid > 0)
   {
-    cmsHPROFILE out_profile = create_output_profile(imgid);
+    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
     _cmsSaveProfileToMem(out_profile, 0, &profile_len);
     if (profile_len > 0)
     {

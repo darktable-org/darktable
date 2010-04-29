@@ -527,7 +527,7 @@ void dt_image_init(dt_image_t *img)
 
   // try to get default raw parameters from db:
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params from iop_defaults where operation = 'rawimport'", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "select op_params from presets where operation = 'rawimport' and def=1", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const void *blob = sqlite3_column_blob(stmt, 0);
@@ -575,9 +575,9 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->width   = sqlite3_column_int(stmt, 2);
     img->height  = sqlite3_column_int(stmt, 3);
     strncpy(img->filename,   (char *)sqlite3_column_text(stmt, 4), 512);
-    strncpy(img->exif_maker, (char *)sqlite3_column_text(stmt, 5), 30);
-    strncpy(img->exif_model, (char *)sqlite3_column_text(stmt, 6), 30);
-    strncpy(img->exif_lens,  (char *)sqlite3_column_text(stmt, 7), 50);
+    strncpy(img->exif_maker, (char *)sqlite3_column_text(stmt, 5), 32);
+    strncpy(img->exif_model, (char *)sqlite3_column_text(stmt, 6), 32);
+    strncpy(img->exif_lens,  (char *)sqlite3_column_text(stmt, 7), 52);
     img->exif_exposure = sqlite3_column_double(stmt, 8);
     img->exif_aperture = sqlite3_column_double(stmt, 9);
     img->exif_iso = sqlite3_column_double(stmt, 10);

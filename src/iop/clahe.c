@@ -343,7 +343,7 @@ void init(dt_iop_module_t *module)
   module->priority = 967;
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
-  dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){64,1.5};
+  dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){64,1.25};
   memcpy(module->params, &tmp, sizeof(dt_iop_rlce_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_rlce_params_t));
 }
@@ -368,13 +368,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("radius")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("slope")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("amount")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 256.0, 1.0, p->radius, 0));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0,3.0, 0.1, p->slope, 2));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 3.0, 0.05, p->slope, 2));
   //dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);

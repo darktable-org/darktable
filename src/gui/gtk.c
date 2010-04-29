@@ -35,6 +35,7 @@
 #include "gui/metadata.h"
 #include "gui/filmview.h"
 #include "gui/capture.h"
+#include "gui/presets.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -823,6 +824,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->snapshot_image = NULL;
   bzero(gui->snapshot, sizeof(gui->snapshot));
   for(int k=0;k<4;k++) snprintf(gui->snapshot[k].filename, 30, "/tmp/dt_snapshot_%d.png", k);
+  gui->presets_popup_menu = NULL;
   if (!g_thread_supported ()) g_thread_init(NULL);
   gdk_threads_init();
   gdk_threads_enter();
@@ -940,6 +942,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_histogram_init(&gui->histogram, widget);
 
   dt_gui_filmview_init();
+
+  dt_gui_presets_init();
 
   // film history
   for(long int k=1;k<5;k++)

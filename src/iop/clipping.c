@@ -103,7 +103,7 @@ void adjust_aabb(const float *p, float *aabb)
 
 const char *name()
 {
-  return _("clipping");
+  return _("crop and rotate");
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -713,10 +713,20 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     {
       grab = g->cropping;
 
-      if(grab & 1) g->clip_x = fmaxf(0.0, pzx - g->handle_x);
-      if(grab & 2) g->clip_y = fmaxf(0.0, pzy - g->handle_y);
-      if(grab & 4) g->clip_w = fminf(1.0, pzx - g->clip_x - g->handle_x);
-      if(grab & 8) g->clip_h = fminf(1.0, pzy - g->clip_y - g->handle_y);
+      if(grab & 1)
+      {
+        const float old_clip_x = g->clip_x;
+        g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+        g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
+      }
+      if(grab & 2)
+      {
+        const float old_clip_y = g->clip_y;
+        g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+        g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
+      }
+      if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
+      if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
 
       if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
       if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
@@ -752,8 +762,8 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   g->clip_w = g->clip_h = 1.0;
   darktable.gui->reset = 1;
   self->gui_update(self);
-  darktable.gui->reset = 0;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self);
 }
 

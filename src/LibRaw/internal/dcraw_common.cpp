@@ -6229,6 +6229,8 @@ void CLASS adobe_coeff (const char *p_make, const char *p_model)
 	{ 5784,-262,-821,-7539,15064,2672,-1982,2681,7427 } },
     { "Canon EOS 500D", 0, 0x3479,
 	{ 4763,712,-646,-6821,14399,2640,-1921,3276,6561 } },
+    { "Canon EOS 550D", 0, 0x3510, /* saturation point copied from 7D */
+	{ 6941,-1164,-857,-3825,11597,2534,-416,1540,6039 } },
     { "Canon EOS 1000D", 0, 0xe43,
 	{ 6771,-1139,-977,-7818,15123,2928,-1244,1437,7533 } },
     { "Canon EOS-1Ds Mark III", 0, 0x3bb0,
@@ -7334,6 +7336,13 @@ canon_a5:
     left_margin = 142;
     raw_width *= 4;
     width = 4916;
+  } else if (is_canon && raw_width == 1336) {
+    top_margin = 51;
+    left_margin = 142;
+    raw_width = width *= 4;
+    if (unique_id == 0x80000270)
+      adobe_coeff ("Canon","EOS 550D");
+    goto canon_cr2;
   } else if (is_canon && raw_width == 1340) {
     top_margin = 51;
     left_margin = 158;

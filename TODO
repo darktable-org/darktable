@@ -1,7 +1,5 @@
 CLAHE:
-  radius scale independent?
-  openmp it
-  8-bit output enough??
+  halos around edges normal?
 
 webpage updates:
 - freebsd has dt (has had for a while :)
@@ -14,15 +12,26 @@ big new features:
 - ship color profiles with dt: matrix-based hardcoded list for each model/maker
 
 - more transparent custom default/presets handling:
-  - store named presets along with exif: maker model,
-    ranges for iso, exposure, aperture, ..
-  - management interface: set default/activate matching+default
-  - list of these named presets for each plugin, replace combo boxes
-    in plugins where already there.
+  - color in: input matrices as such defaults
+  - white balance out of this system as well?
+    show-only-for ticked for these, keep current sys in parallel
+
+- fine-grained history stack copying/replacing: 
   - copy history stack augmented by list of favorite image styles
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- filmstrip h/v/match/off
+
+- check sqlite3 disk speed (remove image: leave mip maps?)
+- ctrl-a broken for sort by color label 
+- whitebalance temp out: 5K, color input uses 6004 ?
+- import from dt/dttags: detect duplicated images
+- backup tables: presets, color labels
+- gtkaboutdialog
+- gtkentrycompletion for tagging and collect
+- clean-up-gui mode for darkroom: collapse all and hide unused ops
+  when entering darkroom mode
 - image flag: history changed but not exported
   - select by this flag
 
@@ -30,9 +39,9 @@ big new features:
   - make exposure work with ldr, too.
 
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
-
 - mipf not loaded on time in develop for small displays.
 
+- ctrl-z ctrl-shift-z up/down in history stack
 - metadata imgfilename etc with ellipzized file names
 - color labels: colored buttons in a row, more colors.
 - read additional tags from exif?

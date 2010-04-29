@@ -20,16 +20,16 @@
 #endif
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
 #include <string.h>
+#include <inttypes.h>
+#include <lcms.h>
 #include "common/darktable.h"
 #include "gui/histogram.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
-#include <inttypes.h>
-#include <lcms.h>
+#include "gui/presets.h"
 
 DT_MODULE(1)
 
@@ -59,7 +59,6 @@ typedef struct dt_iop_colorzones_gui_data_t
   dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
-  GtkComboBox *presets;
   GtkRadioButton *channel_button[3];
   GtkRadioButton *select_button[3];
   double mouse_x, mouse_y, mouse_pick;
@@ -205,12 +204,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  // nothing to do, gui curve is read directly from params during expose event.
-  if(!memcmp(self->params, self->default_params, self->params_size))
-  {
-    dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-    gtk_combo_box_set_active(g->presets, -1);
-  }
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->select_button[p->channel]), TRUE);
@@ -244,73 +237,60 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static void
-presets_changed (GtkComboBox *widget, gpointer user_data)
+void init_presets (dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+  dt_iop_colorzones_params_t p;
   
-  int pos = gtk_combo_box_get_active(widget);
-  switch(pos)
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  p.channel = DT_IOP_COLORZONES_h;
+  for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
   {
-    case 0: // red black white
-      p->channel = DT_IOP_COLORZONES_h;
-      for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
-      {
-        p->equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
-        p->equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
-        p->equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
-        p->equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-        p->equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-        p->equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-      }
-      p->equalizer_y[DT_IOP_COLORZONES_C][0] = p->equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.65;
-      p->equalizer_x[DT_IOP_COLORZONES_C][1] = 3./16.;
-      p->equalizer_x[DT_IOP_COLORZONES_C][2] = 0.50;
-      p->equalizer_x[DT_IOP_COLORZONES_C][3] = 0.51;
-      p->equalizer_x[DT_IOP_COLORZONES_C][4] = 15./16.;
-      break;
-    case 1: // b/w + skin tones
-      p->channel = DT_IOP_COLORZONES_h;
-      for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
-      {
-        p->equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
-        p->equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
-        p->equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
-        p->equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-        p->equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-        p->equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-      }
-      p->equalizer_y[DT_IOP_COLORZONES_C][0] = p->equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.5;
-      p->equalizer_x[DT_IOP_COLORZONES_C][2] = 0.25f;
-      p->equalizer_y[DT_IOP_COLORZONES_C][1] = 0.3f;
-      break;
-    case 2: // polarizing filter
-      p->channel = DT_IOP_COLORZONES_C;
-      for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
-      {
-        p->equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
-        p->equalizer_y[DT_IOP_COLORZONES_C][k] = .5f;
-        p->equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
-        p->equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-        p->equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-        p->equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
-      }
-      for(int k=2;k<DT_IOP_COLORZONES_BANDS;k++)
-        p->equalizer_y[DT_IOP_COLORZONES_C][k] += (k-1.5)/(DT_IOP_COLORZONES_BANDS-2.0) * 0.25;
-      for(int k=3;k<DT_IOP_COLORZONES_BANDS;k++)
-        p->equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-2.5)/(DT_IOP_COLORZONES_BANDS-3.0) * 0.35;
-      break;
-    default: // custom
-      return;
+    p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
+    p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
+    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
   }
-  darktable.gui->reset = 1;
-  self->gui_update(self);
-  darktable.gui->reset = 0;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
-  gtk_widget_queue_draw(self->widget);
+  p.equalizer_y[DT_IOP_COLORZONES_C][0] = p.equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.65;
+  p.equalizer_x[DT_IOP_COLORZONES_C][1] = 3./16.;
+  p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.50;
+  p.equalizer_x[DT_IOP_COLORZONES_C][3] = 0.51;
+  p.equalizer_x[DT_IOP_COLORZONES_C][4] = 15./16.;
+  dt_gui_presets_add_generic(_("red black white"), self->op, &p, sizeof(p), 1);
+
+  p.channel = DT_IOP_COLORZONES_h;
+  for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
+  {
+    p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] = .0f;
+    p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
+    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+  }
+  p.equalizer_y[DT_IOP_COLORZONES_C][0] = p.equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.5;
+  p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.25f;
+  p.equalizer_y[DT_IOP_COLORZONES_C][1] = 0.3f;
+  dt_gui_presets_add_generic(_("black white and skin tones"), self->op, &p, sizeof(p), 1);
+
+  p.channel = DT_IOP_COLORZONES_C;
+  for(int k=0;k<DT_IOP_COLORZONES_BANDS;k++)
+  {
+    p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] = .5f;
+    p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
+    p.equalizer_x[DT_IOP_COLORZONES_L][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+    p.equalizer_x[DT_IOP_COLORZONES_h][k] = k/(DT_IOP_COLORZONES_BANDS-1.);
+  }
+  for(int k=2;k<DT_IOP_COLORZONES_BANDS;k++)
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] += (k-1.5)/(DT_IOP_COLORZONES_BANDS-2.0) * 0.25;
+  for(int k=3;k<DT_IOP_COLORZONES_BANDS;k++)
+    p.equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-2.5)/(DT_IOP_COLORZONES_BANDS-3.0) * 0.35;
+  dt_gui_presets_add_generic(_("polarizing filter"), self->op, &p, sizeof(p), 1);
+
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -605,7 +585,6 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
     {
       dt_iop_colorzones_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    gtk_combo_box_set_active(c->presets, -1);
     dt_dev_add_history_item(darktable.develop, self);
   }
   else if(event->y > height)
@@ -635,24 +614,32 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
 static gboolean
 colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
-  const int inset = DT_IOP_COLORZONES_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
-  c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
-  c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
-  c->dragging = 1;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+    c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
+    const int inset = DT_IOP_COLORZONES_INSET;
+    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
+    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
+    c->dragging = 1;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean
 colorzones_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  c->dragging = 0;
-  return TRUE;
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+    c->dragging = 0;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean
@@ -712,7 +699,6 @@ colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
     {
       memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
       p->channel = (dt_iop_colorzones_channel_t)k;
-      gtk_combo_box_set_active(c->presets, -1);
       dt_dev_add_history_item(darktable.develop, self);
       gtk_widget_queue_draw(self->widget);
       return;
@@ -802,19 +788,6 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *tb = gtk_toggle_button_new_with_label(_("pick gui color from image"));
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(self->widget), tb, FALSE, FALSE, 5);
-
-  hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
-  label = GTK_LABEL(gtk_label_new(_("presets")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 5);
-  c->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("black white red"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("black white and skin tones"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->presets), _("polarizing filter"));
-  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(c->presets), FALSE, FALSE, 5);
-  g_signal_connect (G_OBJECT (c->presets), "changed",
-                    G_CALLBACK (presets_changed),
-                    (gpointer)self);
 
   c->hsRGB = cmsCreate_sRGBProfile();
   c->hLab  = cmsCreateLabProfile(NULL);

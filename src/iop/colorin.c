@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
 #include "common/colorspaces.h"
+#include "common/colormatrices.c"
 
 DT_MODULE(1)
 
@@ -195,13 +196,23 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     libraw_close(raw);
   }
+  else if(!strcmp(p->iccprofile, "darktable"))
+  {
+    char makermodel[512];
+    snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
+    d->input = dt_colorspaces_create_darktable_profile(makermodel);
+  }
   else if(!strcmp(p->iccprofile, "sRGB"))
   {
-    d->input = create_srgb_profile();
+    d->input = dt_colorspaces_create_srgb_profile();
+  }
+  else if(!strcmp(p->iccprofile, "XYZ"))
+  {
+    d->input = dt_colorspaces_create_xyz_profile();
   }
   else if(!strcmp(p->iccprofile, "adobergb"))
   {
-    d->input = create_adobergb_profile();
+    d->input = dt_colorspaces_create_adobergb_profile();
   }
   else
   {
@@ -306,30 +317,57 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
-  // add std RGB profile:
+
+  // get color matrix from raw image:
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "linear_rgb.icc");
-  strcpy(prof->name, "linear_rgb");
+  strcpy(prof->filename, "cmatrix");
+  strcpy(prof->name, "cmatrix");
   g->profiles = g_list_append(g->profiles, prof);
-  prof->pos = 0;
+  int pos = prof->pos = 0;
+
+  // darktable built-in, if applicable
+  char makermodel[512];
+  snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
+  for(int k=0;k<dt_profiled_colormatrix_cnt;k++)
+  {
+    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    {
+      prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+      strcpy(prof->filename, "darktable");
+      strcpy(prof->name, "darktable");
+      g->profiles = g_list_append(g->profiles, prof);
+      prof->pos = ++pos;
+      break;
+    }
+  }
+
   // sRGB for ldr image input
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
   g->profiles = g_list_append(g->profiles, prof);
-  prof->pos = 1;
+  prof->pos = ++pos;
+
   // adobe rgb built-in
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "adobergb");
   strcpy(prof->name, "adobergb");
   g->profiles = g_list_append(g->profiles, prof);
-  prof->pos = 2;
-  // get color matrix from raw image:
+  prof->pos = ++pos;
+
+  // add std RGB profile:
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "cmatrix");
-  strcpy(prof->name, "cmatrix");
-  int pos = prof->pos = 3;
+  strcpy(prof->filename, "linear_rgb.icc");
+  strcpy(prof->name, "linear_rgb");
   g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = ++pos;
+
+  // XYZ built-in
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "XYZ");
+  strcpy(prof->name, "XYZ");
+  g->profiles = g_list_append(g->profiles, prof);
+  prof->pos = ++pos;
 
   // read datadir/color/in/*.icc
   char datadir[1024], dirname[1024], filename[1024];
@@ -352,9 +390,9 @@ void gui_init(struct dt_iop_module_t *self)
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
         strcpy(prof->name, cmsTakeProductDesc(tmpprof));
         strcpy(prof->filename, d_name);
-        prof->pos = ++pos;
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);
+        prof->pos = ++pos;
       }
     }
     g_dir_close(dir);
@@ -381,14 +419,18 @@ void gui_init(struct dt_iop_module_t *self)
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "linear_rgb"))
-      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
+    if(!strcmp(prof->name, "cmatrix"))
+      gtk_combo_box_append_text(g->cbox2, _("standard color matrix"));
+    else if(!strcmp(prof->name, "darktable"))
+      gtk_combo_box_append_text(g->cbox2, _("enhanced color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
       gtk_combo_box_append_text(g->cbox2, _("srgb (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))
       gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
-    else if(!strcmp(prof->name, "cmatrix"))
-      gtk_combo_box_append_text(g->cbox2, _("color matrix"));
+    else if(!strcmp(prof->name, "linear_rgb"))
+      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
+    else if(!strcmp(prof->name, "XYZ"))
+      gtk_combo_box_append_text(g->cbox2, _("linear xyz"));
     else
       gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);

@@ -257,7 +257,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
-  gtk_object_set(GTK_OBJECT(delete), "tooltip-text", _("discard history stack of\nfirst selected image"), NULL);
+  gtk_object_set(GTK_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"), NULL);
   gtk_box_pack_start(hbox, delete, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);

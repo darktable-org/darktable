@@ -118,7 +118,7 @@ int dt_control_load_config(dt_control_t *c)
   int rc;
   sqlite3_stmt *stmt;
   // unsafe, fast write:
-  rc = sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
   // free memory on disk if we call the line below:
   // rc = sqlite3_exec(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
@@ -151,13 +151,11 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "drop table tags", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table tagxtag", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table tagged_images", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "drop table iop_defaults", NULL, NULL, NULL);
       goto create_tables;
     }
     else
     {
       // insert new tables, if not there (statement will just fail if so):
-      sqlite3_exec(darktable.db, "create table iop_defaults (operation varchar, op_params blob, enabled integer, model varchar, maker varchar, primary key(operation, model, maker))", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "create table color_labels (imgid integer primary key, color integer)", NULL, NULL, NULL);
       pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
@@ -171,22 +169,22 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar(256), maker varchar(30), model varchar(30), lens varchar(30), exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), foreign key(film_id) references film_rolls(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table mipmaps (imgid int, level int, data blob, foreign key(imgid) references images(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table mipmaps (imgid int, level int, data blob)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table mipmap_timestamps (imgid int, level int, foreign key(imgid) references images(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table mipmap_timestamps (imgid int, level int)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer, foreign key(imgid) references images(id))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
-    rc = sqlite3_exec(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, foreign key (id1) references tags(id) foreign key (id2) references tags(id) primary key(id1, id2))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, primary key(id1, id2))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, foreign key(imgid) references images(id) foreign key(tagid) references tags(id) primary key(imgid, tagid))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    sqlite3_exec(darktable.db, "create table iop_defaults (operation varchar, op_params blob, enabled integer, model varchar, maker varchar)", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "create table color_labels (imgid integer primary key, color integer)", NULL, NULL, NULL);
 
     // add dummy film roll for single images
     char datetime[20];
@@ -423,18 +421,30 @@ void dt_control_cleanup(dt_control_t *s)
   int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
   int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
   // delete mipmaps
-  // ubuntu compiles a lame sqlite3, else we could simply:
-  // rc = sqlite3_exec(darktable.db, "delete from mipmaps order by imgid desc limit 2500,-1)", NULL, NULL, NULL);
+  
+  double start = dt_get_wtime();
+
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1", -1, &stmt, NULL);
+
+  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level = 0 order by rowid limit ?1,-1)", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, keep0);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level != 0 order by rowid limit ?1,-1)", -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, keep);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep0);
+  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level not in (select imgid*8+level from mipmap_timestamps)", -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+
+  double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[control_cleanup] database cleaning took %.3f secs\n", end - start);
 
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
@@ -712,7 +722,7 @@ void *dt_control_expose(void *voidptr)
       const float fontsize = 14;
       cairo_set_font_size (cr, fontsize);
       cairo_text_extents_t ext;
-      cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_pos-1], &ext);
+      cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_ack], &ext);
       const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
       float rad = 14;
       cairo_set_line_width(cr, 1.);
@@ -733,7 +743,7 @@ void *dt_control_expose(void *voidptr)
       }
       cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
       cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
-      cairo_show_text (cr, darktable.control->log_message[darktable.control->log_pos-1]);
+      cairo_show_text (cr, darktable.control->log_message[darktable.control->log_ack]);
     }
     // draw busy indicator
     if(darktable.control->log_busy > 0)
@@ -847,7 +857,8 @@ void dt_ctl_switch_mode()
 static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
 {
   pthread_mutex_lock(&darktable.control->log_mutex);
-  darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
+  if(darktable.control->log_ack != darktable.control->log_pos)
+    darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=0;
   pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_draw_all();

@@ -21,12 +21,18 @@
 #include <lcms.h>
 
 /** create the ICC virtual profile for adobe rgb space. */
-cmsHPROFILE create_srgb_profile(void);
+cmsHPROFILE dt_colorspaces_create_srgb_profile(void);
 
 /** create the ICC virtual profile for adobe rgb space. */
-cmsHPROFILE create_adobergb_profile(void);
+cmsHPROFILE dt_colorspaces_create_adobergb_profile(void);
+
+/** create a ICC virtual profile for XYZ. */
+cmsHPROFILE dt_colorspaces_create_xyz_profile(void);
+
+/** create a ICC virtual profile from the shipped presets in darktable. */
+cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel);
 
 /** get the icc profile this image would be exported with. */
-cmsHPROFILE create_output_profile(const int imgid);
+cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid);
 
 #endif
