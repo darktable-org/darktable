@@ -194,10 +194,9 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
 
   g->autoapply = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
   gtk_box_pack_start(box, GTK_WIDGET(g->autoapply), FALSE, FALSE, 0);
-  // currently disabled this feature, because i'm not sure if it would obscure the otherwise
-  // transparent settings list again (hide stuff that might nontheless be active for other images) --jo
-  // g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
-  // gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
+  g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
+  gtk_object_set(GTK_OBJECT(g->filter), "tooltip-text", _("be very careful with this option. this might be the last time you see your preset."), NULL);
+  gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   gtk_box_pack_start(box,  GTK_WIDGET(hbox),  FALSE, FALSE, 0);
