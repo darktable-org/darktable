@@ -22,11 +22,8 @@ big new features:
     replace them with presets from the list instead.
 
 - color transfer plugin
-  - histogram matching for L
-  - a, b: find (user specified?) amount of
-    clusters with n-means, find variance
   - store to presets in database
-  - apply by mean shifting/var scaling
+  - request color pick triggers acquisition (without hist item)
 
 - filmstrip h/v/match/off
 

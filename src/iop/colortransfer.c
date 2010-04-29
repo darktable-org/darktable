@@ -54,10 +54,10 @@ DT_MODULE(1)
 
 typedef enum dt_iop_colortransfer_flag_t
 {
-  ACQUIRE,
-  ACQUIRED,
-  APPLY,
-  NEUTRAL
+  ACQUIRE = 0,
+  ACQUIRED = 1,
+  APPLY = 2,
+  NEUTRAL = 3
 }
 dt_iop_colortransfer_flag_t;
 
@@ -165,7 +165,7 @@ static void
 kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n][2], float var_out[n][2])
 {
   // TODO: check params here:
-  const int nit = 3; // number of iterations
+  const int nit = 10; // number of iterations
   const int samples = roi->width*roi->height * 0.1; // samples: only a fraction of the buffer.
   // TODO: check if we need to go to Lab from L a/L b/L
 
@@ -176,8 +176,8 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
   for(int k=0;k<n;k++)
   {
     // TODO: range?
-    mean_out[k][0] = dt_points_get();
-    mean_out[k][1] = dt_points_get();
+    mean_out[k][0] = 20.0f-40.0f*dt_points_get();
+    mean_out[k][1] = 20.0f-40.0f*dt_points_get();
     var_out[k][0] = var_out[k][1] = 0.0f;
     mean[k][0] = mean[k][1] = var[k][0] = var[k][1] = 0.0f;
   }
@@ -228,6 +228,8 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
       var_out[k][1] = var[k][1]/cnt[k] - mean_out[k][1]*mean_out[k][1];
       mean[k][0] = mean[k][1] = var[k][0] = var[k][1] = 0.0f;
     }
+    printf("it %d  %d means:\n", it, n);
+    for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0], var_out[k][1]);
   }
   for(int k=0;k<n;k++)
   { // we actually want the std deviation.
@@ -242,12 +244,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
+  printf("process: flag %d\n", data->flag);
   // TODO: acquire switch:
   // - capture button pressed: cluster preview buffer => gui style
   // - process: cluster only this buffer?? and reverse the effect using the style params
   //   => full buffer remains a coarse preview, export will work as expected.
-  if(data->flag == ACQUIRE)
+  if(self->request_color_pick)
+  // if(data->flag == ACQUIRE)
   {
+    printf("acuiring..\n");
     if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     { // only get stuff from the preview pipe, rest stays untouched.
       int hist[HISTN];
@@ -259,12 +264,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // get n clusters
       kmeans(in, roi_in, data->n, data->mean, data->var);
 
+      printf("acquired %d means:\n", data->n);
+      for(int k=0;k<data->n;k++) printf("%f %f -- var %f %f\n", data->mean[k][0], data->mean[k][1], data->var[k][0], data->var[k][1]);
+
       // notify gui that commit_params should let stuff flow back!
       data->flag = ACQUIRED;
     }
+    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
   }
-  else
+  else if(data->flag == APPLY)
   { // apply histogram of L and clustering of (a,b)
+    printf("applying stuff because flag=%d\n", data->flag);
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
 #ifdef _OPENMP
@@ -305,6 +315,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
+  else
+  {
+    printf("doing nothing because flag=%d\n", data->flag);
+    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
+  }
 }
 
 static void
@@ -314,8 +329,9 @@ button_pressed (GtkButton *button, dt_iop_module_t *self)
   // request color pick
   self->request_color_pick = 1;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+  printf("setting flag to acquire\n");
   p->flag = ACQUIRE;
-  dt_dev_add_history_item(darktable.develop, self);
+  // dt_dev_add_history_item(darktable.develop, self);
 }
 
 static gboolean
@@ -326,11 +342,13 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   if(p->flag == ACQUIRED)
   { // clear the color picking request if we got the cluster data
+    printf("expose: all done!\n");
     self->request_color_pick = 0;
   }
   else
   { // color pick is still on, so the data has to be still in the pipe,
     // toggle a commit_params
+    printf("expose: triggering another pass\n");
     p->flag = NEUTRAL;
     dt_dev_add_history_item(darktable.develop, self);
   }
@@ -345,14 +363,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #else
   dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
-  if(d->flag == ACQUIRED)
+  printf("commit params: p %d  d %d\n", p->flag, d->flag);
+  if(p->flag == ACQUIRE && d->flag == ACQUIRED)
   { // if data is flagged ACQUIRED, actually copy data back from pipe!
+    printf("commit params: copying back data\n");
     memcpy (p, d, self->params_size);
     d->flag = NEUTRAL;
     p->flag = ACQUIRED; // let gui know the data is there.
   }
   else
   {
+    printf("commit params: copying data from params.\n");
     dt_iop_colortransfer_flag_t flag = d->flag;
     memcpy(d, p, self->params_size);
     // only allow apply and acquire commands from gui.
@@ -368,6 +389,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = NULL;
 #else
   piece->data = malloc(sizeof(dt_iop_colortransfer_data_t));
+  dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
+  d->flag = NEUTRAL;
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }

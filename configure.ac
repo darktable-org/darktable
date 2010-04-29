@@ -41,7 +41,7 @@ AC_MSG_CHECKING([whether to enable debugging])
 AC_ARG_ENABLE(debug,
 	      AC_HELP_STRING([--enable-debug], [build debug executable]))
 if test "$enable_debug" = "yes"; then
-   CFLAGS="-Wall -O0 -g -D_DEBUG"
+   CFLAGS="-Wall -msse2 -O0 -g -D_DEBUG"
    CXXFLAGS="-Wall -O0 -g -D_DEBUG"
    AC_MSG_RESULT([yes])
 else
