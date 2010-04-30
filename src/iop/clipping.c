@@ -682,7 +682,6 @@ void gui_init(struct dt_iop_module_t *self)
   // gtk_box_pack_start(GTK_BOX(g->vbox2), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   g->label6 = GTK_LABEL(gtk_label_new(_("guides")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label6), TRUE, TRUE, 0);
   g->guide_lines = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -726,7 +725,8 @@ void gui_init(struct dt_iop_module_t *self)
   hbox = gtk_hbox_new(FALSE, 5);
   g->goldenSpiralBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden spiral")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->goldenSpiralBox), TRUE, TRUE, 0);
-  gtk_object_set (GTK_OBJECT(g->goldenSpiralBox), "tooltip-text", _("Enable this option to show a golden spiral guide."), NULL);
+  //gtk_object_set (GTK_OBJECT(g->goldenSpiralBox), "tooltip-text", _("Enable this option to show a golden spiral guide."), NULL);
+  gtk_object_set (GTK_OBJECT(g->goldenSpiralBox), "tooltip-text", _("It is not implemented yet."), NULL);
 
   g->goldenTriangleBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden triangles")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->goldenTriangleBox), TRUE, TRUE, 0);
