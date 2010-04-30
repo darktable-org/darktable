@@ -31,14 +31,16 @@ gboolean dt_tag_new(const char *name,guint *tagid)
   rc = sqlite3_prepare_v2(darktable.db, "select id from tags where name = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   rt = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  
   if(rt == SQLITE_ROW) 
   { // tagid already exists.
     if( tagid != NULL)
       *tagid=sqlite3_column_int64(stmt, 0);
+    rc = sqlite3_finalize(stmt);
     return  TRUE; 
   }
+  rc = sqlite3_finalize(stmt);
+  
+  
   
   rc = sqlite3_prepare_v2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
   rc = sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
@@ -67,14 +69,13 @@ guint dt_tag_remove(const guint tagid, gboolean final)
   int rc,rt,count=-1;
   sqlite3_stmt *stmt;
  
-  rc = sqlite3_prepare_v2(darktable.db, "select count(tagid) from tagged_images where tagid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select count() from tagged_images where tagid=?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, tagid);
   rt = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
   if( rt == SQLITE_ROW)
     count = sqlite3_column_int(stmt,0);
+  rc = sqlite3_finalize(stmt);
   
-  fprintf(stderr, "count is %d\n",count);
   if( final == TRUE )
   { // let's actually remove the tag
     rc = sqlite3_prepare_v2(darktable.db, "delete from tags where id=?1", -1, &stmt, NULL);
@@ -96,15 +97,16 @@ guint dt_tag_remove(const guint tagid, gboolean final)
 
 const gchar *dt_tag_get_name(const guint tagid) {
   int rc, rt;
+  char *name=NULL;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select name from tags where id= ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1,tagid);
   rt = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
   if( rt== SQLITE_ROW )
-    return g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    name=g_strdup((const char *)sqlite3_column_text(stmt, 0));
+  rc = sqlite3_finalize(stmt);
   
-  return NULL;
+  return name;
 }
 
 gboolean dt_tag_exists(const char *name,guint *tagid)
