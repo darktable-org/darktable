@@ -157,9 +157,16 @@ void init(dt_iop_module_t *module)
   if(!ret)
   {
     for(int k=0;k<3;k++) coeffs[k] = raw->color.cam_mul[k];
-    coeffs[0] /= coeffs[1];
-    coeffs[2] /= coeffs[1];
-    coeffs[1] = 1.0f;
+    if(coeffs[0] == 0 || coeffs[1] == 0 || coeffs[2] == 0)
+    { // could not get useful info!
+      coeffs[0] = coeffs[1] = coeffs[2] = 1.0f;
+    }
+    else
+    {
+      coeffs[0] /= coeffs[1];
+      coeffs[2] /= coeffs[1];
+      coeffs[1] = 1.0f;
+    }
   }
   libraw_close(raw);
   float dmin=coeffs[0], dmax=coeffs[0];

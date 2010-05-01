@@ -194,7 +194,7 @@ dt_colorspaces_create_output_profile(const int imgid)
   profile[0] = '\0';
   // db lookup colorout params, and dt_conf_() for override
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!strcmp(overprofile, "image"))
+  if(!overprofile || !strcmp(overprofile, "image"))
   {
     const dt_iop_colorout_params_t *params;
     // sqlite:
@@ -208,6 +208,8 @@ dt_colorspaces_create_output_profile(const int imgid)
     }
     sqlite3_finalize(stmt);
   }
+  if(!overprofile && profile[0] == '\0')
+    strncpy(profile, "sRGB", 1024);
   if(profile[0] == '\0')
     strncpy(profile, overprofile, 1024);
   g_free(overprofile);
