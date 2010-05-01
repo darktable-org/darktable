@@ -24,6 +24,9 @@ big new features:
 - color transfer plugin
   - store to presets in database
   - request color pick triggers acquisition (without hist item)
+  - color pick doesn't go away: expose is not called anymore
+  - colors don't appear in expose?  (mean L..?)
+  - useless process with flag = 2?
 
 - filmstrip h/v/match/off
 

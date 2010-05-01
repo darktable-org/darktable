@@ -25,6 +25,7 @@
 #include <strings.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <lcms.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
@@ -45,6 +46,15 @@
  * 2) preview is processed, acquires data and sets data to acquired
  * 3) expose gets the post-process callback, launches another commit_params via add history item
  * 4) commit_params copies data back to gui params and sets params flag to acquired.
+ *
+ * capture timeline:
+ *                 params     data
+ *                  neutral    neutral
+ * capture button: *acquire    neutral
+ * commit_params:   acquire   *acquire
+ * process:        *acquire2  *acquired   // FIXME: non thumbnail stays at acquire
+ * expose:         *acquire3   acquired
+ * commit_params:  *acquired  *neutral
  */
 
 DT_MODULE(1)
@@ -55,9 +65,11 @@ DT_MODULE(1)
 typedef enum dt_iop_colortransfer_flag_t
 {
   ACQUIRE = 0,
-  ACQUIRED = 1,
-  APPLY = 2,
-  NEUTRAL = 3
+  ACQUIRE2 = 1,
+  ACQUIRE3 = 2,
+  ACQUIRED = 3,
+  APPLY = 4,
+  NEUTRAL = 5
 }
 dt_iop_colortransfer_flag_t;
 
@@ -76,9 +88,11 @@ dt_iop_colortransfer_params_t;
 
 typedef struct dt_iop_colortransfer_gui_data_t
 {
-  // TODO: button to acquire new style data (as exposure/spot wb)
-  // TODO: list of currently applied is maintained as preset (right click)
-  // TODO: maybe provide an additional combo box with the same presets?
+  int flowback_set;
+  dt_iop_colortransfer_params_t flowback;
+  cmsHPROFILE hsRGB;
+  cmsHPROFILE hLab;
+  cmsHTRANSFORM xform;
 }
 dt_iop_colortransfer_gui_data_t;
 
@@ -194,8 +208,10 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
       // for each sample: determine cluster, update new mean, update var
       for(int k=0;k<n;k++)
       {
+        const float L = col[3*(roi->width*j+i)];
+        const float Lab[3] = {L, col[3*(roi->width*j + i)+1]*L/100.0, col[3*(roi->width*j + i)+2]*L/100.0};
         // determine dist to mean_out
-        const int c = get_cluster(col + 3*(roi->width*j + i), n, mean_out);
+        const int c = get_cluster(Lab, n, mean_out);
 #ifdef _OPENMP
   #pragma omp atomic
 #endif
@@ -204,19 +220,19 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
 #ifdef _OPENMP
   #pragma omp atomic
 #endif
-        var[c][0]  += col[3*(roi->width*j+i)+1]*col[3*(roi->width*j+i)+1];
+        var[c][0]  += Lab[1]*Lab[1];
 #ifdef _OPENMP
   #pragma omp atomic
 #endif
-        var[c][1]  += col[3*(roi->width*j+i)+2]*col[3*(roi->width*j+i)+2];
+        var[c][1]  += Lab[2]*Lab[2];
 #ifdef _OPENMP
   #pragma omp atomic
 #endif
-        mean[c][0] += col[3*(roi->width*j+i)+1];
+        mean[c][0] += Lab[1];
 #ifdef _OPENMP
   #pragma omp atomic
 #endif
-        mean[c][1] += col[3*(roi->width*j+i)+2];
+        mean[c][1] += Lab[2];
       }
     }
     // swap old/new means
@@ -228,8 +244,8 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
       var_out[k][1] = var[k][1]/cnt[k] - mean_out[k][1]*mean_out[k][1];
       mean[k][0] = mean[k][1] = var[k][0] = var[k][1] = 0.0f;
     }
-    printf("it %d  %d means:\n", it, n);
-    for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0], var_out[k][1]);
+    // printf("it %d  %d means:\n", it, n);
+    // for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0], var_out[k][1]);
   }
   for(int k=0;k<n;k++)
   { // we actually want the std deviation.
@@ -249,8 +265,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // - capture button pressed: cluster preview buffer => gui style
   // - process: cluster only this buffer?? and reverse the effect using the style params
   //   => full buffer remains a coarse preview, export will work as expected.
-  if(self->request_color_pick)
-  // if(data->flag == ACQUIRE)
+  // if(self->request_color_pick)
+  if(data->flag == ACQUIRE)
   {
     printf("acuiring..\n");
     if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
@@ -264,19 +280,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // get n clusters
       kmeans(in, roi_in, data->n, data->mean, data->var);
 
-      printf("acquired %d means:\n", data->n);
+      printf("process acquired %d means:\n", data->n);
       for(int k=0;k<data->n;k++) printf("%f %f -- var %f %f\n", data->mean[k][0], data->mean[k][1], data->var[k][0], data->var[k][1]);
 
       // notify gui that commit_params should let stuff flow back!
       data->flag = ACQUIRED;
+      dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+      p->flag = ACQUIRE2;
     }
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
   }
   else if(data->flag == APPLY)
   { // apply histogram of L and clustering of (a,b)
+#if 1
+    // DEBUG: first copy all
+    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
+#endif
     printf("applying stuff because flag=%d\n", data->flag);
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
+#if 0
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,in,out,hist)
 #endif
@@ -289,6 +312,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         j+=3;
       }
     }
+#endif
 
     // cluster input buffer
     float mean[data->n][2], var[data->n][2];
@@ -298,6 +322,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int mapio[data->n];
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
+#if 1
     // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,mean,var,mapio,in,out)
@@ -308,12 +333,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i=0;i<roi_out->width;i++)
       {
         const int ki = get_cluster(in + j, data->n, mean);
+        const float L = in[j];
+        const float Lab[3] = {L, in[j+1]*L/100.0, in[j+2]*L/100.0};
         // a, b: subtract mean, scale nvar/var, add nmean
-        out[j+1] = (in[j+1] - mean[ki][0])*data->var[mapio[ki]][0]/var[ki][0] + data->mean[mapio[ki]][0];
-        out[j+2] = (in[j+2] - mean[ki][1])*data->var[mapio[ki]][1]/var[ki][1] + data->mean[mapio[ki]][1];
+        out[j+1] = 100.0/out[j] * ((Lab[1] - mean[ki][0])*data->var[mapio[ki]][0]/var[ki][0] + data->mean[mapio[ki]][0]);
+        out[j+2] = 100.0/out[j] * ((Lab[2] - mean[ki][1])*data->var[mapio[ki]][1]/var[ki][1] + data->mean[mapio[ki]][1]);
         j+=3;
       }
     }
+#endif
   }
   else
   {
@@ -323,34 +351,50 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-button_pressed (GtkButton *button, dt_iop_module_t *self)
+acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   // request color pick
+  // needed to trigger expose events:
   self->request_color_pick = 1;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
-  printf("setting flag to acquire\n");
   p->flag = ACQUIRE;
-  // dt_dev_add_history_item(darktable.develop, self);
+  printf("setting flag to acquire: %d\n", p->flag);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void
+apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+  p->flag = APPLY;
+  printf("setting flag to apply: %d\n", p->flag);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_dev_add_history_item(darktable.develop, self);
 }
 
 static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 { // this is called whenever the pipeline finishes processing (i.e. after a color pick)
   if(darktable.gui->reset) return FALSE;
-  if(!self->request_color_pick) return FALSE;
+  // if(!self->request_color_pick) return FALSE;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   if(p->flag == ACQUIRED)
   { // clear the color picking request if we got the cluster data
     printf("expose: all done!\n");
     self->request_color_pick = 0;
-  }
-  else
-  { // color pick is still on, so the data has to be still in the pipe,
-    // toggle a commit_params
-    printf("expose: triggering another pass\n");
     p->flag = NEUTRAL;
     dt_dev_add_history_item(darktable.develop, self);
+  }
+  else if(p->flag == ACQUIRE2)
+  { // color pick is still on, so the data has to be still in the pipe,
+    // toggle a commit_params
+    p->flag = ACQUIRE3;
+    printf("expose: triggering another pass, setting to ACQUIRE3: %d\n", p->flag);
+    dt_dev_add_history_item(darktable.develop, self);
+    self->request_color_pick = 1;
   }
   return FALSE;
 }
@@ -364,20 +408,33 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
   printf("commit params: p %d  d %d\n", p->flag, d->flag);
-  if(p->flag == ACQUIRE && d->flag == ACQUIRED)
+  if(p->flag == ACQUIRE3 && d->flag == ACQUIRED)
   { // if data is flagged ACQUIRED, actually copy data back from pipe!
-    printf("commit params: copying back data\n");
-    memcpy (p, d, self->params_size);
     d->flag = NEUTRAL;
     p->flag = ACQUIRED; // let gui know the data is there.
+    if(self->dev == darktable.develop && self->gui_data)
+    {
+      printf("commit params: copying back data\n");
+      dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+      memcpy (&g->flowback, d, self->params_size);
+      g->flowback_set = 1;
+      printf("copied %d means:\n", d->n);
+      for(int k=0;k<d->n;k++) printf("%f %f -- var %f %f\n", d->mean[k][0], d->mean[k][1], d->var[k][0], d->var[k][1]);
+      // dt_dev_add_history_item(darktable.develop, self);
+      dt_control_queue_draw(self->widget);
+    }
   }
   else
   {
-    printf("commit params: copying data from params.\n");
-    dt_iop_colortransfer_flag_t flag = d->flag;
+    // dt_iop_colortransfer_flag_t flag = d->flag;
     memcpy(d, p, self->params_size);
     // only allow apply and acquire commands from gui.
-    if(p->flag != APPLY && p->flag != ACQUIRE) d->flag = flag;
+    // if(p->flag != APPLY && p->flag != ACQUIRE && p->flag != NEUTRAL) d->flag = flag;
+    if(p->flag == ACQUIRE2) d->flag = ACQUIRE;
+    if(p->flag == ACQUIRE3) d->flag = NEUTRAL;
+    if(p->flag == ACQUIRED) d->flag = NEUTRAL;
+    printf("commit params: setting data flag to %d -> %d\n", p->flag, d->flag);
+    // if(p->flag == ACQUIRE) p->flag = ACQUIRE2;
   }
 #endif
 }
@@ -408,10 +465,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  // dt_iop_module_t *module = (dt_iop_module_t *)self;
-  // dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
-  // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)module->params;
-  // TODO: find active preset?
+  // redraw color cluster preview
+  dt_control_queue_draw(self->widget);
 }
 
 void init(dt_iop_module_t *module)
@@ -441,25 +496,92 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static gboolean
+cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+{
+  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  const int inset = 5;
+  int width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  cairo_set_source_rgb (cr, .2, .2, .2);
+  cairo_paint(cr);
+
+  cairo_translate(cr, inset, inset);
+  width -= 2*inset; height -= 2*inset;
+
+  if(g->flowback_set)
+  {
+    memcpy(self->params, &g->flowback, self->params_size);
+    g->flowback_set = 0;
+    p->flag = NEUTRAL;
+    dt_dev_add_history_item(darktable.develop, self);
+  }
+  printf("expose params flag: %d\n", p->flag);
+  printf("expose got %d means:\n", p->n);
+  for(int k=0;k<p->n;k++) printf("%f %f -- var %f %f\n", p->mean[k][0], p->mean[k][1], p->var[k][0], p->var[k][1]);
+
+  const float sep = 2.0;
+  const float qwd = (width-(p->n-1)*sep)/(float)p->n;
+  for(int cl=0;cl<p->n;cl++)
+  { // draw cluster
+    for(int j=-1;j<=1;j++) for(int i=-1;i<=1;i++)
+    { // draw 9x9 grid showing mean and variance of this cluster.
+      double rgb[3] = {0.5, 0.5, 0.5};
+      cmsCIELab Lab;
+      Lab.L = 5.0;//53.390011;
+      Lab.a = (p->mean[cl][0] + i*p->var[cl][0]);// / Lab.L;
+      Lab.b = (p->mean[cl][1] + j*p->var[cl][1]);// / Lab.L;
+      Lab.L = 53.390011;
+      cmsDoTransform(g->xform, &Lab, rgb, 1);
+      cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
+      cairo_rectangle(cr, qwd*(i+1)/3.0, height*(j+1)/3.0, qwd/3.0, height/3.0);
+      cairo_fill(cr);
+    }
+    cairo_translate (cr, qwd + sep, 0);
+  }
+  
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
-  // dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(TRUE, 5));
+  g->flowback_set = 0;
+  g->hsRGB = cmsCreate_sRGBProfile();
+  g->hLab  = cmsCreateLabProfile(NULL);
+  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
+
+  self->widget = GTK_WIDGET(gtk_vbox_new(TRUE, 5));
   g_signal_connect (G_OBJECT(self->widget), "expose-event",
                     G_CALLBACK(expose), self);
 
+  GtkWidget *area = gtk_drawing_area_new();
+  gtk_box_pack_start(GTK_BOX(self->widget), area, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
+
+  GtkBox *box = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   GtkWidget *button;
-  button = gtk_button_new_with_label(_("capture color statistics"));
+  button = gtk_button_new_with_label(_("acquire"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("analyze this image and store parameters"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_pressed), (gpointer)self);
+  gtk_box_pack_start(box, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
 
   button = gtk_button_new_with_label(_("apply"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("apply color statistics to this image"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
+  gtk_box_pack_start(box, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
   // TODO:
   // combo box with presets from db
 }

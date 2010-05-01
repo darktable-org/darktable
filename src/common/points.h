@@ -1033,7 +1033,6 @@ static inline void dt_points_cleanup(dt_points_t *p)
 {
   free(p->s[0]);
   free(p->s);
-  free(p);
 }
 
 static inline float dt_points_get_for(dt_points_t *p, const unsigned int thread_num)
