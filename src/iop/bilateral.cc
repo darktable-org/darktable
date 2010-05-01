@@ -242,7 +242,7 @@ void init(dt_iop_module_t *module)
   module->priority = 150;
   module->params_size = sizeof(dt_iop_bilateral_params_t);
   module->gui_data = NULL;
-  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{2.0, 2.0, 0.002, 0.002, 0.002}};
+  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{5.0, 5.0, 0.005, 0.005, 0.005}};
   memcpy(module->params, &tmp, sizeof(dt_iop_bilateral_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilateral_params_t));
 }
