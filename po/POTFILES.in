@@ -39,6 +39,7 @@ src/iop/grain.c
 src/iop/bilateral.cc
 src/iop/profile_gamma.c
 src/iop/clahe.c
+src/iop/colortransfer.c
 src/gui/gtk.c
 src/gui/histogram.c
 src/gui/metadata.c

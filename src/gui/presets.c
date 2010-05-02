@@ -24,6 +24,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   dt_iop_module_t *module;
   GtkEntry *name, *description;
   GtkCheckButton *autoapply, *filter;
+  GtkBox *details;
   GtkEntry *model, *maker, *lens;
   GtkSpinButton *iso_min, *iso_max;
   GtkComboBox *exposure_min, *exposure_max;
@@ -147,6 +148,20 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 }
 
 static void
+check_buttons_activated (GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
+{
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)) || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)))
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->details), TRUE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->details), FALSE);
+    gtk_widget_show_all (GTK_WIDGET(g->details));
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
+  }
+  else
+    gtk_widget_set_visible(GTK_WIDGET(g->details), FALSE);
+}
+
+static void
 edit_preset (const char *name_in, dt_iop_module_t *module)
 {
   gchar *name = NULL;
@@ -185,7 +200,7 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   g->module = module;
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, name);
-  gtk_box_pack_start(box, GTK_WIDGET(g->name), TRUE, TRUE, 0);
+  gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
   gtk_object_set(GTK_OBJECT(g->name), "tooltip-text", _("name of the preset"), NULL);
 
   g->description = GTK_ENTRY(gtk_entry_new());
@@ -197,9 +212,13 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
   gtk_object_set(GTK_OBJECT(g->filter), "tooltip-text", _("be very careful with this option. this might be the last time you see your preset."), NULL);
   gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
+  g_signal_connect(G_OBJECT(g->filter),    "toggled", G_CALLBACK(check_buttons_activated), g);
 
+  g->details   = GTK_BOX(gtk_hbox_new(FALSE, 0));
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
-  gtk_box_pack_start(box,  GTK_WIDGET(hbox),  FALSE, FALSE, 0);
+  gtk_box_pack_start(box,  GTK_WIDGET(g->details),  FALSE, FALSE, 0);
+  gtk_box_pack_start(g->details, GTK_WIDGET(hbox),  FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox3), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox4), TRUE, TRUE, 0);
@@ -282,6 +301,8 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_object_set(GTK_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), NULL);
   gtk_spin_button_set_digits(g->focal_length_max, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->focal_length_max), FALSE, FALSE, 0);
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(darktable.db, "select description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, autoapply, filter from presets where name = ?1 and operation = ?2", -1, &stmt, NULL);
@@ -427,7 +448,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
   // order: get shipped defaults first
   if(image)
   { // only matching if filter is on:
-    sqlite3_prepare_v2(darktable.db, "select name, op_params, writeprotect from presets where operation=?1 and "
+    sqlite3_prepare_v2(darktable.db, "select name, op_params, writeprotect, description from presets where operation=?1 and "
         "(filter=0 or ( "
         "?2 like model and ?3 like maker and ?4 like lens and "
         "?5 between iso_min and iso_max and "
@@ -447,7 +468,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
   }
   else
   { // don't know for which image. show all we got:
-    sqlite3_prepare_v2(darktable.db, "select name, op_params, writeprotect from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+    sqlite3_prepare_v2(darktable.db, "select name, op_params, writeprotect, description from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
     sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
   }
   // collect all presets for op from db
@@ -487,6 +508,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
     }
     if(module) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), module);
     else if(pick_callback) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);
+    gtk_object_set(GTK_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt ++;
   }

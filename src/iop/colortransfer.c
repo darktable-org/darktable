@@ -20,7 +20,6 @@
 #endif
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
 #include <string.h>
 #include <strings.h>
 #include <gtk/gtk.h>
@@ -41,20 +40,11 @@
  * by erik reinhard, michael ashikhmin, bruce gooch, and peter shirley, 2001.
  * chosen because it officially cites the playboy.
  *
- * data flow:
- * 1) button is pressed: request color pick and set to acquire mode, add history item
- * 2) preview is processed, acquires data and sets data to acquired
- * 3) expose gets the post-process callback, launches another commit_params via add history item
- * 4) commit_params copies data back to gui params and sets params flag to acquired.
- *
- * capture timeline:
- *                 params     data
- *                  neutral    neutral
- * capture button: *acquire    neutral
- * commit_params:   acquire   *acquire
- * process:        *acquire2  *acquired   // FIXME: non thumbnail stays at acquire
- * expose:         *acquire3   acquired
- * commit_params:  *acquired  *neutral
+ * workflow:
+ * - open the target image, press acquire button
+ * - right click store as preset
+ * - open image you want to transfer the color to
+ * - right click and apply the preset
  */
 
 DT_MODULE(1)
@@ -90,6 +80,8 @@ typedef struct dt_iop_colortransfer_gui_data_t
 {
   int flowback_set;
   dt_iop_colortransfer_params_t flowback;
+  GtkSpinButton *spinbutton;
+  GtkWidget *area;
   cmsHPROFILE hsRGB;
   cmsHPROFILE hLab;
   cmsHTRANSFORM xform;
@@ -124,20 +116,28 @@ capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 
   // accumulated start distribution of G1 G2
   for(int k=1;k<HISTN;k++) hist[k] += hist[k-1];
-  for(int k=0;k<HISTN;k++) hist[k] = (int)CLAMP(hist[k]*HISTN/(float)hist[HISTN-1], 0, HISTN-1);
+  for(int k=0;k<HISTN;k++) hist[k] = (int)CLAMP(hist[k]*(HISTN/(float)hist[HISTN-1]), 0, HISTN-1);
+  // for(int i=0;i<100;i++) printf("#[%d] %d \n", i, hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
 static void
 invert_histogram(const int *hist, float *inv_hist)
 {
   // invert non-normalised accumulated hist
+#if 0
   int last = 0;
   for(int i=0;i<HISTN;i++) for(int k=last;k<HISTN;k++)
     if(hist[k] >= i) { last = k; inv_hist[i] = 100.0*k/(float)HISTN; break; }
+#else
+  int last = 31;
+  for(int i=0;i<=last;i++) inv_hist[i] = 100.0*i/(float)HISTN;
+  for(int i=last+1;i<HISTN;i++) for(int k=last;k<HISTN;k++)
+    if(hist[k] >= i) { last = k; inv_hist[i] = 100.0*k/(float)HISTN; break; }
+#endif
 
-  printf("inv histogram debug:\n");
-  for(int i=0;i<100;i++) printf("%d => %f\n", i, inv_hist[hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]]);
-  for(int i=0;i<100;i++) printf("[%d] %f => %f\n", i, hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]/(float)hist[HISTN-1], inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
+  // printf("inv histogram debug:\n");
+  // for(int i=0;i<100;i++) printf("%d => %f\n", i, inv_hist[hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]]);
+  // for(int i=0;i<100;i++) printf("[%d] %f => %f\n", i, hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]/(float)HISTN, inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
 static void
@@ -156,6 +156,23 @@ get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
       }
     }
   }
+}
+
+static void
+get_clusters(const float *col, const int n, float mean[n][2], float *weight)
+{
+  float Mdist = 0.0f, mdist = FLT_MAX;
+  for(int k=0;k<n;k++)
+  {
+    const float dist = (col[1]-mean[k][0])*(col[1]-mean[k][0]) + (col[2]-mean[k][1])*(col[2]-mean[k][1]);
+    weight[k] = dist;
+    if(dist < mdist) mdist = dist;
+    if(dist > Mdist) Mdist = dist;
+  }
+  if(Mdist-mdist > 0) for(int k=0;k<n;k++) weight[k] = (weight[k] - mdist)/(Mdist-mdist);
+  float sum = 0.0f;
+  for(int k=0;k<n;k++) sum += weight[k];
+  if(sum > 0) for(int k=0;k<n;k++) weight[k] /= sum;
 }
 
 static int
@@ -180,8 +197,7 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
 {
   // TODO: check params here:
   const int nit = 10; // number of iterations
-  const int samples = roi->width*roi->height * 0.1; // samples: only a fraction of the buffer.
-  // TODO: check if we need to go to Lab from L a/L b/L
+  const int samples = roi->width*roi->height * 0.2; // samples: only a fraction of the buffer.
 
   float mean[n][2], var[n][2];
   int cnt[n];
@@ -189,7 +205,6 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
   // init n clusters for a, b channels at random
   for(int k=0;k<n;k++)
   {
-    // TODO: range?
     mean_out[k][0] = 20.0f-40.0f*dt_points_get();
     mean_out[k][1] = 20.0f-40.0f*dt_points_get();
     var_out[k][0] = var_out[k][1] = 0.0f;
@@ -238,6 +253,7 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
     // swap old/new means
     for(int k=0;k<n;k++)
     {
+      if(cnt [k] == 0) continue;
       mean_out[k][0] = mean[k][0]/cnt[k];
       mean_out[k][1] = mean[k][1]/cnt[k];
       var_out[k][0] = var[k][0]/cnt[k] - mean_out[k][0]*mean_out[k][0];
@@ -282,13 +298,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else if(data->flag == APPLY)
   { // apply histogram of L and clustering of (a,b)
-#if 1
-    // DEBUG: first copy all
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
-#endif
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
-#if 0
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,in,out,hist)
 #endif
@@ -298,10 +309,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i=0;i<roi_out->width;i++)
       { // L: match histogram
         out[j] = data->hist[hist[(int)CLAMP(HISTN*in[j]/100.0, 0, HISTN-1)]];
+        out[j] = CLAMP(out[j], 0, 100);
         j+=3;
       }
     }
-#endif
 
     // cluster input buffer
     float mean[data->n][2], var[data->n][2];
@@ -311,31 +322,54 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int mapio[data->n];
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
-#if 1
     // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,mean,var,mapio,in,out)
 #endif
     for(int k=0;k<roi_out->height;k++)
     {
+      float weight[MAXN];
       int j = 3*roi_out->width*k;
       for(int i=0;i<roi_out->width;i++)
       {
-        const int ki = get_cluster(in + j, data->n, mean);
         const float L = in[j];
         const float Lab[3] = {L, in[j+1]*L/100.0, in[j+2]*L/100.0};
         // a, b: subtract mean, scale nvar/var, add nmean
+#if 0   // single cluster, gives color banding
+        const int ki = get_cluster(in + j, data->n, mean);
         out[j+1] = 100.0/out[j] * ((Lab[1] - mean[ki][0])*data->var[mapio[ki]][0]/var[ki][0] + data->mean[mapio[ki]][0]);
         out[j+2] = 100.0/out[j] * ((Lab[2] - mean[ki][1])*data->var[mapio[ki]][1]/var[ki][1] + data->mean[mapio[ki]][1]);
+#else   // fuzzy weighting
+        get_clusters(in+j, data->n, mean, weight);
+        out[j+1] = out[j+2] = 0.0f;
+        for(int c=0;c<data->n;c++)
+        {
+          out[j+1] += weight[c] * 100.0/out[j] * ((Lab[1] - mean[c][0])*data->var[mapio[c]][0]/var[c][0] + data->mean[mapio[c]][0]);
+          out[j+2] += weight[c] * 100.0/out[j] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
+        }
+#endif
         j+=3;
       }
     }
-#endif
   }
   else
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
   }
+}
+
+static void
+spinbutton_changed (GtkSpinButton *button, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  p->n = gtk_spin_button_get_value(button);
+  bzero(p->hist, sizeof(float)*HISTN);
+  bzero(p->mean, sizeof(float)*MAXN*2);
+  bzero(p->var,  sizeof(float)*MAXN*2);
+  gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
+  dt_control_queue_draw(self->widget);
 }
 
 static void
@@ -350,18 +384,6 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
-
-#if 0
-static void
-apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
-  p->flag = APPLY;
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
-}
-#endif
 
 static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
@@ -445,6 +467,10 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void gui_update(struct dt_iop_module_t *self)
 {
+  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  gtk_spin_button_set_value(g->spinbutton, p->n);
+  gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   // redraw color cluster preview
   dt_control_queue_draw(self->widget);
 }
@@ -543,25 +569,23 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT(self->widget), "expose-event",
                     G_CALLBACK(expose), self);
 
-  GtkWidget *area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(area, 300, 100);
-  gtk_box_pack_start(GTK_BOX(self->widget), area, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
+  g->area = gtk_drawing_area_new();
+  gtk_widget_set_size_request(g->area, 300, 100);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (g->area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 
-  GtkBox *box = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  GtkBox *box = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   GtkWidget *button;
+  g->spinbutton = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, MAXN, 1));
+  gtk_object_set(GTK_OBJECT(g->spinbutton), "tooltip-text", _("number of clusters to find in image"), NULL);
+  gtk_box_pack_start(box, GTK_WIDGET(g->spinbutton), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->spinbutton), "value-changed", G_CALLBACK(spinbutton_changed), (gpointer)self);
+
   button = gtk_button_new_with_label(_("acquire"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("analyze this image and store parameters"), NULL);
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
-
-  // button = gtk_button_new_with_label(_("apply"));
-  // gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("apply color statistics to this image"), NULL);
-  // gtk_box_pack_start(box, button, TRUE, TRUE, 0);
-  // g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
-  // TODO:
-  // combo box with presets from db
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

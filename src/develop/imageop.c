@@ -51,12 +51,32 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   sqlite3_bind_text(stmt, 2, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 3, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 4, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
-  sqlite3_bind_double(stmt, 5, module->dev->image->exif_iso);
-  sqlite3_bind_double(stmt, 6, module->dev->image->exif_exposure);
-  sqlite3_bind_double(stmt, 7, module->dev->image->exif_aperture);
-  sqlite3_bind_double(stmt, 8, module->dev->image->exif_focal_length);
+  sqlite3_bind_double(stmt, 5, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)));
+  sqlite3_bind_double(stmt, 6, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)));
+  sqlite3_bind_double(stmt, 7, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)));
+  sqlite3_bind_double(stmt, 8, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
   sqlite3_bind_double(stmt, 9, 2-dt_image_is_ldr(module->dev->image));
+
+#if 0 // debug the query:
+  printf("select op_params, enabled from presets where operation ='%s' and "
+      "autoapply=1 and "
+      "'%s' like model and '%s' like maker and '%s' like lens and "
+      "%f between iso_min and iso_max and "
+      "%f between exposure_min and exposure_max and "
+      "%f between aperture_min and aperture_max and "
+      "%f between focal_length_min and focal_length_max and "
+      "(isldr = 0 or isldr=%d) order by length(model) desc, length(maker) desc, length(lens) desc;\n",
+   module->op,
+   module->dev->image->exif_model,
+   module->dev->image->exif_maker,
+   module->dev->image->exif_lens,
+   fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)),
+   fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)),
+   fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)),
+   fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)),
+   2-dt_image_is_ldr(module->dev->image));
+#endif
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   { // try to find matching entry
