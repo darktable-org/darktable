@@ -178,6 +178,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   char datadir[1024];
   char filename[1024];
   dt_get_datadir(datadir, 1024);
+  if(!strcmp(p->iccprofile, "darktable"))
+  {
+    char makermodel[512];
+    snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
+    d->input = dt_colorspaces_create_darktable_profile(makermodel);
+    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+  }
   if(!strcmp(p->iccprofile, "cmatrix"))
   { // color matrix
     int ret;
@@ -196,12 +203,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     libraw_close(raw);
   }
-  else if(!strcmp(p->iccprofile, "darktable"))
-  {
-    char makermodel[512];
-    snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
-    d->input = dt_colorspaces_create_darktable_profile(makermodel);
-  }
   else if(!strcmp(p->iccprofile, "sRGB"))
   {
     d->input = dt_colorspaces_create_srgb_profile();
@@ -214,7 +215,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->input = dt_colorspaces_create_adobergb_profile();
   }
-  else
+  else if(!d->input)
   {
     snprintf(filename, 1024, "%s/color/in/%s", datadir, p->iccprofile);
     d->input = cmsOpenProfileFromFile(filename, "r");
@@ -295,7 +296,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 300;
   module->hide_enable_button = 1;
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"cmatrix", DT_INTENT_PERCEPTUAL};
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"darktable", DT_INTENT_PERCEPTUAL};
   if(dt_image_is_ldr(module->dev->image)) strcpy(tmp.iccprofile, "sRGB");
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
