@@ -309,9 +309,54 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
   const float aspect = gtk_spin_button_get_value(g->aspect);
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on)))
   {
+    // TODO: if only one side changed, force aspect by two adjacent in equal parts!
+    // 1 2 4 8 : x y w h
+
     // aspect = wd*w/ht*h
-    if(grab &  5) g->clip_h = wd*g->clip_w/(ht*aspect);
-    if(grab & 10) g->clip_w = ht*g->clip_h*aspect/wd;
+    // if we only modified one dim, respectively, we wanted these values:
+    const float target_h = wd*g->clip_w/(ht*aspect);
+    const float target_w = ht*g->clip_h*aspect/wd;
+    // i.e. target_w/h = w/target_h = aspect
+
+
+    // corners: move two adjacent 
+    if     (grab == 1+2)
+    { // move x y
+      g->clip_x = fmaxf(0.0f, g->clip_x + g->clip_w - (target_w + g->clip_w)*.5);
+      g->clip_y = fmaxf(0.0f, g->clip_y + g->clip_h - (target_h + g->clip_h)*.5);
+      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5f);
+      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5f);
+    }
+    else if(grab == 2+4) // move y w
+    {
+      g->clip_y = fmaxf(0.0f, g->clip_y + g->clip_h - (target_h + g->clip_h)*.5);
+      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5);
+      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5f);
+    }
+    else if(grab == 4+8) // move w h
+    {
+      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5);
+      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5);
+    }
+    else if(grab == 8+1) // move h x
+    {
+      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5);
+      g->clip_x = fmaxf(0.0f, g->clip_x + g->clip_w - (target_w + g->clip_w)*.5);
+      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5);
+    }
+    else if(grab & 5) // dragged either x or w (1 4)
+    { // change h and move y, h equally
+      const float off = target_h - g->clip_h;
+      g->clip_h = fminf(1.0, g->clip_h + off);
+      g->clip_y = fmaxf(0.0, g->clip_y - .5f*off);
+    }
+    else if(grab & 10) // dragged either y or h (2 8)
+    { // channge w and move x, w equally
+      const float off = target_w - g->clip_w;
+      g->clip_w = fminf(1.0, g->clip_w + off);
+      g->clip_x = fmaxf(0.0, g->clip_x - .5f*off);
+    }
+
     if(g->clip_x + g->clip_w > 1.0)
     {
       g->clip_h *= (1.0 - g->clip_x)/g->clip_w;
