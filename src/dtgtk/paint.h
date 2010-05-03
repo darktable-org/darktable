@@ -37,6 +37,8 @@ typedef void (*DTGTKCairoPaintIconFunc)(cairo_t *cr,gint x,gint y,gint w,gint h,
 
 /** Paint a arrow left or right */
 void dtgtk_cairo_paint_arrow(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a store icon */
+void dtgtk_cairo_paint_store(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a reset icon */
 void dtgtk_cairo_paint_reset(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a flip icon */
@@ -45,5 +47,12 @@ void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 void dtgtk_cairo_paint_switch(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color rect icon */
 void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a eye icon */
+void dtgtk_cairo_paint_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a timer icon */
+void dtgtk_cairo_paint_timer(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a filmstrip icon */
+void dtgtk_cairo_paint_filmstrip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+
 
 #endif

@@ -46,6 +46,11 @@ name ()
   return _("collect images");
 }
 
+uint32_t views() 
+{
+  return DT_LIGHTTABLE_VIEW;
+}
+
 void
 gui_reset (dt_lib_module_t *self)
 {

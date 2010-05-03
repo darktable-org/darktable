@@ -15,6 +15,8 @@ src/libs/tagging.c
 src/libs/select.c
 src/libs/collect.c
 src/libs/colorlabels.c
+src/libs/session.c
+src/libs/camera.c
 src/iop/clipping.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
@@ -45,8 +47,11 @@ src/gui/histogram.c
 src/gui/metadata.c
 src/gui/navigation.c
 src/gui/filmview.c
+src/gui/devices.c
+src/gui/camera_import_dialog.c
 src/gui/presets.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/filmstrip.c
+src/views/capture.c
 src/views/view.c

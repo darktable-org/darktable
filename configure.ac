@@ -109,6 +109,8 @@ PKG_CHECK_MODULES(SQLITE, [sqlite3])
 PKG_CHECK_MODULES(EXIV2, exiv2 >= 0.18)
 PKG_CHECK_MODULES(PNG, libpng >= 1.2)
 PKG_CHECK_MODULES(OPENEXR, OpenEXR >= 1.6)
+PKG_CHECK_MODULES(GPHOTO2, [libgphoto2 >= 2.4.5])
+
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),
         [

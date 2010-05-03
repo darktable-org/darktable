@@ -81,6 +81,12 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
   dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
 
+  // Import settings
+  dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/darktable");
+  dt_conf_set_string ("capture/camera/storage/subpath", "$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)");
+  dt_conf_set_string ("capture/camera/storage/namepattern", "$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)");
+  dt_conf_set_string ("capture/camera/import/jobcode", "noname");
+  
   dt_conf_set_float("gamma_linear", .1f);
   dt_conf_set_float("gamma_gamma", .45f);
 }

@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-22 07:27+0200\n"
-"PO-Revision-Date: 2010-04-22 08:03+0200\n"
+"POT-Creation-Date: 2010-04-22 11:16+0200\n"
+"PO-Revision-Date: 2010-04-22 11:37+0200\n"
 "Last-Translator: Henrik Andersson <>\n"
 "Language-Team:  <>\n"
 "MIME-Version: 1.0\n"
@@ -76,30 +76,34 @@ msgid "button"
 msgstr "knapp"
 
 #: ../darktable.glade.h:18
+msgid "capture"
+msgstr "enheter"
+
+#: ../darktable.glade.h:19
 msgid "compress history stack"
 msgstr "Komprimera historikstack"
 
-#: ../darktable.glade.h:19
+#: ../darktable.glade.h:20
 msgid "create a minimal history stack which produces the same image"
 msgstr "Skapar en minimal historikstack som producerar samma bildresultat"
 
-#: ../darktable.glade.h:20
+#: ../darktable.glade.h:21
 msgid "date/time"
 msgstr "Tidsstämpel"
 
-#: ../darktable.glade.h:21 ../src/iop/exposure.c:38 ../src/iop/exposure.c:281
+#: ../darktable.glade.h:22 ../src/iop/exposure.c:38 ../src/iop/exposure.c:281
 msgid "exposure"
 msgstr "Exponering"
 
-#: ../darktable.glade.h:22
+#: ../darktable.glade.h:23
 msgid "f-length"
 msgstr "Brännvidd"
 
-#: ../darktable.glade.h:23
+#: ../darktable.glade.h:24
 msgid "filename"
 msgstr "Filnamn"
 
-#: ../darktable.glade.h:24
+#: ../darktable.glade.h:25
 msgid ""
 "filename\n"
 "time\n"
@@ -111,53 +115,53 @@ msgstr ""
 "datum\n"
 "betyg\n"
 "id\n"
-"color label"
+"färgmarkering"
 
-#: ../darktable.glade.h:29
+#: ../darktable.glade.h:30
 msgid "height"
 msgstr "Höjd"
 
-#: ../darktable.glade.h:30
+#: ../darktable.glade.h:31
 msgid "histogram"
 msgstr "Histogram"
 
-#: ../darktable.glade.h:31 ../src/libs/collect.c:281
+#: ../darktable.glade.h:32 ../src/libs/collect.c:281
 msgid "history"
 msgstr "Historik"
 
-#: ../darktable.glade.h:32
+#: ../darktable.glade.h:33
 msgid "images sorted by"
 msgstr "bilder sortera efter"
 
-#: ../darktable.glade.h:33
+#: ../darktable.glade.h:34
 msgid "import film roll"
 msgstr "Importera filmrulle"
 
-#: ../darktable.glade.h:34
+#: ../darktable.glade.h:35
 msgid "import single image"
 msgstr "Importera en bild"
 
-#: ../darktable.glade.h:35
+#: ../darktable.glade.h:36
 msgid "iso"
 msgstr "ISO"
 
-#: ../darktable.glade.h:36 ../src/iop/lens.c:1156
+#: ../darktable.glade.h:37 ../src/iop/lens.c:1156
 msgid "lens"
 msgstr "Objektiv"
 
-#: ../darktable.glade.h:37
+#: ../darktable.glade.h:38
 msgid "library"
 msgstr "Bibliotek"
 
-#: ../darktable.glade.h:38
+#: ../darktable.glade.h:39
 msgid "list"
 msgstr "Visa"
 
-#: ../darktable.glade.h:39
+#: ../darktable.glade.h:40
 msgid "maker"
 msgstr "Tillverkare"
 
-#: ../darktable.glade.h:40
+#: ../darktable.glade.h:41
 msgid ""
 "mean\n"
 "min\n"
@@ -167,75 +171,75 @@ msgstr ""
 "min\n"
 "max"
 
-#: ../darktable.glade.h:43
+#: ../darktable.glade.h:44
 msgid "metadata"
 msgstr "Metadata"
 
-#: ../darktable.glade.h:44
+#: ../darktable.glade.h:45
 msgid "model"
 msgstr "Modell"
 
-#: ../darktable.glade.h:45
+#: ../darktable.glade.h:46
 msgid "more plugins"
 msgstr "Fler plug-ins"
 
-#: ../darktable.glade.h:46
+#: ../darktable.glade.h:47
 msgid "navigation"
 msgstr "Navigera"
 
-#: ../darktable.glade.h:47
+#: ../darktable.glade.h:48
 msgid "no module selected"
 msgstr "ingen modul vald"
 
-#: ../darktable.glade.h:48
+#: ../darktable.glade.h:49
 msgid "open"
 msgstr "öppna"
 
-#: ../darktable.glade.h:49
+#: ../darktable.glade.h:50
 msgid "open selected film roll in light table"
 msgstr "Öppna vald filmrulle på ljusbordet"
 
-#: ../darktable.glade.h:50
+#: ../darktable.glade.h:51
 msgid "original"
 msgstr "Orginal"
 
-#: ../darktable.glade.h:51
+#: ../darktable.glade.h:52
 msgid "pick"
 msgstr "Välja bilder"
 
-#: ../darktable.glade.h:52 ../src/libs/image.c:72
+#: ../darktable.glade.h:53 ../src/libs/image.c:72
 msgid "remove"
 msgstr "Ta bort"
 
-#: ../darktable.glade.h:53
+#: ../darktable.glade.h:54
 msgid "remove selected film roll from collection"
 msgstr "ta bort vald filmrulle från samling"
 
-#: ../darktable.glade.h:54
+#: ../darktable.glade.h:55
 msgid "search film rolls by folder"
 msgstr "sök filmrulle utifrån katalog"
 
-#: ../darktable.glade.h:55
+#: ../darktable.glade.h:56
 msgid "snapshots"
 msgstr "Avbilder"
 
-#: ../darktable.glade.h:56
+#: ../darktable.glade.h:57
 msgid "switch to darkroom mode"
 msgstr "Byt till mörkerrumsläge"
 
-#: ../darktable.glade.h:57
+#: ../darktable.glade.h:58
 msgid "take snapshot"
 msgstr "Skapa avbild"
 
-#: ../darktable.glade.h:58
+#: ../darktable.glade.h:59
 msgid "togglebutton"
 msgstr "Knappval"
 
-#: ../darktable.glade.h:59
+#: ../darktable.glade.h:60
 msgid "width"
 msgstr "Bredd"
 
-#: ../darktable.glade.h:60
+#: ../darktable.glade.h:61
 msgid ""
 "zoomable light table\n"
 "file manager"
@@ -348,7 +352,9 @@ msgstr "ICC återgivningsavsikt"
 msgid ""
 "if non-negative, this overrides the per-image output color profile rendering "
 "intent on export."
-msgstr "om icke-negativ så överskrider detta bildens färgprofil återgivningavsikt vid exportering. "
+msgstr ""
+"om icke-negativ så överskrider detta bildens färgprofil återgivningavsikt "
+"vid exportering. "
 
 #: ../darktable.schemas.in.h:22
 msgid ""
@@ -359,31 +365,47 @@ msgstr ""
 "värden att synkroniseras med nya standardvärden"
 
 #: ../darktable.schemas.in.h:23
+msgid "jobcode of import job"
+msgstr "Jobbkod av importeringsjobb"
+
+#: ../darktable.schemas.in.h:24
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "Jpeg kvalitet av miniatyrer på hårddisk"
 
-#: ../darktable.schemas.in.h:24
+#: ../darktable.schemas.in.h:25
 msgid "memory in bytes to use for mipmap cache"
 msgstr "minnesallokering i bytes för mipmap cache"
 
-#: ../darktable.schemas.in.h:25
+#: ../darktable.schemas.in.h:26
 msgid "order by and limit clauses go last"
 msgstr "sortera och limit klausul väljs sist"
 
-#: ../darktable.schemas.in.h:26
+#: ../darktable.schemas.in.h:27
+msgid "path of storage for captured camera images"
+msgstr "full sökväg till lagringsyta vid importering av bilder från kamera"
+
+#: ../darktable.schemas.in.h:28
+msgid "rename pattern for captured images"
+msgstr "filnamnsmönster för importerade bilder"
+
+#: ../darktable.schemas.in.h:29
 msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
 msgstr ""
 "Ange layout för ljusbord: 0 - in/ut zoomingsbar eller 1 - filhanterare."
 
-#: ../darktable.schemas.in.h:27
+#: ../darktable.schemas.in.h:30
 msgid "small thumbnails to keep in main memory cache"
 msgstr "små minatyrer som ska hållas kvar i minnescachen"
 
-#: ../darktable.schemas.in.h:28
+#: ../darktable.schemas.in.h:31
 msgid "sql query to select images for current view"
 msgstr "SQL-sats att använda som urval av bilder i nuvarande vy"
 
-#: ../darktable.schemas.in.h:29
+#: ../darktable.schemas.in.h:32
+msgid "subpath pattern in storage for captured camera images"
+msgstr "underkatalog i lagringsyta för importerade bilder från kameran."
+
+#: ../darktable.schemas.in.h:33
 msgid ""
 "these files can later be re-imported into a different database, preserving "
 "your changes to the image."
@@ -391,11 +413,11 @@ msgstr ""
 "Dessa filer kan senare importeras i en annan databas, utan att skapa "
 "ändringa i orginalbilden"
 
-#: ../darktable.schemas.in.h:30
+#: ../darktable.schemas.in.h:34
 msgid "this overrides the per-image settings, if not set to `image'."
 msgstr "detta överskrider inställningen för bilden, om inte `image' är valt."
 
-#: ../darktable.schemas.in.h:31
+#: ../darktable.schemas.in.h:35
 msgid ""
 "this value smaller than 1.0 downsamples the preview pixels for faster "
 "feedback."
@@ -403,84 +425,106 @@ msgstr ""
 "Om detta värde är mindre än 1.0 nedsamplingar så kommer förhandsvisningen "
 "att vara snabbare."
 
-#: ../darktable.schemas.in.h:32
+#: ../darktable.schemas.in.h:36
 msgid "thumbnails to keep in database"
 msgstr "antal miniatyrer att spara i databasen"
 
-#: ../darktable.schemas.in.h:33
+#: ../darktable.schemas.in.h:37
 msgid "version of these dt-gconf entries"
 msgstr "Version av DT och GConf"
 
-#: ../darktable.schemas.in.h:34
+#: ../darktable.schemas.in.h:38
 msgid "very small thumbnails to keep in database"
 msgstr "mycket små miniatyrer att spara i databasen"
 
-#: ../darktable.schemas.in.h:35
+#: ../darktable.schemas.in.h:39
 msgid "which layout should lighttable mode show"
 msgstr "vilken layout ska ljusbordet visa"
 
-#: ../darktable.schemas.in.h:36
+#: ../darktable.schemas.in.h:40
 msgid "width of the exported image"
 msgstr "Bredd av den exporterade bilden"
 
-#: ../darktable.schemas.in.h:37
+#: ../darktable.schemas.in.h:41
 msgid "width of the exported image, or 0 if no scaling should be done."
 msgstr "Bredd av den exporterade bilden, eller 0 för att utesluta skalning."
 
-#: ../darktable.schemas.in.h:38
+#: ../darktable.schemas.in.h:42
 msgid "write a redundant file for each image"
 msgstr "Skapa en kopia av varje orginal"
 
-#: ../src/control/control.c:739 ../src/control/control.c:742
+#: ../src/control/control.c:745 ../src/control/control.c:748
 msgid "working.."
 msgstr "Arbetar..."
 
-#: ../src/control/control.c:820
+#: ../src/control/control.c:826
 #, c-format
 msgid "switch to %s mode"
 msgstr "Byt till %s vy"
 
-#: ../src/control/control.c:828
+#: ../src/control/control.c:834
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s läge</b></big></span>"
 
-#: ../src/control/control.c:1193
+#: ../src/control/control.c:1199
 msgid "0 - original"
 msgstr "0 - Orginal"
 
 #. single images
-#: ../src/control/control.c:1236 ../src/control/control.c:1237
+#: ../src/control/control.c:1242 ../src/control/control.c:1243
 #: ../src/libs/collect.c:200 ../src/gui/filmview.c:50 ../src/gui/filmview.c:54
 #: ../src/gui/filmview.c:56
 #, c-format
 msgid "single images"
 msgstr "Enstaka bilder"
 
-#: ../src/control/jobs.c:285
+#: ../src/control/jobs.c:88
+#, c-format
+msgid "file %s imported from camera."
+msgstr "File %s importerad från kameran."
+
+#: ../src/control/jobs.c:112
+msgid "starting import job of images from camera"
+msgstr "Startar importeringsjobb av bilder ifrån kamera."
+
+#: ../src/control/jobs.c:136
+#, c-format
+msgid "failed to create import path %s, import of images aborted."
+msgstr ""
+"fallerade att skapa sökväg %s för importering, avbryter importering av "
+"bilder."
+
+#: ../src/control/jobs.c:166
+msgid "failed to create filmroll for camera import, import of images aborted."
+msgstr ""
+"fallerade att skapa filmrulle för importering från kamera, importering av "
+"bilder avbryts"
+
+#: ../src/control/jobs.c:411
 msgid "do you really want to remove all selected images from the collection?"
 msgstr "vill du verkligen ta bort alla valda bilder från samlingen?"
 
-#: ../src/control/jobs.c:286
+#: ../src/control/jobs.c:412
 msgid "remove images?"
 msgstr "Ta bort bilder?"
 
-#: ../src/control/jobs.c:306
+#: ../src/control/jobs.c:432
 msgid "do you really want to physically delete all selected images from disk?"
 msgstr "Vill du verkligen ta bort all valda bilder fysiskt från disk?"
 
-#: ../src/control/jobs.c:307
+#: ../src/control/jobs.c:433
 msgid "delete images?"
 msgstr "Ta bort bilder?"
 
-#: ../src/control/jobs.c:324
+#: ../src/control/jobs.c:450
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "Exporterar %d bild..."
 msgstr[1] "Exporterar %d bilder..."
 
-#: ../src/control/jobs.c:395
+#: ../src/control/jobs.c:521
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exporterad till `%s%s'"
@@ -545,11 +589,11 @@ msgstr "öppna en inställningsfil"
 msgid "dt sidecar files"
 msgstr "instälnningsfiler"
 
-#: ../src/libs/copy_history.c:67 ../src/gui/gtk.c:640
+#: ../src/libs/copy_history.c:67 ../src/gui/gtk.c:644
 msgid "all files"
 msgstr "alla filer"
 
-#: ../src/libs/copy_history.c:85 ../src/gui/gtk.c:660
+#: ../src/libs/copy_history.c:85 ../src/gui/gtk.c:664
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Fel uppstod vid inläsning av fil '%s'"
@@ -1660,7 +1704,7 @@ msgstr "Liknande Canon EOS"
 
 #: ../src/iop/basecurve.c:43
 msgid "sony alpha like"
-msgstr "sony-alpha-like"
+msgstr "sony alpha like"
 
 #: ../src/iop/basecurve.c:44
 msgid "fotogenic - point and shoot v4.1"
@@ -1916,7 +1960,7 @@ msgstr "storlek av detaljer att bevara"
 msgid "strength of the effect"
 msgstr "sluttningen påverkar effektens styrka"
 
-#: ../src/gui/gtk.c:227
+#: ../src/gui/gtk.c:231
 #, c-format
 msgctxt "color picker module"
 msgid "`%s'"
@@ -1928,19 +1972,19 @@ msgstr "`%s'"
 #. snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
 #. break;
 #. case 1: // Lab
-#: ../src/gui/gtk.c:263
+#: ../src/gui/gtk.c:267
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/gui/gtk.c:578
+#: ../src/gui/gtk.c:582
 msgid "import film"
 msgstr "Importera filmrulle"
 
-#: ../src/gui/gtk.c:616
+#: ../src/gui/gtk.c:620
 msgid "import image"
 msgstr "Importera bild"
 
-#: ../src/gui/gtk.c:635
+#: ../src/gui/gtk.c:639
 msgid "supported images"
 msgstr "supporterade bilder"
 
@@ -1967,6 +2011,129 @@ msgstr ""
 #: ../src/gui/filmview.c:113
 msgid "remove film roll?"
 msgstr "ta bort filmrulle?"
+
+#. Add detect button
+#: ../src/gui/capture.c:139
+msgid "detect sources"
+msgstr "Hitta källor"
+
+#: ../src/gui/capture.c:141
+msgid "scan and detect sources available for capture"
+msgstr "Avsök och hitta källor tillgängliga för fångst"
+
+#: ../src/gui/capture.c:164
+#, c-format
+msgid "Device \"%s\" connected on port \"%s\"."
+msgstr "Enhet \"%s\" ansluten på port \"%s\""
+
+#: ../src/gui/capture.c:171
+msgid "import from camera"
+msgstr "Importera från kamera"
+
+#: ../src/gui/capture.c:173
+msgid "tethered shoot"
+msgstr "Tethered shoot"
+
+#: ../src/gui/camera_import_dialog.c:173
+msgid "store value as default"
+msgstr "Spara värde som standardvärden"
+
+#: ../src/gui/camera_import_dialog.c:180
+msgid "reset value to default"
+msgstr "Återställ värde till standardvärden"
+
+#: ../src/gui/camera_import_dialog.c:203
+msgid "import images from camera"
+msgstr "Importera bilder från kamera"
+
+#: ../src/gui/camera_import_dialog.c:203
+msgid "cancel"
+msgstr "Avbryt"
+
+#: ../src/gui/camera_import_dialog.c:203
+msgid "import"
+msgstr "Importera"
+
+#: ../src/gui/camera_import_dialog.c:211
+msgid "My jobcode"
+msgstr "Min jobbkod"
+
+#. Top info
+#: ../src/gui/camera_import_dialog.c:219
+msgid "please wait while prefetcing thumbnails of images from camera..."
+msgstr "Var god vänta medans förhandsvisningsbilder hämtas från kameran."
+
+#. jobcode
+#: ../src/gui/camera_import_dialog.c:224
+msgid "jobcode"
+msgstr "Jobbkod"
+
+#: ../src/gui/camera_import_dialog.c:236
+msgid "thumbnail"
+msgstr "miniatyr"
+
+#: ../src/gui/camera_import_dialog.c:240
+msgid "storage file"
+msgstr "lagringsfil"
+
+#: ../src/gui/camera_import_dialog.c:257
+msgid "import storage structure"
+msgstr "Lagrings struktur vid import"
+
+#: ../src/gui/camera_import_dialog.c:258
+msgid ""
+"the following three settings describes the directory structure and file "
+"renaming for import storage and images, if you dont know how to use this "
+"leave the settings by their default values."
+msgstr ""
+"Följande tre inställningar beskriver katalogstrukturen och filnamn för "
+"import lagring av bilder, om du är osäker på hur detta fungerar så använd "
+"standard inställningarna som skapar en struktur som du ser i exemplet nedan."
+
+#: ../src/gui/camera_import_dialog.c:264
+msgid "storage directory"
+msgstr "lagringskatalog"
+
+#: ../src/gui/camera_import_dialog.c:267
+msgid "directory structure"
+msgstr "katalogstruktur"
+
+#: ../src/gui/camera_import_dialog.c:271
+msgid "filename structure"
+msgstr "Filnamnsstruktur"
+
+#. Add example
+#: ../src/gui/camera_import_dialog.c:276
+msgid "above settings expands to:"
+msgstr "ovanstående inställningar expanderar till:"
+
+#: ../src/gui/camera_import_dialog.c:288
+msgid "import images"
+msgstr "Importera bilder"
+
+#: ../src/gui/camera_import_dialog.c:289
+msgid "import settings"
+msgstr "Import inställningar"
+
+#. Lets run dialog
+#: ../src/gui/camera_import_dialog.c:356
+msgid ""
+"select the images from the list below that you want to import into a new "
+"filmroll"
+msgstr ""
+"markera de bilder i listan nedan som du vill importera till en ny filmrulle"
+
+#: ../src/gui/camera_import_dialog.c:395
+msgid "please set the basedirectory settings before importing"
+msgstr "Ange en huvudkatalog innan du försöker att importera bilder"
+
+#: ../src/gui/camera_import_dialog.c:402
+msgid "please set the subdirectory settings before importing"
+msgstr "Ange ett underkatalogsmönster innan du försöker att importera bilder"
+
+#: ../src/gui/camera_import_dialog.c:409
+msgid "please set the filenamepattern settings before importing"
+msgstr "Ange ett filnamnmönster innan du försöker att importera bilder"
 
 #: ../src/views/darkroom.c:40
 msgid "darkroom"
@@ -1998,6 +2165,12 @@ msgstr "Ljusbord"
 #: ../src/views/filmstrip.c:63
 msgid "film strip"
 msgstr "filmrulle"
+
+#~ msgid "the the strength of applied grain"
+#~ msgstr "ange styrkan av bruset "
+
+#~ msgid "sigma g"
+#~ msgstr "sigma g"
 
 #~ msgid "four color rgb"
 #~ msgstr "Fyrfärgers RGB"

@@ -52,6 +52,11 @@ name ()
   return _("export selected");
 }
 
+uint32_t views() 
+{
+  return DT_LIGHTTABLE_VIEW;
+}
+
 static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {

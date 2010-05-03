@@ -182,6 +182,52 @@ int dt_film_open_recent(const int num)
   return 0;
 }
 
+int dt_film_new(dt_film_t *film,const char *directory)
+{
+  // Try open filmroll for folder if exists
+  film->id = -1;
+  int rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select id from film_rolls where folder = ?1", -1, &stmt, NULL);
+  HANDLE_SQLITE_ERR(rc);
+  rc = sqlite3_bind_text(stmt, 1, directory, strlen(directory), SQLITE_STATIC);
+  HANDLE_SQLITE_ERR(rc);
+  if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
+  rc = sqlite3_finalize(stmt);
+  
+  if(film->id <= 0)
+  { // Create a new filmroll
+    int rc;
+    sqlite3_stmt *stmt;
+    char datetime[20];
+    dt_gettime(datetime);
+    rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, ?2)", -1, &stmt, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
+    rc = sqlite3_bind_text(stmt, 2, directory, strlen(directory), SQLITE_STATIC);
+    HANDLE_SQLITE_ERR(rc);
+    pthread_mutex_lock(&(darktable.db_insert));
+    rc = sqlite3_step(stmt);
+    if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
+    rc = sqlite3_finalize(stmt);
+    film->id = sqlite3_last_insert_rowid(darktable.db);
+    pthread_mutex_unlock(&(darktable.db_insert));
+   
+  }
+  
+  if(film->id<=0)
+      return 0;
+  strcpy(film->dirname,directory);
+  film->last_loaded = 0;
+  return film->id;
+}
+
+void dt_film_image_import(dt_film_t *film,const char *filename)
+{ // import an image into filmroll
+   if(dt_image_import(film->id, filename)) 
+     dt_control_queue_draw_all();
+}
+
 int dt_film_import(const char *dirname)
 {
   // init film and give each thread a pointer, last one cleans up.

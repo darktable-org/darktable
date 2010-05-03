@@ -52,7 +52,8 @@ typedef enum dt_ctl_gui_mode_t
 {
   DT_DEVELOP = 0,
   DT_LIBRARY = 1,
-  DT_MODE_NONE = 2
+  DT_CAPTURE = 2,
+  DT_MODE_NONE = 4
 }
 dt_ctl_gui_mode_t;
 
@@ -65,6 +66,14 @@ typedef enum dt_dev_zoom_t
 }
 dt_dev_zoom_t;
 
+/** The modes of capture view
+  \note in the future there will be a scanning mode...
+*/
+typedef enum dt_capture_mode_t
+{
+  DT_CAPTURE_MODE_TETHERED=0          // Only one capture mode to start with...
+}
+dt_capture_mode_t;
 typedef char dt_dev_operation_t[20];
 
 #define DEV_NUM_OP_PARAMS 10
