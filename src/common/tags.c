@@ -156,7 +156,7 @@ void dt_tag_attach_list(GList *tags,gint imgid)
   if( (child=g_list_first(tags))!=NULL )
     do 
     {
-      dt_tag_attach((guint)child->data,imgid);
+      dt_tag_attach((guint)(long int)child->data,imgid);
     } while( (child=g_list_next(child)) !=NULL);
 }
 
