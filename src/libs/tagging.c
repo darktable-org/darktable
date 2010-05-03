@@ -29,7 +29,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_tagging_t
 {
-  char related_query[1024];
+  char keyword[1024];
   GtkEntry *entry;
   GtkTreeView *current, *related;
   int imgsel;
@@ -61,7 +61,6 @@ update (dt_lib_module_t *self, int which)
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   GList *tags=NULL;
   uint32_t count;  
-  sqlite3_stmt *stmt;
 
   if(which == 0) // tags of selected images
   {
@@ -71,35 +70,7 @@ update (dt_lib_module_t *self, int which)
     count = dt_tag_get_attached(imgsel,&tags);
   }
   else // related tags of typed text
-  {
-    
-    sqlite3_exec(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, d->related_query, NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "insert into tagquery2 select distinct tagid, name, "
-        "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
-        NULL, NULL, NULL);
-    sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
-    
-    // Create result
-    uint32_t count=0;
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      dt_tag_t *t=g_malloc(sizeof(dt_tag_t));
-      t->id = sqlite3_column_int(stmt, 0);
-      t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
-      tags=g_list_append(tags,t);
-      count++;
-    }
-    
-    sqlite3_finalize(stmt);
-  
-    sqlite3_exec(darktable.db, "delete from tagquery1", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "delete from tagquery2", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "drop table tagquery1", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "drop table tagquery2", NULL, NULL, NULL);
-    
-  }
+    count = dt_tag_get_suggestions(d->keyword,&tags);
   
   GtkTreeIter iter;
   GtkTreeView *view;
@@ -120,24 +91,22 @@ update (dt_lib_module_t *self, int which)
                         DT_LIB_TAGGING_COL_ID, ((dt_tag_t*)tags->data)->id,
                         -1);
     } while( (tags=g_list_next(tags)) !=NULL );
+    
+    // Free result...
+    dt_tag_free_result(&tags);
   }
-
+  
+  
+  
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
   g_object_unref(model);
 }
 
 static void
-set_related_query(dt_lib_module_t *self, dt_lib_tagging_t *d)
+set_keyword(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
-  // sql query for filtered tags and (one bounce) for related tags
-  snprintf(d->related_query, 1024,
-    "insert into tagquery1 select related.id, related.name, cross.count from ( "
-    "select * from tags join tagxtag on tags.id = tagxtag.id1 or tags.id = tagxtag.id2 "
-    "where name like '%%%s%%') as cross join tags as related "
-    "where (id2 = related.id or id1 = related.id) "
-    "and (cross.id1 = cross.id2 or related.id != cross.id) "
-    "and cross.count > 0",
-    gtk_entry_get_text(d->entry));
+  sprintf(d->keyword,"%s",gtk_entry_get_text(d->entry));
+  
   update (self, 1);
 }
 
@@ -250,7 +219,7 @@ tag_name_changed (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
   if (event->keyval == GDK_KP_Enter || event->keyval == GDK_Return)
     new_button_clicked (NULL, user_data);
   else
-    set_related_query(self, d);
+    set_keyword(self, d);
   return FALSE;
 }
 
@@ -261,7 +230,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
 
   int res = GTK_RESPONSE_YES;
-//  sqlite3_stmt *stmt;
+
   guint tagid;
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
@@ -303,7 +272,7 @@ gui_reset (dt_lib_module_t *self)
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   // clear entry box and query
   gtk_entry_set_text(d->entry, "");
-  set_related_query(self, d);
+  set_keyword(self, d);
 }
 
 int
@@ -414,7 +383,7 @@ gui_init (dt_lib_module_t *self)
 
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
-  set_related_query(self, d);
+  set_keyword(self, d);
 }
 
 void

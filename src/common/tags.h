@@ -24,7 +24,7 @@
 typedef struct dt_tag_t 
 {
   guint id;
-  const gchar *tag;
+  gchar *tag;
 } 
 dt_tag_t;
 
@@ -57,5 +57,8 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);
 
 /** retreives a list of recent tags used. \param[out] result a pointer to list populated with result. \return the count \note the limit of result is decided by gconf value "xxx" */
 uint32_t dt_tag_get_recent_used(GList **result);
+
+/** frees the memory of a result set. */
+void dt_tag_free_result(GList **result);
 
 #endif

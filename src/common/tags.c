@@ -231,7 +231,59 @@ uint32_t dt_tag_get_attached(guint imgid,GList **result)
 
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 {
-  return 0;
+  sqlite3_stmt *stmt; 
+  char query[1024];
+  snprintf(query, 1024,
+    "insert into tagquery1 select related.id, related.name, cross.count from ( "
+    "select * from tags join tagxtag on tags.id = tagxtag.id1 or tags.id = tagxtag.id2 "
+    "where name like '%%%s%%') as cross join tags as related "
+    "where (id2 = related.id or id1 = related.id) "
+    "and (cross.id1 = cross.id2 or related.id != cross.id) "
+    "and cross.count > 0",
+    keyword);
+  
+  sqlite3_exec(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, query, NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "insert into tagquery2 select distinct tagid, name, "
+      "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
+      NULL, NULL, NULL);
+  sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
+  
+  // Create result
+  uint32_t count=0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_tag_t *t=g_malloc(sizeof(dt_tag_t));
+    t->id = sqlite3_column_int(stmt, 0);
+    t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
+    *result=g_list_append((*result),t);
+    count++;
+  }
+  
+  sqlite3_finalize(stmt);
+
+  sqlite3_exec(darktable.db, "delete from tagquery1", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from tagquery2", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "drop table tagquery1", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "drop table tagquery2", NULL, NULL, NULL);
+  
+  return count;
+}
+
+void _free_result_item(dt_tag_t *t,gpointer unused)
+{
+  g_free(t->tag);
+  g_free(t);
+}
+
+void dt_tag_free_result(GList **result)
+{
+  if( result && *result )
+  {
+    g_list_foreach(*result, (GFunc)_free_result_item , NULL);
+    g_list_free(*result);
+  }
 }
 
 uint32_t dt_tag_get_recent_used(GList **result)
