@@ -9,7 +9,6 @@ webpage updates:
 big new features:
 - tethered shooting
 - print mode?
-- ship color profiles with dt: matrix-based hardcoded list for each model/maker
 
 - more transparent custom default/presets handling:
   - color in: input matrices as such defaults
@@ -22,7 +21,7 @@ big new features:
     replace them with presets from the list instead.
 
 - filmstrip h/v/match/off
-
+- histogram not updated on cache warm lookups??
 - check sqlite3 disk speed (remove image: leave mip maps?)
 - ctrl-a broken for sort by color label 
 - whitebalance temp out: 5K, color input uses 6004 ?

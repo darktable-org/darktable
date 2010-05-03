@@ -48,6 +48,7 @@ dt_iop_basecurve_params_t;
 static const char linear[] = N_("linear");
 static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
+static const char nikon[] = N_("nikon like");
 static const char sony_alpha[] = N_("sony alpha like");
 static const char fotogenic_v41[] = N_("fotogenic - point and shoot v4.1");
 static const char fotogenic_v42[] = N_("fotogenic - ev3 v4.2");
@@ -69,6 +70,8 @@ static const basecurve_preset_t basecurve_presets[] = {
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve:
   {canon_eos, "Canon", "EOS", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.983871, 1.000000}, 0}, 1},
+  // pascals nikon curve:
+  {nikon, "Nikon", "", 0, 51200, {{0.000000, 0.080000, 0.346774, 0.947581, 0.987903, 1.000000}, {0.000000, 0.045323, 0.391935, 0.926613, 0.973629, 1.000000}, 0}, 1},
   // pascals sony alpha curve:
   {sony_alpha, "Sony", "Alpha", 0, 51200, {{0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}, 0}, 1},
   // Fotogenic - Point and shoot v4.1
