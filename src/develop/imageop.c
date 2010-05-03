@@ -365,13 +365,11 @@ _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpoint
 {
   gint w,h;
   GtkRequisition requisition;
-  gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
   (*x)+=w-requisition.width;
-  (*y)+=h;
-
+  (*y)+=GTK_WIDGET(data)->allocation.height;
 }
 
 static void
