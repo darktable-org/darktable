@@ -21,6 +21,13 @@
 #include <sqlite3.h>
 #include <glib.h>
 
+typedef struct dt_tag_t 
+{
+  guint id;
+  const gchar *tag;
+} 
+dt_tag_t;
+
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new tag, this can be NULL \return false if failed to create a tag and indicates that tagid is invalid to use. \note If tag already exists the existing tag id is returned. */
 gboolean dt_tag_new(const char *name,guint *tagid);
 
@@ -41,6 +48,9 @@ void dt_tag_attach_list(GList *tags,gint imgid);
 
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] imgid the image id to attach tag from, if < 0 selected images are used. */
 void dt_tag_detach(guint tagid,gint imgid);
+
+/** retreives a list of tags of specified imgid \param[out] result a list of dt_tag_t. */
+uint32_t dt_tag_get_attached(guint imgid,GList **result);
 
 /** retreives a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out] result a pointer to list populated with result. \return the count \note the limit of result is decided by gconf value "xxx" */
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);

@@ -59,8 +59,8 @@ static void
 update (dt_lib_module_t *self, int which)
 {
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-
-  int rc;
+  GList *tags=NULL;
+  uint32_t count;  
   sqlite3_stmt *stmt;
 
   if(which == 0) // tags of selected images
@@ -68,21 +68,11 @@ update (dt_lib_module_t *self, int which)
     int imgsel = -1;
     DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
     d->imgsel = imgsel;
-    if(imgsel > 0)
-    {
-      char query[1024];
-      snprintf(query, 1024, "select distinct tags.id, tags.name from tagged_images "
-          "join tags on tags.id = tagged_images.tagid where tagged_images.imgid = %d", imgsel);
-      rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-    }
-    else
-    {
-      rc = sqlite3_prepare_v2(darktable.db, "select distinct tags.id, tags.name from selected_images join tagged_images "
-          "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid", -1, &stmt, NULL);
-    }
+    count = dt_tag_get_attached(imgsel,&tags);
   }
   else // related tags of typed text
   {
+    
     sqlite3_exec(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
     sqlite3_exec(darktable.db, "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
     sqlite3_exec(darktable.db, d->related_query, NULL, NULL, NULL);
@@ -90,7 +80,27 @@ update (dt_lib_module_t *self, int which)
         "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
         NULL, NULL, NULL);
     sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
+    
+    // Create result
+    uint32_t count=0;
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      dt_tag_t *t=g_malloc(sizeof(dt_tag_t));
+      t->id = sqlite3_column_int(stmt, 0);
+      t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
+      tags=g_list_append(tags,t);
+      count++;
+    }
+    
+    sqlite3_finalize(stmt);
+  
+    sqlite3_exec(darktable.db, "delete from tagquery1", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "delete from tagquery2", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "drop table tagquery1", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "drop table tagquery2", NULL, NULL, NULL);
+    
   }
+  
   GtkTreeIter iter;
   GtkTreeView *view;
   if(which == 0) view = d->current;
@@ -99,21 +109,17 @@ update (dt_lib_module_t *self, int which)
   g_object_ref(model);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
   gtk_list_store_clear(GTK_LIST_STORE(model));
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  
+  if( count >0 && tags )
   {
-    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-    gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-                        DT_LIB_TAGGING_COL_TAG, sqlite3_column_text(stmt, 1),
-                        DT_LIB_TAGGING_COL_ID, sqlite3_column_int(stmt, 0),
+    do
+    {
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+                        DT_LIB_TAGGING_COL_TAG, ((dt_tag_t*)tags->data)->tag,
+                        DT_LIB_TAGGING_COL_ID, ((dt_tag_t*)tags->data)->id,
                         -1);
-  }
-  rc = sqlite3_finalize(stmt);
-  if(which != 0)
-  {
-    sqlite3_exec(darktable.db, "delete from tagquery1", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "delete from tagquery2", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "drop table tagquery1", NULL, NULL, NULL);
-    sqlite3_exec(darktable.db, "drop table tagquery2", NULL, NULL, NULL);
+    } while( (tags=g_list_next(tags)) !=NULL );
   }
 
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
@@ -149,53 +155,23 @@ expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 static void
 attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
-  int rc;
-  sqlite3_stmt *stmt;
-  
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   GtkTreeView *view = d->related;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
-  guint tag;
+  guint tagid;
   gtk_tree_model_get (model, &iter, 
-                      DT_LIB_TAGGING_COL_ID, &tag,
+                      DT_LIB_TAGGING_COL_ID, &tagid,
                       -1);
 
   int imgsel = -1;
-  if(tag <= 0) return;
+  if(tagid <= 0) return;
 
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
-  if(imgsel > 0)
-  {
-    rc = sqlite3_prepare_v2(darktable.db, "insert or replace into tagged_images (imgid, tagid) values (?1, ?2)", -1, &stmt, NULL);
-    rc = sqlite3_bind_int(stmt, 1, imgsel);
-    rc = sqlite3_bind_int(stmt, 2, tag);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
-
-    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
-        "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
-        "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
-    rc = sqlite3_bind_int(stmt, 1, tag);
-    rc = sqlite3_bind_int(stmt, 2, imgsel);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
-  }
-  else
-  { // insert into tagged_images if not there already.
-    rc = sqlite3_prepare_v2(darktable.db, "insert or replace into tagged_images select imgid, ?1 from selected_images", -1, &stmt, NULL);
-    rc = sqlite3_bind_int(stmt, 1, tag);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
-
-    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
-        "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
-        "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
-    rc = sqlite3_bind_int(stmt, 1, tag);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
-  }
+  
+  dt_tag_attach(tagid,imgsel);
+  
 }
 
 static void
@@ -307,7 +283,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
         GTK_DIALOG_DESTROY_WITH_PARENT,
         GTK_MESSAGE_QUESTION,
         GTK_BUTTONS_YES_NO,
-        _("do you really want to delete the tag `%s'?\nthis will also strip the tag off %d tagged images!"),
+        _("do you really want to delete the tag `%s'?\n%d images are assigned this tag!"),
         tagname,count);
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -316,44 +292,6 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   if(res != GTK_RESPONSE_YES) return;
   dt_tag_remove(tagid,TRUE);
   
-  /*
-  rc = sqlite3_prepare_v2(darktable.db, "select name from tags where id=?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, id);
-  if(sqlite3_step(stmt) != SQLITE_ROW)
-  {
-    rc = sqlite3_finalize(stmt);
-    return;
-  }
-  if(dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag"))
-  {
-    GtkWidget *dialog;
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        _("do you really want to delete the tag `%s'?\nthis will also strip the tag off all tagged images!"),
-        (const char *)sqlite3_column_text(stmt, 0));
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-  rc = sqlite3_finalize(stmt);
-  if(res != GTK_RESPONSE_YES) return;
-
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tags where id=?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, id);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tagxtag where id1=?1 or id2=?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, id);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where tagid=?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, id);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  */
   
   update(self, 0);
   update(self, 1);

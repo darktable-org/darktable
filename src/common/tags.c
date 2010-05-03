@@ -116,15 +116,52 @@ gboolean dt_tag_exists(const char *name,guint *tagid)
 
 void dt_tag_attach(guint tagid,gint imgid)
 {
+  int rc;
+  sqlite3_stmt *stmt;
+  if(imgid > 0)
+  {
+    rc = sqlite3_prepare_v2(darktable.db, "insert or replace into tagged_images (imgid, tagid) values (?1, ?2)", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, imgid);
+    rc = sqlite3_bind_int(stmt, 2, tagid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+
+    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
+        "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+        "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tagid);
+    rc = sqlite3_bind_int(stmt, 2, imgid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+  }
+  else
+  { // insert into tagged_images if not there already.
+    rc = sqlite3_prepare_v2(darktable.db, "insert or replace into tagged_images select imgid, ?1 from selected_images", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tagid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+
+    rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
+        "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
+        "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
+    rc = sqlite3_bind_int(stmt, 1, tagid);
+    rc = sqlite3_step(stmt);
+    rc = sqlite3_finalize(stmt);
+  }
 }
 
 void dt_tag_attach_list(GList *tags,gint imgid)
 {
+  GList *child=NULL;
+  if( (child=g_list_first(tags))!=NULL )
+    do 
+    {
+      dt_tag_attach((guint)child->data,imgid);
+    } while( (child=g_list_next(child)) !=NULL);
 }
 
 void dt_tag_detach(guint tagid,gint imgid)
 {
-  fprintf(stderr,"tag deattach imgid %d!\n",imgid);
   int rc;
   sqlite3_stmt *stmt;
   if(imgid > 0)
@@ -159,6 +196,37 @@ void dt_tag_detach(guint tagid,gint imgid)
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
   }
+}
+
+uint32_t dt_tag_get_attached(guint imgid,GList **result)
+{
+  int rc;
+  sqlite3_stmt *stmt; 
+  if(imgid > 0)
+  {
+    char query[1024];
+    snprintf(query, 1024, "select distinct tags.id, tags.name from tagged_images "
+        "join tags on tags.id = tagged_images.tagid where tagged_images.imgid = %d", imgid);
+    rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+  }
+  else
+  {
+    rc = sqlite3_prepare_v2(darktable.db, "select distinct tags.id, tags.name from selected_images join tagged_images "
+        "on selected_images.imgid = tagged_images.imgid join tags on tags.id = tagged_images.tagid", -1, &stmt, NULL);
+  }
+  
+  // Create result
+  uint32_t count=0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_tag_t *t=g_malloc(sizeof(dt_tag_t));
+    t->id = sqlite3_column_int(stmt, 0);
+    t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
+    *result=g_list_append(*result,t);
+    count++;
+  }
+  rc = sqlite3_finalize(stmt);
+  return count;
 }
 
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
