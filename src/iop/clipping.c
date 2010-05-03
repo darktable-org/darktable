@@ -55,7 +55,7 @@ dt_iop_clipping_params_t;
 typedef struct dt_iop_clipping_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
-  GtkHBox *hbox1, *hbox2;
+  GtkHBox *hbox1, *hbox2, *fliphbox;
   GtkLabel *label1, *label2, *label3, *label4, *label5;
   GtkDarktableSlider *scale1, *scale2, *scale3, *scale4, *scale5;
   GtkDarktableToggleButton *hflip,*vflip;
@@ -65,8 +65,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkLabel *label6;
   GtkComboBox *guide_lines;
   GtkLabel *label7;
-  //GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
-  GtkCheckButton *flipHorGoldenGuide, *flipVerGoldenGuide;
+  GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
   GtkCheckButton *goldenSectionBox, *goldenSpiralSectionBox, *goldenSpiralBox, *goldenTriangleBox;
 
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
@@ -390,6 +389,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   }
 }
 
+#if 0
 static void
 cx_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
@@ -429,6 +429,7 @@ ch_callback (GtkDarktableSlider *slider, gpointer user_data)
   p->ch = copysignf( dtgtk_slider_get_value(slider), p->ch);
   dt_dev_add_history_item(darktable.develop, self);
 }
+#endif
 
 static void
 angle_callback (GtkDarktableSlider *slider, gpointer user_data)
@@ -444,10 +445,10 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale1, p->cx);
-  dtgtk_slider_set_value(g->scale2, p->cy);
-  dtgtk_slider_set_value(g->scale3, fabsf(p->cw));
-  dtgtk_slider_set_value(g->scale4, fabsf(p->ch));
+  // dtgtk_slider_set_value(g->scale1, p->cx);
+  // dtgtk_slider_set_value(g->scale2, p->cy);
+  // dtgtk_slider_set_value(g->scale3, fabsf(p->cw));
+  // dtgtk_slider_set_value(g->scale4, fabsf(p->ch));
   dtgtk_slider_set_value(g->scale5, p->angle);
   gtk_spin_button_set_value(g->aspect, fabsf(p->aspect));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
@@ -557,22 +558,30 @@ guides_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   int which = gtk_combo_box_get_active(combo);
-  if ( which == GUIDE_TRIANGL || which == GUIDE_GOLDEN ) {
+  if (which == GUIDE_TRIANGL || which == GUIDE_GOLDEN )
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->fliphbox), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->label7), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->flipHorGoldenGuide), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->flipVerGoldenGuide), TRUE);
-  } else {
+  }
+  else
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->fliphbox), FALSE);
     gtk_widget_set_visible(GTK_WIDGET(g->label7), FALSE);
     gtk_widget_set_visible(GTK_WIDGET(g->flipHorGoldenGuide), FALSE);
     gtk_widget_set_visible(GTK_WIDGET(g->flipVerGoldenGuide), FALSE);
   }
 
-  if ( which == GUIDE_GOLDEN){
+  if (which == GUIDE_GOLDEN)
+  {
     gtk_widget_set_visible(GTK_WIDGET(g->goldenSectionBox), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->goldenSpiralSectionBox), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->goldenSpiralBox), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->goldenTriangleBox), TRUE);
-  } else {
+  }
+  else
+  {
     gtk_widget_set_visible(GTK_WIDGET(g->goldenSectionBox), FALSE);
     gtk_widget_set_visible(GTK_WIDGET(g->goldenSpiralSectionBox), FALSE);
     gtk_widget_set_visible(GTK_WIDGET(g->goldenSpiralBox), FALSE);
@@ -580,6 +589,7 @@ guides_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   }
 
 
+  darktable.develop->gui_module = self;
   dt_control_queue_draw_all();
 }
 
@@ -602,12 +612,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->straightening = 0;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 5));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 5));
   g->hbox1 = GTK_HBOX(gtk_hbox_new(TRUE, 0));
   g->hbox2 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox2), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox1), FALSE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox2), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->hflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_DIRECTION_UP));
   g->vflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
@@ -617,42 +627,21 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->hbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->hflip), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->vflip), TRUE, TRUE, 0);
-  g->label1 = GTK_LABEL(gtk_label_new(_("crop x")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("crop y")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("crop w")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("crop h")));
   g->label5 = GTK_LABEL(gtk_label_new(_("angle")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), FALSE, FALSE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->cx,2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->cy,2));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->cw,2));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->ch,2));
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-180.0, 180.0, 0.5,p->angle,2));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->hflip), "toggled", G_CALLBACK(toggled_callback), self);
   g_signal_connect (G_OBJECT (g->vflip), "toggled", G_CALLBACK(toggled_callback), self);
 
-  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("vertical flip"), NULL);
-  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("horizontal flip"), NULL);
+  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("flip image vertically"), NULL);
+  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("flip image horizontally"), NULL);
 
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   g->aspect_on = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("aspect")));
-  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->aspect_on), TRUE, TRUE, 0);
   gtk_object_set (GTK_OBJECT(g->aspect_on), "tooltip-text", _("fixed aspect ratio"), NULL);
   g_signal_connect (G_OBJECT (g->aspect_on), "toggled",
                     G_CALLBACK (aspect_on_callback), self);
@@ -676,13 +665,13 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox2), hbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
+  // gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(hbox), FALSE, FALSE, 0);
 
 /*-------------------------------------------*/
-  hbox = gtk_hbox_new(TRUE, 5);
   g->label6 = GTK_LABEL(gtk_label_new(_("guides")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label6), TRUE, TRUE, 0);
+  gtk_misc_set_alignment(GTK_MISC(g->label6), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label6), FALSE, FALSE, 0);
   g->guide_lines = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->guide_lines, _("none"));
   gtk_combo_box_append_text(g->guide_lines, _("grid"));
@@ -691,26 +680,24 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->guide_lines, _("harmonious triangles"));
   gtk_combo_box_append_text(g->guide_lines, _("golden mean"));
   gtk_combo_box_set_active(g->guide_lines, GUIDE_NONE);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->guide_lines), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->guide_lines), TRUE, TRUE, 0);
   gtk_object_set (GTK_OBJECT(g->guide_lines), "tooltip-text", _("with this option, you can display guide lines "
 	    "to help compose your photograph."), NULL);
   g_signal_connect (G_OBJECT (g->guide_lines), "changed",
                     G_CALLBACK (guides_presets_changed), self);
 
 /*-------------------------------------------*/
-  hbox = gtk_hbox_new(TRUE, 5);
-  g->label7 = GTK_LABEL(gtk_label_new(_("flip guides")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label7), TRUE, TRUE, 0);
-  //g->flipHorGoldenGuide = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_DIRECTION_UP));
-  g->flipHorGoldenGuide = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("horizontally")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->flipHorGoldenGuide), TRUE, TRUE, 0);
-  //g->flipVerGoldenGuide = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
-  g->flipVerGoldenGuide = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("vertically")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->flipVerGoldenGuide), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
-  gtk_object_set (GTK_OBJECT(g->flipHorGoldenGuide), "tooltip-text", _("flip guides horizontally"), NULL);
-  gtk_object_set (GTK_OBJECT(g->flipVerGoldenGuide), "tooltip-text", _("flip guides vertically"), NULL);
+  g->fliphbox = GTK_HBOX(gtk_hbox_new(TRUE, 5));
+  g->label7 = GTK_LABEL(gtk_label_new(_("flip")));
+  gtk_misc_set_alignment(GTK_MISC(g->label7), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label7), TRUE, TRUE, 0);
+  g->flipHorGoldenGuide = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_DIRECTION_UP));
+  gtk_box_pack_start(GTK_BOX(g->fliphbox), GTK_WIDGET(g->flipHorGoldenGuide), TRUE, TRUE, 0);
+  g->flipVerGoldenGuide = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
+  gtk_box_pack_start(GTK_BOX(g->fliphbox), GTK_WIDGET(g->flipVerGoldenGuide), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->fliphbox), FALSE, FALSE, 0);
+  gtk_object_set (GTK_OBJECT(g->flipHorGoldenGuide), "tooltip-text", _("flip guides vertically"), NULL);
+  gtk_object_set (GTK_OBJECT(g->flipVerGoldenGuide), "tooltip-text", _("flip guides horizontally"), NULL);
 /*-------------------------------------------*/
   hbox = gtk_hbox_new(TRUE, 5);
   g->goldenSectionBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden sections")));
@@ -726,7 +713,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->goldenSpiralBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden spiral")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->goldenSpiralBox), TRUE, TRUE, 0);
   gtk_object_set (GTK_OBJECT(g->goldenSpiralBox), "tooltip-text", _("enable this option to show a golden spiral guide."), NULL);
-  //gtk_object_set (GTK_OBJECT(g->goldenSpiralBox), "tooltip-text", _("it is not implemented yet."), NULL);
 
   g->goldenTriangleBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden triangles")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->goldenTriangleBox), TRUE, TRUE, 0);
@@ -741,6 +727,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->goldenTriangleBox), "toggled", G_CALLBACK (guides_button_changed), self);
 
   gtk_widget_set_visible(GTK_WIDGET(g->label7), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->fliphbox), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->flipHorGoldenGuide), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->flipVerGoldenGuide), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->goldenSectionBox), FALSE);
@@ -748,16 +735,25 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->goldenSpiralBox), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->goldenTriangleBox), FALSE);
 
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->label7), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->fliphbox), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->flipHorGoldenGuide), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->flipVerGoldenGuide), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->goldenSectionBox), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->goldenSpiralSectionBox), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->goldenSpiralBox), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->goldenTriangleBox), TRUE);
+
 /*-------------------------------------------*/
 
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (cx_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (cy_callback), self);
-  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (cw_callback), self);
-  g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-                    G_CALLBACK (ch_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale1), "value-changed",
+                    // G_CALLBACK (cx_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale2), "value-changed",
+                    // G_CALLBACK (cy_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale3), "value-changed",
+                    // G_CALLBACK (cw_callback), self);
+  // g_signal_connect (G_OBJECT (g->scale4), "value-changed",
+                    // G_CALLBACK (ch_callback), self);
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   g->aspect_ratios[0] = self->dev->image->width/(float)self->dev->image->height;
