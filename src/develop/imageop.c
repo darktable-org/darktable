@@ -372,6 +372,19 @@ _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpoint
   (*y)+=GTK_WIDGET(data)->allocation.height;
 }
 
+static gboolean
+popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
+{
+  if(event->button == 3)
+  {
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, event->button, event->time);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+    return TRUE;
+  }
+  return FALSE;
+}
+
 static void
 popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
@@ -430,8 +443,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
 
-  //gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
-  //g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_callback), module);
+  gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
+  g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
 
   return evb;
 }
