@@ -360,17 +360,27 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module);
 }
 
-static gboolean
-popup_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
+static void 
+_preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
-  if(event->button == 3)
-  {
-    dt_gui_presets_popup_menu_show_for_module(module);
-    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, event->button, event->time);
-    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
-    return TRUE;
-  }
-  return FALSE;
+  gint w,h;
+  GtkRequisition requisition;
+  gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
+  
+  gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
+  gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  (*x)+=w-requisition.width;
+  (*y)+=h;
+
+}
+
+static void
+popup_callback(GtkButton *button, dt_iop_module_t *module)
+{
+  dt_gui_presets_popup_menu_show_for_module(module);
+  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,gtk_get_current_event_time());
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
@@ -396,9 +406,13 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset,0));
+  GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,0));
+  gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), NULL);
+  gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
+  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
@@ -407,6 +421,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   g_signal_connect (G_OBJECT (resetbutton), "clicked",
                     G_CALLBACK (dt_iop_gui_reset_callback), module);
+  g_signal_connect (G_OBJECT (presetsbutton), "clicked",
+                    G_CALLBACK (popup_callback), module);
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
                   G_CALLBACK (dt_iop_gui_expander_callback), module);
   gtk_expander_set_spacing(module->expander, 10);
@@ -416,8 +432,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
 
-  gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_callback), module);
+  //gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
+  //g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_callback), module);
 
   return evb;
 }
