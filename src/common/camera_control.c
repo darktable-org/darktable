@@ -616,7 +616,6 @@ void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam)
 
 void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 {
-//  dt_camctl_t *camctl=(dt_camctl_t *)c;
   CameraEventType event;
   gpointer data;
   int res;
@@ -624,19 +623,16 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
   while( !wait_timedout )
   {
     if( (res=gp_camera_wait_for_event( cam->gpcam, 100, &event, &data, c->gpcontext ) )>= GP_OK ) {
-      switch( event ) {
-        case GP_EVENT_UNKNOWN: 
-        {
+      if( event == GP_EVENT_UNKNOWN )
+      {
           if( strstr( (char *)data, "4006" ) )
           { // Property change event occured on camera
             // let's update cache and signalling 
            _camera_configuration_update(c,cam);
           }
-          
-        } break;
-
-        case GP_EVENT_FILE_ADDED:
-        {
+      }
+      else if( event == GP_EVENT_FILE_ADDED )
+      {
           if( cam->is_tethering ) 
           {
             dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera file added event\n");
@@ -658,23 +654,14 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
             _dispatch_camera_image_downloaded(c,cam,filename);
             
           }
-        } break;
-
-        case GP_EVENT_TIMEOUT:
-          wait_timedout=TRUE;
-        break;
-        
-        case GP_EVENT_FOLDER_ADDED:
-        case GP_EVENT_CAPTURE_COMPLETE:
-        break;
-        
       }
+      else if( event == GP_EVENT_TIMEOUT ) 
+        wait_timedout=TRUE;
     } 
     else
     {
       // Catch any error and handle the situation..
       // Assume that camer connection is broken..
-      
     }
   }
 }
