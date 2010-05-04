@@ -696,6 +696,8 @@ void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,
     // 
     // First of all check if widget has change accessibility
     //
+    /// TODO: Resolve this 2.4.8 libgphoto2 dependency
+    /*
     int sa,da;
     gp_widget_get_readonly( source, &sa );
     gp_widget_get_readonly( dw, &da );
@@ -707,6 +709,7 @@ void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,
       
       _dispatch_camera_property_accessibility_changed(c, camera,sk, ( sa == 1 ) ? TRUE: FALSE) ;
     }
+    */
     
     // 
     // Lets compare values and notify on change or by notifyAll flag
