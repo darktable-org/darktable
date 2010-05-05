@@ -21,11 +21,23 @@
 #ifndef __SSE2__
 
 // lamer version for obsolote archs:
+
+#ifndef _XOPEN_SOURCE
+  #define _XOPEN_SOURCE
+#endif
+
+#include <stdlib.h>
+double drand48(void);
+void srand48(long int seedval);
+
 typedef struct dt_points_t
 { }
 dt_points_t;
 
-static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads) { }
+static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
+{
+  srand48(0x1337ul);
+}
 
 static inline void dt_points_cleanup(dt_points_t *p) { }
 
