@@ -20,8 +20,13 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- color labels sort and import is weird.
+- tagging: don't create duplicate tags, but toggle them
+  default tags (translated..?)
+- rotate crashes (how exactly?)
+- default portrait/landscape aspect to match image
 - filmstrip h/v/match/off
-- histogram not updated on cache warm lookups??
+- histogram not updated on cache warm lookups?? (=>histogram in cache)
 - check sqlite3 disk speed (remove image: leave mip maps?)
 - ctrl-a broken for sort by color label 
 - whitebalance temp out: 5K, color input uses 6004 ?
