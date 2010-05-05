@@ -20,7 +20,7 @@
 
 #ifndef __SSE2__
 
-// lamer version for obsolote archs:
+// lamer version for obsolete archs:
 
 #ifndef _XOPEN_SOURCE
   #define _XOPEN_SOURCE
