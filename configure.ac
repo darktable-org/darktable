@@ -45,7 +45,6 @@ if test "$enable_debug" = "yes"; then
    CXXFLAGS="-Wall -O0 -g -D_DEBUG"
    AC_MSG_RESULT([yes])
 else
-   CFLAGS="-msse2"
    AC_MSG_RESULT([no])
 fi
 dnl ***  disabled because of strange libgomp.so crashes for gcc < 4.4: :(
