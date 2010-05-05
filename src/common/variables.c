@@ -54,7 +54,7 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
   guint occurences = _string_occurence(string,search);
   if( occurences )
   {
-    guint sl=-(strlen(search)-strlen(replace));
+    gint sl=-(strlen(search)-strlen(replace));
     gchar *pend=string+strlen(string);
     gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
     gchar *np=nstring;
