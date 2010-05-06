@@ -51,7 +51,7 @@ guint _string_occurence(const gchar *haystack,const gchar *needle)
 
 gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace) 
 {
-  guint occurences = _string_occurence(string,search);
+  gint occurences = _string_occurence(string,search);
   if( occurences )
   {
     gint sl=-(strlen(search)-strlen(replace));
