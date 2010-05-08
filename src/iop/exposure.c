@@ -260,7 +260,8 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
+  float *coeff = (float *)(self->data);
+  const float white = fmaxf(fmaxf(self->picked_color_max[0]*coeff[0], self->picked_color_max[1]*coeff[1]), self->picked_color_max[2]*coeff[2])
     * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
   dt_iop_exposure_set_white(self, white);
   return FALSE;
