@@ -265,7 +265,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
   { // scale to fit
     bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
-    for(int j=0;j<p_ht && scale*j<raw_ht;j++) for(int i=0;i<p_wd && scale*i < raw_wd;i++)
+    for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
     {
       float *cam = img->pixels + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
       for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
