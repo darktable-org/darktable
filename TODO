@@ -20,9 +20,9 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
-- color labels sort and import is weird.
-- tagging: don't create duplicate tags, but toggle them
-  default tags (translated..?)
+- color labels: sort and import is weird.
+- color labels: colored buttons in a row, more colors, more slots
+- stars: possibility to filter by exact number, not >=
 - rotate crashes (how exactly?)
 - default portrait/landscape aspect to match image
 - filmstrip h/v/match/off
@@ -47,7 +47,6 @@ big new features:
 
 - ctrl-z ctrl-shift-z up/down in history stack
 - metadata imgfilename etc with ellipzized file names
-- color labels: colored buttons in a row, more colors.
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
