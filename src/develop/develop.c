@@ -229,6 +229,10 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
       return;
     }
     dev->mipf = dev->image->mipf;
+    // make sure our newly locked input is also given to the pixel pipe.
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
+    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
   }
 
   // if raw loaded, get new mipf
