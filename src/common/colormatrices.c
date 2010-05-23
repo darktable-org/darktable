@@ -30,6 +30,9 @@ dt_profiled_colormatrix_t;
   // image submitter, chart type, illuminant, comments
 static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
 
+  // Alberto Ferrante, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon EOS 7D",                 { 977829, 294815, -44205}, { 154175, 1238007, -325684}, {103363, -297791, 1397461}, {707291, 741760, 626251}},
+
   // Roy Niswanger, ColorChecker DC, direct sunlight, experimental
   { "Canon EOS 30D",                { 840195, 148773, -67017}, { 112915, 1104553, -369720}, {240005,  -19562, 1468338}, {827255, 873337, 715317}},
 
