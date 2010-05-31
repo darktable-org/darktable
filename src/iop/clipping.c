@@ -1135,6 +1135,11 @@ static void
 commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p)
 {
   g->cropping = 0;
+  if(!self->enabled)
+  { // first time crop, if any data is stored in p, it's obsolete:
+    p->cx = p->cy = 0.0f;
+    p->cw = p->ch = 1.0f;
+  }
   p->aspect = -gtk_spin_button_get_value(g->aspect);
   const float cx = p->cx, cy = p->cy;
   const float cw = fabsf(p->cw), ch = fabsf(p->ch);
@@ -1146,8 +1151,8 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   g->clip_w = g->clip_h = 1.0;
   darktable.gui->reset = 1;
   self->gui_update(self);
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   darktable.gui->reset = 0;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
