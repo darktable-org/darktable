@@ -234,6 +234,12 @@ gui_init (dt_lib_module_t *self)
   pos = prof->pos = 3;
   d->profiles = g_list_append(d->profiles, prof);
 
+  prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  strcpy(prof->filename, "linear_rgb");
+  strcpy(prof->name, _("linear rgb"));
+  pos = prof->pos = 3;
+  d->profiles = g_list_append(d->profiles, prof);
+
   // read datadir/color/out/*.icc
   char datadir[1024], dirname[1024], filename[1024];
   dt_get_datadir(datadir, 1024);

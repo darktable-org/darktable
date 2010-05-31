@@ -20,6 +20,9 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- prefetching while browsing lighttable mode
+- cleanup at end: make incremental during runtime!
+- option to disable preview processing: never,always,only unaltered
 - color labels: sort and import is weird.
 - color labels: colored buttons in a row, more colors, more slots
 - stars: possibility to filter by exact number, not >=

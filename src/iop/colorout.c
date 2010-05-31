@@ -148,6 +148,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     { // default: sRGB
       d->output = dt_colorspaces_create_srgb_profile();
     }
+    else if(!strcmp(p->iccprofile, "linear_rgb"))
+    {
+      d->output = dt_colorspaces_create_linear_rgb_profile();
+    }
     else if(!strcmp(p->iccprofile, "adobergb"))
     {
       d->output = dt_colorspaces_create_adobergb_profile();
@@ -176,6 +180,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(!strcmp(p->displayprofile, "sRGB"))
     { // default: sRGB
       d->output = dt_colorspaces_create_srgb_profile();
+    }
+    else if(!strcmp(p->displayprofile, "linear_rgb"))
+    {
+      d->output = dt_colorspaces_create_linear_rgb_profile();
     }
     else if(!strcmp(p->displayprofile, "adobergb"))
     {
@@ -316,6 +324,12 @@ void gui_init(struct dt_iop_module_t *self)
   strcpy(prof->filename, "X profile");
   strcpy(prof->name, "X profile");
   pos = prof->pos = 2;
+  g->profiles = g_list_append(g->profiles, prof);
+
+  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  strcpy(prof->filename, "linear_rgb");
+  strcpy(prof->name, "linear_rgb");
+  pos = prof->pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
   // read datadir/color/out/*.icc

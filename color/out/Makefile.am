@@ -1,3 +1,3 @@
-EXTRA_DIST=linear_rgb.icc
+EXTRA_DIST=
 colordatarootdir=$(datarootdir)/darktable/color/out
-colordataroot_DATA=linear_rgb.icc
+colordataroot_DATA=
