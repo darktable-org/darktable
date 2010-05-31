@@ -194,15 +194,76 @@ image import: only load \code{dt\_image\_t} and mip[0--4] to database.
 
 For examples, have a look at \code{src/iop/*.\{h,c\}}, and also see the method declarations in \code{src/common/imageop.h}.
 
-The main pixel pipeline stack is organised as follows:
+Pixel processing is done in pipelines (\code{src/develop/pixelpipe\_hb.c}) with fixed order of the modules,
+observe the current status with e.g.
 
-\begin{itemize}
-  \item gamma (sRGB)
-  \item tonecurve (Lab)
-  \item color correction (Lab)
-  \item temperature (sRGB)
-  \item demosaicing (in libraw)
-\end{itemize}
+\code{grep priority src/iop/*.c | sort -t '=' -k 2}.
+
+At the time of this writing, the main pixel pipeline stack is organised as follows:
+
+\medskip
+
+\begin{tabular}{lrl}
+module name & priority & input color format \\
+\hline
+rawimport      &  100  &  - \\ 
+exposure       &  150  &  fff input color space \\
+temperature    &  200  &  fff input color space \\
+highlights     &  250  &  fff input color space \\
+basecurve      &  260  &  fff input color space \\
+profile\_gamma &  299  &  fff input color space \\
+colorin        &  300  &  fff input color space \\
+colortransfer  &  350  &  fff $L^*a^*b^*$ \\
+equalizer      &  500  &  fff $L^*a^*b^*$ \\
+monochrome     &  550  &  fff $L^*a^*b^*$ \\
+tonecurve      &  700  &  fff $L^*a^*b^*$ \\
+colorzones     &  750  &  fff $L^*a^*b^*$ \\
+colorcorrection&  800  &  fff $L^*a^*b^*$ \\
+colorout       &  900  &  fff $L^*a^*b^*$ \\
+lens           &  940  &  fff output color space \\
+clipping       &  950  &  fff output color space \\
+grain          &  965  &  fff output color space \\
+clahe          &  966  &  fff output color space \\
+velvia         &  967  &  fff output color space \\
+splittoning    &  968  &  fff output color space \\
+vignette       &  970  &  fff output color space \\
+sharpen        &  990  &  fff output color space \\
+gamma          & 1000  &  fff output color space \\
+               &   -   &  ccc output color space \\
+\end{tabular}
+
+\medskip
+
+where fff is $3\times32$ bit float, ccc is $3\times8$ bit int, and the input
+color space depends on your camera or type of input data, and the output color space will
+be sRGB (including gamma correction, i.e.\ it is non-linear) most of the time.
+
+$L^*a^*b^*$ is a special variant of $L^*ab$, where $L^* \in [0, 100]$ and $a, b \in [-128, 128]$, but $a^* = a/L^*$ and $b^* = b/L^*$.
+This makes sure that changes in $L^*$ transparently result in the correct adjustment in saturation:
+$a_{out} = a_{in} \cdot L^*_{out}/L^*_{in}$ and
+$b_{out} = b_{in} \cdot L^*_{out}/L^*_{in}$.
+
+
+Each module has to implement a \code{process} function, which is responsible for processing of three types of
+pipelines: preview, full, and export. Most of the time, this can be handled transparently, i.e.\ needs no special
+handling in the module. The pipelines are as follows:
+
+\begin{description}
+  \item[preview] all of the image, but downsampled to low resolution for the navigation view, approximate full image statistics, and fast scrolling.
+  \item[full] full resolution, but only the part that can currently be seen (the region of interest, roi, will be adjusted accordingly).
+  \item[export] full image at full resolution, no gui data is inited for the module.
+\end{description}
+
+and can be identified by the pipeline struct, which carries a \code{pipe->type} flag. This struct can in turn be found
+via the pipeline data piece which is passed to \code{process}: \code{piece->pipe}.
+
+\paragraph{Regions of Interest}
+
+A region of interest holds $x,y,w,h$, and scale information. The semantics are as follows: multiply the whole resolution image by
+the scale value, then crop it to the window defined by $x, y, w, h$. The passed input buffer will be a contiguous block of values as defined by
+the input color space, pixel by pixel and row by row. The output buffer should be in the same format, but the extent should match the
+output region of interest.
+
 
 \subsubsection{Most important Gui Callbacks}
 
@@ -219,10 +280,11 @@ The main pixel pipeline stack is organised as follows:
 \subsubsection{Data Structures}
 
 \begin{description}
-  \item[\code{dt\_iop\_*\_params\_t module->params, module->default\_params, module->factory\_params}]
-  This struct should only be modified by the gui thread. The three fields exist only once per module: \code{module->params}
-  store the currently active parameters, \code{module->default\_params} are the default parameters (possibly adjusted by the
-  user), and \code{module->factory\_params} are dt's factory defaults (automatically copied by the core after \code{init} has been
+  \item[\code{dt\_iop\_*\_params\_t module->\{params, default\_params, factory\_params\}}]
+
+  This struct should only be modified by the gui thread. The three fields exist only once per module: \code{params}
+  store the currently active parameters, \code{default\_params} are the default parameters (possibly adjusted by the
+  user), and \code{factory\_params} are dt's factory defaults (automatically copied by the core after \code{init} has been
   called).
 
   \item[\code{dt\_iop\_*\_data\_t piece->data}]
@@ -237,7 +299,20 @@ The main pixel pipeline stack is organised as follows:
   Core thread global data for all pipes (such as lensfun description database).
 \end{description}
 
-\subsubsection{Image Processing}
 
+\subsubsection{A most useless Example}
+
+
+\todo{script to generate as up-to-date minimal dt header set to compile external plugins}
+
+\todo{a silly template module line by line: render a checker board on top of your input image.}
+
+See \code{src/iop/useless.c}.
+
+Change \code{src/iop/Makefile.am}:
+\begin{verbatim}
+libuseless_la_SOURCES=useless.c
+dtplugins_LTLIBRARIES=libtonecurve.la [..] libcolortransfer.la libuseless.la
+\end{verbatim}
 
 \end{document}

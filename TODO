@@ -1,6 +1,10 @@
 CLAHE:
   halos around edges normal?
 
+documentation:
+- plugin template
+- plugin docs in pdf
+
 webpage updates:
 - freebsd has dt (has had for a while :)
 - list of supported cameras and reverse-engineered basecurves etc
