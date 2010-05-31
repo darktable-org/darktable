@@ -14,6 +14,7 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
 
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
+AM_GCONF_SOURCE_2
 
 dnl *** Check for inotify ***
 AC_CHECK_HEADER([sys/inotify.h],
@@ -85,7 +86,6 @@ AC_ARG_ENABLE(gconf,
           if test "$enable_gconf" = "yes"; then
              AC_DEFINE(HAVE_GCONF, 1, [whether to use gconf to store settings])
              AC_MSG_RESULT([yes])
-             AM_GCONF_SOURCE_2
              PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
              AM_CONDITIONAL(HAVE_GCONF, true)
           else
@@ -94,7 +94,6 @@ AC_ARG_ENABLE(gconf,
           fi
         ],
         [
-             AM_GCONF_SOURCE_2
              AC_DEFINE(HAVE_GCONF, 1, [whether to use gconf to store settings])
              AC_MSG_RESULT([yes])
              PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
