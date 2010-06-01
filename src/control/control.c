@@ -418,6 +418,7 @@ void dt_control_shutdown(dt_control_t *s)
 
 void dt_control_cleanup(dt_control_t *s)
 {
+#if 0
   int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
   int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
   // delete mipmaps
@@ -445,6 +446,7 @@ void dt_control_cleanup(dt_control_t *s)
 
   double end = dt_get_wtime();
   dt_print(DT_DEBUG_PERF, "[control_cleanup] database cleaning took %.3f secs\n", end - start);
+#endif
 
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);

@@ -24,8 +24,9 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- mipmap push out cache seems broken (pushes out random shit)
+- auto apply preset doesn't seem to work (needs reset button press)
 - prefetching while browsing lighttable mode
-- cleanup at end: make incremental during runtime!
 - option to disable preview processing: never,always,only unaltered
 - color labels: sort and import is weird.
 - color labels: colored buttons in a row, more colors, more slots

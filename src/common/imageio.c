@@ -81,6 +81,33 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   rc = sqlite3_bind_int (stmt, 2, mip);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
+
+#if 1
+  // TODO: kick out latest mipmap timestamp, if > gconf settings
+  // pthread_mutex_lock(&darktable.db_insert);
+  int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
+  int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
+
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+
+  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, keep0);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, keep);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level not in (select imgid*8+level from mipmap_timestamps)", -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+  // pthread_mutex_unlock(&darktable.db_insert);
+#endif
+
   if(mip == DT_IMAGE_MIPF)
   {
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
