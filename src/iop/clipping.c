@@ -58,8 +58,8 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkLabel *label5;
   GtkDarktableSlider *scale5;
   GtkDarktableToggleButton *hflip,*vflip;
-  GtkSpinButton *aspect;
-  GtkCheckButton *aspect_on;
+  // GtkSpinButton *aspect;
+  // GtkCheckButton *aspect_on;
   GtkComboBox *aspect_presets;
   GtkComboBox *guide_lines;
   GtkLabel *label7;
@@ -69,7 +69,8 @@ typedef struct dt_iop_clipping_gui_data_t
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
   int cropping, straightening;
-  float aspect_ratios[6];
+  float aspect_ratios[7];
+  float current_aspect;
 }
 dt_iop_clipping_gui_data_t;
 
@@ -310,8 +311,10 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
   // enforce aspect ratio.
-  const float aspect = gtk_spin_button_get_value(g->aspect);
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on)))
+  const float aspect = g->current_aspect;
+  // const float aspect = gtk_spin_button_get_value(g->aspect);
+  // if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->aspect_on)))
+  if(aspect > 0)
   {
     // TODO: if only one side changed, force aspect by two adjacent in equal parts!
     // 1 2 4 8 : x y w h
@@ -379,12 +382,13 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   int which = gtk_combo_box_get_active(combo);
-  if (which >= 0 && which < 6)
+  if (which >= 0 && which < 7)
   {
     if(which > 0 && self->dev->image->height > self->dev->image->width)
-      gtk_spin_button_set_value(g->aspect, 1.0/g->aspect_ratios[which]);
+      g->current_aspect = 1.0/g->aspect_ratios[which];
     else
-      gtk_spin_button_set_value(g->aspect, g->aspect_ratios[which]);
+      g->current_aspect = g->aspect_ratios[which];
+    apply_box_aspect(self, 5);
     dt_control_queue_draw_all();
     self->dev->gui_module = self;
   }
@@ -405,19 +409,20 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   dtgtk_slider_set_value(g->scale5, p->angle);
-  gtk_spin_button_set_value(g->aspect, fabsf(p->aspect));
+  // gtk_spin_button_set_value(g->aspect, fabsf(p->aspect));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
-  if(p->aspect > 0)
-  {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_on), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), TRUE);
-  }
-  else
-  {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_on), FALSE);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), FALSE);
-  }
+  g->current_aspect = p->aspect;
+  // if(p->aspect > 0)
+  // {
+  //   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_on), TRUE);
+  //   gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), TRUE);
+  // }
+  // else
+  // {
+  //   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->aspect_on), FALSE);
+  //   gtk_widget_set_sensitive(GTK_WIDGET(g->aspect), FALSE);
+  // }
 }
 
 void init(dt_iop_module_t *module)
@@ -443,6 +448,7 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+#if 0
 static void
 aspect_callback(GtkSpinButton *widget, dt_iop_module_t *self)
 {
@@ -468,6 +474,7 @@ aspect_on_callback(GtkCheckButton *widget, dt_iop_module_t *self)
   self->dev->gui_module = self;
   dt_control_queue_draw_all();
 }
+#endif
 
 static void
 toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
@@ -492,8 +499,12 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
 static void
 key_accel_callback(void *d)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)d;
-  gtk_spin_button_set_value(g->aspect, 1.0/gtk_spin_button_get_value(g->aspect));
+  dt_iop_module_t *self = (dt_iop_module_t *)d;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  g->current_aspect = 1.0/g->current_aspect;
+  apply_box_aspect(self, 5);
+  dt_control_queue_draw_all();
+  // gtk_spin_button_set_value(g->aspect, 1.0/gtk_spin_button_get_value(g->aspect));
 }
 
 // Golden number (1+sqrt(5))/2
@@ -559,6 +570,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
+  g->current_aspect = -1.0f;
   g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
   g->clip_w = g->clip_h = 1.0;
   g->cropping = 0;
@@ -585,12 +597,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale5), 2, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
-  g->aspect_on = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("aspect")));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect_on), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
-  gtk_object_set (GTK_OBJECT(g->aspect_on), "tooltip-text", _("fixed aspect ratio"), NULL);
-  g_signal_connect (G_OBJECT (g->aspect_on), "toggled",
-                    G_CALLBACK (aspect_on_callback), self);
+  // g->aspect_on = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("aspect")));
+  label = gtk_label_new(_("aspect"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  // gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect_on), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  // gtk_object_set (GTK_OBJECT(g->aspect_on), "tooltip-text", _("fixed aspect ratio"), NULL);
+  // g_signal_connect (G_OBJECT (g->aspect_on), "toggled",
+                    // G_CALLBACK (aspect_on_callback), self);
 
+#if 0
   g->aspect = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0.1, 10.0, 0.01));
   gtk_spin_button_set_increments(g->aspect, 0.01, 0.2);
   gtk_spin_button_set_digits(g->aspect, 3);
@@ -598,18 +614,21 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect), 2, 4, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
   g_signal_connect (G_OBJECT (g->aspect), "value-changed",
                     G_CALLBACK (aspect_callback), self);
-  gtk_object_set(GTK_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
+#endif
   g->aspect_presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->aspect_presets, _("free"));
   gtk_combo_box_append_text(g->aspect_presets, _("image"));
   gtk_combo_box_append_text(g->aspect_presets, _("golden cut"));
   gtk_combo_box_append_text(g->aspect_presets, _("3:2"));
   gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
   gtk_combo_box_append_text(g->aspect_presets, _("square"));
   gtk_combo_box_append_text(g->aspect_presets, _("din"));
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)g);
+  gtk_combo_box_set_active(g->aspect_presets, 0);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect_presets), 4, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  gtk_object_set(GTK_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect_presets), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
 
 /*-------------------------------------------*/
   label = GTK_WIDGET(dtgtk_label_new(_("guides"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
@@ -685,12 +704,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
-  g->aspect_ratios[0] = self->dev->image->width/(float)self->dev->image->height;
-  g->aspect_ratios[1] = 1.6280;
-  g->aspect_ratios[2] = 3.0/2.0;
-  g->aspect_ratios[3] = 4.0/3.0;
-  g->aspect_ratios[4] = 1.0;
-  g->aspect_ratios[5] = sqrtf(2.0);
+  g->aspect_ratios[0] = -1;
+  g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+  g->aspect_ratios[2] = 1.6280;
+  g->aspect_ratios[3] = 3.0/2.0;
+  g->aspect_ratios[4] = 4.0/3.0;
+  g->aspect_ratios[5] = 1.0;
+  g->aspect_ratios[6] = sqrtf(2.0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1140,7 +1160,7 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
     p->cx = p->cy = 0.0f;
     p->cw = p->ch = 1.0f;
   }
-  p->aspect = -gtk_spin_button_get_value(g->aspect);
+  p->aspect = - g->current_aspect;
   const float cx = p->cx, cy = p->cy;
   const float cw = fabsf(p->cw), ch = fabsf(p->ch);
   p->cx += g->clip_x*(cw-cx);

@@ -1,9 +1,3 @@
-libraw mail:
- - include 0.9.1
- - half_size: how does it work??
- - send patches
- - request dcraw conversion script for open source conformality
-
 CLAHE:
   halos around edges normal?
 
@@ -30,10 +24,8 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
-- mipmap push out cache seems broken (pushes out random shit)
-- auto apply preset doesn't seem to work (needs reset button press)
+- auto apply preset doesn't seem to work for curr img (needs reset button press)
 - prefetching while browsing lighttable mode
-- option to disable preview processing: never,always,only unaltered
 - color labels: sort and import is weird.
 - color labels: colored buttons in a row, more colors, more slots
 - stars: possibility to filter by exact number, not >=
