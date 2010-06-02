@@ -109,6 +109,10 @@ Zoom to 1:1, fill, and fit, respectively
 
 show/hide film strip
 
+=item while cropping: B<Enter/Backspace>
+
+apply/revert currently selected cropping frame
+
 =back
 
 =head1 BUGS
