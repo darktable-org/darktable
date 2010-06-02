@@ -1,3 +1,9 @@
+libraw mail:
+ - include 0.9.1
+ - half_size: how does it work??
+ - send patches
+ - request dcraw conversion script for open source conformality
+
 CLAHE:
   halos around edges normal?
 

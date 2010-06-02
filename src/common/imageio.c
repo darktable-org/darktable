@@ -290,10 +290,12 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = img->raw_params.wb_cam;
-  raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
+  raw->params.use_camera_wb = 1;
+  raw->params.use_auto_wb = 0;
+  raw->params.pre_interpolate_median_filter = img->raw_params.pre_median;
   raw->params.med_passes = img->raw_params.med_passes;
-  raw->params.no_auto_bright = 1;//img->raw_params.no_auto_bright;
+  raw->params.no_auto_bright = 1;
+  raw->params.output_color = 0;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
   raw->params.gamm[0] = 1.0;
@@ -302,7 +304,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.four_color_rgb = img->raw_params.four_color_rgb;
   raw->params.use_camera_matrix = 0;
   raw->params.green_matching = 0;// img->raw_params.greeneq;
-  raw->params.highlight = img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
+  raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   ret = libraw_open_file(raw, filename);
@@ -313,11 +315,11 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     raw->params.half_size = 0;
   }
 
-  // get thumbnail
-  ret = libraw_unpack_thumb(raw);
-
-  if(!ret)
-  {
+  // if we have a history stack, don't load preview buffer!
+  if(!dt_image_altered(img))
+  { // no history stack: get thumbnail
+    ret = libraw_unpack_thumb(raw);
+    if(ret) goto try_full_raw;
     ret = libraw_adjust_sizes_info_only(raw);
     ret = 0;
     img->orientation = raw->sizes.flip;
@@ -444,7 +446,91 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       return retval;
     }
   }
+  else
+  {
+try_full_raw:
+    // FIXME: this doesn't seem to result in any predictable behaviour at all :(
+    // raw->params.half_size = 1; /* dcraw -h */
+    ret = libraw_unpack(raw);
+    img->black   = raw->color.black/65535.0;
+    img->maximum = raw->color.maximum/65535.0;
+    HANDLE_ERRORS(ret, 1);
+    ret = libraw_dcraw_process(raw);
+    HANDLE_ERRORS(ret, 1);
+    image = libraw_dcraw_make_mem_image(raw, &ret);
+    HANDLE_ERRORS(ret, 1);
 
+    img->orientation = raw->sizes.flip;
+    img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
+    img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+    img->exif_iso = raw->other.iso_speed;
+    img->exif_exposure = raw->other.shutter;
+    img->exif_aperture = raw->other.aperture;
+    img->exif_focal_length = raw->other.focal_len;
+    strncpy(img->exif_maker, raw->idata.make, 20);
+    strncpy(img->exif_model, raw->idata.model, 20);
+    dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
+
+    const float m = 1./0xffff;
+    const uint16_t *rawpx = (const uint16_t *)image->data;
+    const int raw_wd = img->width;
+    const int raw_ht = img->height;
+    int p_wd, p_ht;
+    float f_wd, f_ht;
+    dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
+    dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
+
+    if(dt_image_alloc(img, DT_IMAGE_MIPF)) goto error_raw_cache_full;
+    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+
+    if(raw_wd == p_wd && raw_ht == p_ht)
+    { // use 1:1
+      for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
+      {
+        const uint16_t *cam = rawpx + 3*(j*raw_wd + i);
+        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k]*m;
+      }
+    }
+    else
+    { // scale to fit
+      bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
+      const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
+      for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
+      {
+        const uint16_t *cam = rawpx + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
+        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k]*m;
+      }
+    }
+    // store in db.
+    dt_imageio_preview_write(img, DT_IMAGE_MIPF);
+
+    // have first preview of non-processed image
+    if(dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
+    dt_image_get(img, DT_IMAGE_MIPF, 'r');
+    dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+    dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
+    dt_imageio_preview_write(img, DT_IMAGE_MIP4);
+    dt_image_release(img, DT_IMAGE_MIP4, 'w');
+    retval = dt_image_update_mipmaps(img);
+    dt_image_release(img, DT_IMAGE_MIP4, 'r');
+
+    dt_image_release(img, DT_IMAGE_MIPF, 'w');
+    dt_image_release(img, DT_IMAGE_MIPF, 'r');
+    // clean up raw stuff.
+    libraw_recycle(raw);
+    libraw_close(raw);
+    free(image);
+    raw = NULL;
+    image = NULL;
+    // dt_image_release(img, DT_IMAGE_FULL, 'w');
+    // dt_image_cache_release(img, 'r');
+    // not a thumbnail!
+    img->flags &= ~DT_IMAGE_THUMBNAIL;
+    return DT_IMAGEIO_OK;
+  }
+
+#if 0
   // if no thumbnail: load shrinked raw to tmp buffer (use dt_imageio_load_raw)
   libraw_recycle(raw);
   libraw_close(raw);
@@ -468,6 +554,7 @@ try_full_raw:
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return retval;
+#endif
 
 error_raw_cache_full:
   fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
