@@ -90,6 +90,23 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
 
   sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
 
+  sqlite3_exec(darktable.db, "create temp table dreggn (imgid integer, level integer, rowid integer)", NULL, NULL, NULL);
+  sqlite3_prepare_v2(darktable.db, "insert into dreggn select imgid, level, rowid from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, keep0);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_prepare_v2(darktable.db, "insert into dreggn select imgid, level, rowid from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, keep);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_exec(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from dreggn)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from dreggn)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from dreggn", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "drop table dreggn", NULL, NULL, NULL);
+
+#if 0
   sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, keep0);
   sqlite3_step(stmt);
@@ -103,6 +120,7 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level not in (select imgid*8+level from mipmap_timestamps)", -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+#endif
 
   sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
   // pthread_mutex_unlock(&darktable.db_insert);
@@ -301,7 +319,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   raw->params.user_qual = 0; // linear
-  raw->params.four_color_rgb = img->raw_params.four_color_rgb;
+  raw->params.four_color_rgb = 0;//img->raw_params.four_color_rgb;
   raw->params.use_camera_matrix = 0;
   raw->params.green_matching = 0;// img->raw_params.greeneq;
   raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
@@ -309,11 +327,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
-  if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
-  { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
-    raw->params.user_qual = 0;
-    raw->params.half_size = 0;
-  }
 
   // if we have a history stack, don't load preview buffer!
   if(!dt_image_altered(img))
@@ -449,8 +462,9 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   else
   {
 try_full_raw:
-    // FIXME: this doesn't seem to result in any predictable behaviour at all :(
+    // buggy :(
     // raw->params.half_size = 1; /* dcraw -h */
+    // raw->params.user_qual = 2;
     ret = libraw_unpack(raw);
     img->black   = raw->color.black/65535.0;
     img->maximum = raw->color.maximum/65535.0;
@@ -472,7 +486,7 @@ try_full_raw:
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
     const float m = 1./0xffff;
-    const uint16_t *rawpx = (const uint16_t *)image->data;
+    const uint16_t (*rawpx)[3] = (const uint16_t (*)[3])image->data;
     const int raw_wd = img->width;
     const int raw_ht = img->height;
     int p_wd, p_ht;
@@ -487,8 +501,7 @@ try_full_raw:
     { // use 1:1
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
       {
-        const uint16_t *cam = rawpx + 3*(j*raw_wd + i);
-        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k]*m;
+        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
       }
     }
     else
@@ -497,8 +510,7 @@ try_full_raw:
       const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
       for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
       {
-        const uint16_t *cam = rawpx + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
-        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k]*m;
+        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
       }
     }
     // store in db.
