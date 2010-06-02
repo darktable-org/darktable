@@ -102,7 +102,13 @@ int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
   sqlite3_finalize(stmt);
 
   sqlite3_exec(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from dreggn)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from dreggn)", NULL, NULL, NULL);
+  // sqlite3_exec(darktable.db, "delete from mipmaps where imgid*8+level in (select imgid*8+level from dreggn)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from mipmaps where level = 0 and imgid in (select imgid from dreggn where level = 0)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from mipmaps where level = 1 and imgid in (select imgid from dreggn where level = 1)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from mipmaps where level = 2 and imgid in (select imgid from dreggn where level = 2)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from mipmaps where level = 3 and imgid in (select imgid from dreggn where level = 3)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from mipmaps where level = 4 and imgid in (select imgid from dreggn where level = 4)", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "delete from mipmaps where level = 5 and imgid in (select imgid from dreggn where level = 5)", NULL, NULL, NULL);
   sqlite3_exec(darktable.db, "delete from dreggn", NULL, NULL, NULL);
   sqlite3_exec(darktable.db, "drop table dreggn", NULL, NULL, NULL);
 
