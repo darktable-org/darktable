@@ -6,6 +6,7 @@ documentation:
 - plugin docs in pdf
 
 webpage updates:
+- windoos version: link ubuntu remix iso :)
 - freebsd has dt (has had for a while :)
 - list of supported cameras and reverse-engineered basecurves etc
 
@@ -24,6 +25,8 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- move lensfun to pre colorin rgb?
+- sliders for C/A in lensfun
 - auto apply preset doesn't seem to work for curr img (needs reset button press)
 - prefetching while browsing lighttable mode
 - color labels: sort and import is weird.
@@ -52,14 +55,12 @@ big new features:
 - mipf not loaded on time in develop for small displays.
 
 - ctrl-z ctrl-shift-z up/down in history stack
-- metadata imgfilename etc with ellipzized file names
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
 - auto select image if there is only one on the light table
 - decapitalize icc profile names
 - lock zoom/pan checkbox in darkroom mode
-- sliders for C/A in lensfun
 - lensfun + crop: preview/full image differ in zoom/pan?
 - built-in XYZ and linear color profile support?
 - embed custom exif data in export plugin

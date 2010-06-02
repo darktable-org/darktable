@@ -1181,7 +1181,6 @@ int key_pressed (struct dt_iop_module_t *self, uint16_t which)
       // reverse cropping to where it was before.
       p->cx = p->cy = 0.0f;
       p->cw = p->ch = 1.0f;
-      p->angle = 0.0f;
       g->clip_x = g->old_clip_x;
       g->clip_y = g->old_clip_y;
       g->clip_w = g->old_clip_w;
