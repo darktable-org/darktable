@@ -1,11 +1,11 @@
 /* 
    GENERATED FILE, DO NOT EDIT
-   Generated from dcraw/dcraw.c at Sat Apr 10 12:12:35 2010
+   Generated from dcraw/dcraw.c at Sat May 15 11:10:07 2010
    Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
    for copyright information.
 */
 
-#line 265 "dcraw/dcraw.c"
+#line 264 "dcraw/dcraw.c"
 #define CLASS LibRaw::
 #include "libraw/libraw_types.h"
 #define LIBRAW_LIBRARY_BUILD
@@ -14,7 +14,7 @@
 #include "internal/defines.h"
 #include "internal/var_defines.h"
 
-#line 275 "dcraw/dcraw.c"
+#line 274 "dcraw/dcraw.c"
 
 #ifndef __GLIBC__
 char *my_memmem (char *haystack, size_t haystacklen,
@@ -29,7 +29,7 @@ char *my_memmem (char *haystack, size_t haystacklen,
 #define memmem my_memmem
 #endif
 
-#line 309 "dcraw/dcraw.c"
+#line 308 "dcraw/dcraw.c"
 
 ushort CLASS sget2 (uchar *s)
 {
@@ -104,7 +104,7 @@ void CLASS read_shorts (ushort *pixel, int count)
   if ((order == 0x4949) == (ntohs(0x1234) == 0x1234))
       swab ((char*)pixel, (char*)pixel, count*2);
 }
-#line 386 "dcraw/dcraw.c"
+#line 385 "dcraw/dcraw.c"
 void CLASS canon_black (double dark[2], int nblack)
 {
   int c, diff, row, col;
@@ -604,7 +604,7 @@ void CLASS canon_compressed_load_raw()
   canon_black (dark, nblack);
 }
 
-#line 896 "dcraw/dcraw.c"
+#line 895 "dcraw/dcraw.c"
 int CLASS ljpeg_start (struct jhead *jh, int info_only)
 {
   int c, tag, len;
@@ -865,22 +865,9 @@ void CLASS adobe_copy_pixel (int row, int col, ushort **rp)
         val = **rp < 0x1000 ? curve[**rp] : **rp;
     if (r < height && c < width)
         {
-            if(fuji_width)
-                {
-                    int rr,cc;
-                    ushort color;
-                    rr = row + fuji_width - 1 - (col >> 1);
-                    cc = row + ((col+1) >> 1);
-                    color = FC(rr,cc);
-                    image[((row) >> shrink)*iwidth + ((col) >> shrink)][color] = val;
-                    if(channel_maximum[color] < val) channel_maximum[color] = val;
-                }
-            else
-                {
-                    ushort color = FC(r,c);
-                    if(channel_maximum[color] < val) channel_maximum[color] = val;
-                    BAYER(r,c) = val;
-                }
+            ushort color = COLOR(r,c);
+            image[((row) >> shrink)*iwidth + ((col) >> shrink)][color] = val;
+            if(channel_maximum[color] < val) channel_maximum[color] = val;
         }
     else
         {
@@ -1221,16 +1208,8 @@ void CLASS fuji_load_raw()
             {
                 int rrow = row-top_margin;
                 int ccol = col-left_margin;
-                ushort color;
-                if (fuji_layout) {
-                    r = fuji_width - 1 - ccol + (rrow >> 1);
-                    c = ccol + ((rrow+1) >> 1);
-                } else {
-                    r = fuji_width - 1 + rrow - (ccol >> 1);
-                    c = rrow + ((ccol+1) >> 1);
-                }
-                color = FC(r,c);
-                image[((row-top_margin) >> shrink)*iwidth + ((col-left_margin) >> shrink)][color] = pixel[col];
+                ushort color = FCF(rrow,ccol);
+                image[((rrow) >> shrink)*iwidth + ((ccol) >> shrink)][color] = pixel[col];
                 if(channel_maximum[color] < pixel[col] ) channel_maximum[color] = pixel[col];
             }
         else
@@ -1243,7 +1222,7 @@ void CLASS fuji_load_raw()
   free (pixel);
 #endif
 }
-#line 1539 "dcraw/dcraw.c"
+#line 1517 "dcraw/dcraw.c"
 void CLASS ppm_thumb()
 {
   char *thumb;
@@ -1778,7 +1757,7 @@ void CLASS leaf_hdr_load_raw()
   }
 }
 
-#line 2077 "dcraw/dcraw.c"
+#line 2055 "dcraw/dcraw.c"
 void CLASS sinar_4shot_load_raw()
 {
   ushort *pixel;
@@ -2455,9 +2434,9 @@ void CLASS eight_bit_load_raw()
           {
               if ((unsigned) (col-left_margin) < width)
                   {
-                      ushort color=FC(row,col);
+                      ushort color=FC(row-top_margin,col-left_margin);
                       if(channel_maximum[color] < val) channel_maximum[color] = val;
-                      BAYER(row,col-left_margin) = val;
+                      BAYER(row-top_margin,col-left_margin) = val;
                   }
               else
                   {
@@ -3039,7 +3018,7 @@ void CLASS smal_v9_load_raw()
     smal_decode_segment (seg+i, holes);
   if (holes) fill_holes (holes);
 }
-#line 4149 "dcraw/dcraw.c"
+#line 4127 "dcraw/dcraw.c"
 
 void CLASS gamma_curve (double pwr, double ts, int mode, int imax)
 {
@@ -3314,7 +3293,7 @@ void CLASS wavelet_denoise()
   temp = fimg + size*3;
   if ((nc = colors) == 3 && filters) nc++;
 #ifdef LIBRAW_LIBRARY_BUILD
-#pragma omp parallel default(shared) private(i,col,row,thold,lev,lpass,hpass,temp,c) firstprivate(scale,size) 
+#pragma omp parallel default(shared) private(i,col,row,thold,lev,lpass,hpass,temp) firstprivate(c,scale,size) 
 #endif
   {
       temp = (float*)malloc( (iheight + iwidth) * sizeof *fimg);
@@ -3397,127 +3376,6 @@ void CLASS wavelet_denoise()
 }
 
 #endif
-
-void CLASS pre_interpolate_median_filter()
-{
-  ushort (*pixo)[4];
-  ushort (*pixi)[4];
-  ushort (*img )[4];
-  int pass, c, i, j, k, row, col, rows, med[9];
-  const int num_passes = 2;
-  static const uchar opt[] =	/* Optimal 9-element median search */
-  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
-    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
-
-  img = (ushort (*)[4]) calloc (height*width, sizeof *image);
-  merror (img, "pre_interpolate_median_filter()");
-  memcpy(img,image,height*width*sizeof *image);
-  for (pass=0; pass < num_passes; pass++)
-  {
-    for (c=0; c < 3; c+=2)
-    {
-      rows = 3;
-      if(FC(rows,3) != c && FC(rows,4) != c) rows++;
-#ifdef _OPENMP
-  #pragma omp parallel for default(shared) private(pixo,pixi,row,col,med,k,i,j) schedule(static)
-#endif
-      for (row=rows;row<height-3;row+=2)
-      {
-        col = 3;
-        if(FC(row,col) != c) col++;
-        pixo = &image[width * row + col];
-        pixi = &img  [width * row + col];
-        for(;col<width-3;col+=2)
-        {
-          for (k=0, i = -2*width; i <= 2*width; i += 2*width)
-            for (j = i-2; j <= i+2; j+=2)
-              med[k++] = pixi[j][c];
-          for (i=0; i < (int)(sizeof opt); i+=2)
-            if     (med[opt[i]] > med[opt[i+1]])
-              SWAP (med[opt[i]] , med[opt[i+1]]);
-          pixo[0][c] = med[4];
-          pixo+=2;
-          pixi+=2;
-        }
-      }
-    }
-  }
-  // now green:
-  const int lim[6] = {0, 1, 2, 1, 0};
-  int cx[6];
-  for (pass=0; pass < num_passes; pass++)
-  {
-#ifdef _OPENMP
-  #pragma omp parallel for default(shared) private(cx,pixo,pixi,row,col,med,k,i,j)
-#endif
-    for (row=3;row<height-3;row++)
-    {
-      col = 3;
-      if(FC(row,col) != 1 && FC(row,col) != 3) col++;
-      c = FC(row,col);
-      for(k=0;k<6;k++) cx[k] = (c == 1) ? ((k & 1) ? 3 : 1) : ((k & 1) ? 1 : 3);
-      pixo = &image[width * row + col];
-      pixi = &img  [width * row + col];
-      for(;col<width-3;col+=2)
-      {
-        for (k=0, i = 0; i < 6; i ++)
-          for (j = -lim[i]; j <= lim[i]; j+=2)
-            med[k++] = pixi[width*(i-2) + j][cx[i]];
-        for (i=0; i < (int)(sizeof opt); i+=2)
-          if     (med[opt[i]] > med[opt[i+1]])
-            SWAP (med[opt[i]] , med[opt[i+1]]);
-        pixo[0][c] = med[4];
-        pixo+=2;
-        pixi+=2;
-      }
-    }
-  }
-  free (img);
-}
-
-// green equilibration
-void CLASS green_matching()
-{
-  int i,j;
-  double m1,m2,c1,c2;
-  int o1_1,o1_2,o1_3,o1_4;
-  int o2_1,o2_2,o2_3,o2_4;
-  ushort (*img)[4];
-  const int margin = 3;
-  int oj = 2, oi = 2;
-  float f;
-  const float thr = 0.01f;
-  if(FC(oj, oi) != 3) oj++;
-  if(FC(oj, oi) != 3) oi++;
-
-  img = (ushort (*)[4]) calloc (height*width, sizeof *image);
-  merror (img, "green_matching()");
-  memcpy(img,image,height*width*sizeof *image);
-
-  for(j=oj;j<height-margin;j+=2)
-    for(i=oi;i<width-margin;i+=2){
-      o1_1=img[(j-1)*width+i-1][1];
-      o1_2=img[(j-1)*width+i+1][1];
-      o1_3=img[(j+1)*width+i-1][1];
-      o1_4=img[(j+1)*width+i+1][1];
-      o2_1=img[(j-2)*width+i][3];
-      o2_2=img[(j+2)*width+i][3];
-      o2_3=img[j*width+i-2][3];
-      o2_4=img[j*width+i+2][3];
-
-      m1=(o1_1+o1_2+o1_3+o1_4)/4.0;
-      m2=(o2_1+o2_2+o2_3+o2_4)/4.0;
-
-      c1=(abs(o1_1-o1_2)+abs(o1_1-o1_3)+abs(o1_1-o1_4)+abs(o1_2-o1_3)+abs(o1_3-o1_4)+abs(o1_2-o1_4))/6.0;
-      c2=(abs(o2_1-o2_2)+abs(o2_1-o2_3)+abs(o2_1-o2_4)+abs(o2_2-o2_3)+abs(o2_3-o2_4)+abs(o2_2-o2_4))/6.0;
-      if((img[j*width+i][3]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
-      {
-        f = image[j*width+i][3]*m1/m2;
-        image[j*width+i][3]=f>0xffff?0xffff:f;
-      }
-    }
-  free(img);
-}
 
 void CLASS scale_colors()
 {
@@ -3936,9 +3794,6 @@ void CLASS ppg_interpolate()
 #ifdef LIBRAW_LIBRARY_BUILD
   RUN_CALLBACK(LIBRAW_PROGRESS_INTERPOLATE,0,3);
 #endif
-#ifdef _OPENMP
-#pragma omp parallel for default(shared) private(guess, diff, row, col, d, c, i, pix) schedule(static)
-#endif
   for (row=3; row < height-3; row++)
     for (col=3+(FC(row,3) & 1), c=FC(row,col); col < width-3; col+=2) {
       pix = image + row*width+col;
@@ -3958,9 +3813,6 @@ void CLASS ppg_interpolate()
 #ifdef LIBRAW_LIBRARY_BUILD
   RUN_CALLBACK(LIBRAW_PROGRESS_INTERPOLATE,1,3);
 #endif
-#ifdef _OPENMP
-#pragma omp parallel for default(shared) private(guess, diff, row, col, d, c, i, pix) schedule(static)
-#endif
   for (row=1; row < height-1; row++)
     for (col=1+(FC(row,2) & 1), c=FC(row,col+1); col < width-1; col+=2) {
       pix = image + row*width+col;
@@ -3971,9 +3823,6 @@ void CLASS ppg_interpolate()
 /*  Calculate blue for red pixels and vice versa:		*/
 #ifdef LIBRAW_LIBRARY_BUILD
   RUN_CALLBACK(LIBRAW_PROGRESS_INTERPOLATE,2,3);
-#endif
-#ifdef _OPENMP
-#pragma omp parallel for default(shared) private(guess, diff, row, col, d, c, i, pix) schedule(static)
 #endif
   for (row=1; row < height-1; row++)
     for (col=1+(FC(row,1) & 1), c=2-FC(row,col); col < width-1; col+=2) {
@@ -4455,7 +4304,7 @@ void CLASS parse_thumb_note (int base, unsigned toff, unsigned tlen)
   }
 }
 
-#line 5438 "dcraw/dcraw.c"
+#line 5416 "dcraw/dcraw.c"
 void CLASS parse_makernote (int base, int uptag)
 {
   static const uchar xlat[2][256] = {
@@ -4997,7 +4846,7 @@ void CLASS parse_kodak_ifd (int base)
   }
 }
 
-#line 5983 "dcraw/dcraw.c"
+#line 5961 "dcraw/dcraw.c"
 int CLASS parse_tiff_ifd (int base)
 {
   unsigned entries, tag, type, len, plen=16, save;
@@ -6182,7 +6031,7 @@ void CLASS parse_cine()
   data_offset  = (INT64) get4() + 8;
   data_offset += (INT64) get4() << 32;
 }
-#line 7269 "dcraw/dcraw.c"
+#line 7247 "dcraw/dcraw.c"
 void CLASS adobe_coeff (const char *p_make, const char *p_model)
 {
   static const struct {
@@ -6229,8 +6078,6 @@ void CLASS adobe_coeff (const char *p_make, const char *p_model)
 	{ 5784,-262,-821,-7539,15064,2672,-1982,2681,7427 } },
     { "Canon EOS 500D", 0, 0x3479,
 	{ 4763,712,-646,-6821,14399,2640,-1921,3276,6561 } },
-    { "Canon EOS 550D", 0, 0x3510, /* saturation point copied from 7D */
-	{ 6941,-1164,-857,-3825,11597,2534,-416,1540,6039 } },
     { "Canon EOS 1000D", 0, 0xe43,
 	{ 6771,-1139,-977,-7818,15123,2928,-1244,1437,7533 } },
     { "Canon EOS-1Ds Mark III", 0, 0x3bb0,
@@ -6747,7 +6594,7 @@ short CLASS guess_byte_order (int words)
   return sum[0] < sum[1] ? 0x4d4d : 0x4949;
 }
 
-#line 7835 "dcraw/dcraw.c"
+#line 7813 "dcraw/dcraw.c"
 
 float CLASS find_green (int bps, int bite, int off0, int off1)
 {
@@ -7336,13 +7183,6 @@ canon_a5:
     left_margin = 142;
     raw_width *= 4;
     width = 4916;
-  } else if (is_canon && raw_width == 1336) {
-    top_margin = 51;
-    left_margin = 142;
-    raw_width = width *= 4;
-    if (unique_id == 0x80000270)
-      adobe_coeff ("Canon","EOS 550D");
-    goto canon_cr2;
   } else if (is_canon && raw_width == 1340) {
     top_margin = 51;
     left_margin = 158;
@@ -8489,7 +8329,7 @@ else if (!strcmp(model,"QV-2000UX")) {
   }
 }
 
-#line 9661 "dcraw/dcraw.c"
+#line 9639 "dcraw/dcraw.c"
 void CLASS convert_to_rgb()
 {
   int row, col, c, i, j, k;
@@ -8708,7 +8548,7 @@ int CLASS flip_index (int row, int col)
   return row * iwidth + col;
 }
 
-#line 9904 "dcraw/dcraw.c"
+#line 9882 "dcraw/dcraw.c"
 void CLASS tiff_set (ushort *ntag,
 	ushort tag, ushort type, int count, int val)
 {

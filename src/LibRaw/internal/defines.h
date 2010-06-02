@@ -1,6 +1,6 @@
 /* 
    GENERATED FILE, DO NOT EDIT
-   Generated from dcraw/dcraw.c at Sat Apr 10 12:12:35 2010
+   Generated from dcraw/dcraw.c at Sat May 15 11:10:07 2010
    Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
    for copyright information.
 */
@@ -129,6 +129,5 @@
 #line 233 "dcraw/dcraw.c"
 #define BAYER(row,col) \
 	image[((row) >> shrink)*iwidth + ((col) >> shrink)][FC(row,col)]
-
 #define BAYER2(row,col) \
 	image[((row) >> shrink)*iwidth + ((col) >> shrink)][fc(row,col)]

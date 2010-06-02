@@ -124,6 +124,8 @@ class DllDef LibRaw
     void         recycle(); 
     ~LibRaw(void) { recycle(); delete tls; }
 
+    int COLOR(int row, int col) { return libraw_internal_data.internal_output_params.fuji_width? FCF(row,col):FC(row,col);}
+
     int FC(int row,int col) { return (imgdata.idata.filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3);}
     int         fc (int row, int col);
     int add_masked_borders_to_bitmap();
@@ -132,6 +134,19 @@ class DllDef LibRaw
     int         rotate_fuji_raw();
 
   private:
+
+    int FCF(int row,int col) { 
+        int rr,cc;
+        if (libraw_internal_data.unpacker_data.fuji_layout) {
+            rr = libraw_internal_data.internal_output_params.fuji_width - 1 - col + (row >> 1);
+            cc = col + ((row+1) >> 1);
+        } else {
+            rr = libraw_internal_data.internal_output_params.fuji_width - 1 + row - (col >> 1);
+            cc = row + ((col+1) >> 1);
+        }
+        return FC(rr,cc);
+    }
+
     void*        malloc(size_t t);
     void*        calloc(size_t n,size_t t);
     void        free(void *p);
@@ -182,8 +197,6 @@ class DllDef LibRaw
     void        median_filter ();
     void        blend_highlights();
     void        recover_highlights();
-    void        green_matching();
-    void        pre_interpolate_median_filter();
 
     void        fuji_rotate();
     void        stretch();

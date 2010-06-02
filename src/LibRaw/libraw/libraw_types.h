@@ -29,7 +29,7 @@ it under the terms of the one of three licenses as you choose:
 #endif
 #include <stdio.h>
 #ifdef _OPENMP
-#ifdef __MSVCRT_VERSION__
+#ifdef _MSC_VER
 #error OpenMP is not supported under MS Visual Studio
 #endif
 #include <omp.h>
@@ -105,9 +105,9 @@ typedef struct
                 colors,
                 bits;
 #ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp firstprivate(colors,height,width)
-// #endif
+#ifdef _OPENMP
+#pragma omp firstprivate(colors,height,width)
+#endif
 #endif
     unsigned int  data_size; 
     unsigned char data[1]; 
@@ -139,9 +139,9 @@ typedef struct
     ushort      iheight,
                 iwidth;
 #ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp firstprivate(iheight,iwidth)
-// #endif
+#ifdef _OPENMP
+#pragma omp firstprivate(iheight,iwidth)
+#endif
 #endif
     double      pixel_aspect;
     int         flip;
@@ -222,9 +222,9 @@ typedef struct
     float       bright;         /* -b */
     float       threshold;      /*  -n */
 #ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp firstprivate(threshold)
-// #endif
+#ifdef _OPENMP
+#pragma omp firstprivate(threshold)
+#endif
 #endif
     int         half_size;      /* -h */
     int         four_color_rgb; /* -f */
@@ -250,8 +250,6 @@ typedef struct
     float       adjust_maximum_thr;
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
-    int         green_matching;
-    int         pre_interpolate_median_filter;
     enum LibRaw_filtering    filtering_mode; 
 }libraw_output_params_t;
 
@@ -281,9 +279,9 @@ typedef struct
     libraw_masked_t             masked_pixels;
     ushort                      (*image)[4] ;
 #ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp shared(image)
-// #endif
+#ifdef _OPENMP
+#pragma omp shared(image)
+#endif
 #endif
     libraw_output_params_t     params;
     void                *parent_class;      
