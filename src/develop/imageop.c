@@ -39,7 +39,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
 
   // select matching default:
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params, enabled from presets where operation = ?1 and "
+  sqlite3_prepare_v2(darktable.db, "select op_params, enabled, operation from presets where operation = ?1 and "
       "autoapply=1 and "
       "?2 like model and ?3 like maker and ?4 like lens and "
       "?5 between iso_min and iso_max and "
@@ -85,6 +85,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     int enabled = sqlite3_column_int(stmt, 1);
     if(blob && length == module->params_size)
     {
+      // printf("got default for image %d and operation %s\n", module->dev->image->id, sqlite3_column_text(stmt, 2));
       memcpy(module->default_params, blob, length);
       module->default_enabled = enabled;
     }
