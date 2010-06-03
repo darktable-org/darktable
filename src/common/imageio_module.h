@@ -1,0 +1,126 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2009--2010 johannes hanika.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#ifndef DT_IMAGEIO_MODULE_H
+#define DT_IMAGEIO_MODULE_H
+
+#include <gmodule.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
+
+/**
+ * defines the plugin structure for image import and export.
+ *
+ * io is handled by the module_format plugins, which in turn is
+ * called by the module_storage plugins, which handles the type of export,
+ * such as flickr upload or simple on-disk storage.
+ */
+
+/* custom data for the module. append private stuff after width and height. */
+typedef struct dt_imageio_module_data_t
+{
+  int width, height;
+}
+dt_imageio_module_data_t;
+
+struct dt_imageio_module_format_t;
+/* responsible for image encoding, such as jpg,png,etc */
+typedef struct dt_imageio_module_format_t
+{
+  // office use only:
+  char plugin_name[128];
+  GModule *module;
+
+  // gui stuff:
+  GtkWidget *widget;
+  
+  // gui and management:
+  /* get translated module name */
+  const char* (*name) ();
+  /* construct widget above */
+  void (*gui_init)    (struct dt_imageio_module_format_t *self);
+  /* destroy resources */
+  void (*gui_cleanup) (struct dt_imageio_module_format_t *self);
+  /* reset options to defaults */
+  void (*gui_reset)   (struct dt_imageio_module_format_t *self);
+ 
+
+  // optional: functions operating in memory, not on files:
+  /* reads the header and fills width/height in data struct. */
+  int (*decompress_header)(const void *in, size_t length, dt_imageio_module_data_t *data);
+  /* reads the whole image to the out buffer, which has to be large enough. */
+  int (*decompress)(dt_imageio_module_data_t *data, uint8_t *out);
+  /* compresses in to out buffer with given quality (0..100). out buffer must be large enough. returns actual data length. */
+  int (*compress)(const uint8_t *in, uint8_t *out, const int width, const int height, const int quality);
+
+  // writing functions:
+  /* write to file, with exif if not NULL. */
+  int (*write)(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len);
+  /* this will collect the images icc profile (or the global export override) and append it during write. */
+  int (*write_with_icc_profile)(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len, int imgid);
+
+  // reading functions:
+  /* read header from file, get width and height */
+  int (*read_header)(const char *filename, dt_imageio_module_data_t *data);
+  /* reads the image to the (sufficiently allocated) buffer, closes file. */
+  int (*read)(dt_imageio_module_data_t *data, uint8_t *out);
+}
+dt_imageio_module_format_t;
+
+
+/* responsible for image storage, such as flickr, harddisk, etc */
+typedef struct dt_imageio_module_storage_t
+{
+  // office use only:
+  char plugin_name[128];
+  GModule *module;
+
+  // gui stuff:
+  GtkWidget *widget;
+  
+  // gui and management:
+  /* get translated module name */
+  const char* (*name) ();
+  /* construct widget above */
+  void (*gui_init)    (struct dt_imageio_module_format_t *self);
+  /* destroy resources */
+  void (*gui_cleanup) (struct dt_imageio_module_format_t *self);
+  /* reset options to defaults */
+  void (*gui_reset)   (struct dt_imageio_module_format_t *self);
+
+  /* this actually does the work */
+  int (*store)(const int imgid);
+}
+dt_imageio_module_storage_t;
+
+
+/* main struct */
+typedef struct dt_imageio_t
+{
+  GList *plugins_format;
+  GList *plugins_storage;
+}
+dt_imageio_t;
+
+
+/* load all modules */
+void dt_imageio_init   (dt_imageio_t *iio);
+/* cleanup */
+void dt_imageio_cleanup(dt_imageio_t *iio);
+
+
+#endif

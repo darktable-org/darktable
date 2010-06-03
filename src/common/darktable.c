@@ -24,6 +24,7 @@
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/imageio_module.h"
 #include "common/points.h"
 #include "libs/lib.h"
 #include "views/view.h"
@@ -146,6 +147,9 @@ int dt_init(int argc, char *argv[])
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)));
 
+  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
+
   darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
   dt_lib_init(darktable.lib);
 
@@ -191,6 +195,8 @@ void dt_cleanup()
   dt_control_write_config(darktable.control);
   dt_control_shutdown(darktable.control);
 
+  dt_imageio_cleanup(darktable.imageio);
+  free(darktable.imageio);
   dt_lib_cleanup(darktable.lib);
   free(darktable.lib);
   dt_view_manager_cleanup(darktable.view_manager);

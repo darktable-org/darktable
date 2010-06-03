@@ -86,6 +86,7 @@ struct dt_image_cache_t;
 struct dt_lib_t;
 struct dt_conf_t;
 struct dt_points_t;
+struct dt_imageio_t;
 
 typedef enum dt_debug_thread_t
 { // powers of two, masking
@@ -113,6 +114,7 @@ typedef struct darktable_t
   const struct dt_fswatch_t	*fswatch;
   const struct dt_camctl_t *camctl;
   struct dt_points_t       *points;
+  struct dt_imageio_t      *imageio;
   pthread_mutex_t db_insert;
   pthread_mutex_t plugin_threadsafe;
   char *progname;
