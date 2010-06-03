@@ -19,6 +19,7 @@
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
+#include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/colorspaces.h"
 #include <setjmp.h>
@@ -492,9 +493,10 @@ int write_with_icc_profile(const char *filename, const uint8_t *in, const int wi
   return 0;
 }
 
-int write(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len)
+int write_image (const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len)
 {
-  return dt_imageio_jpeg_write_with_icc_profile(filename, in, width, height, quality, exif, exif_len, -1);
+  // FIXME: this will fail if multiple plugins exist!
+  return write_with_icc_profile(filename, in, width, height, quality, exif, exif_len, -1);
 }
 
 int read_header(const char *filename, dt_imageio_jpeg_t *jpg)
@@ -520,7 +522,7 @@ int read_header(const char *filename, dt_imageio_jpeg_t *jpg)
   return 0;
 }
 
-int read(dt_imageio_jpeg_t *jpg, uint8_t *out)
+int read_image (dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
   jpg->dinfo.err = jpeg_std_error(&jerr.pub);

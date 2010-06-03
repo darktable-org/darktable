@@ -191,6 +191,9 @@ AC_CONFIG_FILES([
     color/Makefile
     color/in/Makefile
     color/out/Makefile
+    src/imageio/Makefile
+    src/imageio/format/Makefile
+    src/imageio/storage/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT

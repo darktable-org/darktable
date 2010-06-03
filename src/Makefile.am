@@ -1,4 +1,4 @@
-SUBDIRS=LibRaw iop views libs # gegl-operations
+SUBDIRS=LibRaw iop views libs imageio # gegl-operations
 include shared.am
 AM_CFLAGS+=-Werror -rdynamic -Wno-deprecated-declarations
 AM_CPPFLAGS=$(OPENEXR_CFLAGS)
