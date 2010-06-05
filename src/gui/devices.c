@@ -146,8 +146,8 @@ void dt_gui_devices_update()
       GtkWidget *ib=NULL,*tb=NULL;
       if( camera->can_import==TRUE )
         gtk_box_pack_start(GTK_BOX(widget),(ib=gtk_button_new_with_label(_("import from camera"))),FALSE,FALSE,0);
-      /*if( camera->can_tether==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);*/
+      if( camera->can_tether==TRUE )
+        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);
       
       if( ib ) {
         g_signal_connect (G_OBJECT(ib), "clicked",G_CALLBACK (import_callback), camera);
