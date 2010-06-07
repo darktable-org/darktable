@@ -147,9 +147,6 @@ int dt_init(int argc, char *argv[])
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)));
 
-  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
-  dt_imageio_init(darktable.imageio);
-
   darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
   dt_lib_init(darktable.lib);
 
@@ -161,6 +158,9 @@ int dt_init(int argc, char *argv[])
 
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
+
+  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
 
   int id = 0;
   if(image_to_load)

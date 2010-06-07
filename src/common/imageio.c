@@ -1035,6 +1035,100 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
+int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
+{
+  dt_develop_t dev;
+  dt_dev_init(&dev, 0);
+  dt_dev_load_image(&dev, img);
+  const int wd = dev.image->width;
+  const int ht = dev.image->height;
+  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
+
+  dt_dev_pixelpipe_t pipe;
+  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
+  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+  dt_dev_pixelpipe_synch_all(&pipe, &dev);
+  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+
+  // find output color profile for this image:
+  int sRGB = 1;
+  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  if(overprofile && !strcmp(overprofile, "sRGB"))
+  {
+    sRGB = 1;
+  }
+  else if(!overprofile || !strcmp(overprofile, "image"))
+  {
+    GList *modules = dev.iop;
+    dt_iop_module_t *colorout = NULL;
+    while (modules)
+    {
+      colorout = (dt_iop_module_t *)modules->data;
+      if (strcmp(colorout->op, "colorout") == 0)
+      {
+        dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)colorout->params;
+        if(!strcmp(p->iccprofile, "sRGB")) sRGB = 1;
+        else sRGB = 0;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+  else
+  {
+    sRGB = 0;
+  }
+  g_free(overprofile);
+
+  const int width  = format_params->max_width;
+  const int height = format_params->max_height;
+  const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
+  const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
+  const float scale = fminf(scalex, scaley);
+  const int processed_width  = scale*pipe.processed_width  + .5f;
+  const int processed_height = scale*pipe.processed_height + .5f;
+  const int bpp = format->bpp(format_params);
+  if(bpp == 8)
+  { // ldr output: char
+    dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    uint8_t *buf8 = pipe.backbuf;
+    for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
+    { // convert in place
+      const int k = x + processed_width*y;
+      uint8_t tmp = buf[4*k+0];
+      buf[4*k+0] = buf[4*k+2];
+      buf[4*k+2] = tmp;
+    }
+  }
+  else if(bpp == 16)
+  { // uint16_t per color channel
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    float   *buff  = pipe.backbuf;
+    uint8_t *buf16 = pipe.backbuf;
+    for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
+    { // convert in place
+      const int k = x + processed_width*y;
+      for(int i=0;i<3;i++) buf16[3*k+i] = CLAMP(buff[3*k+i]*0x10000, 0, 0xffff);
+    }
+  }
+  else if(bpp == 32)
+  { // 32-bit float
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+  }
+
+  int length;
+  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
+  length = dt_exif_read_blob(exif_profile, pathname, sRGB);
+  format_params->width  = processed_width;
+  format_params->height = processed_height;
+  int res = format->write_image_with_icc_profile (format_params, filename, pipe.backbuf, processed_width, processed_height, exif_profile, length, img->id);
+
+  dt_dev_pixelpipe_cleanup(&pipe);
+  dt_dev_cleanup(&dev);
+  return res;
+}
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
   dt_develop_t dev;
