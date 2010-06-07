@@ -195,12 +195,12 @@ void dt_cleanup()
   dt_control_write_config(darktable.control);
   dt_control_shutdown(darktable.control);
 
-  dt_imageio_cleanup(darktable.imageio);
-  free(darktable.imageio);
   dt_lib_cleanup(darktable.lib);
   free(darktable.lib);
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
+  dt_imageio_cleanup(darktable.imageio);
+  free(darktable.imageio);
   dt_gui_gtk_cleanup(darktable.gui);
   free(darktable.gui);
   dt_image_cache_cleanup(darktable.image_cache);

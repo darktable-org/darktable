@@ -107,6 +107,8 @@ height_changed (GtkSpinButton *spin, gpointer user_data)
 void
 gui_reset (dt_lib_module_t *self)
 {
+  // make sure we don't do anything useless:
+  if(!darktable.control->running) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   // int quality = MIN(100, MAX(1, dt_conf_get_int ("plugins/lighttable/export/quality")));
   // dtgtk_slider_set_value(d->quality, quality);
@@ -118,19 +120,10 @@ gui_reset (dt_lib_module_t *self)
   if(it)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
-    gtk_container_add(d->format_box, module->widget);
+    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
+    if(old) gtk_container_remove(d->format_box, old);
+    if(module->widget) gtk_container_add(d->format_box, module->widget);
   }
-#if 0
-  int i = 0;
-  if     (k == DT_DEV_EXPORT_JPG)    i = 0;
-  else if(k == DT_DEV_EXPORT_PNG)    i = 1;
-  else if(k == DT_DEV_EXPORT_TIFF8)  i = 2;
-  else if(k == DT_DEV_EXPORT_PPM16)  i = 3;
-  else if(k == DT_DEV_EXPORT_TIFF16) i = 4;
-  else if(k == DT_DEV_EXPORT_PFM)    i = 5;
-  else if(k == DT_DEV_EXPORT_EXR)    i = 6;
-  gtk_combo_box_set_active(d->format, i);
-#endif
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
@@ -155,6 +148,21 @@ gui_reset (dt_lib_module_t *self)
   mformat->gui_reset(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   mstorage->gui_reset(mstorage);
+}
+
+static void
+format_changed (GtkComboBox *widget, dt_lib_export_t *d)
+{
+  int k = gtk_combo_box_get_active(d->format);
+  dt_conf_set_int ("plugins/lighttable/export/format", k);
+  GList *it = g_list_nth(darktable.imageio->plugins_format, k);
+  if(it)
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
+    if(old) gtk_container_remove(d->format_box, old);
+    if(module->widget) gtk_container_add(d->format_box, module->widget);
+  }
 }
 
 static void
@@ -191,7 +199,6 @@ position ()
 void
 gui_init (dt_lib_module_t *self)
 {
-  // TODO: what about the layout with the plugins??
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
   self->widget = gtk_table_new(8, 2, FALSE);
@@ -233,6 +240,9 @@ gui_init (dt_lib_module_t *self)
     it = g_list_next(it);
   }
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g_signal_connect (G_OBJECT (d->format), "changed",
+                    G_CALLBACK (format_changed),
+                    (gpointer)d);
 
   d->format_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->format_box), 0, 0, 0, 0);
