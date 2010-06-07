@@ -105,7 +105,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
       continue;
     }
     module->gui_init(module);
-    gtk_widget_ref(module->widget);
+    if(module->widget) gtk_widget_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);
   }
@@ -170,7 +170,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
       continue;
     }
     module->gui_init(module);
-    gtk_widget_ref(module->widget);
+    if(module->widget) gtk_widget_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_storage);
   }
@@ -195,25 +195,24 @@ dt_imageio_cleanup (dt_imageio_t *iio)
   while(iio->plugins_format)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
-    gtk_widget_unref(module->widget);
+    if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
     iio->plugins_format = g_list_delete_link(iio->plugins_format, iio->plugins_format);
   }
   while(iio->plugins_storage)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
-    gtk_widget_unref(module->widget);
+    if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
     iio->plugins_storage = g_list_delete_link(iio->plugins_storage, iio->plugins_storage);
   }
 }
 
-
 dt_imageio_module_format_t *dt_imageio_get_format()
 {
   dt_imageio_t *iio = darktable.imageio;
   int k = dt_conf_get_int ("plugins/lighttable/export/format");
-  GList *it = g_list_get_nth(iio->plugins_format, k);
+  GList *it = g_list_nth(iio->plugins_format, k);
   if(!it) return NULL;
   return (dt_imageio_module_format_t *)it->data;
 }
@@ -222,7 +221,7 @@ dt_imageio_module_storage_t *dt_imageio_get_storage()
 {
   dt_imageio_t *iio = darktable.imageio;
   int k = dt_conf_get_int ("plugins/lighttable/export/storage");
-  GList *it = g_list_get_nth(iio->plugins_storage, k);
+  GList *it = g_list_nth(iio->plugins_storage, k);
   if(!it) return NULL;
   return (dt_imageio_module_storage_t *)it->data;
 }

@@ -756,8 +756,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/plugins/lighttable/export/quality</key>
-      <applyto>/apps/darktable/plugins/lighttable/export/quality</applyto>
+      <key>/schemas/apps/darktable/plugins/imageio/format/quality</key>
+      <applyto>/apps/darktable/plugins/imageio/format/quality</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>97</default>

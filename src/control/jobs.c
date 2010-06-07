@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include <glade/glade.h>
@@ -577,16 +578,15 @@ void dt_control_delete_images()
 
 void dt_control_export_job_run(dt_job_t *job)
 {
-  char filename[1024], dirname[1024];
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   const int total = g_list_length(t);
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format();
   g_assert(mformat);
-  dt_imageio_module_data_t *mdata = mformat->get_params(mformat);
-  mdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
-  mdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+  fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   g_assert(mstorage);
   dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
@@ -594,9 +594,10 @@ void dt_control_export_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    mstorage->store(sdata, imgid, mformat, fdata);
+    t = g_list_delete_link(t, t);
+    mstorage->store(sdata, imgid, mformat, fdata, total-g_list_length(t), total);
   }
-  mformat->free_params (mformat,  mdata);
+  mformat->free_params (mformat,  fdata);
   mstorage->free_params(mstorage, sdata);
 }
 

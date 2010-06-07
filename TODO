@@ -24,9 +24,16 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- port output imageio to plugins:
+  - exr
+  - png
+  - tif
+- port input imageio to plugins?
 - export doesn't export all images, some with 1x1 resolution,
   even unaltered ones???
 - libraw 0.10 :)
+  - test pre interpolate median again
+  - we can remove green eq :)
 - move lensfun to pre colorin rgb?
 - sliders for C/A in lensfun
 - auto apply preset doesn't seem to work for curr img (needs reset button press)

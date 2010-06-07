@@ -20,6 +20,7 @@
 #endif
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_pfm.h"
@@ -851,6 +852,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   return DT_IMAGEIO_OK;
 }
 
+#if 0
 // batch-processing enabled write method: history stack, raw image, custom copy of gamma/tonecurves
 int dt_imageio_export_f(dt_image_t *img, const char *filename)
 {
@@ -1018,6 +1020,7 @@ int dt_imageio_export_16(dt_image_t *img, const char *filename)
   dt_dev_cleanup(&dev);
   return status;
 }
+#endif
 
 void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 {
@@ -1095,16 +1098,16 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
     { // convert in place
       const int k = x + processed_width*y;
-      uint8_t tmp = buf[4*k+0];
-      buf[4*k+0] = buf[4*k+2];
-      buf[4*k+2] = tmp;
+      uint8_t tmp = buf8[4*k+0];
+      buf8[4*k+0] = buf8[4*k+2];
+      buf8[4*k+2] = tmp;
     }
   }
   else if(bpp == 16)
   { // uint16_t per color channel
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-    float   *buff  = pipe.backbuf;
-    uint8_t *buf16 = pipe.backbuf;
+    float    *buff  = (float *)   pipe.backbuf;
+    uint16_t *buf16 = (uint16_t *)pipe.backbuf;
     for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
     { // convert in place
       const int k = x + processed_width*y;
@@ -1123,12 +1126,14 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   length = dt_exif_read_blob(exif_profile, pathname, sRGB);
   format_params->width  = processed_width;
   format_params->height = processed_height;
-  int res = format->write_image_with_icc_profile (format_params, filename, pipe.backbuf, processed_width, processed_height, exif_profile, length, img->id);
+  int res = format->write_image_with_icc_profile (format_params, filename, pipe.backbuf, exif_profile, length, img->id);
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return res;
 }
+
+#if 0
 int dt_imageio_export_8(dt_image_t *img, const char *filename)
 {
   dt_develop_t dev;
@@ -1212,6 +1217,7 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   dt_dev_cleanup(&dev);
   return res;
 }
+#endif
 
 // =================================================
 //   combined reading

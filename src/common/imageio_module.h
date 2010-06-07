@@ -119,7 +119,7 @@ typedef struct dt_imageio_module_storage_t
   void (*gui_reset)   (struct dt_imageio_module_storage_t *self);
 
   /* this actually does the work */
-  int (*store)(struct dt_imageio_module_storage_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata);
+  int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total);
 
   void* (*get_params)   (struct dt_imageio_module_storage_t *self);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);

@@ -151,6 +151,10 @@ gui_reset (dt_lib_module_t *self)
     g_free(iccprofile);
   }
   if(!iccfound) gtk_combo_box_set_active(d->profile, 0);
+  dt_imageio_module_format_t *mformat = dt_imageio_get_format();
+  mformat->gui_reset(mformat);
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  mstorage->gui_reset(mstorage);
 }
 
 static void
