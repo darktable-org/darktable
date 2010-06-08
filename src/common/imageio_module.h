@@ -84,10 +84,8 @@ typedef struct dt_imageio_module_format_t
   // writing functions:
   /* bits per pixel and color channel we want to write: 8: char x3, 16: uint16_t x3, 32: float x3. */
   int (*bpp)(dt_imageio_module_data_t *data);
-  /* write to file, with exif if not NULL. */
-  int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len);
-  /* this will collect the images icc profile (or the global export override) and append it during write. */
-  int (*write_image_with_icc_profile)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid);
+  /* write to file, with exif if not NULL, and icc profile if supported. */
+  int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid);
 
   // reading functions:
   /* read header from file, get width and height */

@@ -44,8 +44,8 @@ typedef struct dt_imageio_png_t
 dt_imageio_png_t;
 
 
-static int
-write_image_with_icc_profile_static (dt_imageio_png_t *p, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+int
+write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
 {
   const int width = p->width, height = p->height;
   const uint8_t *in = (uint8_t *)in_void;
@@ -107,16 +107,6 @@ write_image_with_icc_profile_static (dt_imageio_png_t *p, const char *filename, 
   fclose(f);
   // TODO: append exif and embed icc profile!
   return 0;
-}
-
-int write_image_with_icc_profile (dt_imageio_png_t *p, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
-{
-  return write_image_with_icc_profile_static (p, filename, in_void, exif, exif_len, imgid);
-}
-
-int write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, void *exif, int exif_len)
-{
-  return write_image_with_icc_profile_static (p, filename, in_void, exif, exif_len, -1);
 }
 
 int read_header(const char *filename, dt_imageio_png_t *png)

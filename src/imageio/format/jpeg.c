@@ -437,8 +437,8 @@ read_icc_profile (j_decompress_ptr cinfo,
 #undef MAX_SEQ_NO
 
 
-static int
-write_image_with_icc_profile_static(dt_imageio_jpeg_t *jpg, const char *filename, const uint8_t *in, void *exif, int exif_len, int imgid)
+int
+write_image (dt_imageio_jpeg_t *jpg, const char *filename, const uint8_t *in, void *exif, int exif_len, int imgid)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
 
@@ -495,16 +495,6 @@ write_image_with_icc_profile_static(dt_imageio_jpeg_t *jpg, const char *filename
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
   return 0;
-}
-
-int write_image_with_icc_profile (dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid)
-{
-  return write_image_with_icc_profile_static((dt_imageio_jpeg_t *)data, filename, (uint8_t *)in, exif, exif_len, imgid);
-}
-
-int write_image (dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len)
-{
-  return write_image_with_icc_profile_static((dt_imageio_jpeg_t *)data, filename, (uint8_t *)in, exif, exif_len, -1);
 }
 
 int read_header(const char *filename, dt_imageio_jpeg_t *jpg)

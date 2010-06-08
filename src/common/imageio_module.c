@@ -61,7 +61,6 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
   if(!g_module_symbol(module->module, "write_image",                  (gpointer)&(module->write_image)))                  goto error;
-  if(!g_module_symbol(module->module, "write_image_with_icc_profile", (gpointer)&(module->write_image_with_icc_profile))) goto error;
   if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
 
   if(!g_module_symbol(module->module, "decompress_header",            (gpointer)&(module->decompress_header)))            module->decompress_header = NULL;
