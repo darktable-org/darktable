@@ -309,12 +309,12 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
-  ret = libraw_open_file(raw, filename);
-  HANDLE_ERRORS(ret, 0);
 
   // if we have a history stack, don't load preview buffer!
   if(!dt_image_altered(img))
   { // no history stack: get thumbnail
+    ret = libraw_open_file(raw, filename);
+    HANDLE_ERRORS(ret, 0);
     ret = libraw_unpack_thumb(raw);
     if(ret) goto try_full_raw;
     ret = libraw_adjust_sizes_info_only(raw);
@@ -447,8 +447,10 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   {
 try_full_raw:
     // buggy :(
-    // raw->params.half_size = 1; /* dcraw -h */
+    raw->params.half_size = 1; /* dcraw -h */
     // raw->params.user_qual = 2;
+    ret = libraw_open_file(raw, filename);
+    HANDLE_ERRORS(ret, 0);
     ret = libraw_unpack(raw);
     img->black   = raw->color.black/65535.0;
     img->maximum = raw->color.maximum/65535.0;
@@ -473,6 +475,8 @@ try_full_raw:
     const uint16_t (*rawpx)[3] = (const uint16_t (*)[3])image->data;
     const int raw_wd = img->width;
     const int raw_ht = img->height;
+    img->width  <<= 1;
+    img->height <<= 1;
     int p_wd, p_ht;
     float f_wd, f_ht;
     dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
