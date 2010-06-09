@@ -212,7 +212,7 @@ dt_imageio_module_format_t *dt_imageio_get_format()
   dt_imageio_t *iio = darktable.imageio;
   int k = dt_conf_get_int ("plugins/lighttable/export/format");
   GList *it = g_list_nth(iio->plugins_format, k);
-  if(!it) return NULL;
+  if(!it) it = iio->plugins_format;
   return (dt_imageio_module_format_t *)it->data;
 }
 
@@ -221,7 +221,7 @@ dt_imageio_module_storage_t *dt_imageio_get_storage()
   dt_imageio_t *iio = darktable.imageio;
   int k = dt_conf_get_int ("plugins/lighttable/export/storage");
   GList *it = g_list_nth(iio->plugins_storage, k);
-  if(!it) return NULL;
+  if(!it) it = iio->plugins_storage;
   return (dt_imageio_module_storage_t *)it->data;
 }
 

@@ -79,7 +79,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   // avoid name clashes for single images:
   if(img->film_id == 1 && !strcmp(c+1, ext)) { strncpy(c, "_dt", 3); c += 3; }
-  strncpy(c+1, ext, strlen(ext));
+  strncpy(c+1, ext, strlen(ext)+1);
   dt_imageio_export(img, filename, format, fdata);
   dt_image_cache_release(img, 'r');
 

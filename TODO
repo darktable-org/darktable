@@ -24,10 +24,9 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- tiff export 16-bit broken
+- export widgets for plugins sometimes not showing up :(
 - port output imageio to plugins:
-  - exr
-  - png
-  - tif
 - port input imageio to plugins?
 - export doesn't export all images, some with 1x1 resolution,
   even unaltered ones???

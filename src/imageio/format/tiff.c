@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010 Henrik Andersson and johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,9 +21,11 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <tiffio.h>
-#include "imageio_tiff.h"
+#include "common/darktable.h"
+#include "common/imageio_module.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
+#include "control/conf.h"
 #define DT_TIFFIO_STRIPE 20
 
 DT_MODULE(1)
@@ -37,11 +39,6 @@ typedef struct dt_imageio_tiff_t
 }
 dt_imageio_tiff_t;
 
-
-int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len)
-{
-  return dt_imageio_tiff_write_with_icc_profile_16(filename,in,width,height,exif,exif_len,0);
-}
 
 int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
 {
@@ -61,7 +58,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   }
   
    // Create tiff image
-  TIFF *tif=TIFFOpen(filename,"w");
+  TIFF *tif=TIFFOpen(filename,"wb");
   if(d->bpp == 8) TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
   else            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
@@ -80,11 +77,11 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
   
-  uint32_t rowsize=(d->width*3)*sizeof(uint16_t);
-  uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
   const uint8_t *in8=(const uint8_t *)in_void;
   if(d->bpp == 16)
   {
+    uint32_t rowsize=(d->width*3)*sizeof(uint16_t);
+    uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
     uint8_t *stripedata=(uint8_t*)in_void;
     uint32_t stripe=0;
     uint32_t insize=((d->width*d->height)*3)*sizeof(uint16_t);
@@ -97,6 +94,8 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   }
   else
   {
+    uint32_t rowsize=(d->width*3)*sizeof(uint8_t);
+    uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
     uint8_t *rowdata = (uint8_t *)malloc(stripesize);
     uint8_t *wdata = rowdata;
     uint32_t stripe=0;
@@ -106,7 +105,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
       for(int x=0;x<d->width;x++) 
         for(int k=0;k<3;k++) 
         {
-          (wdata)[0] = in8[4*width*y + 4*x + k];
+          (wdata)[0] = in8[4*d->width*y + 4*x + k];
           wdata++;
         }
       if((wdata-stripesize)==rowdata)
@@ -121,86 +120,16 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     free(rowdata);
   }
   
-  if(exif)
-    dt_exif_write_blob(exif,exif_len,filename);
+  if(exif) dt_exif_write_blob(exif,exif_len,filename);
+  free(profile);
   
   return 1;
 }
 
-int dt_imageio_tiff_write_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len)
-{
-  return dt_imageio_tiff_write_with_icc_profile_8(filename,in,width,height,exif,exif_len,0);
-}
-
-int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len, int imgid)
-{
-  // Fetch colorprofile into buffer if wanted
-  uint8_t *profile=NULL;
-  size_t profile_len = 0;
-  if(imgid > 0)
-  {
-    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
-    _cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if (profile_len > 0)
-    {
-      profile=malloc(profile_len);
-      _cmsSaveProfileToMem(out_profile, profile, &profile_len);
-    }
-    cmsCloseProfile(out_profile);
-  }
-
-  // Create tiff image
-  TIFF *tif=TIFFOpen(filename,"w");  
-  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-  TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-  if(profile!=NULL)
-    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
-  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
-  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
-  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
-  
-  uint32_t rowsize=width*3;
-  uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
-  uint8_t *rowdata=malloc(stripesize);
-  uint8_t *wdata=rowdata;
-  uint32_t stripe=0;
-  
-  for (int y = 0; y < height; y++)
-  {
-    for(int x=0;x<width;x++) 
-      for(int k=0;k<3;k++) 
-      {
-        (wdata)[0] = in[4*width*y + 4*x + k];
-          wdata++;
-      }
-    if((wdata-stripesize)==rowdata)
-    {
-      TIFFWriteEncodedStrip(tif,stripe++,rowdata,rowsize*DT_TIFFIO_STRIPE);
-      wdata=rowdata;
-    }
-  }	
-  if((wdata-stripesize)!=rowdata)
-	TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
-  TIFFClose(tif);
-  
-  if(exif)
-    dt_exif_write_blob(exif,exif_len,filename);
-  
-  return 1;
-}
-
+#if 0
 int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
 {
-  tiff->handle = TIFFOpen(filename, "r");
+  tiff->handle = TIFFOpen(filename, "rb");
   if( tiff->handle )
   {
     TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
@@ -211,14 +140,18 @@ int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
 
 int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
 {
-    TIFFClose(tiff->handle);
+  TIFFClose(tiff->handle);
   return 1;
 }
+#endif
 
 void*
 get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
+  d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  if(d->bpp < 12) d->bpp = 8;
+  else            d->bpp = 16;
   return d;
 }
 
@@ -230,7 +163,7 @@ free_params(dt_imageio_module_format_t *self, void *params)
 
 int bpp(dt_imageio_tiff_t *p)
 {
-  return 16;
+  return p->bpp;
 }
 
 const char*
@@ -242,11 +175,39 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("16-bit tiff");
+  return _("8/16-bit tiff");
+}
+
+static void
+radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
+{
+  long int bpp = (long int)user_data;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
+    dt_conf_set_int("plugins/imageio/format/tiff/bpp", bpp);
 }
 
 // TODO: some quality/compression stuff?
-void gui_init    (dt_imageio_module_format_t *self) {}
-void gui_cleanup (dt_imageio_module_format_t *self) {}
-void gui_reset   (dt_imageio_module_format_t *self) {}
+void gui_init (dt_imageio_module_format_t *self)
+{
+  int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  self->widget = gtk_hbox_new(TRUE, 5);
+  GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
+  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)8);
+  if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
+  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)16);
+  if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+}
+
+void gui_cleanup (dt_imageio_module_format_t *self)
+{
+}
+
+void gui_reset   (dt_imageio_module_format_t *self)
+{
+  // TODO: reset to gconf? reset to factory defaults?
+}
+
 
