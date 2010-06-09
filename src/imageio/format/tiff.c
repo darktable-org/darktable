@@ -113,7 +113,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
         TIFFWriteEncodedStrip(tif,stripe++,rowdata,rowsize*DT_TIFFIO_STRIPE);
         wdata=rowdata;
       }
-    }	
+    }
     if((wdata-stripesize)!=rowdata)
     TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
     TIFFClose(tif);

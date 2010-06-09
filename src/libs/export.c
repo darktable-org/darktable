@@ -123,6 +123,7 @@ gui_reset (dt_lib_module_t *self)
     GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
     if(old) gtk_container_remove(d->format_box, old);
     if(module->widget) gtk_container_add(d->format_box, module->widget);
+    gtk_widget_show_all(GTK_WIDGET(d->format_box));
   }
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
@@ -162,6 +163,7 @@ format_changed (GtkComboBox *widget, dt_lib_export_t *d)
     GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
     if(old) gtk_container_remove(d->format_box, old);
     if(module->widget) gtk_container_add(d->format_box, module->widget);
+    gtk_widget_show_all(GTK_WIDGET(d->format_box));
   }
 }
 

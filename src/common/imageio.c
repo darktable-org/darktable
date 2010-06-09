@@ -24,7 +24,6 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
-#include "common/imageio_tiff.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
