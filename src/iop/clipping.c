@@ -410,7 +410,8 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale5, p->angle);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
-  g->current_aspect = p->aspect;
+  g->current_aspect = -1.0;//p->aspect;
+  gtk_combo_box_set_active(g->aspect_presets, 0);
 }
 
 void init(dt_iop_module_t *module)
