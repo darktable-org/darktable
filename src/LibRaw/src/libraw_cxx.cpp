@@ -186,7 +186,6 @@ LibRaw:: LibRaw(unsigned int flags)
     imgdata.params.auto_bright_thr = LIBRAW_DEFAULT_AUTO_BRIGHTNESS_THRESHOLD;
     imgdata.params.adjust_maximum_thr= LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD;
     imgdata.params.green_matching = 0;
-    imgdata.params.pre_interpolate_median_filter = 0;
     imgdata.parent_class = this;
     imgdata.progress_flags = 0;
     tls = new LibRaw_TLS;
@@ -1450,19 +1449,28 @@ int LibRaw::dcraw_process(void)
         quality = 2 + !IO.fuji_width;
 
         if(O.filtering_mode & LIBRAW_FILTERING_NOBLACKS)
-            C.black=0;
+            {
+                C.black=0;
+                memset(&C.cblack,0,sizeof(C.cblack));
+            }
 
         if (O.user_qual >= 0) quality = O.user_qual;
+
+        unsigned int i = C.cblack[3];
+        unsigned int c;
+        for(c=0;c<3;c++)
+            if (i > C.cblack[c]) i = C.cblack[c];
+        for (c=0;c<4;c++)
+            C.cblack[c] -= i;
+        C.black += i;
+
+
         if (O.user_black >= 0) C.black = O.user_black;
         if (O.user_sat > 0) C.maximum = O.user_sat;
 
         if (O.green_matching)
             {
                 green_matching();
-            }
-        if (O.pre_interpolate_median_filter)
-            {
-                pre_interpolate_median_filter();
             }
 
         if ( O.document_mode < 2)
@@ -1616,6 +1624,7 @@ static const char  *static_camera_list[] =
 "Canon EOS 400D / Digital Rebel XTi / Kiss Digital X",
 "Canon EOS 450D / Digital Rebel XSi / Kiss Digital X2",
 "Canon EOS 500D / Digital Rebel T1i / Kiss Digital X3",
+"Canon EOS 550D / Digital Rebel T2i / Kiss Digital X4",
 "Canon EOS 1000D / Digital Rebel XS / Kiss Digital F",
 "Canon EOS D2000C",
 "Canon EOS-1D",
@@ -1643,6 +1652,7 @@ static const char  *static_camera_list[] =
 "Casio EX-Z75",
 "Casio EX-Z750",
 "Casio EX-Z850",
+"Casio EX-Z1050",
 "Casio Exlim Pro 505",
 "Casio Exlim Pro 600",
 "Casio Exlim Pro 700",
@@ -1669,6 +1679,7 @@ static const char  *static_camera_list[] =
 "Fuji FinePix S9000/S9500",
 "Fuji FinePix S9100/S9600",
 "Fuji FinePix S200EXR",
+"Fuji FinePix HS10/HS11",
 "Fuji IS-1",
 "Hasselblad CFV",
 "Hasselblad H3D",
@@ -1677,8 +1688,8 @@ static const char  *static_camera_list[] =
 "Imacon Ixpress 22-megapixel",
 "Imacon Ixpress 39-megapixel",
 "ISG 2020x1520",
-"Kodak DC20 (see Oliver Hartman's page)",
-"Kodak DC25 (see Jun-ichiro Itoh's page)",
+"Kodak DC20",
+"Kodak DC25",
 "Kodak DC40",
 "Kodak DC50",
 "Kodak DC120 (also try kdc2tiff)",
@@ -1713,6 +1724,7 @@ static const char  *static_camera_list[] =
 "Kodak P850",
 "Kodak P880",
 "Kodak Z980",
+"Kodak Z981",
 "Kodak Z1015",
 "Kodak KAI-0340",
 "Konica KD-400Z",
@@ -1828,6 +1840,7 @@ static const char  *static_camera_list[] =
 "Olympus E-520",
 "Olympus E-620",
 "Olympus E-P1",
+"Olympus E-PL1",
 "Olympus SP310",
 "Olympus SP320",
 "Olympus SP350",
@@ -1844,6 +1857,8 @@ static const char  *static_camera_list[] =
 "Panasonic DMC-FZ50",
 "Panasonic DMC-FX150",
 "Panasonic DMC-G1",
+"Panasonic DMC-G10",
+"Panasonic DMC-G2",
 "Panasonic DMC-GH1",
 "Panasonic DMC-L1",
 "Panasonic DMC-L10",
@@ -1877,11 +1892,14 @@ static const char  *static_camera_list[] =
 "Phase One P 30",
 "Phase One P 45",
 "Phase One P 45+",
+"Phase One P 65",
 "Pixelink A782",
 "Rollei d530flex",
 "RoverShot 3320af",
 "Samsung GX-1S",
 "Samsung GX-10",
+"Samsung NX-10",
+"Samsung WB550",
 "Samsung S85 (hacked)",
 "Samsung S850 (hacked)",
 "Sarnoff 4096x5440",
@@ -1901,14 +1919,16 @@ static const char  *static_camera_list[] =
 "Sony DSLR-A330",
 "Sony DSLR-A350",
 "Sony DSLR-A380",
+"Sony DSLR-A450 (beta)",
 "Sony DSLR-A500",
 "Sony DSLR-A550",
 "Sony DSLR-A700",
 "Sony DSLR-A850",
 "Sony DSLR-A900",
+"Sony NEX-3",
+"Sony NEX-5",
 "Sony XCD-SX910CR",
 "STV680 VGA",
-
    NULL
 };
 

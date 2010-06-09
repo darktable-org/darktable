@@ -61,6 +61,7 @@
 #endif
 #ifndef SRC_USES_BLACK
 #define black           (imgdata.color.black)
+#define cblack           (imgdata.color.cblack)
 #endif
 #define maximum         (imgdata.color.maximum)
 #define channel_maximum         (imgdata.color.channel_maximum)

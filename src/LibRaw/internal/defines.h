@@ -1,6 +1,6 @@
 /* 
    GENERATED FILE, DO NOT EDIT
-   Generated from dcraw/dcraw.c at Sat May 15 11:10:07 2010
+   Generated from dcraw/dcraw.c at Sun Jun  6 17:42:15 2010
    Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
    for copyright information.
 */
@@ -8,7 +8,7 @@
 #line 27 "dcraw/dcraw.c"
 #define NO_JPEG
 #line 32 "dcraw/dcraw.c"
-#define VERSION "8.99"
+#define VERSION "9.01"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -85,7 +85,7 @@
 #define LIM(x,min,max) MAX(min,MIN(x,max))
 #define ULIM(x,y,z) ((y) < (z) ? LIM(x,y,z) : LIM(x,z,y))
 #define CLIP(x) LIM(x,0,65535)
-#define SWAP(a,b) { a ^= b; a ^= (b ^= a); }
+#define SWAP(a,b) { a=a+b; b=a-b; a=a-b; }
 
 /*
    In order to inline this calculation, I make the risky

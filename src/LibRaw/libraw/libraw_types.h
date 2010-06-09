@@ -104,11 +104,6 @@ typedef struct
                 width,
                 colors,
                 bits;
-#ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp firstprivate(colors,height,width)
-// #endif
-#endif
     unsigned int  data_size; 
     unsigned char data[1]; 
 }libraw_processed_image_t;
@@ -138,11 +133,6 @@ typedef struct
                 left_margin;
     ushort      iheight,
                 iwidth;
-#ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp firstprivate(iheight,iwidth)
-// #endif
-#endif
     double      pixel_aspect;
     int         flip;
 
@@ -178,6 +168,7 @@ typedef struct
     float       cam_xyz[4][3]; 
     ushort      curve[0x10000]; 
     unsigned    black;
+    unsigned    cblack[8];
     unsigned    maximum;
     unsigned    channel_maximum[4];
     struct ph1_t       phase_one_data;
@@ -221,11 +212,6 @@ typedef struct
     unsigned    shot_select;    /* -s */
     float       bright;         /* -b */
     float       threshold;      /*  -n */
-#ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp firstprivate(threshold)
-// #endif
-#endif
     int         half_size;      /* -h */
     int         four_color_rgb; /* -f */
     int         document_mode;  /* -d/-D */
@@ -251,7 +237,6 @@ typedef struct
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
     int         green_matching;
-    int         pre_interpolate_median_filter;
     enum LibRaw_filtering    filtering_mode; 
 }libraw_output_params_t;
 
@@ -280,11 +265,6 @@ typedef struct
     libraw_thumbnail_t          thumbnail;
     libraw_masked_t             masked_pixels;
     ushort                      (*image)[4] ;
-#ifdef LIBRAW_LIBRARY_BUILD
-// #ifdef _OPENMP
-// #pragma omp shared(image)
-// #endif
-#endif
     libraw_output_params_t     params;
     void                *parent_class;      
 } libraw_data_t;
