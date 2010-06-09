@@ -22,6 +22,8 @@
 #include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/colorspaces.h"
+#include "control/conf.h"
+#include "dtgtk/slider.h"
 #include <setjmp.h>
 #include <lcms.h>
 #include <stdlib.h>
@@ -38,7 +40,9 @@ DT_MODULE(1)
 
 typedef struct dt_imageio_jpeg_t
 {
+  int max_width, max_height;
   int width, height;
+  int quality;
   struct jpeg_source_mgr src;
   struct jpeg_destination_mgr dest;
   struct jpeg_decompress_struct dinfo;
@@ -433,32 +437,32 @@ read_icc_profile (j_decompress_ptr cinfo,
 #undef MAX_SEQ_NO
 
 
-int write_with_icc_profile(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len, int imgid)
+int
+write_image (dt_imageio_jpeg_t *jpg, const char *filename, const uint8_t *in, void *exif, int exif_len, int imgid)
 {
-	struct dt_imageio_jpeg_error_mgr jerr;
-  dt_imageio_jpeg_t jpg;
+  struct dt_imageio_jpeg_error_mgr jerr;
 
-  jpg.cinfo.err = jpeg_std_error(&jerr.pub);
+  jpg->cinfo.err = jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = dt_imageio_jpeg_error_exit;
   if (setjmp(jerr.setjmp_buffer))
   {
-	  jpeg_destroy_compress(&(jpg.cinfo));
+    jpeg_destroy_compress(&(jpg->cinfo));
     return 1;
   }
-	jpeg_create_compress(&(jpg.cinfo));
+  jpeg_create_compress(&(jpg->cinfo));
   FILE *f = fopen(filename, "wb");
   if(!f) return 1;
-  jpeg_stdio_dest(&(jpg.cinfo), f);
+  jpeg_stdio_dest(&(jpg->cinfo), f);
 
-	jpg.cinfo.image_width = width;	
-	jpg.cinfo.image_height = height;
-	jpg.cinfo.input_components = 3;
-	jpg.cinfo.in_color_space = JCS_RGB;
-	jpeg_set_defaults(&(jpg.cinfo));
-  jpeg_set_quality(&(jpg.cinfo), quality, TRUE);
-  if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
-  if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
-	jpeg_start_compress(&(jpg.cinfo), TRUE);
+  jpg->cinfo.image_width = jpg->width;	
+  jpg->cinfo.image_height = jpg->height;
+  jpg->cinfo.input_components = 3;
+  jpg->cinfo.in_color_space = JCS_RGB;
+  jpeg_set_defaults(&(jpg->cinfo));
+  jpeg_set_quality(&(jpg->cinfo), jpg->quality, TRUE);
+  if(jpg->quality > 90) jpg->cinfo.comp_info[0].v_samp_factor = 1;
+  if(jpg->quality > 92) jpg->cinfo.comp_info[0].h_samp_factor = 1;
+  jpeg_start_compress(&(jpg->cinfo), TRUE);
 
   if(imgid > 0)
   {
@@ -469,34 +473,28 @@ int write_with_icc_profile(const char *filename, const uint8_t *in, const int wi
     {
       unsigned char buf[len];
       _cmsSaveProfileToMem(out_profile, buf, &len);
-      write_icc_profile(&(jpg.cinfo), buf, len);
+      write_icc_profile(&(jpg->cinfo), buf, len);
     }
     cmsCloseProfile(out_profile);
   }
 
   if(exif && exif_len > 0 && exif_len < 65534)
-    jpeg_write_marker(&(jpg.cinfo), JPEG_APP0+1, exif, exif_len);
+    jpeg_write_marker(&(jpg->cinfo), JPEG_APP0+1, exif, exif_len);
 
-  uint8_t row[3*width];
+  uint8_t row[3*jpg->width];
   const uint8_t *buf;
-	while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
-	{
-		JSAMPROW tmp[1];
-    buf = in + jpg.cinfo.next_scanline * jpg.cinfo.image_width * 4;
-    for(int i=0;i<width;i++) for(int k=0;k<3;k++) row[3*i+k] = buf[4*i+k];
+  while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
+  {
+    JSAMPROW tmp[1];
+    buf = in + jpg->cinfo.next_scanline * jpg->cinfo.image_width * 4;
+    for(int i=0;i<jpg->width;i++) for(int k=0;k<3;k++) row[3*i+k] = buf[4*i+k];
     tmp[0] = row;
-		jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
-	}
-	jpeg_finish_compress (&(jpg.cinfo));
-	jpeg_destroy_compress(&(jpg.cinfo));
+    jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
+  }
+  jpeg_finish_compress (&(jpg->cinfo));
+  jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
   return 0;
-}
-
-int write_image (const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len)
-{
-  // FIXME: this will fail if multiple plugins exist!
-  return write_with_icc_profile(filename, in, width, height, quality, exif, exif_len, -1);
 }
 
 int read_header(const char *filename, dt_imageio_jpeg_t *jpg)
@@ -509,7 +507,7 @@ int read_header(const char *filename, dt_imageio_jpeg_t *jpg)
   jerr.pub.error_exit = dt_imageio_jpeg_error_exit;
   if (setjmp(jerr.setjmp_buffer))
   {
-	  jpeg_destroy_decompress(&(jpg->dinfo));
+    jpeg_destroy_decompress(&(jpg->dinfo));
     fclose(jpg->f);
     return 1;
   }
@@ -528,7 +526,7 @@ int read_image (dt_imageio_jpeg_t *jpg, uint8_t *out)
   jpg->dinfo.err = jpeg_std_error(&jerr.pub);
   if (setjmp(jerr.setjmp_buffer))
   {
-	  jpeg_destroy_decompress(&(jpg->dinfo));
+    jpeg_destroy_decompress(&(jpg->dinfo));
     fclose(jpg->f);
     return 1;
   }
@@ -554,10 +552,42 @@ int read_image (dt_imageio_jpeg_t *jpg, uint8_t *out)
   return 0;
 }
 
+void*
+get_params(dt_imageio_module_format_t *self)
+{
+  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
+  d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
+  if(d->quality <= 0 || d->quality > 100) d->quality = 100;
+  return d;
+}
+
+void
+free_params(dt_imageio_module_format_t *self, void *params)
+{
+  free(params);
+}
+
+int bpp(dt_imageio_module_data_t *p)
+{
+  return 8;
+}
+
+const char*
+extension(dt_imageio_module_data_t *data)
+{
+  return "jpg";
+}
+
 
 // =============================================================================
 //  gui stuff:
 // =============================================================================
+
+typedef struct dt_imageio_jpeg_gui_data_t
+{
+  GtkDarktableSlider *quality;
+}
+dt_imageio_jpeg_gui_data_t;
 
 const char*
 name ()
@@ -565,22 +595,42 @@ name ()
   return _("8-bit jpeg");
 }
 
+static void
+quality_changed (GtkDarktableSlider *slider, gpointer user_data)
+{
+  int quality = (int)dtgtk_slider_get_value(slider);
+  dt_conf_set_int ("plugins/imageio/format/jpeg/quality", quality);
+}
+
 void
-gui_init (dt_imageio_jpeg_t *self)
+gui_init (dt_imageio_module_format_t *self)
 {
-  // TODO: construct gui with jpeg specific options:
-  // quality
-  // subsample dreggn
-  // TODO: init callbacks on gui elements to change gconf variables
+  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
+  self->gui_data = g;
+  // construct gui with jpeg specific options:
+  GtkWidget *box = gtk_hbox_new(FALSE, 5);
+  self->widget = box;
+  // quality slider
+  g->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0, 100, 1, 97, 0));
+  GtkWidget *label = gtk_label_new(_("quality"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (g->quality), "value-changed",
+                    G_CALLBACK (quality_changed),
+                    (gpointer)0);
+  // TODO: subsample dreggn
 }
 
-void gui_cleanup (dt_imageio_jpeg_t *self)
+void gui_cleanup (dt_imageio_module_format_t *self)
 {
-  // nothing really?
+  free(self->gui_data);
 }
 
-void gui_reset (dt_imageio_jpeg_t *self)
+void gui_reset (dt_imageio_module_format_t *self)
 {
+  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
   // reset gconf values to hardcoded defaults
+  dtgtk_slider_set_value(g->quality, 97);
 }
 

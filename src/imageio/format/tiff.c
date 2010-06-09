@@ -1,0 +1,213 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2010 Henrik Andersson and johannes hanika
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#include <memory.h>
+#include <lcms.h> 
+#include <stdlib.h>
+#include <stdio.h>
+#include <inttypes.h>
+#include <tiffio.h>
+#include "common/darktable.h"
+#include "common/imageio_module.h"
+#include "common/exif.h"
+#include "common/colorspaces.h"
+#include "control/conf.h"
+#define DT_TIFFIO_STRIPE 20
+
+DT_MODULE(1)
+
+typedef struct dt_imageio_tiff_t
+{
+  int max_width, max_height;
+  int width, height;
+  int bpp;
+  TIFF *handle;
+}
+dt_imageio_tiff_t;
+
+
+int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+{
+  // Fetch colorprofile into buffer if wanted
+  uint8_t *profile = NULL;
+  size_t profile_len = 0;
+  if(imgid > 0)
+  {
+    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    _cmsSaveProfileToMem(out_profile, 0, &profile_len);
+    if (profile_len > 0)
+    {
+      profile=malloc(profile_len);
+      _cmsSaveProfileToMem(out_profile, profile, &profile_len);
+    }
+    cmsCloseProfile(out_profile);
+  }
+  
+   // Create tiff image
+  TIFF *tif=TIFFOpen(filename,"wb");
+  if(d->bpp == 8) TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+  else            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
+  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+  TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
+  if(profile!=NULL)
+    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, d->width);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, d->height);
+  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
+  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
+  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+  
+  const uint8_t *in8=(const uint8_t *)in_void;
+  if(d->bpp == 16)
+  {
+    uint32_t rowsize=(d->width*3)*sizeof(uint16_t);
+    uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
+    uint8_t *stripedata=(uint8_t*)in_void;
+    uint32_t stripe=0;
+    uint32_t insize=((d->width*d->height)*3)*sizeof(uint16_t);
+    while(stripedata<(in8+insize)-(stripesize)) {
+      TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
+      stripedata+=stripesize;  
+    }
+    TIFFWriteEncodedStrip(tif,stripe++,stripedata,(in8+insize)-stripedata);
+    TIFFClose(tif);
+  }
+  else
+  {
+    uint32_t rowsize=(d->width*3)*sizeof(uint8_t);
+    uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
+    uint8_t *rowdata = (uint8_t *)malloc(stripesize);
+    uint8_t *wdata = rowdata;
+    uint32_t stripe=0;
+    
+    for (int y = 0; y < d->height; y++)
+    {
+      for(int x=0;x<d->width;x++) 
+        for(int k=0;k<3;k++) 
+        {
+          (wdata)[0] = in8[4*d->width*y + 4*x + k];
+          wdata++;
+        }
+      if((wdata-stripesize)==rowdata)
+      {
+        TIFFWriteEncodedStrip(tif,stripe++,rowdata,rowsize*DT_TIFFIO_STRIPE);
+        wdata=rowdata;
+      }
+    }
+    if((wdata-stripesize)!=rowdata)
+    TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
+    TIFFClose(tif);
+    free(rowdata);
+  }
+  
+  if(exif) dt_exif_write_blob(exif,exif_len,filename);
+  free(profile);
+  
+  return 1;
+}
+
+#if 0
+int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
+{
+  tiff->handle = TIFFOpen(filename, "rb");
+  if( tiff->handle )
+  {
+    TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
+    TIFFGetField(tiff->handle, TIFFTAG_IMAGELENGTH, &tiff->height);
+  }
+  return 1;
+}
+
+int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
+{
+  TIFFClose(tiff->handle);
+  return 1;
+}
+#endif
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
+  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
+  d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  if(d->bpp < 12) d->bpp = 8;
+  else            d->bpp = 16;
+  return d;
+}
+
+void
+free_params(dt_imageio_module_format_t *self, void *params)
+{
+  free(params);
+}
+
+int bpp(dt_imageio_tiff_t *p)
+{
+  return p->bpp;
+}
+
+const char*
+extension(dt_imageio_module_data_t *data)
+{
+  return "tiff";
+}
+
+const char*
+name ()
+{
+  return _("8/16-bit tiff");
+}
+
+static void
+radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
+{
+  long int bpp = (long int)user_data;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
+    dt_conf_set_int("plugins/imageio/format/tiff/bpp", bpp);
+}
+
+// TODO: some quality/compression stuff?
+void gui_init (dt_imageio_module_format_t *self)
+{
+  int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  self->widget = gtk_hbox_new(TRUE, 5);
+  GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
+  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)8);
+  if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
+  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)16);
+  if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+}
+
+void gui_cleanup (dt_imageio_module_format_t *self)
+{
+}
+
+void gui_reset   (dt_imageio_module_format_t *self)
+{
+  // TODO: reset to gconf? reset to factory defaults?
+}
+
+

@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/darktable.h"
+#include "common/imageio_module.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -32,8 +33,9 @@ DT_MODULE(1)
 typedef struct dt_lib_export_t
 {
   GtkSpinButton *width, *height;
-  GtkComboBox *format, *profile, *intent;
-  GtkDarktableSlider *quality;
+  GtkComboBox *storage, *format;
+  GtkContainer *storage_box, *format_box;
+  GtkComboBox *profile, *intent;
   GList *profiles;
 }
 dt_lib_export_t;
@@ -60,6 +62,7 @@ uint32_t views()
 static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
+#if 0
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   // read "format" to global settings
@@ -71,9 +74,11 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   else if(i == 4)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF16);
   else if(i == 5)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PFM);
   else if(i == 6)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_EXR);
+#endif
   dt_control_export();
 }
 
+#if 0
 static void
 export_quality_changed (GtkDarktableSlider *slider, gpointer user_data)
 {
@@ -83,6 +88,7 @@ export_quality_changed (GtkDarktableSlider *slider, gpointer user_data)
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
 }
+#endif
 
 static void
 width_changed (GtkSpinButton *spin, gpointer user_data)
@@ -101,21 +107,24 @@ height_changed (GtkSpinButton *spin, gpointer user_data)
 void
 gui_reset (dt_lib_module_t *self)
 {
+  // make sure we don't do anything useless:
+  if(!darktable.control->running) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  int quality = MIN(100, MAX(1, dt_conf_get_int ("plugins/lighttable/export/quality")));
+  // int quality = MIN(100, MAX(1, dt_conf_get_int ("plugins/lighttable/export/quality")));
+  // dtgtk_slider_set_value(d->quality, quality);
   gtk_spin_button_set_value(d->width,  dt_conf_get_int("plugins/lighttable/export/width"));
   gtk_spin_button_set_value(d->height, dt_conf_get_int("plugins/lighttable/export/height"));
-  dtgtk_slider_set_value(d->quality, quality);
   int k = dt_conf_get_int ("plugins/lighttable/export/format");
-  int i = 0;
-  if     (k == DT_DEV_EXPORT_JPG)    i = 0;
-  else if(k == DT_DEV_EXPORT_PNG)    i = 1;
-  else if(k == DT_DEV_EXPORT_TIFF8)  i = 2;
-  else if(k == DT_DEV_EXPORT_PPM16)  i = 3;
-  else if(k == DT_DEV_EXPORT_TIFF16) i = 4;
-  else if(k == DT_DEV_EXPORT_PFM)    i = 5;
-  else if(k == DT_DEV_EXPORT_EXR)    i = 6;
-  gtk_combo_box_set_active(d->format, i);
+  gtk_combo_box_set_active(d->format, k);
+  GList *it = g_list_nth(darktable.imageio->plugins_format, k);
+  if(it)
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
+    if(old) gtk_container_remove(d->format_box, old);
+    if(module->widget) gtk_container_add(d->format_box, module->widget);
+    gtk_widget_show_all(GTK_WIDGET(d->format_box));
+  }
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
@@ -136,6 +145,26 @@ gui_reset (dt_lib_module_t *self)
     g_free(iccprofile);
   }
   if(!iccfound) gtk_combo_box_set_active(d->profile, 0);
+  dt_imageio_module_format_t *mformat = dt_imageio_get_format();
+  if(mformat) mformat->gui_reset(mformat);
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  if(mstorage) mstorage->gui_reset(mstorage);
+}
+
+static void
+format_changed (GtkComboBox *widget, dt_lib_export_t *d)
+{
+  int k = gtk_combo_box_get_active(d->format);
+  dt_conf_set_int ("plugins/lighttable/export/format", k);
+  GList *it = g_list_nth(darktable.imageio->plugins_format, k);
+  if(it)
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
+    if(old) gtk_container_remove(d->format_box, old);
+    if(module->widget) gtk_container_add(d->format_box, module->widget);
+    gtk_widget_show_all(GTK_WIDGET(d->format_box));
+  }
 }
 
 static void
@@ -174,14 +203,52 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
-  self->widget = gtk_hbox_new(FALSE, 5);
+  self->widget = gtk_table_new(8, 2, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
   
-  GtkBox *hbox, *vbox1, *vbox2;
   GtkWidget *label;
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
+
+  label = gtk_label_new(_("target storage"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
+  d->storage = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  // TODO: load modules!
+#if 0
+  GList *it = darktable.imageio->plugins_format;
+  while(it)
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    gtk_combo_box_append_text(d->format, module->name());
+    it = g_list_next(it);
+  }
+#endif
+  gtk_combo_box_append_text(d->storage, _("file on harddrive"));
+  gtk_combo_box_set_active(d->storage, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage), 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
+  d->storage_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
+  gtk_alignment_set_padding(GTK_ALIGNMENT(d->storage_box), 0, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage_box), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
+  label = gtk_label_new(_("file format"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  GList *it = darktable.imageio->plugins_format;
+  while(it)
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    gtk_combo_box_append_text(d->format, module->name());
+    it = g_list_next(it);
+  }
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g_signal_connect (G_OBJECT (d->format), "changed",
+                    G_CALLBACK (format_changed),
+                    (gpointer)d);
+
+  d->format_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
+  gtk_alignment_set_padding(GTK_ALIGNMENT(d->format_box), 0, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format_box), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   d->width  = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
@@ -189,29 +256,23 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
   label = gtk_label_new(_("maximum size"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, label, TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->width), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  d->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 100, 1,97,0));
-  label = gtk_label_new(_("quality"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(d->quality), FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("rendering intent"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, label, TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->intent = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(d->intent, _("image settings"));
   gtk_combo_box_append_text(d->intent, _("perceptual"));
   gtk_combo_box_append_text(d->intent, _("relative colorimetric"));
   gtk_combo_box_append_text(d->intent, C_("rendering intent", "saturation"));
   gtk_combo_box_append_text(d->intent, _("absolute colorimetric"));
-  gtk_box_pack_start(vbox2, GTK_WIDGET(d->intent), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   d->profiles = NULL;
 
@@ -269,9 +330,9 @@ gui_init (dt_lib_module_t *self)
   GList *l = d->profiles;
   label = gtk_label_new(_("output profile"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, label, TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->profile = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_box_pack_start(vbox2, GTK_WIDGET(d->profile), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_combo_box_append_text(d->profile, _("image settings"));
   while(l)
   {
@@ -293,24 +354,12 @@ gui_init (dt_lib_module_t *self)
                     G_CALLBACK (profile_changed),
                     (gpointer)d);
 
-  d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(d->format, _("8-bit jpg"));
-  gtk_combo_box_append_text(d->format, _("8-bit png"));
-  gtk_combo_box_append_text(d->format, _("8-bit tiff"));
-  gtk_combo_box_append_text(d->format, _("16-bit ppm"));
-  gtk_combo_box_append_text(d->format, _("16-bit tiff"));
-  gtk_combo_box_append_text(d->format, _("float pfm"));
-  gtk_combo_box_append_text(d->format, _("float exr"));
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
-  gtk_box_pack_start(vbox1, GTK_WIDGET(d->format), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(button), FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (export_button_clicked),
                     (gpointer)self);
-  g_signal_connect (G_OBJECT (d->quality), "value-changed",
-                    G_CALLBACK (export_quality_changed),
-                    (gpointer)0);
   g_signal_connect (G_OBJECT (d->width), "value-changed",
                     G_CALLBACK (width_changed),
                     (gpointer)0);

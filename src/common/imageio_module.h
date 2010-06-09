@@ -30,9 +30,14 @@
  * such as flickr upload or simple on-disk storage.
  */
 
-/* custom data for the module. append private stuff after width and height. */
+/*
+ * custom data for the module. append private stuff after width and height.
+ * this will be inited once when the export button is hit, so the user can make
+ * gui adjustments that won't affect the currently running export.
+ */
 typedef struct dt_imageio_module_data_t
 {
+  int max_width, max_height;
   int width, height;
 }
 dt_imageio_module_data_t;
@@ -47,6 +52,9 @@ typedef struct dt_imageio_module_format_t
 
   // gui stuff:
   GtkWidget *widget;
+
+  // data for you to initialize
+  void *gui_data;
   
   // gui and management:
   /* get translated module name */
@@ -57,27 +65,33 @@ typedef struct dt_imageio_module_format_t
   void (*gui_cleanup) (struct dt_imageio_module_format_t *self);
   /* reset options to defaults */
   void (*gui_reset)   (struct dt_imageio_module_format_t *self);
- 
+
+  /* gets the current export parameters from gui/gconf and stores in this struct for later use. */
+  void* (*get_params)   (struct dt_imageio_module_format_t *self);
+  void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
+
+  /* this extension (plus dot) is appended to the exported filename. */
+  const char* (*extension) (dt_imageio_module_data_t *data);
 
   // optional: functions operating in memory, not on files:
   /* reads the header and fills width/height in data struct. */
   int (*decompress_header)(const void *in, size_t length, dt_imageio_module_data_t *data);
   /* reads the whole image to the out buffer, which has to be large enough. */
   int (*decompress)(dt_imageio_module_data_t *data, uint8_t *out);
-  /* compresses in to out buffer with given quality (0..100). out buffer must be large enough. returns actual data length. */
-  int (*compress)(const uint8_t *in, uint8_t *out, const int width, const int height, const int quality);
+  /* compresses in to out buffer. out buffer must be large enough. returns actual data length. */
+  int (*compress)(dt_imageio_module_data_t *data, const uint8_t *in, uint8_t *out);
 
   // writing functions:
-  /* write to file, with exif if not NULL. */
-  int (*write)(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len);
-  /* this will collect the images icc profile (or the global export override) and append it during write. */
-  int (*write_with_icc_profile)(const char *filename, const uint8_t *in, const int width, const int height, const int quality, void *exif, int exif_len, int imgid);
+  /* bits per pixel and color channel we want to write: 8: char x3, 16: uint16_t x3, 32: float x3. */
+  int (*bpp)(dt_imageio_module_data_t *data);
+  /* write to file, with exif if not NULL, and icc profile if supported. */
+  int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid);
 
   // reading functions:
   /* read header from file, get width and height */
   int (*read_header)(const char *filename, dt_imageio_module_data_t *data);
   /* reads the image to the (sufficiently allocated) buffer, closes file. */
-  int (*read)(dt_imageio_module_data_t *data, uint8_t *out);
+  int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
 }
 dt_imageio_module_format_t;
 
@@ -96,14 +110,17 @@ typedef struct dt_imageio_module_storage_t
   /* get translated module name */
   const char* (*name) ();
   /* construct widget above */
-  void (*gui_init)    (struct dt_imageio_module_format_t *self);
+  void (*gui_init)    (struct dt_imageio_module_storage_t *self);
   /* destroy resources */
-  void (*gui_cleanup) (struct dt_imageio_module_format_t *self);
+  void (*gui_cleanup) (struct dt_imageio_module_storage_t *self);
   /* reset options to defaults */
-  void (*gui_reset)   (struct dt_imageio_module_format_t *self);
+  void (*gui_reset)   (struct dt_imageio_module_storage_t *self);
 
   /* this actually does the work */
-  int (*store)(const int imgid);
+  int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total);
+
+  void* (*get_params)   (struct dt_imageio_module_storage_t *self);
+  void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 }
 dt_imageio_module_storage_t;
 
@@ -122,5 +139,10 @@ void dt_imageio_init   (dt_imageio_t *iio);
 /* cleanup */
 void dt_imageio_cleanup(dt_imageio_t *iio);
 
+/* get selected imageio plugin for export */
+dt_imageio_module_format_t *dt_imageio_get_format();
+
+/* get selected imageio plugin for export */
+dt_imageio_module_storage_t *dt_imageio_get_storage();
 
 #endif

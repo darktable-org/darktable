@@ -16,11 +16,39 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/imageio_png.h"
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
+#include "common/darktable.h"
+#include "common/imageio_module.h"
+#include "common/colorspaces.h"
+#include "control/conf.h"
+#include "dtgtk/slider.h"
+#include <lcms.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <png.h>
+#include <inttypes.h>
 
+DT_MODULE(1)
 
-int dt_imageio_png_write(const char *filename, const uint8_t *in, const int width, const int height)
+typedef struct dt_imageio_png_t
 {
+  int max_width, max_height;
+  int width, height;
+  int bytespp;
+  FILE *f;
+  png_structp png_ptr;
+  png_infop info_ptr;
+}
+dt_imageio_png_t;
+
+
+int
+write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+{
+  const int width = p->width, height = p->height;
+  const uint8_t *in = (uint8_t *)in_void;
   FILE *f = fopen(filename, "wb");
   if (!f) return 1;
 
@@ -77,11 +105,11 @@ int dt_imageio_png_write(const char *filename, const uint8_t *in, const int widt
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
   fclose(f);
+  // TODO: append exif and embed icc profile!
   return 0;
 }
 
-
-int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
+int read_header(const char *filename, dt_imageio_png_t *png)
 {
   png->f = fopen(filename, "rb");
 
@@ -157,6 +185,7 @@ int dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
   return 0;
 }
 
+#if 0
 int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
 {
   if (setjmp(png_jmpbuf(png->png_ptr)))
@@ -172,8 +201,9 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
 
   return 0;
 }
+#endif
 
-int dt_imageio_png_read(dt_imageio_png_t *png, uint8_t *out)
+int read_image (dt_imageio_png_t *png, uint8_t *out)
 {
   if (setjmp(png_jmpbuf(png->png_ptr)))
   {
@@ -199,4 +229,40 @@ int dt_imageio_png_read(dt_imageio_png_t *png, uint8_t *out)
   fclose(png->f);
   return 0;
 }
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
+  dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+  return d;
+}
+
+void
+free_params(dt_imageio_module_format_t *self, void *params)
+{
+  free(params);
+}
+
+int bpp(dt_imageio_module_data_t *p)
+{
+  return 8;
+}
+
+const char*
+extension(dt_imageio_module_data_t *data)
+{
+  return "png";
+}
+
+const char*
+name ()
+{
+  return _("8-bit png");
+}
+
+// TODO: some quality/compression stuff?
+void gui_init    (dt_imageio_module_format_t *self) {}
+void gui_cleanup (dt_imageio_module_format_t *self) {}
+void gui_reset   (dt_imageio_module_format_t *self) {}
+
 

@@ -24,9 +24,10 @@
 #include <OpenEXR/ImfTiledOutputFile.h>
 #include <OpenEXR/ImfChannelList.h>
 #include <OpenEXR/ImfStandardAttributes.h>
+#include "common/darktable.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
-#include "imageio_exr.h"
+#include "common/imageio_module.h"
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"
@@ -52,19 +53,29 @@ namespace Imf {
     Xdr::read <StreamIO> (is, (char *)_value.data, _value.size);
   }
 }
- 
-int dt_imageio_exr_write_f(const char *filename, const float *in, const int width, const int height, void *exif, int exif_len)
-{
-  return dt_imageio_exr_write_with_icc_profile_f(filename,in,width,height,exif,exif_len,0);
-}
 
-int dt_imageio_exr_write_with_icc_profile_f(const char *filename, const float *in, const int width, const int height, void *exif, int exif_len,int imgid)
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+DT_MODULE(1)
+
+typedef struct dt_imageio_exr_t
+{
+  int max_width, max_height;
+  int width, height;
+}
+dt_imageio_exr_t;
+
+ 
+int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, void *exif, int exif_len, int imgid)
 {
   Imf::BlobAttribute::registerAttributeType();
   Imf::Blob exif_blob={0};
   exif_blob.size=exif_len;
   exif_blob.data=(uint8_t *)exif;
-  Imf::Header header(width,height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
+  Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
   header.insert("comment",Imf::StringAttribute("developed using "PACKAGE_NAME"-"PACKAGE_VERSION));
   header.insert("exif", Imf::BlobAttribute(exif_blob));
   header.channels().insert("R",Imf::Channel(Imf::FLOAT));
@@ -74,19 +85,19 @@ int dt_imageio_exr_write_with_icc_profile_f(const char *filename, const float *i
   Imf::TiledOutputFile file(filename, header);	
   Imf::FrameBuffer data;
   
-  uint32_t channelsize=(width*height);
+  uint32_t channelsize=(exr->width*exr->height);
   float *red=(float *)malloc(channelsize*sizeof(float));
   float *green=(float *)malloc(channelsize*sizeof(float));
   float *blue=(float *)malloc(channelsize*sizeof(float));
   
   for(uint32_t j=0;j<channelsize;j++) { red[j]=in[j*3+0]; }
-  data.insert("R",Imf::Slice(Imf::FLOAT,(char *)red,sizeof(float)*1,sizeof(float)*width));
+  data.insert("R",Imf::Slice(Imf::FLOAT,(char *)red,sizeof(float)*1,sizeof(float)*exr->width));
   
   for(uint32_t j=0;j<channelsize;j++) { blue[j]=in[j*3+2]; }
-  data.insert("B",Imf::Slice(Imf::FLOAT,(char *)blue,sizeof(float)*1,sizeof(float)*width));
+  data.insert("B",Imf::Slice(Imf::FLOAT,(char *)blue,sizeof(float)*1,sizeof(float)*exr->width));
   
   for(uint32_t j=0;j<channelsize;j++) { green[j]=in[j*3+1]; }
-  data.insert("G",Imf::Slice(Imf::FLOAT,(char *)green,sizeof(float)*1,sizeof(float)*width));
+  data.insert("G",Imf::Slice(Imf::FLOAT,(char *)green,sizeof(float)*1,sizeof(float)*exr->width));
   
   file.setFrameBuffer(data);
   file.writeTiles (0, file.numXTiles() - 1, 0, file.numYTiles() - 1);
@@ -95,3 +106,44 @@ int dt_imageio_exr_write_with_icc_profile_f(const char *filename, const float *i
   free(blue);
   return 1;
 }
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
+  dt_imageio_exr_t *d = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+  return d;
+}
+
+void
+free_params(dt_imageio_module_format_t *self, void *params)
+{
+  free(params);
+}
+
+int bpp(dt_imageio_module_data_t *p)
+{
+  return 32;
+}
+
+const char*
+extension(dt_imageio_module_data_t *data)
+{
+  return "exr";
+}
+
+const char*
+name ()
+{
+  return _("openexr");
+}
+
+// TODO: some quality/compression stuff?
+void gui_init    (dt_imageio_module_format_t *self) {}
+void gui_cleanup (dt_imageio_module_format_t *self) {}
+void gui_reset   (dt_imageio_module_format_t *self) {}
+
+
+
+#ifdef __cplusplus
+}
+#endif

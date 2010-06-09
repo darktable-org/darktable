@@ -20,13 +20,10 @@
 #endif
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "common/imageio_jpeg.h"
-#include "common/imageio_png.h"
 #include "common/imageio_pfm.h"
-#include "common/imageio_ppm.h"
 #include "common/imageio_rgbe.h"
-#include "common/imageio_tiff.h"
-#include "common/imageio_exr.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -851,174 +848,6 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   return DT_IMAGEIO_OK;
 }
 
-// batch-processing enabled write method: history stack, raw image, custom copy of gamma/tonecurves
-int dt_imageio_export_f(dt_image_t *img, const char *filename)
-{
-  dt_develop_t dev;
-  dt_dev_init(&dev, 0);
-  dt_dev_load_image(&dev, img);
-  const int wd = dev.image->width;
-  const int ht = dev.image->height;
-  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
-
-  dt_dev_pixelpipe_t pipe;
-  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
-  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-  dt_dev_pixelpipe_synch_all(&pipe, &dev);
-  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
-  const int height = dt_conf_get_int ("plugins/lighttable/export/height");
-  const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
-  const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
-  const float scale = fminf(scalex, scaley);
-  const int processed_width  = scale*pipe.processed_width  + .5f;
-  const int processed_height = scale*pipe.processed_height + .5f;
-  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-  float *buf = (float *)pipe.backbuf;
-
-  // find output color profile for this image:
-  int sRGB = 1;
-  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(overprofile && !strcmp(overprofile, "sRGB"))
-  {
-    sRGB = 1;
-  }
-  else if(!overprofile || !strcmp(overprofile, "image"))
-  {
-    GList *modules = dev.iop;
-    dt_iop_module_t *colorout = NULL;
-    while (modules)
-    {
-      colorout = (dt_iop_module_t *)modules->data;
-      if (strcmp(colorout->op, "colorout") == 0)
-      {
-        dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)colorout->params;
-        if(!strcmp(p->iccprofile, "sRGB")) sRGB = 1;
-        else sRGB = 0;
-      }
-      modules = g_list_next(modules);
-    }
-  }
-  else
-  {
-    sRGB = 0;
-  }
-  g_free(overprofile);
-  
-  char pathname[1024];
-  dt_image_full_path(img, pathname, 1024);
-  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
-  
-  int status = 1;
-  int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
-  if( export_format==DT_DEV_EXPORT_PFM)
-  {
-    FILE *f = fopen(filename, "wb");
-    if(f)
-    {
-      (void)fprintf(f, "PF\n%d %d\n-1.0\n", processed_width, processed_height);
-      for(int j=processed_height-1;j>=0;j--)
-      {
-        int cnt = fwrite(buf + 3*processed_width*j, sizeof(float)*3, processed_width, f);
-        if(cnt != processed_width) status = 1;
-        else status = 0;
-      }
-      fclose(f);
-    }
-  }    
-  else if( export_format==DT_DEV_EXPORT_EXR ) 
-    status=dt_imageio_exr_write_f(filename,buf,processed_width, processed_height, exif_profile, length);
- 
-  dt_dev_pixelpipe_cleanup(&pipe);
-  dt_dev_cleanup(&dev);
-  return status;
-}
-
-int dt_imageio_export_16(dt_image_t *img, const char *filename)
-{
-  dt_develop_t dev;
-  dt_dev_init(&dev, 0);
-  dt_dev_load_image(&dev, img);
-  const int wd = dev.image->width;
-  const int ht = dev.image->height;
-  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
-
-  dt_dev_pixelpipe_t pipe;
-  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
-  dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-  dt_dev_pixelpipe_synch_all(&pipe, &dev);
-  dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
-  const int height = dt_conf_get_int ("plugins/lighttable/export/height");
-  const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
-  const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
-  const float scale = fminf(scalex, scaley);
-  const int processed_width  = scale*pipe.processed_width  + .5f;
-  const int processed_height = scale*pipe.processed_height + .5f;
-  dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width,   processed_height, scale);
-  float *buf = (float *)pipe.backbuf;
-
-  // find output color profile for this image:
-  int sRGB = 1;
-  gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(overprofile && !strcmp(overprofile, "sRGB"))
-  {
-    sRGB = 1;
-  }
-  else if(!overprofile || !strcmp(overprofile, "image"))
-  {
-    GList *modules = dev.iop;
-    dt_iop_module_t *colorout = NULL;
-    while (modules)
-    {
-      colorout = (dt_iop_module_t *)modules->data;
-      if (strcmp(colorout->op, "colorout") == 0)
-      {
-        dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)colorout->params;
-        if(!strcmp(p->iccprofile, "sRGB")) sRGB = 1;
-        else sRGB = 0;
-      }
-      modules = g_list_next(modules);
-    }
-  }
-  else
-  {
-    sRGB = 0;
-  }
-  g_free(overprofile);
-  
-  int status = 1;
-  int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
-
-  // Generate the 16 bit image buffer out of internal floatbuffer
-  uint32_t imgsize=((processed_width*processed_height)*3)*sizeof(uint16_t);
-  uint16_t *imgdata=(uint16_t *)malloc(imgsize);
-  for(int y=0;y<processed_height;y++)
-    for(int x=0;x<processed_width ;x++)
-    {
-      const int k = x + processed_width*y;
-      for(int i=0;i<3;i++) imgdata[3*k+i] = CLAMP(buf[3*k+i]*0x10000, 0, 0xffff);
-    }
-    
-  char pathname[1024];
-  dt_image_full_path(img, pathname, 1024);
-  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  uint32_t length = dt_exif_read_blob(exif_profile, pathname, sRGB);
-  
-  if( export_format==DT_DEV_EXPORT_PPM16)
-    status=dt_imageio_ppm_write_16(filename,imgdata,processed_width, processed_height);
-  else if( export_format==DT_DEV_EXPORT_TIFF16 ) 
-    status=dt_imageio_tiff_write_16(filename,imgdata,processed_width, processed_height, exif_profile, length);
-
-  free(imgdata);
-  dt_dev_pixelpipe_cleanup(&pipe);
-  dt_dev_cleanup(&dev);
-  return status;
-}
-
 void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 {
   if(!(in >= 0))
@@ -1035,7 +864,7 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export_8(dt_image_t *img, const char *filename)
+int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -1080,44 +909,56 @@ int dt_imageio_export_8(dt_image_t *img, const char *filename)
   }
   g_free(overprofile);
 
-  const int width  = dt_conf_get_int ("plugins/lighttable/export/width");
-  const int height = dt_conf_get_int ("plugins/lighttable/export/height");
+  const int width  = format_params->max_width;
+  const int height = format_params->max_height;
   const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
   const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
   const float scale = fminf(scalex, scaley);
   const int processed_width  = scale*pipe.processed_width  + .5f;
   const int processed_height = scale*pipe.processed_height + .5f;
-  dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-  char pathname[1024];
-  dt_image_full_path(img, pathname, 1024);
-  uint8_t *buf8 = pipe.backbuf;
-  for(int y=0;y<processed_height;y++)
-  for(int x=0;x<processed_width ;x++)
-  {
-    const int k = x + processed_width*y;
-    uint8_t tmp = buf8[4*k+0];
-    buf8[4*k+0] = buf8[4*k+2];
-    buf8[4*k+2] = tmp;
+  const int bpp = format->bpp(format_params);
+  if(bpp == 8)
+  { // ldr output: char
+    dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    uint8_t *buf8 = pipe.backbuf;
+    for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
+    { // convert in place
+      const int k = x + processed_width*y;
+      uint8_t tmp = buf8[4*k+0];
+      buf8[4*k+0] = buf8[4*k+2];
+      buf8[4*k+2] = tmp;
+    }
+  }
+  else if(bpp == 16)
+  { // uint16_t per color channel
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    float    *buff  = (float *)   pipe.backbuf;
+    uint16_t *buf16 = (uint16_t *)pipe.backbuf;
+    for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
+    { // convert in place
+      const int k = x + processed_width*y;
+      for(int i=0;i<3;i++) buf16[3*k+i] = CLAMP(buff[3*k+i]*0x10000, 0, 0xffff);
+    }
+  }
+  else if(bpp == 32)
+  { // 32-bit float
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   }
 
   int length;
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+  char pathname[1024];
+  dt_image_full_path(img, pathname, 1024);
   length = dt_exif_read_blob(exif_profile, pathname, sRGB);
-  int export_format = dt_conf_get_int ("plugins/lighttable/export/format");
-  int quality = dt_conf_get_int ("plugins/lighttable/export/quality");
-  if(quality <= 0 || quality > 100) quality = 100;
-  int res=0;
-  if(export_format==DT_DEV_EXPORT_JPG)
-    res=dt_imageio_jpeg_write_with_icc_profile(filename, buf8,processed_width, processed_height, quality, exif_profile, length,img->id);
-  else if(export_format==DT_DEV_EXPORT_PNG)
-    res=dt_imageio_png_write(filename, buf8,processed_width, processed_height);
-  else if(export_format==DT_DEV_EXPORT_TIFF8)
-    res=dt_imageio_tiff_write_with_icc_profile_8(filename, buf8,processed_width, processed_height,exif_profile, length,img->id);
+  format_params->width  = processed_width;
+  format_params->height = processed_height;
+  int res = format->write_image (format_params, filename, pipe.backbuf, exif_profile, length, img->id);
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   return res;
 }
+
 
 // =================================================
 //   combined reading

@@ -52,20 +52,23 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
     fprintf(stderr, "[imageio_load_module] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n", libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()), dt_version() < 0 ? "debug" : "opt");
     goto error;
   }
-  if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
-  if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
-  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
-  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+  if(!g_module_symbol(module->module, "name",                         (gpointer)&(module->name)))                         goto error;
+  if(!g_module_symbol(module->module, "gui_reset",                    (gpointer)&(module->gui_reset)))                    goto error;
+  if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
+  if(!g_module_symbol(module->module, "gui_cleanup",                  (gpointer)&(module->gui_cleanup)))                  goto error;
 
-  if(!g_module_symbol(module->module, "write",                  (gpointer)&(module->write)))                  goto error;
-  if(!g_module_symbol(module->module, "write_with_icc_profile", (gpointer)&(module->write_with_icc_profile))) goto error;
+  if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
+  if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
+  if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
+  if(!g_module_symbol(module->module, "write_image",                  (gpointer)&(module->write_image)))                  goto error;
+  if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
 
-  if(!g_module_symbol(module->module, "decompress_header",      (gpointer)&(module->decompress_header)))      module->decompress_header = NULL;
-  if(!g_module_symbol(module->module, "decompress",             (gpointer)&(module->decompress)))             module->decompress = NULL;
-  if(!g_module_symbol(module->module, "compress",               (gpointer)&(module->compress)))               module->compress = NULL;
+  if(!g_module_symbol(module->module, "decompress_header",            (gpointer)&(module->decompress_header)))            module->decompress_header = NULL;
+  if(!g_module_symbol(module->module, "decompress",                   (gpointer)&(module->decompress)))                   module->decompress = NULL;
+  if(!g_module_symbol(module->module, "compress",                     (gpointer)&(module->compress)))                     module->compress = NULL;
 
-  if(!g_module_symbol(module->module, "read_header",            (gpointer)&(module->read_header)))            module->read_header = NULL;
-  if(!g_module_symbol(module->module, "read",                   (gpointer)&(module->read)))                   module->read = NULL;
+  if(!g_module_symbol(module->module, "read_header",                  (gpointer)&(module->read_header)))                  module->read_header = NULL;
+  if(!g_module_symbol(module->module, "read_image",                   (gpointer)&(module->read_image)))                   module->read_image = NULL;
 
   return 0;
 error:
@@ -100,6 +103,8 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
       free(module);
       continue;
     }
+    module->gui_init(module);
+    if(module->widget) gtk_widget_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);
   }
@@ -128,6 +133,8 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
+  if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
+  if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
 
   return 0;
 error:
@@ -161,6 +168,8 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
       free(module);
       continue;
     }
+    module->gui_init(module);
+    if(module->widget) gtk_widget_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_storage);
   }
@@ -185,15 +194,34 @@ dt_imageio_cleanup (dt_imageio_t *iio)
   while(iio->plugins_format)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
+    if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
     iio->plugins_format = g_list_delete_link(iio->plugins_format, iio->plugins_format);
   }
   while(iio->plugins_storage)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
+    if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
     iio->plugins_storage = g_list_delete_link(iio->plugins_storage, iio->plugins_storage);
   }
 }
 
+dt_imageio_module_format_t *dt_imageio_get_format()
+{
+  dt_imageio_t *iio = darktable.imageio;
+  int k = dt_conf_get_int ("plugins/lighttable/export/format");
+  GList *it = g_list_nth(iio->plugins_format, k);
+  if(!it) it = iio->plugins_format;
+  return (dt_imageio_module_format_t *)it->data;
+}
+
+dt_imageio_module_storage_t *dt_imageio_get_storage()
+{
+  dt_imageio_t *iio = darktable.imageio;
+  int k = dt_conf_get_int ("plugins/lighttable/export/storage");
+  GList *it = g_list_nth(iio->plugins_storage, k);
+  if(!it) it = iio->plugins_storage;
+  return (dt_imageio_module_storage_t *)it->data;
+}
 

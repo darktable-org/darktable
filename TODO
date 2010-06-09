@@ -24,6 +24,13 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- tiff export 16-bit broken
+- port input imageio to plugins?
+- export doesn't export all images, some with 1x1 resolution,
+  even unaltered ones???
+- libraw 0.10 :)
+  - we can remove green eq :)
+  - debug half_size in open_raw_preview
 - move lensfun to pre colorin rgb?
 - sliders for C/A in lensfun
 - auto apply preset doesn't seem to work for curr img (needs reset button press)
