@@ -381,6 +381,9 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
+  gtk_container_remove(d->format_box, old);
   free(self->data);
   self->data = NULL;
 }

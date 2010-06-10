@@ -23,29 +23,22 @@
 #include <glade/glade.h>
 #include <sqlite3.h>
 
-#if 0 // support code that might be useful for adaptive resizing:
-int fontSIZE(char *str, gboolean type)
+#if 1 // support code that might be useful for adaptive resizing:
+
+static int
+get_font_height(GtkWidget *widget, const char *str)
 {
-int width, height, ret;
-PangoFontDescription *desc;
+  int width, height;
+  // PangoFontDescription *desc;
 
-PangoLayout *layout = pango_layout_new (gtk_widget_get_pango_context (widget /* drawing area, e.g. */));
+  PangoLayout *layout = pango_layout_new (gtk_widget_get_pango_context (widget));
 
-pango_layout_set_text(layout, str, -1);
-pango_layout_set_font_description(layout, desc);
-pango_layout_get_pixel_size (layout, &width, &height);
+  pango_layout_set_text(layout, str, -1);
+  pango_layout_set_font_description(layout, NULL);//desc);
+  pango_layout_get_pixel_size (layout, &width, &height);
 
-switch (type)
-{
-  case HEIGHT:
-    ret = height;
-    break;
-  case WIDTH:
-    ret = width;
-    break;
-}
-g_object_unref (layout);
-return(ret);
+  g_object_unref (layout);
+  return height;
 }
 #endif
 
@@ -164,6 +157,7 @@ static void
 focus_in_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  printf("font height: %d\n", get_font_height(view, "dreggn"));
   gtk_widget_set_size_request(view, -1, win->allocation.height/2);
 }
 
