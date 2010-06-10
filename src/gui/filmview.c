@@ -23,26 +23,6 @@
 #include <glade/glade.h>
 #include <sqlite3.h>
 
-#if 1 // support code that might be useful for adaptive resizing:
-
-static int
-get_font_height(GtkWidget *widget, const char *str)
-{
-  int width, height;
-  // PangoFontDescription *desc;
-
-  PangoLayout *layout = pango_layout_new (gtk_widget_get_pango_context (widget));
-
-  pango_layout_set_text(layout, str, -1);
-  pango_layout_set_font_description(layout, NULL);//desc);
-  pango_layout_get_pixel_size (layout, &width, &height);
-
-  g_object_unref (layout);
-  return height;
-}
-#endif
-
-
 typedef enum dt_gui_filmview_columns_t
 {
   DT_GUI_FILM_COL_FOLDER=0,
@@ -51,6 +31,37 @@ typedef enum dt_gui_filmview_columns_t
   DT_GUI_FILM_NUM_COLS
 }
 dt_gui_filmview_columns_t;
+
+static int
+get_font_height(GtkWidget *widget, const char *str)
+{
+  int width, height;
+
+  PangoLayout *layout = pango_layout_new (gtk_widget_get_pango_context (widget));
+
+  pango_layout_set_text(layout, str, -1);
+  pango_layout_set_font_description(layout, NULL);
+  pango_layout_get_pixel_size (layout, &width, &height);
+
+  g_object_unref (layout);
+  return height;
+}
+
+static int
+count_film_rolls(const char *filter)
+{
+  char filterstring[512];
+  snprintf(filterstring, 512, "%%%s%%", filter);
+  int count = 0;
+  if(g_strrstr(_("single images"), filter)) count++;
+  sqlite3_stmt *stmt;
+  int rc;
+  rc = sqlite3_prepare_v2(darktable.db, "select count(*) from film_rolls where folder like ?1 and id != 1 order by folder", -1, &stmt, NULL);
+  rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count += sqlite3_column_int(stmt, 0);
+  return count;
+}
 
 void
 dt_gui_filmview_update(const char *filter)
@@ -157,8 +168,11 @@ static void
 focus_in_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  printf("font height: %d\n", get_font_height(view, "dreggn"));
-  gtk_widget_set_size_request(view, -1, win->allocation.height/2);
+  GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+  int count = 1 + count_film_rolls(gtk_entry_get_text(entry));
+  int ht = 1.5*get_font_height(view, "dreggn");
+  const int size = MAX(4*ht, MIN(win->allocation.height/2, count*ht));
+  gtk_widget_set_size_request(view, -1, size);
 }
 
 static void
