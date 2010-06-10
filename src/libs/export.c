@@ -121,8 +121,12 @@ gui_reset (dt_lib_module_t *self)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
     GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
-    if(old) gtk_container_remove(d->format_box, old);
-    if(module->widget) gtk_container_add(d->format_box, module->widget);
+    // printf("export: gui_reset replacing %lu with %lu\n", (long int)old, (long int)module->widget);
+    if(old != module->widget)
+    {
+      if(old) gtk_container_remove(d->format_box, old);
+      if(module->widget) gtk_container_add(d->format_box, module->widget);
+    }
     gtk_widget_show_all(GTK_WIDGET(d->format_box));
   }
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
@@ -161,8 +165,12 @@ format_changed (GtkComboBox *widget, dt_lib_export_t *d)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
     GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
-    if(old) gtk_container_remove(d->format_box, old);
-    if(module->widget) gtk_container_add(d->format_box, module->widget);
+    // printf("export: combo replacing %lu with %lu\n", (long int)old, (long int)module->widget);
+    if(old != module->widget)
+    {
+      if(old) gtk_container_remove(d->format_box, old);
+      if(module->widget) gtk_container_add(d->format_box, module->widget);
+    }
     gtk_widget_show_all(GTK_WIDGET(d->format_box));
   }
 }

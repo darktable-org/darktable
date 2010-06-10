@@ -1,10 +1,6 @@
 CLAHE:
   halos around edges normal?
 
-documentation:
-- plugin template
-- plugin docs in pdf
-
 webpage updates:
 - freebsd has dt (has had for a while :)
 - list of supported cameras and reverse-engineered basecurves etc
@@ -13,11 +9,6 @@ webpage updates:
 big new features:
 - tethered shooting
 - print mode?
-
-- more transparent custom default/presets handling:
-  - color in: input matrices as such defaults
-  - white balance out of this system as well?
-    show-only-for ticked for these, keep current sys in parallel
 
 - fine-grained history stack copying/replacing: 
   - copy history stack augmented by list of favorite image styles
@@ -28,9 +19,6 @@ big new features:
 - port input imageio to plugins?
 - export doesn't export all images, some with 1x1 resolution,
   even unaltered ones???
-- libraw 0.10 :)
-  - we can remove green eq :)
-  - debug half_size in open_raw_preview
 - move lensfun to pre colorin rgb?
 - sliders for C/A in lensfun
 - auto apply preset doesn't seem to work for curr img (needs reset button press)
