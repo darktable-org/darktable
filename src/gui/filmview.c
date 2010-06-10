@@ -23,6 +23,33 @@
 #include <glade/glade.h>
 #include <sqlite3.h>
 
+#if 0 // support code that might be useful for adaptive resizing:
+int fontSIZE(char *str, gboolean type)
+{
+int width, height, ret;
+PangoFontDescription *desc;
+
+PangoLayout *layout = pango_layout_new (gtk_widget_get_pango_context (widget /* drawing area, e.g. */));
+
+pango_layout_set_text(layout, str, -1);
+pango_layout_set_font_description(layout, desc);
+pango_layout_get_pixel_size (layout, &width, &height);
+
+switch (type)
+{
+  case HEIGHT:
+    ret = height;
+    break;
+  case WIDTH:
+    ret = width;
+    break;
+}
+g_object_unref (layout);
+return(ret);
+}
+#endif
+
+
 typedef enum dt_gui_filmview_columns_t
 {
   DT_GUI_FILM_COL_FOLDER=0,
