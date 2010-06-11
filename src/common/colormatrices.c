@@ -57,6 +57,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   { "Canon EOS DIGITAL REBEL XSi",  { 960098, 404968,  22842}, { -85114,  855072, -310928}, {159851, -194611, 1164276}, {851379, 871506, 711823}},
   { "Canon EOS Kiss Digital X2",    { 960098, 404968,  22842}, { -85114,  855072, -310928}, {159851, -194611, 1164276}, {851379, 871506, 711823}},
 
+  // Artis Rozentals, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon PowerShot S60",          { 879990, 321808,  23041}, { 272324, 1104752, -410950}, { 75500, -184097, 1373230}, {702026, 740524, 622131}},
+
   // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
 
