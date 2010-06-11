@@ -252,7 +252,8 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
         GTK_DIALOG_DESTROY_WITH_PARENT,
         GTK_MESSAGE_QUESTION,
         GTK_BUTTONS_YES_NO,
-        _("do you really want to delete the tag `%s'?\n%d images are assigned this tag!"),
+        ngettext("do you really want to delete the tag `%s'?\n%d image is assigned this tag!",
+        "do you really want to delete the tag `%s'?\n%d images are assigned this tag!", count),
         tagname,count);
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));

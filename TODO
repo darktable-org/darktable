@@ -15,6 +15,7 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- ctrl-c/ctrl-v in darkroom mode
 - tiff export 16-bit broken
 - port input imageio to plugins?
 - export doesn't export all images, some with 1x1 resolution,
