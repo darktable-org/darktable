@@ -61,7 +61,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   TIFF *tif=TIFFOpen(filename,"wb");
   if(d->bpp == 8) TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
   else            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-  // TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
   if(profile!=NULL)
     TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
