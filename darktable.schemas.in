@@ -14,6 +14,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/themefile</key>
+      <applyto>/apps/darktable/themefile</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>darktable.gtkrc</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>filename of your custom theme in share/darktable/</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/cache_memory</key>
       <applyto>/apps/darktable/cache_memory</applyto>
       <owner>darktable</owner>
