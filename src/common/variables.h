@@ -25,7 +25,7 @@ typedef struct dt_variables_params_t
   /** only validates string */
   gboolean validate_only;
   
-  /** Used for expanding variables that uses filename $(FILE_NAME) and $(FILE_EXTENSION). */
+  /** Used for expanding variables that uses filename $(FILE_DIRECTORY) $(FILE_NAME) and $(FILE_EXTENSION). */
   const gchar *filename;
   
   /** Used for expanding variable $(JOBCODE) */
