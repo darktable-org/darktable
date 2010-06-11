@@ -91,7 +91,7 @@ Strip all stars (reject image)
 
 Color labels: toggle red, yellow, green
 
-=item B<g, shift-g> 
+=item B<ctrl-g, ctrl-shift-g> 
 
 Move to top, bottom, respectively
 
