@@ -26,7 +26,7 @@
 #include "common/exif.h"
 #include "common/colorspaces.h"
 #include "control/conf.h"
-#define DT_TIFFIO_STRIPE 20
+#define DT_TIFFIO_STRIPE 64
 
 DT_MODULE(1)
 
@@ -69,7 +69,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, d->height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
+  TIFFSetField(tif, TIFFTAG_PREDICTOR, 1);		// Reference www.awaresystems.be/imaging/tiff/tifftags/predictor.html
   TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
@@ -120,7 +120,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     free(rowdata);
   }
   
-  if(exif) dt_exif_write_blob(exif,exif_len,filename);
+  //if(exif) dt_exif_write_blob(exif,exif_len,filename);
   free(profile);
   
   return 1;
