@@ -105,6 +105,9 @@ typedef struct dt_imageio_module_storage_t
 
   // gui stuff:
   GtkWidget *widget;
+
+  // data for you to initialize
+  void *gui_data;
   
   // gui and management:
   /* get translated module name */

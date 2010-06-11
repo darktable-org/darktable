@@ -110,8 +110,6 @@ gui_reset (dt_lib_module_t *self)
   // make sure we don't do anything useless:
   if(!darktable.control->running) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  // int quality = MIN(100, MAX(1, dt_conf_get_int ("plugins/lighttable/export/quality")));
-  // dtgtk_slider_set_value(d->quality, quality);
   gtk_spin_button_set_value(d->width,  dt_conf_get_int("plugins/lighttable/export/width"));
   gtk_spin_button_set_value(d->height, dt_conf_get_int("plugins/lighttable/export/height"));
   int k = dt_conf_get_int ("plugins/lighttable/export/format");
@@ -128,6 +126,20 @@ gui_reset (dt_lib_module_t *self)
       if(module->widget) gtk_container_add(d->format_box, module->widget);
     }
     gtk_widget_show_all(GTK_WIDGET(d->format_box));
+  }
+  k = dt_conf_get_int ("plugins/lighttable/export/storage");
+  gtk_combo_box_set_active(d->storage, k);
+  it = g_list_nth(darktable.imageio->plugins_storage, k);
+  if(it)
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->storage_box));
+    if(old != module->widget)
+    {
+      if(old) gtk_container_remove(d->storage_box, old);
+      if(module->widget) gtk_container_add(d->storage_box, module->widget);
+    }
+    gtk_widget_show_all(GTK_WIDGET(d->storage_box));
   }
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
@@ -176,6 +188,25 @@ format_changed (GtkComboBox *widget, dt_lib_export_t *d)
 }
 
 static void
+storage_changed (GtkComboBox *widget, dt_lib_export_t *d)
+{
+  int k = gtk_combo_box_get_active(d->storage);
+  dt_conf_set_int ("plugins/lighttable/export/storage", k);
+  GList *it = g_list_nth(darktable.imageio->plugins_storage, k);
+  if(it)
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->storage_box));
+    if(old != module->widget)
+    {
+      if(old) gtk_container_remove(d->storage_box, old);
+      if(module->widget) gtk_container_add(d->storage_box, module->widget);
+    }
+    gtk_widget_show_all(GTK_WIDGET(d->storage_box));
+  }
+}
+
+static void
 profile_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
   int pos = gtk_combo_box_get_active(widget);
@@ -220,19 +251,17 @@ gui_init (dt_lib_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
   d->storage = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  // TODO: load modules!
-#if 0
-  GList *it = darktable.imageio->plugins_format;
+  GList *it = darktable.imageio->plugins_storage;
   while(it)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    gtk_combo_box_append_text(d->format, module->name());
+    gtk_combo_box_append_text(d->storage, module->name());
     it = g_list_next(it);
   }
-#endif
-  gtk_combo_box_append_text(d->storage, _("file on harddrive"));
-  gtk_combo_box_set_active(d->storage, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage), 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g_signal_connect (G_OBJECT (d->storage), "changed",
+                    G_CALLBACK (storage_changed),
+                    (gpointer)d);
 
   d->storage_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->storage_box), 0, 0, 0, 0);
@@ -242,7 +271,7 @@ gui_init (dt_lib_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  GList *it = darktable.imageio->plugins_format;
+  it = darktable.imageio->plugins_format;
   while(it)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
@@ -384,6 +413,8 @@ gui_cleanup (dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
   if(old) gtk_container_remove(d->format_box, old);
+  old = gtk_bin_get_child(GTK_BIN(d->storage_box));
+  if(old) gtk_container_remove(d->storage_box, old);
   free(self->data);
   self->data = NULL;
 }

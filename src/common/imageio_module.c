@@ -103,6 +103,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
       free(module);
       continue;
     }
+    module->gui_data = NULL;
     module->gui_init(module);
     if(module->widget) gtk_widget_ref(module->widget);
     g_free(libname);
@@ -168,6 +169,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
       free(module);
       continue;
     }
+    module->gui_data = NULL;
     module->gui_init(module);
     if(module->widget) gtk_widget_ref(module->widget);
     g_free(libname);

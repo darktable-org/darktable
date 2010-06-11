@@ -36,6 +36,16 @@ name ()
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
+#if 0
+  // TODO: buttons to select a base directory?
+  self->widget = gtk_hbox_new(FALSE, 5);
+  GtkWidget *widget;
+  
+  widget = gtk_button_new_with_label(_("base directory"));
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  widget = gtk_entry_new();
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
+#endif
 }
 
 void
