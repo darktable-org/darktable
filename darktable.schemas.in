@@ -795,6 +795,32 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/picasa/username</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/picasa/username</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/picasa/password</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/picasa/password</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/export/iccprofile</key>
       <applyto>/apps/darktable/plugins/lighttable/export/iccprofile</applyto>
       <owner>darktable</owner>
