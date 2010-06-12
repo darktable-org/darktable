@@ -76,7 +76,7 @@ int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, v
   exif_blob.size=exif_len;
   exif_blob.data=(uint8_t *)exif;
   Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
-  header.insert("comment",Imf::StringAttribute("developed using "PACKAGE_NAME"-"PACKAGE_VERSION));
+  header.insert("comment",Imf::StringAttribute("Developed using Darktable "PACKAGE_VERSION));
   header.insert("exif", Imf::BlobAttribute(exif_blob));
   header.channels().insert("R",Imf::Channel(Imf::FLOAT));
   header.channels().insert("B",Imf::Channel(Imf::FLOAT));

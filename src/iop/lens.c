@@ -1016,26 +1016,15 @@ static void lens_search_clicked(
 
   (void)button;
 
-  if(txt[0] != '\0')
-  {
-    parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
-    pthread_mutex_lock(&darktable.plugin_threadsafe);
-    lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
-        make [0] ? make : NULL,
-        model [0] ? model : NULL, 0);
-    pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    if (!lenslist) return;
-    lens_menu_fill (self, lenslist);
-    lf_free (lenslist);
-  }
-  else
-  {
-    pthread_mutex_lock(&darktable.plugin_threadsafe);
-    const lfLens *const *lenslist = lf_db_get_lenses (dt_iop_lensfun_db);
-    pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    if (!lenslist) return;
-    lens_menu_fill (self, lenslist);
-  }
+  parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
+  pthread_mutex_lock(&darktable.plugin_threadsafe);
+  lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
+      make [0] ? make : NULL,
+      model [0] ? model : NULL, 0);
+  pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  if (!lenslist) return;
+  lens_menu_fill (self, lenslist);
+  lf_free (lenslist);
 
   gtk_menu_popup (GTK_MENU (g->lens_menu), NULL, NULL, NULL, NULL,
       0, gtk_get_current_event_time ());
