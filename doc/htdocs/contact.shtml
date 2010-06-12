@@ -43,6 +43,7 @@
 
         ..make your important changes..<br/>
 
+        $ git commit -a<br/>
         $ git pull<br/>
         $ git rebase master<br/>
         $ git format-patch master<br/>
