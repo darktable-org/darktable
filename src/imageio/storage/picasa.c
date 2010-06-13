@@ -600,12 +600,14 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  int result=0;
+  int result=1;
   dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
   
   if( p->picasa_api->current_album == NULL ) 
-    if( _picasa_api_create_album( p->picasa_api ) != 201 ) 
-      return 0; 
+    if( _picasa_api_create_album( p->picasa_api ) != 201 ) {
+      dt_control_log("failed to create picasa album");
+      return 1; 
+    }
   
   const char *ext = format->extension(fdata);
 
@@ -637,7 +639,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   
   // Upload image to picasa
   if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 ) 
-    result=1;
+    result=0;
   
   // Unreference the memorymapped file...
   g_mapped_file_unref( imgfile );
@@ -647,6 +649,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   g_free( caption );
   g_free( tempfilename );
   
+  dt_control_log(_("%d/%d exported to picasa album"), num, total );
   return result;
 }
 
