@@ -1112,7 +1112,7 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
     p->cx = p->cy = 0.0f;
     p->cw = p->ch = 1.0f;
   }
-  p->aspect = - g->current_aspect;
+  p->aspect = - 1.0;//g->current_aspect;
   const float cx = p->cx, cy = p->cy;
   const float cw = fabsf(p->cw), ch = fabsf(p->ch);
   p->cx += g->clip_x*(cw-cx);
