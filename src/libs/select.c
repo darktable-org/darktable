@@ -42,8 +42,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
   if(!query) return;
   gchar *c;
-  c = g_strrstr(query, "as a join");
-  if(c == NULL) c = g_strrstr(query, "order by");
+  c  = g_strrstr(query, "order by");
   if(c) *c = '\0';
   c = g_strrstr(query, "limit");
   if(c) *c = '\0';
@@ -54,7 +53,9 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   snprintf(fullq, 2048, "insert into selected_images select id %s", query + 8);
   strcat(fullq,"where (");
   snprintf(fullq+strlen(fullq), 2048-strlen(fullq), "%s", query+strlen(query) + 6);
-  strcat(fullq,")");
+  gchar *c2 = g_strrstr(fullq, "as a join");
+  if(c2) *(c2-1) = ')';
+  else strcat(fullq,")");
 
   // printf("%s\n", fullq);
   
@@ -62,6 +63,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   {
     case 0: // all
       sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+      printf("select all:\n%s;\n", fullq);
       sqlite3_exec(darktable.db, fullq, NULL, NULL, NULL);
       break;
     case 1: // none
