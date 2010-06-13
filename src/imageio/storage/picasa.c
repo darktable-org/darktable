@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <curl/curl.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -34,15 +35,17 @@
 DT_MODULE(1)
 
 typedef struct dt_storage_picasa_gui_data_t {
+  
   GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7;                           // username, password, albums, status, albumtitle, albumsummary, albumrights
   GtkEntry *entry1,*entry2,*entry3,*entry4;                          // username, password, albumtitle,albumsummary
-  GtkComboBox *comboBox1,*comboBox2;                     // album box, album rights
+  GtkComboBox *comboBox1;                                 // album box
+  GtkCheckButton *checkButton1;                         // public albnum
   GtkDarktableButton *dtbutton1;                        // refresh albums
   GtkBox *hbox1;                                                    // Create album options...
   
+  /** Current picasa context for the gui */
   struct _picasa_api_context_t *picasa_api;
   
- 
 } dt_storage_picasa_gui_data_t;
   
 
@@ -64,11 +67,17 @@ typedef struct _picasa_api_context_t {
   /** Headers to pass on to HTTP requests. */
   struct curl_slist *curl_headers;
   
+  gchar *authHeader;  // Google Auth HTTP header string
+  
   /** A list with _picasa_album_t objects from parsed XML */
   GList *albums;           
 
   /** Current album used when posting images... */
-  struct _picasa_album_t  *current;
+  struct _picasa_album_t  *current_album;
+  
+  char *album_title;
+  char *album_summary;
+  int album_public;
   
 } _picasa_api_context_t;
 
@@ -83,8 +92,10 @@ typedef struct _picasa_album_t {
 
 /** Authenticates and retreives an initialized picasa api object */
 _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password);
+
 int _picasa_api_get_feed(_picasa_api_context_t *ctx);
 int _picasa_api_create_album(_picasa_api_context_t *ctx);
+int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags );
 
 /** Grow and fill _buffer_t with recieved data... */
 size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream) {
@@ -98,6 +109,16 @@ size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void 
   buffer->size += nmemb;
   return nmemb;
 }
+
+void _picasa_api_free( _picasa_api_context_t *ctx ){
+  
+  g_free( ctx->album_title );
+  g_free( ctx->album_summary );
+  
+  /// \todo free list of albums...  
+  g_free( ctx );
+}
+  
 
 _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password) {
   _picasa_api_context_t *ctx = (_picasa_api_context_t *)g_malloc(sizeof(_picasa_api_context_t));
@@ -114,7 +135,7 @@ _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char 
   g_strlcat(data,password,4096);
   g_strlcat(data,"&service=lh2&source="PACKAGE_NAME"-"PACKAGE_VERSION,4096);
   
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_FOLLOWLOCATION, 1);
 
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "https://www.google.com/accounts/ClientLogin");
@@ -136,6 +157,7 @@ _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char 
     char auth[4096]={0};
     strcat(auth,"Authorization: GoogleLogin auth=");
     strcat(auth,pa);
+    ctx->authHeader=g_strdup(auth);
     ctx->curl_headers = curl_slist_append(ctx->curl_headers,auth);
     curl_easy_setopt(ctx->curl_handle,CURLOPT_HTTPHEADER, ctx->curl_headers);
     g_free(buffer.data);
@@ -146,33 +168,91 @@ _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char 
   return NULL;
 }
 
-int _picasa_api_create_album(_picasa_api_context_t *ctx) {
+
+int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags ) {
+  _buffer_t buffer;
+  memset(&buffer,0,sizeof(_buffer_t));
+  char uri[4096]={0};
+
+  gchar *entry = g_markup_printf_escaped (
+      "<entry xmlns='http://www.w3.org/2005/Atom'>"
+      "<title>%s</title>"
+      "<summary>%s</summary>"
+      "<category scheme=\"http://schemas.google.com/g/2005#kind\""
+      " term=\"http://schemas.google.com/photos/2007#photo\"/>"
+      "</entry>",
+      caption,description);
+  
+  
+  
+  // Hack for nonform multipart post...
+  gchar mpart1[4096]={0};
+  gchar *mpart_format="Media multipart posting\n--END_OF_PART\nContent-Type: application/atom+xml\n\n%s\n--END_OF_PART\nContent-Type: %s\n\n";
+  sprintf(mpart1,mpart_format,entry,mime);
+ 
+  int mpart1size=strlen(mpart1);
+  int postdata_length=mpart1size+size+strlen("\n--END_OF_PART--");
+  gchar *postdata=g_malloc(postdata_length);
+  memcpy( postdata, mpart1, mpart1size);
+  memcpy( postdata+mpart1size, data, size);
+  memcpy( postdata+mpart1size+size, "\n--END_OF_PART--",strlen("\n--END_OF_PART--") );
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers,ctx->authHeader);
+  headers = curl_slist_append(headers,"Content-Type: multipart/related; boundary=\"END_OF_PART\"");
+  headers = curl_slist_append(headers,"MIME-version: 1.0");
+  headers = curl_slist_append(headers,"Expect:");
+  
+  sprintf(uri,"http://picasaweb.google.com/data/feed/api/user/default/albumid/%s", ctx->current_album->id);
+  //sprintf(uri,"http://localhost/data/feed/api/user/default/albumid/%s", ctx->current_album->id);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, uri);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_POST,1);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDS, postdata);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDSIZE, postdata_length);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
+  curl_easy_perform( ctx->curl_handle );
+
+  long result;
+  curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
+  if( result == 201 ) {
+    // Image was created , fine.. and result have the fully created photo xml entry..
+    // Let's perform an update of the photos keywords with tags passed along to this function..
+    // and use picasa photo update api to add keywords to the photo...
+    
+    // Not for now.. but for future...
+    
+  }
+  return result;
+}
+
+
+int _picasa_api_create_album(_picasa_api_context_t *ctx ) {
  _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
-  gchar *title="Test Album";
-  gchar *summary="Ett testalbum skapat ifrån darktable";
-  gchar *access="public";
   
-  gchar *data = g_markup_printf_escaped ("<entry xmlns='http://www.w3.org/2005/Atom'"
+  gchar *data = g_markup_printf_escaped ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+  "<entry xmlns='http://www.w3.org/2005/Atom'"
    " xmlns:media='http://search.yahoo.com/mrss/'"
    " xmlns:gphoto='http://schemas.google.com/photos/2007'>"
   "<title type='text'>%s</title>"
   "<summary type='text'>%s</summary>"
   "<gphoto:access>%s</gphoto:access>" // public
-  "<gphoto:timestamp>%d</gphoto:timestamp>"
+  "<gphoto:timestamp>%d000</gphoto:timestamp>"
   "<media:group>"
-    "<media:keywords></media:keywords>"
+  "<media:keywords></media:keywords>"
   "</media:group>"
   "<category scheme='http://schemas.google.com/g/2005#kind'"
   "  term='http://schemas.google.com/photos/2007#album'></category>"
-  "</entry>",title, summary, access, (int)time(NULL) );
-  
+  "</entry>",ctx->album_title, (ctx->album_summary)?ctx->album_summary:"", (ctx->album_public)?"public":"private", ((int)time(NULL)) );
   
   ctx->curl_headers = curl_slist_append(ctx->curl_headers,"Content-Type: application/atom+xml");
   curl_easy_setopt(ctx->curl_handle,CURLOPT_HTTPHEADER, ctx->curl_headers);
     
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_HEADER , 1);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_HEADER , 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "http://picasaweb.google.com/data/feed/api/user/default");
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POST, 1);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDS, data);
@@ -182,10 +262,51 @@ int _picasa_api_create_album(_picasa_api_context_t *ctx) {
   
   long result;
   curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
-  if( result == 200 && result == 201 ) {
-    fprintf(stderr,"%s",buffer.data);
-    // Get <id> from returned <entry>
-    return 1;
+  if( result == 201 ) {
+    xmlDocPtr doc;
+    xmlNodePtr entryNode;
+    
+    // Parse xml document
+    if( ( doc = xmlParseDoc( (xmlChar *)buffer.data ))==NULL) return 0;
+    // Let's parse album entry response and construct a _picasa_album_t and assign to current album...
+    entryNode = xmlDocGetRootElement(doc);
+    if(  xmlStrcmp(entryNode->name, (const xmlChar *) "entry")==0 ) {
+      xmlNodePtr entryChilds = entryNode->xmlChildrenNode;
+      if( entryChilds != NULL ) {
+        // Allocate current_album...
+        ctx->current_album =  g_malloc(sizeof(_picasa_album_t));
+        memset( ctx->current_album,0,sizeof(_picasa_album_t));
+        // Parse xml
+       do {
+          if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"id")) ) {
+            xmlChar *id= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
+            if( xmlStrncmp( id, (const xmlChar *)"http://",7) )
+              ctx->current_album->id = g_strdup((const char *)id);
+            xmlFree(id);
+          } else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"title")) ) {
+            xmlChar *title= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
+            ctx->current_album->title = g_strdup((const char *)title);
+            xmlFree(title);
+          } else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"summary")) )  {
+            xmlChar *summary= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
+            if( summary ) 
+              ctx->current_album->summary = g_strdup((const char *)summary);
+            xmlFree(summary);
+          } else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"rights")) ) {
+            xmlChar *rights= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
+            ctx->current_album->rights= g_strdup((const char *)rights);
+            xmlFree(rights);
+          } else if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"numphotos")) ) {
+            xmlChar *photos= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
+            ctx->current_album->photoCount = g_strdup((const char *)photos);
+            xmlFree(photos);
+          }
+        } while( (entryChilds = entryChilds->next)!=NULL );
+      }
+    } else
+      return 0;
+
+    return 201;
   }
   return 0;
 }
@@ -193,7 +314,7 @@ int _picasa_api_create_album(_picasa_api_context_t *ctx) {
 int _picasa_api_get_feed(_picasa_api_context_t *ctx) {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
-  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "http://picasaweb.google.com/data/feed/api/user/default");
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POST, 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
@@ -212,12 +333,7 @@ int _picasa_api_get_feed(_picasa_api_context_t *ctx) {
     if( ( doc = xmlParseDoc( (xmlChar *)buffer.data ))==NULL) {
       return 0;
     }
-    
-    // Debug output document...
-    // xmlDocDump(stdout, doc);
-    
     // Remove old album objects from list..
-    
     if( ctx->albums != NULL ) {
      while( g_list_length(ctx->albums) > 0 ) {
         gpointer data=g_list_nth_data(ctx->albums, 0);
@@ -225,7 +341,6 @@ int _picasa_api_get_feed(_picasa_api_context_t *ctx) {
         g_free( data );
       }
     }
-
     
     // Let's parse atom feed of albums...
     feedNode = xmlDocGetRootElement(doc);
@@ -298,8 +413,6 @@ void entry_changed(GtkEntry *entry, gpointer data) {
       dt_conf_set_string( "plugins/imageio/storage/picasa/username",gtk_entry_get_text( ui->entry1 ) );
   else if(entry == ui->entry2)
       dt_conf_set_string( "plugins/imageio/storage/picasa/password",gtk_entry_get_text( ui->entry2 ) );
-
-    
 }
 
 
@@ -314,7 +427,6 @@ void set_status(dt_storage_picasa_gui_data_t *ui, gchar *message,gchar *color) {
 /** Refresh albums */
 void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
-  
   
   if( ui->picasa_api == NULL )
     ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1),gtk_entry_get_text(ui->entry2));
@@ -336,10 +448,13 @@ void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
       if( album != NULL ) {
         for(int i=0;i<g_list_length(ui->picasa_api->albums);i++) {
           char data[512]={0};
-          sprintf(data,"[%s] %s",((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->photoCount,((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->title);
+          sprintf(data,"%s (%s)", ((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->title, ((_picasa_album_t*)g_list_nth_data(ui->picasa_api->albums,i))->photoCount );
           gtk_combo_box_append_text( ui->comboBox1, g_strdup(data));
         }
-      }
+        gtk_combo_box_set_active( ui->comboBox1, 2);
+        gtk_widget_hide( GTK_WIDGET(ui->hbox1) ); // Hide create album box...
+      }else
+        gtk_combo_box_set_active( ui->comboBox1, 0);
     } else {
         // Failed to parse feed of album...
         // Lets notify somehow...
@@ -355,7 +470,7 @@ void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
 void album_changed(GtkComboBox *cb,gpointer data) {
   dt_storage_picasa_gui_data_t * ui=(dt_storage_picasa_gui_data_t *)data;
   gchar *value=gtk_combo_box_get_active_text(ui->comboBox1);
-  if( strcmp( value, _("create new album") ) == 0 ) {
+  if( value!=NULL && strcmp( value, _("create new album") ) == 0 ) {
     gtk_widget_show(GTK_WIDGET(ui->hbox1));    
   } else
     gtk_widget_hide(GTK_WIDGET(ui->hbox1));
@@ -368,19 +483,13 @@ gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointer data)
   if (G_VALUE_HOLDS_STRING (&value)) {
     if( (v=(gchar *)g_value_get_string (&value))!=NULL && strlen(v) == 0 ) return TRUE;
   }
-  
   return FALSE;
 }
 
 // Refresh button pressed...
 void button1_clicked(GtkButton *button,gpointer data) {
   dt_storage_picasa_gui_data_t * ui=(dt_storage_picasa_gui_data_t *)data;
-  
   refresh_albums(ui);
-  
-    /*if( _picasa_api_create_album(ui->picasa_api) == 201 ) {
-      // Album created
-    }*/
 }
 
 void
@@ -409,7 +518,6 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_misc_set_alignment(GTK_MISC(ui->label6), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label7), 0.0, 0.5);
   
-  
   ui->entry1 = GTK_ENTRY( gtk_entry_new() );
   ui->entry2 = GTK_ENTRY( gtk_entry_new() );
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
@@ -423,7 +531,6 @@ gui_init (dt_imageio_module_storage_t *self)
 
   GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
   ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
-  ui->comboBox2=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Album rights
   
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_color,0) );
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
@@ -431,9 +538,9 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->dtbutton1), FALSE, FALSE, 0);
  
+  ui->checkButton1 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("public album")) );
+ 
  // Auth
-  //gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET( dtgtk_label_new(_("authentication"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT) ), TRUE, FALSE, 0);
-  
   gtk_box_pack_start(GTK_BOX(hbox1), vbox1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox1), vbox2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 5);
@@ -461,7 +568,7 @@ gui_init (dt_imageio_module_storage_t *self)
   
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry3 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry4 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->comboBox2 ), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton1 ), TRUE, FALSE, 0);
  
  
   // Setup signals
@@ -476,6 +583,8 @@ gui_init (dt_imageio_module_storage_t *self)
   if( gtk_entry_get_text(ui->entry1) && gtk_entry_get_text(ui->entry2) ) {
     refresh_albums(ui);
   }
+  
+  gtk_combo_box_set_active( ui->comboBox1, 0);
 }
 
 void
@@ -491,7 +600,54 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  return 1;
+  int result=0;
+  dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
+  
+  if( p->picasa_api->current_album == NULL ) 
+    if( _picasa_api_create_album( p->picasa_api ) != 201 ) 
+      return 0; 
+  
+  const char *ext = format->extension(fdata);
+
+  // Let's upload image...
+  char fname[512]={"darktable.XXXXXX."};
+  strcat(fname,ext);
+  gchar *tempfilename;
+  char *caption="a image";  
+  char *description="";  
+  char *mime="image/jpeg";
+  GList *tags=NULL;
+  
+  // Ok, maybe a dt_imageio_export_to_buffer would suit here !?
+  
+  gint fd=g_file_open_tmp(fname,&tempfilename,NULL);
+  close(fd);
+  dt_image_t *img = dt_image_cache_use(imgid, 'r');
+  caption = g_strdup( img->filename );
+  
+  (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
+  
+  dt_imageio_export(img, tempfilename, format, fdata);
+  dt_image_cache_release(img, 'r');
+  fprintf(stderr,"File: %s\n",tempfilename);
+  // Open the temp file and read image to memory
+  GMappedFile *imgfile = g_mapped_file_new(tempfilename,FALSE,NULL);
+  int size = g_mapped_file_get_length( imgfile );
+  gchar *data =g_mapped_file_get_contents( imgfile );
+  
+  // Upload image to picasa
+  if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 ) 
+    result=1;
+  
+  // Unreference the memorymapped file...
+  g_mapped_file_unref( imgfile );
+ 
+  // And remove from filesystem..
+  unlink( tempfilename );
+  g_free( caption );
+  g_free( tempfilename );
+  
+  return result;
 }
 
 void*
@@ -503,6 +659,21 @@ get_params(dt_imageio_module_storage_t *self)
   
   // fill d from controls in ui
   d->picasa_api = ui->picasa_api;
+  int index = gtk_combo_box_get_active(ui->comboBox1);
+  if( index >= 0 ){
+    if( index == 0 ) {
+      d->picasa_api->current_album = NULL;
+      d->picasa_api->album_title = g_strdup( gtk_entry_get_text( ui->entry3 ) );
+      d->picasa_api->album_summary = g_strdup( gtk_entry_get_text( ui->entry4) );
+      d->picasa_api->album_public = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( ui->checkButton1 ) );
+    } else 
+      d->picasa_api->current_album = g_list_nth_data(d->picasa_api->albums,(index-2));
+    
+  }
+  
+  // Let UI forget about this api context and recreate a new one for further usage...
+  ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
+  
   return d;
 }
 
@@ -510,7 +681,9 @@ void
 free_params(dt_imageio_module_storage_t *self, void *params)
 {
   dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)params;
-  g_free( d->picasa_api );
+  
+  _picasa_api_free(  d->picasa_api );
+  
   free(params);
 }
 
