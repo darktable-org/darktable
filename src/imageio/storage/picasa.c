@@ -532,7 +532,7 @@ gui_init (dt_imageio_module_storage_t *self)
   GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
   ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
   
-  ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_color,0) );
+  ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
   gtk_combo_box_set_row_separator_func(ui->comboBox1,combobox_separator,ui->comboBox1,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
