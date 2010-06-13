@@ -15,15 +15,21 @@ big new features:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- remove lensfun autoscale and add crop autocrop
+- sliders for C/A in lensfun
+- move lensfun to pre colorin rgb?
+- remove dcraw_process calls from libraw usage, put demosaic in plugin?
+
+- format, storage:
+  . params_size
+  . gui_update after params change
+- storage to enforce constraints on format/wd/ht
+- named presets for export: comboentry (copy blob)
+
 - ctrl-c/ctrl-v in darkroom mode
 - libchamplain geotagging?
 - steal gegl tonemapping operators?
-- tiff export 16-bit broken
 - port input imageio to plugins?
-- export doesn't export all images, some with 1x1 resolution,
-  even unaltered ones???
-- move lensfun to pre colorin rgb?
-- sliders for C/A in lensfun
 - auto apply preset doesn't seem to work for curr img (needs reset button press)
 - prefetching while browsing lighttable mode
 - color labels: sort and import is weird.

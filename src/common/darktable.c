@@ -181,7 +181,7 @@ int dt_init(int argc, char *argv[])
   if(!id)
   {
     // dummy selection:
-    dt_conf_set_string ("plugins/lighttable/query", "select * from images where film_id = -1 and (flags & 7) >= 1 order by filename limit ?1, ?2");
+    dt_conf_set_string ("plugins/lighttable/query", "select * from images where (film_id = -1) and (flags & 7) >= 1 order by filename limit ?1, ?2");
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 

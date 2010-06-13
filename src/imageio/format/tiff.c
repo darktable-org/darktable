@@ -167,6 +167,12 @@ int bpp(dt_imageio_tiff_t *p)
 }
 
 const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "image/tiff";
+}
+ 
+const char*
 extension(dt_imageio_module_data_t *data)
 {
   return "tiff";

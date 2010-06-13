@@ -66,6 +66,12 @@ int bpp(dt_imageio_module_data_t *p)
 }
 
 const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "image/x-portable-pixmap";
+}
+ 
+const char*
 extension(dt_imageio_module_data_t *data)
 {
   return "ppm";

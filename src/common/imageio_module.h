@@ -70,6 +70,8 @@ typedef struct dt_imageio_module_format_t
   void* (*get_params)   (struct dt_imageio_module_format_t *self);
   void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
 
+  /* returns the mime type of the exported image. */
+  const char* (*mime)      (dt_imageio_module_data_t *data);
   /* this extension (plus dot) is appended to the exported filename. */
   const char* (*extension) (dt_imageio_module_data_t *data);
 

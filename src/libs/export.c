@@ -27,6 +27,7 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 #include <lcms.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -62,33 +63,14 @@ uint32_t views()
 static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-#if 0
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  // read "format" to global settings
-  int i = gtk_combo_box_get_active(d->format);
-  if     (i == 0)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_JPG);
-  else if(i == 1)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PNG);
-  else if(i == 2)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF8);
-  else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PPM16);
-  else if(i == 4)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF16);
-  else if(i == 5)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PFM);
-  else if(i == 6)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_EXR);
-#endif
   dt_control_export();
 }
 
-#if 0
 static void
-export_quality_changed (GtkDarktableSlider *slider, gpointer user_data)
+key_accel_callback(void *d)
 {
-  GtkWidget *widget;
-  int quality = (int)dtgtk_slider_get_value(slider);
-  dt_conf_set_int ("plugins/lighttable/export/quality", quality);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(widget);
+  export_button_clicked(NULL, d);
 }
-#endif
 
 static void
 width_changed (GtkSpinButton *spin, gpointer user_data)
@@ -405,11 +387,13 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)0);
 
   self->gui_reset(self);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, key_accel_callback, NULL);
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_gui_key_accel_unregister(key_accel_callback);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
   if(old) gtk_container_remove(d->format_box, old);

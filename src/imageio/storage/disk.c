@@ -21,11 +21,35 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/variables.h"
 #include "control/control.h"
+#include "control/conf.h"
+#include "gui/gtk.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <glade/glade.h>
 
 DT_MODULE(1)
+
+// gui data
+typedef struct disk_t
+{
+  gchar *file_directory;
+  GtkEntry *entry;
+}
+disk_t;
+
+// saved params
+typedef struct dt_imageio_disk_t
+{
+  char file_directory[1024];
+  char filename[1024];
+  dt_variables_params_t *vp;
+}
+dt_imageio_disk_t;
+
 
 const char*
 name ()
@@ -33,39 +57,92 @@ name ()
   return _("file on disk");
 }
 
+static void
+button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
+{
+  disk_t *d = (disk_t *)self->gui_data;
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select $(FILE_DIRECTORY)"),
+              GTK_WINDOW (win),
+              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+              NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (d->file_directory) gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), d->file_directory);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+    g_free(d->file_directory);
+    d->file_directory = dir;
+    dt_conf_set_string("plugins/imageio/storage/disk/file_directory", dir);
+  }
+  gtk_widget_destroy (filechooser);
+}
+
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
-#if 0
-  // TODO: buttons to select a base directory?
+  disk_t *d = (disk_t *)malloc(sizeof(disk_t));
+  self->gui_data = (void *)d;
+  d->file_directory = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
   self->widget = gtk_hbox_new(FALSE, 5);
   GtkWidget *widget;
-  
-  widget = gtk_button_new_with_label(_("base directory"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+
   widget = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
-#endif
+  gtk_entry_set_text(GTK_ENTRY(widget), "$(FILE_DIRECTORY)/darktable_exported/img_$(SEQUENCE)");
+  d->entry = GTK_ENTRY(widget);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
+                                                       "$(FILE_DIRECTORY) - select with button to the right\n"
+                                                       "$(SEQUENCE) - sequence number\n"
+                                                       "$(YEAR) - year\n"
+                                                       "$(MONTH) - month\n"
+                                                       "$(DAY) - day\n"
+                                                       "$(HOUR) - hour\n"
+                                                       "$(MINUTE) - minute\n"
+                                                       "$(SECOND) - second\n"
+                                                       "$(PICTURES_FOLDER) - pictures folder\n"
+                                                       "$(HOME_FOLDER) - home folder\n"
+                                                       "$(DESKTOP_FOLDER) - desktop folder"
+                                                       ), NULL);
+  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
+  gtk_widget_set_size_request(widget, 18, 18);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select $(FILE_DIRECTORY)"), NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 }
 
 void
 gui_cleanup (dt_imageio_module_storage_t *self)
 {
+  free(self->gui_data);
 }
 
 void
 gui_reset (dt_imageio_module_storage_t *self)
 {
+  disk_t *d = (disk_t *)self->gui_data;
+  gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_DIRECTORY)/darktable_exported/img_$(SEQUENCE)");
+  // g_free(d->file_directory);
 }
 
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
   dt_image_t *img = dt_image_cache_use(imgid, 'r');
+  dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
   char filename[1024];
   char dirname[1024];
-  dt_image_export_path(img, filename, 1024);
+  // dt_image_export_path(img, filename, 1024);
+
+  d->vp->filename = d->file_directory;
+  d->vp->jobcode = "export";
+  d->vp->img = img;
+  dt_variables_expand(d->vp, d->filename, TRUE);
+  strncpy(filename, dt_variables_get_result(d->vp), 1024);
   strncpy(dirname, filename, 1024);
 
   char *c = dirname + strlen(dirname);
@@ -79,8 +156,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
 
-  // TODO: get storage path from paramters (which also need to be passed here)
-  // and only avoid if filename and c match exactly!
   c = filename + strlen(filename);
   for(;c>filename && *c != '.';c--);
   if(c <= filename) c = filename + strlen(filename);
@@ -89,6 +164,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   // avoid name clashes for single images:
   if(img->film_id == 1 && !strcmp(c+1, ext)) { strncpy(c, "_dt", 3); c += 3; }
+  *c = '.';
   strncpy(c+1, ext, strlen(ext)+1);
   dt_imageio_export(img, filename, format, fdata);
   dt_image_cache_release(img, 'r');
@@ -104,12 +180,21 @@ void*
 get_params(dt_imageio_module_storage_t *self)
 {
   // TODO: collect (and partially expand?) regexp where to put img
-  return NULL;
+  dt_imageio_disk_t *d = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
+  disk_t *g = (disk_t *)self->gui_data;
+  d->vp = NULL;
+  dt_variables_params_init(&d->vp);
+  d->file_directory[0] = '\0';
+  memcpy(d->filename, gtk_entry_get_text(GTK_ENTRY(g->entry)), 1024);
+  if(g->file_directory) snprintf(d->file_directory, 1024, "%s/dreggn.jpg", g->file_directory);
+  return d;
 }
 
 void
 free_params(dt_imageio_module_storage_t *self, void *params)
 {
+  dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
+  dt_variables_params_destroy(d->vp);
   free(params);
 }
 

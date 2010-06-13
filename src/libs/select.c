@@ -41,21 +41,25 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   char fullq[2048];
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
   if(!query) return;
-  gchar *c = g_strrstr(query, "order by");
-  if(c) *c = '\0';
+  gchar *c;
   c = g_strrstr(query, "limit");
   if(c) *c = '\0';
   
   // fix to group first where within () for use an addition statement to existing where
-  c = g_strrstr(query, "where");
+  c = g_strstr_len(query, -1, "where");
   if(c) *c = '\0';
   snprintf(fullq, 2048, "insert into selected_images select id %s", query + 8);
   strcat(fullq,"where (");
   snprintf(fullq+strlen(fullq), 2048-strlen(fullq), "%s", query+strlen(query) + 6);
-  strcat(fullq,")");
+  gchar *c2 = g_strrstr(fullq, "as a join color");
+  if(c2) *(c2-1) = ')';
+  else 
+  {
+    c2 = g_strrstr(fullq, "order by");
+    if(c2) *(c2-1) = ')';
+    else strcat(fullq,")");
+  }
 
-  // printf("%s\n", fullq);
-  
   switch((long int)user_data)
   {
     case 0: // all

@@ -68,7 +68,6 @@ typedef struct dt_imageio_exr_t
 }
 dt_imageio_exr_t;
 
- 
 int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, void *exif, int exif_len, int imgid)
 {
   Imf::BlobAttribute::registerAttributeType();
@@ -125,6 +124,12 @@ int bpp(dt_imageio_module_data_t *p)
   return 32;
 }
 
+const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "image/openexr";
+}
+ 
 const char*
 extension(dt_imageio_module_data_t *data)
 {

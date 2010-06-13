@@ -11,7 +11,7 @@ Options:
 
     --help        
     --version
-    -d {cache,control,dev,fswatch}
+    -d {cache,control,dev,fswatch,perf}
 
 =head1 DESCRIPTION
 
@@ -51,7 +51,7 @@ Show/hide sidebars
 
 =item B<e>
 
-Switch between lighttable and darkroom modes
+Switch between light-table and darkroom modes
 
 =back
 
@@ -94,6 +94,10 @@ Color labels: toggle red, yellow, green
 =item B<ctrl-g, ctrl-shift-g> 
 
 Move to top, bottom, respectively
+
+=item B<ctrl-e>
+
+Export selected images
 
 =back
 
