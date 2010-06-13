@@ -388,6 +388,7 @@ update_query()
   char newquery[1024], filter[512];
   if(j == 1) snprintf(filter, 512, "flags & 7) < 1");
   else       snprintf(filter, 512, "flags & 7) >= %d", j-1);
+  // g_strstr_len(split[0], -1, "where ");
   if(i == 4)
     snprintf(newquery, 1024, "select * from (%s %s) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
   else

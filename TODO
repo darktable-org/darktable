@@ -26,7 +26,6 @@ big new features:
 - storage to enforce constraints on format/wd/ht
 - named presets for export: comboentry (copy blob)
 
-- ctrl-a for collections broken
 - ctrl-c/ctrl-v in darkroom mode
 - libchamplain geotagging?
 - steal gegl tonemapping operators?

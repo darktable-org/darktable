@@ -41,7 +41,9 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   char fullq[2048];
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
   if(!query) return;
-  gchar *c = g_strrstr(query, "order by");
+  gchar *c;
+  c = g_strrstr(query, "as a join");
+  if(c == NULL) c = g_strrstr(query, "order by");
   if(c) *c = '\0';
   c = g_strrstr(query, "limit");
   if(c) *c = '\0';

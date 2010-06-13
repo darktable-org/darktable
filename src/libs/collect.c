@@ -73,51 +73,51 @@ update_query(dt_lib_collect_t *d)
   {
     case 0: // film roll
       if(imgsel == -666)
-        snprintf(query, 1024, "select * from images where film_id in (select id from film_rolls where folder like '%%%s%%')", text);
+        snprintf(query, 1024, "select * from images where (film_id in (select id from film_rolls where folder like '%%%s%%'))", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select * from images where film_id in (select id from film_rolls where folder in "
-                              "(select folder from film_rolls where id = (select film_id from images where id = %d)))", imgsel);
+        snprintf(query, 1024, "select * from images where (film_id in (select id from film_rolls where folder in "
+                              "(select folder from film_rolls where id = (select film_id from images where id = %d))))", imgsel);
       else
-        snprintf(query, 1024, "select * from images where film_id in (select id from film_rolls where id in "
-                              "(select film_id from images as a join selected_images as b on a.id = b.imgid))");
+        snprintf(query, 1024, "select * from images where (film_id in (select id from film_rolls where id in "
+                              "(select film_id from images as a join selected_images as b on a.id = b.imgid)))");
       break;
       
     case 4: // history
-      snprintf(query, 1024, "select * from images where id %s in (select imgid from history where imgid=images.id) ",(strcmp(text,_("altered"))==0)?"":"not");
+      snprintf(query, 1024, "select * from images where (id %s in (select imgid from history where imgid=images.id)) ",(strcmp(text,_("altered"))==0)?"":"not");
     break;
       
     case 1: // camera
       if(imgsel == -666)
-        snprintf(query, 1024, "select * from images where maker || ' ' || model like '%%%s%%'", text);
+        snprintf(query, 1024, "select * from images where (maker || ' ' || model like '%%%s%%')", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select * from images where maker || ' ' || model in "
-                              "(select maker || ' ' || model from images where id = %d)", imgsel);
+        snprintf(query, 1024, "select * from images where (maker || ' ' || model in "
+                              "(select maker || ' ' || model from images where id = %d))", imgsel);
       else
-        snprintf(query, 1024, "select * from images where maker || ' ' || model in "
-                              "(select maker || ' ' || model from images as a join selected_images as b on a.id = b.imgid)");
+        snprintf(query, 1024, "select * from images where (maker || ' ' || model in "
+                              "(select maker || ' ' || model from images as a join selected_images as b on a.id = b.imgid))");
       break;
     case 2: // tag
       if(imgsel == -666)
-        snprintf(query, 1024, "select * from images where id in (select imgid from tagged_images as a join "
-                              "tags as b on a.tagid = b.id where name like '%%%s%%')", text);
+        snprintf(query, 1024, "select * from images where (id in (select imgid from tagged_images as a join "
+                              "tags as b on a.tagid = b.id where name like '%%%s%%'))", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select * from images where id in "
+        snprintf(query, 1024, "select * from images where (id in "
                               "(select imgid from tagged_images as a join tags as b on a.tagid = b.id where "
-                              "b.id in (select tagid from tagged_images where imgid = %d))", imgsel);
+                              "b.id in (select tagid from tagged_images where imgid = %d)))", imgsel);
       else
-        snprintf(query, 1024, "select * from images where id in "
+        snprintf(query, 1024, "select * from images where (id in "
                               "(select imgid from tagged_images as a join tags as b on a.tagid = b.id where "
-                              "b.id in (select tagid from tagged_images as c join selected_images as d on c.imgid = d.imgid))");
+                              "b.id in (select tagid from tagged_images as c join selected_images as d on c.imgid = d.imgid)))");
       break;
  
 
     default: // case 3: // day
       if(imgsel == -666)
-        snprintf(query, 1024, "select * from images where datetime_taken like '%%%s%%'", text);
+        snprintf(query, 1024, "select * from images where (datetime_taken like '%%%s%%')", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select * from images where datetime_taken in (select datetime_taken from images where id = %d)", imgsel);
+        snprintf(query, 1024, "select * from images where (datetime_taken in (select datetime_taken from images where id = %d))", imgsel);
       else
-        snprintf(query, 1024, "select * from images where datetime_taken in (select datetime_taken from images as a join selected_images as b on a.id = b.imgid");
+        snprintf(query, 1024, "select * from images where (datetime_taken in (select datetime_taken from images as a join selected_images as b on a.id = b.imgid)");
       break;
   }
   g_free(text);
