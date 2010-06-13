@@ -96,7 +96,17 @@ gui_init (dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
                                                        "$(FILE_DIRECTORY) - select with button to the right\n"
-                                                       "TODO - document the other vars!"), NULL);
+                                                       "$(SEQUENCE) - sequence number\n"
+                                                       "$(YEAR) - year\n"
+                                                       "$(MONTH) - month\n"
+                                                       "$(DAY) - day\n"
+                                                       "$(HOUR) - hour\n"
+                                                       "$(MINUTE) - minute\n"
+                                                       "$(SECOND) - second\n"
+                                                       "$(PICTURES_FOLDER) - pictures folder\n"
+                                                       "$(HOME_FOLDER) - home folder\n"
+                                                       "$(DESKTOP_FOLDER) - desktop folder"
+                                                       ), NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select $(FILE_DIRECTORY)"), NULL);

@@ -41,7 +41,6 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   char fullq[2048];
   gchar *query = dt_conf_get_string("plugins/lighttable/query");
   if(!query) return;
-  printf("query\n%s;\n", query);
   gchar *c;
   c = g_strrstr(query, "limit");
   if(c) *c = '\0';
@@ -66,7 +65,6 @@ button_clicked(GtkWidget *widget, gpointer user_data)
     case 0: // all
       sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, fullq, NULL, NULL, NULL);
-      printf("select all\n%s;\n", fullq);
       break;
     case 1: // none
       sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
