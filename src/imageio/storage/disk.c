@@ -22,6 +22,8 @@
 #include "common/imageio_module.h"
 #include "common/imageio.h"
 #include "control/control.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -39,21 +41,47 @@ name ()
   return _("file on disk");
 }
 
+static void
+button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
+{
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select $(FILE_DIRECTORY)"),
+              GTK_WINDOW (win),
+              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+              NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+    g_free(dir);
+  }
+  gtk_widget_destroy (filechooser);
+}
+
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
-#if 0
+#if 1
   disk_t *d = (disk_t *)malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
-  // TODO: buttons to select a base directory?
   self->widget = gtk_hbox_new(FALSE, 5);
   GtkWidget *widget;
-  
+
+  // TODO: default FILE_DIRECTORY to first image in selection?
+
   widget = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
   gtk_entry_set_text(GTK_ENTRY(widget), "$(FILE_DIRECTORY)/darktable_exported");
   d->entry = GTK_ENTRY(widget);
-  widget = gtk_button_new_from_stock(GTK_STOCK_DIRECTORY);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
+                                                       "$(FILE_DIRECTORY) - select with button to the right\n"
+                                                       "TODO - document the other vars!"), NULL);
+  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
+  gtk_widget_set_size_request(widget, 18, 18);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select $(FILE_DIRECTORY)"), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 #endif
 }

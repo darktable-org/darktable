@@ -215,4 +215,20 @@ void dtgtk_cairo_paint_filmstrip(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   cairo_identity_matrix(cr);	
 }
 
+void dtgtk_cairo_paint_directory(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  cairo_save(cr);
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_translate(cr, x+.05*w, y+.05*h);
+  cairo_scale(cr, .9*w, .9*h);
+  cairo_set_line_width(cr, 1./w);
+  cairo_rectangle(cr, 0., 0., 1., 1.);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0., .2);
+  cairo_line_to(cr, .5, .2);
+  cairo_line_to(cr, .6, 0.);
+  cairo_stroke(cr);
+  cairo_restore(cr);
+}
+
 
