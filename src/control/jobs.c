@@ -479,7 +479,7 @@ void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
   t->index = NULL;
   int rc;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images order by rowid desc", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     long int imgid = sqlite3_column_int(stmt, 0);

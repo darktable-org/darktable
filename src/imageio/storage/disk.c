@@ -146,8 +146,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
 
-  // TODO: get storage path from paramters (which also need to be passed here)
-  // and only avoid if filename and c match exactly!
   c = filename + strlen(filename);
   for(;c>filename && *c != '.';c--);
   if(c <= filename) c = filename + strlen(filename);

@@ -27,6 +27,7 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 #include <lcms.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -63,6 +64,12 @@ static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_control_export();
+}
+
+static void
+key_accel_callback(void *d)
+{
+  export_button_clicked(NULL, d);
 }
 
 static void
@@ -380,11 +387,13 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)0);
 
   self->gui_reset(self);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, key_accel_callback, NULL);
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_gui_key_accel_unregister(key_accel_callback);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
   if(old) gtk_container_remove(d->format_box, old);
