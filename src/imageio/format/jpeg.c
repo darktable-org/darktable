@@ -573,6 +573,12 @@ int bpp(dt_imageio_module_data_t *p)
 }
 
 const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "image/jpeg";
+}
+ 
+const char*
 extension(dt_imageio_module_data_t *data)
 {
   return "jpg";

@@ -113,6 +113,12 @@ int bpp(dt_imageio_module_data_t *p)
 }
 
 const char*
+mime(dt_imageio_module_data_t *data)
+{
+  return "image/x-portable-floatmap";
+}
+ 
+const char*
 extension(dt_imageio_module_data_t *data)
 {
   return "pfm";

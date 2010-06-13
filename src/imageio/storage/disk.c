@@ -27,6 +27,12 @@
 
 DT_MODULE(1)
 
+typedef struct disk_t
+{
+  GtkEntry *entry;
+}
+disk_t;
+
 const char*
 name ()
 {
@@ -37,20 +43,25 @@ void
 gui_init (dt_imageio_module_storage_t *self)
 {
 #if 0
+  disk_t *d = (disk_t *)malloc(sizeof(disk_t));
+  self->gui_data = (void *)d;
   // TODO: buttons to select a base directory?
   self->widget = gtk_hbox_new(FALSE, 5);
   GtkWidget *widget;
   
-  widget = gtk_button_new_with_label(_("base directory"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   widget = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
+  gtk_entry_set_text(GTK_ENTRY(widget), "$(FILE_DIRECTORY)/darktable_exported");
+  d->entry = GTK_ENTRY(widget);
+  widget = gtk_button_new_from_stock(GTK_STOCK_DIRECTORY);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 #endif
 }
 
 void
 gui_cleanup (dt_imageio_module_storage_t *self)
 {
+  free(self->gui_data);
 }
 
 void

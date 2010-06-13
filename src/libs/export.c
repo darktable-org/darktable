@@ -62,33 +62,8 @@ uint32_t views()
 static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-#if 0
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  // read "format" to global settings
-  int i = gtk_combo_box_get_active(d->format);
-  if     (i == 0)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_JPG);
-  else if(i == 1)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PNG);
-  else if(i == 2)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF8);
-  else if(i == 3)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PPM16);
-  else if(i == 4)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_TIFF16);
-  else if(i == 5)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_PFM);
-  else if(i == 6)  dt_conf_set_int ("plugins/lighttable/export/format", DT_DEV_EXPORT_EXR);
-#endif
   dt_control_export();
 }
-
-#if 0
-static void
-export_quality_changed (GtkDarktableSlider *slider, gpointer user_data)
-{
-  GtkWidget *widget;
-  int quality = (int)dtgtk_slider_get_value(slider);
-  dt_conf_set_int ("plugins/lighttable/export/quality", quality);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(widget);
-}
-#endif
 
 static void
 width_changed (GtkSpinButton *spin, gpointer user_data)

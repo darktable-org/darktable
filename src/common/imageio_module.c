@@ -57,6 +57,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",                  (gpointer)&(module->gui_cleanup)))                  goto error;
 
+  if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
   if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
