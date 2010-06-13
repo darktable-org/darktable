@@ -49,6 +49,7 @@ src/imageio/format/ppm.c
 src/imageio/format/pfm.c
 src/imageio/format/tiff.c
 src/imageio/storage/disk.c
+src/imageio/storage/picasa.c
 src/gui/gtk.c
 src/gui/histogram.c
 src/gui/metadata.c
