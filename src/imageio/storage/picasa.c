@@ -60,6 +60,7 @@ typedef struct dt_storage_picasa_params_t
 typedef struct _buffer_t {
   char *data;
   size_t size;
+  size_t offset;
 } _buffer_t;
 
 typedef struct _picasa_api_context_t {
@@ -109,6 +110,19 @@ size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void 
   buffer->data = newdata;
   buffer->size += nmemb;
   return nmemb;
+}
+
+size_t _picasa_api_buffer_read_func( void *ptr, size_t size, size_t nmemb, void *stream) {
+   _buffer_t *buffer=(_buffer_t *)stream;
+  size_t dsize=0;
+  if( (buffer->size - buffer->offset) > nmemb )
+    dsize=nmemb;
+  else
+    dsize=(buffer->size - buffer->offset);
+  
+  memcpy(ptr,buffer->data+buffer->offset,dsize);
+  buffer->offset+=nmemb;
+  return dsize;
 }
 
 void _picasa_api_free( _picasa_api_context_t *ctx ){
@@ -237,12 +251,10 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
     
     xmlDocPtr doc;
     xmlNodePtr entryNode;
-    
     // Parse xml document
     if( ( doc = xmlParseDoc( (xmlChar *)buffer.data ))==NULL) return 0;
     entryNode = xmlDocGetRootElement(doc);
-    if(  xmlStrcmp(entryNode->name, (const xmlChar *) "entry")==0 ) {
-    
+    if(  !xmlStrcmp(entryNode->name, (const xmlChar *) "entry") ) {
       // Let's get the gd:etag attribute of entry... 
       // For now, we force update using "If-Match: *"
       /*
@@ -275,25 +287,38 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       }
       
       // Let's update the photo 
-      /*
       
       struct curl_slist *headers = NULL;
       headers = curl_slist_append(headers,ctx->authHeader);
       headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
       headers = curl_slist_append(headers,"If-Match: *");
+      headers = curl_slist_append(headers,"Expect:");
       
+      _buffer_t response;
+      memset(&response,0,sizeof(_buffer_t));
+  
+      // Setup data to send..
+      _buffer_t writebuffer;
+      
+      xmlDocDumpMemory(doc,(xmlChar **)&writebuffer.data,(int *)&writebuffer.size);
+      writebuffer.offset=0;
+      
+      /*
       sprintf(uri,"http://picasaweb.google.com/data/media/api/user/default/albumid/%s/photoid/%s",ctx->current_album->id,photo_id);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, uri);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,1);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_READDATA,data);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_INFILESIZE,size);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,1);   // A put request
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_READDATA,&writebuffer);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_INFILESIZE,writebuffer.size);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_READFUNCTION,_picasa_api_buffer_read_func);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
-      curl_easy_perform( ctx->curl_handle ); */
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &response);
+      curl_easy_perform( ctx->curl_handle ); 
+      */
       
-      
+      xmlFree( writebuffer.data );
+      curl_slist_free_all( headers );
     }
     
   }
