@@ -298,7 +298,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -.5, 1.0, .001,p->black,3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
   
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -3.0, 6.0, .02, p->exposure,3));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -9.0, 9.0, .02, p->exposure,3));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), NULL);
   
   
