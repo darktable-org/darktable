@@ -403,7 +403,7 @@ int _picasa_api_get_feed(_picasa_api_context_t *ctx) {
 const char*
 name ()
 {
-  return _("picasa");
+  return _("picasa webalbum");
 }
 
 
@@ -649,7 +649,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   g_free( caption );
   g_free( tempfilename );
   
-  dt_control_log(_("%d/%d exported to picasa album"), num, total );
+  dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
   return result;
 }
 
