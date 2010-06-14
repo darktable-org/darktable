@@ -20,6 +20,13 @@ big new features:
 - move lensfun to pre colorin rgb?
 - remove dcraw_process calls from libraw usage, put demosaic in plugin?
 
+- longest edge resize
+- storage/format communication:
+  . file type
+  . size
+  . icc profile
+- cleanup (labels..)
+
 - format, storage:
   . params_size
   . gui_update after params change
