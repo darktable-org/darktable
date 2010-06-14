@@ -23,6 +23,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <stdio.h>
@@ -215,14 +216,85 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
   curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
   curl_easy_perform( ctx->curl_handle );
 
+  curl_slist_free_all(headers);
+
   long result;
   curl_easy_getinfo(ctx->curl_handle,CURLINFO_RESPONSE_CODE,&result );
-  if( result == 201 ) {
+  
+  // If we want to add tags let's do...
+  if( result == 201 && g_list_length(tags)>0 ) {
     // Image was created , fine.. and result have the fully created photo xml entry..
     // Let's perform an update of the photos keywords with tags passed along to this function..
     // and use picasa photo update api to add keywords to the photo...
     
-    // Not for now.. but for future...
+    // Build the keywords content string
+    gchar keywords[4096]={0};
+    for( int i=0;i<g_list_length( tags );i++) {
+      g_strlcat(keywords,((dt_tag_t *)g_list_nth_data(tags,i))->tag,4096);
+      if( i < g_list_length( tags )-1)
+        g_strlcat(keywords,", ",4096);
+    }
+    
+    xmlDocPtr doc;
+    xmlNodePtr entryNode;
+    
+    // Parse xml document
+    if( ( doc = xmlParseDoc( (xmlChar *)buffer.data ))==NULL) return 0;
+    entryNode = xmlDocGetRootElement(doc);
+    if(  xmlStrcmp(entryNode->name, (const xmlChar *) "entry")==0 ) {
+    
+      // Let's get the gd:etag attribute of entry... 
+      // For now, we force update using "If-Match: *"
+      /*
+        if( !xmlHasProp(entryNode, (const xmlChar*)"gd:etag") ) return 0;
+        xmlChar *etag = xmlGetProp(entryNode,(const xmlChar*)"gd:etag");
+      */
+      
+      gchar *photo_id=NULL;
+      xmlNodePtr entryChilds = entryNode->xmlChildrenNode;
+      if( entryChilds != NULL ) {
+        do {
+          if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"id")) ) {
+            // Get the photo id used in uri for update
+            xmlChar *id= xmlNodeListGetString(doc, entryChilds->xmlChildrenNode, 1);
+            if( xmlStrncmp( id, (const xmlChar *)"http://",7) )
+              photo_id = g_strdup((const char *)id);
+            xmlFree(id);
+          } else  if ((!xmlStrcmp(entryChilds->name, (const xmlChar *)"group")) ) {
+            // Got the media:group entry lets find the child media:keywords
+            xmlNodePtr mediaChilds = entryChilds->xmlChildrenNode;
+            if(mediaChilds != NULL) {
+              do {
+                // Got the keywords tag, let's set the tags
+                if ((!xmlStrcmp(mediaChilds->name, (const xmlChar *)"keywords")) ) 
+                  xmlNodeSetContent(mediaChilds, (xmlChar *)keywords);
+              } while( (mediaChilds = mediaChilds->next)!=NULL );
+            }
+          }
+        } while( (entryChilds = entryChilds->next)!=NULL );
+      }
+      
+      // Let's update the photo 
+      /*
+      
+      struct curl_slist *headers = NULL;
+      headers = curl_slist_append(headers,ctx->authHeader);
+      headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
+      headers = curl_slist_append(headers,"If-Match: *");
+      
+      sprintf(uri,"http://picasaweb.google.com/data/media/api/user/default/albumid/%s/photoid/%s",ctx->current_album->id,photo_id);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, uri);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,1);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_READDATA,data);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_INFILESIZE,size);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
+      curl_easy_perform( ctx->curl_handle ); */
+      
+      
+    }
     
   }
   return result;
@@ -620,18 +692,21 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   char *mime="image/jpeg";
   GList *tags=NULL;
   
+  // Fetch the attached tags of image id
+  dt_tag_get_attached(imgid,&tags);
+  
   // Ok, maybe a dt_imageio_export_to_buffer would suit here !?
   
   gint fd=g_file_open_tmp(fname,&tempfilename,NULL);
   close(fd);
   dt_image_t *img = dt_image_cache_use(imgid, 'r');
-  caption = g_strdup( img->filename );
+  caption = g_path_get_basename( img->filename );
   
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
   
   dt_imageio_export(img, tempfilename, format, fdata);
   dt_image_cache_release(img, 'r');
-  fprintf(stderr,"File: %s\n",tempfilename);
+  
   // Open the temp file and read image to memory
   GMappedFile *imgfile = g_mapped_file_new(tempfilename,FALSE,NULL);
   int size = g_mapped_file_get_length( imgfile );
