@@ -33,6 +33,7 @@ big new features:
 - storage to enforce constraints on format/wd/ht
 - named presets for export: comboentry (copy blob)
 
+- import film roll: reset top panel and collect plugin.
 - ctrl-c/ctrl-v in darkroom mode
 - libchamplain geotagging?
 - steal gegl tonemapping operators?

@@ -68,6 +68,24 @@
         contributors of ideas, ethusiasm, translations, aur ubuntu macintosh packaging, git support, feature and bugfix patches, as well as excessive battle-testing :)</li>
       </ul>
     	</div>
+
+    	<div class="listtext">
+    	<img src="images/sails.jpg" alt="people" class="img" /><h1>people</h1>
+      <table>
+      <tr class="odd"><td><em>photo</em></td><td><em>irc nick</em></td><td><em>real name</em></td>
+                      <td><em>project role</em></td><td><em>homepage</em></td><td><em>gallery</em></td></tr>
+      <tr class="even"><td><img width="52" src="http://www.gravatar.com/avatar/07d83b598e6a654dacf173f221b8a241.png" /></td>
+          <td>dinamic</td><td>henrik andersson</td><td>developer</td><td><a href="http://www.ohloh.net/accounts/hean01/">homepage</a></td>
+          <td><a href="http://www.dinamic.se/">gallery</a></td></tr>
+      <tr class="odd"><td><img width="52" src="images/avatar.jpg" alt="jo" /></td><td>hanatos</td><td>johannes hanika</td>
+          <td>project founder</td>
+          <td></td><td></td></tr>
+      <tr class="even"><td><img width="52" src="http://planet.ubuntu-nl.org/static/images/hackergotchis/pmjdebruijn.png" alt="photo" /></td>
+          <td>pmjdebruijn</td><td>pascal de bruijn</td><td>color management</td><td><a href="http://blog.pcode.nl/">homepage</a></td>
+          <td><a href="http://photos.pcode.nl/">gallery</a></td></tr>
+       </table>
+      </ul>
+    	</div>
     </div> <!-- page -->
     <!--#include virtual="footer.html" -->
   </body>
