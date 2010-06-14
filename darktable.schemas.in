@@ -773,7 +773,7 @@
       <applyto>/apps/darktable/plugins/imageio/storage/disk/file_directory</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>$(HOME_FOLDER)</default>
+      <default>$(FILE_DIRECTORY)/darktable_exported/img_$(SEQUENCE)</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>

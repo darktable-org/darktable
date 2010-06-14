@@ -12,6 +12,15 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
+    	<img src="images/grass.jpg" class="img" alt="dreggn" /><h1>darktable on tv :)</h1>
+      <em>(2010-06-14)</em> no new release today, but some great videos about dt:
+      <ul>
+        <li><a href="http://river-valley.tv/digital-photography-workflow-on-linux-with-darktable/">watch</a> <a href="http://prokoudine.info/">alexandre prokoudine</a> at <a href="http://libregraphicsmeeting.org/2010/">LGM 2010</a></li>
+        <li><a href="http://meetthegimp.org/episode-135-darktable/">watch meetthegimp #135</a>, a bit older, but still.. </li>
+      </ul>
+      </div>
+
+      <div class="listtext">
     	<img src="images/redice.jpg" class="img" alt="dreggn" /><h1>released 0.5</h1>
       <em>(2010-03-26)</em> features, features, features ;)
       <ul>
