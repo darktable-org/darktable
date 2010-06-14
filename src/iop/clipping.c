@@ -20,7 +20,6 @@
 #endif
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
 #include <string.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -1135,8 +1134,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   {
     float dx = x - darktable.control->button_x, dy = y - darktable.control->button_y;
     if(dx < 0) { dx = -dx; dy = - dy; }
-    const float angle = atan2f(dy, dx);
-    assert(angle >= - M_PI/2.0 && angle <= M_PI/2.0);
+    float angle = atan2f(dy, dx);
+    if(!(angle >= - M_PI/2.0 && angle <= M_PI/2.0)) angle = 0.0f;
     float close = angle;
     if     (close >  M_PI/4.0) close =  M_PI/2.0 - close;
     else if(close < -M_PI/4.0) close = -M_PI/2.0 - close;
