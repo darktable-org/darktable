@@ -124,6 +124,8 @@ class DllDef LibRaw
     void         recycle(); 
     ~LibRaw(void) { recycle(); delete tls; }
 
+    int COLOR(int row, int col) { return libraw_internal_data.internal_output_params.fuji_width? FCF(row,col):FC(row,col);}
+
     int FC(int row,int col) { return (imgdata.idata.filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3);}
     int         fc (int row, int col);
     int add_masked_borders_to_bitmap();
@@ -131,10 +133,23 @@ class DllDef LibRaw
     const char *unpack_function_name();
     int         rotate_fuji_raw();
 
+    void        free(void *p);
   private:
+
+    int FCF(int row,int col) { 
+        int rr,cc;
+        if (libraw_internal_data.unpacker_data.fuji_layout) {
+            rr = libraw_internal_data.internal_output_params.fuji_width - 1 - col + (row >> 1);
+            cc = col + ((row+1) >> 1);
+        } else {
+            rr = libraw_internal_data.internal_output_params.fuji_width - 1 + row - (col >> 1);
+            cc = row + ((col+1) >> 1);
+        }
+        return FC(rr,cc);
+    }
+
     void*        malloc(size_t t);
     void*        calloc(size_t n,size_t t);
-    void        free(void *p);
     void        merror (void *ptr, const char *where);
     void        derror();
 
@@ -159,7 +174,7 @@ class DllDef LibRaw
     
     int         own_filtering_supported(){ return 0;}
     void        identify();
-    void        identify2(unsigned, char*);
+    void        identify2(unsigned, unsigned, char*);
     void        write_ppm_tiff ();
     void        convert_to_rgb();
     void        kodak_ycbcr_load_raw();

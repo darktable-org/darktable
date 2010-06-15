@@ -10,14 +10,13 @@ LibRaw is free software; you can redistribute it and/or modify
 it under the terms of the one of three licenses as you choose:
 
 1. GNU LESSER GENERAL PUBLIC LICENSE version 2.1
-   (See file LICENSE.LGPL provided in LibRaw distribution archive for details).
+   (See the file LICENSE.LGPL provided in LibRaw distribution archive for details).
 
 2. COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
-   (See file LICENSE.CDDL provided in LibRaw distribution archive for details).
+   (See the file LICENSE.CDDL provided in LibRaw distribution archive for details).
 
 3. LibRaw Software License 27032010
-   (See file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
-
+   (See the file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
 
  */
 
@@ -25,9 +24,9 @@ it under the terms of the one of three licenses as you choose:
 #define __VERSION_H
 
 #define LIBRAW_MAJOR_VERSION  0
-#define LIBRAW_MINOR_VERSION  9
+#define LIBRAW_MINOR_VERSION  10
 #define LIBRAW_PATCH_VERSION  0
-#define LIBRAW_VERSION_TAIL   Beta4
+#define LIBRAW_VERSION_TAIL   Beta1
 
 #define _LIBRAW_VERSION_MAKE(a,b,c,d) #a"."#b"."#c"-"#d
 #define LIBRAW_VERSION_MAKE(a,b,c,d) _LIBRAW_VERSION_MAKE(a,b,c,d)

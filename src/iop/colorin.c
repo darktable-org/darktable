@@ -181,8 +181,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[512];
-    snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
+    if(!strncmp(self->dev->image->exif_maker, self->dev->image->exif_model, strlen(self->dev->image->exif_maker)))
+      snprintf(makermodel, 512, "%s", self->dev->image->exif_model);
+    else
+      snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
+    // printf("searching matrix for `%s'\n", makermodel);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
+    // if(!d->input) printf("could not find enhanced color matrix for `%s'!\n", makermodel);
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
   if(!strcmp(p->iccprofile, "cmatrix"))
@@ -207,6 +212,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->input = dt_colorspaces_create_srgb_profile();
   }
+  else if(!strcmp(p->iccprofile, "linear_rgb"))
+  {
+    d->input = dt_colorspaces_create_linear_rgb_profile();
+  }
   else if(!strcmp(p->iccprofile, "XYZ"))
   {
     d->input = dt_colorspaces_create_xyz_profile();
@@ -226,8 +235,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     if(strcmp(p->iccprofile, "sRGB"))
     { // use linear_rgb as fallback for missing profiles:
-      snprintf(filename, 1024, "%s/color/in/%s", datadir, "linear_rgb.icc");
-      d->input = cmsOpenProfileFromFile(filename, "r");
+      d->input = dt_colorspaces_create_linear_rgb_profile();
     }
     if(!d->input) // sRGB fallback
       d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
@@ -358,7 +366,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // add std RGB profile:
   prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "linear_rgb.icc");
+  strcpy(prof->filename, "linear_rgb");
   strcpy(prof->name, "linear_rgb");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
@@ -383,7 +391,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      if(!strcmp(d_name, "linear_rgb.icc")) continue;
+      if(!strcmp(d_name, "linear_rgb")) continue;
       snprintf(filename, 1024, "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)

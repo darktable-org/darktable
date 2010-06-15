@@ -157,6 +157,7 @@ void init(dt_iop_module_t *module)
   if(!ret)
   {
     for(int k=0;k<3;k++) coeffs[k] = raw->color.cam_mul[k];
+    if(coeffs[0] < 0.0) for(int k=0;k<3;k++) coeffs[k] = raw->color.pre_mul[k];
     if(coeffs[0] == 0 || coeffs[1] == 0 || coeffs[2] == 0)
     { // could not get useful info!
       coeffs[0] = coeffs[1] = coeffs[2] = 1.0f;
@@ -260,7 +261,8 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
+  float *coeff = (float *)(self->data);
+  const float white = fmaxf(fmaxf(self->picked_color_max[0]*coeff[0], self->picked_color_max[1]*coeff[1]), self->picked_color_max[2]*coeff[2])
     * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
   dt_iop_exposure_set_white(self, white);
   return FALSE;
@@ -296,7 +298,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -.5, 1.0, .001,p->black,3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), NULL);
   
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -3.0, 6.0, .02, p->exposure,3));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -9.0, 9.0, .02, p->exposure,3));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), NULL);
   
   

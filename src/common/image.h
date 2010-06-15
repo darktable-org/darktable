@@ -137,6 +137,8 @@ int dt_image_reimport(dt_image_t *img, const char *filename);
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */
 void dt_image_duplicate(const int32_t imgid);
+/** returns 1 if there is history data found for this image, 0 else. */
+int dt_image_altered(const dt_image_t *img);
 /** cleanup. */
 void dt_image_cleanup(dt_image_t *img);
 /** loads the requested buffer to cache, with read lock set. */

@@ -10,18 +10,43 @@ big new features:
 - tethered shooting
 - print mode?
 
-- more transparent custom default/presets handling:
-  - color in: input matrices as such defaults
-  - white balance out of this system as well?
-    show-only-for ticked for these, keep current sys in parallel
-
 - fine-grained history stack copying/replacing: 
   - copy history stack augmented by list of favorite image styles
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- remove lensfun autoscale and add crop autocrop
+- sliders for C/A in lensfun
+- move lensfun to pre colorin rgb?
+- remove dcraw_process calls from libraw usage, put demosaic in plugin?
+
+- longest edge resize
+- storage/format communication:
+  . file type
+  . size
+  . icc profile
+- cleanup (labels..)
+
+- format, storage:
+  . params_size
+  . gui_update after params change
+- storage to enforce constraints on format/wd/ht
+- named presets for export: comboentry (copy blob)
+
+- import film roll: reset top panel and collect plugin.
+- ctrl-c/ctrl-v in darkroom mode
+- libchamplain geotagging?
+- steal gegl tonemapping operators?
+- port input imageio to plugins?
+- auto apply preset doesn't seem to work for curr img (needs reset button press)
+- prefetching while browsing lighttable mode
+- color labels: sort and import is weird.
+- color labels: colored buttons in a row, more colors, more slots
+- stars: possibility to filter by exact number, not >=
+- rotate crashes (how exactly?)
+- default portrait/landscape aspect to match image
 - filmstrip h/v/match/off
-- histogram not updated on cache warm lookups??
+- histogram not updated on cache warm lookups?? (=>histogram in cache)
 - check sqlite3 disk speed (remove image: leave mip maps?)
 - ctrl-a broken for sort by color label 
 - whitebalance temp out: 5K, color input uses 6004 ?
@@ -41,15 +66,12 @@ big new features:
 - mipf not loaded on time in develop for small displays.
 
 - ctrl-z ctrl-shift-z up/down in history stack
-- metadata imgfilename etc with ellipzized file names
-- color labels: colored buttons in a row, more colors.
 - read additional tags from exif?
 - mouse wheel zoom in navigation
 - splines: linear interpolation check box
 - auto select image if there is only one on the light table
 - decapitalize icc profile names
 - lock zoom/pan checkbox in darkroom mode
-- sliders for C/A in lensfun
 - lensfun + crop: preview/full image differ in zoom/pan?
 - built-in XYZ and linear color profile support?
 - embed custom exif data in export plugin

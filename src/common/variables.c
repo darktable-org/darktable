@@ -51,10 +51,10 @@ guint _string_occurence(const gchar *haystack,const gchar *needle)
 
 gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace) 
 {
-  guint occurences = _string_occurence(string,search);
+  gint occurences = _string_occurence(string,search);
   if( occurences )
   {
-    guint sl=-(strlen(search)-strlen(replace));
+    gint sl=-(strlen(search)-strlen(replace));
     gchar *pend=string+strlen(string);
     gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
     gchar *np=nstring;
@@ -156,7 +156,8 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
   else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_sec);
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
-  else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",params->filename);
+  else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
+  else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_basename(params->filename));
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
   else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());

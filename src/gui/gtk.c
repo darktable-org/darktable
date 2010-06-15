@@ -388,6 +388,7 @@ update_query()
   char newquery[1024], filter[512];
   if(j == 1) snprintf(filter, 512, "flags & 7) < 1");
   else       snprintf(filter, 512, "flags & 7) >= %d", j-1);
+  // g_strstr_len(split[0], -1, "where ");
   if(i == 4)
     snprintf(newquery, 1024, "select * from (%s %s) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
   else
@@ -832,11 +833,12 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   char path[1024], datadir[1024];
   dt_get_datadir(datadir, 1024);
-  snprintf(path, 1023, "%s/darktable.gtkrc", datadir);
+  gchar *themefile = dt_conf_get_string("themefile");
+  snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
   if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
   else
   {
-    snprintf(path, 1023, "%s/darktable.gtkrc", DATADIR);
+    snprintf(path, 1023, "%s/%s", DATADIR, themefile ? themefile : "darktable.gtkrc");
     if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
     else
     {
@@ -844,6 +846,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
       return 1;
     }
   }
+  g_free(themefile);
 
   /* load the interface */
   snprintf(path, 1023, "%s/darktable.glade", datadir);

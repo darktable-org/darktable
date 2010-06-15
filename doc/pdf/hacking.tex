@@ -120,6 +120,7 @@
   \item[image operation (iop) modules, aka plug-ins]
 \end{description}
 
+\newpage
 \subsection{Image Loading Data Flow}
 
 \paragraph{Related Modules}
@@ -169,6 +170,7 @@ image import: only load \code{dt\_image\_t} and mip[0--4] to database.
 
 \code{dt\_image\_get}: check mipmap cache, check database, else \code{dt\_imageio\_open[\_preview]}.
 
+\newpage
 \subsection{Cache Interfaces}
 
 \subsubsection{Image Cache}
@@ -187,25 +189,130 @@ image import: only load \code{dt\_image\_t} and mip[0--4] to database.
 
 \subsubsection{Homebrew Pixelpipe Cache}
 
+\newpage
 \subsection{Plug-in Interface}
 
-For examples, have a look at \code{src/iop/*.\{h,c\}}.
+For examples, have a look at \code{src/iop/*.\{h,c\}}, and also see the method declarations in \code{src/common/imageop.h}.
 
-The main pixel pipeline stack is organised as follows:
+Pixel processing is done in pipelines (\code{src/develop/pixelpipe\_hb.c}) with fixed order of the modules,
+observe the current status with e.g.
 
-\begin{itemize}
-  \item gamma (sRGB)
-  \item tonecurve (Lab)
-  \item color correction (Lab)
-  \item temperature (sRGB)
-  \item demosaicing
-\end{itemize}
+\code{grep priority src/iop/*.c | sort -t '=' -k 2}.
 
-\subsubsection{Gui Callbacks}
+At the time of this writing, the main pixel pipeline stack is organised as follows:
 
-\subsubsection{Image Processing}
+\medskip
 
-State of libgegl support: enable at compile time with \texttt{--enable-gegl}. Using this
-flag is discouraged at the moment, as libgegl is really a lot slower than the homebrew version.
+\begin{tabular}{lrl}
+module name & priority & input color format \\
+\hline
+rawimport      &  100  &  - \\ 
+exposure       &  150  &  fff input color space \\
+temperature    &  200  &  fff input color space \\
+highlights     &  250  &  fff input color space \\
+basecurve      &  260  &  fff input color space \\
+profile\_gamma &  299  &  fff input color space \\
+colorin        &  300  &  fff input color space \\
+colortransfer  &  350  &  fff $L^*a^*b^*$ \\
+equalizer      &  500  &  fff $L^*a^*b^*$ \\
+monochrome     &  550  &  fff $L^*a^*b^*$ \\
+tonecurve      &  700  &  fff $L^*a^*b^*$ \\
+colorzones     &  750  &  fff $L^*a^*b^*$ \\
+colorcorrection&  800  &  fff $L^*a^*b^*$ \\
+colorout       &  900  &  fff $L^*a^*b^*$ \\
+lens           &  940  &  fff output color space \\
+clipping       &  950  &  fff output color space \\
+grain          &  965  &  fff output color space \\
+clahe          &  966  &  fff output color space \\
+velvia         &  967  &  fff output color space \\
+splittoning    &  968  &  fff output color space \\
+vignette       &  970  &  fff output color space \\
+sharpen        &  990  &  fff output color space \\
+gamma          & 1000  &  fff output color space \\
+               &   -   &  ccc output color space \\
+\end{tabular}
+
+\medskip
+
+where fff is $3\times32$ bit float, ccc is $3\times8$ bit int, and the input
+color space depends on your camera or type of input data, and the output color space will
+be sRGB (including gamma correction, i.e.\ it is non-linear) most of the time.
+
+$L^*a^*b^*$ is a special variant of $L^*ab$, where $L^* \in [0, 100]$ and $a, b \in [-128, 128]$, but $a^* = a/L^*$ and $b^* = b/L^*$.
+This makes sure that changes in $L^*$ transparently result in the correct adjustment in saturation:
+$a_{out} = a_{in} \cdot L^*_{out}/L^*_{in}$ and
+$b_{out} = b_{in} \cdot L^*_{out}/L^*_{in}$.
+
+
+Each module has to implement a \code{process} function, which is responsible for processing of three types of
+pipelines: preview, full, and export. Most of the time, this can be handled transparently, i.e.\ needs no special
+handling in the module. The pipelines are as follows:
+
+\begin{description}
+  \item[preview] all of the image, but downsampled to low resolution for the navigation view, approximate full image statistics, and fast scrolling.
+  \item[full] full resolution, but only the part that can currently be seen (the region of interest, roi, will be adjusted accordingly).
+  \item[export] full image at full resolution, no gui data is inited for the module.
+\end{description}
+
+and can be identified by the pipeline struct, which carries a \code{pipe->type} flag. This struct can in turn be found
+via the pipeline data piece which is passed to \code{process}: \code{piece->pipe}.
+
+\paragraph{Regions of Interest}
+
+A region of interest holds $x,y,w,h$, and scale information. The semantics are as follows: multiply the whole resolution image by
+the scale value, then crop it to the window defined by $x, y, w, h$. The passed input buffer will be a contiguous block of values as defined by
+the input color space, pixel by pixel and row by row. The output buffer should be in the same format, but the extent should match the
+output region of interest.
+
+
+\subsubsection{Most important Gui Callbacks}
+
+\begin{description}
+  \item \code{gui\_init} gui thread, init the widget (not called for export)
+  \item \code{gui\_update} gui thread, make the gui match the modules parameters (not called for export)
+  \item \code{commit\_params} core thread + gui thread in synch, copy module->params to module->data
+  \item \code{process} core thread, execute the op on the input buffer
+  \item \code{modify\_roi\_in}
+  \item \code{modify\_roi\_out} core thread, optional, only needed if input and output buffers are of different size.
+    For examples, see \code{src/iop/lens.c} and \code{src/iop/clipping.c}.
+\end{description}
+
+\subsubsection{Data Structures}
+
+\begin{description}
+  \item[\code{dt\_iop\_*\_params\_t module->\{params, default\_params, factory\_params\}}]
+
+  This struct should only be modified by the gui thread. The three fields exist only once per module: \code{params}
+  store the currently active parameters, \code{default\_params} are the default parameters (possibly adjusted by the
+  user), and \code{factory\_params} are dt's factory defaults (automatically copied by the core after \code{init} has been
+  called).
+
+  \item[\code{dt\_iop\_*\_data\_t piece->data}]
+  This struct lives in pixel pipeline domain, and thus exists once for the full and once for the preview pipeline.
+  It should only be modified by the core thread (which calls \code{commit\_params} and \code{process}).
+
+  \item[\code{dt\_iop\_*\_gui\_data\_t module->gui\_data}]
+  You can use this struct to store your gui data (from the gui thread, obviously). It exists once per module and should be inited in \code{gui\_init} and
+  cleaned up in \code{gui\_cleanup}. Note that gtk+ widgets are cleaned up implicitly while the widget is destroyed.
+
+  \item[\code{dt\_iop\_*\_global\_data\_t module->data}]
+  Core thread global data for all pipes (such as lensfun description database).
+\end{description}
+
+
+\subsubsection{A most useless Example}
+
+
+\todo{script to generate as up-to-date minimal dt header set to compile external plugins}
+
+\todo{a silly template module line by line: render a checker board on top of your input image.}
+
+See \code{src/iop/useless.c}.
+
+Change \code{src/iop/Makefile.am}:
+\begin{verbatim}
+libuseless_la_SOURCES=useless.c
+dtplugins_LTLIBRARIES=libtonecurve.la [..] libcolortransfer.la libuseless.la
+\end{verbatim}
 
 \end{document}

@@ -24,6 +24,7 @@
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/imageio_module.h"
 #include "common/points.h"
 #include "libs/lib.h"
 #include "views/view.h"
@@ -158,6 +159,9 @@ int dt_init(int argc, char *argv[])
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
+  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
+
   int id = 0;
   if(image_to_load)
   {
@@ -177,7 +181,7 @@ int dt_init(int argc, char *argv[])
   if(!id)
   {
     // dummy selection:
-    dt_conf_set_string ("plugins/lighttable/query", "select * from images where film_id = -1 and (flags & 7) >= 1 order by filename limit ?1, ?2");
+    dt_conf_set_string ("plugins/lighttable/query", "select * from images where (film_id = -1) and (flags & 7) >= 1 order by filename limit ?1, ?2");
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
@@ -195,6 +199,8 @@ void dt_cleanup()
   free(darktable.lib);
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
+  dt_imageio_cleanup(darktable.imageio);
+  free(darktable.imageio);
   dt_gui_gtk_cleanup(darktable.gui);
   free(darktable.gui);
   dt_image_cache_cleanup(darktable.image_cache);

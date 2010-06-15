@@ -14,6 +14,41 @@
       on this page, there are a few demonstrations of darktable's tools, as well as hack-level tricks.
       </div>
 
+      <div class="listtext">
+    	<h1>cameras with enhanced support</h1>
+      </div>
+      <div class="text">
+      <table class="bigimg">
+        <tr class="odd">
+          <td><em>camera</em></td>
+          <td><em>enhanced color matrix</em></td>
+          <td><em>base curve</em></td>
+        </tr>
+        <tr class="even"><td>Canon EOS 5D Mark II</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon EOS 7D</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Canon EOS 30D</td><td>experimental</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon EOS 40D</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Canon EOS 50D</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon EOS 350D DIGITAL</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Canon EOS DIGITAL REBEL XT</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon EOS Kiss Digital N</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Canon EOS 400D DIGITAL</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon EOS DIGITAL REBEL XTi</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Canon EOS Kiss Digital X</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon EOS 450D</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Canon EOS DIGITAL REBEL XSi</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon EOS Kiss Digital X2</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Canon PowerShot S60</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Canon PowerShot S90</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>NIKON D60</td><td>experimental</td><td>experimental</td></tr>
+        <tr class="odd"> <td>NIKON D200</td><td>x</td><td>experimental</td></tr>
+        <tr class="even"><td>SONY DSLR-A200</td><td>x</td><td>x</td></tr>
+      </table>
+      for better color rendition, darktable comes with custom profiled color matrices.
+      plus, to reproduce the behavior of the camera's chip, we have reverse-engineered some
+      base curves for you.
+    	</div>
+
       <div class="listtext"><h1>monochrome tool: convert an image to black and white</h1>
       this section briefly shows how to convert an image to black and white using the <em>monochrome</em> tool in darktable.
       </div>

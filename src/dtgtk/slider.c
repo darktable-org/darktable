@@ -459,7 +459,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
 
   // Widget bakground
   gtk_paint_box(style,widget->window, GTK_STATE_NORMAL,
-   GTK_SHADOW_ETCHED_IN,
+   GTK_SHADOW_ETCHED_OUT,
    NULL,
    widget,
    "button",
@@ -469,7 +469,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   GdkRectangle vr;
   _slider_get_value_area(widget,&vr);
   gtk_paint_box(style,widget->window, state,
-   GTK_SHADOW_ETCHED_IN,
+   GTK_SHADOW_ETCHED_OUT,
    NULL,
    widget,
    "button",

@@ -62,6 +62,7 @@
 #define KEYCODE_Right       74
 #define KEYCODE_Tab         56
 #define KEYCODE_Return      36
+#define KEYCODE_BackSpace   22
 #else
 #define KEYCODE_a           0   // mac keycodes carbon :)
 #define KEYCODE_o           1   // s
@@ -83,6 +84,7 @@
 #define KEYCODE_Tab         48
 #define KEYCODE_space       49
 #define KEYCODE_Return      36
+#define KEYCODE_BackSpace   22
 #endif
 #else
 #define KEYCODE_a           38
@@ -104,6 +106,7 @@
 #define KEYCODE_Right      114  
 #define KEYCODE_Tab         23  
 #define KEYCODE_Return      36
+#define KEYCODE_BackSpace   22
 #endif
 
 typedef GdkCursorType dt_cursor_t;

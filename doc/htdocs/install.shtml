@@ -23,6 +23,15 @@
       </ul>
     	</div>
     	<div class="listtext">
+    	<img src="images/windoos.jpg" alt="release" class="img" /><h1>micr0soft(r) windoos(tm)</h1>
+      <ul>
+        <li>unfortunately the community of this commercial distro didn't natively build dt yet</li>
+        <li>but there's a better solution for you to try:</li>
+        <li>download and burn an iso from <a href="http://files.pcode.nl/isos/">Pascal's ubuntu remasters</a>.</li>
+        <li>reboot your machine.</li>
+      </ul>
+    	</div>
+    	<div class="listtext">
     	<img src="images/firering.jpg" alt="release" class="img" /><h1>ubuntu packages</h1>
       <ul>
         <li>get an appropriate <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release">darktable*.deb</a>.

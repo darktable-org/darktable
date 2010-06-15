@@ -265,7 +265,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
   { // scale to fit
     bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
-    for(int j=0;j<p_ht && scale*j<raw_ht;j++) for(int i=0;i<p_wd && scale*i < raw_wd;i++)
+    for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
     {
       float *cam = img->pixels + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
       for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
@@ -329,6 +329,17 @@ void dt_image_remove(const int32_t imgid)
   dt_image_cache_clear(imgid);
 }
 
+int dt_image_altered(const dt_image_t *img)
+{
+  int altered = 0;
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, img->id);
+  if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
+  sqlite3_finalize(stmt);
+  return altered;
+}
+
 int dt_image_reimport(dt_image_t *img, const char *filename)
 {
   // this brute-force lock might be a bit too much:
@@ -357,13 +368,9 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
   }
 
   // already some db entry there?
-  int rc, altered = img->force_reimport;
+  int altered = img->force_reimport;
   img->force_reimport = 0;
-  sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
-  sqlite3_finalize(stmt);
+  if(dt_image_altered(img)) altered = 1;
 
   // try loading a .dt[tags] file
   char dtfilename[1031];

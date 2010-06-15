@@ -14,6 +14,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/themefile</key>
+      <applyto>/apps/darktable/themefile</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>darktable.gtkrc</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>filename of your custom theme in share/darktable/</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/cache_memory</key>
       <applyto>/apps/darktable/cache_memory</applyto>
       <owner>darktable</owner>
@@ -396,7 +409,7 @@
       <applyto>/apps/darktable/ui_last/panel_top</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>0</default>
+      <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -756,11 +769,63 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/plugins/lighttable/export/quality</key>
-      <applyto>/apps/darktable/plugins/lighttable/export/quality</applyto>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/disk/file_directory</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/disk/file_directory</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>$(FILE_DIRECTORY)/darktable_exported/img_$(SEQUENCE)</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/format/jpeg/quality</key>
+      <applyto>/apps/darktable/plugins/imageio/format/jpeg/quality</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>97</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/format/tiff/bpp</key>
+      <applyto>/apps/darktable/plugins/imageio/format/tiff/bpp</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>16</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/picasa/username</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/picasa/username</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/picasa/password</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/picasa/password</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>

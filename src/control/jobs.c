@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include <glade/glade.h>
@@ -478,7 +479,7 @@ void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
   t->index = NULL;
   int rc;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images order by rowid desc", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     long int imgid = sqlite3_column_int(stmt, 0);
@@ -577,84 +578,27 @@ void dt_control_delete_images()
 
 void dt_control_export_job_run(dt_job_t *job)
 {
-  char filename[1024], dirname[1024];
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   const int total = g_list_length(t);
+  dt_imageio_module_format_t  *mformat  = dt_imageio_get_format();
+  g_assert(mformat);
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+  fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  g_assert(mstorage);
+  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_use(imgid, 'r');
-
-    dt_image_export_path(img, filename, 1024);
-    strncpy(dirname, filename, 1024);
-
-    char *c = dirname + strlen(dirname);
-    for(;c>dirname && *c != '/';c--);
-    *c = '\0';
-    if(g_mkdir_with_parents(dirname, 0755))
-    {
-      fprintf(stderr, "[export_job] could not create directory %s!\n", dirname);
-      dt_image_cache_release(img, 'r');
-      return;
-    }
-    c = filename + strlen(filename);
-    for(;c>filename && *c != '.';c--);
-    if(c <= filename) c = filename + strlen(filename);
-
-    // read type from global config.
-    dt_dev_export_format_t fmt = dt_conf_get_int ("plugins/lighttable/export/format");
-    switch(fmt)
-    {
-      case DT_DEV_EXPORT_JPG:
-        // avoid name clashes for single images:
-        if(img->film_id == 1 && !strcmp(c, ".jpg")) { strncpy(c, "_dt", 3); c += 3; }
-        strncpy(c, ".jpg", 4);
-        dt_imageio_export_8(img, filename);
-        break;
-      case DT_DEV_EXPORT_PNG:
-        if(img->film_id == 1 && !strcmp(c, ".png")) { strncpy(c, "_dt", 3); c += 3; }
-        strncpy(c, ".png", 4);
-        dt_imageio_export_8(img, filename);
-        break;
-      case DT_DEV_EXPORT_PPM16:
-        if(img->film_id == 1 && !strcmp(c, ".ppm")) { strncpy(c, "_dt", 3); c += 3; }
-        strncpy(c, ".ppm", 4);
-        dt_imageio_export_16(img, filename);
-        break;
-      case DT_DEV_EXPORT_PFM:
-        if(img->film_id == 1 && !strcmp(c, ".pfm")) { strncpy(c, "_dt", 3); c += 3; }
-        strncpy(c, ".pfm", 4);
-        dt_imageio_export_f(img, filename);
-        break;
-      case DT_DEV_EXPORT_TIFF8:
-      case DT_DEV_EXPORT_TIFF16:
-        if(img->film_id == 1 && !strcmp(c, ".tif")) { strncpy(c, "_dt", 3); c += 3; }
-        strncpy(c, ".tif", 4);
-        if(fmt==DT_DEV_EXPORT_TIFF8)
-          dt_imageio_export_8(img, filename);
-        else if(fmt==DT_DEV_EXPORT_TIFF16)
-          dt_imageio_export_16(img, filename);
-        break;
-      case DT_DEV_EXPORT_EXR:
-        if(img->film_id == 1 && !strcmp(c, ".exr")) { strncpy(c, "_dt", 3); c += 3; }
-        strncpy(c, ".exr", 4);
-        dt_imageio_export_f(img, filename);
-        break;
-      
-      default:
-        break;
-    }
-
-    dt_image_cache_release(img, 'r');
-    printf("[export_job] exported to `%s'\n", filename);
-    char *trunc = filename + strlen(filename) - 32;
-    if(trunc < filename) trunc = filename;
     t = g_list_delete_link(t, t);
-    dt_control_log(_("%d/%d exported to `%s%s'"), total-g_list_length(t), total, trunc != filename ? ".." : "", trunc);
+    mstorage->store(sdata, imgid, mformat, fdata, total-g_list_length(t), total);
   }
+  mformat->free_params (mformat,  fdata);
+  mstorage->free_params(mstorage, sdata);
 }
 
 void dt_control_export_job_init(dt_job_t *job)

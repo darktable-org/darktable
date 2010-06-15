@@ -18,6 +18,40 @@
 #ifndef DT_POINTS_H
 #define DT_POINTS_H
 
+#ifndef __SSE2__
+
+// lamer version for obsolete archs:
+
+#ifndef _XOPEN_SOURCE
+  #define _XOPEN_SOURCE
+#endif
+
+#include <stdlib.h>
+double drand48(void);
+void srand48(long int seedval);
+
+typedef struct dt_points_t
+{ }
+dt_points_t;
+
+static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
+{
+  srand48(0x1337ul);
+}
+
+static inline void dt_points_cleanup(dt_points_t *p) { }
+
+static inline float dt_points_get_for(dt_points_t *p, const unsigned int thread_num)
+{
+  return drand48();
+}
+
+static inline float dt_points_get()
+{
+  return drand48();
+}
+#else
+
 #include <emmintrin.h>
 #include <inttypes.h>
 
@@ -1045,4 +1079,5 @@ static inline float dt_points_get()
   return dt_points_get_for(darktable.points, dt_get_thread_num());
 }
 
+#endif
 #endif

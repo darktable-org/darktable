@@ -258,7 +258,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_container_set_border_width(GTK_CONTAINER(data->import.page),5);
   
   // Top info
-  data->import.info=gtk_label_new( _("please wait while prefetcing thumbnails of images from camera...") );
+  data->import.info=gtk_label_new( _("please wait while prefetching thumbnails of images from camera...") );
   gtk_label_set_single_line_mode( GTK_LABEL(data->import.info) , FALSE );
   gtk_misc_set_alignment(GTK_MISC(data->import.info), 0.0, 0.0);
   gtk_box_pack_start(GTK_BOX(data->import.page),data->import.info,FALSE,FALSE,0);
@@ -301,7 +301,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   // general settings
   gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("general"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
   
-  data->settings.general.delete_originals = gtk_check_button_new_with_label(_("delete orignals after import"));
+  data->settings.general.delete_originals = gtk_check_button_new_with_label(_("delete originals after import"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
   if( dt_conf_get_bool("capture/camera/import/delete_originals") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.general.delete_originals ), TRUE);
    
@@ -309,9 +309,9 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   g_signal_connect (G_OBJECT(data->settings.general.delete_originals), "clicked",G_CALLBACK (_check_button_callback),data);
  
   GtkWidget *hbox=gtk_hbox_new(FALSE,5);
-  data->settings.general.date_override=gtk_check_button_new_with_label(_("override todays date"));
+  data->settings.general.date_override=gtk_check_button_new_with_label(_("override today's date"));
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_override,FALSE,FALSE,0);
-  g_object_set(data->settings.general.date_override,"tooltip-text",_("check this if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),NULL);
+  g_object_set(data->settings.general.date_override,"tooltip-text",_("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),NULL);
   
   data->settings.general.date_entry=gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_entry,TRUE,TRUE,0);
@@ -323,7 +323,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
 
   // Storage structure
   gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("storage structure"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
-  GtkWidget *l=gtk_label_new(_("the following three settings describes the directory structure and file renaming for import storage and images, if you dont know how to use this leave the settings by their default values."));
+  GtkWidget *l=gtk_label_new(_("the following three settings describe the directory structure and file renaming for import storage and images; if you dont know how to use this, keep the default settings."));
   gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
   gtk_widget_set_size_request(l,400,-1);
   gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);

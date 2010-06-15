@@ -154,6 +154,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #ifdef HAVE_GEGL
   // TODO
 #else
+#if 0 // print new preset
+  printf("p.channel = %d;\n", p->channel);
+  for(int k=0;k<3;k++) for(int i=0;i<DT_IOP_COLORZONES_BANDS;i++)
+  {
+    printf("p.equalizer_x[%d][%i] = %f;\n", k, i, p->equalizer_x[k][i]);
+    printf("p.equalizer_y[%d][%i] = %f;\n", k, i, p->equalizer_y[k][i]);
+  }
+#endif
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   for(int ch=0;ch<3;ch++)
   {
@@ -289,6 +297,45 @@ void init_presets (dt_iop_module_t *self)
   for(int k=3;k<DT_IOP_COLORZONES_BANDS;k++)
     p.equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-2.5)/(DT_IOP_COLORZONES_BANDS-3.0) * 0.35;
   dt_gui_presets_add_generic(_("polarizing filter"), self->op, &p, sizeof(p), 1);
+
+  p.channel = 2;
+  p.equalizer_x[0][0] = 0.000000;
+  p.equalizer_y[0][0] = 0.500000;
+  p.equalizer_x[0][1] = 0.200000;
+  p.equalizer_y[0][1] = 0.500000;
+  p.equalizer_x[0][2] = 0.400000;
+  p.equalizer_y[0][2] = 0.500000;
+  p.equalizer_x[0][3] = 0.600000;
+  p.equalizer_y[0][3] = 0.500000;
+  p.equalizer_x[0][4] = 0.800000;
+  p.equalizer_y[0][4] = 0.500000;
+  p.equalizer_x[0][5] = 1.000000;
+  p.equalizer_y[0][5] = 0.500000;
+  p.equalizer_x[1][0] = 0.000000;
+  p.equalizer_y[1][0] = 0.468932;
+  p.equalizer_x[1][1] = 0.120155;
+  p.equalizer_y[1][1] = 0.445975;
+  p.equalizer_x[1][2] = 0.248062;
+  p.equalizer_y[1][2] = 0.468932;
+  p.equalizer_x[1][3] = 0.500000;
+  p.equalizer_y[1][3] = 0.499667;
+  p.equalizer_x[1][4] = 0.748062;
+  p.equalizer_y[1][4] = 0.500000;
+  p.equalizer_x[1][5] = 1.000000;
+  p.equalizer_y[1][5] = 0.468932;
+  p.equalizer_x[2][0] = 0.000000;
+  p.equalizer_y[2][0] = 0.500000;
+  p.equalizer_x[2][1] = 0.200000;
+  p.equalizer_y[2][1] = 0.500000;
+  p.equalizer_x[2][2] = 0.400000;
+  p.equalizer_y[2][2] = 0.500000;
+  p.equalizer_x[2][3] = 0.600000;
+  p.equalizer_y[2][3] = 0.500000;
+  p.equalizer_x[2][4] = 0.800000;
+  p.equalizer_y[2][4] = 0.500000;
+  p.equalizer_x[2][5] = 1.000000;
+  p.equalizer_y[2][5] = 0.500000;
+  dt_gui_presets_add_generic(_("natural skin tones"), self->op, &p, sizeof(p), 1);
 
   sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }

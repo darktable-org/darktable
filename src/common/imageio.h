@@ -57,9 +57,9 @@ int dt_imageio_dttags_write (const int imgid, const char *filename);
 // reads .dttags file to database. requires a locked img as argument.
 int dt_imageio_dttags_read (dt_image_t *img, const char *filename);
 
-int dt_imageio_export_8 (dt_image_t *img, const char *filename);
-int dt_imageio_export_16(dt_image_t *img, const char *filename);
-int dt_imageio_export_f (dt_image_t *img, const char *filename);
+struct dt_imageio_module_format_t;
+struct dt_imageio_module_data_t;
+int dt_imageio_export(dt_image_t *img, const char *filename, struct dt_imageio_module_format_t *format, struct dt_imageio_module_data_t *format_params);
 
 void dt_imageio_preview_f_to_8(int32_t wd, int32_t ht, const float *f, uint8_t *p8);
 void dt_imageio_preview_8_to_f(int32_t wd, int32_t ht, const uint8_t *p8, float *f);

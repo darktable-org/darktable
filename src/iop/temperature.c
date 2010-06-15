@@ -232,6 +232,7 @@ void init (dt_iop_module_t *module)
   if(!ret)
   {
     for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.cam_mul[k];
+    if(tmp.coeffs[0] < 0.0) for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.pre_mul[k];
     if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
     { // could not get useful info!
       tmp.coeffs[0] = tmp.coeffs[1] = tmp.coeffs[2] = 1.0f;

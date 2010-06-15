@@ -6,7 +6,7 @@ AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_CXX
 IT_PROG_INTLTOOL([0.40])
-ALL_LINGUAS="es fr nl ru sv"
+ALL_LINGUAS="de es fr nl ru sv"
 AM_GLIB_GNU_GETTEXT
 AM_GLIB_DEFINE_LOCALEDIR(DARKTABLE_LOCALEDIR)
 GETTEXT_PACKAGE=darktable
@@ -14,6 +14,7 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
 
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
+AM_GCONF_SOURCE_2
 
 dnl *** Check for inotify ***
 AC_CHECK_HEADER([sys/inotify.h],
@@ -85,7 +86,6 @@ AC_ARG_ENABLE(gconf,
           if test "$enable_gconf" = "yes"; then
              AC_DEFINE(HAVE_GCONF, 1, [whether to use gconf to store settings])
              AC_MSG_RESULT([yes])
-             AM_GCONF_SOURCE_2
              PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
              AM_CONDITIONAL(HAVE_GCONF, true)
           else
@@ -94,7 +94,6 @@ AC_ARG_ENABLE(gconf,
           fi
         ],
         [
-             AM_GCONF_SOURCE_2
              AC_DEFINE(HAVE_GCONF, 1, [whether to use gconf to store settings])
              AC_MSG_RESULT([yes])
              PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.26)
@@ -110,6 +109,7 @@ PKG_CHECK_MODULES(EXIV2, exiv2 >= 0.18)
 PKG_CHECK_MODULES(PNG, libpng >= 1.2)
 PKG_CHECK_MODULES(OPENEXR, OpenEXR >= 1.6)
 PKG_CHECK_MODULES(GPHOTO2, [libgphoto2 >= 2.4.5])
+PKG_CHECK_MODULES(CURL, [libcurl >= 7.18.0])
 
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),
@@ -192,6 +192,9 @@ AC_CONFIG_FILES([
     color/Makefile
     color/in/Makefile
     color/out/Makefile
+    src/imageio/Makefile
+    src/imageio/format/Makefile
+    src/imageio/storage/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT

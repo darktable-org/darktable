@@ -491,6 +491,24 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 }
 
 static void
+go_up_key_accel_callback(void *data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->offset = 0;
+  dt_control_queue_draw_all();
+}
+
+static void
+go_down_key_accel_callback(void *data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->offset = 0x1fffffff;
+  dt_control_queue_draw_all();
+}
+
+static void
 star_key_accel_callback(void *data)
 {
   long int num = (long int)data;
@@ -500,16 +518,38 @@ star_key_accel_callback(void *data)
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-      if(num == 666) image->flags &= ~0xf;
-      else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+      if(mouse_over_id <= 0)
+      {
+        sqlite3_stmt *stmt;
+        sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');
+          if(num == 666) image->flags &= ~0xf;
+          else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+          else
+          {
+            image->flags &= ~0x7;
+            image->flags |= num;
+          }
+          dt_image_cache_flush(image);
+          dt_image_cache_release(image, 'r');
+        }
+        sqlite3_finalize(stmt);
+      }
       else
       {
-        image->flags &= ~0x7;
-        image->flags |= num;
+        dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+        if(num == 666) image->flags &= ~0xf;
+        else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+        else
+        {
+          image->flags &= ~0x7;
+          image->flags |= num;
+        }
+        dt_image_cache_flush(image);
+        dt_image_cache_release(image, 'r');
       }
-      dt_image_cache_flush(image);
-      dt_image_cache_release(image, 'r');
       dt_control_queue_draw_all();
       break;
     }
@@ -571,6 +611,8 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_g, go_up_key_accel_callback, (void *)self);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_G, go_down_key_accel_callback, (void *)self);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -581,6 +623,8 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 void leave(dt_view_t *self)
 {
   dt_gui_key_accel_unregister(star_key_accel_callback);
+  dt_gui_key_accel_unregister(go_up_key_accel_callback);
+  dt_gui_key_accel_unregister(go_down_key_accel_callback);
   GList *it = darktable.lib->plugins;
   while(it)
   {

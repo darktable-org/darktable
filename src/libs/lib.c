@@ -23,7 +23,8 @@
 #include <glade/glade.h>
 #include <stdlib.h>
 
-gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
+static gint
+dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_lib_module_t *am = (const dt_lib_module_t *)a;
   const dt_lib_module_t *bm = (const dt_lib_module_t *)b;
@@ -32,7 +33,7 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
   return apos - bpos;
 }
 
-int
+static int
 dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *plugin_name)
 {
   module->dt = &darktable;
@@ -44,7 +45,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
   if(version() != dt_version())
   {
-    fprintf(stderr, "[lib_load_module] `%s' is compiled for another version of dt (module %d != dt %d) !\n", libname, version(), dt_version());
+    fprintf(stderr, "[lib_load_module] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n", libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()), dt_version() < 0 ? "debug" : "opt");
     goto error;
   }
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
@@ -193,7 +194,7 @@ dt_lib_cleanup (dt_lib_t *lib)
 {
   while(lib->plugins)
   {
-    dt_lib_module_t *module = (dt_lib_module_t *)(darktable.lib->plugins->data);
+    dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);
     dt_lib_unload_module(module);
     lib->plugins = g_list_delete_link(lib->plugins, lib->plugins);
   }

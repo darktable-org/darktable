@@ -107,16 +107,16 @@ void dt_film_set_query(const int32_t id)
   if(sortindex == 4)
   {
     if(filter == DT_LIB_FILTER_STAR_NO)
-      snprintf(query, 512, "select * from (select * from images where film_id = %d and (flags & 7) < 1) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", id, sortstring[sortindex]);
+      snprintf(query, 512, "select * from (select * from images where (film_id = %d) and (flags & 7) < 1) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", id, sortstring[sortindex]);
     else
-      snprintf(query, 512, "select * from (select * from images where film_id = %d and (flags & 7) >= %d) as a join color_labels as b order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
+      snprintf(query, 512, "select * from (select * from images where (film_id = %d) and (flags & 7) >= %d) as a join color_labels as b order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
   }
   else
   {
     if(filter == DT_LIB_FILTER_STAR_NO)
-      snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) < 1 order by %s limit ?1, ?2", id, sortstring[sortindex]);
+      snprintf(query, 512, "select * from images where (film_id = %d) and (flags & 7) < 1 order by %s limit ?1, ?2", id, sortstring[sortindex]);
     else
-      snprintf(query, 512, "select * from images where film_id = %d and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
+      snprintf(query, 512, "select * from images where (film_id = %d) and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
   }
   dt_conf_set_string ("plugins/lighttable/query", query);
   dt_conf_set_int ("ui_last/film_roll", id);

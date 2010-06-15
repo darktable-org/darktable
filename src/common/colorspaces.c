@@ -186,6 +186,33 @@ dt_colorspaces_create_xyz_profile(void)
   return hXYZ;
 }
 
+cmsHPROFILE
+dt_colorspaces_create_linear_rgb_profile(void)
+{
+  cmsCIExyY       D65;
+  cmsCIExyYTRIPLE Rec709Primaries = {
+                                   {0.6400, 0.3300, 1.0},
+                                   {0.3000, 0.6000, 1.0},
+                                   {0.1500, 0.0600, 1.0}
+                                   };
+  LPGAMMATABLE Gamma[3];
+  cmsHPROFILE  hsRGB;
+ 
+  cmsWhitePointFromTemp(6504, &D65);
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+           
+  hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma);
+  cmsFreeGamma(Gamma[0]);
+  if (hsRGB == NULL) return NULL;
+      
+  cmsAddTag(hsRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
+  cmsAddTag(hsRGB, icSigDeviceModelDescTag,    (LPVOID) "linear rgb");
+
+  // This will only be displayed when the embedded profile is read by for example GIMP
+  cmsAddTag(hsRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable linear RGB");
+        
+  return hsRGB;
+}
 
 cmsHPROFILE
 dt_colorspaces_create_output_profile(const int imgid)
@@ -218,6 +245,8 @@ dt_colorspaces_create_output_profile(const int imgid)
 
   if(!strcmp(profile, "sRGB"))
     output = dt_colorspaces_create_srgb_profile();
+  if(!strcmp(profile, "linear_rgb"))
+    output = dt_colorspaces_create_linear_rgb_profile();
   else if(!strcmp(profile, "XYZ"))
     output = dt_colorspaces_create_xyz_profile();
   else if(!strcmp(profile, "adobergb"))

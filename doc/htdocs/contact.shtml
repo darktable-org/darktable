@@ -12,9 +12,11 @@
     	<span class="number"><img src="style/6.png" alt="6" width="142px" /></span><div class="headline"><img src="contact.png" alt="contact" width="157px"/></div>
     	<div class="starterText">
       fastest contact via email: &#104;&#97;&#110;&#97;&#116;&#111;&#115;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;,
-      <br/>
-      or, better, subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>,
-      <br/>
+      <br />
+      or, better, irc.freenode.net <em>#darktable</em>,
+      <br />
+      subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>,
+      <br />
       or try your luck at the <a href="http://sourceforge.net/apps/phpbb/darktable/">phpBB forums</a>.
     	</div>
     	<div class="listtext">
@@ -24,7 +26,7 @@
             on the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>.</li>
         <li>post <em>documentation</em>, tutorials, your experiences at <a href="http://sourceforge.net/apps/phpbb/darktable/">the forums</a>.</li>
         <li>post beta: write image operation <em>plug-ins</em>.</li>
-        <li><em>translate</em> dt into your language (in case it didn't already happen:<br/>
+        <li><em>translate</em> dt into your language (in case it didn't already happen):<br/>
             read the short instructions in the file <a href="http://darktable.git.sourceforge.net/git/gitweb.cgi?p=darktable/darktable;a=blob;f=TRANSLATORS;h=8b55a4f319d2a255eedd17b596f3fa4171ab58ff;hb=HEAD">TRANSLATORS</a> in git.
         </li>
         <li>produce <em>helpful stacktraces</em> for bugreports (minimal steps):<br/>
@@ -41,6 +43,7 @@
 
         ..make your important changes..<br/>
 
+        $ git commit -a<br/>
         $ git pull<br/>
         $ git rebase master<br/>
         $ git format-patch master<br/>
@@ -63,6 +66,28 @@
         <li><em>thorsten mahler</em> [<a href="http://medien.informatik.uni-ulm.de/~mahler">homepage</a>] webdesign</li>
         <li><em>alexander rabtchevich, alexandre prokoudine, christian himpel, ger siemerink, gregor quade, pascal de bruijn, richard hughes, sebastien delcoigne, thomas costis</em>
         contributors of ideas, ethusiasm, translations, aur ubuntu macintosh packaging, git support, feature and bugfix patches, as well as excessive battle-testing :)</li>
+      </ul>
+    	</div>
+
+    	<div class="listtext">
+    	<img src="images/sails.jpg" alt="people" class="img" /><h1>people</h1>
+      <table>
+      <tr class="odd"><td><em>photo</em></td><td><em>irc nick</em></td><td><em>real name</em></td>
+                      <td><em>project role</em></td><td><em>homepage</em></td><td><em>gallery</em></td></tr>
+      <tr class="even"><td><img width="52" src="http://www.gravatar.com/avatar/07d83b598e6a654dacf173f221b8a241.png" /></td>
+          <td>dinamic</td><td>henrik andersson</td><td>developer</td><td><a href="http://www.ohloh.net/accounts/hean01/">homepage</a></td>
+          <td><a href="http://www.dinamic.se/">gallery</a></td></tr>
+      <tr class="odd"><td><img width="52" src="images/avatar.jpg" alt="jo" /></td><td>hanatos</td><td>johannes hanika</td>
+          <td>project founder/<br />developer</td>
+          <td></td><td></td></tr>
+      <tr class="even"><td><img width="52" src="http://planet.ubuntu-nl.org/static/images/hackergotchis/pmjdebruijn.png" alt="photo" /></td>
+          <td>pmjdebruijn</td><td>pascal de bruijn</td><td>color management</td><td><a href="http://blog.pcode.nl/">homepage</a></td>
+          <td><a href="http://photos.pcode.nl/">gallery</a></td></tr>
+      <tr class="odd"><td><img width="52" src="http://l-userpic.livejournal.com/87071852/1121493" alt="photo" /></td>
+          <td>prokoudine</td><td>alexandre prokoudine</td><td>translation expert/day one battle tester</td>
+          <td><a href="http://prokoudine.info/">homepage</a></td>
+          <td><a href="http://prokoudine.info/gallery/">gallery</a></td></tr>
+       </table>
       </ul>
     	</div>
     </div> <!-- page -->

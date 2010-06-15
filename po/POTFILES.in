@@ -42,6 +42,14 @@ src/iop/bilateral.cc
 src/iop/profile_gamma.c
 src/iop/clahe.c
 src/iop/colortransfer.c
+src/imageio/format/jpeg.c
+src/imageio/format/png.c
+src/imageio/format/exr.cc
+src/imageio/format/ppm.c
+src/imageio/format/pfm.c
+src/imageio/format/tiff.c
+src/imageio/storage/disk.c
+src/imageio/storage/picasa.c
 src/gui/gtk.c
 src/gui/histogram.c
 src/gui/metadata.c

@@ -11,7 +11,7 @@ Options:
 
     --help        
     --version
-    -d {cache,control,dev,fswatch}
+    -d {cache,control,dev,fswatch,perf}
 
 =head1 DESCRIPTION
 
@@ -51,7 +51,7 @@ Show/hide sidebars
 
 =item B<e>
 
-Switch between lighttable and darkroom modes
+Switch between light-table and darkroom modes
 
 =back
 
@@ -91,6 +91,14 @@ Strip all stars (reject image)
 
 Color labels: toggle red, yellow, green
 
+=item B<ctrl-g, ctrl-shift-g> 
+
+Move to top, bottom, respectively
+
+=item B<ctrl-e>
+
+Export selected images
+
 =back
 
 Darkroom mode:
@@ -104,6 +112,10 @@ Zoom to 1:1, fill, and fit, respectively
 =item B<ctrl-f>
 
 show/hide film strip
+
+=item while cropping: B<Enter/Backspace>
+
+apply/revert currently selected cropping frame
 
 =back
 

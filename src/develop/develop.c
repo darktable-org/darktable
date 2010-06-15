@@ -207,6 +207,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     // prefetch and lock
     if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
     {
+      dev->mipf = NULL;
       dt_control_log_busy_leave();
       return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
     }
@@ -218,6 +219,20 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
     dev->preview_loading = 0;
+  }
+  else
+  {
+    if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+    {
+      dev->mipf = NULL;
+      dt_control_log_busy_leave();
+      return;
+    }
+    dev->mipf = dev->image->mipf;
+    // make sure our newly locked input is also given to the pixel pipe.
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
+    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
   }
 
   // if raw loaded, get new mipf
@@ -242,7 +257,7 @@ restart:
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width*dev->preview_downsampling, dev->preview_pipe->processed_height*dev->preview_downsampling, dev->preview_downsampling))
   {
-    if(dev->preview_loading)
+    if(dev->preview_loading || dev->preview_input_changed)
     {
       dt_control_log_busy_leave();
       dev->mipf = NULL;
