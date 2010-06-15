@@ -557,6 +557,7 @@ void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
         }
         gtk_combo_box_set_active( ui->comboBox1, 2);
         gtk_widget_hide( GTK_WIDGET(ui->hbox1) ); // Hide create album box...
+	
       }else
         gtk_combo_box_set_active( ui->comboBox1, 0);
     } else {
@@ -575,7 +576,8 @@ void album_changed(GtkComboBox *cb,gpointer data) {
   dt_storage_picasa_gui_data_t * ui=(dt_storage_picasa_gui_data_t *)data;
   gchar *value=gtk_combo_box_get_active_text(ui->comboBox1);
   if( value!=NULL && strcmp( value, _("create new album") ) == 0 ) {
-    gtk_widget_show(GTK_WIDGET(ui->hbox1));    
+    gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(ui->hbox1));    
   } else
     gtk_widget_hide(GTK_WIDGET(ui->hbox1));
 }
@@ -662,6 +664,7 @@ gui_init (dt_imageio_module_storage_t *self)
   
   // Create Album
   ui->hbox1=GTK_BOX(gtk_hbox_new(FALSE,0));
+  gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), TRUE);
   vbox1=gtk_vbox_new(FALSE,0);
   vbox2=gtk_vbox_new(FALSE,0);
   
