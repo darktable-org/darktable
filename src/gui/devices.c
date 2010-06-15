@@ -30,8 +30,10 @@
 #include "common/variables.h"
 #include "common/camera_control.h"
 
-static dt_camctl_listener_t _gui_camctl_listener;
 
+
+
+static dt_camctl_listener_t _gui_camctl_listener;
 
 static void _camctl_camera_control_status_callback(dt_camctl_status_t status,void *data)
 {
@@ -64,7 +66,11 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   }
 }
 
-
+static void scan_callback(GtkButton *button,gpointer data)  
+{
+  dt_camctl_detect_cameras(darktable.camctl);
+  dt_gui_devices_update();
+}
 
 static void import_callback(GtkButton *button,gpointer data)  
 {
@@ -94,6 +100,8 @@ static void tethered_callback(GtkToggleButton *button,gpointer data)
   dt_ctl_switch_mode_to(DT_CAPTURE);
 }
 
+
+
 void dt_gui_devices_init() 
 {
   memset(&_gui_camctl_listener,0,sizeof(dt_camctl_listener_t));
@@ -114,9 +122,15 @@ void dt_gui_devices_update()
       gtk_container_remove(GTK_CONTAINER(widget),GTK_WIDGET(item->data));
     } while((item=g_list_next(item))!=NULL);
 
+  // Add the rescan button
+  GtkButton *scan=GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
+  gtk_object_set(GTK_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), NULL);
+  g_signal_connect (G_OBJECT(scan), "clicked",G_CALLBACK (scan_callback), NULL);
+  gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(scan),TRUE,TRUE,5);
+    
   uint32_t count=0;
   GtkWidget *expander= glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
-    
+
   if( (citem=g_list_first(darktable.camctl->cameras))!=NULL) 
   {    
     // Add detected supported devices
@@ -138,7 +152,7 @@ void dt_gui_devices_update()
       }
       else
       {
-        sprintf(buffer,_("Device \"%s\" connected on port \"%s\"."),camera->model,camera->port);
+        sprintf(buffer,_("device \"%s\" connected on port \"%s\"."),camera->model,camera->port);
         gtk_object_set(GTK_OBJECT(label), "tooltip-text", buffer, NULL);
       }
       
@@ -166,6 +180,8 @@ void dt_gui_devices_update()
     gtk_object_set(GTK_OBJECT(expander), "tooltip-text", _("no supported devices found"), NULL);
   } else
     gtk_object_set(GTK_OBJECT(expander), "tooltip-text", "", NULL);
-  
+  gtk_widget_show_all(widget);
 }
+
+
 

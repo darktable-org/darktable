@@ -195,13 +195,14 @@ gint _compare_camera_by_port(gconstpointer a,gconstpointer b)
 
 void dt_camctl_detect_cameras(const dt_camctl_t *c)
 {
+
   dt_camctl_t *camctl=(dt_camctl_t *)c;
+  pthread_mutex_lock(&camctl->lock);
   CameraList *available_cameras=NULL;
   gp_list_new( &available_cameras );
   gp_abilities_list_detect (c->gpcams,c->gpports, available_cameras, c->gpcontext );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( available_cameras )>0?gp_list_count( available_cameras ):0);
 
-  pthread_mutex_lock(&camctl->lock);
   
   for(int i=0;i<gp_list_count( available_cameras );i++)
   {
@@ -225,29 +226,28 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
           continue;
         }
         
+        // Check if camera has capabililties for being presented to darktable
         if( camera->can_import==FALSE && camera->can_tether==FALSE )
         {
-          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Device %s on port %s doesn't suport import or tether, skipping device.\n", camera->model,camera->port);
+          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Device %s on port %s doesn't support import or tether, skipping device.\n", camera->model,camera->port);
           g_free(camera);
           continue;
         }
         
+        // Fetch some summary of camera
         if( gp_camera_get_summary(camera->gpcam, &camera->summary, c->gpcontext) == GP_OK )
         {
           // Remove device property summary:
           char *eos=strstr(camera->summary.text,"Device Property Summary:\n");
           eos[0]='\0';
         }
+        
+        // Add to camera list
         camctl->cameras = g_list_append(camctl->cameras,camera);
         
-        // Notify listerners of conencted camera
-        GList *listener;
-        if((listener=g_list_first(camctl->listeners))!=NULL)
-        do
-        {
-          if(((dt_camctl_listener_t*)listener->data)->camera_connected)
-            ((dt_camctl_listener_t*)listener->data)->camera_connected(camera,((dt_camctl_listener_t*)listener->data)->data);
-        } while((listener=g_list_next(listener))!=NULL);
+        // Notify listeners of connected camera
+        _dispatch_camera_connected(camctl,camera);
+        
       } 
       else
       { 
@@ -257,8 +257,6 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
       
     } else g_free(camera);    
   }
-  
-  // Also run thru for checking and signalling disconnected cameras  
   pthread_mutex_unlock(&camctl->lock);
 }
 
