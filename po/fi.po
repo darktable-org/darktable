@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Darktable\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: Darktable 0.5\n"
+"Report-Msgid-Bugs-To: mikko@ruohola.org\n"
 "POT-Creation-Date: 2010-06-15 20:26+0300\n"
-"PO-Revision-Date: 2010-06-16 17:08+0300\n"
+"PO-Revision-Date: 2010-06-16 20:12+0300\n"
 "Last-Translator: Mikko Ruohola <mikko@ruohola.org>\n"
 "Language-Team: Finnish Translators <mikko@ruohola.org>\n"
 "MIME-Version: 1.0\n"
@@ -360,6 +360,9 @@ msgid ""
 "in the database cache when darktable closes. these do not need a lot of "
 "memory and provide fast visual feedback for lighttable mode."
 msgstr ""
+"kuinka monta pienintä viime aikoina käytettyä näytekuvaa tulisi pitää "
+"tietokantavälimuistissa kun darktable sulkeutuu. nämä eivät käytä paljoa "
+"muistia ja toimivat nopeasti valopöytätilassa."
 
 #: ../darktable.schemas.in.h:23
 msgid ""
@@ -367,6 +370,9 @@ msgid ""
 "also affects larger mipmap counts, these get fewer by size. only read at "
 "startup."
 msgstr ""
+"kuinka monta pienintä, viime aikoina käytettyä näytekuvaa tulisi pitää "
+"muistissa. tämä vaikuttaa myös suurempien mipmapien määrää, niitä on "
+"vähemmän koon lisääntyessä. arvo luetaan vain käynnistyksessä."
 
 #: ../darktable.schemas.in.h:24
 msgid "icc profile to use for export"
@@ -381,12 +387,16 @@ msgid ""
 "if non-negative, this overrides the per-image output color profile rendering "
 "intent on export."
 msgstr ""
+"jos arvo ei ole negatiivinen, tämä ohittaa tuotteen väriprofiilin "
+"näyttöaikeen viennissä."
 
 #: ../darktable.schemas.in.h:27
 msgid ""
 "if this number is smaller than the darktable internal version number, the "
 "values here will be synched with the new defaults."
 msgstr ""
+"jos tämä on pienempi kuin darktablen sisäinen versionumero, nämä arvot "
+"päivitetään uusiin oletuksiin."
 
 #: ../darktable.schemas.in.h:28
 msgid "jobcode of import job"
@@ -423,31 +433,37 @@ msgstr "välimuistissa pidettävien pienten näytekuvien määrä "
 
 #: ../darktable.schemas.in.h:36
 msgid "sql query to select images for current view"
-msgstr ""
+msgstr "sql haku jolla haetaan nykyiseen näkymään kuvat"
 
 #: ../darktable.schemas.in.h:37
 msgid "subpath pattern in storage for captured camera images"
-msgstr ""
+msgstr "alihakemistopolun muoto levyllä kamerasta kaapatuille kuville"
 
 #: ../darktable.schemas.in.h:38
 msgid "the name of backup directory to search for on mounted medias"
-msgstr ""
+msgstr "varmuuskopiohakemiston nimi josta etsitään liitettyjä laitteita"
 
 #: ../darktable.schemas.in.h:39
 msgid ""
 "these files can later be re-imported into a different database, preserving "
 "your changes to the image."
 msgstr ""
+"nämä tiedostot voidaan myöhemmin uudelleentuoda eri tietokantaan, säilyttäen "
+"tekemäsi muokkaukset kuviin."
 
 #: ../darktable.schemas.in.h:40
 msgid "this overrides the per-image settings, if not set to `image'."
 msgstr ""
+"tämä ohittaa kuvakohtaisen asetukset jos tätä ei ole asetettu arvoon \"image"
+"\"."
 
 #: ../darktable.schemas.in.h:41
 msgid ""
 "this value smaller than 1.0 downsamples the preview pixels for faster "
 "feedback."
 msgstr ""
+"pienempi arvo kuin 1.0 alinäytteistää esikatsellun pikselit nopeampaa "
+"toimintaa varten."
 
 #: ../darktable.schemas.in.h:42
 msgid "thumbnails to keep in database"
@@ -455,15 +471,15 @@ msgstr "tietokannassa säilytettävien näytekuvien määrä"
 
 #: ../darktable.schemas.in.h:43
 msgid "version of these dt-gconf entries"
-msgstr ""
+msgstr "dt-gconf merkintöjen versio"
 
 #: ../darktable.schemas.in.h:44
 msgid "very small thumbnails to keep in database"
-msgstr ""
+msgstr "erittäin pienten näytekuvien määrä tietokannassa"
 
 #: ../darktable.schemas.in.h:45
 msgid "which layout should lighttable mode show"
-msgstr ""
+msgstr "millainen näkymä valopöytätilassa tulisi näyttää"
 
 #: ../darktable.schemas.in.h:46
 msgid "width of the exported image"
@@ -475,7 +491,7 @@ msgstr "vietävän kuvan leveys tai 0 jos käytetään alkuperäistä"
 
 #: ../darktable.schemas.in.h:48
 msgid "write a redundant file for each image"
-msgstr ""
+msgstr "kirjoita ylimääräinen tiedosto jokaista kuvaa varten"
 
 #: ../src/control/control.c:762 ../src/control/control.c:765
 msgid "working.."
@@ -712,7 +728,7 @@ msgstr "havainnollinen"
 #: ../src/libs/export.c:291 ../src/iop/colorin.c:423 ../src/iop/colorout.c:381
 #: ../src/iop/colorout.c:386
 msgid "relative colorimetric"
-msgstr ""
+msgstr "relatiivisesti värimetrinen"
 
 #: ../src/libs/export.c:292 ../src/iop/colorin.c:424 ../src/iop/colorout.c:382
 #: ../src/iop/colorout.c:387
@@ -723,7 +739,7 @@ msgstr "kylläisyys"
 #: ../src/libs/export.c:293 ../src/iop/colorin.c:425 ../src/iop/colorout.c:383
 #: ../src/iop/colorout.c:388
 msgid "absolute colorimetric"
-msgstr ""
+msgstr "absoluuttisesti värimetrinen"
 
 #: ../src/libs/export.c:300
 msgid "srgb (web-safe)"
@@ -905,6 +921,8 @@ msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
 msgstr ""
+"valitse kaikki kuvat jotka ovat samassa\n"
+"filmirullassa valittujen kuvien kanssa"
 
 #: ../src/libs/select.c:153
 msgid "select untouched"
@@ -1225,7 +1243,7 @@ msgstr "tyyppi"
 
 #: ../src/iop/clipping.c:608
 msgid "flip guides vertically"
-msgstr "Käännä ohjeet pystysuunnassa"
+msgstr "käännä ohjeet pystysuunnassa"
 
 #: ../src/iop/clipping.c:609
 msgid "flip guides horizontally"
@@ -1860,7 +1878,7 @@ msgstr "tumma kontrasti"
 
 #: ../src/iop/basecurve.c:50
 msgid "canon eos like"
-msgstr "Canon EOS tyylinen"
+msgstr "canon eos tyylinen"
 
 #: ../src/iop/basecurve.c:51
 msgid "nikon like"
@@ -1908,7 +1926,7 @@ msgstr "valoisuus (L)"
 
 #: ../src/iop/colorzones.c:795 ../src/iop/colorzones.c:820
 msgid "colorness (C)"
-msgstr "Värillisyys (C)"
+msgstr "värillisyys (C)"
 
 #: ../src/iop/colorzones.c:796 ../src/iop/colorzones.c:821
 msgid "hue (h)"
@@ -2340,7 +2358,7 @@ msgstr "poista filmirulla?"
 #: ../src/gui/devices.c:141
 #, c-format
 msgid "Device \"%s\" connected on port \"%s\"."
-msgstr "Laite \"%s\" liitetty porttiin \"%s\""
+msgstr "laite \"%s\" liitetty porttiin \"%s\""
 
 #: ../src/gui/devices.c:148
 msgid "import from camera"
