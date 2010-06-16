@@ -67,7 +67,7 @@ typedef struct dt_iop_clipping_gui_data_t
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
   float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
   int cropping, straightening;
-  float aspect_ratios[7];
+  float aspect_ratios[8];
   float current_aspect;
 }
 dt_iop_clipping_gui_data_t;
@@ -134,8 +134,9 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->tx = roi_in->width  * .5f;
   d->ty = roi_in->height * .5f;
 
-  // enforce aspect ratio, only make area smaller
   float ach = d->ch-d->cy, acw = d->cw-d->cx;
+#if 0
+  // enforce aspect ratio, only make area smaller
   if(d->aspect > 0.0)
   {
     const float ch = acw * roi_in->width / d->aspect  / (roi_in->height);
@@ -144,6 +145,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     else if(ach >= ch) ach = ch; // height smaller
     else               acw *= ach/ch; // should never happen.
   }
+#endif
 
   // rotate and clip to max extent
   roi_out->x      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
@@ -380,7 +382,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   int which = gtk_combo_box_get_active(combo);
-  if (which >= 0 && which < 7)
+  if (which >= 0 && which < 8)
   {
     if(which > 0 && self->dev->image->height > self->dev->image->width)
       g->current_aspect = 1.0/g->aspect_ratios[which];
@@ -566,6 +568,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->aspect_presets, _("free"));
   gtk_combo_box_append_text(g->aspect_presets, _("image"));
   gtk_combo_box_append_text(g->aspect_presets, _("golden cut"));
+  gtk_combo_box_append_text(g->aspect_presets, _("1:2"));
   gtk_combo_box_append_text(g->aspect_presets, _("3:2"));
   gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
   gtk_combo_box_append_text(g->aspect_presets, _("square"));
@@ -654,10 +657,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_ratios[0] = -1;
   g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
   g->aspect_ratios[2] = 1.6280;
-  g->aspect_ratios[3] = 3.0/2.0;
-  g->aspect_ratios[4] = 4.0/3.0;
-  g->aspect_ratios[5] = 1.0;
-  g->aspect_ratios[6] = sqrtf(2.0);
+  g->aspect_ratios[3] = 2.0/1.0;
+  g->aspect_ratios[4] = 3.0/2.0;
+  g->aspect_ratios[5] = 4.0/3.0;
+  g->aspect_ratios[6] = 1.0;
+  g->aspect_ratios[7] = sqrtf(2.0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

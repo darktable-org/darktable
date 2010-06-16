@@ -20,7 +20,14 @@ big new features:
 - move lensfun to pre colorin rgb?
 - remove dcraw_process calls from libraw usage, put demosaic in plugin?
 
-- longest edge resize
+- straighten perspective:
+  . press ctrl/button before starting rotate
+  . draw a second line
+  . optimize shear matrix
+  . apply shear matrix to rotation...
+  . rotate 90 doesn't flip the buffer but crops
+- denoise with too small values crashes (for hdr input).
+- denoise preset/max values meaningless for hdr input
 - storage/format communication:
   . file type
   . size
@@ -33,6 +40,7 @@ big new features:
 - storage to enforce constraints on format/wd/ht
 - named presets for export: comboentry (copy blob)
 
+- snapshots: side-by-side mode/split along different axes, etc..
 - import film roll: reset top panel and collect plugin.
 - ctrl-c/ctrl-v in darkroom mode
 - libchamplain geotagging?
