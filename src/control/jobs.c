@@ -590,6 +590,16 @@ void dt_control_export_job_run(dt_job_t *job)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   g_assert(mstorage);
   dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
+  if( sdata == NULL || fdata == NULL ) {
+    if( sdata ) {
+      mstorage->free_params(mstorage,sdata);
+      dt_control_log(_("failed to get parameters from format module, aborting export.."));
+    } else {
+      mformat->free_params (mformat,  fdata);
+      dt_control_log(_("failed to get parameters from storage module, aborting export.."));
+    }
+    return;
+  }
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   while(t)
   {
