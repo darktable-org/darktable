@@ -400,5 +400,9 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_lib_camera_t *lib = self->data;
+  // remove listener from camera control..
+  dt_camctl_tether_mode(darktable.camctl,NULL,FALSE);
+  dt_camctl_unregister_listener(darktable.camctl,lib->data.listener);
 }
 
