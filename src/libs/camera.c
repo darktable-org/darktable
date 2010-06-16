@@ -168,7 +168,7 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
   uint32_t delay= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb1))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb1)):0;
-  uint32_t count= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):0;
+  uint32_t count= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):1;
   uint32_t brackets=0;
   dt_job_t j;
   dt_camera_capture_job_init(&j,delay,count,brackets);
