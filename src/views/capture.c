@@ -80,14 +80,10 @@ typedef struct dt_capture_session_t
 }
 dt_capture_session_t;
 
-
-
-
 const char *name(dt_view_t *self)
 {
   return _("capture");
 }
-
 
 static void
 film_strip_activated(const int imgid, void *data)
@@ -132,7 +128,7 @@ void cleanup(dt_view_t *self)
 
 
 #define TOP_MARGIN		20
-#define BOTTOM_MARGIN	20
+#define BOTTOM_MARGIN		20
 
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -170,7 +166,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
  
-	
+  
   if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
   if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   
@@ -231,7 +227,7 @@ void enter(dt_view_t *self)
       // soo here goes the special cases for capture view
       if( !( strcmp(module->name(),"tethered shoot")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
       {
-	module->gui_init(module);
+        module->gui_init(module);
         // add the widget created by gui_init to an expander and both to list.
         GtkWidget *expander = dt_lib_gui_get_expander(module);
         gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
@@ -280,11 +276,42 @@ void enter(dt_view_t *self)
   // Setup capture session and initialize with filmroll
 }
 
+void dt_lib_remove_child(GtkWidget *widget, gpointer data)
+{
+  gtk_container_remove(GTK_CONTAINER(data), widget);
+}
 
 void leave(dt_view_t *self)
 {
-    dt_gui_key_accel_unregister(capture_view_switch_key_accel);
+  // Reset ui
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  gtk_widget_set_visible(widget, FALSE);
+   widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
+  gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
+  gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
+  gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  gtk_widget_set_visible(widget, FALSE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
+  gtk_widget_set_visible(widget, TRUE);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  gtk_widget_set_visible(widget, TRUE);
+  
+  dt_gui_key_accel_unregister(capture_view_switch_key_accel);
   dt_gui_key_accel_unregister(film_strip_key_accel);
+  GList *it = darktable.lib->plugins;
+  while(it)
+  {
+    dt_lib_module_t *module = (dt_lib_module_t *)(it->data);
+    if( module->views() & DT_CAPTURE_VIEW )
+      module->gui_cleanup(module);
+    it = g_list_next(it);
+  }
+  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
 
 void reset(dt_view_t *self)
