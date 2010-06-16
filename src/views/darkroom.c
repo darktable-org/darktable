@@ -614,7 +614,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   int handled = 0;
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
-  if(which == 1) dt_control_change_cursor(GDK_ARROW);
+  if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
   return 1;
 }
 

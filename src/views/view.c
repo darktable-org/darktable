@@ -245,7 +245,7 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
   vm->film_strip_dragging = 0;
-  dt_control_change_cursor(GDK_ARROW);
+  dt_control_change_cursor(GDK_LEFT_PTR);
   if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_released)
     return vm->film_strip.button_released(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, state);
   else if(v->button_released) return v->button_released(v, x, y, which, state);

@@ -670,7 +670,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->pan = 0;
-  if(which == 1) dt_control_change_cursor(GDK_ARROW);
+  if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
   return 1;
 }
 
