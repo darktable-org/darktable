@@ -309,7 +309,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, "srgb");
+  strcpy(prof->name, "sRGB");
   int pos;
   prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
@@ -404,8 +404,8 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else if(!strcmp(prof->name, "sRGB"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("srgb"));
-      gtk_combo_box_append_text(g->cbox3, _("srgb"));
+      gtk_combo_box_append_text(g->cbox2, _("srgb (web-safe)"));
+      gtk_combo_box_append_text(g->cbox3, _("srgb (web-safe)"));
     }
     else if(!strcmp(prof->name, "adobergb"))
     {
