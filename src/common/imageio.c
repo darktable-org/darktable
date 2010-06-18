@@ -893,6 +893,14 @@ delete_old_config:
 
 int dt_imageio_dttags_write (const int imgid, const char *filename)
 { // write out human-readable file containing images stars and tags.
+
+  char xmpfilename[1024];
+  strncpy(xmpfilename, filename, 1024);
+  char *c = xmpfilename + strlen(xmpfilename);
+  while(*c != '.' && c > xmpfilename) c--;
+  sprintf(c, ".xmp");
+  dt_exif_xmp_write (imgid, xmpfilename);
+
   // refuse to write dttags for non-existent image:
   char imgfname[1024];
   snprintf(imgfname, 1024, "%s", filename);

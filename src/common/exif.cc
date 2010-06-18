@@ -21,14 +21,16 @@
 #endif
 
 #include "common/exif.h"
-
-#if 0
+#include "common/darktable.h"
 #include <libexif/exif-data.h>
-#endif
-
+#include <exiv2/xmp.hpp>
+#include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
 #include <exiv2/canonmn.hpp>
+#include <sqlite3.h>
+#include <iostream>
+#include <fstream>
 #include <sstream>
 #include <cassert>
 #include <glib.h>
@@ -58,10 +60,8 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 
 int dt_exif_read(dt_image_t *img, const char* path)
 {
-  /* Redirect exiv2 errors to a string buffer */
-  // std::ostringstream stderror;
-  // std::streambuf *savecerr = std::cerr.rdbuf();
-  // std::cerr.rdbuf(stderror.rdbuf());
+  // mute exiv2:
+  // Exiv2::LogMsg::setLevel(Exiv2::LogMsg::error);
 
   try
   {
@@ -85,6 +85,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat ();
     } else if ( (pos=exifData.findKey(
+
             Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
         != exifData.end() ) {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
@@ -225,18 +226,11 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
 
-    // std::cerr.rdbuf(savecerr);
-
-    // std::cout << "time c++: " << img->exif_datetime_taken << std::endl;
-    // std::cout << "lens c++: " << img->exif_lens << std::endl;
-    // std::cout << "lensptr : " << (long int)(img->exif_lens) << std::endl;
-    // std::cout << "imgptr  : " << (long int)(img) << std::endl;
     img->exif_inited = 1;
     return 0;
   }
   catch (Exiv2::AnyError& e)
   {
-    // std::cerr.rdbuf(savecerr);
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;
     return 1;
@@ -483,3 +477,161 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
     return 0;
   }
 }
+
+// encode binary blob into text:
+void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len)
+{
+  const char hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+  for(int i=0;i<len;i++)
+  {
+    const int hi = input[i] >> 4;
+    const int lo = input[i] & 15;
+    output[2*i]   = hex[hi];
+    output[2*i+1] = hex[lo];
+  }
+}
+
+// and back to binary
+void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len)
+{
+  // ascii table:
+  // 48- 57 0-9
+  // 97-102 a-f
+#define TO_BINARY(a) (a > 57 ? a - 97 + 10 : a - 48)
+  for(int i=0;i<len/2;i++)
+  {
+    const int hi = TO_BINARY( input[2*i  ] ); 
+    const int lo = TO_BINARY( input[2*i+1] );
+    output[i] = (hi << 4) | lo;
+  }
+#undef TO_BINARY
+}
+
+// write xmp sidecar file:
+int dt_exif_xmp_write (const int imgid, const char* filename)
+{
+  // refuse to write sidecar for non-existent image:
+  char imgfname[1024];
+  snprintf(imgfname, 1024, "%s", filename);
+  *(imgfname + strlen(imgfname) - 4) = '\0';
+  if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
+
+  try
+  {
+    Exiv2::XmpData xmpData;
+
+    int stars = 1, raw_params = 0;
+    // get stars and raw params from db
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select flags, raw_parameters, license, description, caption from images where id = ?1", -1, &stmt, NULL);
+    sqlite3_bind_int (stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      stars      = sqlite3_column_int(stmt, 0);
+      raw_params = sqlite3_column_int(stmt, 1);
+      xmpData["Xmp.dc.rights"]      = sqlite3_column_text(stmt, 2);
+      xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 3);
+      xmpData["Xmp.dc.title"]       = sqlite3_column_text(stmt, 4);
+    }
+    sqlite3_finalize(stmt);
+    xmpData["Xmp.xmp.Rating"] = (stars & 0x7) - 1; // normally stars go from -1 .. 5 or so.
+
+    // FIXME: this call is not thread safe
+    // FIXME: as is XmpParser::initialize
+    Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
+    xmpData["Xmp.darktable.raw_params"] = raw_params;
+
+    // get tags from db, store in dublin core
+    Exiv2::Value::AutoPtr v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+    sqlite3_prepare_v2(darktable.db, "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
+    sqlite3_bind_int (stmt, 1, imgid);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+      v->read((char *)sqlite3_column_text(stmt, 0));
+    sqlite3_finalize(stmt);
+    xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v.get());
+
+    // color labels
+    char val[2048];
+    v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
+    sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
+    sqlite3_bind_int (stmt, 1, imgid);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      snprintf(val, 2048, "%d", sqlite3_column_int(stmt, 0));
+      v->read(val);
+    }
+    sqlite3_finalize(stmt);
+    xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
+
+    // history stack:
+    char key[1024];
+    int num = 1;
+
+    // create an array:
+    Exiv2::XmpTextValue tv("");
+    tv.setXmpArrayType(Exiv2::XmpValue::xaBag);
+    xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_modversion"), &tv);
+    xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_enabled"), &tv);
+    xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_operation"), &tv);
+    xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_params"), &tv);
+
+    // reset tv
+    tv.setXmpArrayType(Exiv2::XmpValue::xaNone);
+
+    sqlite3_prepare_v2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+    sqlite3_bind_int (stmt, 1, imgid);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      int32_t modversion = sqlite3_column_int(stmt, 2); 
+      snprintf(val, 2048, "%d", modversion);
+      tv.read(val);
+      snprintf(key, 1024, "Xmp.darktable.history_modversion[%d]", num);
+      xmpData.add(Exiv2::XmpKey(key), &tv);
+
+      int32_t enabled = sqlite3_column_int(stmt, 5);
+      snprintf(val, 2048, "%d", enabled);
+      tv.read(val);
+      snprintf(key, 1024, "Xmp.darktable.history_enabled[%d]", num);
+      xmpData.add(Exiv2::XmpKey(key), &tv);
+
+      const char *op = (const char *)sqlite3_column_text(stmt, 3);
+      tv.read(op);
+      snprintf(key, 1024, "Xmp.darktable.history_operation[%d]", num);
+      xmpData.add(Exiv2::XmpKey(key), &tv);
+
+      const int32_t len = sqlite3_column_bytes(stmt, 4);
+      assert(2*len < 2048);
+      dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 4), val, len);
+      tv.read(val);
+      snprintf(key, 1024, "Xmp.darktable.history_params[%d]", num);
+      xmpData.add(Exiv2::XmpKey(key), &tv);
+
+      num ++;
+    }
+    sqlite3_finalize (stmt);
+
+    // serialize the xmp data and output the xmp packet
+    std::string xmpPacket;
+    if (0 != Exiv2::XmpParser::encode(xmpPacket, xmpData))
+    {
+      throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
+    }
+    std::ofstream fout(filename);
+    if(fout.is_open())
+    {
+      fout << xmpPacket;
+      fout.close();
+    }
+
+    // cleanup
+    Exiv2::XmpParser::terminate();
+
+    return 0;
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::cerr << "[xmp_write] caught exiv2 exception '" << e << "'\n";
+    return -1;
+  }
+}
+
