@@ -192,7 +192,14 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
       _camctl_camera_set_property_job_t *spj=(_camctl_camera_set_property_job_t *)job;
       dt_print(DT_DEBUG_CAMCTL,"[camera_control] Executing set camera config job %s=%s\n",spj->name,spj->value);
       
-      pthread_mutex_lock( &cam->config_lock );
+      CameraWidget *config; // Copy of camera configuration
+      CameraWidget *widget;
+      gp_camera_get_config( cam->gpcam, &config, c->gpcontext );
+      if(  gp_widget_get_child_by_name ( config, spj->name, &widget) == GP_OK) {
+        gp_widget_set_value ( widget , spj->value);
+        gp_camera_set_config( cam->gpcam, config, c->gpcontext );
+      }
+     /* pthread_mutex_lock( &cam->config_lock );
       CameraWidget *widget;
       if(  gp_widget_get_child_by_name ( camera->configuration, spj->name, &widget) == GP_OK) {
         gp_widget_set_value ( widget , spj->value);
@@ -200,7 +207,7 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
         cam->config_changed=TRUE;
       }
 
-      pthread_mutex_unlock( &cam->config_lock);
+      pthread_mutex_unlock( &cam->config_lock);*/
     } break;
     
     default:
