@@ -3,7 +3,6 @@ webpage updates:
 
 0.6 release:
 - tethered shooting
-- rotate 90 doesn't flip the buffer but crops
 - storage/format communication:
   . file type
   . size
