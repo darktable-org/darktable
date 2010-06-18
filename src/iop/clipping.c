@@ -141,6 +141,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
                 -sinf(d->angle), cosf(d->angle)};
   if(d->angle == 0.0f) { rt[0] = rt[3] = 1.0; rt[1] = rt[2] = 0.0f; }
 
+  // correct keystone correction factors by resolution of this buffer
+  const float kc = 1.0f/fminf(roi_in->width, roi_in->height);
+  d->k = d->ki * kc;
+
   // TODO: check portrait/landscape orientation, whichever fits more area:
   // fwd transform rotated points on corners and scale back inside roi_in bounds.
   float cropscale = 1.0f;
@@ -157,10 +161,6 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->tx = roi_in->width  * .5f;
   d->ty = roi_in->height * .5f;
 
-  // correct keystone correction factors by resolution of this buffer
-  const float kc = 1.0f/fminf(roi_in->width, roi_in->height);
-  d->k = d->ki * kc;
-
   float ach = d->ch-d->cy, acw = d->cw-d->cx;
   // rotate and clip to max extent
   roi_out->x      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
@@ -175,12 +175,6 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->ciy = roi_out->y;
   d->ciw = roi_out->width;
   d->cih = roi_out->height;
-
-#if 0
-  // orthogonal matrix: m-1 = m^1, and counter diag entries are - of each other
-  rt[1] = - rt[1];
-  rt[2] = - rt[2];
-#endif
 
   for(int k=0;k<4;k++) d->m[k] = rt[k];
   if(d->flags & FLAG_FLIP_HORIZONTAL) { d->m[0] = - rt[0]; d->m[2] = - rt[2]; }
@@ -205,8 +199,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     get_corner(aabb, c, p);
     // backtransform aabb using m
     p[0] -= d->tx*so; p[1] -= d->ty*so;
+    p[0] *= 1.0/so; p[1] *= 1.0/so;
     // mul_mat_vec_2(d->m, p, o);
     backtransform(p, o, d->m, d->k, d->keystone);
+    o[0] *= so; o[1] *= so;
     o[0] += d->tx*so; o[1] += d->ty*so;
     // transform to roi_in space, get aabb.
     adjust_aabb(o, aabb_in);
@@ -293,7 +289,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) firstprivate(out) shared(d,o,in,roi_in,roi_out)
 #endif
-  // TODO: point-by-point transformation!
+  // (slow) point-by-point transformation.
+  // TODO: optimize with scanlines and linear steps between?
   for(int j=0;j<roi_out->height;j++)
   {
     // out = ((float *)o)+3*roi_out->width*j;
@@ -340,9 +337,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   #error "clipping needs to be ported to GEGL!"
 #else
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
-  // TODO: pull in from weird p->aspect!
-  d->keystone = 0;
-  d->ki = p->k;
+  // pull in bit from weird p->k => d->keystone = 1
+  uint32_t intk = *(uint32_t *)&p->k;
+  if(intk & 0x40000000u) d->keystone = 1;
+  else                   d->keystone = 0;
+  intk &= ~0x40000000;
+  float floatk = *(float *)&intk;
+  if(fabsf(floatk) < .0001) d->keystone = 2;
+  d->ki = floatk;
   d->angle = M_PI/180.0 * p->angle;
   d->cx = p->cx;
   d->cy = p->cy;
@@ -471,12 +473,16 @@ angle_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
 }
 
 static void
-keystone_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
+keystone_callback (GtkWidget *widget, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->k = dtgtk_slider_get_value(slider);
-  // FIXME: bit frickeln!
+  // we need k to be abs(k) < 2, so the second bit will always be zero (except we set it:).
+  const float k = fmaxf(-1.9, fminf(1.9, dtgtk_slider_get_value(g->keystone)));
+  uint32_t intk = *(uint32_t *)&k;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->keystone_x))) intk |= 0x40000000u;
+  p->k = *(float *)&intk;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -485,7 +491,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   dtgtk_slider_set_value(g->scale5, p->angle);
-  dtgtk_slider_set_value(g->keystone, p->k);
+  uint32_t intk = *(uint32_t *)&p->k;
+  if(intk & 0x40000000u) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->keystone_x), TRUE);
+  else                   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->keystone_y), TRUE);
+  intk &= ~0x40000000u;
+  float floatk = *(float *)&intk;
+  dtgtk_slider_set_value(g->keystone, floatk);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
   g->current_aspect = -1.0;
@@ -662,9 +673,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 5);
 
-  // FIXME: bit frickeln!
-  float kst = p->k;
-  g->keystone = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, kst, 2));
+  g->keystone = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
   g_signal_connect (G_OBJECT (g->keystone), "value-changed",
                     G_CALLBACK (keystone_callback), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone), 2, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 5);
@@ -672,6 +681,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->keystone_y = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget (g->keystone_x, _("up")));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_x), 2, 4, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 5);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_y), 4, 6, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  g_signal_connect (G_OBJECT (g->keystone_x), "toggled", G_CALLBACK (keystone_callback), self);
+  g_signal_connect (G_OBJECT (g->keystone_y), "toggled", G_CALLBACK (keystone_callback), self);
 
 
 /*-------------------------------------------*/
