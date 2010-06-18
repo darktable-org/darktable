@@ -35,6 +35,7 @@
 #include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
+#include "gui/presets.h"
 
 DT_MODULE(2)
 
@@ -84,6 +85,7 @@ typedef struct dt_iop_clipping_data_t
   float cix, ciy, ciw, cih; // crop window on roi_out 1.0 scale
   uint32_t keystone;        // 2: off, else the axis to correct
   uint32_t flags;           // flipping flags
+  uint32_t flip;            // flipped output buffer so more area would fit.
 }
 dt_iop_clipping_data_t;
 
@@ -145,28 +147,48 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   const float kc = 1.0f/fminf(roi_in->width, roi_in->height);
   d->k = d->ki * kc;
 
-  // TODO: check portrait/landscape orientation, whichever fits more area:
-  // fwd transform rotated points on corners and scale back inside roi_in bounds.
-  float cropscale = 1.0f;
-  float p[2], o[2], aabb[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height};
-  for(int c=0;c<4;c++)
+  float cropscale = -1.0f;
+  // check portrait/landscape orientation, whichever fits more area:
+  const float oaabb[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height};
+  for(int flip=0;flip<2;flip++)
   {
-    get_corner(aabb, c, p);
-    transform(p, o, rt, d->k, d->keystone);
-    // mul_mat_vec_2(rt, p, o);
-    for(int k=0;k<2;k++) if(fabsf(o[k]) > 0.001f) cropscale = fminf(cropscale, aabb[(o[k] > 0 ? 2 : 0) + k]/o[k]);
+    const float roi_in_width  = flip ? roi_in->height : roi_in->width;
+    const float roi_in_height = flip ? roi_in->width  : roi_in->height;
+    float newcropscale = 1.0f;
+    // fwd transform rotated points on corners and scale back inside roi_in bounds.
+    float p[2], o[2], aabb[4] = {-.5f*roi_in_width, -.5f*roi_in_height, .5f*roi_in_width, .5f*roi_in_height};
+    for(int c=0;c<4;c++)
+    {
+      get_corner(oaabb, c, p);
+      transform(p, o, rt, d->k, d->keystone);
+      for(int k=0;k<2;k++) if(fabsf(o[k]) > 0.001f) newcropscale = fminf(newcropscale, aabb[(o[k] > 0 ? 2 : 0) + k]/o[k]);
+    }
+    if(newcropscale >= cropscale)
+    {
+      cropscale = newcropscale;
+      // remember rotation center in whole-buffer coordinates:
+      d->tx = roi_in->width  * .5f;
+      d->ty = roi_in->height * .5f;
+      d->flip = flip;
+
+      float ach = d->ch-d->cy, acw = d->cw-d->cx;
+      // rotate and clip to max extent
+      if(flip)
+      {
+        roi_out->y      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
+        roi_out->x      = d->ty - (.5f - d->cy)*cropscale*roi_in->height;
+        roi_out->height = acw*cropscale*roi_in->width;
+        roi_out->width  = ach*cropscale*roi_in->height;
+      }
+      else
+      {
+        roi_out->x      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
+        roi_out->y      = d->ty - (.5f - d->cy)*cropscale*roi_in->height;
+        roi_out->width  = acw*cropscale*roi_in->width;
+        roi_out->height = ach*cropscale*roi_in->height;
+      }
+    }
   }
-
-  // remember rotation center in whole-buffer coordinates:
-  d->tx = roi_in->width  * .5f;
-  d->ty = roi_in->height * .5f;
-
-  float ach = d->ch-d->cy, acw = d->cw-d->cx;
-  // rotate and clip to max extent
-  roi_out->x      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
-  roi_out->y      = d->ty - (.5f - d->cy)*cropscale*roi_in->height;
-  roi_out->width  = acw*cropscale*roi_in->width;
-  roi_out->height = ach*cropscale*roi_in->height;
   // sanity check.
   if(roi_out->width  < 1) roi_out->width  = 1;
   if(roi_out->height < 1) roi_out->height = 1;
@@ -198,7 +220,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     // get corner points of roi_out
     get_corner(aabb, c, p);
     // backtransform aabb using m
-    p[0] -= d->tx*so; p[1] -= d->ty*so;
+    if(d->flip) {p[1] -= d->tx*so; p[0] -= d->ty*so;}
+    else        {p[0] -= d->tx*so; p[1] -= d->ty*so;}
     p[0] *= 1.0/so; p[1] *= 1.0/so;
     // mul_mat_vec_2(d->m, p, o);
     backtransform(p, o, d->m, d->k, d->keystone);
@@ -299,12 +322,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out = ((float *)o)+3*roi_out->width*j + 3*i;
       float pi[2], po[2];
 
-      pi[0] = roi_out->x + roi_out->scale*d->cix + i;
-      pi[1] = roi_out->y + roi_out->scale*d->ciy + j;
+      pi[0] = roi_out->x + roi_out->scale*d->cix + i + .5;
+      pi[1] = roi_out->y + roi_out->scale*d->ciy + j + .5;
       // transform this point using matrix m
-      pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
+      if(d->flip) {pi[1] -= d->tx*roi_out->scale; pi[0] -= d->ty*roi_out->scale;}
+      else        {pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;}
       pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-      // mul_mat_vec_2(d->m, pi, p0);
       backtransform(pi, po, d->m, d->k, d->keystone);
       po[0] *= roi_in->scale; po[1] *= roi_in->scale;
       po[0] += d->tx*roi_in->scale;  po[1] += d->ty*roi_in->scale;
@@ -444,6 +467,19 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
       g->clip_h  =  1.0 - g->clip_y;
     }
   }
+}
+
+void init_presets (dt_iop_module_t *self)
+{
+  dt_iop_clipping_params_t p = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, 0.0};
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  p.angle = 90.0f;
+  dt_gui_presets_add_generic(_("rotate by  90"), self->op, &p, sizeof(p), 1);
+  p.angle = -90.0f;
+  dt_gui_presets_add_generic(_("rotate by -90"), self->op, &p, sizeof(p), 1);
+  p.angle = 180.0f;
+  dt_gui_presets_add_generic(_("rotate by 180"), self->op, &p, sizeof(p), 1);
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 static void
