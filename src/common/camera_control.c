@@ -24,7 +24,7 @@
 #include "common/camera_control.h"
 
 /***/
-typedef enum dt_camctl_job_type_t 
+typedef enum _camctl_camera_job_type_t 
 {
   /** Start a scan of devices and announce new and removed. */
   _JOB_TYPE_DETECT_DEVICES,
@@ -39,7 +39,11 @@ typedef enum dt_camctl_job_type_t
   /** get's a property from config cache. \todo This shouldn't be a job in jobqueue !?  */
   _JOB_TYPE_GET_PROPERTY
 }
-dt_camctl_job_type_t;
+_camctl_camera_job_type_t;
+
+typedef struct _camctl_camera_job_t {
+  _camctl_camera_job_type_t type;
+} _camctl_camera_job_t;
 
 
 /** Initializes camera */
@@ -53,12 +57,21 @@ void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam);
 /** Lock camera control and notify listener. \note Locks mutex and signals CAMERA_CONTROL_AVAILABLE. \see _camctl_lock() */
 void _camctl_unlock(const dt_camctl_t *c);
 
+
+
+
+
 /** Updates the cached configuration with a copy of camera configuration */
 void _camera_configuration_update(const dt_camctl_t *c,const dt_camera_t *camera);
 /** Commit the changes in cached configuration to the camera configuration */
 void _camera_configuration_commit(const dt_camctl_t *c,const dt_camera_t *camera);
 /** Merges source with destination and notifies listeners of the changes. \param notify_all If true every widget is notified as change */
 void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,CameraWidget *source, CameraWidget *destination, gboolean notify_all);
+/** Put a job on the queue */
+void _camera_add_job(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job);
+/** Get a job from the queue */
+gpointer _camera_get_job( const dt_camctl_t *c, const dt_camera_t *camera );
+void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job);
 
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
@@ -75,6 +88,7 @@ void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const 
 
 
 static void _idle_func_dispatch(GPContext *context, void *data) {
+  // Let's do gtk main event iteration for not locking the ui
   gdk_threads_enter();
   if( gtk_events_pending () ) gtk_main_iteration();
   gdk_threads_leave();
@@ -102,7 +116,60 @@ static void _message_func_dispatch(GPContext *context, const char *format, va_li
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s\n",buffer);
 }
 
+void _camera_add_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job) {
+  dt_camera_t *cam=(dt_camera_t *)camera;
+  pthread_mutex_lock(&cam->jobqueue_lock);
+  cam->jobqueue = g_list_append(cam->jobqueue,job);
+  pthread_mutex_unlock(&cam->jobqueue_lock);
+}
 
+gpointer _camera_get_job( const dt_camctl_t *c,const dt_camera_t *camera ) {
+  dt_camera_t *cam=(dt_camera_t *)camera;
+  pthread_mutex_lock(&cam->jobqueue_lock);
+  gpointer job=NULL;
+  if(  g_list_length(cam->jobqueue) > 0 ) {
+    job = g_list_nth_data(cam->jobqueue,0);
+    cam->jobqueue = g_list_remove(cam->jobqueue,job);
+  }
+  pthread_mutex_unlock(&cam->jobqueue_lock);
+  return job;
+}
+
+
+void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpointer job) {
+  _camctl_camera_job_t *j = (_camctl_camera_job_t *)job;
+  switch( j->type ) {
+    
+    case _JOB_TYPE_EXECUTE_CAPTURE: 
+    {
+      dt_print(DT_DEBUG_CAMCTL,"[camera_control] Executing remote camera capture job\n");
+      CameraFilePath fp;
+      gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&fp, c->gpcontext);
+      
+      CameraFile *destination;
+      char filename[512]={0};
+      const char *path=_dispatch_request_image_path(c,camera);
+      if( path )
+        strcat(filename,path);
+      else
+        strcat(filename,"/tmp/");
+      strcat(filename,fp.name);
+      int handle = open( filename, O_CREAT | O_WRONLY,0666);
+      gp_file_new_from_fd( &destination , handle );
+      gp_camera_file_get( camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
+      close( handle );
+        
+      // Notify listerners of captured image
+      _dispatch_camera_image_downloaded(c,camera,filename);
+      
+      
+    } break;
+    
+    default:
+       dt_print(DT_DEBUG_CAMCTL,"[camera_control] Process of unknown job type %lx\n",(unsigned long int)j->type);
+    break;
+  }
+}
 
 void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam) 
 {
@@ -269,7 +336,14 @@ static void *_camera_event_thread(void *data) {
   
   while(camera->is_tethering==TRUE) 
   {
+    // Poll event from camera
     _camera_poll_events(camctl,camera);
+    
+    // Let's check if there are jobs in queue to preocess
+    gpointer job;
+    while( (job=_camera_get_job(camctl,camera)) != NULL ) 
+      _camera_process_jobb(camctl,camera,job);
+    
   }
   
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Exiting camera thread %lx.\n",(unsigned long int)camctl->camera_event_thread);
@@ -305,7 +379,9 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam) {
     
     // read a full copy of config to configuration cache
      gp_camera_get_config( cam->gpcam, &cam->configuration, c->gpcontext );
-      
+  
+    pthread_mutex_init(&cam->jobqueue_lock, NULL);
+  
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Device %s on port %s initialized\n", cam->model,cam->port);
   } else
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Device %s on port %s already initialized\n", cam->model,cam->port);
@@ -501,6 +577,25 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *c
   return camera->model;	
 }
 
+void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value) {
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  if( !cam && ( (cam = camctl->active_camera) == NULL || (cam = camctl->wanted_camera) == NULL ))
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to set property from camera, camera==NULL\n"); 
+    return;
+  }
+  
+  dt_camera_t *camera=(dt_camera_t *)cam;
+  pthread_mutex_lock( &camera->config_lock );
+  CameraWidget *widget;
+  if(  gp_widget_get_child_by_name ( camera->configuration, property_name, &widget) == GP_OK) {
+    gp_widget_set_value ( widget , &value);
+    gp_widget_set_changed( widget, 1 );
+  }
+  
+  pthread_mutex_unlock( &camera->config_lock);
+}
+
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
@@ -602,8 +697,12 @@ void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam)
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
   
-  CameraFilePath source;
-  gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&source, c->gpcontext);
+  _camctl_camera_job_t *job=g_malloc(sizeof(_camctl_camera_job_t));
+  job->type=_JOB_TYPE_EXECUTE_CAPTURE;
+  _camera_add_job( camctl, camera, job);
+  
+  /*CameraFilePath source;
+  gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&source, c->gpcontext);*/
   
   /** TODO: Does the event handling GP_EVENT_CAPTURE_COMPLETE trig this completion
     or do we need to handle filedownload by our self? maybe trig same code as GP_EVENT_FILE_ADDED use...
@@ -742,7 +841,7 @@ void _camera_configuration_commit(const dt_camctl_t *c,const dt_camera_t *camera
   pthread_mutex_lock(&cam->config_lock);
   int res=GP_OK;
   if( ( res = gp_camera_set_config( camera->gpcam, camera->configuration, c->gpcontext) ) != GP_OK )
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] ailed to commit configuration changes to camera\n");
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to commit configuration changes to camera\n");
 
   pthread_mutex_unlock(&cam->config_lock);
 }

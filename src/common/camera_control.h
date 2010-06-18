@@ -47,6 +47,11 @@ typedef struct dt_camera_t {
   
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;  
+
+  /** A mutex lock for jobqueue */
+  pthread_mutex_t jobqueue_lock;
+  /** The jobqueue */
+  GList *jobqueue;
   
   struct {
     CameraWidget *widget;
@@ -177,9 +182,12 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
 
 /** Execute remote capture of camera.*/
 void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam);
-/** Returns a model string of camera-*/
+/** Returns a model string of camera.*/
 const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *cam);
-/** Get a property valued from chached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
+
+/** Set a property value \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
+void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value);
+/** Get a property value from chached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 /** Check if property exists. */
 int dt_camctl_camera_property_exists(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
