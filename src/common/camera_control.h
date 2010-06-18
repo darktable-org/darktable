@@ -37,6 +37,7 @@ typedef struct dt_camera_t {
  
   /** Camera configuration cache */
   CameraWidget *configuration;
+  gboolean config_changed;
   pthread_mutex_t config_lock;
   /** This camera/device can import images. */
   gboolean can_import;

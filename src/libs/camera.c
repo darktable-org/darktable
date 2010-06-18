@@ -115,8 +115,8 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
         gtk_combo_box_append_text(prop->values, value);
       } while( (value=dt_camctl_camera_property_get_next_choice(darktable.camctl,NULL,propertyname)) != NULL );
 	lib->gui.properties=g_list_append(lib->gui.properties,prop);
-	// Does thread lock!!!
-	//g_signal_connect(G_OBJECT(prop->values), "changed", G_CALLBACK(property_changed_callback), (gpointer)prop);  
+	// Does dead lock!!!
+	g_signal_connect(G_OBJECT(prop->values), "changed", G_CALLBACK(property_changed_callback), (gpointer)prop);  
       return prop;
     }
   }
