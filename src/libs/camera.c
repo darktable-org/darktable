@@ -86,6 +86,12 @@ position ()
   return 998;
 }
 
+/** Property changed*/
+void property_changed_callback(GtkComboBox *cb,gpointer data) {
+  dt_lib_camera_property_t *prop=(dt_lib_camera_property_t *)data;
+  dt_camctl_camera_set_property(darktable.camctl,NULL,prop->property_name,gtk_combo_box_get_active_text(prop->values));
+}
+
 /** Add  a new property of camera to the gui */
 dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gchar *label,const gchar *propertyname)
 {
@@ -101,13 +107,16 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       prop->label = GTK_LABEL(gtk_label_new(label));
       gtk_misc_set_alignment(GTK_MISC(prop->label ), 0.0, 0.5);
       prop->values=GTK_COMBO_BOX(gtk_combo_box_new_text());
+      
       prop->osd=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye,0));
       gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), NULL);
       do
       {    
         gtk_combo_box_append_text(prop->values, value);
       } while( (value=dt_camctl_camera_property_get_next_choice(darktable.camctl,NULL,propertyname)) != NULL );
-      lib->gui.properties=g_list_append(lib->gui.properties,prop);
+	lib->gui.properties=g_list_append(lib->gui.properties,prop);
+	// Does thread lock!!!
+	//g_signal_connect(G_OBJECT(prop->values), "changed", G_CALLBACK(property_changed_callback), (gpointer)prop);  
       return prop;
     }
   }
