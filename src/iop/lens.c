@@ -35,7 +35,7 @@
 #include "gui/draw.h"
 #include "iop/lens.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 const char *name()
 {
@@ -290,13 +290,24 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(lens)
     {
       lf_lens_copy(d->lens, lens[0]);
+      if(p->tca_override)
+      { // add manual d->lens stuff:
+        lfLensCalibTCA tca;
+        tca.Focal = 0;
+        tca.Model = LF_TCA_MODEL_LINEAR;
+        tca.Terms[0] = p->tca_b;
+        tca.Terms[1] = p->tca_r;
+        if(d->lens->CalibTCA) for (int i=0; d->lens->CalibTCA[i]; i++)
+          lf_lens_remove_calib_tca (d->lens, i);
+        lf_lens_add_calib_tca (d->lens, &tca);
+      }
       lf_free (lens);
     }
   }
   lf_free(cam);
   d->modify_flags = p->modify_flags;
   d->inverse      = p->inverse;
-  d->scale        = p->scale;
+  d->scale        = 1.0;//p->scale;
   d->crop         = p->crop;
   d->focal        = p->focal;
   d->aperture     = p->aperture;
@@ -376,6 +387,9 @@ void init(dt_iop_module_t *module)
     LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
   tmp.distance = 5.0;
   tmp.target_geom = LF_RECTILINEAR;
+  tmp.tca_override = 0;
+  tmp.tca_r = 1.0;
+  tmp.tca_b = 1.0;
 
   // init crop from db:
   dt_image_t *img = module->dev->image;
@@ -938,8 +952,6 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
       G_CALLBACK(lens_comboentry_distance_update), self);
 
   gtk_widget_show_all (g->lens_param_box);
-
-  // TODO: autoscale!
 }
 
 static void lens_menu_select (
@@ -1034,25 +1046,38 @@ static void lens_search_clicked(
 
 static void target_geometry_changed (GtkComboBox *widget, gpointer user_data)
 {
+  if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
 
   int pos = gtk_combo_box_get_active(widget);
   p->target_geom = pos + LF_UNKNOWN + 1;
-  if(darktable.gui->reset) return;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void reverse_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
+  if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   if(gtk_toggle_button_get_active(togglebutton)) p->inverse = 1;
   else p->inverse = 0;
-  if(darktable.gui->reset) return;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+static void tca_changed(GtkDarktableSlider *slider, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  const float val = dtgtk_slider_get_value(slider);
+  if(slider == g->tca_r) p->tca_r = val;
+  else                   p->tca_b = val;
+  if(p->tca_r != 1.0 || p->tca_b != 1.0) p->tca_override = 1;
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+#if 0
 static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1100,6 +1125,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dtgtk_slider_set_value(g->scale, scale);
 }
+#endif
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -1113,34 +1139,29 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *button;
   GtkWidget *label;
-  GtkWidget *vbox1, *vbox2, *hbox;
 
-  self->widget = gtk_vbox_new(FALSE, 2);
-  hbox  = gtk_hbox_new(FALSE, 0);
-  vbox1 = gtk_vbox_new(TRUE, 2);
-  vbox2 = gtk_vbox_new(TRUE, 2);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 5);
+  self->widget = gtk_table_new(7, 3, FALSE);
+  gtk_table_set_col_spacings(GTK_TABLE(self->widget), 5);
+  gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
 
   // camera selector
   g->camera_model = GTK_ENTRY(gtk_entry_new());
   gtk_editable_set_editable(GTK_EDITABLE(g->camera_model), TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(g->camera_model), TRUE, TRUE, 0);
   gtk_entry_set_text(g->camera_model, self->dev->image->exif_model);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->camera_model), 0, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   button = gtk_button_new_with_label(_("cam"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("search for camera using a pattern\n"
         "format: [maker, ][model]"), NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
       G_CALLBACK (camera_search_clicked), self);
-  gtk_box_pack_start(GTK_BOX(vbox2), button, TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), button, 2, 3, 0, 1, GTK_FILL, 0, 0, 0);
 
   // lens selector
   g->lens_model = GTK_ENTRY(gtk_entry_new());
   gtk_editable_set_editable(GTK_EDITABLE(g->lens_model), TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
   gtk_entry_set_text(g->lens_model, self->dev->image->exif_lens);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->lens_model), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   button = gtk_button_new_with_label(_("lens"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text",
@@ -1148,18 +1169,11 @@ void gui_init(struct dt_iop_module_t *self)
         "format: [maker, ][model]"), NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
       G_CALLBACK (lens_search_clicked), self);
-  gtk_box_pack_start(GTK_BOX(vbox2), button, TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), button, 2, 3, 1, 2, GTK_FILL, 0, 0, 0);
 
   // lens properties
-  g->lens_param_box = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->lens_param_box), TRUE, TRUE, 0);
-
-  hbox  = gtk_hbox_new(FALSE, 0);
-  vbox1 = gtk_vbox_new(TRUE, 2);
-  vbox2 = gtk_vbox_new(TRUE, 2);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 5);
+  g->lens_param_box = gtk_hbox_new(TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->lens_param_box), 0, 3, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // if unambigious info is there, use it.
   if(self->dev->image->exif_lens[0] != '\0')
@@ -1177,6 +1191,10 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   // target geometry
+  label = gtk_label_new(_("geometry"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
+
   g->target_geom = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_object_set(GTK_OBJECT(g->target_geom), "tooltip-text",
       _("target geometry"), NULL);
@@ -1188,11 +1206,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->target_geom), "changed",
       G_CALLBACK (target_geometry_changed),
       (gpointer)self);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->target_geom), TRUE, TRUE, 0);
-  label = gtk_label_new(_("geometry"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->target_geom), 1, 3, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
+#if 0
   // scale
   g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.1, 2.0, 0.005,p->scale,3));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
@@ -1208,15 +1224,31 @@ void gui_init(struct dt_iop_module_t *self)
   label = gtk_label_new(_("scale"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
+#endif
 
   // reverse direction
   g->reverse = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reverse")));
   gtk_object_set(GTK_OBJECT(g->reverse), "tooltip-text", _("apply distortions instead of correcting them"), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  gtk_box_pack_start(GTK_BOX(vbox1), gtk_label_new(""), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->reverse), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->reverse), 1, 3, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->reverse), "toggled",
                     G_CALLBACK (reverse_toggled), self);
+
+  // override linear tca (if not 1.0):
+  label = gtk_label_new(_("tca r"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 5, 6, GTK_FILL, 0, 0, 0);
+  label = gtk_label_new(_("tca b"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_FILL, 0, 0, 0);
+  g->tca_r = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_r, 5));
+  g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 1, 3, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 1, 3, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
+  g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
+  gtk_object_set(GTK_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), NULL);
+  gtk_object_set(GTK_OBJECT(g->tca_b), "tooltip-text", _("override transversal chromatic aberration correction for blue channel\nleave at 1.0 for defaults"), NULL);
 }
 
 
@@ -1230,7 +1262,8 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_entry_set_text(g->lens_model, p->lens);
   gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  dtgtk_slider_set_value(g->scale, p->scale);
+  dtgtk_slider_set_value(g->tca_r, p->tca_r);
+  dtgtk_slider_set_value(g->tca_b, p->tca_b);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])
