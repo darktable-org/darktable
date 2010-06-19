@@ -63,9 +63,9 @@ dt_iop_grain_params_t;
 typedef struct dt_iop_grain_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1,*label2,*label3;	           // channel, scale, strength
-  GtkComboBox *combo1;			                      // channel
-  GtkDarktableSlider *scale1,*scale2;        // scale, strength
+  GtkLabel  *label1,*label2,*label3;	      // channel, scale, strength
+  GtkComboBox *combo1;			                // channel
+  GtkDarktableSlider *scale1,*scale2;       // scale, strength
 }
 dt_iop_grain_gui_data_t;
 
@@ -307,54 +307,78 @@ const char *name()
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
-  
   // Apply grain to image
-  in  = (float *)ivoid;
-  out = (float *)ovoid;
-  float h,s,l;
-  double strength=(data->strength/100.0);
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  const double strength=(data->strength/100.0);
+  const double octaves=3;
+  // double zoom=1.0+(8*(data->scale/100.0));
+  const double wd = fminf(piece->buf_in.width, piece->buf_in.height);
+  const double zoom=(1.0+8*data->scale/100)/wd;
+  const int filter = fabsf(roi_out->scale - 1.0) > 0.01;
+  // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to pixelpipe iscale)
+  const double filtermul = piece->iscale/(roi_out->scale*wd);
+#pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data)
+  for(int j=0;j<roi_out->height;j++)
   {
-    double x = (roi_out->x + i)/roi_out->scale;
-    double y = (roi_out->y + j)/roi_out->scale;
-	  
-    double octaves=3;
-    double zoom=1.0+(8*(data->scale/100.0));
-    //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
-    double noise=_simplex_2d_noise(x, y, octaves,1.0, zoom);
-    if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION || data->channel==DT_GRAIN_CHANNEL_HUE) 
+    float h, s, l;
+    float *in  = ((float *)ivoid) + roi_out->width * j * 3;
+    float *out = ((float *)ovoid) + roi_out->width * j * 3;
+    for(int i=0;i<roi_out->width;i++)
     {
-      rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
-    
-      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)?GRAIN_HUE_COLORRANGE*(noise*(strength*GRAIN_HUE_STRENGTH_SCALE)) : 0;
-      s-=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
-      l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
+      // calculate x, y in a resolution independent way:
+      // wx,wy: worldspace in full image pixel coords: 
+      double wx = (roi_out->x + i)/roi_out->scale;
+      double wy = (roi_out->y + j)/roi_out->scale;
+      // x, y: normalized to shorter side of image, so with pixel aspect = 1.
+      // printf("scale %f\n", wd);
+      double x = wx / wd;
+      double y = wy / wd;
+      //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
+      double noise = 1.0;
+      if(filter)
+      { // if zoomed out a lot, use rank-1 lattice downsampling
+        const float fib1 = 34.0, fib2 = 21.0;
+        for(int l=0;l<fib2;l++)
+        {
+          float px = l/fib2, py = l*(fib1/fib2); py -= (int)py;
+          float dx = px*filtermul, dy = py*filtermul;
+          noise += (1.0/fib2) * _simplex_2d_noise(x+dx, y+dy, octaves, 1.0, zoom);
+        }
+      }
+      else
+      {
+        noise = _simplex_2d_noise(x, y, octaves, 1.0, zoom);
+      }
+      if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION || data->channel==DT_GRAIN_CHANNEL_HUE) 
+      {
+        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
       
-      // Clip and wrapHSL values
-      s=CLIP(s); 
-      l=CLIP(l);
-      if(h<0.0) h+=1.0;
-      if(h>1.0) h-=1.0;
-	    
-      hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
-    } 
-    else if( data->channel==DT_GRAIN_CHANNEL_RGB )
-    {
-      out[0]=CLIP(in[0]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-      out[1]=CLIP(in[1]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-      out[2]=CLIP(in[2]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-    } 
-    else
-    { // No noisemethod lets jsut copy source to dest
-      out[0]=in[0];
-      out[1]=in[1];
-      out[2]=in[2];
-    }  
-    out += 3; in += 3;
+        h+=(data->channel==DT_GRAIN_CHANNEL_HUE)?GRAIN_HUE_COLORRANGE*(noise*(strength*GRAIN_HUE_STRENGTH_SCALE)) : 0;
+        s-=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
+        l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
+        
+        // Clip and wrapHSL values
+        s=CLIP(s); 
+        l=CLIP(l);
+        if(h<0.0) h+=1.0;
+        if(h>1.0) h-=1.0;
+        
+        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+      } 
+      else if( data->channel==DT_GRAIN_CHANNEL_RGB )
+      {
+        out[0]=CLIP(in[0]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+        out[1]=CLIP(in[1]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+        out[2]=CLIP(in[2]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+      } 
+      else
+      { // No noisemethod lets jsut copy source to dest
+        out[0]=in[0];
+        out[1]=in[1];
+        out[2]=in[2];
+      }  
+      out += 3; in += 3;
+    }
   }
-  
 }
 
 static void
@@ -441,7 +465,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 965;
+  module->priority = 995;
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS,10.0,12.0};

@@ -714,7 +714,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   label = gtk_label_new(_("aspect"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->aspect_presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->aspect_presets, _("free"));
@@ -730,20 +730,20 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   gtk_object_set(GTK_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect_presets), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect_presets), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("perspective"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->keystone = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
   g_signal_connect (G_OBJECT (g->keystone), "value-changed",
                     G_CALLBACK (keystone_callback), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone), 2, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone), 2, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g->keystone_x = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label (NULL, _("right")));
   g->keystone_y = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget (g->keystone_x, _("up")));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_x), 2, 4, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 5);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_y), 4, 6, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_x), 2, 4, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_y), 4, 6, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->keystone_x), "toggled", G_CALLBACK (keystone_callback), self);
   g_signal_connect (G_OBJECT (g->keystone_y), "toggled", G_CALLBACK (keystone_callback), self);
 
@@ -765,8 +765,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (guides_presets_changed), self);
   label = gtk_label_new(_("type"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 5);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->guide_lines), 2, 6, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->guide_lines), 2, 6, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 /*-------------------------------------------*/
   g->label7 = GTK_LABEL(gtk_label_new(_("flip")));
