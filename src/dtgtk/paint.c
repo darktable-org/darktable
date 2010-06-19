@@ -225,6 +225,7 @@ void dtgtk_cairo_paint_directory(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
 {
   cairo_save(cr);
   cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   cairo_translate(cr, x+.05*w, y+.05*h);
   cairo_scale(cr, .9*w, .9*h);
   cairo_set_line_width(cr, 1./w);
