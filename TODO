@@ -29,8 +29,7 @@ webpage updates:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
-- remove lensfun autoscale and add crop autocrop
-- sliders for C/A in lensfun
+- remove lensfun add crop autocrop
 - move lensfun to pre colorin rgb?
 - remove dcraw_process calls from libraw usage, put demosaic in plugin?
 
