@@ -131,14 +131,20 @@ void dtgtk_cairo_paint_store(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
   cairo_scale(cr,s,s);
   cairo_set_line_width(cr,0.15);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  cairo_move_to(cr,0.5,0.10);
-  cairo_line_to(cr,0.5,0.80);
-  cairo_move_to(cr,0.30,0.5);
-  cairo_line_to(cr,0.5,0.80);
-  cairo_line_to(cr,0.70,0.5);
-  
-  cairo_move_to(cr,0.1,0.9);
+  cairo_move_to(cr,0.275,0.1);
+  cairo_line_to(cr,0.1,0.1);
+  cairo_line_to(cr,0.1,0.9);
   cairo_line_to(cr,0.9,0.9);
+  cairo_line_to(cr,0.9,0.175);
+  cairo_line_to(cr,0.825,0.1);
+  cairo_line_to(cr,0.825,0.5);
+  cairo_line_to(cr,0.275,0.5);
+  cairo_line_to(cr,0.275,0.1);
+
+  cairo_stroke(cr);
+  cairo_set_line_width(cr,0);
+  cairo_rectangle(cr,0.5,0.025,0.17,0.275);
+  cairo_fill(cr);
   
   cairo_stroke(cr);
   cairo_identity_matrix(cr);
