@@ -470,7 +470,7 @@ void init(dt_iop_module_t *module)
   module->priority = 995;
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
-  dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS, 400.0/53.3, 27.5};
+  dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS, 400.0/53.3, 25.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
 }
@@ -512,9 +512,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_set_active(g->combo1,p->channel);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->combo1), TRUE, TRUE, 0);
   
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 50.0, 3200.0, 25.0, p->scale*53.3, 0));
-  dtgtk_slider_set_snap(g->scale1, 25);
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2.5, p->strength, 2));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 80.0, 3200.0, 20.0, p->scale*53.3, 0));
+  dtgtk_slider_set_snap(g->scale1, 20);
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->strength, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
