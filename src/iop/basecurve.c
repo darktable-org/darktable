@@ -50,8 +50,8 @@ static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
 static const char nikon[] = N_("nikon like");
 static const char sony_alpha[] = N_("sony alpha like");
-static const char fotogenic_v41[] = N_("fotogenic - point and shoot v4.1");
-static const char fotogenic_v42[] = N_("fotogenic - ev3 v4.2");
+static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
+static const char fotogenetic_v42[] = N_("fotogenetic (ev3)");
 
 typedef struct basecurve_preset_t
 {
@@ -74,10 +74,10 @@ static const basecurve_preset_t basecurve_presets[] = {
   {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals sony alpha curve (needs testing):
   {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}, 0}, 1},
-  // Fotogenic - Point and shoot v4.1
-  {fotogenic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
-  // Fotogenic - EV3 v4.2
-  {fotogenic_v42, "", "", 0, 51200, {{0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}, 0}, 0}
+  // Fotogenetic - Point and shoot v4.1
+  {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
+  // Fotogenetic - EV3 v4.2
+  {fotogenetic_v42, "", "", 0, 51200, {{0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}, 0}, 0}
 };
 
 typedef struct dt_iop_basecurve_gui_data_t
