@@ -199,13 +199,17 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
   else if( event->button==1 )
   {
     if( event->x > 0 && event->x < (DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+(DTGTK_SLIDER_BORDER_WIDTH*2)) ) { 
-      gtk_adjustment_set_value(slider->adjustment,gtk_adjustment_get_value(slider->adjustment)-(gtk_adjustment_get_step_increment(slider->adjustment)));
+      float value = gtk_adjustment_get_value(slider->adjustment)-(gtk_adjustment_get_step_increment(slider->adjustment));
+      if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+      gtk_adjustment_set_value(slider->adjustment, value);
       gtk_widget_draw(widget,NULL);
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
     } 
     else if( event->x > (widget->allocation.width-(DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+(DTGTK_SLIDER_BORDER_WIDTH*2))) && event->x < widget->allocation.width  ) 
     {
-      gtk_adjustment_set_value(slider->adjustment,gtk_adjustment_get_value(slider->adjustment)+gtk_adjustment_get_step_increment(slider->adjustment));
+      float value = gtk_adjustment_get_value(slider->adjustment)+(gtk_adjustment_get_step_increment(slider->adjustment));
+      if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+      gtk_adjustment_set_value(slider->adjustment, value);
       gtk_widget_draw(widget,NULL);
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
     }
@@ -243,7 +247,11 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
         vr.width-=(DTGTK_SLIDER_BORDER_WIDTH*4);
         gint vmx = event->x-vr.x;
         if( vmx >= 0 && vmx <= vr.width)
-          gtk_adjustment_set_value(slider->adjustment, _slider_translate_pos_to_value(slider->adjustment, &vr, vmx));
+        {
+          float value = _slider_translate_pos_to_value(slider->adjustment, &vr, vmx);
+          if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+          gtk_adjustment_set_value(slider->adjustment, value);
+        }
         gtk_widget_draw(widget,NULL);
         slider->prev_x_root = event->x_root;
       }
@@ -257,10 +265,9 @@ static gboolean _slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
   double inc=gtk_adjustment_get_step_increment(DTGTK_SLIDER(widget)->adjustment);
   inc*= (DTGTK_SLIDER(widget)->is_ctrl_key_pressed==TRUE) ? 1.0 : DTGTK_VALUE_SENSITIVITY;
-  gtk_adjustment_set_value( 
-    DTGTK_SLIDER(widget)->adjustment,
-    gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?-inc:inc)
-  );
+  float value = gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?-inc:inc);
+  if(DTGTK_SLIDER(widget)->snapsize) value = DTGTK_SLIDER(widget)->snapsize * (((int)value)/DTGTK_SLIDER(widget)->snapsize);
+  gtk_adjustment_set_value(DTGTK_SLIDER(widget)->adjustment, value);
   gtk_widget_draw( widget, NULL);
   g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
   return TRUE;
@@ -348,14 +355,19 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
     {
       gdouble inc = gtk_adjustment_get_step_increment( slider->adjustment );
       if(DARKTABLE_SLIDER_VALUE &&  !slider->is_sensibility_key_pressed) inc*=DTGTK_VALUE_SENSITIVITY;
-      gdouble value = gtk_adjustment_get_value(slider->adjustment);
-      gtk_adjustment_set_value( slider->adjustment, value + ( ((slider->prev_x_root <= (gint)event->x_root) && slider->motion_direction==1 )?(inc):-(inc)) );
+      gdouble value = gtk_adjustment_get_value(slider->adjustment) + ( ((slider->prev_x_root <= (gint)event->x_root) && slider->motion_direction==1 )?(inc):-(inc));
+      if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+      gtk_adjustment_set_value(slider->adjustment, value);
       slider->is_changed=TRUE;
     } 
     else if( slider->type==DARKTABLE_SLIDER_BAR )
     {
       if( vmx >= 0 && vmx <= vr.width)
-        gtk_adjustment_set_value(slider->adjustment, _slider_translate_pos_to_value(slider->adjustment, &vr, vmx));
+      {
+        float value = _slider_translate_pos_to_value(slider->adjustment, &vr, vmx);
+        if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+        gtk_adjustment_set_value(slider->adjustment, value);
+      }
     }
       
       
@@ -606,11 +618,18 @@ GtkWidget *dtgtk_slider_new_with_range (darktable_slider_type_t type,gdouble min
   slider->type=type;
   slider->digits=digits;
   slider->is_entry_active=FALSE;
+  slider->snapsize = 0;
   return GTK_WIDGET(slider);
 }
 
-void dtgtk_slider_set_digits(GtkDarktableSlider *slider, gint digits) {
+void dtgtk_slider_set_digits(GtkDarktableSlider *slider, gint digits)
+{
   slider->digits = digits;
+}
+
+void dtgtk_slider_set_snap(GtkDarktableSlider *slider, gint snapsize)
+{
+  slider->snapsize = snapsize;
 }
 
 void dtgtk_slider_set_format_type(GtkDarktableSlider *slider, darktable_slider_format_type_t type)
@@ -624,7 +643,9 @@ gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider)
   return gtk_adjustment_get_value( slider->adjustment );
 }
 
-void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value) {
+void dtgtk_slider_set_value(GtkDarktableSlider *slider, gdouble value)
+{
+  if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
   gtk_adjustment_set_value( slider->adjustment, value );
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(slider));

@@ -54,8 +54,9 @@ typedef struct _GtkDarktableSlider
   gboolean is_entry_active;
   gboolean is_changed;
   gint prev_x_root;
-  gint motion_direction;		
+  gint motion_direction;
   gint digits;
+  gint snapsize;
   gfloat default_value;
   darktable_slider_type_t type;
   darktable_slider_format_type_t fmt_type;
@@ -92,6 +93,8 @@ void dtgtk_slider_set_type(GtkDarktableSlider *slider,darktable_slider_type_t ty
 void dtgtk_slider_set_digits(GtkDarktableSlider *slider, gint digits);
 /** Set value display format */
 void dtgtk_slider_set_format_type(GtkDarktableSlider *slider, darktable_slider_format_type_t type);
+/** set step size to snap values to. 0 for no snapping (default). */
+void dtgtk_slider_set_snap(GtkDarktableSlider *slider, gint snapsize);
 
 G_END_DECLS
 #endif
