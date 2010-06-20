@@ -215,6 +215,35 @@ dt_colorspaces_create_linear_rgb_profile(void)
 }
 
 cmsHPROFILE
+dt_colorspaces_create_linear_infrared_profile(void)
+{
+  // linear rgb with r and b swapped:
+  cmsCIExyY       D65;
+  cmsCIExyYTRIPLE Rec709Primaries = {
+                                   {0.1500, 0.0600, 1.0},
+                                   {0.3000, 0.6000, 1.0},
+                                   {0.6400, 0.3300, 1.0}
+                                   };
+  LPGAMMATABLE Gamma[3];
+  cmsHPROFILE  hsRGB;
+ 
+  cmsWhitePointFromTemp(6504, &D65);
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+           
+  hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma);
+  cmsFreeGamma(Gamma[0]);
+  if (hsRGB == NULL) return NULL;
+      
+  cmsAddTag(hsRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
+  cmsAddTag(hsRGB, icSigDeviceModelDescTag,    (LPVOID) "linear infrared bgr");
+
+  // This will only be displayed when the embedded profile is read by for example GIMP
+  cmsAddTag(hsRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable linear infrared BGR");
+        
+  return hsRGB;
+}
+
+cmsHPROFILE
 dt_colorspaces_create_output_profile(const int imgid)
 {
   char profile[1024];
