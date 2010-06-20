@@ -450,7 +450,7 @@ void gui_init(struct dt_iop_module_t *self)
     else if(!strcmp(prof->name, "linear_rgb"))
       gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
     else if(!strcmp(prof->name, "infrared"))
-      gtk_combo_box_append_text(g->cbox2, _("linear swapped r and b"));
+      gtk_combo_box_append_text(g->cbox2, _("linear infrared bgr"));
     else if(!strcmp(prof->name, "XYZ"))
       gtk_combo_box_append_text(g->cbox2, _("linear xyz"));
     else

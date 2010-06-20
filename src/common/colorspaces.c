@@ -238,7 +238,7 @@ dt_colorspaces_create_linear_infrared_profile(void)
   cmsAddTag(hsRGB, icSigDeviceModelDescTag,    (LPVOID) "linear infrared bgr");
 
   // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsAddTag(hsRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable linear infrared BGR");
+  cmsAddTag(hsRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable Linear Infrared BGR");
         
   return hsRGB;
 }
