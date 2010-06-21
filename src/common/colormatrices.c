@@ -69,6 +69,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D60",                    { 746475, 318924,   9277}, { 254776,  946991, -130447}, { 63171, -166458, 1029190}, {753220, 787949, 652695}},
 
+  // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
+  { "NIKON D90",                    { 855072, 361176,  22751}, { 177414,  963577, -241501}, { 28931, -229019, 1123062}, {751816, 781677, 650024}},
+
   // Rolf Steinort, Wolf Faust IT8, direct sunlight, well lit
   { "NIKON D200",                   { 878922, 352966,   2914}, { 273575, 1048141, -116302}, { 61661, -171021, 1126297}, {691483, 727142, 615204}},
 
