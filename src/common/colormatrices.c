@@ -66,8 +66,8 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
 
-  // Richard Hughes, Homebrew ColorChecker, strobe, experimental
-  { "NIKON D60",                    { 756927, 309906, -13000}, { 323959, 1038269,  -66376}, { 51697, -178635, 1044418}, {609894, 636215, 537338}},
+  // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
+  { "NIKON D60",                    { 746475, 318924,   9277}, { 254776,  946991, -130447}, { 63171, -166458, 1029190}, {753220, 787949, 652695}},
 
   // Rolf Steinort, Wolf Faust IT8, direct sunlight, well lit
   { "NIKON D200",                   { 878922, 352966,   2914}, { 273575, 1048141, -116302}, { 61661, -171021, 1126297}, {691483, 727142, 615204}},
