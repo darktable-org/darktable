@@ -64,7 +64,6 @@ typedef struct basecurve_preset_t
 }
 basecurve_preset_t;
 
-static const int basecurve_presets_cnt = 6;
 static const basecurve_preset_t basecurve_presets[] = {
   {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
@@ -79,6 +78,7 @@ static const basecurve_preset_t basecurve_presets[] = {
   // Fotogenetic - EV3 v4.2
   {fotogenetic_v42, "", "", 0, 51200, {{0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}, 0}, 0}
 };
+static const int basecurve_presets_cnt = sizeof(basecurve_presets)/sizeof(basecurve_preset_t);
 
 typedef struct dt_iop_basecurve_gui_data_t
 {
