@@ -524,7 +524,7 @@ void entry_changed(GtkEntry *entry, gpointer data) {
   g_hash_table_insert(table, "password", password);
 
   if( !dt_pwstorage_set("picasa", table) ){
-    g_printerr("[picasa] cannot store username/password\n");
+    dt_print(DT_DEBUG_PWSTORAGE,"[picasa] cannot store username/password\n");
   }
 
   g_free(username);

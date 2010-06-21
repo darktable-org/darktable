@@ -186,6 +186,10 @@ static gboolean init_kwallet(){
 // General initialization. Takes care of all the other stuff.
 const backend_kwallet_context_t* dt_pwstorage_kwallet_new(){
 	_context = g_malloc(sizeof(backend_kwallet_context_t));
+
+	// NULL the context
+	memset(_context, 0, sizeof(backend_kwallet_context_t));
+
 	// Initialize threading in dbus-glib - it should be fine for
 	// dbus_g_thread_init to be called multiple times.
 	if (!g_thread_supported())
@@ -194,6 +198,7 @@ const backend_kwallet_context_t* dt_pwstorage_kwallet_new(){
 
 	// Get a connection to the session bus.
 	_context->connection = dbus_g_bus_get(DBUS_BUS_SESSION, &(_context->error));
+
 	if (CheckError())
 		return NULL;
 

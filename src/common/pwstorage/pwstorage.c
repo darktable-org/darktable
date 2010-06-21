@@ -52,7 +52,7 @@ const dt_pwstorage_t* dt_pwstorage_new(){
 			pwstorage->backend_context = NULL;
 			break;
 		case PW_STORAGE_BACKEND_KWALLET:
-			dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] using kwallet backend for username/password storage.\n");
+			dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] using kwallet backend for username/password storage");
 			pwstorage->backend_context = (void*)dt_pwstorage_kwallet_new();
 			if(pwstorage->backend_context == NULL){
 				dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] error starting kwallet. using no storage backend.\n");
@@ -61,6 +61,7 @@ const dt_pwstorage_t* dt_pwstorage_new(){
 			} else {
 				pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_KWALLET;
 			}
+			dt_print(DT_DEBUG_PWSTORAGE,"  done.\n");
 			break;
 		case PW_STORAGE_BACKEND_GNOME_KEYRING:
 			dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] gnome keyring backend not implemented.\n");
