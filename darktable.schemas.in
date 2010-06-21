@@ -808,28 +808,15 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/plugins/imageio/storage/picasa/username</key>
-      <applyto>/apps/darktable/plugins/imageio/storage/picasa/username</applyto>
+      <key>/schemas/apps/darktable/plugins/pwstorage/pwstorage_backend</key>
+      <applyto>/apps/darktable/plugins/pwstorage/pwstorage_backend</applyto>
       <owner>darktable</owner>
-      <type>string</type>
-      <default></default>
+      <type>int</type>
+      <default>0</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-    
-    <schema>
-      <key>/schemas/apps/darktable/plugins/imageio/storage/picasa/password</key>
-      <applyto>/apps/darktable/plugins/imageio/storage/picasa/password</applyto>
-      <owner>darktable</owner>
-      <type>string</type>
-      <default></default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
+        <short>storage backend to use</short>
+        <long>the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring (not implemented yet)</long>
       </locale>
     </schema>
     

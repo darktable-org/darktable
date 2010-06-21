@@ -24,6 +24,7 @@
 #include "common/imageio_module.h"
 #include "common/imageio.h"
 #include "common/tags.h"
+#include "common/pwstorage/pwstorage.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <stdio.h>
@@ -513,10 +514,22 @@ name ()
 
 void entry_changed(GtkEntry *entry, gpointer data) {
   dt_storage_picasa_gui_data_t *ui=(dt_storage_picasa_gui_data_t *)data;
-  if(entry == ui->entry1)
-      dt_conf_set_string( "plugins/imageio/storage/picasa/username",gtk_entry_get_text( ui->entry1 ) );
-  else if(entry == ui->entry2)
-      dt_conf_set_string( "plugins/imageio/storage/picasa/password",gtk_entry_get_text( ui->entry2 ) );
+
+  GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
+
+  gchar* username = g_strdup(gtk_entry_get_text(ui->entry1));
+  gchar* password = g_strdup(gtk_entry_get_text(ui->entry2));
+
+  g_hash_table_insert(table, "username", username);
+  g_hash_table_insert(table, "password", password);
+
+  if( !dt_pwstorage_set("picasa", table) ){
+    g_printerr("[picasa] cannot store username/password\n");
+  }
+
+  g_free(username);
+  g_free(password);
+  g_hash_table_destroy(table);
 }
 
 
@@ -628,8 +641,13 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->entry2 = GTK_ENTRY( gtk_entry_new() );
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
   ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
-  gtk_entry_set_text( ui->entry1,  dt_conf_get_string( "plugins/imageio/storage/picasa/username" ) );
-  gtk_entry_set_text( ui->entry2,  dt_conf_get_string( "plugins/imageio/storage/picasa/password" ) );
+
+  GHashTable* table = dt_pwstorage_get("picasa");
+  gchar* _username = g_hash_table_lookup(table, "username");
+  gchar* _password = g_hash_table_lookup(table, "password");
+  g_hash_table_destroy(table);
+  gtk_entry_set_text( ui->entry1,  _username == NULL?"":_username );
+  gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
   gtk_entry_set_text( ui->entry3, _("my new album") );
   gtk_entry_set_text( ui->entry4, _("exported from darktable") );
    

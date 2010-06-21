@@ -182,6 +182,19 @@ static inline gchar *dt_conf_get_string(const char *name)
 #endif
 }
 
+static inline GSList *dt_conf_all_entries(const char *dir)
+{
+#ifdef HAVE_GCONF
+  char var[1024];
+  snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, dir);
+  return gconf_client_all_entries(darktable.conf->gconf, var, NULL);
+#else
+  // FIXME
+  // Uh, no idea how to handle this.
+  return NULL;
+#endif
+}
+
 static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
 {
 #ifdef HAVE_GCONF
