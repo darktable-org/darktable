@@ -397,13 +397,13 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
 
+   // Get camera model name
+  lib->data.camera_model=dt_camctl_camera_get_model(darktable.camctl,NULL);
   
   // Register listener 
   dt_camctl_register_listener(darktable.camctl,lib->data.listener);
   dt_camctl_tether_mode(darktable.camctl,NULL,TRUE);
   
-  // Get camera model name
-  lib->data.camera_model=dt_camctl_camera_get_model(darktable.camctl,NULL);
 }
 
 void
