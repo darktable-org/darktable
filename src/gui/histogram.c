@@ -42,7 +42,7 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_leave_notify), n);
   g_signal_connect (G_OBJECT (widget), "enter-notify-event",
                     G_CALLBACK (dt_gui_histogram_enter_notify), n);
-  gtk_widget_set_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
+  gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 }
 
 void dt_gui_histogram_cleanup(dt_gui_histogram_t *n) {}

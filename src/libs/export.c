@@ -229,7 +229,7 @@ gui_init (dt_lib_module_t *self)
   
   GtkWidget *label;
 
-  label = gtk_label_new(_("target storage"));
+  label = gtk_label_new(_("storage"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
   d->storage = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -273,7 +273,7 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
-  label = gtk_label_new(_("maximum size"));
+  label = gtk_label_new(_("max size"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
@@ -282,7 +282,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = gtk_label_new(_("rendering intent"));
+  label = gtk_label_new(_("intent"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->intent = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -347,7 +347,7 @@ gui_init (dt_lib_module_t *self)
     g_dir_close(dir);
   }
   GList *l = d->profiles;
-  label = gtk_label_new(_("output profile"));
+  label = gtk_label_new(_("profile"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->profile = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -364,7 +364,7 @@ gui_init (dt_lib_module_t *self)
   }
   gtk_combo_box_set_active(d->profile, 0);
   char tooltip[1024];
-  snprintf(tooltip, 1024, _("icc profiles in %s/color/out"), datadir);
+  snprintf(tooltip, 1024, _("output icc profiles in %s/color/out"), datadir);
   gtk_object_set(GTK_OBJECT(d->profile), "tooltip-text", tooltip, NULL);
   g_signal_connect (G_OBJECT (d->intent), "changed",
                     G_CALLBACK (intent_changed),
