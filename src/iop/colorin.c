@@ -180,11 +180,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_get_datadir(datadir, 1024);
   if(!strcmp(p->iccprofile, "darktable"))
   {
+    char maker[512];
+    snprintf(maker, 512, "%s", self->dev->image->exif_maker);
     char makermodel[512];
-    if(!strncmp(self->dev->image->exif_maker, self->dev->image->exif_model, strlen(self->dev->image->exif_maker)))
+    char *c = g_strstr_len(maker, 512, "CORPORATION");
+    if(c) *(c-1) = '\0';
+    if(!strncmp(maker, self->dev->image->exif_model, strlen(maker)))
       snprintf(makermodel, 512, "%s", self->dev->image->exif_model);
     else
-      snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
+      snprintf(makermodel, 512, "%s %s", maker, self->dev->image->exif_model);
     // printf("searching matrix for `%s'\n", makermodel);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
     // if(!d->input) printf("could not find enhanced color matrix for `%s'!\n", makermodel);
