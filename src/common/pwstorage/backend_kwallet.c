@@ -90,7 +90,7 @@ static gchar* char2qstring(const gchar* in, gsize* size){
 	if(error){
 		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_kwallet] ERROR: error converting string: %s\n", error->message);
 		g_error_free(error);
-		return 0;
+		return NULL;
 	}
 
 	glong i;
@@ -345,6 +345,8 @@ static gchar* array2string(gchar* pos, guint* length){
 // Get the (key,value) pairs back from KWallet.
 GHashTable* dt_pwstorage_kwallet_get(const gchar* slot){
 	_context = (backend_kwallet_context_t*)(darktable.pwstorage->backend_context);
+	GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
+
 	// Is there an entry in the wallet?
 	gboolean has_entry = FALSE;
 	int wallet_handle = get_wallet_handle();
@@ -358,7 +360,7 @@ GHashTable* dt_pwstorage_kwallet_get(const gchar* slot){
 					G_TYPE_INVALID);
 
 	if (CheckError() || !has_entry)
-		return NULL;
+		return table;
 
 	GArray* byte_array = NULL;
 
@@ -372,15 +374,13 @@ GHashTable* dt_pwstorage_kwallet_get(const gchar* slot){
 					G_TYPE_INVALID);
 
 	if (CheckError() || !byte_array || !byte_array->len)
-		return NULL;
+		return table;
 
 	gint entries;
 	memcpy(&entries, byte_array->data, sizeof(gint));
 	entries = GINT_FROM_BE(entries);
 
 	gchar* pos = byte_array->data + sizeof(gint);
-
-	GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
 
 	gint i;
 	for(i=0; i<entries; ++i){
