@@ -20,6 +20,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "develop/develop.h"
+#include "control/control.h"
 
 #define DT_HIST_INSET 5
 
@@ -39,6 +40,9 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_motion_notify), n);
   g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (dt_gui_histogram_leave_notify), n);
+  g_signal_connect (G_OBJECT (widget), "enter-notify-event",
+                    G_CALLBACK (dt_gui_histogram_enter_notify), n);
+  gtk_widget_set_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
 }
 
 void dt_gui_histogram_cleanup(dt_gui_histogram_t *n) {}
@@ -175,10 +179,17 @@ gboolean dt_gui_histogram_button_release(GtkWidget *widget, GdkEventButton *even
   return TRUE;
 }
 
+gboolean dt_gui_histogram_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_control_change_cursor(GDK_HAND1);
+  return TRUE;
+}
+
 gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
   n->dragging = 0;
+  dt_control_change_cursor(GDK_LEFT_PTR);
   return TRUE;
 }
 
