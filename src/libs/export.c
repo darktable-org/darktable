@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/label.h"
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
@@ -229,9 +230,9 @@ gui_init (dt_lib_module_t *self)
   
   GtkWidget *label;
 
-  label = gtk_label_new(_("storage"));
+  label = dtgtk_label_new("target storage", DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
   d->storage = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *it = darktable.imageio->plugins_storage;
   while(it)
@@ -240,18 +241,18 @@ gui_init (dt_lib_module_t *self)
     gtk_combo_box_append_text(d->storage, module->name());
     it = g_list_next(it);
   }
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage), 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (d->storage), "changed",
                     G_CALLBACK (storage_changed),
                     (gpointer)d);
 
   d->storage_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->storage_box), 0, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage_box), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage_box), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = gtk_label_new(_("file format"));
+  label = dtgtk_label_new("file format", DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
   it = darktable.imageio->plugins_format;
   while(it)
@@ -260,38 +261,40 @@ gui_init (dt_lib_module_t *self)
     gtk_combo_box_append_text(d->format, module->name());
     it = g_list_next(it);
   }
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format), 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (d->format), "changed",
                     G_CALLBACK (format_changed),
                     (gpointer)d);
 
   d->format_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->format_box), 0, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format_box), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format_box), 0, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
+  label = dtgtk_label_new("global options", DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->width  = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
   label = gtk_label_new(_("max size"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->width), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 1, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("intent"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->intent = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(d->intent, _("image settings"));
   gtk_combo_box_append_text(d->intent, _("perceptual"));
   gtk_combo_box_append_text(d->intent, _("relative colorimetric"));
   gtk_combo_box_append_text(d->intent, C_("rendering intent", "saturation"));
   gtk_combo_box_append_text(d->intent, _("absolute colorimetric"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   d->profiles = NULL;
 
@@ -349,9 +352,9 @@ gui_init (dt_lib_module_t *self)
   GList *l = d->profiles;
   label = gtk_label_new(_("profile"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->profile = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_combo_box_append_text(d->profile, _("image settings"));
   while(l)
   {
@@ -374,7 +377,7 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)d);
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (export_button_clicked),
