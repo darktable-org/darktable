@@ -62,10 +62,6 @@ void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam);
 /** Lock camera control and notify listener. \note Locks mutex and signals CAMERA_CONTROL_AVAILABLE. \see _camctl_lock() */
 void _camctl_unlock(const dt_camctl_t *c);
 
-
-
-
-
 /** Updates the cached configuration with a copy of camera configuration */
 void _camera_configuration_update(const dt_camctl_t *c,const dt_camera_t *camera);
 /** Commit the changes in cached configuration to the camera configuration */
@@ -166,24 +162,27 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
     {
       dt_print(DT_DEBUG_CAMCTL,"[camera_control] Executing remote camera capture job\n");
       CameraFilePath fp;
-      gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&fp, c->gpcontext);
+      int res=GP_OK;
+      if( (res = gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&fp, c->gpcontext)) == GP_OK ) {
       
-      CameraFile *destination;
-      char filename[512]={0};
-      const char *path=_dispatch_request_image_path(c,camera);
-      if( path )
-        strcat(filename,path);
-      else
-        strcat(filename,"/tmp/");
-      strcat(filename,fp.name);
-      int handle = open( filename, O_CREAT | O_WRONLY,0666);
-      gp_file_new_from_fd( &destination , handle );
-      gp_camera_file_get( camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-      close( handle );
+        CameraFile *destination;
+        char filename[512]={0};
+        const char *path = _dispatch_request_image_path(c,camera);
+        if( path )
+          strcat(filename,path);
+        else
+          strcat(filename,"/tmp/");
+        strcat(filename,fp.name);
+        int handle = open( filename, O_CREAT | O_WRONLY,0666);
+        gp_file_new_from_fd( &destination , handle );
+        gp_camera_file_get( camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
+        close( handle );
+          
+        // Notify listerners of captured image
+        _dispatch_camera_image_downloaded(c,camera,filename);
+      } else
+        dt_print(DT_DEBUG_CAMCTL,"[camera_control] Capture job failed to capture image %d\n",res);
         
-      // Notify listerners of captured image
-      _dispatch_camera_image_downloaded(c,camera,filename);
-      
       
     } break;
     
@@ -429,7 +428,7 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam) {
     }
     
     // read a full copy of config to configuration cache
-     gp_camera_get_config( cam->gpcam, &cam->configuration, c->gpcontext );
+    gp_camera_get_config( cam->gpcam, &cam->configuration, c->gpcontext );
   
     pthread_mutex_init(&cam->jobqueue_lock, NULL);
   
@@ -574,8 +573,10 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags
 
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam)
 {
+  _camctl_lock(c,cam);
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   camctl->wanted_camera=cam;
+  _camctl_unlock(c);
 }
 
 
@@ -642,17 +643,8 @@ void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,c
   job->name=g_strdup(property_name);
   job->value=g_strdup(value);
   
+  // Push the job on the jobqueue 
   _camera_add_job( camctl, camera, job);
-  
-  /*
-  pthread_mutex_lock( &camera->config_lock );
-  CameraWidget *widget;
-  if(  gp_widget_get_child_by_name ( camera->configuration, property_name, &widget) == GP_OK) {
-    gp_widget_set_value ( widget , &value);
-    gp_widget_set_changed( widget, 1 );
-  }
-  
-  pthread_mutex_unlock( &camera->config_lock);*/
 }
 
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name)
@@ -759,15 +751,7 @@ void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam)
   _camctl_camera_job_t *job=g_malloc(sizeof(_camctl_camera_job_t));
   job->type=_JOB_TYPE_EXECUTE_CAPTURE;
   _camera_add_job( camctl, camera, job);
-  
-  /*CameraFilePath source;
-  gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&source, c->gpcontext);*/
-  
-  /** TODO: Does the event handling GP_EVENT_CAPTURE_COMPLETE trig this completion
-    or do we need to handle filedownload by our self? maybe trig same code as GP_EVENT_FILE_ADDED use...
-    maybe we can emit a GP_EVENT_FILE_ADDED event to the camera from host application?
-    NEEDS INVESTIGATE!!
-  */
+
 }
 
 void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
