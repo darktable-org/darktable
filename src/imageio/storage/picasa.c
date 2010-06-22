@@ -136,7 +136,9 @@ void _picasa_api_free( _picasa_api_context_t *ctx ){
 }
   
 
-_picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password) {
+_picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password)
+{
+  if(username[0] == '\0' || password[0] == '\0') return NULL;
   _picasa_api_context_t *ctx = (_picasa_api_context_t *)g_malloc(sizeof(_picasa_api_context_t));
   memset(ctx,0,sizeof(_picasa_api_context_t));
   ctx->curl_handle = curl_easy_init();
