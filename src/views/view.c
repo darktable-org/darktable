@@ -225,6 +225,7 @@ void dt_view_manager_mouse_leave (dt_view_manager_t *vm)
 
 void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
 {
+  static int oldstate = 0;
   const float tb = darktable.control->tabborder;
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
@@ -238,6 +239,11 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
   else if(vm->film_strip_on && v->height + tb < y && vm->film_strip.mouse_moved)
     vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - tb, which);
   else if(v->mouse_moved) v->mouse_moved(v, x, y, which);
+
+  int state = vm->film_strip_on && (v->height + tb > y) && (y > v->height);
+  if(state && !oldstate)      dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+  else if(oldstate && !state) dt_control_change_cursor(GDK_LEFT_PTR);
+  oldstate = state;
 }
 
 int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, int which, uint32_t state)
