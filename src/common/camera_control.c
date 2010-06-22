@@ -625,7 +625,7 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *c
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get model of camera, camera==NULL\n"); 
     return NULL;
   }
-  return cam->model;	
+  return g_strdup(cam->model);	
 }
 
 void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value) {
