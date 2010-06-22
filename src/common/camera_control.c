@@ -373,14 +373,14 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   pthread_mutex_unlock(&camctl->lock);
 }
 
-static void *_camera_event_thread(void *data) {
+void *_camera_event_thread(void *data) {
   dt_camctl_t *camctl=(dt_camctl_t *)data;
 
   const dt_camera_t *camera=camctl->active_camera;
   
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Starting camera event thread %lx of context %lx\n",(unsigned long int)camctl->camera_event_thread,(unsigned long int)data);
   
-  while(camera->is_tethering==TRUE) 
+  while( camera->is_tethering == TRUE ) 
   {
     // Poll event from camera
     _camera_poll_events(camctl,camera);
@@ -596,7 +596,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean
     dt_camctl_t *camctl=(dt_camctl_t *)c;
     dt_camera_t *camera=(dt_camera_t *)cam;
     
-    if( enable==TRUE)
+    if( enable==TRUE && camera->is_tethering != TRUE)
     {
       _camctl_lock(c,cam);
       // Start up camera event polling thread
@@ -620,17 +620,12 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean
 const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *cam)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
-  gdk_threads_enter();
   if( !cam && ( (cam = camctl->active_camera) == NULL  || (cam = camctl->wanted_camera) == NULL))
   {
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get model of camera, camera==NULL\n"); 
-    gdk_threads_leave();
     return NULL;
   }
-  gchar *crap=g_strdup(cam->model);	
-  gdk_threads_leave();
-    
-  return crap;
+  return cam->model;
 }
 
 void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value) {
