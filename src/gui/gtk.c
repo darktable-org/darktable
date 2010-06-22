@@ -383,14 +383,14 @@ update_query()
   if (query == NULL)
     return;
   gchar *q = query;
-  if(!strncmp(query, "select * from (", 15)) q = query + 15;
+  if(!strncmp(query, "select distinct * from (", 24)) q = query + 24;
   gchar **split = g_regex_split_simple("flags & 7", q, 0, 0);
   char newquery[1024], filter[512];
   if(j == 1) snprintf(filter, 512, "flags & 7) < 1");
   else       snprintf(filter, 512, "flags & 7) >= %d", j-1);
   // g_strstr_len(split[0], -1, "where ");
   if(i == 4)
-    snprintf(newquery, 1024, "select * from (%s %s) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
+    snprintf(newquery, 1024, "select distinct * from (%s %s) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
   else
     snprintf(newquery, 1024, "%s %s order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
   g_strfreev(split);

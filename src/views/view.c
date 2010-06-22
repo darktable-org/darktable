@@ -566,24 +566,30 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   cairo_new_path(cr);
 
   { // color labels:
-    const int x = zoom == 1 ? (0.04+5*0.04)*fscale : 0.9*width;
+    const int x = zoom == 1 ? (0.04+5*0.04)*fscale : .7*width;
     const int y = zoom == 1 ? 0.12*fscale: 0.1*height;
     const int r = zoom == 1 ? 0.02*fscale : 0.06*width;
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
     sqlite3_bind_int(stmt, 1, img->id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
+    while(sqlite3_step(stmt) == SQLITE_ROW)
     {
+      cairo_save(cr);
       int col = sqlite3_column_int(stmt, 0);
-      if     (col == 0) cairo_set_source_rgb(cr, 1.0, 0.2, 0.2);
-      else if(col == 1) cairo_set_source_rgb(cr, 1.0, 1.0, 0.2);
-      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 1.0, 0.2);
-      cairo_arc(cr, x, y, r, 0.0, 2.0*M_PI);
+      if     (col == 0) cairo_set_source_rgb(cr, 0.8, 0.2, 0.2);
+      else if(col == 1) cairo_set_source_rgb(cr, 0.8, 0.8, 0.2);
+      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 0.8, 0.2);
+      cairo_translate(cr, 2*r*col, 0.0);
+      cairo_translate(cr, x, y);
+      cairo_scale(cr, .6, 1.);
+      cairo_arc(cr, 0.0, 0.0, r, 0.0, 2.0*M_PI);
       cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 1.0);
+      cairo_set_line_width(cr, 2.0);
       cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
       cairo_stroke(cr);
+      cairo_restore(cr);
     }
+    sqlite3_finalize(stmt);
   }
 
   if(zoom == 1)

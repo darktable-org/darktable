@@ -52,8 +52,8 @@ void dt_colorlabels_toggle_label_selection (const int color)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // label al previously unlabeled images:
-  sqlite3_prepare_v2(darktable.db, "insert or replace into color_labels select imgid, ?1 from selected_images where imgid not in (select imgid from color_labels_temp)", -1, &stmt, NULL);
+  // label all previously unlabeled images:
+  sqlite3_prepare_v2(darktable.db, "insert into color_labels select imgid, ?1 from selected_images where imgid not in (select imgid from color_labels_temp)", -1, &stmt, NULL);
   sqlite3_bind_int(stmt, 1, color);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -79,8 +79,8 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
     sqlite3_finalize(stmt2);
   }
   else
-  { // red label replaces green etc.
-    sqlite3_prepare_v2(darktable.db, "insert or replace into color_labels (imgid, color) values (?1, ?2)", -1, &stmt2, NULL);
+  {
+    sqlite3_prepare_v2(darktable.db, "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt2, NULL);
     sqlite3_bind_int(stmt2, 1, imgid);
     sqlite3_bind_int(stmt2, 2, color);
     sqlite3_step(stmt2);
