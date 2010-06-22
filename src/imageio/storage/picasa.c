@@ -627,7 +627,7 @@ gui_init (dt_imageio_module_storage_t *self)
   dt_storage_picasa_gui_data_t *ui= self->gui_data;
   self->widget = gtk_vbox_new(TRUE, 0);
   
-  GtkWidget *hbox1=gtk_hbox_new(FALSE,0);
+  GtkWidget *hbox1=gtk_hbox_new(FALSE,5);
   GtkWidget *vbox1=gtk_vbox_new(FALSE,0);
   GtkWidget *vbox2=gtk_vbox_new(FALSE,0);
   
@@ -665,6 +665,7 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
   
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
+  gtk_object_set(GTK_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), NULL);
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
   gtk_combo_box_set_row_separator_func(ui->comboBox1,combobox_separator,ui->comboBox1,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
@@ -680,6 +681,7 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label1 ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label2 ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label3 ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry1 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry2 ), TRUE, FALSE, 0);
@@ -689,7 +691,7 @@ gui_init (dt_imageio_module_storage_t *self)
   
   
   // Create Album
-  ui->hbox1=GTK_BOX(gtk_hbox_new(FALSE,0));
+  ui->hbox1=GTK_BOX(gtk_hbox_new(FALSE,5));
   gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), TRUE);
   vbox1=gtk_vbox_new(FALSE,0);
   vbox2=gtk_vbox_new(FALSE,0);
