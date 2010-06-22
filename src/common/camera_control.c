@@ -620,7 +620,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean
 const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *cam)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
-  if( !cam && ( (cam = camctl->active_camera) == NULL  || (cam = camctl->wanted_camera) == NULL))
+  if( !cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL )
   {
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get model of camera, camera==NULL\n"); 
     return NULL;
