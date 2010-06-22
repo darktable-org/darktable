@@ -178,7 +178,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   char datadir[1024];
   char filename[1024];
   dt_get_datadir(datadir, 1024);
-  if(!strcmp(p->iccprofile, "darktable"))
+  int preview_thumb = self->dev->image->flags & DT_IMAGE_THUMBNAIL;
+  if(!strcmp(p->iccprofile, "darktable") && !preview_thumb)
   {
     char maker[512];
     snprintf(maker, 512, "%s", self->dev->image->exif_maker);
@@ -194,7 +195,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     // if(!d->input) printf("could not find enhanced color matrix for `%s'!\n", makermodel);
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
-  if(!strcmp(p->iccprofile, "cmatrix"))
+  if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
   { // color matrix
     int ret;
     dt_image_full_path(self->dev->image, filename, 1024);
@@ -216,10 +217,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->input = dt_colorspaces_create_srgb_profile();
   }
-  else if(!strcmp(p->iccprofile, "linear_rgb"))
-  {
-    d->input = dt_colorspaces_create_linear_rgb_profile();
-  }
   else if(!strcmp(p->iccprofile, "infrared"))
   {
     d->input = dt_colorspaces_create_linear_infrared_profile();
@@ -231,6 +228,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   else if(!strcmp(p->iccprofile, "adobergb"))
   {
     d->input = dt_colorspaces_create_adobergb_profile();
+  }
+  else if(!strcmp(p->iccprofile, "linear_rgb") || preview_thumb)
+  {
+    d->input = dt_colorspaces_create_linear_rgb_profile();
   }
   else if(!d->input)
   {

@@ -36,6 +36,7 @@ typedef struct dt_lib_export_t
 {
   GtkSpinButton *width, *height;
   GtkComboBox *storage, *format;
+  int format_lut[128];
   GtkContainer *storage_box, *format_box;
   GtkComboBox *profile, *intent;
   GList *profiles;
