@@ -630,7 +630,7 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *c
 
 void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value) {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
-  if( !cam && ( (cam = camctl->active_camera) == NULL || (cam = camctl->wanted_camera) == NULL ))
+  if( !cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL )
   {
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to set property from camera, camera==NULL\n"); 
     return;
@@ -649,7 +649,7 @@ void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,c
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
-   if( !cam && ( (cam = camctl->active_camera) == NULL || (cam = camctl->wanted_camera) == NULL ))
+   if( !cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL )
   {
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get property from camera, camera==NULL\n"); 
     return NULL;
