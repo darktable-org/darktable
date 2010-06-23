@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=Darktable
+Name=Darktable Photo Workflow
 GenericName=Virtual Lighttable and Darkroom
 GenericName[ru]=Программа для отсмотра и проявки цифровых негативов
 
-Comment=A utility to organize and develop raw images from digital cameras
+Comment=Organize and develop images from digital cameras
 Comment[ru]=Организация, сортировка и проявка цифровых негативов
 
 Encoding=UTF-8
@@ -20,3 +20,4 @@ StartupNotify=true
 MimeType=application/x-darktable;image/x-dcraw;
 
 Icon=darktable
+
