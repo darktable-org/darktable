@@ -114,9 +114,9 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       {    
         gtk_combo_box_append_text(prop->values, value);
       } while( (value=dt_camctl_camera_property_get_next_choice(darktable.camctl,NULL,propertyname)) != NULL );
-	lib->gui.properties=g_list_append(lib->gui.properties,prop);
-	// Does dead lock!!!
-	g_signal_connect(G_OBJECT(prop->values), "changed", G_CALLBACK(property_changed_callback), (gpointer)prop);  
+      lib->gui.properties=g_list_append(lib->gui.properties,prop);
+      // Does dead lock!!!
+      g_signal_connect(G_OBJECT(prop->values), "changed", G_CALLBACK(property_changed_callback), (gpointer)prop);  
       return prop;
     }
   }
@@ -133,9 +133,11 @@ gint _compare_property_by_name(gconstpointer a,gconstpointer b)
 /** Invoked when a value of a property is changed. */
 static void _camera_property_value_changed(const dt_camera_t *camera,const char *name,const char *value,void *data)
 {
+
   dt_lib_camera_t *lib=(dt_lib_camera_t *)data;
   // Find the property in lib->data.properties, update value
   GList *citem;
+  gdk_threads_enter();
   if( (citem=g_list_find_custom(lib->gui.properties,name,_compare_property_by_name)) != NULL ) 
   {
     dt_lib_camera_property_t *prop=(dt_lib_camera_property_t*)citem->data;
@@ -150,11 +152,15 @@ static void _camera_property_value_changed(const dt_camera_t *camera,const char 
         if(strcmp(str,value)==0)
         {
           gtk_combo_box_set_active(prop->values,index);
-          return;
+    
+          break;
         }
         index++;
       } while( gtk_tree_model_iter_next(model,&iter) == TRUE);
   }
+  gdk_flush();
+  gdk_threads_leave();
+  
 }
 
 /** Invoked when accesibility of a property is changed. */
