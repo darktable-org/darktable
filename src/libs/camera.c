@@ -186,6 +186,17 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_add_job(darktable.control, &j);
 }
 
+static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data) {
+  dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
+  GtkWidget *w=NULL;
+  if( widget == GTK_WIDGET(lib->gui.tb1) ) w = lib->gui.sb1;
+  else if( widget == GTK_WIDGET(lib->gui.tb2) ) w = lib->gui.sb2;
+  
+  if(w)
+    gtk_widget_set_sensitive( w, gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget) ) );
+  
+}
+
 static void _osd_button_clicked(GtkWidget *widget, gpointer user_data) {
   dt_control_gui_queue_draw();
 }
@@ -321,8 +332,12 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), NULL);
   gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), NULL);
 
+  g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
+  g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(_capture_button_clicked), lib);
 
+  gtk_widget_set_sensitive( GTK_WIDGET(lib->gui.sb1),FALSE);
+  gtk_widget_set_sensitive( GTK_WIDGET(lib->gui.sb2),FALSE);
   
   // Camera settings
   dt_lib_camera_property_t *prop;

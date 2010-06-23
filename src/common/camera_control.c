@@ -799,7 +799,8 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
     } 
     else
     {
-      dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to wait for camera event\n");
+	wait_timedout=TRUE;
+     // dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to wait for camera event\n");
       
     }
   }
