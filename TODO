@@ -20,6 +20,10 @@ webpage updates:
 
 - prevent tab on/off for some form widgets
 
+- exposure dragging in hist with more active areas: black/gain/exp
+
+- metadata: include film roll name?
+
 
 0.7 release:
 - tagging to include description/title/licence and presets

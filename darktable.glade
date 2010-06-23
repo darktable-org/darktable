@@ -514,13 +514,12 @@ file manager</property>
                                   </widget>
                                 </child>
                               </widget>
-                                <packing>
-                                  <property name="expand">False</property>
-                                  <property name="fill">False</property>
-                                  <property name="position">0</property>
-                                </packing>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
                             </child>
-                            
                             <child>
                               <widget class="GtkEventBox" id="library_eventbox">
                                 <property name="visible">True</property>
@@ -717,7 +716,7 @@ all film rolls</property>
                                       </widget>
                                     </child>
                                     <child>
-                                      <widget class="GtkLabel" id="label1">
+                                      <widget class="GtkLabel" id="label2">
                                         <property name="visible">True</property>
                                         <property name="label" translatable="yes">library</property>
                                       </widget>
@@ -843,7 +842,7 @@ all film rolls</property>
                                         <property name="visible">True</property>
                                         <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                         <property name="border_width">5</property>
-                                        <property name="n_rows">11</property>
+                                        <property name="n_rows">12</property>
                                         <property name="n_columns">2</property>
                                         <child>
                                           <widget class="GtkLabel" id="label20">
@@ -1050,7 +1049,7 @@ all film rolls</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="label2">
+                                          <widget class="GtkLabel" id="label4">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="xpad">5</property>
@@ -1076,7 +1075,7 @@ all film rolls</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="label4">
+                                          <widget class="GtkLabel" id="label5">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="xpad">5</property>
@@ -1089,7 +1088,7 @@ all film rolls</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="label5">
+                                          <widget class="GtkLabel" id="label8">
                                             <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="xpad">5</property>
@@ -1125,6 +1124,33 @@ all film rolls</property>
                                             <property name="right_attach">2</property>
                                             <property name="top_attach">10</property>
                                             <property name="bottom_attach">11</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="label14">
+                                            <property name="visible">True</property>
+                                            <property name="xalign">0</property>
+                                            <property name="xpad">5</property>
+                                            <property name="label" translatable="yes">film roll</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="top_attach">11</property>
+                                            <property name="bottom_attach">12</property>
+                                            <property name="x_options">GTK_FILL</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="metadata_label_filmroll">
+                                            <property name="visible">True</property>
+                                            <property name="xalign">0</property>
+                                            <property name="label" translatable="yes">-</property>
+                                            <property name="ellipsize">middle</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="left_attach">1</property>
+                                            <property name="right_attach">2</property>
+                                            <property name="top_attach">11</property>
+                                            <property name="bottom_attach">12</property>
                                           </packing>
                                         </child>
                                       </widget>
@@ -1305,7 +1331,7 @@ all film rolls</property>
                                       </widget>
                                     </child>
                                     <child>
-                                      <widget class="GtkLabel" id="label8">
+                                      <widget class="GtkLabel" id="label13">
                                         <property name="visible">True</property>
                                         <property name="label" translatable="yes">history</property>
                                       </widget>

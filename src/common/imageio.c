@@ -284,7 +284,8 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 // only set mip4..0.
 dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
-  (void) dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void) dt_exif_read(img, filename);
   // init libraw stuff
   // img = dt_image_cache_use(img->id, 'r');
   dt_imageio_retval_t retval = DT_IMAGEIO_OK;
@@ -446,7 +447,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   else
   {
 try_full_raw:
-    // buggy :(
     raw->params.half_size = 1; /* dcraw -h */
     // raw->params.user_qual = 2;
     ret = libraw_open_file(raw, filename);
@@ -575,7 +575,8 @@ error_raw_corrupted:
 
 dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
-  (void) dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void) dt_exif_read(img, filename);
   // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);
@@ -741,7 +742,8 @@ void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
 
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
-  (void) dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void) dt_exif_read(img, filename);
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;
@@ -812,7 +814,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
-  (void) dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void) dt_exif_read(img, filename);
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
 
   dt_imageio_jpeg_t jpg;

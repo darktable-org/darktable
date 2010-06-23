@@ -227,6 +227,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     // std::cout << "lens c++: " << img->exif_lens << std::endl;
     // std::cout << "lensptr : " << (long int)(img->exif_lens) << std::endl;
     // std::cout << "imgptr  : " << (long int)(img) << std::endl;
+    img->exif_inited = 1;
     return 0;
   }
   catch (Exiv2::AnyError& e)

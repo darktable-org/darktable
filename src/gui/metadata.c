@@ -30,7 +30,7 @@ void dt_gui_metadata_update()
   
   if(mouse_over_id >= 0)
   {
-    const int ll = 100;
+    const int ll = 512;
     char lbl[ll];
     dt_image_t *img = dt_image_cache_use(mouse_over_id, 'r');
     if(!img || img->film_id == -1)
@@ -38,6 +38,11 @@ void dt_gui_metadata_update()
       dt_image_cache_release(img, 'r');
       goto fill_minuses;
     }
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_filmroll");
+    dt_image_film_roll(img, lbl, ll);
+    gtk_label_set_text(GTK_LABEL(widget), lbl);
+    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", lbl, NULL);
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_filename");
     snprintf(lbl, ll, "%s", img->filename);
     gtk_label_set_text(GTK_LABEL(widget), lbl);

@@ -80,6 +80,7 @@ dt_image_raw_parameters_t;
 typedef struct dt_image_t
 {
   // minimal exif data here (all in multiples of 4-byte to interface nicely with c++):
+  int32_t exif_inited;
   int32_t orientation;
   float exif_exposure;
   float exif_aperture;
@@ -122,6 +123,8 @@ int dt_image_is_ldr(dt_image_t *img);
 void dt_image_full_path(dt_image_t *img, char *pathname, int len);
 /** returns the full path where to export the image (file ending remains original). */
 void dt_image_export_path(dt_image_t *img, char *pathname, int len);
+/** returns the film roll name, i.e. without the path. */
+void dt_image_film_roll(dt_image_t *img, char *pathname, int len);
 /** appends version numbering for duplicated images. */
 void dt_image_path_append_version(dt_image_t *img, char *pathname, const int len);
 /** prints a one-line exif information string. */

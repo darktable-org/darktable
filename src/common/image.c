@@ -56,6 +56,30 @@ int dt_image_is_ldr(dt_image_t *img)
   else return 0;
 }
 
+void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
+{
+  if(img->film_id == 1)
+  {
+    snprintf(pathname, len, "%s", _("single images"));
+  }
+  else
+  {
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1, img->film_id);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      char *f = (char *)sqlite3_column_text(stmt, 0);
+      char *c = f + strlen(f);
+      while(c > f && *c  != '/') c--;
+      if(*c == '/' && c != f) c++;
+      snprintf(pathname, len, "%s", c);
+    }
+    sqlite3_finalize(stmt);
+  }
+  pathname[len-1] = '\0';
+}
+
 void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 {
   if(img->film_id == 1)
@@ -547,6 +571,7 @@ void dt_image_init(dt_image_t *img)
   img->id = -1;
   img->cacheline = -1;
   img->force_reimport = 0;
+  img->exif_inited = 0;
   bzero(img->exif_maker, sizeof(img->exif_maker));
   bzero(img->exif_model, sizeof(img->exif_model));
   bzero(img->exif_lens, sizeof(img->exif_lens));
@@ -599,6 +624,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
     img->black   = sqlite3_column_double(stmt, 20);
     img->maximum = sqlite3_column_double(stmt, 21);
+    img->exif_inited = 1;
     
     ret = 0;
   }
