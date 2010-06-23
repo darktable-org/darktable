@@ -197,4 +197,5 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,cons
 /** Get next choice availble for named property. */
 const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 
+
 #endif

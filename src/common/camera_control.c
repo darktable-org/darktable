@@ -761,7 +761,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
   gboolean wait_timedout=FALSE;
   while( !wait_timedout )
   {
-    if( (res=gp_camera_wait_for_event( cam->gpcam, 100, &event, &data, c->gpcontext ) )>= GP_OK ) {
+    if( (res=gp_camera_wait_for_event( cam->gpcam, 100, &event, &data, c->gpcontext ) )== GP_OK ) {
       if( event == GP_EVENT_UNKNOWN )
       {
           if( strstr( (char *)data, "4006" ) )
@@ -799,8 +799,8 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
     } 
     else
     {
-      // Catch any error and handle the situation..
-      // Assume that camer connection is broken..
+      dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to wait for camera event\n");
+      
     }
   }
 }

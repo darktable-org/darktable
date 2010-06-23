@@ -137,7 +137,6 @@ static void _camera_property_value_changed(const dt_camera_t *camera,const char 
   dt_lib_camera_t *lib=(dt_lib_camera_t *)data;
   // Find the property in lib->data.properties, update value
   GList *citem;
-  gdk_threads_enter();
   if( (citem=g_list_find_custom(lib->gui.properties,name,_compare_property_by_name)) != NULL ) 
   {
     dt_lib_camera_property_t *prop=(dt_lib_camera_property_t*)citem->data;
@@ -158,8 +157,6 @@ static void _camera_property_value_changed(const dt_camera_t *camera,const char 
         index++;
       } while( gtk_tree_model_iter_next(model,&iter) == TRUE);
   }
-  gdk_flush();
-  gdk_threads_leave();
   
 }
 
