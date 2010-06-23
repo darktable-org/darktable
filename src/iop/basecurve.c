@@ -50,8 +50,8 @@ static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
 static const char nikon[] = N_("nikon like");
 static const char sony_alpha[] = N_("sony alpha like");
-static const char fotogenic_v41[] = N_("fotogenic - point and shoot v4.1");
-static const char fotogenic_v42[] = N_("fotogenic - ev3 v4.2");
+static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
+static const char fotogenetic_v42[] = N_("fotogenetic (ev3)");
 
 typedef struct basecurve_preset_t
 {
@@ -64,21 +64,21 @@ typedef struct basecurve_preset_t
 }
 basecurve_preset_t;
 
-static const int basecurve_presets_cnt = 6;
 static const basecurve_preset_t basecurve_presets[] = {
   {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve (well tested):
   {canon_eos, "Canon", "", 0, 51200, {{0.000000, 0.028226, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
-  // pascals nikon curve (probably wrong/broken):
-  {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.080000, 0.346774, 0.947581, 0.987903, 1.000000}, {0.000000, 0.045323, 0.391935, 0.926613, 0.973629, 1.000000}, 0}, 1},
+  // pascals nikon curve (new curve, needs testing):
+  {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals sony alpha curve (needs testing):
   {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}, 0}, 1},
-  // Fotogenic - Point and shoot v4.1
-  {fotogenic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
-  // Fotogenic - EV3 v4.2
-  {fotogenic_v42, "", "", 0, 51200, {{0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}, 0}, 0}
+  // Fotogenetic - Point and shoot v4.1
+  {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
+  // Fotogenetic - EV3 v4.2
+  {fotogenetic_v42, "", "", 0, 51200, {{0.000000, 0.100943, 0.201886, 0.301010, 0.404040, 1.000000}, {0.000000, 0.125252, 0.250505, 0.377778, 0.503030, 0.876768}, 0}, 0}
 };
+static const int basecurve_presets_cnt = sizeof(basecurve_presets)/sizeof(basecurve_preset_t);
 
 typedef struct dt_iop_basecurve_gui_data_t
 {
@@ -114,13 +114,13 @@ void init_presets (dt_iop_module_t *self)
   for(int k=0;k<basecurve_presets_cnt;k++)
   {
     // add the preset.
-    dt_gui_presets_add_generic(basecurve_presets[k].name, self->op, &basecurve_presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
+    dt_gui_presets_add_generic(_(basecurve_presets[k].name), self->op, &basecurve_presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
     // and restrict it to model, maker, iso, and raw images
-    dt_gui_presets_update_mml(basecurve_presets[k].name, self->op, basecurve_presets[k].maker, basecurve_presets[k].model, "");
-    dt_gui_presets_update_iso(basecurve_presets[k].name, self->op, basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
-    dt_gui_presets_update_ldr(basecurve_presets[k].name, self->op, 2);
+    dt_gui_presets_update_mml(_(basecurve_presets[k].name), self->op, basecurve_presets[k].maker, basecurve_presets[k].model, "");
+    dt_gui_presets_update_iso(_(basecurve_presets[k].name), self->op, basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
+    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, 2);
     // make it auto-apply for matching images:
-    dt_gui_presets_update_autoapply(basecurve_presets[k].name, self->op, basecurve_presets[k].autoapply);
+    dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, basecurve_presets[k].autoapply);
   }
   // sql commit
   sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
@@ -164,8 +164,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   }
   for(int k=0;k<0x10000;k++)
-    // d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
+  {
     d->table[k] = dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k);
+  }
 #endif
 }
 

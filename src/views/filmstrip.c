@@ -92,16 +92,12 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   const float ht = height;
 
   const int seli = pointerx / (float)wd;
-  // const int selj = pointery / (float)ht;
 
   const int img_pointerx = fmodf(pointerx, wd);
   const int img_pointery = pointery;
 
-  // const int max_rows = 1;
   const int max_cols = (int)(1+width/(float)wd);
   sqlite3_stmt *stmt = NULL;
-  // int id, last_seli = 1<<30, last_selj = 1<<30;
-  // int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   gchar *query = dt_conf_get_string ("plugins/lighttable/query");
   if(!query) return;
@@ -111,7 +107,7 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
     return;
   }
   char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 8);
+  snprintf(newquery, 1024, "select count(id) %s", query + 17);
   sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, 0);
   sqlite3_bind_int (stmt, 2, -1);
@@ -138,32 +134,9 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
         // set mouse over id
         if(seli == col)
         {
-          // firstsel = lib->offset + selj*iir + seli;
           mouse_over_id = image->id;
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
-#if 0
-        // add clicked image to selected table
-        if(clicked1)
-        {
-          if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
-          { // clear selected if no modifier
-            sqlite3_stmt *stmt2;
-            sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
-            sqlite3_bind_int(stmt2, 1, image->id);
-            sqlite3_step(stmt2);
-            sqlite3_finalize(stmt2);
-          }
-          if((lib->modifiers & GDK_SHIFT_MASK) && image->id == lib->last_selected_id) { last_seli = col; last_selj = row; }
-          if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                    col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
-              (seli == col && selj == row))
-          { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
-            dt_library_toggle_selection(image->id);
-            lib->last_selected_id = image->id;
-          }
-        }
-#endif
         cairo_save(cr);
         dt_view_image_expose(image, &(strip->image_over), image->id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
         cairo_restore(cr);
@@ -256,45 +229,17 @@ void reset(dt_view_t *self)
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 }
 
-
-// TODO: what's with this?
-#if 0
-void mouse_leave(dt_view_t *self)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-  if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
-  {
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-    dt_control_queue_draw_all(); // remove focus
-  }
-}
-#endif
-
-
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   // update stars/etc :(
   dt_control_queue_draw_all();
 }
 
-
-#if 0
-int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-  if(which == 1) dt_control_change_cursor(GDK_ARROW);
-  return 1;
-}
-#endif
-
-
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
-  // strip->modifiers = state;
-  // strip->button = which;
   if(which == 1 && type == GDK_2BUTTON_PRESS)
   {
     // emit some selection event.

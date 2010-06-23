@@ -225,6 +225,7 @@ void dt_view_manager_mouse_leave (dt_view_manager_t *vm)
 
 void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
 {
+  static int oldstate = 0;
   const float tb = darktable.control->tabborder;
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
@@ -238,6 +239,11 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
   else if(vm->film_strip_on && v->height + tb < y && vm->film_strip.mouse_moved)
     vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - tb, which);
   else if(v->mouse_moved) v->mouse_moved(v, x, y, which);
+
+  int state = vm->film_strip_on && (v->height + tb > y) && (y > v->height);
+  if(state && !oldstate)      dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+  else if(oldstate && !state) dt_control_change_cursor(GDK_LEFT_PTR);
+  oldstate = state;
 }
 
 int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, int which, uint32_t state)
@@ -245,7 +251,7 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
   vm->film_strip_dragging = 0;
-  dt_control_change_cursor(GDK_ARROW);
+  dt_control_change_cursor(GDK_LEFT_PTR);
   if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_released)
     return vm->film_strip.button_released(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, state);
   else if(v->button_released) return v->button_released(v, x, y, which, state);
@@ -560,24 +566,30 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   cairo_new_path(cr);
 
   { // color labels:
-    const int x = zoom == 1 ? (0.04+5*0.04)*fscale : 0.9*width;
+    const int x = zoom == 1 ? (0.04+5*0.04)*fscale : .7*width;
     const int y = zoom == 1 ? 0.12*fscale: 0.1*height;
     const int r = zoom == 1 ? 0.02*fscale : 0.06*width;
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
     sqlite3_bind_int(stmt, 1, img->id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
+    while(sqlite3_step(stmt) == SQLITE_ROW)
     {
+      cairo_save(cr);
       int col = sqlite3_column_int(stmt, 0);
-      if     (col == 0) cairo_set_source_rgb(cr, 1.0, 0.2, 0.2);
-      else if(col == 1) cairo_set_source_rgb(cr, 1.0, 1.0, 0.2);
-      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 1.0, 0.2);
-      cairo_arc(cr, x, y, r, 0.0, 2.0*M_PI);
+      if     (col == 0) cairo_set_source_rgb(cr, 0.8, 0.2, 0.2);
+      else if(col == 1) cairo_set_source_rgb(cr, 0.8, 0.8, 0.2);
+      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 0.8, 0.2);
+      cairo_translate(cr, 2*r*col, 0.0);
+      cairo_translate(cr, x, y);
+      cairo_scale(cr, .6, 1.);
+      cairo_arc(cr, 0.0, 0.0, r, 0.0, 2.0*M_PI);
       cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 1.0);
+      cairo_set_line_width(cr, 2.0);
       cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
       cairo_stroke(cr);
+      cairo_restore(cr);
     }
+    sqlite3_finalize(stmt);
   }
 
   if(zoom == 1)

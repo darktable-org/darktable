@@ -289,23 +289,27 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       maxwd = pipe->iwidth;
       maxht = pipe->iheight;
     }
-    if(roi_in.width  > maxwd)
+    // only necessary if mem area would overflow:
+    if(roi_in.width*roi_in.height > maxwd*maxht)
     {
-      const float f = maxwd/(float)roi_in.width;
-      roi_in.scale  *= f;
-      roi_in.height *= f;
-      roi_in.x      *= f;
-      roi_in.y      *= f;
-      roi_in.width   = maxwd;
-    }
-    if(roi_in.height > maxht)
-    {
-      const float f  = maxht/(float)roi_in.height;
-      roi_in.scale  *= f;
-      roi_in.x      *= f;
-      roi_in.y      *= f;
-      roi_in.width  *= f;
-      roi_in.height  = maxht;
+      if(roi_in.width  > maxwd)
+      {
+        const float f = maxwd/(float)roi_in.width;
+        roi_in.scale  *= f;
+        roi_in.height *= f;
+        roi_in.x      *= f;
+        roi_in.y      *= f;
+        roi_in.width   = maxwd;
+      }
+      if(roi_in.height > maxht)
+      {
+        const float f  = maxht/(float)roi_in.height;
+        roi_in.scale  *= f;
+        roi_in.x      *= f;
+        roi_in.y      *= f;
+        roi_in.width  *= f;
+        roi_in.height  = maxht;
+      }
     }
 
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;

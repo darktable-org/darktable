@@ -19,4 +19,4 @@ StartupNotify=true
 
 MimeType=application/x-darktable;image/x-dcraw;
 
-Icon=darktable.png
+Icon=darktable

@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/fswatch.h"
+#include "common/pwstorage/pwstorage.h"
 #include "common/camera_control.h"
 #include "common/film.h"
 #include "common/image.h"
@@ -62,7 +63,7 @@ int dt_init(int argc, char *argv[])
     {
       if(!strcmp(argv[k], "--help"))
       {
-        printf("usage: %s [-d {cache,control,dev,fswatch,camctl}] [IMG_1234.{RAW,..}]\n", argv[0]);
+        printf("usage: %s [-d {cache,control,dev,fswatch,camctl,pwstorage}] [IMG_1234.{RAW,..}]\n", argv[0]);
         return 1;
       }
       else if(!strcmp(argv[k], "--version"))
@@ -78,6 +79,7 @@ int dt_init(int argc, char *argv[])
         if(!strcmp(argv[k+1], "fswatch")) darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
         if(!strcmp(argv[k+1], "camctl")) darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
         if(!strcmp(argv[k+1], "perf"))    darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
+        if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
         k ++;
       }
     }
@@ -105,6 +107,9 @@ int dt_init(int argc, char *argv[])
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
+
+  // Initialize the password storage engine
+  darktable.pwstorage=dt_pwstorage_new();	
 
   char dbfilename[1024];
   gchar *dbname = dt_conf_get_string("database");
@@ -215,6 +220,7 @@ void dt_cleanup()
   free(darktable.points);
 
   dt_camctl_destroy(darktable.camctl);
+  dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
 
   sqlite3_close(darktable.db);

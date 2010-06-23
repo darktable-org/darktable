@@ -614,18 +614,18 @@ gui_init (dt_imageio_module_format_t *self)
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
   // construct gui with jpeg specific options:
-  GtkWidget *box = gtk_hbox_new(FALSE, 5);
+  GtkWidget *box = gtk_hbox_new(FALSE, 20);
   self->widget = box;
   // quality slider
   g->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0, 100, 1, 97, 0));
   GtkWidget *label = gtk_label_new(_("quality"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->quality), "value-changed",
                     G_CALLBACK (quality_changed),
                     (gpointer)0);
-  // TODO: subsample dreggn
+  // TODO: add more options: subsample dreggn
 }
 
 void gui_cleanup (dt_imageio_module_format_t *self)

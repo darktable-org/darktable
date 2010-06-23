@@ -150,7 +150,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     return;
   }
   char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 8);
+  snprintf(newquery, 1024, "select count(id) %s", query + 17);
   sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, 0);
   sqlite3_bind_int (stmt, 2, -1);
@@ -328,7 +328,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   sqlite3_stmt *stmt = NULL;
   int rc;
   char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 8);
+  snprintf(newquery, 1024, "select count(id) %s", query + 17);
   sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, 0);
   sqlite3_bind_int (stmt, 2, -1);
@@ -671,7 +671,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->pan = 0;
-  if(which == 1) dt_control_change_cursor(GDK_ARROW);
+  if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
   return 1;
 }
 

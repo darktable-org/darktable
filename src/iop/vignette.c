@@ -307,7 +307,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_enabled = 0;
-  module->priority = 970;
+  module->priority = 997;
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
   dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t){80,50,50,.0,0,FALSE,FALSE,{0,0}};

@@ -20,6 +20,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "develop/develop.h"
+#include "control/control.h"
 
 #define DT_HIST_INSET 5
 
@@ -39,6 +40,9 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_motion_notify), n);
   g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (dt_gui_histogram_leave_notify), n);
+  g_signal_connect (G_OBJECT (widget), "enter-notify-event",
+                    G_CALLBACK (dt_gui_histogram_enter_notify), n);
+  gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 }
 
 void dt_gui_histogram_cleanup(dt_gui_histogram_t *n) {}
@@ -141,7 +145,7 @@ gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event
   if(n->dragging && n->exposure && n->set_white)
   {
     float white = n->white - (event->x - n->button_down_x)*
-      darktable.develop->image->maximum/(float)widget->allocation.width; 
+      1.0f/(float)widget->allocation.width; 
     n->set_white(n->exposure, white);
   }
   gint x, y; // notify gtk for motion_hint.
@@ -175,10 +179,17 @@ gboolean dt_gui_histogram_button_release(GtkWidget *widget, GdkEventButton *even
   return TRUE;
 }
 
+gboolean dt_gui_histogram_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_control_change_cursor(GDK_HAND1);
+  return TRUE;
+}
+
 gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
   n->dragging = 0;
+  dt_control_change_cursor(GDK_LEFT_PTR);
   return TRUE;
 }
 

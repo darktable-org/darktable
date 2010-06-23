@@ -39,6 +39,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
 gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 gboolean dt_gui_histogram_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 gboolean dt_gui_histogram_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+gboolean dt_gui_histogram_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 void dt_gui_histogram_draw_8(cairo_t *cr, float *hist, int32_t channel);
 

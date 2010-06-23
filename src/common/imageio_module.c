@@ -138,6 +138,8 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
 
+  if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = NULL;
+
   return 0;
 error:
   fprintf(stderr, "[imageio_load_module] failed to open storage `%s': %s\n", plugin_name, g_module_error());

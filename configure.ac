@@ -6,7 +6,7 @@ AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_CXX
 IT_PROG_INTLTOOL([0.40])
-ALL_LINGUAS="de es fr nl ru sv"
+ALL_LINGUAS="de es fi fr nl ru sv"
 AM_GLIB_GNU_GETTEXT
 AM_GLIB_DEFINE_LOCALEDIR(DARKTABLE_LOCALEDIR)
 GETTEXT_PACKAGE=darktable
@@ -110,6 +110,7 @@ PKG_CHECK_MODULES(PNG, libpng >= 1.2)
 PKG_CHECK_MODULES(OPENEXR, OpenEXR >= 1.6)
 PKG_CHECK_MODULES(GPHOTO2, [libgphoto2 >= 2.4.5])
 PKG_CHECK_MODULES(CURL, [libcurl >= 7.18.0])
+PKG_CHECK_MODULES(DBUSGLIB, [dbus-glib-1 >= 0.84])
 
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),

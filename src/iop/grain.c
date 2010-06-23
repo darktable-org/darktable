@@ -63,9 +63,9 @@ dt_iop_grain_params_t;
 typedef struct dt_iop_grain_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1,*label2,*label3;	           // channel, scale, strength
-  GtkComboBox *combo1;			                      // channel
-  GtkDarktableSlider *scale1,*scale2;        // scale, strength
+  GtkLabel  *label1,*label2,*label3;	      // channel, scale, strength
+  GtkComboBox *combo1;			                // channel
+  GtkDarktableSlider *scale1,*scale2;       // scale, strength
 }
 dt_iop_grain_gui_data_t;
 
@@ -307,54 +307,80 @@ const char *name()
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
-  
   // Apply grain to image
-  in  = (float *)ivoid;
-  out = (float *)ovoid;
-  float h,s,l;
-  double strength=(data->strength/100.0);
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  const double strength=(data->strength/100.0);
+  const double octaves=3;
+  // double zoom=1.0+(8*(data->scale/100.0));
+  const double wd = fminf(piece->buf_in.width, piece->buf_in.height);
+  const double zoom=(1.0+8*data->scale/100)/800.0;
+  const int filter = fabsf(roi_out->scale - 1.0) > 0.01;
+  // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to pixelpipe iscale)
+  const double filtermul = piece->iscale/(roi_out->scale*wd);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data)
+#endif
+  for(int j=0;j<roi_out->height;j++)
   {
-    double x = (roi_out->x + i)/roi_out->scale;
-    double y = (roi_out->y + j)/roi_out->scale;
-	  
-    double octaves=3;
-    double zoom=1.0+(8*(data->scale/100.0));
-    //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
-    double noise=_simplex_2d_noise(x, y, octaves,1.0, zoom);
-    if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION || data->channel==DT_GRAIN_CHANNEL_HUE) 
+    float h, s, l;
+    float *in  = ((float *)ivoid) + roi_out->width * j * 3;
+    float *out = ((float *)ovoid) + roi_out->width * j * 3;
+    for(int i=0;i<roi_out->width;i++)
     {
-      rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
-    
-      h+=(data->channel==DT_GRAIN_CHANNEL_HUE)?GRAIN_HUE_COLORRANGE*(noise*(strength*GRAIN_HUE_STRENGTH_SCALE)) : 0;
-      s-=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
-      l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
+      // calculate x, y in a resolution independent way:
+      // wx,wy: worldspace in full image pixel coords: 
+      double wx = (roi_out->x + i)/roi_out->scale;
+      double wy = (roi_out->y + j)/roi_out->scale;
+      // x, y: normalized to shorter side of image, so with pixel aspect = 1.
+      // printf("scale %f\n", wd);
+      double x = wx / wd;
+      double y = wy / wd;
+      //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
+      double noise = 0.0;
+      if(filter)
+      { // if zoomed out a lot, use rank-1 lattice downsampling
+        const float fib1 = 34.0, fib2 = 21.0;
+        for(int l=0;l<fib2;l++)
+        {
+          float px = l/fib2, py = l*(fib1/fib2); py -= (int)py;
+          float dx = px*filtermul, dy = py*filtermul;
+          noise += (1.0/fib2) * _simplex_2d_noise(x+dx, y+dy, octaves, 1.0, zoom);
+        }
+      }
+      else
+      {
+        noise = _simplex_2d_noise(x, y, octaves, 1.0, zoom);
+      }
+      if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION || data->channel==DT_GRAIN_CHANNEL_HUE) 
+      {
+        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
       
-      // Clip and wrapHSL values
-      s=CLIP(s); 
-      l=CLIP(l);
-      if(h<0.0) h+=1.0;
-      if(h>1.0) h-=1.0;
-	    
-      hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
-    } 
-    else if( data->channel==DT_GRAIN_CHANNEL_RGB )
-    {
-      out[0]=CLIP(in[0]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-      out[1]=CLIP(in[1]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-      out[2]=CLIP(in[2]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-    } 
-    else
-    { // No noisemethod lets jsut copy source to dest
-      out[0]=in[0];
-      out[1]=in[1];
-      out[2]=in[2];
-    }  
-    out += 3; in += 3;
+        h+=(data->channel==DT_GRAIN_CHANNEL_HUE)?GRAIN_HUE_COLORRANGE*(noise*(strength*GRAIN_HUE_STRENGTH_SCALE)) : 0;
+        s-=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
+        l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
+        
+        // Clip and wrapHSL values
+        s=CLIP(s); 
+        l=CLIP(l);
+        if(h<0.0) h+=1.0;
+        if(h>1.0) h-=1.0;
+        
+        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+      } 
+      else if( data->channel==DT_GRAIN_CHANNEL_RGB )
+      {
+        out[0]=CLIP(in[0]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+        out[1]=CLIP(in[1]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+        out[2]=CLIP(in[2]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
+      } 
+      else
+      { // No noisemethod lets jsut copy source to dest
+        out[0]=in[0];
+        out[1]=in[1];
+        out[2]=in[2];
+      }  
+      out += 3; in += 3;
+    }
   }
-  
 }
 
 static void
@@ -373,7 +399,7 @@ scale_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->scale= dtgtk_slider_get_value(slider);
+  p->scale = dtgtk_slider_get_value(slider)/53.3;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -431,7 +457,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)module->params;
   gtk_combo_box_set_active(g->combo1, p->channel);
-  dtgtk_slider_set_value(g->scale1, p->scale);
+  dtgtk_slider_set_value(g->scale1, p->scale*53.3);
   dtgtk_slider_set_value(g->scale2, p->strength);
 }
 
@@ -441,10 +467,10 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 965;
+  module->priority = 995;
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
-  dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS,10.0,12.0};
+  dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS, 400.0/53.3, 25.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
 }
@@ -469,7 +495,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("channel")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("scale")));
+  g->label2 = GTK_LABEL(gtk_label_new(_("coarseness")));
   g->label3 = GTK_LABEL(gtk_label_new(_("strength")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
@@ -486,13 +512,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_set_active(g->combo1,p->channel);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->combo1), TRUE, TRUE, 0);
   
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->scale, 2));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->strength, 2));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 100.0, 3200.0, 20.0, p->scale*53.3, 0));
+  dtgtk_slider_set_snap(g->scale1, 20);
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->strength, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the scale of the noise"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the grain size (~iso of the film)"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), NULL);
   
  g_signal_connect (G_OBJECT (g->combo1), "changed",

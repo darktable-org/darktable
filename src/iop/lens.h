@@ -36,6 +36,8 @@ typedef struct dt_iop_lensfun_params_t
   lfLensType target_geom;
   char camera[52];
   char lens[52];
+  int tca_override;
+  float tca_r, tca_b;
 }
 dt_iop_lensfun_params_t;
 
@@ -49,7 +51,8 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkMenu *lens_menu;
   GtkComboBox *target_geom;
   GtkCheckButton *reverse;
-  GtkDarktableSlider *scale;
+  GtkDarktableSlider *tca_r;
+  GtkDarktableSlider *tca_b;
 }
 dt_iop_lensfun_gui_data_t;
 
