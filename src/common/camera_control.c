@@ -259,7 +259,6 @@ dt_camctl_t *dt_camctl_new()
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Loaded %d camera drivers.\n", gp_abilities_list_count( camctl->gpcams ) );	
   
   pthread_mutex_init(&camctl->lock, NULL);
-  //pthread_create(&camctl->camera_event_thread, NULL, &_camera_control_thread, camctl);
   
   // Let's detect cameras connexted
   dt_camctl_detect_cameras(camctl);
@@ -271,7 +270,8 @@ dt_camctl_t *dt_camctl_new()
 void dt_camctl_destroy(const dt_camctl_t *c)
 {
   // TODO: Go thru all c->cameras and release them..
-  
+  // gp_camera_exit(cam,camctl);
+  // gp_camera_free(cam);
 }
 
 void dt_camctl_register_listener( const dt_camctl_t *c, dt_camctl_listener_t *listener)
@@ -373,7 +373,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   pthread_mutex_unlock(&camctl->lock);
 }
 
-void *_camera_event_thread(void *data) {
+static void *_camera_event_thread(void *data) {
   dt_camctl_t *camctl=(dt_camctl_t *)data;
 
   const dt_camera_t *camera=camctl->active_camera;
