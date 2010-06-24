@@ -13,6 +13,8 @@ webpage updates:
   . gui_update after params change
   . storage to enforce constraints on format/wd/ht
 
+- lighttable view prefetching
+- film strip view keyboard bindings
 
 - ctrl-c/ctrl-v in darkroom mode
 - ctrl-e in darkroom mode: export with current settings
@@ -21,8 +23,6 @@ webpage updates:
 - prevent tab on/off for some form widgets
 
 - exposure dragging in hist with more active areas: black/gain/exp
-
-- metadata: include film roll name?
 
 
 0.7 release:
