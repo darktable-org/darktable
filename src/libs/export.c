@@ -231,7 +231,7 @@ gui_init (dt_lib_module_t *self)
   
   GtkWidget *label;
 
-  label = dtgtk_label_new("target storage", DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
+  label = dtgtk_label_new(_("target storage"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
   d->storage = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -251,7 +251,7 @@ gui_init (dt_lib_module_t *self)
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->storage_box), 0, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage_box), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = dtgtk_label_new("file format", DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
+  label = dtgtk_label_new(_("file format"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -271,7 +271,7 @@ gui_init (dt_lib_module_t *self)
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->format_box), 0, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format_box), 0, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = dtgtk_label_new("global options", DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
+  label = dtgtk_label_new(_("global options"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->width  = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
