@@ -166,7 +166,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   sqlite3_bind_int (stmt, 1, offset);
   sqlite3_bind_int (stmt, 2, max_rows*iir);
   g_free(query);
-  for(int row = 0; row < max_rows; row++)
+  for(int row = 0; row < 1.6*max_rows+1; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
@@ -174,39 +174,50 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
       {
         id = sqlite3_column_int(stmt, 0);
         dt_image_t *image = dt_image_cache_get(id, 'r');
-        // set mouse over id
-        if(seli == col && selj == row)
+        if(row >= max_rows && image)
         {
-          firstsel = lib->offset + selj*iir + seli;
-          mouse_over_id = id;
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+          int32_t iwd, iht;
+          float imgwd = iir == 1 ? 0.97 : 0.8;
+          dt_image_buffer_t mip = dt_image_get_matching_mip_size(image, imgwd*wd, imgwd*(iir==1?height:ht), &iwd, &iht);
+          dt_image_prefetch(image, mip);
+          if (iir == 1 && row) goto failure; // only one image in one-image mode ;)
         }
-        // add clicked image to selected table
-        if(clicked1)
+        else
         {
-          if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
-          { // clear selected if no modifier
-            sqlite3_stmt *stmt2;
-            sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
-            sqlite3_bind_int(stmt2, 1, id);
-            sqlite3_step(stmt2);
-            sqlite3_finalize(stmt2);
+          if (iir == 1 && row) goto failure; // only one image in one-image mode ;)
+          // set mouse over id
+          if(seli == col && selj == row)
+          {
+            firstsel = lib->offset + selj*iir + seli;
+            mouse_over_id = id;
+            DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
           }
-          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id) { last_seli = col; last_selj = row; }
-          if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                    col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
-              (seli == col && selj == row))
-          { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
-            dt_view_toggle_selection(id);
-            lib->last_selected_id = id;
+          // add clicked image to selected table
+          if(clicked1)
+          {
+            if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
+            { // clear selected if no modifier
+              sqlite3_stmt *stmt2;
+              sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
+              sqlite3_bind_int(stmt2, 1, id);
+              sqlite3_step(stmt2);
+              sqlite3_finalize(stmt2);
+            }
+            if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id) { last_seli = col; last_selj = row; }
+            if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
+                      col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
+                (seli == col && selj == row))
+            { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
+              dt_view_toggle_selection(id);
+              lib->last_selected_id = id;
+            }
           }
+          cairo_save(cr);
+          if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
+          dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+          cairo_restore(cr);
+          dt_image_cache_release(image, 'r');
         }
-        cairo_save(cr);
-        if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
-        cairo_restore(cr);
-        dt_image_cache_release(image, 'r');
-        if (iir == 1) goto failure; // only one image in one-image mode ;)
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
