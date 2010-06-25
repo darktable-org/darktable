@@ -274,7 +274,7 @@ int dt_film_import(const char *dirname)
 
   const int ret = film->id;
   // darktable.control->progress = .001f;
-  for(int k=0;k<MAX(1,dt_ctl_get_num_procs()-1);k++) // keep one proc for the user.
+  for(int k=0;k<MAX(1,dt_ctl_get_num_procs());k++) // keep one proc for the user.
   {
     // last job will destroy film struct.
     dt_job_t j;
