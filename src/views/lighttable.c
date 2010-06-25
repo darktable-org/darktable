@@ -162,11 +162,12 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(offset > count-iir) lib->offset = offset = count-iir;
   dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_cols*iir);
 
+  const int prefetchrows = 1.5*max_rows+1;
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, offset);
-  sqlite3_bind_int (stmt, 2, max_rows*iir);
+  sqlite3_bind_int (stmt, 2, prefetchrows*iir);
   g_free(query);
-  for(int row = 0; row < 1.6*max_rows+1; row++)
+  for(int row = 0; row < prefetchrows; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
@@ -180,11 +181,15 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           float imgwd = iir == 1 ? 0.97 : 0.8;
           dt_image_buffer_t mip = dt_image_get_matching_mip_size(image, imgwd*wd, imgwd*(iir==1?height:ht), &iwd, &iht);
           dt_image_prefetch(image, mip);
-          if (iir == 1 && row) goto failure; // only one image in one-image mode ;)
+          dt_image_cache_release(image, 'r');
         }
         else
         {
-          if (iir == 1 && row) goto failure; // only one image in one-image mode ;)
+          if (iir == 1 && row)
+          {
+            dt_image_cache_release(image, 'r');
+            continue;
+          }
           // set mouse over id
           if(seli == col && selj == row)
           {
