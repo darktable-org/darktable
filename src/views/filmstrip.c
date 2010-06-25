@@ -129,19 +129,16 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
     {
       id = sqlite3_column_int(stmt, 0);
       dt_image_t *image = dt_image_cache_get(id, 'r');
-      if(image)
+      // set mouse over id
+      if(seli == col)
       {
-        // set mouse over id
-        if(seli == col)
-        {
-          mouse_over_id = image->id;
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
-        }
-        cairo_save(cr);
-        dt_view_image_expose(image, &(strip->image_over), image->id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
-        cairo_restore(cr);
-        dt_image_cache_release(image, 'r');
+        mouse_over_id = id;
+        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
       }
+      cairo_save(cr);
+      dt_view_image_expose(image, &(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
+      cairo_restore(cr);
+      dt_image_cache_release(image, 'r');
     }
     else goto failure;
     cairo_translate(cr, wd, 0.0f);

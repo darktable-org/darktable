@@ -14,6 +14,9 @@ webpage updates:
   . storage to enforce constraints on format/wd/ht
 
 - lighttable view prefetching
+  . still images lost somewhere?
+  . try more threads an explicit sleep
+  . prefetch: user statistics.
 - film strip view keyboard bindings
 
 - ctrl-c/ctrl-v in darkroom mode

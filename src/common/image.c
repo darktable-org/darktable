@@ -693,7 +693,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 
 void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip)
 {
-  if(mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
+  if(!img || mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   if(img->mip_buf_size[mip] > 0)
   { // already loaded.
@@ -936,7 +936,7 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
 dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
 {
   dt_image_buffer_t mip = mip_in;
-  if(mip == DT_IMAGE_NONE) return mip;
+  if(!img || mip == DT_IMAGE_NONE) return DT_IMAGE_NONE;
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   // get image with no write lock set!
   if((int)mip < (int)DT_IMAGE_MIPF)
@@ -995,7 +995,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
 {
   dt_image_buffer_t mip = mip_in;
-  if(mip == DT_IMAGE_NONE) return mip;
+  if(!img || mip == DT_IMAGE_NONE) return DT_IMAGE_NONE;
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   // get image with no write lock set!
   if((int)mip < (int)DT_IMAGE_MIPF)

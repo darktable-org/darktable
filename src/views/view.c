@@ -358,10 +358,10 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
   cairo_close_path(cr);
 }
 
-
 void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
 {
   cairo_save (cr);
+  const int32_t imgid = img ? img->id : index; // in case of locked image, use id to draw basic stuff.
   float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
@@ -369,11 +369,11 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   sqlite3_stmt *stmt;
   int rc;
   rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) selected = 1;
   sqlite3_finalize(stmt);
   rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
   sqlite3_finalize(stmt);
   if(selected == 1)
@@ -381,7 +381,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     outlinecol = 0.4;
     bgcol = 0.6; fontcol = 0.5;
   }
-  if(imgsel == img->id) { bgcol = 0.8; fontcol = 0.7; outlinecol = 0.6; } // mouse over
+  if(imgsel == imgid) { bgcol = 0.8; fontcol = 0.7; outlinecol = 0.6; } // mouse over
   float imgwd = 0.8f;
   if(zoom == 1)
   {
@@ -428,13 +428,16 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 
 #if 1
   int32_t iwd = width*imgwd, iht = height*imgwd, stride;
-  float scale = 1.0;
-  dt_image_buffer_t mip;
-  mip = dt_image_get_matching_mip_size(img, imgwd*width, imgwd*height, &iwd, &iht);
-  mip = dt_image_get(img, mip, 'r');
-  dt_image_get_mip_size(img, mip, &iwd, &iht);
   float fwd, fht;
-  dt_image_get_exact_mip_size(img, mip, &fwd, &fht);
+  float scale = 1.0;
+  dt_image_buffer_t mip = DT_IMAGE_NONE;
+  if(img)
+  {
+    mip = dt_image_get_matching_mip_size(img, imgwd*width, imgwd*height, &iwd, &iht);
+    mip = dt_image_get(img, mip, 'r');
+    dt_image_get_mip_size(img, mip, &iwd, &iht);
+    dt_image_get_exact_mip_size(img, mip, &fwd, &fht);
+  }
   cairo_surface_t *surface = NULL;
   if(mip != DT_IMAGE_NONE)
   {
@@ -502,7 +505,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   cairo_restore(cr);
 
   const float fscale = fminf(width, height);
-  if(imgsel == img->id)
+  if(imgsel == imgid)
   { // draw mouseover hover effects, set event hook for mouse button down!
     *image_over = DT_VIEW_DESERT;
     cairo_set_line_width(cr, 1.5);
@@ -550,7 +553,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
           *image_over = DT_VIEW_STAR_1 + k;
           cairo_fill(cr);
         }
-        else if((img->flags & 0x7) > k)
+        else if(img && ((img->flags & 0x7) > k))
         {
           cairo_fill_preserve(cr);
           cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
@@ -571,7 +574,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     const int r = zoom == 1 ? 0.02*fscale : 0.06*width;
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, img->id);
+    sqlite3_bind_int(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       cairo_save(cr);
@@ -592,7 +595,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     sqlite3_finalize(stmt);
   }
 
-  if(zoom == 1)
+  if(img && (zoom == 1))
   { // some exif data
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);

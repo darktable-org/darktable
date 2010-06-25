@@ -176,6 +176,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
 
 void dt_image_cache_release(dt_image_t *img, const char mode)
 {
+  if(!img) return;
   dt_image_cache_t *cache = darktable.image_cache;
   pthread_mutex_lock(&(cache->mutex));
   cache->line[img->cacheline].lock.users--;

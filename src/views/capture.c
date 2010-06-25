@@ -151,7 +151,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
       dt_image_prefetch(image, DT_IMAGE_MIPF);
       const float wd = width/1.0;
       cairo_translate(cr,0.0f, TOP_MARGIN);
-      dt_view_image_expose(image, &(lib->image_over), image->id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
+      dt_view_image_expose(image, &(lib->image_over), lib->image_id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
       cairo_translate(cr,0.0f, -BOTTOM_MARGIN);
       dt_image_cache_release(image, 'r');
     }
