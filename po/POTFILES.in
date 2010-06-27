@@ -1,5 +1,12 @@
 darktable.glade
 darktable.schemas.in
+src/LibRaw/internal/vcd_interpolate.c
+src/LibRaw/internal/refinement.c
+src/LibRaw/internal/median_filter_new.c
+src/LibRaw/internal/es_median_filter.c
+src/LibRaw/internal/ahd_interpolate_mod.c
+src/LibRaw/internal/ahd_partial_interpolate.c
+src/LibRaw/internal/dcb_demosaicing.c
 src/common/darktable.h
 src/common/film.c
 src/common/image.c
