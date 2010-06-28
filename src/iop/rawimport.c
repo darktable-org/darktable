@@ -102,6 +102,7 @@ static void reimport_button_callback (GtkButton *button, gpointer user_data)
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)module->params;
   pthread_mutex_lock(&module->dev->history_mutex);
   // set image params
+  if(p->raw_demosaic_method != 4 && p->raw_demosaic_method != 5) p->raw_four_color_rgb = 0;
   module->dev->image->raw_denoise_threshold      = p->raw_denoise_threshold;
   module->dev->image->raw_auto_bright_threshold  = p->raw_auto_bright_threshold;
   module->dev->image->raw_params.pre_median      = p->raw_pre_median;
@@ -149,7 +150,7 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
   int active = gtk_combo_box_get_active(box);
   int demosaic = active;
   p->fill1 = (p->fill1&0x1F0) | (active&0xF);
-  if(active < 4) p->raw_four_color_rgb = 0;
+  if(active != 4 && active != 5) p->raw_four_color_rgb = 0;
   if(active == 4)
   {
     active = 0;
@@ -303,6 +304,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_combo_box_set_active(g->demosaic_method, dm);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 ////////////////////////////////
+  if(dm != 4 && dm != 5) p->raw_four_color_rgb = 0;
   gtk_widget_set_visible(GTK_WIDGET(g->dcb_iterat), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->fbdd_noise), FALSE);
   
@@ -376,6 +378,7 @@ static void resetbutton_callback (GtkButton *button, gpointer user_data)
   int dm = p->raw_demosaic_method;
   if(p->raw_four_color_rgb && dm == 0) dm = 4;
   if(p->raw_four_color_rgb && dm == 1) dm = 5;
+  if(dm != 4 && dm != 5) p->raw_four_color_rgb = 0;
   gtk_combo_box_set_active(g->demosaic_method, dm);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
 }
@@ -402,6 +405,7 @@ void init(dt_iop_module_t *module)
   p->raw_highlight             = module->dev->image->raw_params.highlight;
   p->raw_user_flip             = module->dev->image->raw_params.user_flip;
   p->fill1                     = module->dev->image->raw_params.fill0;
+  if(p->raw_demosaic_method != 4 && p->raw_demosaic_method != 5 && p->raw_demosaic_method != 0 && p->raw_demosaic_method != 1) p->raw_four_color_rgb = 0;
   memcpy(module->default_params, p, sizeof(dt_iop_rawimport_params_t));
 }
 
