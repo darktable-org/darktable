@@ -448,13 +448,17 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   
   // filename\n 1/60 f/2.8 24mm iso 160
   sprintf(file_info,"%s%c%s",filename,strlen(exif_info)?'\n':'\0',strlen(exif_info)?exif_info:"");
-  
   gtk_list_store_append(data->store,&iter);
   gtk_list_store_set(data->store,&iter,0,thumb,1,file_info,-1);
   if(pixbuf) g_object_unref(pixbuf);
   if(thumb) g_object_ref(thumb);
 }
 
+void _camera_import_dialog_free(_camera_import_dialog_t *data) {
+  gtk_list_store_clear( data->store );
+  g_object_unref( data->store );
+  g_free( data->vp );
+}
 
 void _camera_import_dialog_run(_camera_import_dialog_t *data) 
 {
@@ -553,4 +557,5 @@ void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
   data.params=params;
   _camera_import_dialog_new(&data);
   _camera_import_dialog_run(&data);
+  _camera_import_dialog_free(&data);
 }

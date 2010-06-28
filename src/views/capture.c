@@ -130,6 +130,11 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
+void configure(dt_view_t *self, int wd, int ht)
+{
+   dt_capture_t *lib=(dt_capture_t*)self->data;
+   
+}
 
 #define TOP_MARGIN		20
 #define BOTTOM_MARGIN	20
