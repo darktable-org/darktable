@@ -22,7 +22,7 @@ src/libs/tagging.c
 src/libs/select.c
 src/libs/collect.c
 src/libs/colorlabels.c
-src/libs/session.c
+src/libs/capture.c
 src/libs/camera.c
 src/iop/clipping.c
 src/iop/colorcorrection.c

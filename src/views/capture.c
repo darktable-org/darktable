@@ -132,7 +132,7 @@ void cleanup(dt_view_t *self)
 
 void configure(dt_view_t *self, int wd, int ht)
 {
-   dt_capture_t *lib=(dt_capture_t*)self->data;
+   // dt_capture_t *lib=(dt_capture_t*)self->data;
    
 }
 
