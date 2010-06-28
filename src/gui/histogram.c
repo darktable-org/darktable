@@ -26,6 +26,7 @@
 
 void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
 {
+  n->highlight = 0;
   n->dragging = 0;
   n->exposure = NULL;
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
@@ -47,7 +48,7 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
 
 void dt_gui_histogram_cleanup(dt_gui_histogram_t *n) {}
 
-gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gui_histogram_t *n)
 {
   const int inset = DT_HIST_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
@@ -84,6 +85,18 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
   cairo_set_source_rgb (cr, .3, .3, .3);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
+  if(n->highlight == 1)
+  {
+    cairo_set_source_rgb (cr, .5, .5, .5);
+    cairo_rectangle(cr, 0, 0, .2*width, height);
+    cairo_fill(cr);
+  }
+  else if(n->highlight == 2)
+  {
+    cairo_set_source_rgb (cr, .5, .5, .5);
+    cairo_rectangle(cr, 0.2*width, 0, width, height);
+    cairo_fill(cr);
+  }
 
   // draw grid
   cairo_set_line_width(cr, .4);
@@ -142,11 +155,34 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, gpoin
 gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
-  if(n->dragging && n->exposure && n->set_white)
+  if(n->dragging && n->highlight == 2 && n->exposure && n->set_white)
   {
     float white = n->white - (event->x - n->button_down_x)*
-      1.0f/(float)widget->allocation.width; 
+          1.0f/(float)widget->allocation.width; 
     n->set_white(n->exposure, white);
+  }
+  else if(n->dragging && n->highlight == 1 && n->exposure && n->set_black)
+  {
+    float black = n->black - (event->x - n->button_down_x)*
+          .2f/(float)widget->allocation.width; 
+    n->set_black(n->exposure, black);
+  }
+  else
+  {
+    const float offs = 4*DT_HIST_INSET;
+    const float pos = (event->x-offs)/(float)(widget->allocation.width - 2*offs);
+    if(pos < 0 || pos > 1.0);
+    else if(pos < 0.2)
+    {
+      n->highlight = 1;
+      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change black point,\ndoubleclick resets"), NULL);
+    }
+    else
+    {
+      n->highlight = 2;
+      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"), NULL);
+    }
+    gtk_widget_queue_draw(widget);
   }
   gint x, y; // notify gtk for motion_hint.
   gdk_window_get_pointer(event->window, &x, &y, NULL);
@@ -165,7 +201,8 @@ gboolean dt_gui_histogram_button_press(GtkWidget *widget, GdkEventButton *event,
   else
   {
     n->dragging = 1;
-    if(n->exposure && n->get_white) n->white = n->get_white(n->exposure);
+    if(n->exposure && n->highlight == 2 && n->get_white) n->white = n->get_white(n->exposure);
+    if(n->exposure && n->highlight == 1 && n->get_black) n->black = n->get_black(n->exposure);
     n->button_down_x = event->x;
     n->button_down_y = event->y;
   }
@@ -189,7 +226,9 @@ gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *even
 {
   dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
   n->dragging = 0;
+  n->highlight = 0;
   dt_control_change_cursor(GDK_LEFT_PTR);
+  gtk_widget_queue_draw(widget);
   return TRUE;
 }
 

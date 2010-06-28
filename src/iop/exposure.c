@@ -204,6 +204,18 @@ float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
   return exp2f(-p->exposure);
 }
 
+void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black)
+{
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale1), fmaxf(0.0, black));
+}
+
+float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
+{
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  return p->black;
+}
+
 static void
 autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 {
@@ -278,6 +290,8 @@ void gui_init(struct dt_iop_module_t *self)
   darktable.gui->histogram.exposure = self;
   darktable.gui->histogram.set_white = dt_iop_exposure_set_white;
   darktable.gui->histogram.get_white = dt_iop_exposure_get_white;
+  darktable.gui->histogram.set_black = dt_iop_exposure_set_black;
+  darktable.gui->histogram.get_black = dt_iop_exposure_get_black;
 
   self->request_color_pick = 0;
 
