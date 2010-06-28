@@ -82,7 +82,7 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage){
 			// nothing to be done
 			break;
 		case PW_STORAGE_BACKEND_KWALLET:
-			dt_pwstorage_kwallet_destroy(pwstorage->backend_context);
+// 			dt_pwstorage_kwallet_destroy(pwstorage->backend_context); // doesn't do anything.
 			g_free(pwstorage->backend_context);
 			break;
 		case PW_STORAGE_BACKEND_GNOME_KEYRING:

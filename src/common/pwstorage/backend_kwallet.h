@@ -23,10 +23,6 @@
 
 /** kwallet backend context */
 typedef struct backend_kwallet_context_t {
-	// Error from the last DBus call. NULL when there's no error. Freed and
-	// cleared by CheckError().
-	GError* error;
-
 	// Connection to the DBus session bus.
 	DBusGConnection* connection;
 
@@ -40,7 +36,7 @@ typedef struct backend_kwallet_context_t {
 /** Initializes a new kwallet backend context. */
 const backend_kwallet_context_t* dt_pwstorage_kwallet_new();
 /** Cleanup and destroy kwallet backend context. */
-void dt_pwstorage_kwallet_destroy(const backend_kwallet_context_t *context);
+// void dt_pwstorage_kwallet_destroy(const backend_kwallet_context_t *context); // doesn't do anything
 /** Store (key,value) pairs. */
 gboolean dt_pwstorage_kwallet_set(const gchar* slot, GHashTable* table);
 /** Load (key,value) pairs. */

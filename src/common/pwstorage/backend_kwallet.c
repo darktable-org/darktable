@@ -110,11 +110,11 @@ static gchar* char2qstring(const gchar* in, gsize* size){
 }
 
 // For cleaner code ...
-static gboolean CheckError(){
-	if (_context->error) {
-		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_kwallet] ERROR: failed to complete kwallet call: %s\n", _context->error->message);
-		g_error_free(_context->error);
-		_context->error = NULL;
+static gboolean CheckError(GError* error){
+	if (error) {
+		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_kwallet] ERROR: failed to complete kwallet call: %s\n", error->message);
+		g_error_free(error);
+		error = NULL;
 		return TRUE;
 	}
 	return FALSE;
@@ -130,8 +130,9 @@ static gboolean start_kwallet(){
 
 	gchar* empty_string_list = NULL;
 	gint ret = 1;
-	gchar* error = NULL;
-	dbus_g_proxy_call(klauncher_proxy, "start_service_by_desktop_name", &(_context->error),
+	gchar* error_string = NULL;
+	GError* error = NULL;
+	dbus_g_proxy_call(klauncher_proxy, "start_service_by_desktop_name", &error,
 					G_TYPE_STRING,  "kwalletd",          // serviceName
 					G_TYPE_STRV,    &empty_string_list,  // urls
 					G_TYPE_STRV,    &empty_string_list,  // envs
@@ -140,44 +141,45 @@ static gboolean start_kwallet(){
 					G_TYPE_INVALID,
 					G_TYPE_INT,     &ret,                // result
 					G_TYPE_STRING,  NULL,                // dubsName
-					G_TYPE_STRING,  &error,              // error
+					G_TYPE_STRING,  &error_string,              // error
 					G_TYPE_INT,     NULL,                // pid
 					G_TYPE_INVALID);
 
-	if (error && *error) {
+	if (error_string && *error_string) {
 		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_kwallet] ERROR: error launching kwalletd: %s\n", error);
 		ret = 1;  // Make sure we return false after freeing.
 	}
 
-	g_free(error);
+	g_free(error_string);
 	g_object_unref(klauncher_proxy);
 
-	if (CheckError() || ret != 0)
+	if (CheckError(error) || ret != 0)
 		return FALSE;
 	return TRUE;
 }
 
 // Initialize the connection to KWallet
 static gboolean init_kwallet(){
+	GError* error = NULL;
 	 // Make a proxy to KWallet.
 	_context->proxy = dbus_g_proxy_new_for_name(_context->connection, kwallet_service_name,
 									kwallet_path, kwallet_interface);
 
 	// Check KWallet is enabled.
 	gboolean is_enabled = FALSE;
-	dbus_g_proxy_call(_context->proxy, "isEnabled", &(_context->error),
+	dbus_g_proxy_call(_context->proxy, "isEnabled", &error,
 					G_TYPE_INVALID,
 					G_TYPE_BOOLEAN, &is_enabled,
 					G_TYPE_INVALID);
-	if (CheckError() || !is_enabled)
+	if (CheckError(error) || !is_enabled)
 		return FALSE;
 
 	// Get the wallet name.
-	dbus_g_proxy_call(_context->proxy, "networkWallet", &(_context->error),
+	dbus_g_proxy_call(_context->proxy, "networkWallet", &error,
 					G_TYPE_INVALID,
 					G_TYPE_STRING, &(_context->wallet_name),
 					G_TYPE_INVALID);
-	if (CheckError() || !_context->wallet_name)
+	if (CheckError(error) || !_context->wallet_name)
 		return FALSE;
 
 	return TRUE;
@@ -196,10 +198,11 @@ const backend_kwallet_context_t* dt_pwstorage_kwallet_new(){
 		g_thread_init(NULL);
 	dbus_g_thread_init();
 
+	GError* error = NULL;
 	// Get a connection to the session bus.
-	_context->connection = dbus_g_bus_get(DBUS_BUS_SESSION, &(_context->error));
+	_context->connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
 
-	if (CheckError())
+	if (CheckError(error))
 		return NULL;
 
 	if (!init_kwallet()) {
@@ -212,49 +215,50 @@ const backend_kwallet_context_t* dt_pwstorage_kwallet_new(){
 }
 
 /** Cleanup and destroy kwallet backend context. */
-void dt_pwstorage_kwallet_destroy(const backend_kwallet_context_t *context){
-	if(context->error != NULL){
-		g_error_free(context->error);
-	}
-}
+// void dt_pwstorage_kwallet_destroy(const backend_kwallet_context_t *context){
+// 	if(context->error != NULL){
+// 		g_error_free(context->error);
+// 	}
+// }
 
 // get the handle for connections to KWallet
 static int get_wallet_handle() {
 	// Open the wallet.
 	int handle = invalid_kwallet_handle;
-	dbus_g_proxy_call(_context->proxy, "open", &(_context->error),
+	GError* error = NULL;
+	dbus_g_proxy_call(_context->proxy, "open", &error,
 					G_TYPE_STRING, _context->wallet_name,  // wallet
 					G_TYPE_INT64,  0LL,                   // wid
 					G_TYPE_STRING, app_id,                // appid
 					G_TYPE_INVALID,
 					G_TYPE_INT,    &handle,
 					G_TYPE_INVALID);
-	if (CheckError() || handle == invalid_kwallet_handle)
+	if (CheckError(error) || handle == invalid_kwallet_handle)
 		return invalid_kwallet_handle;
 
 	// Check if our folder exists.
 	gboolean has_folder = FALSE;
-	dbus_g_proxy_call(_context->proxy, "hasFolder", &(_context->error),
+	dbus_g_proxy_call(_context->proxy, "hasFolder", &error,
 					G_TYPE_INT,    handle,          // handle
 					G_TYPE_STRING, kwallet_folder,  // folder
 					G_TYPE_STRING, app_id,          // appid
 					G_TYPE_INVALID,
 					G_TYPE_BOOLEAN, &has_folder,
 					G_TYPE_INVALID);
-	if (CheckError())
+	if (CheckError(error))
 		return invalid_kwallet_handle;
 
 	// Create it if it didn't.
 	if (!has_folder) {
 		gboolean success = FALSE;
-		dbus_g_proxy_call(_context->proxy, "createFolder", &(_context->error),
+		dbus_g_proxy_call(_context->proxy, "createFolder", &error,
 							G_TYPE_INT,    handle,          // handle
 							G_TYPE_STRING, kwallet_folder,  // folder
 							G_TYPE_STRING, app_id,          // appid
 							G_TYPE_INVALID,
 							G_TYPE_BOOLEAN, &success,
 							G_TYPE_INVALID);
-		if (CheckError() || !success)
+		if (CheckError(error) || !success)
 			return invalid_kwallet_handle;
 	}
 
@@ -297,8 +301,9 @@ gboolean dt_pwstorage_kwallet_set(const gchar* slot, GHashTable* table){
 
 	int wallet_handle = get_wallet_handle();
 	int ret = 0;
+	GError* error = NULL;
 
-	dbus_g_proxy_call(_context->proxy, "writeMap", &(_context->error),
+	dbus_g_proxy_call(_context->proxy, "writeMap", &error,
 					G_TYPE_INT,     wallet_handle,         // handle
 					G_TYPE_STRING,  kwallet_folder,        // folder
 					G_TYPE_STRING,  slot,                  // key
@@ -310,7 +315,7 @@ gboolean dt_pwstorage_kwallet_set(const gchar* slot, GHashTable* table){
 
 	g_array_free(byte_array, TRUE);
 
-	CheckError();
+	CheckError(error);
 
 	if (ret != 0)
 		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_kwallet_set] Warning: bad return code %d from kwallet\n", ret);
@@ -346,11 +351,12 @@ static gchar* array2string(gchar* pos, guint* length){
 GHashTable* dt_pwstorage_kwallet_get(const gchar* slot){
 	_context = (backend_kwallet_context_t*)(darktable.pwstorage->backend_context);
 	GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
+	GError* error = NULL;
 
 	// Is there an entry in the wallet?
 	gboolean has_entry = FALSE;
 	int wallet_handle = get_wallet_handle();
-	dbus_g_proxy_call(_context->proxy, "hasEntry", &(_context->error),
+	dbus_g_proxy_call(_context->proxy, "hasEntry", &error,
 					G_TYPE_INT,     wallet_handle,         // handle
 					G_TYPE_STRING,  kwallet_folder,        // folder
 					G_TYPE_STRING,  slot,                  // key
@@ -359,12 +365,12 @@ GHashTable* dt_pwstorage_kwallet_get(const gchar* slot){
 					G_TYPE_BOOLEAN, &has_entry,
 					G_TYPE_INVALID);
 
-	if (CheckError() || !has_entry)
+	if (CheckError(error) || !has_entry)
 		return table;
 
 	GArray* byte_array = NULL;
 
-	dbus_g_proxy_call(_context->proxy, "readMap", &(_context->error),
+	dbus_g_proxy_call(_context->proxy, "readMap", &error,
 					G_TYPE_INT,     wallet_handle,         // handle
 					G_TYPE_STRING,  kwallet_folder,        // folder
 					G_TYPE_STRING,  slot,                  // key
@@ -373,7 +379,7 @@ GHashTable* dt_pwstorage_kwallet_get(const gchar* slot){
 					DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
 					G_TYPE_INVALID);
 
-	if (CheckError() || !byte_array || !byte_array->len)
+	if (CheckError(error) || !byte_array || !byte_array->len)
 		return table;
 
 	gint entries;
