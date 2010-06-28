@@ -56,6 +56,10 @@
         $ git config --global user.email "dreggn@gmx.at"<br/>
 
         </li>
+        <li><em>contribute a color matrix for your camera</em><br />
+            read more about it in pascal's <a href="http://blog.pcode.nl/2010/06/28/darktable-camera-color-profiling/
+">detailed blog post</a>
+        </li>
       </ul>
     	</div>
     	<div class="listtext">

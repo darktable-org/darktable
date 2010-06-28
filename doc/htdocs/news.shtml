@@ -12,6 +12,17 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
+    	<img src="images/chart.jpg" class="img" alt="dreggn" /><h1>enhancing color management</h1>
+      <em>(2010-06-28)</em> still no release? doh! but there is now a nice, detailed doc about
+      how to profile your camera for darktable to get rich and precise color rendition out of your images
+      (ever been sad about the flat reds in your expensive 5D?)
+      <ul>
+        <li>read <a href="http://blog.pcode.nl/2010/06/28/darktable-camera-color-profiling/
+">how to contribute a color matrix!</a></li>
+      </ul>
+      </div>
+
+      <div class="listtext">
     	<img src="images/grass.jpg" class="img" alt="dreggn" /><h1>darktable on tv :)</h1>
       <em>(2010-06-14)</em> no new release today, but some great videos about dt:
       <ul>
