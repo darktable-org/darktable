@@ -628,7 +628,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   if(height_i > DT_IMAGE_WINDOW_SIZE) y -= (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
 
   int handled = 0;
-  if(dev->gui_module && dev->gui_module->request_color_pick)
+  if(dev->gui_module && dev->gui_module->request_color_pick && which == 1)
   {
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);

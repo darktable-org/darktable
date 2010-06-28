@@ -40,6 +40,7 @@ webpage updates:
   - simple interface to [de-]activate single operations, or
     replace them with presets from the list instead.
 
+- tiff/png input
 - remove lensfun add crop autocrop
 - move lensfun to pre colorin rgb?
 - remove dcraw_process calls from libraw usage, put demosaic in plugin?
