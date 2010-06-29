@@ -23,10 +23,13 @@
 
 #include <glib.h>
 
+#ifdef HAVE_GCONF
 static const gchar* gconf_path = "plugins/pwstorage/";
+#endif
 
 /** Store (key,value) pairs. */
 gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table){
+#ifdef HAVE_GCONF
 	GHashTableIter iter;
 	g_hash_table_iter_init (&iter, table);
 	gpointer key, value;
@@ -53,12 +56,16 @@ gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table){
 	}
 
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
 /** Load (key,value) pairs. */
 GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
 	GHashTable* table = g_hash_table_new(g_str_hash, g_str_equal);
 
+#ifdef HAVE_GCONF
 	gsize size = strlen(gconf_path) + strlen(slot);
 	gchar* _path = g_malloc(size+1);
 	gchar* _tmp = _path;
@@ -103,6 +110,7 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
 	}
 
 	g_slist_free(list);
+#endif
 
 	return table;
 }
