@@ -1,6 +1,6 @@
 include $(srcdir)/../shared.am
 LDFLAGS= -module -avoid-version
-CFLAGS+=$(AM_CFLAGS) -I$(srcdir) -I$(srcdir)/..  -I$(srcdir)/dtgtk -Werror -g
+CFLAGS+=$(AM_CFLAGS) -I$(srcdir) -I$(srcdir)/..  -I$(srcdir)/dtgtk -Werror -g $(RSVG_CFLAGS)
 CXXFLAGS+=$(AM_CPPFLAGS) -I$(srcdir) -I$(srcdir)/..  -I$(srcdir)/dtgtk -Werror -g
 LTADD=$(GEGL_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) -fPIC
 libtonecurve_la_SOURCES=tonecurve.c
@@ -30,12 +30,21 @@ libbilateral_la_SOURCES=bilateral.cc
 libprofile_gamma_la_SOURCES=profile_gamma.c
 libprofile_gamma_la_CFLAGS=-I$(srcdir)/../LibRaw
 libcolortransfer_la_SOURCES=colortransfer.c
-noinst_HEADERS=tonecurve.h gamma.h temperature.h colorcorrection.h exposure.h equalizer.h equalizer_eaw.h colorin.h colorout.h lens.h wb_presets.c Permutohedral.h profile_gamma.h
+noinst_HEADERS=tonecurve.h gamma.h temperature.h colorcorrection.h exposure.h equalizer.h equalizer_eaw.h colorin.h colorout.h lens.h wb_presets.c  Permutohedral.h profile_gamma.h
 dtpluginsdir=$(libdir)/darktable/plugins
 dtplugins_LTLIBRARIES=libtonecurve.la libgamma.la libtemperature.la libcolorcorrection.la libexposure.la libequalizer.la libcolorin.la libcolorout.la libclipping.la libsharpen.la libmonochrome.la librawimport.la libcolorzones.la libbasecurve.la libhighlights.la libvelvia.la libvignette.la libsplittoning.la libgrain.la libbilateral.la libclahe.la libprofile_gamma.la  libcolortransfer.la
+
 if HAVE_LENSFUN
   liblens_la_SOURCES=lens.c
   liblens_la_CFLAGS=$(LENSFUN_CFLAGS)
   liblens_la_LIBADD=$(LENSFUN_LIBS)
   dtplugins_LTLIBRARIES+=liblens.la
 endif
+
+if HAVE_RSVG
+  libwatermark_la_SOURCES=watermark.c
+  libwatermark_la_CFLAGS=$(RSVG_CFLAGS)
+  libwatermark_la_LIBADD=$(RSVG_LIBS)
+  dtplugins_LTLIBRARIES+=libwatermark.la
+endif
+  

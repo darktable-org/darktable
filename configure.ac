@@ -127,6 +127,22 @@ AC_ARG_ENABLE(lensfun,
           AM_CONDITIONAL([HAVE_LENSFUN], [true])
         ]
         )
+	
+AC_ARG_ENABLE(watermark,
+	      AC_HELP_STRING([--enable-watermark], [build the watermark plugin]),
+        [
+          if test "$enable_watermark" = "yes"; then
+             PKG_CHECK_MODULES(RSVG, [librsvg-2.0 >= 2.26])
+             AC_DEFINE(HAVE_RSVG, 1, [whether build the watermark plugin])
+          fi
+          AM_CONDITIONAL([HAVE_RSVG], [test "$enable_watermark" = yes])
+        ],
+        [
+          PKG_CHECK_MODULES(RSVG, [librsvg-2.0 >= 2.26])
+          AC_DEFINE(HAVE_RSVG, 1, [whether build the watermark plugin])
+          AM_CONDITIONAL([HAVE_RSVG], [true])
+        ]
+        )
  
 AC_CHECK_LIB(jpeg, jpeg_destroy_decompress,
    [JPEG_LIBS="-ljpeg"], AC_MSG_FAILURE([libjpeg is required!]))
@@ -196,6 +212,7 @@ AC_CONFIG_FILES([
     src/imageio/Makefile
     src/imageio/format/Makefile
     src/imageio/storage/Makefile
+    watermarks/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT
