@@ -448,6 +448,9 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale2, p->scale);
   dtgtk_slider_set_value(g->scale3, p->xoffset);
   dtgtk_slider_set_value(g->scale4, p->yoffset);
+  for(int i=0;i<9;i++)
+    gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ i ]), FALSE);
+  
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
   _combo_box_set_active_text( g->combobox1, p->filename );
 }
@@ -463,7 +466,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->data = malloc( sizeof(dt_iop_watermark_global_data_t));
   memset(module->data,0,sizeof(dt_iop_watermark_global_data_t));
-  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,4}; // opacity,scale,xoffs,yoffs,aligment
+  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,4}; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
 }
