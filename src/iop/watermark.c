@@ -53,13 +53,20 @@ typedef struct dt_iop_watermark_params_t
   float yoffset;
   /** Alignment value 0-8 3x3 */
   int alignment;
-  
-  gchar *svgdata;
-  
-  /** Watermark id */
-  gchar watermark_id[32];
+  char filename[64];
 }
 dt_iop_watermark_params_t;
+
+typedef struct dt_iop_watermark_data_t
+{
+  float opacity;
+  float scale;
+  float xoffset;
+  float yoffset;
+  int alignment;
+  char filename[64];
+} 
+dt_iop_watermark_data_t;
 
 typedef struct dt_iop_watermark_gui_data_t
 {
@@ -72,19 +79,13 @@ typedef struct dt_iop_watermark_gui_data_t
 }
 dt_iop_watermark_gui_data_t;
 
-typedef struct dt_iop_watermark_data_t
-{
-  float opacity;
+typedef struct dt_iop_watermark_global_data_t {
   float scale;
-  float xoffset;
-  float yoffset;
-  int alignment;
   int roi_width;
   int roi_height;
   gchar *svgdata;
-  gchar watermark_id[32];
-} 
-dt_iop_watermark_data_t;
+} dt_iop_watermark_global_data_t;
+
 
 const char *name()
 {
@@ -135,23 +136,69 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
 }
 
 static void _rsvg_size_func(gint *width,gint *height,gpointer user_data) {
-    dt_iop_watermark_data_t *data=(dt_iop_watermark_data_t *)user_data;
+    dt_iop_watermark_global_data_t *gd=(dt_iop_watermark_global_data_t *)user_data;
     float ratio=(float)*width / (float)*height;
-    fprintf(stderr,"rsvg: size %dx%d scaling %f, ratio %f\n",*width,*height,data->scale,ratio);
-    *width = data->roi_width * (data->scale/100.0); 
+    fprintf(stderr,"rsvg: size %dx%d scaling %f, ratio %f\n",*width,*height,gd->scale,ratio);
+    *width = gd->roi_width * (gd->scale/100.0); 
     *height = (float)*width/ratio;
     fprintf(stderr,"rsvg: new size %dx%d\n",*width,*height);
+}
+
+void _load_svg( dt_iop_module_t *self ) {
+  gsize length;
+  dt_iop_watermark_global_data_t *gd = (dt_iop_watermark_global_data_t *)self->data;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  
+  if( gd->svgdata == NULL ) {      
+    gchar datadir[1024], filename[2048];
+    dt_get_datadir(datadir, 1024);
+    snprintf(filename, 2048, "%s/watermarks/%s", datadir,  p->filename );
+    gchar *svgdata=NULL;
+    if( g_file_get_contents( filename, &svgdata, &length, NULL) ) {
+      // File is loaded lets substitute strings if found...
+      
+      // Darktable internal 
+      gd->svgdata = _string_substitute(svgdata,"$(DARKTABLE.NAME)",PACKAGE_NAME);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+      gd->svgdata = _string_substitute(svgdata,"$(DARKTABLE.VERSION)",PACKAGE_VERSION);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+    
+      // Current image
+      gchar buffer[1024];
+      dt_image_print_exif(darktable.develop->image,buffer,1024);
+      gd->svgdata = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+
+      // Image exid
+      gd->svgdata = _string_substitute(svgdata,"$(EXIF.DATE)",darktable.develop->image->exif_datetime_taken);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+      gd->svgdata = _string_substitute(svgdata,"$(EXIF.MAKER)",darktable.develop->image->exif_maker);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+      gd->svgdata = _string_substitute(svgdata,"$(EXIF.MODEL)",darktable.develop->image->exif_model);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+      gd->svgdata = _string_substitute(svgdata,"$(EXIF.LENS)",darktable.develop->image->exif_lens);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+
+      gd->svgdata = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
+      if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
+    }
+  }
+    
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
-  
+  dt_iop_watermark_global_data_t *gd = (dt_iop_watermark_global_data_t*)self->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  data->roi_width=roi_out->width;
-  data->roi_height=roi_out->height;
+  // Load svg if not loaded
+  _load_svg( self );
+  
+  gd->scale = data->scale;
+  gd->roi_width=roi_out->width;
+  gd->roi_height=roi_out->height;
   
   // Open and read svg xml file
   RsvgHandle *svg = rsvg_handle_new();
@@ -159,11 +206,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // Parse and replace keywords in svg xml
   
   // Create rsvg context set size callback and dpi
-  rsvg_handle_set_size_callback(svg, _rsvg_size_func, data, NULL);
+  rsvg_handle_set_size_callback(svg, _rsvg_size_func, gd, NULL);
   
   // Write data to handle
   GError *err=NULL;
-  if( rsvg_handle_write(svg,(guchar *)data->svgdata,strlen(data->svgdata),&err) == FALSE )
+  if( gd->svgdata && rsvg_handle_write(svg,(guchar *)gd->svgdata,strlen(gd->svgdata),&err) == FALSE )
     fprintf(stderr,"rsvg: error %s\n",err->message);
   if( rsvg_handle_close(svg,&err) == FALSE )
     fprintf(stderr,"rsvg: error %s\n",err->message);
@@ -222,53 +269,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   rsvg_handle_free(svg);
 }
 
+
+
 static void 
 watermark_callback(GtkWidget *tb, gpointer user_data) 
 {
-  gsize length;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_global_data_t *gd = (dt_iop_watermark_global_data_t *)self->data;
+  
+  if(self->dt->gui->reset) return;
+  if( gd->svgdata ) { g_free(gd->svgdata); gd->svgdata=NULL; }
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  
-  if( p->svgdata )
-    g_free(p->svgdata);
-  
-  gchar datadir[1024], filename[2048];
-  dt_get_datadir(datadir, 1024);
-  snprintf(filename, 2048, "%s/watermarks/%s", datadir,  gtk_combo_box_get_active_text( g->combobox1 ) );
-  gchar *svgdata=NULL;
-  if( g_file_get_contents( filename, &svgdata, &length, NULL) ) {
-    // File is loaded lets substitute strings if found...
-    
-    // Darktable internal 
-    p->svgdata = _string_substitute(svgdata,"$(DARKTABLE.NAME)",PACKAGE_NAME);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-    p->svgdata = _string_substitute(svgdata,"$(DARKTABLE.VERSION)",PACKAGE_VERSION);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-  
-    // Current image
-    gchar buffer[1024];
-    dt_image_print_exif(darktable.develop->image,buffer,1024);
-    p->svgdata = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-
-    // Image exid
-    p->svgdata = _string_substitute(svgdata,"$(EXIF.DATE)",darktable.develop->image->exif_datetime_taken);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-    p->svgdata = _string_substitute(svgdata,"$(EXIF.MAKER)",darktable.develop->image->exif_maker);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-    p->svgdata = _string_substitute(svgdata,"$(EXIF.MODEL)",darktable.develop->image->exif_model);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-    p->svgdata = _string_substitute(svgdata,"$(EXIF.LENS)",darktable.develop->image->exif_lens);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-
-    p->svgdata = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
-    if( p->svgdata != svgdata ) { g_free(svgdata); svgdata = p->svgdata; }
-  
-    // Lets commit for process
-    dt_dev_add_history_item(darktable.develop, self);
-  }
-  
+  snprintf(p->filename,32,"%s",gtk_combo_box_get_active_text(g->combobox1));
+  dt_dev_add_history_item(darktable.develop, self);
 }
 
 void refresh_watermarks( dt_iop_module_t *self ) {
@@ -378,7 +392,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->xoffset= p->xoffset;
   d->yoffset= p->yoffset;
   d->alignment= p->alignment;
-  d->svgdata= p->svgdata;
 #endif
 }
 
@@ -414,16 +427,20 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale2, p->scale);
   dtgtk_slider_set_value(g->scale3, p->xoffset);
   dtgtk_slider_set_value(g->scale4, p->yoffset);
+  gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
 }
 
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_watermark_params_t));
+  module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = malloc(sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
   module->priority = 999;
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
+  module->data = malloc( sizeof(dt_iop_watermark_global_data_t));
+  memset(module->data,0,sizeof(dt_iop_watermark_global_data_t));
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,5}; // opacity,scale,xoffs,yoffs,aligment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
@@ -433,6 +450,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->gui_data);
   module->gui_data = NULL;
+  free(module->data);
+  module->data= NULL;
   free(module->params);
   module->params = NULL;
 }
@@ -442,7 +461,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_watermark_gui_data_t));
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-
+  
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
