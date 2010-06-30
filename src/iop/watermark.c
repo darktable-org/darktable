@@ -484,82 +484,67 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  self->widget = gtk_hbox_new(FALSE,0);
+  GtkTable *table = GTK_TABLE(gtk_table_new(6,2,FALSE) );
+  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET(table),TRUE,TRUE,5);
+  gtk_table_set_row_spacings(GTK_TABLE(table),0);
+  gtk_table_set_col_spacings(GTK_TABLE(table),8);
+  
   g->label1 = GTK_LABEL(gtk_label_new(_("marker")));
   g->label2 = GTK_LABEL(gtk_label_new(_("opacity")));
   g->label3 = GTK_LABEL(gtk_label_new(_("scale")));
   g->label4 = GTK_LABEL(gtk_label_new(_("alignment")));
   g->label5 = GTK_LABEL(gtk_label_new(_("x offset")));
   g->label6 = GTK_LABEL(gtk_label_new(_("y offset")));
+  
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label6), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label6), TRUE, TRUE, 0);
   
+  // Add labels to the table
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label1), 0,1,0,1,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label2), 0,1,1,2,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label3), 0,1,2,3,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label4), 0,1,3,4,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label5), 0,1,4,5,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label6), 0,1,5,6,GTK_FILL,0,0,0);
+  
+  // Add the marker combobox 
   GtkWidget *hbox= GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->combobox1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->dtbutton1), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(hbox), TRUE, TRUE, 0);
- 
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(hbox), 1,2,0,1,GTK_EXPAND|GTK_FILL,0,0,0);
   
+  // Add opacity/scale sliders to table
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, p->opacity, 0.5));
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
- 
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
+  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
- 
-  GtkBox *br = GTK_BOX(gtk_hbox_new(FALSE,1));
-  GtkBox *bb = GTK_BOX(gtk_vbox_new(FALSE,1));
-  g->dtba[0] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  g->dtba[1] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  g->dtba[2] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[0]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[1]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[2]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(bb), GTK_WIDGET(br), FALSE, FALSE, 0);
- 
-  br = GTK_BOX( gtk_hbox_new(FALSE,1) );
-  g->dtba[3] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  g->dtba[4] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  g->dtba[5] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[3]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[4]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[5]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(bb), GTK_WIDGET(br), FALSE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->scale1), 1,2,1,2,GTK_EXPAND|GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->scale2), 1,2,2,3,GTK_EXPAND|GTK_FILL,0,0,0);
   
-  br = GTK_BOX( gtk_hbox_new(FALSE,1) );
-  g->dtba[6] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  g->dtba[7] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  g->dtba[8] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[6]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[7]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(br), GTK_WIDGET(g->dtba[8]), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(bb), GTK_WIDGET(br), FALSE, FALSE, 0);
- 
- gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(bb), TRUE, TRUE, 0);
- 
+  // Create the 3x3 gtk table toggle button table...
+  GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
+  for(int i=0;i<9;i++) {
+    g->dtba[i] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
+    gtk_table_attach(GTK_TABLE(bat), GTK_WIDGET(g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
+    g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);          
+  }
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(bat), 1,2,3,4,GTK_EXPAND|GTK_FILL,0,0,0);
+  
+  // x/y offset
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale3 ), 1,2,4,5,GTK_EXPAND|GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale4 ), 1,2,5,6,GTK_EXPAND|GTK_FILL,0,0,0);
  
+  
+  // Let's add some tooltips and hook up some signals...
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), NULL);
 
@@ -577,8 +562,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
                     G_CALLBACK (yoffset_callback), self);          
                     
-  for(int i=0;i<9;i++)
-    g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);          
   
   g_signal_connect (G_OBJECT (g->dtbutton1), "clicked",G_CALLBACK (refresh_callback), self);        
   
