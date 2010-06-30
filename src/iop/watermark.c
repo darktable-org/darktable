@@ -138,10 +138,10 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
 static void _rsvg_size_func(gint *width,gint *height,gpointer user_data) {
     dt_iop_watermark_global_data_t *gd=(dt_iop_watermark_global_data_t *)user_data;
     float ratio=(float)*width / (float)*height;
-    fprintf(stderr,"rsvg: size %dx%d scaling %f, ratio %f\n",*width,*height,gd->scale,ratio);
+    //fprintf(stderr,"rsvg: size %dx%d scaling %f, ratio %f\n",*width,*height,gd->scale,ratio);
     *width = gd->roi_width * (gd->scale/100.0); 
     *height = (float)*width/ratio;
-    fprintf(stderr,"rsvg: new size %dx%d\n",*width,*height);
+  //  fprintf(stderr,"rsvg: new size %dx%d\n",*width,*height);
 }
 
 void _load_svg( dt_iop_module_t *self ) {
@@ -279,9 +279,9 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_iop_watermark_global_data_t *gd = (dt_iop_watermark_global_data_t *)self->data;
   
   if(self->dt->gui->reset) return;
-  if( gd->svgdata ) { g_free(gd->svgdata); gd->svgdata=NULL; }
+  if( gd->svgdata ) { g_free(gd->svgdata); gd->svgdata=NULL; } // Free global svg data to enshure a new is loaded..
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  snprintf(p->filename,32,"%s",gtk_combo_box_get_active_text(g->combobox1));
+  snprintf(p->filename,64,"%s",gtk_combo_box_get_active_text(g->combobox1));
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -392,6 +392,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->xoffset= p->xoffset;
   d->yoffset= p->yoffset;
   d->alignment= p->alignment;
+  strcpy(d->filename,p->filename);
 #endif
 }
 
@@ -418,6 +419,26 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #endif
 }
 
+gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
+  gboolean found=FALSE;
+  gchar *sv=NULL;
+  GtkTreeIter iter;
+  GtkTreeModel *tm=gtk_combo_box_get_model(cb);
+  if(  gtk_tree_model_get_iter_first (tm,&iter) ) {
+    do { 
+      GValue value = { 0, };
+      gtk_tree_model_get_value(tm,&iter,0,&value);
+       if (G_VALUE_HOLDS_STRING (&value)) 
+        if( (sv=(gchar *)g_value_get_string(&value))!=NULL) {
+          gtk_combo_box_set_active_iter(cb, &iter);
+          found=TRUE;
+          break;
+        }
+    } while( gtk_tree_model_iter_next(tm,&iter) );
+  }
+  return found;
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -428,6 +449,7 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale3, p->xoffset);
   dtgtk_slider_set_value(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
+  _combo_box_set_active_text( g->combobox1, p->filename );
 }
 
 void init(dt_iop_module_t *module)
@@ -441,7 +463,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->data = malloc( sizeof(dt_iop_watermark_global_data_t));
   memset(module->data,0,sizeof(dt_iop_watermark_global_data_t));
-  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,5}; // opacity,scale,xoffs,yoffs,aligment
+  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,4}; // opacity,scale,xoffs,yoffs,aligment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
 }
@@ -541,7 +563,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), NULL);
 
-g_signal_connect (G_OBJECT (g->combobox1), "changed",
+  g_signal_connect (G_OBJECT (g->combobox1), "changed",
                     G_CALLBACK (watermark_callback), self);     
   
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
