@@ -387,6 +387,10 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(0,GDK_c,capture_view_switch_key_accel,(void *)self);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 
+  // initialize a default session...
+  dt_capture_view_set_jobcode(self, dt_conf_get_string("plugins/capture/jobcode"));
+  
+  
 }
 
 

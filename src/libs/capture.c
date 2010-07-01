@@ -70,10 +70,11 @@ position ()
 static void 
 create_callback(GtkButton *button, gpointer user_data) 
 {
-    dt_lib_module_t *self=(dt_lib_module_t *)user_data;
-    dt_lib_capture_t *lib=self->data;
-  
-    dt_capture_view_set_jobcode(dt_view_manager_get_current_view( darktable.view_manager ), gtk_entry_get_text( lib->gui.entry1 ) );
+  dt_lib_module_t *self=(dt_lib_module_t *)user_data;
+  dt_lib_capture_t *lib=self->data;
+
+  dt_conf_set_string("plugins/capture/jobcode", gtk_entry_get_text(lib->gui.entry1) );
+  dt_capture_view_set_jobcode(dt_view_manager_get_current_view( darktable.view_manager ), gtk_entry_get_text( lib->gui.entry1 ) );
 }
 
 void
@@ -109,9 +110,11 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), TRUE, TRUE, 0);
   
-   g_signal_connect (G_OBJECT (lib->gui.button1), "clicked",
-                    G_CALLBACK (create_callback), self);
+  g_signal_connect (G_OBJECT (lib->gui.button1), "clicked",
+                  G_CALLBACK (create_callback), self);
 
+  gtk_entry_set_text(lib->gui.entry1, dt_conf_get_string("plugins/capture/jobcode") );
+  
 }
 
 void
