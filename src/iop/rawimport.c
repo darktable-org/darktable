@@ -64,7 +64,7 @@ typedef struct dt_iop_rawimport_gui_data_t
   GtkCheckButton *dcb_enhance;
   GtkWidget *dcb_iterat, *fbdd_noise, *vcd_enhance_lab;
   GtkSpinButton *iterations_dcb;
-  GtkSpinButton *noiserd_fbdd;
+  GtkComboBox *noiserd_fbdd;
   GtkCheckButton *vcd_eeci_refine;
   GtkSpinButton *vcd_es_med_passes;
   GtkCheckButton *amaze_ca_correct;
@@ -184,12 +184,9 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
   gtk_widget_set_no_show_all(GTK_WIDGET(g->amaze_ca_correct), TRUE);
 
   if ( demosaic == DCB_DEMOSAIC ) {
-    //g->dcb_enhance = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("dcb enhance")));
-    //g->iterations_dcb = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1)); // not enough room for more then 4
-    //g->noiserd_fbdd = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 2, 1));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dcb_enhance), TRUE);
     gtk_spin_button_set_value(g->iterations_dcb, 0);
-    gtk_spin_button_set_value(g->noiserd_fbdd, 0);
+    gtk_combo_box_set_active(g->noiserd_fbdd, 0);
 
     gtk_widget_set_visible(GTK_WIDGET(g->dcb_enhance), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->dcb_iterat), TRUE);
@@ -208,8 +205,6 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
     gtk_widget_set_visible(GTK_WIDGET(g->amaze_ca_correct), TRUE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->amaze_ca_correct), FALSE);
   } else if ( demosaic == VCD_DEMOSAIC ) {
-    //g->vcd_eeci_refine = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("vcd enhance")));
-    //g->vcd_es_med_passes = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1)); // not enough room for more then 4
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vcd_eeci_refine), TRUE);
     gtk_spin_button_set_value(g->vcd_es_med_passes, 1);
     gtk_widget_set_visible(GTK_WIDGET(g->vcd_eeci_refine), TRUE);
@@ -260,15 +255,13 @@ static void med_passes_vcd_callback (GtkSpinButton *spin, gpointer user_data)
   p->fill1 = (p->fill1&0x1F) | (iterations<<5);
 }
 
-static void noiserd_fbdd_callback (GtkSpinButton *spin, gpointer user_data)
+static void noiserd_fbdd_callback (GtkComboBox *box, gpointer user_data)
 {
-  unsigned short iterations;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  int active = gtk_combo_box_get_active(box);
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
-  iterations = gtk_spin_button_get_value(spin);
-  //iterations = iterations<<7;
-  p->fill1 = (p->fill1&0x07F) | (iterations<<7);
+  p->fill1 = (p->fill1&0x07F) | (active<<7);
 }
 
 static void median_callback (GtkSpinButton *spin, gpointer user_data)
@@ -329,7 +322,7 @@ void gui_update(struct dt_iop_module_t *self)
   if ( dm == DCB_DEMOSAIC ) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dcb_enhance), (p->fill1 & 0x010));
     gtk_spin_button_set_value(g->iterations_dcb, (p->fill1 & 0x060)>>5);
-    gtk_spin_button_set_value(g->noiserd_fbdd, ((p->fill1 & 0x180)>>7));
+    gtk_combo_box_set_active(g->noiserd_fbdd, ((p->fill1 & 0x180)>>7));
 
     gtk_widget_set_visible(GTK_WIDGET(g->dcb_enhance), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->dcb_iterat), TRUE);
@@ -343,7 +336,6 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_set_no_show_all(GTK_WIDGET(g->fbdd_noise), FALSE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->noiserd_fbdd), FALSE);
   } else if ( dm == AMAZE_DEMOSAIC ) {
-    //amaze_ca_correct
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->amaze_ca_correct), (p->fill1 & 0x010));
 
     gtk_widget_set_visible(GTK_WIDGET(g->amaze_ca_correct), TRUE);
@@ -480,11 +472,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->dcb_iterat), 0, 3, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->iterations_dcb), 4, 7, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  //GtkSpinButton *noiserd_fbdd;
+  //GtkComboBox *noiserd_fbdd;
   g->fbdd_noise = gtk_label_new(_("fbdd denoising"));
   gtk_misc_set_alignment(GTK_MISC(g->fbdd_noise), 0.0, 0.5);
-  g->noiserd_fbdd = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 2, 1));
-  gtk_object_set(GTK_OBJECT(g->noiserd_fbdd), "tooltip-text", _("1-turns on pre demosaicing FBDD image denoising\n2-with additional chroma noise reduction.\nworks with all demosaicing methods"), NULL);
+  g->noiserd_fbdd = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->noiserd_fbdd, C_("fbdd noise", "none"));
+  gtk_combo_box_append_text(g->noiserd_fbdd, _("FBDD"));
+  gtk_combo_box_append_text(g->noiserd_fbdd, _("FBDD+chroma"));
+  gtk_object_set(GTK_OBJECT(g->noiserd_fbdd), "tooltip-text", _("FBDD-turns on pre demosaicing FBDD image denoising\nFBDD+chroma-with additional chroma noise reduction.\nworks with all demosaicing methods"), NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->fbdd_noise), 0, 3, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->noiserd_fbdd), 4, 7, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
@@ -530,7 +525,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->dcb_enhance), "toggled", G_CALLBACK (toggledcb_enhance_callback), self);
   g_signal_connect (G_OBJECT (g->iterations_dcb), "value-changed", G_CALLBACK (iterations_dcb_callback), self);
-  g_signal_connect (G_OBJECT (g->noiserd_fbdd), "value-changed", G_CALLBACK (noiserd_fbdd_callback), self);
+  g_signal_connect (G_OBJECT (g->noiserd_fbdd), "changed", G_CALLBACK (noiserd_fbdd_callback), self);
 
   g_signal_connect (G_OBJECT (g->vcd_eeci_refine), "toggled", G_CALLBACK (toggledcb_enhance_callback), self);
   g_signal_connect (G_OBJECT (g->vcd_es_med_passes), "value-changed", G_CALLBACK (med_passes_vcd_callback), self);
