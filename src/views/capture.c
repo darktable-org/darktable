@@ -154,12 +154,12 @@ const gchar *dt_capture_view_get_session_path(const dt_view_t *view)
   return cv->film->dirname;
 }
 
-const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,char *filename) 
+const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const char *filename) 
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
   
-  cv->vp->filename=filename;
+  cv->vp->filename = filename;
   
   dt_variables_expand( cv->vp, cv->path, FALSE );
   const gchar *storage=dt_variables_get_result(cv->vp);

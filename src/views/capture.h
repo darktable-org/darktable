@@ -30,5 +30,5 @@ const char *dt_capture_view_get_jobcode(const dt_view_t *view);
 uint32_t dt_capture_view_get_film_id(const dt_view_t *view);
 
 const gchar *dt_capture_view_get_session_path(const dt_view_t *view);
-const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,char *filename);
+const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const char *filename);
 #endif

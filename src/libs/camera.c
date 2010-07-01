@@ -174,7 +174,7 @@ const char *_camera_tethered_request_image_path(const dt_camera_t *camera,void *
 
 
 /** listener callback from callback control to get target filename for captured image... */
-const char *_camera_tethered_request_image_filename(const dt_camera_t *camera,char *filename, void *data)
+const char *_camera_tethered_request_image_filename(const dt_camera_t *camera,const char *filename, void *data)
 {
   // Fetch the directory for current filmroll in  capture view..
   return dt_capture_view_get_session_filename( dt_view_manager_get_current_view(darktable.view_manager),filename );
@@ -303,6 +303,7 @@ gui_init (dt_lib_module_t *self)
   lib->data.listener->camera_property_value_changed=_camera_property_value_changed;
   lib->data.listener->camera_property_accessibility_changed=_camera_property_accessibility_changed;
   lib->data.listener->request_image_path=_camera_tethered_request_image_path;
+  lib->data.listener->request_image_filename=_camera_tethered_request_image_filename;
   
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
