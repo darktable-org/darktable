@@ -150,7 +150,7 @@ void dt_camera_import_backup_job_run(dt_job_t *job)
       { // Got the mount point lets check for backup folder
         gchar *backuppath=NULL;
         gchar *rootpath=g_file_get_path(root);
-        backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("capture/camera/backup/foldername"),NULL);
+        backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("plugins/capture/backup/foldername"),NULL);
         g_free(rootpath);
         
         if( g_file_test(backuppath,G_FILE_TEST_EXISTS)==TRUE)
@@ -206,9 +206,9 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   dt_film_image_import(t->film,filename);
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
-  if( dt_conf_get_bool("capture/camera/import/backup/enable") == TRUE )
+  if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )
   { // Backup is enabled, let's initialize a backup job of imported image...
-    char *base=dt_conf_get_string("capture/camera/storage/basedirectory");
+    char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
     dt_variables_expand( t->vp, base, FALSE );
     const char *sdpart=dt_variables_get_result(t->vp);
     if( sdpart )
@@ -296,7 +296,7 @@ void dt_camera_import_job_run(dt_job_t *job)
     
     //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);
-    dt_camctl_import(darktable.camctl,t->camera,t->images,dt_conf_get_bool("capture/camera/import/delete_originals"));
+    dt_camctl_import(darktable.camctl,t->camera,t->images,dt_conf_get_bool("plugins/capture/camera/import/delete_originals"));
     dt_camctl_unregister_listener(darktable.camctl,&listener);
     
     dt_variables_params_destroy(t->vp);

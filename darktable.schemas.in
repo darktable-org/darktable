@@ -171,34 +171,34 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/storage/basedirectory</key>
-      <applyto>/apps/darktable/capture/camera/storage/basedirectory</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/storage/basedirectory</key>
+      <applyto>/apps/darktable/plugins/capture/storage/basedirectory</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>$(PICTURES_FOLDER)/darktable</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>path of storage for captured camera images</short>
+        <short>path of storage for captured images</short>
         <long></long>
       </locale>
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/storage/subpath</key>
-      <applyto>/apps/darktable/capture/camera/storage/subpath</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/storage/subpath</key>
+      <applyto>/apps/darktable/plugins/capture/storage/subpath</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>subpath pattern in storage for captured camera images</short>
+        <short>subpath pattern in storage for captured images</short>
         <long></long>
       </locale>
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/storage/namepattern</key>
-      <applyto>/apps/darktable/capture/camera/storage/namepattern</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/storage/namepattern</key>
+      <applyto>/apps/darktable/plugins/capture/storage/namepattern</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
@@ -210,8 +210,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/delete_originals</key>
-      <applyto>/apps/darktable/capture/camera/import/delete_originals</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/camera/import/delete_originals</key>
+      <applyto>/apps/darktable/plugins/capture/camera/import/delete_originals</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>false</default>
@@ -223,8 +223,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/jobcode</key>
-      <applyto>/apps/darktable/capture/camera/import/jobcode</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/camera/import/jobcode</key>
+      <applyto>/apps/darktable/plugins/capture/camera/import/jobcode</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>noname</default>
@@ -236,8 +236,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/backup/enable</key>
-      <applyto>/apps/darktable/capture/camera/import/backup/enable</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/backup/enable</key>
+      <applyto>/apps/darktable/plugins/capture/backup/enable</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>false</default>
@@ -249,8 +249,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/backup/warn</key>
-      <applyto>/apps/darktable/capture/camera/import/backup/warn</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/backup/warn</key>
+      <applyto>/apps/darktable/plugins/capture/backup/warn</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>false</default>
@@ -262,8 +262,8 @@
     </schema>
     
      <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/backup/foldername</key>
-      <applyto>/apps/darktable/capture/camera/import/backup/foldername</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/backup/foldername</key>
+      <applyto>/apps/darktable/plugins/capture/backup/foldername</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>photos</default>

@@ -77,7 +77,7 @@ typedef struct dt_capture_t
   gchar *filenamepattern;
   gchar *path;
   
-	/** The jobcode name used for session initialization etc..*/
+  /** The jobcode name used for session initialization etc..*/
   char *jobcode;
   dt_film_t *film;
   
@@ -126,9 +126,9 @@ void init(dt_view_t *self)
   
   // Setup variable expanding, shares configuration as camera import uses...
   dt_variables_params_init(&lib->vp);
-  lib->basedirectory = dt_conf_get_string("capture/camera/storage/basedirectory");
-  lib->subdirectory = dt_conf_get_string("capture/camera/storage/subpath");
-  lib->filenamepattern = dt_conf_get_string("capture/camera/storage/namepattern");
+  lib->basedirectory = dt_conf_get_string("plugins/capture/storage/basedirectory");
+  lib->subdirectory = dt_conf_get_string("plugins/capture/storage/subpath");
+  lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
   
 }
 
@@ -238,13 +238,11 @@ const char *dt_capture_view_get_jobcode(const dt_view_t *view) {
 
 void configure(dt_view_t *self, int wd, int ht)
 {
-   // dt_capture_t *lib=(dt_capture_t*)self->data;
-   
+  //dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
 #define TOP_MARGIN		20
 #define BOTTOM_MARGIN	20
-
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
@@ -389,13 +387,12 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(0,GDK_c,capture_view_switch_key_accel,(void *)self);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 
-  // Setup capture session and initialize with filmroll
 }
 
 
 void leave(dt_view_t *self)
 {
-    dt_gui_key_accel_unregister(capture_view_switch_key_accel);
+  dt_gui_key_accel_unregister(capture_view_switch_key_accel);
   dt_gui_key_accel_unregister(film_strip_key_accel);
 }
 
