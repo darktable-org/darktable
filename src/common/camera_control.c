@@ -168,20 +168,21 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
       if( (res = gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&fp, c->gpcontext)) == GP_OK ) {
       
         CameraFile *destination;
-        char filename[512]={0};
-        const char *path = _dispatch_request_image_path(c,camera);
-        if( path )
-          strcat(filename,path);
-        else
-          strcat(filename,"/tmp/");
-        strcat(filename,fp.name);
-        int handle = open( filename, O_CREAT | O_WRONLY,0666);
+        const char *output_path = _dispatch_request_image_path(c,camera);
+        if( !output_path ) output_path="/tmp";
+        const char *fname = _dispatch_request_image_filename(c,fp.name,cam);
+        if( !fname ) fname=fp.name;
+  
+        char *output = g_build_filename(output_path,fname,NULL);
+  
+        int handle = open( output, O_CREAT | O_WRONLY,0666);
         gp_file_new_from_fd( &destination , handle );
         gp_camera_file_get( camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
         close( handle );
-          
+        
         // Notify listerners of captured image
-        _dispatch_camera_image_downloaded(c,camera,filename);
+        _dispatch_camera_image_downloaded(c,camera,output);
+        g_free( output );
       } else
         dt_print(DT_DEBUG_CAMCTL,"[camera_control] Capture job failed to capture image %d\n",res);
         
@@ -779,21 +780,21 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
             dt_print(DT_DEBUG_CAMCTL,"[camera_control] Camera file added event\n");
             CameraFilePath *fp = (CameraFilePath *)data;
             CameraFile *destination;
-            char filename[512]={0};
-            const char *path=_dispatch_request_image_path(c,cam);
-            if( path )
-              strcat(filename,path);
-            else
-              strcat(filename,"/tmp/");
-            strcat(filename,fp->name);
-            int handle = open( filename, O_CREAT | O_WRONLY,0666);
+            const char *output_path = _dispatch_request_image_path(c,cam);
+            if( !output_path ) output_path="/tmp";
+            const char *fname = _dispatch_request_image_filename(c,fp->name,cam);
+            if( !fname ) fname=fp->name;
+            
+            char *output = g_build_filename(output_path,fname,NULL);
+           
+            int handle = open( output, O_CREAT | O_WRONLY,0666);
             gp_file_new_from_fd( &destination , handle );
             gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
             close( handle );
               
             // Notify listerners of captured image
-            _dispatch_camera_image_downloaded(c,cam,filename);
-            
+            _dispatch_camera_image_downloaded(c,cam,output);
+            g_free(output);
           }
       }
       else if( event == GP_EVENT_TIMEOUT ) 
@@ -801,7 +802,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
     } 
     else
     {
-	wait_timedout=TRUE;
+      wait_timedout=TRUE;
      // dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to wait for camera event\n");
       
     }

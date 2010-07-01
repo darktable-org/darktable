@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "views/capture.h"
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "control/jobs.h"
@@ -164,11 +165,27 @@ static void _camera_property_accessibility_changed(const dt_camera_t *camera,con
 {  
 }
 
+/** listener callback from callback control to get target directory for captured image... */
+const char *_camera_tethered_request_image_path(const dt_camera_t *camera,void *data)
+{
+  // Fetch the directory for current filmroll in  capture view..
+  return dt_capture_view_get_session_path( dt_view_manager_get_current_view(darktable.view_manager) );
+}
+
+
+/** listener callback from callback control to get target filename for captured image... */
+const char *_camera_tethered_request_image_filename(const dt_camera_t *camera,char *filename, void *data)
+{
+  // Fetch the directory for current filmroll in  capture view..
+  return dt_capture_view_get_session_filename( dt_view_manager_get_current_view(darktable.view_manager),filename );
+}
+
 /** Listener callback from camera control when image are downloaded from camera. */
 static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
 {
   dt_job_t j;
-  dt_captured_image_import_job_init(&j,filename);
+  uint32_t filmid=dt_capture_view_get_film_id( dt_view_manager_get_current_view( darktable.view_manager ) );
+  dt_captured_image_import_job_init(&j,filmid,filename);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -182,7 +199,8 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
   uint32_t count= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):1;
   uint32_t brackets=0;
   dt_job_t j;
-  dt_camera_capture_job_init(&j,delay,count,brackets);
+  uint32_t filmid=dt_capture_view_get_film_id( dt_view_manager_get_current_view( darktable.view_manager ) );
+  dt_camera_capture_job_init(&j,filmid,delay,count,brackets);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -284,7 +302,7 @@ gui_init (dt_lib_module_t *self)
   lib->data.listener->image_downloaded=_camera_tethered_downloaded_callback;
   lib->data.listener->camera_property_value_changed=_camera_property_value_changed;
   lib->data.listener->camera_property_accessibility_changed=_camera_property_accessibility_changed;
-  
+  lib->data.listener->request_image_path=_camera_tethered_request_image_path;
   
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);

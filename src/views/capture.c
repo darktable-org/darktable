@@ -28,7 +28,7 @@
 
 */
 
-#include "views/view.h"
+
 #include "libs/lib.h"
 #include "control/jobs.h"
 #include "control/settings.h"
@@ -37,8 +37,10 @@
 #include "common/image_cache.h"
 #include "common/darktable.h"
 #include "common/camera_control.h"
+#include "common/variables.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
+#include "capture.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,7 +58,7 @@
 
 DT_MODULE(1)
 
-/** data for the capture view */
+/** module data for the capture view */
 typedef struct dt_capture_t
 {
   /** The current image activated in capture view, either latest tethered shoot
@@ -69,25 +71,23 @@ typedef struct dt_capture_t
   /** The capture mode, for now only supports TETHERED */
   dt_capture_mode_t mode;
   
+  dt_variables_params_t *vp;
+  gchar *basedirectory;
+  gchar *subdirectory;
+  gchar *filenamepattern;
+  gchar *path;
+  
+	/** The jobcode name used for session initialization etc..*/
+  char *jobcode;
+  dt_film_t *film;
+  
 }
 dt_capture_t;
-
-/** Identifies a session that equals a directory named
-    after session creation time used as a filmroll. */
-typedef struct dt_capture_session_t
-{
-  dt_film_t *film;
-}
-dt_capture_session_t;
-
-
-
 
 const char *name(dt_view_t *self)
 {
   return _("capture");
 }
-
 
 static void
 film_strip_activated(const int imgid, void *data)
@@ -99,7 +99,7 @@ film_strip_activated(const int imgid, void *data)
 
 void capture_view_switch_key_accel(void *p)
 {
-  //dt_view_t *self=(dt_view_t*)p;
+  // dt_view_t *self=(dt_view_t*)p;
   // dt_capture_t *lib=(dt_capture_t*)self->data;
   dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode==DT_CAPTURE)
@@ -123,11 +123,117 @@ void init(dt_view_t *self)
   // initialize capture data struct
   const int i = dt_conf_get_int("plugins/capture/mode");
   lib->mode = i;
+  
+  // Setup variable expanding, shares configuration as camera import uses...
+  dt_variables_params_init(&lib->vp);
+  lib->basedirectory = dt_conf_get_string("capture/camera/storage/basedirectory");
+  lib->subdirectory = dt_conf_get_string("capture/camera/storage/subpath");
+  lib->filenamepattern = dt_conf_get_string("capture/camera/storage/namepattern");
+  
 }
 
 void cleanup(dt_view_t *self)
 {
   free(self->data);
+}
+
+uint32_t dt_capture_view_get_film_id(const dt_view_t *view) {
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  if(cv->film) 
+    return cv->film->id;
+  // else return standard "single images"
+  /// @todo maybe return 0 and check error in caller...
+  return 1;
+}
+
+const gchar *dt_capture_view_get_session_path(const dt_view_t *view) 
+{
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  return cv->film->dirname;
+}
+
+const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,char *filename) 
+{
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  
+  cv->vp->filename=filename;
+  
+  dt_variables_expand( cv->vp, cv->path, FALSE );
+  const gchar *storage=dt_variables_get_result(cv->vp);
+  
+  dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
+  const gchar *file = dt_variables_get_result(cv->vp);
+  
+  // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
+  gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+  if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
+  {
+    do
+    {
+      g_free(fullfile);
+      dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
+      file = dt_variables_get_result(cv->vp);
+      fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+    } while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
+  }
+  
+  return file;
+}
+
+void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  
+  if(cv->jobcode) 
+    g_free(cv->jobcode);
+  cv->jobcode=g_strdup(name);
+  
+  // Setup variables jobcode...
+  cv->vp->jobcode = cv->jobcode;
+  
+  // Take care of old filmroll
+  if( cv->film ) {
+    // Close filmroll, if empty remove from database..
+    
+  }
+  
+  // Lets setup a new filmroll for the capture...
+  cv->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
+  dt_film_init(cv->film);
+  
+  // Construct the direectory for filmroll...
+  cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory,NULL);
+  dt_variables_expand( cv->vp, cv->path, FALSE );
+  sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
+    
+  // Create recursive directories, abort if no access
+  if( g_mkdir_with_parents(cv->film->dirname,0755) == -1 )
+  {
+    dt_control_log(_("failed to create session path %s."), cv->film->dirname);
+    g_free( cv->film );
+    return;
+  }
+  
+  if(dt_film_new(cv->film,cv->film->dirname) > 0)
+  {
+    // Switch to new filmroll
+    dt_film_open(cv->film->id);
+    
+  }
+
+  dt_control_log("new filmroll '%s' id %d",cv->jobcode,cv->film->id);
+  
+  
+}
+
+const char *dt_capture_view_get_jobcode(const dt_view_t *view) {
+  g_assert( view != NULL );
+  dt_capture_t *cv=(dt_capture_t *)view->data;
+  
+  return cv->jobcode;
 }
 
 void configure(dt_view_t *self, int wd, int ht)
@@ -175,7 +281,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
  
-	
+  
   if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
   if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
   
@@ -214,7 +320,7 @@ void enter(dt_view_t *self)
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
   gtk_widget_set_visible(widget, FALSE);
-   widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
   gtk_widget_set_visible(widget, TRUE);
@@ -232,11 +338,12 @@ void enter(dt_view_t *self)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     if( module->views() & DT_CAPTURE_VIEW )
-    { // Module does support this view let's add it to plugin box
+    { 
+      // Module does support this view let's add it to plugin box
       // soo here goes the special cases for capture view
       if( !( strcmp(module->name(),"tethered shoot")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
       {
-	module->gui_init(module);
+        module->gui_init(module);
         // add the widget created by gui_init to an expander and both to list.
         GtkWidget *expander = dt_lib_gui_get_expander(module);
         gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
