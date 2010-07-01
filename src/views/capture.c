@@ -194,10 +194,12 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
   // Setup variables jobcode...
   cv->vp->jobcode = cv->jobcode;
   
-  // Take care of old filmroll
+  // Take care of previous capture filmroll
   if( cv->film ) {
-    // Close filmroll, if empty remove from database..
-    
+    if( dt_film_is_empty(cv->film->id) )
+      dt_film_remove(cv->film->id );
+    else
+      dt_film_cleanup( cv->film );
   }
   
   // Lets setup a new filmroll for the capture...
@@ -396,6 +398,11 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
+  dt_capture_t *cv = (dt_capture_t *)self->data;
+ 
+  if( dt_film_is_empty(cv->film->id) != 0)
+    dt_film_remove(cv->film->id );
+  
   dt_gui_key_accel_unregister(capture_view_switch_key_accel);
   dt_gui_key_accel_unregister(film_strip_key_accel);
 }

@@ -284,6 +284,16 @@ int dt_film_import(const char *dirname)
   return ret;
 }
 
+int dt_film_is_empty(const int id) {
+  int rc, empty=0;
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, id);
+  if( sqlite3_step(stmt) == SQLITE_DONE) empty=1;
+  rc = sqlite3_finalize(stmt);
+  return empty;
+}
+
 void dt_film_remove(const int id)
 {
   int rc;
