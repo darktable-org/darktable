@@ -88,6 +88,7 @@ void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const 
 
 
 
+
 static int logid=0;
 
 void _gphoto_log(GPLogLevel level, const char *domain, const char *format, va_list args, void *data) {
@@ -97,7 +98,7 @@ void _gphoto_log(GPLogLevel level, const char *domain, const char *format, va_li
 }
 
 void _enable_debug() {
- logid=gp_log_add_func(GP_LOG_DATA,_gphoto_log,NULL);
+ logid=gp_log_add_func(GP_LOG_DATA,(GPLogFunc)_gphoto_log,NULL);
 }
 void _disable_debug() {
   gp_log_remove_func(logid);
@@ -110,6 +111,7 @@ static void _idle_func_dispatch(GPContext *context, void *data) {
   if( gtk_events_pending () ) gtk_main_iteration();
   gdk_threads_leave();
 }
+
 
 static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
   dt_camctl_t *camctl=(dt_camctl_t *)data;
@@ -242,10 +244,10 @@ dt_camctl_t *dt_camctl_new()
 
   // Initialize gphoto2 context and setup dispatch callbacks
   camctl->gpcontext = gp_context_new();
-  gp_context_set_idle_func( camctl->gpcontext , _idle_func_dispatch, camctl );
-  gp_context_set_status_func( camctl->gpcontext , _status_func_dispatch, camctl );
-  gp_context_set_error_func( camctl->gpcontext , _error_func_dispatch, camctl );
-  gp_context_set_message_func( camctl->gpcontext , _message_func_dispatch, camctl );
+  gp_context_set_idle_func( camctl->gpcontext , (GPContextIdleFunc)_idle_func_dispatch, camctl );
+  gp_context_set_status_func( camctl->gpcontext , (GPContextStatusFunc)_status_func_dispatch, camctl );
+  gp_context_set_error_func( camctl->gpcontext , (GPContextErrorFunc)_error_func_dispatch, camctl );
+  gp_context_set_message_func( camctl->gpcontext , (GPContextMessageFunc)_message_func_dispatch, camctl );
   
   gp_port_info_list_new( &camctl->gpports );
   gp_abilities_list_new( &camctl->gpcams );
