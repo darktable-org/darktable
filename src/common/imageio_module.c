@@ -37,6 +37,8 @@ dt_imageio_sort_modules_format (gconstpointer a, gconstpointer b)
   return strcmp(am->name(), bm->name());
 }
 
+/** Default implementation of dimension module function, used if format modules does not implements dimension() */
+int _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height) { return 0; }
 
 static int
 dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *libname, const char *plugin_name)
@@ -59,6 +61,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
 
   if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
   if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
+  if(!g_module_symbol(module->module, "dimension",                   (gpointer)&(module->dimension)))                   module->dimension = _default_format_dimension;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
   if(!g_module_symbol(module->module, "write_image",                  (gpointer)&(module->write_image)))                  goto error;
@@ -116,11 +119,9 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
 }
 
 /** Default implementation of supported function, used if storage modules not implements supported() */
-int
-_default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format) 
-{
-  return 1;
-}
+int _default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format) { return 1; }
+/** Default implementation of dimension module function, used if storage modules does not implements dimension() */
+int _default_storage_dimension(struct dt_imageio_module_storage_t *self,uint32_t *width, uint32_t *height) { return 0; }
 
 static int
 dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char *libname, const char *plugin_name)
@@ -146,7 +147,8 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
 
   if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
-
+  if(!g_module_symbol(module->module, "dimension",                   (gpointer)&(module->dimension)))         	module->dimension = _default_storage_dimension;
+  
   return 0;
 error:
   fprintf(stderr, "[imageio_load_module] failed to open storage `%s': %s\n", plugin_name, g_module_error());

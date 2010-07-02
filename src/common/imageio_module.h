@@ -74,6 +74,8 @@ typedef struct dt_imageio_module_format_t
   const char* (*mime)      (dt_imageio_module_data_t *data);
   /* this extension (plus dot) is appended to the exported filename. */
   const char* (*extension) (dt_imageio_module_data_t *data);
+  /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
+  int (*dimension)    (struct dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height);
 
   // optional: functions operating in memory, not on files:
   /* reads the header and fills width/height in data struct. */
@@ -122,6 +124,8 @@ typedef struct dt_imageio_module_storage_t
   void (*gui_reset)   (struct dt_imageio_module_storage_t *self);
   /* try and see if this format is supported? */
   int (*supported)    (struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
+  /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
+  int (*dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
 
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total);
