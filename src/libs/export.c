@@ -56,6 +56,8 @@ void _update_formats_combobox(dt_lib_export_t *d);
 gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text);
 /** Sets the max dimensions based upon what storage and format supports */
 void _update_dimensions(dt_lib_export_t *d);
+/** get the max output dimension supported by combination of storage and format.. */
+void _get_max_output_dimension(dt_lib_export_t *d,uint32_t *width, uint32_t *height);
 
 const char*
 name ()
@@ -71,6 +73,7 @@ uint32_t views()
 static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
+  // Let's get the max dimension restriction if any...
   dt_control_export();
 }
 
@@ -168,33 +171,31 @@ format_changed (GtkComboBox *widget, dt_lib_export_t *d)
   }
 }
 
-void _update_dimensions(dt_lib_export_t *d) {
-  int k = dt_conf_get_int("plugins/lighttable/export/storage");
+void _get_max_output_dimension(dt_lib_export_t *d,uint32_t *width, uint32_t *height) 
+{
+  int k = dt_conf_get_int("plugins/lighttable/export/storage"); 
   dt_imageio_module_storage_t *storage = (dt_imageio_module_storage_t *)g_list_nth_data(darktable.imageio->plugins_storage, k);
   k = dt_conf_get_int("plugins/lighttable/export/format");
   dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)g_list_nth_data(darktable.imageio->plugins_format, k);
   if( storage && format ) {
-    uint32_t w,h,fw,fh,sw,sh;
-    w=h=fw=fh=sw=sh=0; // We are all equals!!!
+    uint32_t fw,fh,sw,sh;
+    fw=fh=sw=sh=0; // We are all equals!!!
     storage->dimension(storage, &sw,&sh);
     format->dimension(format, &fw,&fh);
     
-    if( sw==0 || fw==0) w=sw>fw?sw:fw;
-    else w=sw<fw?sw:fw;
+    if( sw==0 || fw==0) *width=sw>fw?sw:fw;
+    else *width=sw<fw?sw:fw;
       
-    if( sh==0 || fh==0) h=sh>fh?sh:fh;
-    else h=sh<fh?sh:fh;
-    
-    gtk_spin_button_set_range( d->width,0, (w>0?w:10000) );
-    gtk_spin_button_set_range( d->height,0, (h>0?h:10000) );
-    
-    if( w>0 && gtk_spin_button_get_value(d->width) > w )
-      gtk_spin_button_set_value(d->width,w);
-    
-    if( h>0 && gtk_spin_button_get_value(d->height) > h )
-      gtk_spin_button_set_value(d->height,h);
-    
+    if( sh==0 || fh==0) *height=sh>fh?sh:fh;
+    else *height=sh<fh?sh:fh;
   }
+}
+
+void _update_dimensions(dt_lib_export_t *d) {
+  uint32_t w=0,h=0;
+  _get_max_output_dimension(d,&w,&h);
+  gtk_spin_button_set_range( d->width,0, (w>0?w:10000) );
+  gtk_spin_button_set_range( d->height,0, (h>0?h:10000) );
 }
 
 static void
