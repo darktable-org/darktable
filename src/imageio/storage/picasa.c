@@ -832,6 +832,13 @@ get_params(dt_imageio_module_storage_t *self)
   return d;
 }
 
+int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format) {
+	if( strcmp(format->mime(NULL) ,"image/jpeg") ==  0 ) return 1;
+	else if( strcmp(format->mime(NULL) ,"image/png") ==  0 ) return 1;
+	
+	return 0;
+}
+
 void
 free_params(dt_imageio_module_storage_t *self, void *params)
 {
