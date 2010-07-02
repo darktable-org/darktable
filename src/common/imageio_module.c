@@ -115,6 +115,13 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   return 0;
 }
 
+/** Default implementation of supported function, used if storage modules not implements supported() */
+int
+_default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format) 
+{
+  return 1;
+}
+
 static int
 dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char *libname, const char *plugin_name)
 {
@@ -138,7 +145,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
 
-  if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = NULL;
+  if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
 
   return 0;
 error:
