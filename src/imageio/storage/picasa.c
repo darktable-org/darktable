@@ -533,7 +533,7 @@ void entry_changed(GtkEntry *entry, gpointer data) {
   g_free(password);
   g_hash_table_destroy(table);
   if( ui->picasa_api != NULL)
-	ui->picasa_api->needsReauthentication=TRUE;
+  ui->picasa_api->needsReauthentication=TRUE;
 }
 
 
@@ -803,40 +803,46 @@ get_params(dt_imageio_module_storage_t *self)
   
   // fill d from controls in ui
   if( ui->picasa_api ) {
-	// We are authenticated and off to actually export images..
-	  d->picasa_api = ui->picasa_api;
-	  int index = gtk_combo_box_get_active(ui->comboBox1);
-	  if( index >= 0 ){
-	    if( index == 0 ) { // Create new album
-	      d->picasa_api->current_album = NULL;
-	      d->picasa_api->album_title = g_strdup( gtk_entry_get_text( ui->entry3 ) );
-	      d->picasa_api->album_summary = g_strdup( gtk_entry_get_text( ui->entry4) );
-	      d->picasa_api->album_public = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( ui->checkButton1 ) );
-	    } else {
-	       // use existing album
-	      if( (d->picasa_api->current_album = g_list_nth_data(d->picasa_api->albums,(index-2)))==NULL ) {
-		// Something went wrong...
-		fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-2 );
-		return NULL;
-	      }
-	    }
-	  } else return NULL;
-	  
-	  d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
-	  
-	  // Let UI forget about this api context and recreate a new one for further usage...
-	  ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
+  // We are authenticated and off to actually export images..
+    d->picasa_api = ui->picasa_api;
+    int index = gtk_combo_box_get_active(ui->comboBox1);
+    if( index >= 0 ){
+      if( index == 0 ) { // Create new album
+        d->picasa_api->current_album = NULL;
+        d->picasa_api->album_title = g_strdup( gtk_entry_get_text( ui->entry3 ) );
+        d->picasa_api->album_summary = g_strdup( gtk_entry_get_text( ui->entry4) );
+        d->picasa_api->album_public = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( ui->checkButton1 ) );
+      } else {
+         // use existing album
+        if( (d->picasa_api->current_album = g_list_nth_data(d->picasa_api->albums,(index-2)))==NULL ) {
+          // Something went wrong...
+          fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-2 );
+          return NULL;
+        }
+      }
+    } else return NULL;
+    
+    d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
+    
+    // Let UI forget about this api context and recreate a new one for further usage...
+    ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
   } else
-	return NULL;
+    return NULL;
   
   return d;
 }
 
+int dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height) {
+  *width=4000;
+  *height=4000;
+  return 1;
+}
+
 int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format) {
-	if( strcmp(format->mime(NULL) ,"image/jpeg") ==  0 ) return 1;
-	else if( strcmp(format->mime(NULL) ,"image/png") ==  0 ) return 1;
-	
-	return 0;
+  if( strcmp(format->mime(NULL) ,"image/jpeg") ==  0 ) return 1;
+  else if( strcmp(format->mime(NULL) ,"image/png") ==  0 ) return 1;
+  
+  return 0;
 }
 
 void
