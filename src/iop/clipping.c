@@ -749,6 +749,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
 /*-------------------------------------------*/
+  gtk_table_set_row_spacing(GTK_TABLE(self->widget), 4, 10);
   label = GTK_WIDGET(dtgtk_label_new(_("guides"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 6, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 5);
   g->guide_lines = GTK_COMBO_BOX(gtk_combo_box_new_text());
