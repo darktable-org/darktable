@@ -62,6 +62,12 @@ void dt_view_manager_cleanup(dt_view_manager_t *vm)
   for(int k=0;k<vm->num_views;k++) dt_view_unload_module(vm->view + k);
 }
 
+const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm) 
+{
+  return &vm->view[vm->current_view];
+}
+
+
 int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod)
 {
   if(vm->num_views >= DT_VIEW_MAX_MODULES) return -1;

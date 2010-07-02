@@ -105,6 +105,8 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k);
 void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 /** reset current view. */
 void dt_view_manager_reset(dt_view_manager_t *vm);
+/** get current view of the view manager. */
+const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm);
 
 void dt_view_manager_mouse_leave     (dt_view_manager_t *vm);
 void dt_view_manager_mouse_moved     (dt_view_manager_t *vm, double x, double y, int which);

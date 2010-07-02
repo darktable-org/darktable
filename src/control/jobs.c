@@ -51,22 +51,23 @@ void dt_image_load_job_run(dt_job_t *job)
 void dt_captured_image_import_job_run(dt_job_t *job)
 {
   dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
-  int id = dt_image_import(1, t->filename);
+  int id = dt_image_import(t->film_id, t->filename);
   if(id)
   {
-    // dt_film_open(1);
+    //dt_film_open(1);
     dt_view_film_strip_set_active_image(darktable.view_manager,id);
     dt_control_queue_draw_all();
     //dt_ctl_switch_mode_to(DT_DEVELOP);
   }
 }
 
-void dt_captured_image_import_job_init(dt_job_t *job, const char *filename)
+void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char *filename)
 {
   dt_control_job_init(job, "import tethered image");
   job->execute = &dt_captured_image_import_job_run;
   dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
-  t->filename=g_strdup(filename);
+  t->filename = g_strdup(filename);
+  t->film_id = filmid;
 }
 
 void dt_camera_capture_job_run(dt_job_t *job)
@@ -74,9 +75,6 @@ void dt_camera_capture_job_run(dt_job_t *job)
   dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
   for(int i=0;i<t->count;i++)
   {
-    // Delay if active
-    if(t->delay)
-      g_usleep(t->delay*G_USEC_PER_SEC);
     
     for(int b=0;b<=t->brackets;b++)
     {
@@ -86,14 +84,20 @@ void dt_camera_capture_job_run(dt_job_t *job)
       //  set next bracket
       dt_camctl_camera_capture(darktable.camctl,NULL);
     }
+    
+    // Delay if active
+    if(t->delay)
+      g_usleep(t->delay*G_USEC_PER_SEC);
+   
   }
 }
 
-void dt_camera_capture_job_init(dt_job_t *job, uint32_t delay, uint32_t count, uint32_t brackets)
+void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets)
 {
   dt_control_job_init(job, "remote capture of image(s)");
   job->execute = &dt_camera_capture_job_run;
   dt_camera_capture_t *t = (dt_camera_capture_t *)job->param;
+  t->film_id=filmid;
   t->delay=delay;
   t->count=count;
   t->brackets=brackets;
@@ -146,7 +150,7 @@ void dt_camera_import_backup_job_run(dt_job_t *job)
       { // Got the mount point lets check for backup folder
         gchar *backuppath=NULL;
         gchar *rootpath=g_file_get_path(root);
-        backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("capture/camera/backup/foldername"),NULL);
+        backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("plugins/capture/backup/foldername"),NULL);
         g_free(rootpath);
         
         if( g_file_test(backuppath,G_FILE_TEST_EXISTS)==TRUE)
@@ -202,9 +206,9 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   dt_film_image_import(t->film,filename);
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
-  if( dt_conf_get_bool("capture/camera/import/backup/enable") == TRUE )
+  if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )
   { // Backup is enabled, let's initialize a backup job of imported image...
-    char *base=dt_conf_get_string("capture/camera/storage/basedirectory");
+    char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
     dt_variables_expand( t->vp, base, FALSE );
     const char *sdpart=dt_variables_get_result(t->vp);
     if( sdpart )
@@ -217,7 +221,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   t->import_count++;
 }
 
-const char *_camera_request_image_filename(const dt_camera_t *camera,const char *filename,void *data) 
+const char *_camera_import_request_image_filename(const dt_camera_t *camera,const char *filename,void *data) 
 {
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   t->vp->filename=filename;
@@ -244,7 +248,7 @@ const char *_camera_request_image_filename(const dt_camera_t *camera,const char 
   return file;
 }
 
-const char *_camera_request_image_path(const dt_camera_t *camera,void *data)
+const char *_camera_import_request_image_path(const dt_camera_t *camera,void *data)
 {
   // :) yeap this is kind of stupid yes..
   dt_camera_import_t *t = (dt_camera_import_t *)data;
@@ -287,12 +291,12 @@ void dt_camera_import_job_run(dt_job_t *job)
     dt_camctl_listener_t listener= {0};
     listener.data=t;
     listener.image_downloaded=_camera_image_downloaded;
-    listener.request_image_path=_camera_request_image_path;
-    listener.request_image_filename=_camera_request_image_filename;
+    listener.request_image_path=_camera_import_request_image_path;
+    listener.request_image_filename=_camera_import_request_image_filename;
     
     //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);
-    dt_camctl_import(darktable.camctl,t->camera,t->images,dt_conf_get_bool("capture/camera/import/delete_originals"));
+    dt_camctl_import(darktable.camctl,t->camera,t->images,dt_conf_get_bool("plugins/capture/camera/import/delete_originals"));
     dt_camctl_unregister_listener(darktable.camctl,&listener);
     
     dt_variables_params_destroy(t->vp);

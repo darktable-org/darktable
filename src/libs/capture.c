@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "views/capture.h"
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "control/jobs.h"
@@ -27,12 +28,13 @@
 
 DT_MODULE(1)
 
-typedef  struct dt_lib_session_t
+typedef  struct dt_lib_capture_t
 {
   /** Gui part of the module */
   struct {
     GtkLabel *label1;                           // Jobcode
     GtkEntry *entry1;                         // Jobcode
+    GtkButton *button1;                     // create new
   } gui;
   
   /** Data part of the module */
@@ -40,7 +42,7 @@ typedef  struct dt_lib_session_t
     
   } data;
 }
-dt_lib_session_t;
+dt_lib_capture_t;
 
 const char*
 name ()
@@ -65,15 +67,25 @@ position ()
   return 999;
 }
 
+static void 
+create_callback(GtkButton *button, gpointer user_data) 
+{
+  dt_lib_module_t *self=(dt_lib_module_t *)user_data;
+  dt_lib_capture_t *lib=self->data;
+
+  dt_conf_set_string("plugins/capture/jobcode", gtk_entry_get_text(lib->gui.entry1) );
+  dt_capture_view_set_jobcode(dt_view_manager_get_current_view( darktable.view_manager ), gtk_entry_get_text( lib->gui.entry1 ) );
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
   self->widget = gtk_vbox_new(TRUE, 5);
-  self->data = malloc(sizeof(dt_lib_session_t));
-  memset(self->data,0,sizeof(dt_lib_session_t));
+  self->data = malloc(sizeof(dt_lib_capture_t));
+  memset(self->data,0,sizeof(dt_lib_capture_t));
   
   // Setup lib data
-  dt_lib_session_t *lib=self->data;
+  dt_lib_capture_t *lib=self->data;
   
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
@@ -92,9 +104,16 @@ gui_init (dt_lib_module_t *self)
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
  
+  lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label( _("create") ));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), TRUE, TRUE, 0);
+  
+  g_signal_connect (G_OBJECT (lib->gui.button1), "clicked",
+                  G_CALLBACK (create_callback), self);
+
+  gtk_entry_set_text(lib->gui.entry1, dt_conf_get_string("plugins/capture/jobcode") );
   
 }
 
