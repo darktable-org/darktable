@@ -54,6 +54,8 @@ dt_lib_export_profile_t;
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 void _update_formats_combobox(dt_lib_export_t *d);
 gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text);
+/** Sets the max dimensions based upon what storage and format supports */
+void _update_dimensions(dt_lib_export_t *d);
 
 const char*
 name ()
@@ -159,6 +161,39 @@ format_changed (GtkComboBox *widget, dt_lib_export_t *d)
       }
       gtk_widget_show_all(GTK_WIDGET(d->format_box));
     }
+    
+    // Let's also update combination of storage/format dimension restrictions
+    _update_dimensions( d );
+    
+  }
+}
+
+void _update_dimensions(dt_lib_export_t *d) {
+  int k = dt_conf_get_int("plugins/lighttable/export/storage");
+  dt_imageio_module_storage_t *storage = (dt_imageio_module_storage_t *)g_list_nth_data(darktable.imageio->plugins_storage, k);
+  k = dt_conf_get_int("plugins/lighttable/export/format");
+  dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)g_list_nth_data(darktable.imageio->plugins_format, k);
+  if( storage && format ) {
+    uint32_t w,h,fw,fh,sw,sh;
+    w=h=fw=fh=sw=sh=0; // We are all equals!!!
+    storage->dimension(storage, &sw,&sh);
+    format->dimension(format, &fw,&fh);
+    
+    if( sw==0 || fw==0) w=sw>fw?sw:fw;
+    else w=sw<fw?sw:fw;
+      
+    if( sh==0 || fh==0) h=sh>fh?sh:fh;
+    else h=sh<fh?sh:fh;
+    
+    gtk_spin_button_set_range( d->width,0, (w>0?w:10000) );
+    gtk_spin_button_set_range( d->height,0, (h>0?h:10000) );
+    
+    if( w>0 && gtk_spin_button_get_value(d->width) > w )
+      gtk_spin_button_set_value(d->width,w);
+    
+    if( h>0 && gtk_spin_button_get_value(d->height) > h )
+      gtk_spin_button_set_value(d->height,h);
+    
   }
 }
 
@@ -189,6 +224,7 @@ storage_changed (GtkComboBox *widget, dt_lib_export_t *d)
     
     gtk_widget_show_all(GTK_WIDGET(d->storage_box));
   }
+  
 }
 
 static void
