@@ -48,7 +48,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   // fix to group first where within () for use an addition statement to existing where
   c = g_strstr_len(query, -1, "where");
   if(c) *c = '\0';
-  snprintf(fullq, 2048, "insert into selected_images select id %s", query + 8);
+  snprintf(fullq, 2048, "insert into selected_images select distinct id %s", query + 17);
   strcat(fullq,"where (");
   snprintf(fullq+strlen(fullq), 2048-strlen(fullq), "%s", query+strlen(query) + 6);
   gchar *c2 = g_strrstr(fullq, "as a join color");
