@@ -51,6 +51,10 @@ typedef struct dt_lib_export_profile_t
 }
 dt_lib_export_profile_t;
 
+/** Updates the combo box and shows only the supported formats of current selected storage module */
+void _update_formats_combobox(dt_lib_export_t *d);
+gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text);
+
 const char*
 name ()
 {
@@ -96,35 +100,11 @@ gui_reset (dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   gtk_spin_button_set_value(d->width,  dt_conf_get_int("plugins/lighttable/export/width"));
   gtk_spin_button_set_value(d->height, dt_conf_get_int("plugins/lighttable/export/height"));
-  int k = dt_conf_get_int ("plugins/lighttable/export/format");
-  gtk_combo_box_set_active(d->format, k);
-  GList *it = g_list_nth(darktable.imageio->plugins_format, k);
-  if(it)
-  {
-    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
-    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
-    // printf("export: gui_reset replacing %lu with %lu\n", (long int)old, (long int)module->widget);
-    if(old != module->widget)
-    {
-      if(old) gtk_container_remove(d->format_box, old);
-      if(module->widget) gtk_container_add(d->format_box, module->widget);
-    }
-    gtk_widget_show_all(GTK_WIDGET(d->format_box));
-  }
-  k = dt_conf_get_int ("plugins/lighttable/export/storage");
+  
+  // Set storage
+  int k = dt_conf_get_int ("plugins/lighttable/export/storage");
   gtk_combo_box_set_active(d->storage, k);
-  it = g_list_nth(darktable.imageio->plugins_storage, k);
-  if(it)
-  {
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->storage_box));
-    if(old != module->widget)
-    {
-      if(old) gtk_container_remove(d->storage_box, old);
-      if(module->widget) gtk_container_add(d->storage_box, module->widget);
-    }
-    gtk_widget_show_all(GTK_WIDGET(d->storage_box));
-  }
+  
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
@@ -154,20 +134,31 @@ gui_reset (dt_lib_module_t *self)
 static void
 format_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
-  int k = gtk_combo_box_get_active(d->format);
-  dt_conf_set_int ("plugins/lighttable/export/format", k);
-  GList *it = g_list_nth(darktable.imageio->plugins_format, k);
-  if(it)
-  {
-    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
-    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
-    // printf("export: combo replacing %lu with %lu\n", (long int)old, (long int)module->widget);
-    if(old != module->widget)
+  gchar *name = gtk_combo_box_get_active_text(d->format);
+  if( name ) {
+    // Find index of selected format plugin among all existing plugins
+    int k=-1;
+    GList *it = g_list_first(darktable.imageio->plugins_format);
+    if( it != NULL ) 
+      do { 
+        k++; 
+        if( strcmp(  ((dt_imageio_module_format_t *)it->data)->name(),name) == 0) break; 
+      } while( ( it = g_list_next(it) ) );
+    
+    // Store the new format
+    dt_conf_set_int ("plugins/lighttable/export/format", k);
+    it = g_list_nth(darktable.imageio->plugins_format, k);
+    if(it)
     {
-      if(old) gtk_container_remove(d->format_box, old);
-      if(module->widget) gtk_container_add(d->format_box, module->widget);
+      dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+      GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
+      if(old != module->widget)
+      {
+        if(old) gtk_container_remove(d->format_box, old);
+        if(module->widget) gtk_container_add(d->format_box, module->widget);
+      }
+      gtk_widget_show_all(GTK_WIDGET(d->format_box));
     }
-    gtk_widget_show_all(GTK_WIDGET(d->format_box));
   }
 }
 
@@ -186,6 +177,16 @@ storage_changed (GtkComboBox *widget, dt_lib_export_t *d)
       if(old) gtk_container_remove(d->storage_box, old);
       if(module->widget) gtk_container_add(d->storage_box, module->widget);
     }
+    
+    // Let's update formats combobox with supported formats of selected storage module...
+    _update_formats_combobox( d );
+    
+    // Lets try to set selected format if fail select first in list..
+    k = dt_conf_get_int("plugins/lighttable/export/format");
+    GList *it = g_list_nth(darktable.imageio->plugins_format, k);
+    if( _combo_box_set_active_text( d->format, ((dt_imageio_module_format_t *)it->data)->name() ) == FALSE )
+      gtk_combo_box_set_active( d->format, 0);
+    
     gtk_widget_show_all(GTK_WIDGET(d->storage_box));
   }
 }
@@ -219,6 +220,51 @@ int
 position ()
 {
   return 0;
+}
+
+gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text) {
+  g_assert( text!=NULL );
+  g_assert( cb!=NULL );
+  GtkTreeModel *model=gtk_combo_box_get_model(cb);
+  GtkTreeIter iter;
+  if( gtk_tree_model_get_iter_first( model, &iter ) )
+  {
+    int k=-1;
+    do {
+      k++;
+      GValue value = { 0, };
+      gtk_tree_model_get_value(model,&iter,0,&value);
+      gchar *v=NULL;
+      if( G_VALUE_HOLDS_STRING(&value) && (  v=(gchar *)g_value_get_string(&value) ) != NULL
+      ) {
+        if( strcmp( v, text) == 0 ) {
+          gtk_combo_box_set_active( cb, k);
+          return TRUE;
+        }
+      }
+    } while( gtk_tree_model_iter_next( model, &iter ) );
+  }
+  return FALSE;
+}
+
+void _update_formats_combobox(dt_lib_export_t *d) {
+  // Clear format combo box
+  gtk_list_store_clear( GTK_LIST_STORE(gtk_combo_box_get_model(d->format) ) );
+  
+  // Get current selected storage
+  int k = dt_conf_get_int("plugins/lighttable/export/storage");
+  dt_imageio_module_storage_t *storage = (dt_imageio_module_storage_t *)g_list_nth_data(darktable.imageio->plugins_storage, k);
+  
+  // Add supported formats to combobox
+  GList *it = darktable.imageio->plugins_format;
+  while(it)
+  {
+    dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
+    if( storage->supported( storage, format ) ) 
+      gtk_combo_box_append_text(d->format, format->name());
+      
+    it = g_list_next(it);
+  }
 }
 
 void
@@ -256,13 +302,7 @@ gui_init (dt_lib_module_t *self)
   gtk_table_set_row_spacing(GTK_TABLE(self->widget), 2, 20);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  it = darktable.imageio->plugins_format;
-  while(it)
-  {
-    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
-    gtk_combo_box_append_text(d->format, module->name());
-    it = g_list_next(it);
-  }
+
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format), 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (d->format), "changed",
                     G_CALLBACK (format_changed),
