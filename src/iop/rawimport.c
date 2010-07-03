@@ -477,9 +477,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(g->fbdd_noise), 0.0, 0.5);
   g->noiserd_fbdd = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->noiserd_fbdd, C_("fbdd noise", "none"));
-  gtk_combo_box_append_text(g->noiserd_fbdd, _("FBDD"));
-  gtk_combo_box_append_text(g->noiserd_fbdd, _("FBDD+chroma"));
-  gtk_object_set(GTK_OBJECT(g->noiserd_fbdd), "tooltip-text", _("FBDD-turns on pre demosaicing FBDD image denoising\nFBDD+chroma-with additional chroma noise reduction.\nworks with all demosaicing methods"), NULL);
+  gtk_combo_box_append_text(g->noiserd_fbdd, _("luma"));
+  gtk_combo_box_append_text(g->noiserd_fbdd, _("luma+chroma"));
+  gtk_object_set(GTK_OBJECT(g->noiserd_fbdd), "tooltip-text", _("fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"), NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->fbdd_noise), 0, 3, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->noiserd_fbdd), 4, 7, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
