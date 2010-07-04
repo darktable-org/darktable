@@ -394,13 +394,13 @@ gui_init (dt_lib_module_t *self)
   prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "X profile");
   strcpy(prof->name, "X profile");
-  pos = prof->pos = 3;
+  prof->pos = 3;
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "linear_rgb");
   strcpy(prof->name, _("linear rgb"));
-  pos = prof->pos = 3;
+  pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
   // read datadir/color/out/*.icc
@@ -457,6 +457,7 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)d);
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",
