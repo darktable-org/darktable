@@ -773,7 +773,7 @@
       <applyto>/apps/darktable/plugins/lighttable/export/format</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>0</default>
+      <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
