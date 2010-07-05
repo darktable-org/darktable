@@ -461,14 +461,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   // GtkCheckButton *dcb_enhance;
   g->dcb_enhance = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("dcb enhance")));
-  gtk_object_set(GTK_OBJECT(g->dcb_enhance), "tooltip-text", _("turns off the default image refinement if edges are jagged or you prefer softer demosaicing.\nworks only with DCB."), NULL);
+  gtk_object_set(GTK_OBJECT(g->dcb_enhance), "tooltip-text", _("turns off the default image refinement if edges are jagged or you prefer softer demosaicing."), NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->dcb_enhance), 4, 7, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // GtkSpinButton *iterations_dcb;
   g->dcb_iterat = gtk_label_new(_("dcb iterations"));
   gtk_misc_set_alignment(GTK_MISC(g->dcb_iterat), 0.0, 0.5);
   g->iterations_dcb = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1)); // not enough room for number more then 4
-  gtk_object_set(GTK_OBJECT(g->iterations_dcb), "tooltip-text", _("number of DCB correction routines passes(the default is zero)\nthis helps if you see lots of wrong interpolation directions, just remember that it may produce new artifacts\nusually 0 or 1 should work fine, in some situations even 10 is not enough. works only with DCB."), NULL);
+  gtk_object_set(GTK_OBJECT(g->iterations_dcb), "tooltip-text", _("number of DCB correction routines passes(the default is zero)\nthis helps if you see lots of wrong interpolation directions, just remember that it may produce new artifacts\nusually 0 or 1 should work fine, in some situations even 10 is not enough."), NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->dcb_iterat), 0, 3, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->iterations_dcb), 4, 7, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 

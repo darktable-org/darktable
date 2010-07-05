@@ -17,6 +17,7 @@ webpage updates:
   . on import
 - film strip view keyboard bindings
 
+- color transfer capture/apply temp buffer
 - benchmark import/thumbnail creation speed.
 - write_dt_files option not working?
 - mirror after crop?

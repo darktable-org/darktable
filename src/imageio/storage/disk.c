@@ -94,8 +94,11 @@ gui_init (dt_imageio_module_storage_t *self)
   widget = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
   gchar *dir = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
-  gtk_entry_set_text(GTK_ENTRY(widget), dir);
-  g_free(dir);
+  if(dir)
+  {
+    gtk_entry_set_text(GTK_ENTRY(widget), dir);
+    g_free(dir);
+  }
   d->entry = GTK_ENTRY(widget);
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
                                                        "$(FILE_DIRECTORY) - directory of the input image\n"
