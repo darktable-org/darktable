@@ -47,6 +47,23 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
+  // TODO: dump cache
+  // for all images
+  // - pixels == 0 and mip_buf_size adjusted to match
+  // - make sure locks are okay (all 0)
+  // - dump image struct
+
+  // - dump all mip[..] in jpeg
+  // dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
+  // uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
+  // int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
+
+  // - dump mipf in dct
+  //  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
+  //  uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
+  //  dt_image_compress(img->mipf, buf, wd, ht);
+
+  
   // free mipmap cache lines
   for(int k=0;k<cache->num_lines;k++)
   {
