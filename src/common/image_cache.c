@@ -56,20 +56,21 @@ void dt_image_cache_write(dt_image_cache_t *cache)
 
   for(int k=0;k<cache->num_lines;k++)
   { // for all images
-    dt_image_t image;
+    dt_image_cache_line_t line;
     dt_image_t *img;
-    image = cache->line[k].image;
+    line = cache->line[k];
+    line.lock.users = line.lock.write = 0;
     img = &(cache->line[k].image);
-    image.pixels = NULL;
+    line.image.pixels = NULL;
     for(int i=0;i<DT_IMAGE_NONE;i++)
     {
-      image.lock[i].users = image.lock[i].write = 0;
-      image.mip_buf_size[i] = 0;
+      line.image.lock[i].users = line.image.lock[i].write = 0;
+      line.image.mip_buf_size[i] = 0;
     }
-    for(int mip=0;mip<DT_IMAGE_MIPF;mip++) image.mip[mip] = image.mip[mip]?(uint8_t*)1:NULL;
-    image.mipf = image.mipf?(float *)1:NULL;
-    image.import_lock = image.force_reimport = 0;
-    written = fwrite(&image, sizeof(dt_image_t), 1, f);
+    for(int mip=0;mip<DT_IMAGE_MIPF;mip++) line.image.mip[mip] = line.image.mip[mip]?(uint8_t*)1:NULL;
+    line.image.mipf = line.image.mipf?(float *)1:NULL;
+    line.image.import_lock = line.image.force_reimport = 0;
+    written = fwrite(&line, sizeof(dt_image_cache_line_t), 1, f);
     if(written != 1) goto write_error;
 
     int wd, ht;
@@ -103,9 +104,11 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       free(buf);
     }
   }
+  fclose(f);
   return;
 
 write_error:
+  if(f) fclose(f);
   fprintf(stderr, "[image_cache_write] failed to dump the cache to `%s'\n", dbfilename);
   g_unlink(filename);
 }
@@ -143,13 +146,17 @@ void dt_image_cache_read(dt_image_cache_t *cache)
   for(int k=0;k<cache->num_lines;k++)
   {
     dt_image_t *image = &(cache->line[k].image);
-    rd = fread(image, sizeof(dt_image_t), 1, f);
+    rd = fread(cache->line+k, sizeof(dt_image_cache_line_t), 1, f);
     if(rd != 1) goto read_error;
+
+    printf("read image `%s' from disk cache\n", image->filename);
 
     int wd, ht;
     for(int mip=0;mip<DT_IMAGE_MIPF;mip++)
     { // read all available mips
       if(!image->mip[mip]) continue;
+      image->mip[mip] = NULL;
+#if 1
       // printf("reading mip %d for image %d\n", mip, image->id);
       dt_image_get_mip_size(image, mip, &wd, &ht);
       uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
@@ -172,13 +179,17 @@ void dt_image_cache_read(dt_image_cache_t *cache)
         dt_image_release(image, mip, 'r');
       }
       free(blob);
+#endif
     }
     if(image->mipf)
     { // read float preview
+      image->mipf = NULL;
+#if 1
       dt_image_get_mip_size(image, DT_IMAGE_MIPF, &wd, &ht);
       uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
       int32_t length = wd*ht;
       rd = fread(&length, sizeof(int32_t), 1, f);
+      g_assert(length == wd*ht);
       if(rd != 1) { free(buf); goto read_error; }
       rd = fread(buf, sizeof(uint8_t), length, f);
       if(rd != length) { free(buf); goto read_error; }
@@ -190,11 +201,14 @@ void dt_image_cache_read(dt_image_cache_t *cache)
         dt_image_release(image, DT_IMAGE_MIPF, 'r');
       }
       free(buf);
+#endif
     }
   }
+  fclose(f);
   return;
 
 read_error:
+  if(f) fclose(f);
   fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
 }
 
@@ -216,6 +230,26 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
   dt_image_cache_read(cache);
+#if 1 // these tests are passed, even after reading.
+  int i = cache->lru;
+  for(int k=0;k<cache->num_lines;k++)
+  {
+    i = cache->line[i].mru;
+    assert(cache->line[i].image.cacheline == i);
+    printf("next lru: `%s'\n", cache->line[i].image.filename);
+    if(i == cache->mru) break;
+  }
+#endif
+#if 1
+  i = cache->mru;
+  for(int k=0;k<cache->num_lines;k++)
+  {
+    i = cache->line[i].lru;
+    assert(cache->line[i].image.cacheline == i);
+    printf("next mru: `%s'\n", cache->line[i].image.filename);
+    if(i == cache->lru) break;
+  }
+#endif
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)

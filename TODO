@@ -1,19 +1,3 @@
-
-remove mipmaps from sqlite3:
-- remove dt_imageio_preview_{read,write}
-- image_cache.c:
-  . init: read the old cache state from disk
-    . assert num lines == num lines on disk
-    . read in order: image with jpeg blobs
-    . convert pointers
-    . also read mru/lru lists
-  . cleanup: dump the cache state to disk
-    . dump image structs with exif data
-    . dump jpeg-compressed blobs for each loaded mip
-    . in order of cache lines.
-  . what to do with very small thumbnails?
-  . avoid disk io completely, where not necessary.
-
 webpage updates:
 - freebsd has dt (has had for a while :)
 
@@ -31,6 +15,7 @@ webpage updates:
 
 - lighttable view prefetching
   . on import
+  . restore job's priority for in-view images.
 - film strip view keyboard bindings
 
 - color transfer capture/apply temp buffer
