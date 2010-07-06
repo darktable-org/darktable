@@ -230,7 +230,7 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
   dt_image_cache_read(cache);
-#if 1 // these tests are passed, even after reading.
+#if 0 // these tests are passed, even after reading.
   int i = cache->lru;
   for(int k=0;k<cache->num_lines;k++)
   {
@@ -240,7 +240,7 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
     if(i == cache->mru) break;
   }
 #endif
-#if 1
+#if 0
   i = cache->mru;
   for(int k=0;k<cache->num_lines;k++)
   {
