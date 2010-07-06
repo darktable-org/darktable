@@ -45,169 +45,6 @@
 #include <glib/gstdio.h>
 
 
-int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
-{
-  sqlite3_stmt *stmt;
-  int rc, wd, ht;
-  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1; 
-  dt_image_get_mip_size(img, mip, &wd, &ht);
-  // check if resolution is still up-to-date:
-  if(img->mip_buf_size[mip] != (mip == DT_IMAGE_MIPF?3*sizeof(float):4*sizeof(uint8_t))*wd*ht)
-  {
-    printf("[imageio_preview_write] rejecting old resolution\n");
-    return 0;
-  }
-
-  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "insert into mipmap_timestamps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "insert into mipmaps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-
-  // kick out latest mipmap timestamp, if > gconf settings
-  // pthread_mutex_lock(&darktable.db_insert);
-  int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
-  int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
-
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
-
-  sqlite3_exec(darktable.db, "create temp table dreggn (imgid integer, level integer, rowid integer)", NULL, NULL, NULL);
-  sqlite3_prepare_v2(darktable.db, "insert into dreggn select imgid, level, rowid from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep0);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_prepare_v2(darktable.db, "insert into dreggn select imgid, level, rowid from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_exec(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from dreggn)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 0 and imgid in (select imgid from dreggn where level = 0)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 1 and imgid in (select imgid from dreggn where level = 1)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 2 and imgid in (select imgid from dreggn where level = 2)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 3 and imgid in (select imgid from dreggn where level = 3)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 4 and imgid in (select imgid from dreggn where level = 4)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 5 and imgid in (select imgid from dreggn where level = 5)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from dreggn", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "drop table dreggn", NULL, NULL, NULL);
-
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
-  // pthread_mutex_unlock(&darktable.db_insert);
-
-  if(mip == DT_IMAGE_MIPF)
-  {
-    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
-    uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
-    dt_image_compress(img->mipf, buf, wd, ht);
-    rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
-    rc = sqlite3_bind_blob(stmt, 1, buf, sizeof(uint8_t)*wd*ht, free);
-    rc = sqlite3_bind_int (stmt, 2, img->id);
-    rc = sqlite3_bind_int (stmt, 3, mip);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
-    return 0;
-  }
-
-  dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-  uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
-  int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
-  rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
-  HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_blob(stmt, 1, blob, length, free);
-  HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_int (stmt, 2, img->id);
-  rc = sqlite3_bind_int (stmt, 3, mip);
-  rc = sqlite3_step(stmt);
-  if(rc != SQLITE_DONE) fprintf(stderr, "[preview_write] update mipmap failed: %s\n", sqlite3_errmsg(darktable.db));
-  rc = sqlite3_finalize(stmt);
-
-  return 0;
-}
-
-int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
-{
-  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1;
-  if(img->mip[mip])
-  { // already loaded?
-    dt_image_buffer_t mip2 = dt_image_get(img, mip, 'r');
-    if(mip2 != mip) dt_image_release(img, mip2, 'r');
-    else return 0;
-  }
-  sqlite3_stmt *stmt;
-  int rc, wd, ht;
-  size_t length = 0;
-  const void *blob = NULL;
-  dt_image_get_mip_size(img, mip, &wd, &ht);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "insert into mipmap_timestamps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "select data from mipmaps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  HANDLE_SQLITE_ERR(rc);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    blob = sqlite3_column_blob(stmt, 0);
-    length = sqlite3_column_bytes(stmt, 0);
-  }
-  if(!blob || dt_image_alloc(img, mip))
-  {
-    rc = sqlite3_finalize(stmt);
-    return 1;
-  }
-
-  if(mip == DT_IMAGE_MIPF)
-  {
-    if(length != sizeof(uint8_t)*wd*ht) goto err_wrong_res;
-    dt_image_check_buffer(img, mip, 3*wd*ht*sizeof(float));
-    dt_image_uncompress((uint8_t *)blob, img->mipf, wd, ht);
-  }
-  else
-  {
-    dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-    dt_imageio_jpeg_t jpg;
-    if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) || 
-      (jpg.width != wd || jpg.height != ht) ||
-       dt_imageio_jpeg_decompress(&jpg, img->mip[mip])) goto err_wrong_res;
-  }
-  rc = sqlite3_finalize(stmt);
-  dt_image_release(img, mip, 'w');
-  return 0;
-err_wrong_res: // remove obsoleted thumbnail from db
-  sqlite3_finalize(stmt);
-  dt_image_release(img, mip, 'w');
-  dt_image_release(img, mip, 'r');
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, img->id);
-  sqlite3_bind_int (stmt, 2, mip);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  return 1;
-}
-
 void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8_t *p8)
 {
   for(int idx=0;idx < p_wd*p_ht; idx++)
@@ -264,7 +101,6 @@ dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *fil
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
   ret = DT_IMAGEIO_OK;
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   ret = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -388,8 +224,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       }
       free(tmp);
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      // store in db.
-      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
       retval = dt_image_update_mipmaps(img);
 
       // clean up raw stuff.
@@ -432,7 +266,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       retval = dt_image_preview_to_raw(img);
       // store in db.
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
       if(retval == DT_IMAGEIO_OK)
         retval = dt_image_update_mipmaps(img);
       // clean up raw stuff.
@@ -501,8 +334,6 @@ try_full_raw:
         for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
       }
     }
-    // store in db.
-    dt_imageio_preview_write(img, DT_IMAGE_MIPF);
 
     // have first preview of non-processed image
     if(dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
@@ -510,7 +341,6 @@ try_full_raw:
     dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
     dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-    dt_imageio_preview_write(img, DT_IMAGE_MIP4);
     dt_image_release(img, DT_IMAGE_MIP4, 'w');
     retval = dt_image_update_mipmaps(img);
     dt_image_release(img, DT_IMAGE_MIP4, 'r');
@@ -548,7 +378,6 @@ try_full_raw:
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -820,8 +649,6 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   free(tmp);
   dt_imageio_retval_t retval = dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  // store in db.
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
   if(retval == DT_IMAGEIO_OK)
     retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');

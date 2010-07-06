@@ -258,7 +258,6 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
   else
     dt_imageio_preview_8_to_f(p_wd, p_ht, img->mip[DT_IMAGE_MIP4], img->mipf);
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
-  dt_imageio_preview_write(img, DT_IMAGE_MIPF);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
   // remember this is no real raw data:
   img->flags |= DT_IMAGE_THUMBNAIL;
@@ -295,8 +294,6 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
       for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
     }
   }
-  // store in db.
-  dt_imageio_preview_write(img, DT_IMAGE_MIPF);
 
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -517,8 +514,6 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
                                                     + (int)img->mip[l+1][8*(2*j+1)*p_wd + 4*(2*i+1) + k] + (int)img->mip[l+1][8*(2*j+1)*p_wd + 4*(2*i) + k])/4;
     else memcpy(img->mip[l], img->mip[l+1], 4*sizeof(uint8_t)*p_ht*p_wd);
 
-    if(dt_imageio_preview_write(img, l))
-      fprintf(stderr, "[update_mipmaps] could not write mip level %d of image %s to database!\n", l, img->filename);
     dt_image_release(img, l, 'w');
     dt_image_release(img, l+1, 'r');
   }
@@ -633,9 +628,6 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   if(ret) return ret;
   // add watch for file
   dt_fswatch_add( darktable.fswatch, DT_FSWATCH_IMAGE, img);
-  // read mip 0:
-  rc = dt_imageio_preview_read(img, DT_IMAGE_MIP0);
-  if(!rc) dt_image_release(img, DT_IMAGE_MIP0, 'r');
   return rc;
 }
 
@@ -658,33 +650,31 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     ret = dt_image_reimport(img, filename);
     dt_image_release(img, mip, 'w');
   }
-  else if(dt_imageio_preview_read(img, mip))
-  { // img not in database. => mip == FULL or kicked out or corrupt or first time load..
-    if(mip == DT_IMAGE_MIPF)
+  // img not in database. => mip == FULL or kicked out or corrupt or first time load..
+  if(mip == DT_IMAGE_MIPF)
+  {
+    ret = 0;
+    if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     {
-      ret = 0;
-      if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
-      {
-        if(dt_image_reimport(img, filename)) ret = 1;
-      }
-      else
-      {
-        ret = dt_image_raw_to_preview(img);
-        dt_image_release(img, DT_IMAGE_FULL, 'r');
-      }
-      dt_image_release(img, mip, 'w');
-    }
-    else if(mip == DT_IMAGE_FULL)
-    {
-      ret = dt_imageio_open(img, filename);
-      ret = dt_image_raw_to_preview(img);
-      dt_image_release(img, mip, 'w');
+      if(dt_image_reimport(img, filename)) ret = 1;
     }
     else
     {
-      ret = dt_image_reimport(img, filename);
-      dt_image_release(img, mip, 'w');
+      ret = dt_image_raw_to_preview(img);
+      dt_image_release(img, DT_IMAGE_FULL, 'r');
     }
+    dt_image_release(img, mip, 'w');
+  }
+  else if(mip == DT_IMAGE_FULL)
+  {
+    ret = dt_imageio_open(img, filename);
+    ret = dt_image_raw_to_preview(img);
+    dt_image_release(img, mip, 'w');
+  }
+  else
+  {
+    ret = dt_image_reimport(img, filename);
+    dt_image_release(img, mip, 'w');
   }
   // TODO: insert abstract hook here?
   dt_control_queue_draw_all();
@@ -887,8 +877,8 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip)
   // mutex is already locked, as only alloc is allowed to free.
   if(!img) return;
   // dt_image_release(img, mip, "w");
-  if((int)mip < (int)DT_IMAGE_MIPF) { free(img->mip[mip]); img->mip[mip] = NULL; }
-  else if(mip == DT_IMAGE_MIPF) { free(img->mipf); img->mipf = NULL; }
+  if((int)mip < (int)DT_IMAGE_MIPF) { if(img->mip[mip] != (uint8_t *)1) free(img->mip[mip]); img->mip[mip] = NULL; }
+  else if(mip == DT_IMAGE_MIPF) { if(img->mipf != (float *)1) free(img->mipf); img->mipf = NULL; }
   else if(mip == DT_IMAGE_FULL) { free(img->pixels); img->pixels = NULL; }
   else return;
   for(int k=0;k<darktable.mipmap_cache->num_entries[mip];k++)

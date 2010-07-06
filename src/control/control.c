@@ -168,6 +168,8 @@ int dt_control_load_config(dt_control_t *c)
 
       // insert new tables, if not there (statement will just fail if so):
       sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table mipmaps", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL);
       pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
 #endif
@@ -181,10 +183,6 @@ create_tables:
     rc = sqlite3_exec(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40))", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table mipmaps (imgid int, level int, data blob)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table mipmap_timestamps (imgid int, level int)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
@@ -434,36 +432,6 @@ void dt_control_shutdown(dt_control_t *s)
 
 void dt_control_cleanup(dt_control_t *s)
 {
-#if 0
-  int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
-  int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
-  // delete mipmaps
-  
-  double start = dt_get_wtime();
-
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
-  sqlite3_stmt *stmt;
-
-  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level = 0 order by rowid limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep0);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level != 0 order by rowid limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level not in (select imgid*8+level from mipmap_timestamps)", -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
-
-  double end = dt_get_wtime();
-  dt_print(DT_DEBUG_PERF, "[control_cleanup] database cleaning took %.3f secs\n", end - start);
-#endif
-
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   // rc = sqlite3_exec(darktable.db, "vacuum", NULL, NULL, NULL);
