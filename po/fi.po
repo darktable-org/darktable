@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Darktable 0.5\n"
 "Report-Msgid-Bugs-To: mikko@ruohola.org\n"
 "POT-Creation-Date: 2010-06-15 20:26+0300\n"
-"PO-Revision-Date: 2010-06-16 20:12+0300\n"
+"PO-Revision-Date: 2010-07-04 12:55+0300\n"
 "Last-Translator: Mikko Ruohola <mikko@ruohola.org>\n"
 "Language-Team: Finnish Translators <mikko@ruohola.org>\n"
 "MIME-Version: 1.0\n"
@@ -503,9 +503,9 @@ msgid "switch to %s mode"
 msgstr "vaihda %s tilaan"
 
 #: ../src/control/control.c:851
-#, fuzzy, c-format
+#, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b>Valopöytätila</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>%s-tila</b></big></span>"
 
 #: ../src/control/control.c:1217
 msgid "0 - original"
@@ -598,14 +598,12 @@ msgid "history stack"
 msgstr "historiapino"
 
 #: ../src/libs/copy_history.c:57
-#, fuzzy
 msgid "open dt sidecar file"
-msgstr "Tiedostoa %s ei voitu avata"
+msgstr "avaa dt aputiedosto"
 
 #: ../src/libs/copy_history.c:67
-#, fuzzy
 msgid "dt sidecar files"
-msgstr "Poista väliaikaistiedostot"
+msgstr "dt aputiedostot"
 
 #: ../src/libs/copy_history.c:72 ../src/gui/gtk.c:646
 msgid "all files"
@@ -757,7 +755,7 @@ msgstr "lineaarinen rgb"
 
 #: ../src/libs/export.c:350 ../src/iop/colorout.c:368
 msgid "output profile"
-msgstr "tuloksen profiili"
+msgstr "valmiin kuvan profiili"
 
 #: ../src/libs/export.c:360 ../src/iop/colorout.c:397
 #: ../src/iop/colorout.c:398
@@ -783,7 +781,7 @@ msgstr "poista kokoelmasta"
 
 #: ../src/libs/image.c:82 ../src/libs/tagging.c:379
 msgid "delete"
-msgstr "poista"
+msgstr "tuhoa"
 
 #: ../src/libs/image.c:83
 msgid "physically delete from disk"
@@ -971,9 +969,8 @@ msgid "type your query, use `%' as wildcard"
 msgstr ""
 
 #: ../src/libs/collect.c:300
-#, fuzzy
 msgid "matches selected images"
-msgstr "Valittu tiedosto ei kelpaa"
+msgstr "vastaavat valitut kuvat"
 
 #: ../src/libs/collect.c:319
 msgid "doubleclick to select"
@@ -1178,7 +1175,6 @@ msgid "3:2"
 msgstr "3:2"
 
 #: ../src/iop/clipping.c:570
-#, fuzzy
 msgid "4:3"
 msgstr "4:3"
 
@@ -1204,7 +1200,6 @@ msgid "guides"
 msgstr "ohjeet"
 
 #: ../src/iop/clipping.c:584
-#, fuzzy
 msgid "none"
 msgstr "ei mikään"
 
@@ -1237,7 +1232,6 @@ msgstr ""
 "sommittelussa."
 
 #: ../src/iop/clipping.c:595
-#, fuzzy
 msgid "type"
 msgstr "tyyppi"
 
@@ -1582,7 +1576,6 @@ msgid "apply distortions instead of correcting them"
 msgstr "käytä vääristymiä niiden korjaamisen sijasta"
 
 #: ../src/iop/monochrome.c:69
-#, fuzzy
 msgid "monochrome"
 msgstr "harmaasävy"
 
@@ -1922,15 +1915,15 @@ msgstr "luonnolliset ihon sävyt"
 
 #: ../src/iop/colorzones.c:794 ../src/iop/colorzones.c:819
 msgid "luma (L)"
-msgstr "valoisuus (L)"
+msgstr "valo (L)"
 
 #: ../src/iop/colorzones.c:795 ../src/iop/colorzones.c:820
 msgid "colorness (C)"
-msgstr "värillisyys (C)"
+msgstr "värik (C)"
 
 #: ../src/iop/colorzones.c:796 ../src/iop/colorzones.c:821
 msgid "hue (h)"
-msgstr "värisävy (h)"
+msgstr "sävy (h)"
 
 #: ../src/iop/colorzones.c:812
 msgid "select color by"
@@ -1941,7 +1934,6 @@ msgid "pick gui color from image"
 msgstr "valitse käyttöliittymän väri kuvasta"
 
 #: ../src/iop/vignette.c:83
-#, fuzzy
 msgid "vignetting"
 msgstr "vinjetointi"
 
@@ -2271,7 +2263,6 @@ msgid "albums"
 msgstr "albumit"
 
 #: ../src/imageio/storage/picasa.c:617
-#, fuzzy
 msgid "title"
 msgstr "otsikko"
 

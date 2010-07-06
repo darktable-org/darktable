@@ -76,8 +76,10 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    gtk_entry_set_text(GTK_ENTRY(d->entry), dir);
-    dt_conf_set_string("plugins/imageio/storage/disk/file_directory", dir);
+    char composed[1024];
+    snprintf(composed, 1024, "%s/$(FILE_NAME)", dir);
+    gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
+    dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
     g_free(dir);
   }
   gtk_widget_destroy (filechooser);
@@ -94,8 +96,11 @@ gui_init (dt_imageio_module_storage_t *self)
   widget = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
   gchar *dir = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
-  gtk_entry_set_text(GTK_ENTRY(widget), dir);
-  g_free(dir);
+  if(dir)
+  {
+    gtk_entry_set_text(GTK_ENTRY(widget), dir);
+    g_free(dir);
+  }
   d->entry = GTK_ENTRY(widget);
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
                                                        "$(FILE_DIRECTORY) - directory of the input image\n"
