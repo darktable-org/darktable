@@ -153,7 +153,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
   GList *item=g_list_first(fswatch->items);
   while(item) {
     g_free( item->data );
-    g_list_next(item);
+    item=g_list_next(item);
   }
   g_list_free(fswatch->items);
   g_free(ctx);
