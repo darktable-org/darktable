@@ -501,13 +501,13 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_set_source_rgb (cr, .1, .1, .1);
     cairo_paint(cr);
     dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-		if( image )
-		{
-			dt_image_prefetch(image, DT_IMAGE_MIPF);
-			const float wd = width/1.0;
-			dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
-			dt_image_cache_release(image, 'r');
-		}
+    if( image )
+    {
+      dt_image_prefetch(image, DT_IMAGE_MIPF);
+      const float wd = width/1.0;
+      dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
+      dt_image_cache_release(image, 'r');
+    }
   } 
   else // we do pass on expose to manager or zoomable
   {
@@ -779,21 +779,24 @@ int key_pressed(dt_view_t *self, uint16_t which)
   {
     case KEYCODE_z:
     {
-      if( lib->full_preview == 1) 
-        return 0;
-      lib->full_preview=1;
-      
-      // let's hide some gui components
-      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-      gtk_widget_hide(widget);
-      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-      gtk_widget_hide(widget);
-      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-      gtk_widget_hide(widget);
-      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
-      gtk_widget_hide(widget);
-      //dt_dev_invalidate(darktable.develop);
-      
+      int32_t mouse_over_id;
+      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      if( mouse_over_id != -1 ) {
+        if( lib->full_preview == 1) 
+          return 0;
+        lib->full_preview=1;
+        
+        // let's hide some gui components
+        GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+        gtk_widget_hide(widget);
+        widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+        gtk_widget_hide(widget);
+        widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+        gtk_widget_hide(widget);
+        widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+        gtk_widget_hide(widget);
+        //dt_dev_invalidate(darktable.develop);
+      }
     }  break;
     case KEYCODE_Left: case KEYCODE_a:
       if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
