@@ -149,7 +149,7 @@ void dt_image_cache_read(dt_image_cache_t *cache)
     rd = fread(cache->line+k, sizeof(dt_image_cache_line_t), 1, f);
     if(rd != 1) goto read_error;
 
-    printf("read image `%s' from disk cache\n", image->filename);
+    // printf("read image `%s' from disk cache\n", image->filename);
 
     int wd, ht;
     for(int mip=0;mip<DT_IMAGE_MIPF;mip++)
