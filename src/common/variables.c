@@ -38,13 +38,16 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
 guint _string_occurence(const gchar *haystack,const gchar *needle) 
 {
   guint o=0;
-  const gchar *p=haystack;
-  if( (p=g_strstr_len(p,strlen(p),needle)) != NULL) 
+  if( haystack && needle )
   {
-    do
+    const gchar *p=haystack;
+    if( (p=g_strstr_len(p,strlen(p),needle)) != NULL) 
     {
-      o++;
-    } while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
+      do
+      {
+        o++;
+      } while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
+    }
   }
   return o;
 }
@@ -199,9 +202,13 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   if( iterate ) 
     params->data->sequence++;
   
+  // Let's free previous expanded result if any...
+  if( params->data->result )
+    g_free(  params->data->result );
+  
   // Lets expand string
   gchar *result=NULL;
-  params->data->result=params->data->source=string;
+  params->data->result = params->data->source = string;
   if( (token=_string_get_first_variable(params->data->source,variable)) != NULL)
   {
     do {
@@ -218,5 +225,7 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
       }
     } while( (token=_string_get_next_variable(token,variable)) !=NULL );
   }
+  g_free(variable);
+  g_free(value);
   return TRUE;
 }
