@@ -408,6 +408,8 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     dt_dev_load_preview(&dev, img);
     dt_dev_process_to_mip(&dev);
     dt_dev_cleanup(&dev);
+    // load preview keeps a lock on mipf:
+    dt_image_release(img, DT_IMAGE_MIPF, 'r');
   }
   img->import_lock = 0;
   // dt_image_cache_release(imgl, 'w');

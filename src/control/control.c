@@ -51,11 +51,9 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_bool ("write_dt_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
   dt_conf_set_float("preview_subsample", .125f);
-  dt_conf_set_int  ("mipmap_cache_thumbnails", 500);
+  dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
   dt_conf_set_int  ("mipmap_cache_full_images", 2);
   dt_conf_set_int  ("cache_memory", 536870912);
-  dt_conf_set_int  ("database_cache_thumbnails", 2500);
-  dt_conf_set_int  ("database_cache_thumbnails0", 10000);
   dt_conf_set_int  ("database_cache_quality", 89);
 
   dt_conf_set_bool ("ui_last/fullscreen", FALSE);
