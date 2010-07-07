@@ -15,6 +15,7 @@ webpage updates:
 
 - lighttable view prefetching
   . on import
+  . restore job's priority for in-view images.
 - film strip view keyboard bindings
 
 - color transfer capture/apply temp buffer

@@ -42,10 +42,10 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
   
-  int res=0,midx=0;
+  int res=0, midx=0;
   char *modules[] = {"darkroom","lighttable","capture",NULL};
-  char *module=modules[midx];
-  while( module != NULL ) 
+  char *module = modules[midx];
+  while(module != NULL)
   {
     if((res=dt_view_manager_load_module(vm, module))<0) 
       fprintf(stderr,"[view_manager_init] failed to load view module '%s'\n",module);
