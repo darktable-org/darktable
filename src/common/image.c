@@ -561,6 +561,7 @@ void dt_image_init(dt_image_t *img)
     if(length == sizeof(dt_image_raw_parameters_t) + 2*sizeof(float))
       memcpy(&(img->raw_denoise_threshold), blob, length);
   }
+  sqlite3_finalize(stmt);
   img->film_id = -1;
   img->flags = 1; // every image has one star. zero is deleted.
   img->id = -1;
