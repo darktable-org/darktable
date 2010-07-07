@@ -1,4 +1,4 @@
-// ported from rawtherapee code wyattolson-rawtherapee-staging revision 81052bfa26
+// ported from rawtherapee code wyattolson-rawtherapee-staging revision 8ff3edd0f8
 ////////////////////////////////////////////////////////////////
 //
 //			AMaZE demosaic algorithm
@@ -27,7 +27,7 @@
 
 
 
-void CLASS amaze_demosaic_RT() {  
+void CLASS amaze_demosaic_RT() {
 	
 #define SQR(x) ((x)*(x))
 	//#define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -37,32 +37,14 @@ void CLASS amaze_demosaic_RT() {
 	//#define CLIP(x) LIM(x,0,65535)
 	
 	
-	//int width=W, height=H;
-	unsigned short** red;
-	unsigned short** green;
-	unsigned short** blue;
-	red = new unsigned short*[height];
-	for (int i=0; i<height; i++) {
-		red[i] = new unsigned short[width];
-	}
-	green = new unsigned short*[height];
-	for (int i=0; i<height; i++) {
-		green[i] = new unsigned short[width];
-	}	
-	blue = new unsigned short*[height];
-	for (int i=0; i<height; i++) {
-		blue[i] = new unsigned short[width];
-	}
-	
 #define TS 512	 // Tile size; the image is processed in square tiles to lower memory requirements and facilitate multi-threading
 	
 	// local variables
 
 	int top, left;
 	int ex, ey;
-	int rrmin, rrmax, ccmin, ccmax;
 	static const int v1=TS, v2=2*TS, v3=3*TS, p1=-TS+1, p2=-2*TS+2, p3=-3*TS+3, m1=TS+1, m2=2*TS+2, m3=3*TS+3;
-	int nbr[5] = {-v2,-2,2,v2,0};
+	static const int nbr[5] = {-2*TS,-2,2,2*TS,0};
 	
 	static const float eps=1e-5;			//tolerance to avoid dividing by zero
 	static const float epssq=1e-10;			//tolerance to avoid dividing by zero
@@ -73,40 +55,22 @@ void CLASS amaze_demosaic_RT() {
 	static const float lbd=1.0, ubd=1.0;//lbd=0.66, ubd=1.5;
 	
 	static const float gaussodd[4] = {0.14659727707323927f, 0.103592713382435f, 0.0732036125103057f, 0.0365543548389495f};//gaussian on 5x5 quincunx, sigma=1.2
-	float gaussgrad[6] = {0.07384411893421103f, 0.06207511968171489f, 0.0521818194747806f, \
+	static const float gaussgrad[6] = {0.07384411893421103f, 0.06207511968171489f, 0.0521818194747806f, \
 	0.03687419286733595f, 0.03099732204057846f, 0.018413194161458882f};//gaussian on 5x5, sigma=1.2
 	static const float gauss1[3] = {0.3376688223162362f, 0.12171198028231786f, 0.04387081413862306f};//gaussian on 3x3, sigma =0.7
 	static const float gausseven[2] = {0.13719494435797422f, 0.05640252782101291f};//gaussian on 5x5 alt quincunx, sigma=1.5
 	static const float gquinc[4] = {0.169917f, 0.108947f, 0.069855f, 0.0287182f};
 	
 	
-	
-	//tile vars	
-	int bottom, right, row, col;
-	int rr, cc, rr1, cc1, c, indx, indx1, dir, i, j, sgn;
-	
-	float crse, crnw, crne, crsw, rbse, rbnw, rbne, rbsw, wtse, wtnw, wtsw, wtne;
-	float pmwtalt;
+	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	float cru, crd, crl, crr;
-	float vwt, hwt, pwt, mwt, Gintv, Ginth;
-	float guar, gdar, glar, grar, guha, gdha, glha, grha, Ginthar, Ginthha, Gintvar, Gintvha, hcdaltvar, vcdaltvar;
-	float Dgrbvvaru, Dgrbvvard, Dgrbhvarl, Dgrbhvarr;
-	float sumh, sumv, sumsqh, sumsqv, areawt;
-	float nyqtest, vcdvar, hcdvar, hvwtalt, vo, ve, gradp, gradm, gradv, gradh, gradpm, gradhv;
-	float vcdvar1, hcdvar1, varwt, diffwt;
-	float rbvarp, rbvarm;
-	float gu, gd, gl, gr;
-	float gvarh, gvarv;
-	float g[4], f[4];
-	
-	
 	char		*buffer;			// TS*TS*168
 	float         (*rgb)[3];		// TS*TS*12
 	float         (*delh);			// TS*TS*4
 	float         (*delv);			// TS*TS*4
 	float         (*delhsq);		// TS*TS*4
 	float         (*delvsq);		// TS*TS*4
+	float         (*dirwts)[2];		// TS*TS*8
 	float         (*vcd);			// TS*TS*4
 	float         (*hcd);			// TS*TS*4
 	float         (*vcdalt);		// TS*TS*4
@@ -119,11 +83,6 @@ void CLASS amaze_demosaic_RT() {
 	float         (*delp);			// TS*TS*4
 	float         (*delm);			// TS*TS*4
 	float         (*rbint);			// TS*TS*4
-	float         (*dirwts)[2];		// TS*TS*8
-	float         (*Dgrbh1);		// TS*TS*4
-	float         (*Dgrbv1);		// TS*TS*4
-	float         (*Dgrbhsq1);		// TS*TS*4
-	float         (*Dgrbvsq1);		// TS*TS*4
 	float         (*Dgrbh2);		// TS*TS*4
 	float         (*Dgrbv2);		// TS*TS*4
 	float         (*dgintv);		// TS*TS*4
@@ -141,46 +100,42 @@ void CLASS amaze_demosaic_RT() {
 	
 	
 	// assign working space
-	buffer = (char *) malloc(156*TS*TS);
+	buffer = (char *) malloc((34*sizeof(float)+sizeof(int))*TS*TS);
 	//merror(buffer,"amaze_interpolate()");
-	memset(buffer,0,156*TS*TS);
+	memset(buffer,0,(34*sizeof(float)+sizeof(int))*TS*TS);
 	// rgb array
 	rgb         = (float (*)[3])		buffer; //pointers to array
- 	delh		= (float (*))			(buffer +  12*TS*TS);
-	delv		= (float (*))			(buffer +  16*TS*TS);
-	delhsq		= (float (*))			(buffer +  20*TS*TS);
-	delvsq		= (float (*))			(buffer +  24*TS*TS);
-	vcd			= (float (*))			(buffer +  28*TS*TS);
-	hcd			= (float (*))			(buffer +  32*TS*TS);
-	vcdalt		= (float (*))			(buffer +  36*TS*TS);
-	hcdalt		= (float (*))			(buffer +  40*TS*TS);
-	vcdsq		= (float (*))			(buffer +  44*TS*TS);
-	hcdsq		= (float (*))			(buffer +  48*TS*TS);
-	cddiffsq	= (float (*))			(buffer +  52*TS*TS);
-	hvwt		= (float (*))			(buffer +  56*TS*TS);
-	Dgrb		= (float (*)[2])		(buffer +  60*TS*TS);
-	delp		= (float (*))			(buffer +  68*TS*TS);
-	delm		= (float (*))			(buffer +  72*TS*TS);
-	rbint		= (float (*))			(buffer +  76*TS*TS);
-	dirwts		= (float (*)[2])		(buffer +  80*TS*TS);
-	Dgrbh1		= (float (*))			(buffer +  88*TS*TS);
-	Dgrbv1		= (float (*))			(buffer +  92*TS*TS);
-	Dgrbhsq1	= (float (*))			(buffer +  96*TS*TS);
-	Dgrbvsq1	= (float (*))			(buffer +  100*TS*TS);
-	Dgrbh2		= (float (*))			(buffer +  104*TS*TS);
-	Dgrbv2		= (float (*))			(buffer +  108*TS*TS);	
-	dgintv		= (float (*))			(buffer +  112*TS*TS);
-	dginth		= (float (*))			(buffer +  116*TS*TS);
-	Dgrbp1		= (float (*))			(buffer +  120*TS*TS);
-	Dgrbm1		= (float (*))			(buffer +  124*TS*TS);
-	Dgrbpsq1	= (float (*))			(buffer +  128*TS*TS);
-	Dgrbmsq1	= (float (*))			(buffer +  132*TS*TS);
-	cfa			= (float (*))			(buffer +  136*TS*TS);
-	pmwt		= (float (*))			(buffer +  140*TS*TS);
-	rbp			= (float (*))			(buffer +  144*TS*TS);
-	rbm			= (float (*))			(buffer +  148*TS*TS);
+	delh		= (float (*))			(buffer +  3*sizeof(float)*TS*TS);
+	delv		= (float (*))			(buffer +  4*sizeof(float)*TS*TS);
+	delhsq		= (float (*))			(buffer +  5*sizeof(float)*TS*TS);
+	delvsq		= (float (*))			(buffer +  6*sizeof(float)*TS*TS);
+	dirwts		= (float (*)[2])		(buffer +  7*sizeof(float)*TS*TS);
+	vcd			= (float (*))			(buffer +  9*sizeof(float)*TS*TS);
+	hcd			= (float (*))			(buffer +  10*sizeof(float)*TS*TS);
+	vcdalt		= (float (*))			(buffer +  11*sizeof(float)*TS*TS);
+	hcdalt		= (float (*))			(buffer +  12*sizeof(float)*TS*TS);
+	vcdsq		= (float (*))			(buffer +  13*sizeof(float)*TS*TS);
+	hcdsq		= (float (*))			(buffer +  14*sizeof(float)*TS*TS);
+	cddiffsq	= (float (*))			(buffer +  15*sizeof(float)*TS*TS);
+	hvwt		= (float (*))			(buffer +  16*sizeof(float)*TS*TS);
+	Dgrb		= (float (*)[2])		(buffer +  17*sizeof(float)*TS*TS);
+	delp		= (float (*))			(buffer +  19*sizeof(float)*TS*TS);
+	delm		= (float (*))			(buffer +  20*sizeof(float)*TS*TS);
+	rbint		= (float (*))			(buffer +  21*sizeof(float)*TS*TS);
+	Dgrbh2		= (float (*))			(buffer +  22*sizeof(float)*TS*TS);
+	Dgrbv2		= (float (*))			(buffer +  23*sizeof(float)*TS*TS);	
+	dgintv		= (float (*))			(buffer +  24*sizeof(float)*TS*TS);
+	dginth		= (float (*))			(buffer +  25*sizeof(float)*TS*TS);
+	Dgrbp1		= (float (*))			(buffer +  26*sizeof(float)*TS*TS);
+	Dgrbm1		= (float (*))			(buffer +  27*sizeof(float)*TS*TS);
+	Dgrbpsq1	= (float (*))			(buffer +  28*sizeof(float)*TS*TS);
+	Dgrbmsq1	= (float (*))			(buffer +  29*sizeof(float)*TS*TS);
+	cfa			= (float (*))			(buffer +  30*sizeof(float)*TS*TS);
+	pmwt		= (float (*))			(buffer +  31*sizeof(float)*TS*TS);
+	rbp			= (float (*))			(buffer +  32*sizeof(float)*TS*TS);
+	rbm			= (float (*))			(buffer +  33*sizeof(float)*TS*TS);
 	
-	nyquist		= (int (*))				(buffer +  152*TS*TS);
+	nyquist		= (int (*))				(buffer +  34*sizeof(float)*TS*TS);
 	
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
@@ -211,7 +166,7 @@ void CLASS amaze_demosaic_RT() {
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	
-	//determine GRBG coset
+	//determine GRBG coset; (ey,ex) is the offset of the R subarray
 	if (FC(0,0)==1) {//first pixel is G
 		if (FC(0,1)==0) {ey=0; ex=1;} else {ey=1; ex=0;}
 	} else {//first pixel is R or B
@@ -223,10 +178,108 @@ void CLASS amaze_demosaic_RT() {
 	//code is openmp ready; just have to pull local tile variable declarations inside the tile loop
 	for (top=-16; top < height; top += TS-32)
 		for (left=-16; left < width; left += TS-32) {
-			bottom = MIN( top+TS,height+16);
-			right  = MIN(left+TS, width+16);
-			rr1 = bottom - top;
-			cc1 = right - left;
+			int bottom = MIN( top+TS,height+16);
+			int right  = MIN(left+TS, width+16);
+			int rr1 = bottom - top;
+			int cc1 = right - left;
+			
+			//tile vars	
+			int row, col;
+			int rrmin, rrmax, ccmin, ccmax;
+			int rr, cc, c, indx, indx1, dir, i, j, sgn;
+			
+			float crse, crnw, crne, crsw, rbse, rbnw, rbne, rbsw, wtse, wtnw, wtsw, wtne;
+			float pmwtalt;
+			
+			float cru, crd, crl, crr;
+			float vwt, hwt, pwt, mwt, Gintv, Ginth;
+			float guar, gdar, glar, grar, guha, gdha, glha, grha, Ginthar, Ginthha, Gintvar, Gintvha, hcdaltvar, vcdaltvar;
+			float Dgrbvvaru, Dgrbvvard, Dgrbhvarl, Dgrbhvarr;
+			float sumh, sumv, sumsqh, sumsqv, areawt;
+			float nyqtest, vcdvar, hcdvar, hvwtalt, vo, ve, gradp, gradm, gradv, gradh, gradpm, gradhv;
+			float vcdvar1, hcdvar1, varwt, diffwt;
+			float rbvarp, rbvarm;
+			float gu, gd, gl, gr;
+			float gvarh, gvarv;	
+			
+			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/*			
+			char		*buffer;			// TS*TS*168
+			float         (*rgb)[3];		// TS*TS*12
+			float         (*delh);			// TS*TS*4
+			float         (*delv);			// TS*TS*4
+			float         (*delhsq);		// TS*TS*4
+			float         (*delvsq);		// TS*TS*4
+			float         (*dirwts)[2];		// TS*TS*8
+			float         (*vcd);			// TS*TS*4
+			float         (*hcd);			// TS*TS*4
+			float         (*vcdalt);		// TS*TS*4
+			float         (*hcdalt);		// TS*TS*4
+			float         (*vcdsq);			// TS*TS*4
+			float         (*hcdsq);			// TS*TS*4
+			float         (*cddiffsq);		// TS*TS*4
+			float         (*hvwt);			// TS*TS*4
+			float         (*Dgrb)[2];		// TS*TS*8
+			float         (*delp);			// TS*TS*4
+			float         (*delm);			// TS*TS*4
+			float         (*rbint);			// TS*TS*4
+			float         (*Dgrbh2);		// TS*TS*4
+			float         (*Dgrbv2);		// TS*TS*4
+			float         (*dgintv);		// TS*TS*4
+			float         (*dginth);		// TS*TS*4
+			float         (*Dgrbp1);		// TS*TS*4
+			float         (*Dgrbm1);		// TS*TS*4
+			float         (*Dgrbpsq1);		// TS*TS*4
+			float         (*Dgrbmsq1);		// TS*TS*4
+			float         (*cfa);			// TS*TS*4
+			float         (*pmwt);			// TS*TS*4
+			float         (*rbp);			// TS*TS*4
+			float         (*rbm);			// TS*TS*4
+			
+			int			(*nyquist);			// TS*TS*4
+			
+			
+			// assign working space
+			buffer = (char *) malloc(35*sizeof(float)*TS*TS);
+			//merror(buffer,"amaze_interpolate()");
+			memset(buffer,0,35*sizeof(float)*TS*TS);
+			// rgb array
+			rgb         = (float (*)[3])		buffer; //pointers to array
+			delh		= (float (*))			(buffer +  3*sizeof(float)*TS*TS);
+			delv		= (float (*))			(buffer +  4*sizeof(float)*TS*TS);
+			delhsq		= (float (*))			(buffer +  5*sizeof(float)*TS*TS);
+			delvsq		= (float (*))			(buffer +  6*sizeof(float)*TS*TS);
+			dirwts		= (float (*)[2])		(buffer +  7*sizeof(float)*TS*TS);
+			vcd			= (float (*))			(buffer +  9*sizeof(float)*TS*TS);
+			hcd			= (float (*))			(buffer +  10*sizeof(float)*TS*TS);
+			vcdalt		= (float (*))			(buffer +  11*sizeof(float)*TS*TS);
+			hcdalt		= (float (*))			(buffer +  12*sizeof(float)*TS*TS);
+			vcdsq		= (float (*))			(buffer +  13*sizeof(float)*TS*TS);
+			hcdsq		= (float (*))			(buffer +  14*sizeof(float)*TS*TS);
+			cddiffsq	= (float (*))			(buffer +  15*sizeof(float)*TS*TS);
+			hvwt		= (float (*))			(buffer +  16*sizeof(float)*TS*TS);
+			Dgrb		= (float (*)[2])		(buffer +  17*sizeof(float)*TS*TS);
+			delp		= (float (*))			(buffer +  19*sizeof(float)*TS*TS);
+			delm		= (float (*))			(buffer +  20*sizeof(float)*TS*TS);
+			rbint		= (float (*))			(buffer +  21*sizeof(float)*TS*TS);
+			Dgrbh2		= (float (*))			(buffer +  22*sizeof(float)*TS*TS);
+			Dgrbv2		= (float (*))			(buffer +  23*sizeof(float)*TS*TS);	
+			dgintv		= (float (*))			(buffer +  24*sizeof(float)*TS*TS);
+			dginth		= (float (*))			(buffer +  25*sizeof(float)*TS*TS);
+			Dgrbp1		= (float (*))			(buffer +  26*sizeof(float)*TS*TS);
+			Dgrbm1		= (float (*))			(buffer +  27*sizeof(float)*TS*TS);
+			Dgrbpsq1	= (float (*))			(buffer +  28*sizeof(float)*TS*TS);
+			Dgrbmsq1	= (float (*))			(buffer +  29*sizeof(float)*TS*TS);
+			cfa			= (float (*))			(buffer +  30*sizeof(float)*TS*TS);
+			pmwt		= (float (*))			(buffer +  31*sizeof(float)*TS*TS);
+			rbp			= (float (*))			(buffer +  32*sizeof(float)*TS*TS);
+			rbm			= (float (*))			(buffer +  33*sizeof(float)*TS*TS);
+			
+			nyquist		= (int (*))				(buffer +  34*sizeof(float)*TS*TS);
+*/			
+			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			
+			
 			// rgb from input CFA data
 			// rgb values should be floating point number between 0 and 1 
 			// after white balance multipliers are applied 
@@ -361,9 +414,9 @@ void CLASS amaze_demosaic_RT() {
 			//interpolate vertical and horizontal color differences
 			//t1_vcdhcd = clock();
 			
-			for (rr=4; rr<TS-4; rr++)
-				//for (cc=4+(FC(rr,2)&1),indx=rr*TS+cc,c=FC(rr,cc); cc<TS-4; cc+=2,indx+=2) {
-				for (cc=4,indx=rr*TS+cc; cc<TS-4; cc++,indx++) {
+			for (rr=4; rr<rr1-4; rr++)
+				//for (cc=4+(FC(rr,2)&1),indx=rr*TS+cc,c=FC(rr,cc); cc<cc1-4; cc+=2,indx+=2) {
+				for (cc=4,indx=rr*TS+cc; cc<cc1-4; cc++,indx++) {
 					c=FC(rr,cc);
 					if (c&1) {sgn=-1;} else {sgn=1;}
 					
@@ -409,9 +462,9 @@ void CLASS amaze_demosaic_RT() {
 			//t2_vcdhcd += clock() - t1_vcdhcd;
 			
 			//t1_cdvar = clock();
-			for (rr=4; rr<TS-4; rr++)
-				//for (cc=4+(FC(rr,2)&1),indx=rr*TS+cc,c=FC(rr,cc); cc<TS-4; cc+=2,indx+=2) {
-				for (cc=4,indx=rr*TS+cc; cc<TS-4; cc++,indx++) {
+			for (rr=4; rr<rr1-4; rr++)
+				//for (cc=4+(FC(rr,2)&1),indx=rr*TS+cc,c=FC(rr,cc); cc<cc1-4; cc+=2,indx+=2) {
+				for (cc=4,indx=rr*TS+cc; cc<cc1-4; cc++,indx++) {
 					c=FC(rr,cc);
 					
 					hcdvar = 3*(SQR(hcd[indx-2])+SQR(hcd[indx])+SQR(hcd[indx+2]))-SQR(hcd[indx-2]+hcd[indx]+hcd[indx+2]);
@@ -482,8 +535,8 @@ void CLASS amaze_demosaic_RT() {
 					cddiffsq[indx] = SQR(vcd[indx]-hcd[indx]);
 				}
 			
-			for (rr=6; rr<TS-6; rr++)
-				for (cc=6+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-6; cc+=2,indx+=2) {
+			for (rr=6; rr<rr1-6; rr++)
+				for (cc=6+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-6; cc+=2,indx+=2) {
 					
 					//compute color difference variances in cardinal directions
 					
@@ -521,8 +574,8 @@ void CLASS amaze_demosaic_RT() {
 			// Nyquist test				 
 			//t1_nyqtest = clock();
 			
-			for (rr=6; rr<TS-6; rr++)
-				for (cc=6+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-6; cc+=2,indx+=2) {
+			for (rr=6; rr<rr1-6; rr++)
+				for (cc=6+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-6; cc+=2,indx+=2) {
 					
 					//nyquist texture test: ask if difference of vcd compared to hcd is larger or smaller than RGGB gradients
 					nyqtest = (gaussodd[0]*cddiffsq[indx]+ \
@@ -551,8 +604,8 @@ void CLASS amaze_demosaic_RT() {
 					if (nyqtest>0) {nyquist[indx]=1;}//nyquist=1 for nyquist region
 				}
 			
-			for (rr=8; rr<TS-8; rr++)
-				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			for (rr=8; rr<rr1-8; rr++)
+				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2) {
 					
 					areawt=(nyquist[indx-v2]+nyquist[indx-m1]+nyquist[indx+p1]+ \
 							nyquist[indx-2]+nyquist[indx]+nyquist[indx+2]+ \
@@ -573,8 +626,8 @@ void CLASS amaze_demosaic_RT() {
 			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			// in areas of Nyquist texture, do area interpolation
 			//t1_areainterp = clock();
-			for (rr=8; rr<TS-8; rr++)
-				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			for (rr=8; rr<rr1-8; rr++)
+				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2) {
 					
 					if (nyquist[indx]) {
 						// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -608,8 +661,8 @@ void CLASS amaze_demosaic_RT() {
 			
 			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			//populate G at R/B sites
-			for (rr=8; rr<TS-8; rr++)
-				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			for (rr=8; rr<rr1-8; rr++)
+				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2) {
 					
 					//first ask if one gets more directional discrimination from nearby B/R sites
 					hvwtalt = 0.25*(hvwt[indx-m1]+hvwt[indx+p1]+hvwt[indx-p1]+hvwt[indx+m1]);
@@ -634,8 +687,8 @@ void CLASS amaze_demosaic_RT() {
 			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			// refine Nyquist areas using G curvatures
 			
-			for (rr=8; rr<TS-8; rr++)
-				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			for (rr=8; rr<rr1-8; rr++)
+				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2) {
 					
 					if (nyquist[indx]) {
 						//local averages (over Nyquist pixels only) of G curvature squared 
@@ -659,8 +712,8 @@ void CLASS amaze_demosaic_RT() {
 			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			// diagonal interpolation correction
-			/*for (rr=8; rr<TS-8; rr++)
-			 for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			/*for (rr=8; rr<rr1-8; rr++)
+			 for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2) {
 			 
 			 
 			 //evaluate diagonal gradients based on CFA values
@@ -693,8 +746,8 @@ void CLASS amaze_demosaic_RT() {
 			 pmwt[indx]=1;
 			 }
 			 
-			 for (rr=8; rr<TS-8; rr++)
-			 for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			 for (rr=8; rr<rr1-8; rr++)
+			 for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2) {
 			 
 			 areawt=(pmwt[indx-v2]+pmwt[indx-m1]+pmwt[indx+p1]+ \
 			 pmwt[indx-2]+pmwt[indx]+pmwt[indx+2]+ \
@@ -705,8 +758,8 @@ void CLASS amaze_demosaic_RT() {
 			 if (areawt<2) pmwt[indx]=0;
 			 }*/
 			
-			for (rr=8; rr<TS-8; rr++)
-				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			for (rr=8; rr<rr1-8; rr++)
+				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2) {
 					
 					
 					rbvarp = epssq + (gausseven[0]*(Dgrbpsq1[indx-v1]+Dgrbpsq1[indx-1]+Dgrbpsq1[indx+1]+Dgrbpsq1[indx+v1]) + \
@@ -789,8 +842,8 @@ void CLASS amaze_demosaic_RT() {
 			
 			
 			
-			for (rr=8; rr<TS-8; rr++)
-				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {
+			for (rr=10; rr<rr1-10; rr++)
+				for (cc=10+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-10; cc+=2,indx+=2) {
 					
 					//first ask if one gets more directional discrimination from nearby B/R sites
 					pmwtalt = 0.25*(pmwt[indx-m1]+pmwt[indx+p1]+pmwt[indx-p1]+pmwt[indx+m1]);
@@ -800,8 +853,8 @@ void CLASS amaze_demosaic_RT() {
 					rbint[indx] = 0.5*(cfa[indx] + rbm[indx]*(1-pmwt[indx]) + rbp[indx]*pmwt[indx]);//this is R+B, interpolated
 				}
 			
-			for (rr=8; rr<TS-8; rr++)
-				for (cc=8+(FC(rr,2)&1),indx=rr*TS+cc; cc<TS-8; cc+=2,indx+=2) {	
+			for (rr=12; rr<rr1-12; rr++)
+				for (cc=12+(FC(rr,2)&1),indx=rr*TS+cc; cc<cc1-12; cc+=2,indx+=2) {	
 					
 					//if (fabs(0.5-pmwt[indx])<fabs(0.5-hvwt[indx])/*+0.5*pmthresh*/) continue;
 					
@@ -872,34 +925,30 @@ void CLASS amaze_demosaic_RT() {
 			//t1_chroma = clock();
 			//fancy chrominance interpolation
 			//(ey,ex) is location of R site
-			for (rr=13-ey; rr<TS-12; rr+=2)
-				for (cc=13-ex,indx=rr*TS+cc; cc<TS-12; cc+=2,indx+=2) {//B coset
+			for (rr=13-ey; rr<rr1-12; rr+=2)
+				for (cc=13-ex,indx=rr*TS+cc; cc<cc1-12; cc+=2,indx+=2) {//B coset
 					Dgrb[indx][1]=Dgrb[indx][0];//split out G-B from G-R
 					Dgrb[indx][0]=0;
 				}
-			for (rr=12; rr<TS-12; rr++)
-				for (cc=12+(FC(rr,2)&1),indx=rr*TS+cc,c=1-FC(rr,cc)/2; cc<TS-12; cc+=2,indx+=2) {
-					f[0]=1.0/(eps+fabs(Dgrb[indx-m1][c]-Dgrb[indx+m1][c])+fabs(Dgrb[indx-m1][c]-Dgrb[indx-m3][c])+fabs(Dgrb[indx+m1][c]-Dgrb[indx-m3][c]));
-					f[1]=1.0/(eps+fabs(Dgrb[indx+p1][c]-Dgrb[indx-p1][c])+fabs(Dgrb[indx+p1][c]-Dgrb[indx+p3][c])+fabs(Dgrb[indx-p1][c]-Dgrb[indx+p3][c]));
-					f[2]=1.0/(eps+fabs(Dgrb[indx-p1][c]-Dgrb[indx+p1][c])+fabs(Dgrb[indx-p1][c]-Dgrb[indx+m3][c])+fabs(Dgrb[indx+p1][c]-Dgrb[indx-p3][c]));
-					f[3]=1.0/(eps+fabs(Dgrb[indx+m1][c]-Dgrb[indx-m1][c])+fabs(Dgrb[indx+m1][c]-Dgrb[indx-p3][c])+fabs(Dgrb[indx-m1][c]-Dgrb[indx+m3][c]));
+			for (rr=12; rr<rr1-12; rr++)
+				for (cc=12+(FC(rr,2)&1),indx=rr*TS+cc,c=1-FC(rr,cc)/2; cc<cc1-12; cc+=2,indx+=2) {
+					wtnw=1.0/(eps+fabs(Dgrb[indx-m1][c]-Dgrb[indx+m1][c])+fabs(Dgrb[indx-m1][c]-Dgrb[indx-m3][c])+fabs(Dgrb[indx+m1][c]-Dgrb[indx-m3][c]));
+					wtne=1.0/(eps+fabs(Dgrb[indx+p1][c]-Dgrb[indx-p1][c])+fabs(Dgrb[indx+p1][c]-Dgrb[indx+p3][c])+fabs(Dgrb[indx-p1][c]-Dgrb[indx+p3][c]));
+					wtsw=1.0/(eps+fabs(Dgrb[indx-p1][c]-Dgrb[indx+p1][c])+fabs(Dgrb[indx-p1][c]-Dgrb[indx+m3][c])+fabs(Dgrb[indx+p1][c]-Dgrb[indx-p3][c]));
+					wtse=1.0/(eps+fabs(Dgrb[indx+m1][c]-Dgrb[indx-m1][c])+fabs(Dgrb[indx+m1][c]-Dgrb[indx-p3][c])+fabs(Dgrb[indx-m1][c]-Dgrb[indx+m3][c]));
 					
-					g[0]=Dgrb[indx-m1][c];
-					g[1]=Dgrb[indx+p1][c];
-					g[2]=Dgrb[indx-p1][c];
-					g[3]=Dgrb[indx+m1][c];
-					Dgrb[indx][c]=(f[0]*g[0]+f[1]*g[1]+f[2]*g[2]+f[3]*g[3])/(f[0]+f[1]+f[2]+f[3]);
+					Dgrb[indx][c]=(wtnw*Dgrb[indx-m1][c]+wtne*Dgrb[indx+p1][c]+wtsw*Dgrb[indx-p1][c]+wtse*Dgrb[indx+m1][c])/(wtnw+wtne+wtsw+wtse);
 				}
-			for (rr=12; rr<TS-12; rr++)
-				for (cc=12+(FC(rr,1)&1),indx=rr*TS+cc,c=FC(rr,cc+1)/2; cc<TS-12; cc+=2,indx+=2)
+			for (rr=12; rr<rr1-12; rr++)
+				for (cc=12+(FC(rr,1)&1),indx=rr*TS+cc,c=FC(rr,cc+1)/2; cc<cc1-12; cc+=2,indx+=2)
 					for(c=0;c<2;c++){
 						
 						Dgrb[indx][c]=((hvwt[indx-v1])*Dgrb[indx-v1][c]+(1-hvwt[indx+1])*Dgrb[indx+1][c]+(1-hvwt[indx-1])*Dgrb[indx-1][c]+(hvwt[indx+v1])*Dgrb[indx+v1][c])/ \
 						((hvwt[indx-v1])+(1-hvwt[indx+1])+(1-hvwt[indx-1])+(hvwt[indx+v1]));
 						
 					}
-			for(rr=12; rr<TS-12; rr++)
-				for(cc=12,indx=rr*TS+cc; cc<TS-12; cc++,indx++){
+			for(rr=12; rr<rr1-12; rr++)
+				for(cc=12,indx=rr*TS+cc; cc<cc1-12; cc++,indx++){
 					rgb[indx][0]=(rgb[indx][1]-Dgrb[indx][0]);
 					rgb[indx][2]=(rgb[indx][1]-Dgrb[indx][1]);
 				}
@@ -914,53 +963,33 @@ void CLASS amaze_demosaic_RT() {
 					col = cc + left;
 					
 					indx=rr*TS+cc;
+					indx1=row*width+col;
 					
-					red[row][col] = CLIP((int)(65535.0f*rgb[indx][0] + 0.5f));
-					green[row][col] = CLIP((int)(65535.0f*rgb[indx][1] + 0.5f));
-					blue[row][col] = CLIP((int)(65535.0f*rgb[indx][2] + 0.5f));
+					//red[row][col] = CLIP((int)(65535.0f*rgb[indx][0] + 0.5f));
+					//green[row][col] = CLIP((int)(65535.0f*rgb[indx][1] + 0.5f));
+					//blue[row][col] = CLIP((int)(65535.0f*rgb[indx][2] + 0.5f));
 					
 					//for dcraw implementation
-					//for (c=0; c<3; c++){
-					//	image[indx][c] = CLIP((int)(65535.0f*rgb[rr*TS+cc][c] + 0.5f)); 
-					//} 
+					for (c=0; c<3; c++){
+						//image[indx][c] = CLIP((int)(65535.0f*rgb[rr*TS+cc][c] + 0.5f));
+						image[indx1][c] = CLIP((int)(65535.0f*rgb[indx][c] + 0.5f));
+					}
 					
 					
 				}
 			//end of main loop
 			
-// 			if(plistener) plistener->setProgress(fabs((float)top/height));
+			// clean up
+			//free(buffer);
+			
+//			if(plistener) plistener->setProgress(fabs((float)top/height));
 		}	
 	
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	int ind, ind1;
-	for (int i=0; i<height; i++) {
-		ind=i*width;
-		for (int j=0; j<width; j++) {
-			ind1=ind+j;
-   			image[ind1][0]  = red[i][j];
-   			image[ind1][1]  = green[i][j];
-   			image[ind1][2]  = blue[i][j];
-		}
-	}
+	
 	
 	// clean up
 	free(buffer);
-
-	for (int i=0; i<height; i++) {
-		delete blue[i];
-	}
-	delete[] blue;
-	
-	for (int i=0; i<height; i++) {
-		delete[] green[i];
-	}	
-	delete[] green;
-	
-	for (int i=0; i<height; i++) {
-		delete[] red[i];
-	}
-	delete[] red;
 
 	// done
 
