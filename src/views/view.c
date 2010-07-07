@@ -38,22 +38,24 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->film_strip_size = 0.15f;
   vm->film_strip_scroll_to = -1;
   vm->film_strip_active_image = -1;
+  vm->num_views = 0;
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
   
   int res=0,midx=0;
-  char *modules[]={"darkroom","lighttable","capture",NULL};
+  char *modules[] = {"darkroom","lighttable","capture",NULL};
   char *module=modules[midx];
-  do 
+  while( module != NULL ) 
   {
     if((res=dt_view_manager_load_module(vm, module))<0) 
       fprintf(stderr,"[view_manager_init] failed to load view module '%s'\n",module);
     else
     { // Module loaded lets handle specific cases
-      if(strcmp(module,"darkroom")==0) 
+      if(strcmp(module,"darkroom") == 0) 
         darktable.develop = (dt_develop_t *)vm->view[res].data;
     }
-  } while((module=(modules[++midx]))!=NULL);
+    module = modules[++midx];
+  }
   vm->current_view=-1;
 }
 
