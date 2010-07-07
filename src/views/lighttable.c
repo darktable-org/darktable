@@ -61,6 +61,7 @@ typedef struct dt_library_t
   int32_t track, offset, first_visible_zoomable, first_visible_filemanager;
   float zoom_x, zoom_y;
   dt_view_image_over_t image_over;
+  int full_preview;
 }
 dt_library_t;
 
@@ -81,6 +82,7 @@ void init(dt_view_t *self)
   lib->center = lib->pan = lib->track = 0;
   lib->zoom_x = 0.0f;
   lib->zoom_y = 0.0f;
+  lib->full_preview=0; 
 }
 
 
@@ -237,6 +239,7 @@ failure:
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
 #endif
+
 }
 
 static void
@@ -488,14 +491,35 @@ failure:
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   const int i = dt_conf_get_int("plugins/lighttable/layout");
-  switch(i)
+  
+  // Let's show full preview if in that state... 
+  dt_library_t *lib = (dt_library_t *)self->data;
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if( lib->full_preview && mouse_over_id!=-1 ) {
+    lib->image_over = DT_VIEW_DESERT;
+    cairo_set_source_rgb (cr, .1, .1, .1);
+    cairo_paint(cr);
+    dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+		if( image )
+		{
+			dt_image_prefetch(image, DT_IMAGE_MIPF);
+			const float wd = width/1.0;
+			dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
+			dt_image_cache_release(image, 'r');
+		}
+  } 
+  else // we do pass on expose to manager or zoomable
   {
-    case 1: // file manager
-      expose_filemanager(self, cr, width, height, pointerx, pointery);
-      break;
-    default: // zoomable
-      expose_zoomable(self, cr, width, height, pointerx, pointery);
-      break;
+    switch(i)
+    {
+      case 1: // file manager
+        expose_filemanager(self, cr, width, height, pointerx, pointery);
+        break;
+      default: // zoomable
+        expose_zoomable(self, cr, width, height, pointerx, pointery);
+        break;
+    }
   }
 }
 
@@ -722,6 +746,28 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   return 1;
 }
 
+int key_released(dt_view_t *self, uint16_t which)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  switch (which)
+  {
+    case KEYCODE_z: 
+    {
+      lib->full_preview=0;
+      
+      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      gtk_widget_show(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+      gtk_widget_show(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      gtk_widget_hide(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      gtk_widget_hide(widget);
+      
+    }break;
+  }
+  return 1;
+}
 
 int key_pressed(dt_view_t *self, uint16_t which)
 {
@@ -731,6 +777,24 @@ int key_pressed(dt_view_t *self, uint16_t which)
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   switch (which)
   {
+    case KEYCODE_z:
+    {
+      if( lib->full_preview == 1) 
+        return 0;
+      lib->full_preview=1;
+      
+      // let's hide some gui components
+      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      gtk_widget_hide(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+      gtk_widget_hide(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      gtk_widget_hide(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      gtk_widget_hide(widget);
+      //dt_dev_invalidate(darktable.develop);
+      
+    }  break;
     case KEYCODE_Left: case KEYCODE_a:
       if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
       else lib->track = -1;
