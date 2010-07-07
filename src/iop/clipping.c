@@ -254,72 +254,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
-#if 0
-  float pi[2], p0[2], tmp[2];
-  float dx[2], dy[2];
-  // get whole-buffer point from i,j
-  pi[0] = roi_out->x + roi_out->scale*d->cix;
-  pi[1] = roi_out->y + roi_out->scale*d->ciy;
-  // transform this point using matrix m
-  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
-  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-  // mul_mat_vec_2(d->m, pi, p0);
-  backtransform(pi, p0, d->m, d->k, d->keystone);
-  p0[0] *= roi_in->scale; p0[1] *= roi_in->scale;
-  p0[0] += d->tx*roi_in->scale;  p0[1] += d->ty*roi_in->scale;
-  // transform this point to roi_in
-  p0[0] -= roi_in->x; p0[1] -= roi_in->y;
-
-  pi[0] = roi_out->x + roi_out->scale*d->cix + 1;
-  pi[1] = roi_out->y + roi_out->scale*d->ciy;
-  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
-  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-  // mul_mat_vec_2(d->m, pi, tmp);
-  backtransform(pi, tmp, d->m, d->k, d->keystone);
-  tmp[0] *= roi_in->scale; tmp[1] *= roi_in->scale;
-  tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
-  tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
-  dx[0] = tmp[0] - p0[0]; dx[1] = tmp[1] - p0[1];
-
-  pi[0] = roi_out->x + roi_out->scale*d->cix;
-  pi[1] = roi_out->y + roi_out->scale*d->ciy + 1;
-  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
-  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-  // mul_mat_vec_2(d->m, pi, tmp);
-  backtransform(pi, tmp, d->m, d->k, d->keystone);
-  tmp[0] *= roi_in->scale; tmp[1] *= roi_in->scale;
-  tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
-  tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
-  dy[0] = tmp[0] - p0[0]; dy[1] = tmp[1] - p0[1];
-
-  pi[0] = p0[0]; pi[1] = p0[1];
-#ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) firstprivate(pi,out) shared(o,p0,dx,dy,in,roi_in,roi_out)
-#endif
-  for(int j=0;j<roi_out->height;j++)
-  {
-    out = ((float *)o)+3*roi_out->width*j;
-    for(int k=0;k<2;k++) pi[k] = p0[k] + j*dy[k];
-    for(int i=0;i<roi_out->width;i++)
-    {
-      const int ii = (int)pi[0], jj = (int)pi[1];
-      if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
-      {
-        const float fi = pi[0] - ii, fj = pi[1] - jj;
-        for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-               (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-               (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-               (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
-      }
-      else for(int c=0;c<3;c++) out[c] = 0.0f;
-      for(int k=0;k<2;k++) pi[k] += dx[k];
-      out += 3;
-    }
-  }
-#else
   // only crop, no rot fast and sharp path:
-  if(d->angle == 0.0 && d->keystone > 1 && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(!d->flags && d->angle == 0.0 && d->keystone > 1 && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) firstprivate(out, in) shared(d,o,i,roi_in,roi_out)
@@ -376,7 +312,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
-#endif
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

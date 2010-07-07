@@ -66,37 +66,11 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/database_cache_thumbnails</key>
-      <applyto>/apps/darktable/database_cache_thumbnails</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>250</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>thumbnails to keep in database</short>
-        <long>how many most-recently used thumbnail mipmaps should be kept in the database cache when darktable closes.</long>
-      </locale>
-    </schema>
-
-    <schema>
-      <key>/schemas/apps/darktable/database_cache_thumbnails0</key>
-      <applyto>/apps/darktable/database_cache_thumbnails0</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>1000</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>very small thumbnails to keep in database</short>
-        <long>how many smallest-size most-recently used thumbnail mipmaps should be kept in the database cache when darktable closes. these do not need a lot of memory and provide fast visual feedback for lighttable mode.</long>
-      </locale>
-    </schema>
-
-    <schema>
       <key>/schemas/apps/darktable/mipmap_cache_thumbnails</key>
       <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>500</default>
+      <default>1000</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
