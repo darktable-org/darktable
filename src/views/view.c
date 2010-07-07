@@ -119,6 +119,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "button_released", (gpointer)&(view->button_released))) view->button_released = NULL;
   if(!g_module_symbol(view->module, "button_pressed",  (gpointer)&(view->button_pressed)))  view->button_pressed = NULL;
   if(!g_module_symbol(view->module, "key_pressed",     (gpointer)&(view->key_pressed)))     view->key_pressed = NULL;
+  if(!g_module_symbol(view->module, "key_released",     (gpointer)&(view->key_released)))     view->key_released = NULL;
   if(!g_module_symbol(view->module, "configure",       (gpointer)&(view->configure)))       view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled",        (gpointer)&(view->scrolled)))        view->scrolled = NULL;
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
@@ -287,6 +288,14 @@ int dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->key_pressed) return v->key_pressed(v, which);
+  return 0;
+}
+
+int dt_view_manager_key_released (dt_view_manager_t *vm, uint16_t which)
+{
+  if(vm->current_view < 0) return 0;
+  dt_view_t *v = vm->view + vm->current_view;
+  if(v->key_released) return v->key_released(v, which);
   return 0;
 }
 

@@ -782,6 +782,11 @@ key_pressed (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 }
 
 static gboolean
+key_released (GtkWidget *w, GdkEventKey *event, gpointer user_data) {
+  return dt_control_key_released(event->hardware_keycode);
+}
+
+static gboolean
 button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
   dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state);
@@ -891,6 +896,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (quit), NULL);
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed_override), NULL);
+g_signal_connect (G_OBJECT (widget), "key-release-event",
+                    G_CALLBACK (key_released), NULL);
+		    
   // g_signal_connect (G_OBJECT (widget), "key-press-event",
                     // G_CALLBACK (key_pressed), NULL);
 

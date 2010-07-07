@@ -1131,6 +1131,32 @@ int dt_control_key_pressed(uint16_t which)
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
   GtkWidget *widget;
+  int needRedraw=0;
+  switch (which)
+  {
+    case KEYCODE_period:
+      dt_ctl_switch_mode();
+      needRedraw=1;
+      break;
+    default:
+      // propagate to view modules.
+      needRedraw = dt_view_manager_key_pressed(darktable.view_manager, which);
+      break;
+  }
+  if( needRedraw ) {
+    widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    gtk_widget_queue_draw(widget);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+    gtk_widget_queue_draw(widget);
+  }
+  return 1;
+}
+
+int dt_control_key_released(uint16_t which)
+{
+  // this line is here to find the right key code on different platforms (mac).
+  // printf("key code pressed: %d\n", which);
+  GtkWidget *widget;
   switch (which)
   {
     case KEYCODE_period:
@@ -1138,7 +1164,7 @@ int dt_control_key_pressed(uint16_t which)
       break;
     default:
       // propagate to view modules.
-      dt_view_manager_key_pressed(darktable.view_manager, which);
+      dt_view_manager_key_released(darktable.view_manager, which);
       break;
   }
 

@@ -46,6 +46,7 @@
 #define KEYCODE_a            8   // mac keycodes X11 :(
 #define KEYCODE_o            9
 #define KEYCODE_e           10
+#define KEYCODE_z           0xff // TODO: should be z 
 #define KEYCODE_apostrophe  20
 #define KEYCODE_comma       21
 #define KEYCODE_period      22
@@ -67,6 +68,7 @@
 #define KEYCODE_a           0   // mac keycodes carbon :)
 #define KEYCODE_o           1   // s
 #define KEYCODE_e           2   // d
+#define KEYCODE_z           0xff // TODO: should be z 
 #define KEYCODE_apostrophe  12  // q
 #define KEYCODE_comma       13  // w
 #define KEYCODE_period      14  // e .. in qwerty :)
@@ -90,6 +92,7 @@
 #define KEYCODE_a           38
 #define KEYCODE_o           39  
 #define KEYCODE_e           40  
+#define KEYCODE_z           52
 #define KEYCODE_apostrophe  24  
 #define KEYCODE_comma       25  
 #define KEYCODE_period      26  
@@ -119,6 +122,7 @@ void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
 void dt_control_mouse_leave();
 int  dt_control_key_pressed(uint16_t which);
+int  dt_control_key_released(uint16_t which);
 int  dt_control_key_pressed_override(uint16_t which);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_gui_queue_draw();
