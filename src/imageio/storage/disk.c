@@ -76,8 +76,10 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    gtk_entry_set_text(GTK_ENTRY(d->entry), dir);
-    dt_conf_set_string("plugins/imageio/storage/disk/file_directory", dir);
+    char composed[1024];
+    snprintf(composed, 1024, "%s/$(FILE_NAME)", dir);
+    gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
+    dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
     g_free(dir);
   }
   gtk_widget_destroy (filechooser);

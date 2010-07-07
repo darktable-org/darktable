@@ -217,6 +217,8 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   pthread_mutex_init(&(cache->mutex), NULL);
   cache->num_lines = entries;
   cache->line = (dt_image_cache_line_t *)malloc(sizeof(dt_image_cache_line_t)*cache->num_lines);
+  memset(cache->line,0,sizeof(dt_image_cache_line_t)*cache->num_lines);
+    
   cache->by_id = (int16_t *)malloc(sizeof(int16_t)*cache->num_lines);
   for(int k=0;k<cache->num_lines;k++)
   {

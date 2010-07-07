@@ -594,17 +594,22 @@ void dt_control_export_job_run(dt_job_t *job)
 	dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
 	g_assert(mstorage);
 	
-	uint32_t fw,fh,sw,sh;
-	fw=fh=sw=sh=0; // We are all equals!!!
+	// Get max dimensions...
+	uint32_t w,h,fw,fh,sw,sh;
+	w=h=fw=fh=sw=sh=0; // We are all equals!!!
 	mstorage->dimension(mstorage, &sw,&sh);
 	mformat->dimension(mformat, &fw,&fh);
 
-	if( sw==0 || fw==0) fdata->max_width=sw>fw?sw:fw;
-	else fdata->max_width=sw<fw?sw:fw;
+	if( sw==0 || fw==0) w=sw>fw?sw:fw;
+	else w=sw<fw?sw:fw;
 
-	if( sh==0 || fh==0) fdata->max_height=sh>fh?sh:fh;
-	else fdata->max_height=sh<fh?sh:fh;
+	if( sh==0 || fh==0) h=sh>fh?sh:fh;
+	else h=sh<fh?sh:fh;
 
+	fprintf(stderr,"fmw=%d fmh=%d w=%d h=%d\n",fdata->max_width,fdata->max_height,w,h);
+	fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
+	fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+	
 	dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
 	if( sdata == NULL || fdata == NULL ) {
 		if( sdata ) {

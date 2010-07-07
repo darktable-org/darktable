@@ -436,7 +436,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 
 #if 1
   int32_t iwd = width*imgwd, iht = height*imgwd, stride;
-  float fwd, fht;
+  float fwd=0, fht=0;
   float scale = 1.0;
   dt_image_buffer_t mip = DT_IMAGE_NONE;
   if(img)
