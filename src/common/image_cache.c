@@ -32,6 +32,7 @@
 
 void dt_image_cache_write(dt_image_cache_t *cache)
 {
+  pthread_mutex_lock(&(cache->mutex));
   char dbfilename[1024];
   char *homedir = getenv("HOME");
   gchar *filename = dt_conf_get_string("cachefile");
@@ -105,16 +106,19 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     }
   }
   fclose(f);
+  pthread_mutex_unlock(&(cache->mutex));
   return;
 
 write_error:
   if(f) fclose(f);
   fprintf(stderr, "[image_cache_write] failed to dump the cache to `%s'\n", dbfilename);
   g_unlink(filename);
+  pthread_mutex_unlock(&(cache->mutex));
 }
 
 void dt_image_cache_read(dt_image_cache_t *cache)
 {
+  pthread_mutex_lock(&(cache->mutex));
   char *homedir = getenv("HOME");
   char dbfilename[1024];
   gchar *filename = dt_conf_get_string("cachefile");
@@ -205,11 +209,13 @@ void dt_image_cache_read(dt_image_cache_t *cache)
     }
   }
   fclose(f);
+  pthread_mutex_unlock(&(cache->mutex));
   return;
 
 read_error:
   if(f) fclose(f);
   fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
+  pthread_mutex_unlock(&(cache->mutex));
 }
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)

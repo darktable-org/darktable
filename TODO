@@ -2,6 +2,10 @@ webpage updates:
 - freebsd has dt (has had for a while :)
 
 0.6 release:
+
+- BUG: full image stays locked?
+- BUG: linked list mru/lru in image cache broken sometimes after load?
+
 - tethered shooting
 - storage/format communication:
   . file type

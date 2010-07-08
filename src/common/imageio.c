@@ -353,44 +353,16 @@ try_full_raw:
     free(image);
     raw = NULL;
     image = NULL;
-    // dt_image_release(img, DT_IMAGE_FULL, 'w');
-    // dt_image_cache_release(img, 'r');
     // not a thumbnail!
     img->flags &= ~DT_IMAGE_THUMBNAIL;
     return DT_IMAGEIO_OK;
   }
-
-#if 0
-  // if no thumbnail: load shrinked raw to tmp buffer (use dt_imageio_load_raw)
-  libraw_recycle(raw);
-  libraw_close(raw);
-  free(image);
-try_full_raw:
-  retval = dt_imageio_open_raw(img, filename);
-  if(retval != DT_IMAGEIO_OK) return retval;
-  retval = dt_image_raw_to_preview(img);
-  dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
-  // this updates mipf/mip4..0 from raw pixels.
-  int p_wd, p_ht;
-  dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
-  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
-  dt_image_get(img, DT_IMAGE_MIPF, 'r');
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  retval = dt_image_update_mipmaps(img);
-  dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return retval;
-#endif
 
 error_raw_cache_full:
   fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
-  // dt_image_cache_release(img, 'r');
   return DT_IMAGEIO_CACHE_FULL;
 
 error_raw_corrupted:
@@ -398,7 +370,6 @@ error_raw_corrupted:
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
-  // dt_image_cache_release(img, 'r');
   return DT_IMAGEIO_FILE_CORRUPTED;
 }
 
@@ -406,7 +377,6 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-  // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
@@ -480,7 +450,6 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     libraw_recycle(raw);
     libraw_close(raw);
     free(image);
-    // dt_image_cache_release(img, 'r');
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width)*(img->height)*sizeof(float));
@@ -494,7 +463,6 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw = NULL;
   image = NULL;
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-  // dt_image_cache_release(img, 'r');
   return DT_IMAGEIO_OK;
 }
 
