@@ -1159,9 +1159,6 @@ int dt_control_key_released(uint16_t which)
   GtkWidget *widget;
   switch (which)
   {
-    case KEYCODE_period:
-      dt_ctl_switch_mode();
-      break;
     default:
       // propagate to view modules.
       dt_view_manager_key_released(darktable.view_manager, which);
