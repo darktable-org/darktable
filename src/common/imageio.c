@@ -479,94 +479,6 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   return DT_IMAGEIO_OK;
 }
 
-#if 0
-static void MaxMidMin(int64_t p[3], int *maxc, int *midc, int *minc)
-{
-  if (p[0] > p[1] && p[0] > p[2]) {
-    *maxc = 0;
-    if (p[1] > p[2]) { *midc = 1; *minc = 2; }
-    else { *midc = 2; *minc = 1; }
-  } else if (p[1] > p[2]) {
-    *maxc = 1;
-    if (p[0] > p[2]) { *midc = 0; *minc = 2; }
-    else { *midc = 2; *minc = 0; }
-  } else {
-    *maxc = 2;
-    if (p[0] > p[1]) { *midc = 0; *minc = 1; }
-    else { *midc = 1; *minc = 0; }
-  }
-}
-
-// this is stolen from develop_linear (ufraw_developer.c), because it does a great job ;)
-void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
-{
-  int64_t tmppix[4];//, tmp;
-  int64_t exposure = pow(2, img->exposure) * 0x10000;
-  int clipped = 0;
-  for(int c=0;c<img->raw->idata.colors;c++)
-  {
-    tmppix[c] = (uint64_t)in[c] * img->raw->color.cam_mul[c]/0x10000 - img->raw->color.black;
-    if(tmppix[c] > img->raw->color.maximum) clipped = 1;
-    tmppix[c] = tmppix[c] * exposure / img->raw->color.maximum;
-    // tmppix[c] = (tmppix[c] * 0x10000) / img->raw.color.maximum;
-  }
-  if(clipped)
-  {
-    int64_t unclipped[3], clipped[3];
-    for(int cc=0;cc<3;cc++)
-    {
-      // for(int c=0,tmp=0;c<img->raw->idata.colors;c++)
-      //   tmp += tmppix[c] * img->raw->color.cmatrix[cc][c];
-      // unclipped[cc] = MAX(tmp/0x10000, 0);
-      unclipped[cc] = tmppix[cc];
-    }
-    for(int c=0; c<3; c++) tmppix[c] = MIN(tmppix[c], 0xFFFF);
-    // for(int c=0; c<3; c++) tmppix[c] = MIN(tmppix[c], exposure);
-    for(int cc=0; cc<3; cc++)
-    {
-      // for(int c=0, tmp=0; c<img->raw->idata.colors; c++)
-      //   tmp += tmppix[c] * img->raw->color.cmatrix[cc][c];
-      // clipped[cc] = MAX(tmp/0x10000, 0);
-      clipped[cc] = tmppix[cc];
-    }
-    int maxc, midc, minc;
-    MaxMidMin(unclipped, &maxc, &midc, &minc);
-    int64_t unclippedLum = unclipped[maxc];
-    int64_t clippedLum = clipped[maxc];
-    int64_t clippedSat;
-    if(clipped[maxc] < clipped[minc] || clipped[maxc] == 0)
-      clippedSat = 0;
-    else
-      clippedSat = 0x10000 - clipped[minc] * 0x10000 / clipped[maxc];
-    int64_t clippedHue;
-    if(clipped[maxc] == clipped[minc]) clippedHue = 0;
-    else clippedHue =
-      (clipped[midc]-clipped[minc])*0x10000 /
-        (clipped[maxc]-clipped[minc]);
-    int64_t unclippedHue;
-    if(unclipped[maxc] == unclipped[minc])
-      unclippedHue = clippedHue;
-    else
-      unclippedHue =
-        (unclipped[midc]-unclipped[minc])*0x10000 /
-        (unclipped[maxc]-unclipped[minc]);
-    int64_t lum = clippedLum + (unclippedLum - clippedLum) * 1/2;
-    int64_t sat = clippedSat;
-    int64_t hue = unclippedHue;
-
-    tmppix[maxc] = lum;
-    tmppix[minc] = lum * (0x10000-sat) / 0x10000;
-    tmppix[midc] = lum * (0x10000-sat + sat*hue/0x10000) / 0x10000;
-  }
-  for(int c=0; c<3; c++)
-    out[c] = MIN(MAX(tmppix[c], 0), 0xFFFF);
-}
-#endif
-
-// =================================================
-//   begin magickcore wrapper functions:
-// =================================================
-
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
   if(!img->exif_inited)
@@ -611,6 +523,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
   const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
 
+  for(int i=0;i<4*p_wd*p_ht;i++) img->mip[DT_IMAGE_MIP4][i] = 100;
   if(img->width == p_wd && img->height == p_ht)
   { // use 1:1
     for (int j=0; j < jpg.height; j++)
@@ -634,6 +547,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return retval;
+  return DT_IMAGEIO_OK;
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.

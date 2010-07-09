@@ -361,22 +361,37 @@ int dt_image_altered(const dt_image_t *img)
   return altered;
 }
 
+int dt_image_import_locked(dt_image_t *img)
+{
+  pthread_mutex_lock(&darktable.db_insert);
+  int lock = img->import_lock;
+  pthread_mutex_unlock(&darktable.db_insert);
+  return lock;
+}
+
+void dt_image_import_lock_set(dt_image_t *img, const int lock)
+{
+  pthread_mutex_lock(&darktable.db_insert);
+  img->import_lock = lock;
+  pthread_mutex_unlock(&darktable.db_insert);
+}
+
 int dt_image_reimport(dt_image_t *img, const char *filename)
 {
   // this brute-force lock might be a bit too much:
   // dt_image_t *imgl = dt_image_cache_use(img->id, 'w');
   // if(!imgl)
-  if(img->import_lock)
+  if(dt_image_import_locked(img))
   {
     // fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
     return 1;
   }
-  img->import_lock = 1;
+  dt_image_import_lock_set(img, 1);
   img->output_width = img->output_height = 0;
   dt_imageio_retval_t ret = dt_imageio_open_preview(img, filename);
   if(ret == DT_IMAGEIO_CACHE_FULL)
   { // handle resource conflicts if user provided very small caches:
-    img->import_lock = 0;
+    dt_image_import_lock_set(img, 0);
     return 1;
   }
   else if(ret != DT_IMAGEIO_OK)
@@ -411,7 +426,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     // load preview keeps a lock on mipf:
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
   }
-  img->import_lock = 0;
+  dt_image_import_lock_set(img, 0);
   // dt_image_cache_release(imgl, 'w');
   return 0;
 }
