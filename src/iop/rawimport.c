@@ -102,7 +102,8 @@ static void reimport_button_callback (GtkButton *button, gpointer user_data)
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)module->params;
   pthread_mutex_lock(&module->dev->history_mutex);
   // set image params
-  if(p->raw_demosaic_method != 4 && p->raw_demosaic_method != 5) p->raw_four_color_rgb = 0;
+  if(p->raw_demosaic_method != 4 && p->raw_demosaic_method != 5 && p->raw_demosaic_method != 0 && p->raw_demosaic_method != 1) p->raw_four_color_rgb = 0;
+  if(p->raw_demosaic_method >= 4) p->raw_demosaic_method = 3;
   module->dev->image->raw_denoise_threshold      = p->raw_denoise_threshold;
   module->dev->image->raw_auto_bright_threshold  = p->raw_auto_bright_threshold;
   module->dev->image->raw_params.pre_median      = p->raw_pre_median;
@@ -161,6 +162,10 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
     active = 1;
     p->raw_four_color_rgb = 1;
   }
+  if(active >= 4)
+  {
+    active = 3;
+  }
   p->raw_demosaic_method = active;
   gtk_widget_set_visible(GTK_WIDGET(g->dcb_iterat), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->fbdd_noise), FALSE);
@@ -185,6 +190,7 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
 
   if ( demosaic == DCB_DEMOSAIC ) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dcb_enhance), TRUE);
+    p->fill1 = (p->fill1 | 0x10);
     gtk_spin_button_set_value(g->iterations_dcb, 0);
     gtk_combo_box_set_active(g->noiserd_fbdd, 0);
 
@@ -201,12 +207,16 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
     gtk_widget_set_no_show_all(GTK_WIDGET(g->noiserd_fbdd), FALSE);
   } else if ( demosaic == AMAZE_DEMOSAIC ) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->amaze_ca_correct), FALSE);
+    p->fill1 = (p->fill1 & 0x1EF);
 
     gtk_widget_set_visible(GTK_WIDGET(g->amaze_ca_correct), TRUE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->amaze_ca_correct), FALSE);
   } else if ( demosaic == VCD_DEMOSAIC ) {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vcd_eeci_refine), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vcd_eeci_refine), FALSE);
+    p->fill1 = (p->fill1 & 0x1EF);
     gtk_spin_button_set_value(g->vcd_es_med_passes, 1);
+    p->fill1 = (p->fill1&0x1F) | (1<<5);
+
     gtk_widget_set_visible(GTK_WIDGET(g->vcd_eeci_refine), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->vcd_enhance_lab), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(g->vcd_es_med_passes), TRUE);
@@ -215,7 +225,7 @@ static void demosaic_callback (GtkComboBox *box, gpointer user_data)
     gtk_widget_set_no_show_all(GTK_WIDGET(g->vcd_enhance_lab), FALSE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->vcd_es_med_passes), FALSE);
   } else {
-    p->fill1 = (p->fill1&0x0) | (demosaic&0xF);
+    p->fill1 = demosaic&0xF;
   }
 
 }
@@ -296,7 +306,6 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->raw_four_color_rgb && dm == 1) dm = 5;
   gtk_combo_box_set_active(g->demosaic_method, dm);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
-////////////////////////////////
   if(dm != 4 && dm != 5) p->raw_four_color_rgb = 0;
   gtk_widget_set_visible(GTK_WIDGET(g->dcb_iterat), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->fbdd_noise), FALSE);
@@ -512,8 +521,26 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_rawimport_params_t *p = (dt_iop_rawimport_params_t *)self->params;
   // dtgtk_slider_set_value(g->denoise_threshold, p->raw_denoise_threshold);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pre_median), p->raw_pre_median);
-  gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
+  //gtk_combo_box_set_active(g->demosaic_method, p->raw_demosaic_method);
   gtk_spin_button_set_value(g->med_passes, p->raw_med_passes);
+//////////////////////////////////////////////////////
+  int dm = p->raw_demosaic_method;
+  if ((p->fill1 & 0x0F) != 0 ) {dm =p->fill1 & 0x0F;}
+  if(p->raw_four_color_rgb && dm == 0) dm = 4;
+  if(p->raw_four_color_rgb && dm == 1) dm = 5;
+  if(dm != 4 && dm != 5) p->raw_four_color_rgb = 0;
+  gtk_combo_box_set_active(g->demosaic_method, dm);
+  if ( dm == DCB_DEMOSAIC ) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dcb_enhance), (p->fill1 & 0x010));
+    gtk_spin_button_set_value(g->iterations_dcb, (p->fill1 & 0x060)>>5);
+    gtk_combo_box_set_active(g->noiserd_fbdd, ((p->fill1 & 0x180)>>7));
+  } else if ( dm == AMAZE_DEMOSAIC ) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->amaze_ca_correct), (p->fill1 & 0x010));
+  } else if ( dm == VCD_DEMOSAIC ) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vcd_eeci_refine), (p->fill1 & 0x010));
+    gtk_spin_button_set_value(g->vcd_es_med_passes, ((p->fill1 & 0x1E0)>>5));
+  }
+//////////////////////////////////////////////////////
 
   g_signal_connect (G_OBJECT (g->pre_median), "toggled", G_CALLBACK (togglebutton_callback), self);
   g_signal_connect (G_OBJECT (g->greeneq), "toggled", G_CALLBACK (togglegreeneq_callback), self);
