@@ -264,7 +264,7 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
   return DT_IMAGEIO_OK;
 }
 
-dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
+dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
 {
   const int raw_wd = img->width;
   const int raw_ht = img->height;
@@ -280,7 +280,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
   { // use 1:1
     for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
     {
-      float *cam = img->pixels + 3*(j*raw_wd + i);
+      const float *cam = raw + 3*(j*raw_wd + i);
       for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
     }
   }
@@ -290,7 +290,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img)
     const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
     for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
     {
-      float *cam = img->pixels + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
+      const float *cam = raw + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
       for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
     }
   }
@@ -663,7 +663,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     }
     else
     {
-      ret = dt_image_raw_to_preview(img);
+      ret = dt_image_raw_to_preview(img, img->pixels);
       dt_image_release(img, DT_IMAGE_FULL, 'r');
     }
     dt_image_release(img, mip, 'w');
@@ -671,7 +671,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   else if(mip == DT_IMAGE_FULL)
   {
     ret = dt_imageio_open(img, filename);
-    ret = dt_image_raw_to_preview(img);
+    ret = dt_image_raw_to_preview(img, img->pixels);
     dt_image_release(img, mip, 'w');
   }
   else

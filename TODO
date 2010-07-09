@@ -3,6 +3,9 @@ webpage updates:
 
 0.6 release:
 
+- make sure no preview import uses full buffers!
+- processed images fight for resources during import and get processed twice?
+- BUG: mem leak in ldr import??
 - BUG: full image stays locked?
 - BUG: linked list mru/lru in image cache broken sometimes after load?
 

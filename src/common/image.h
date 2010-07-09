@@ -190,7 +190,7 @@ void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode);
 
 /** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
-dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img);
+dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw);
 /** up-converts mip4 to mipf using guessed gamma values. needs mip4 r locked. */
 dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img);
 #endif

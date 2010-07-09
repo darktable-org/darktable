@@ -88,12 +88,17 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
 
 dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
 {
-  dt_imageio_retval_t ret = dt_imageio_open_hdr(img, filename);
-  if(ret != DT_IMAGEIO_OK) return ret;
-  ret = dt_image_raw_to_preview(img);
-  dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
-  // this updates mipf/mip4..0 from raw pixels.
   int p_wd, p_ht;
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_rgbe_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK) goto all_good;
+  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  ret = dt_imageio_open_pfm_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK) goto all_good;
+  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+all_good:
+  // this updates mipf/mip4..0 from raw pixels.
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
   dt_image_get(img, DT_IMAGE_MIPF, 'r');
