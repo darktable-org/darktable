@@ -102,7 +102,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 { // draw arrows on borders
-  if(!darktable.control->running) return TRUE;
+  if(!dt_control_running()) return TRUE;
   long int which = (long int)user_data;
   float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -301,7 +301,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   update_colorpicker_panel();
 
   // test quit cond (thread safe, 2nd pass)
-  if(!darktable.control->running)
+  if(!dt_control_running())
   {
     dt_cleanup();
     gtk_main_quit();
@@ -698,7 +698,9 @@ void quit()
   gtk_window_iconify(win);
 
   pthread_mutex_lock(&darktable.control->cond_mutex);
+  pthread_mutex_lock(&darktable.control->run_mutex);
   darktable.control->running = 0;
+  pthread_mutex_unlock(&darktable.control->run_mutex);
   pthread_mutex_unlock(&darktable.control->cond_mutex);
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
@@ -896,7 +898,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (quit), NULL);
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed_override), NULL);
-g_signal_connect (G_OBJECT (widget), "key-release-event",
+  g_signal_connect (G_OBJECT (widget), "key-release-event",
                     G_CALLBACK (key_released), NULL);
 		    
   // g_signal_connect (G_OBJECT (widget), "key-press-event",

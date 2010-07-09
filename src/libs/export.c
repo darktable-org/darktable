@@ -101,7 +101,7 @@ void
 gui_reset (dt_lib_module_t *self)
 {
   // make sure we don't do anything useless:
-  if(!darktable.control->running) return;
+  if(!dt_control_running()) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   gtk_spin_button_set_value(d->width,  dt_conf_get_int("plugins/lighttable/export/width"));
   gtk_spin_button_set_value(d->height, dt_conf_get_int("plugins/lighttable/export/height"));

@@ -384,6 +384,7 @@ void dt_control_init(dt_control_t *s)
   pthread_cond_init(&s->cond, NULL);
   pthread_mutex_init(&s->cond_mutex, NULL);
   pthread_mutex_init(&s->queue_mutex, NULL);
+  pthread_mutex_init(&s->run_mutex, NULL);
 
   int k; for(k=0;k<DT_CONTROL_MAX_JOBS;k++) s->idle[k] = k;
   s->idle_top = DT_CONTROL_MAX_JOBS;
@@ -391,7 +392,9 @@ void dt_control_init(dt_control_t *s)
   // start threads
   s->num_threads = dt_ctl_get_num_procs()+1;
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
+  pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
+  pthread_mutex_unlock(&s->run_mutex);
   for(k=0;k<s->num_threads;k++)
     pthread_create(s->thread + k, NULL, dt_control_work, s);
   for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
@@ -412,10 +415,21 @@ void dt_control_change_cursor(dt_cursor_t curs)
   gdk_cursor_destroy(cursor);
 }
 
+int dt_control_running()
+{
+  dt_control_t *s = darktable.control;
+  pthread_mutex_lock(&s->run_mutex);
+  int running = s->running;
+  pthread_mutex_unlock(&s->run_mutex);
+  return running;
+}
+
 void dt_control_shutdown(dt_control_t *s)
 {
   pthread_mutex_lock(&s->cond_mutex);
+  pthread_mutex_lock(&s->run_mutex);
   s->running = 0;
+  pthread_mutex_unlock(&s->run_mutex);
   pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   // gdk_threads_leave();
@@ -436,6 +450,7 @@ void dt_control_cleanup(dt_control_t *s)
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);
   pthread_mutex_destroy(&s->log_mutex);
+  pthread_mutex_destroy(&s->run_mutex);
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
@@ -591,7 +606,7 @@ void *dt_control_work_res(void *ptr)
 {
   dt_control_t *s = (dt_control_t *)ptr;
   int32_t threadid = dt_control_get_threadid_res();
-  while(s->running)
+  while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
     if(dt_control_run_job_res(s, threadid) < 0)
@@ -612,7 +627,7 @@ void *dt_control_work(void *ptr)
 {
   dt_control_t *s = (dt_control_t *)ptr;
   // int32_t threadid = dt_control_get_threadid();
-  while(s->running)
+  while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
     if(dt_control_run_job(s) < 0)
@@ -914,7 +929,7 @@ void dt_control_log_busy_leave()
 
 void dt_control_gui_queue_draw()
 {
-  if(darktable.control->running)
+  if(dt_control_running())
   {
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_queue_draw(widget);
@@ -923,7 +938,7 @@ void dt_control_gui_queue_draw()
 
 void dt_control_queue_draw_all()
 {
-  if(darktable.control->running)
+  if(dt_control_running())
   {
     int needlock = pthread_self() != darktable.control->gui_thread;
     if(needlock) gdk_threads_enter();
@@ -935,7 +950,7 @@ void dt_control_queue_draw_all()
 
 void dt_control_queue_draw(GtkWidget *widget)
 {
-  if(darktable.control->running)
+  if(dt_control_running())
   {
     if(pthread_self() != darktable.control->gui_thread) gdk_threads_enter();
     gtk_widget_queue_draw(widget);

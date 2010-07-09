@@ -202,7 +202,7 @@ typedef struct dt_control_t
 
   // job management
   int32_t running;
-  pthread_mutex_t queue_mutex, cond_mutex;
+  pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
   pthread_t *thread;
@@ -230,6 +230,8 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job);
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res);
 int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res);
 
+/** get threadsafe running state. */
+int dt_control_running();
 void *dt_control_work(void *ptr);
 void *dt_control_work_res(void *ptr);
 int32_t dt_control_get_threadid();

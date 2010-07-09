@@ -52,7 +52,7 @@ void dt_film_import1(dt_film_t *film)
   while(1)
   {
     pthread_mutex_lock(&film->images_mutex);
-    if (film->dir && (d_name = g_dir_read_name(film->dir)) && darktable.control->running)
+    if (film->dir && (d_name = g_dir_read_name(film->dir)) && dt_control_running())
     {
       snprintf(filename, 1024, "%s/%s", film->dirname, d_name);
       image.film_id = film->id;

@@ -97,11 +97,18 @@ dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *fil
   if(ret == DT_IMAGEIO_OK) goto all_good;
   if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
+  // no hdr file:
+  if(ret == DT_IMAGEIO_FILE_CORRUPTED) return ret;
 all_good:
   // this updates mipf/mip4..0 from raw pixels.
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
-  dt_image_get(img, DT_IMAGE_MIPF, 'r');
+  if(dt_image_get(img, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+  {
+    dt_image_release(img, DT_IMAGE_MIP4, 'w');
+    dt_image_release(img, DT_IMAGE_MIP4, 'r');
+    return DT_IMAGEIO_CACHE_FULL;
+  }
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
   ret = DT_IMAGEIO_OK;
