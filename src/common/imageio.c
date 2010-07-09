@@ -406,6 +406,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   // new demosaicing params
+  raw->params.amaze_ca_refine = -1;
   if ((img->raw_params.fill0 & 0x0F) == 6 ) {
     raw->params.user_qual = 4;
     raw->params.dcb_enhance_fl = img->raw_params.fill0 & 0x010;
@@ -414,7 +415,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   }
   if ((img->raw_params.fill0 & 0x0F) == 7 ) {
     raw->params.user_qual = 5;
-    raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x010;;
+    raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x010;
   }
   if ((img->raw_params.fill0 & 0x0F) == 8 ) {
     raw->params.user_qual = 6;
