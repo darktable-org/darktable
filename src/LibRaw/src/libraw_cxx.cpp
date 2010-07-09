@@ -1498,7 +1498,7 @@ int LibRaw::dcraw_process(void)
         pre_interpolate();
         SET_PROC_FLAG(LIBRAW_PROGRESS_PRE_INTERPOLATE);
 
-        if (quality == 5 && O.amaze_ca_refine >=0 ) {CA_correct_RT();}
+        if (quality == 5 && O.amaze_ca_refine >0 ) {CA_correct_RT();}
         if (P1.filters && !O.document_mode) 
             {
 		if (noiserd>0) fbdd(noiserd);	
