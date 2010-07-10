@@ -265,7 +265,7 @@ static gboolean _slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
   double inc=gtk_adjustment_get_step_increment(DTGTK_SLIDER(widget)->adjustment);
   inc*= (DTGTK_SLIDER(widget)->is_ctrl_key_pressed==TRUE) ? 1.0 : DTGTK_VALUE_SENSITIVITY;
-  float value = gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?-inc:inc);
+  float value = gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?inc:-inc);
   if(DTGTK_SLIDER(widget)->snapsize) value = DTGTK_SLIDER(widget)->snapsize * (((int)value)/DTGTK_SLIDER(widget)->snapsize);
   gtk_adjustment_set_value(DTGTK_SLIDER(widget)->adjustment, value);
   gtk_widget_draw( widget, NULL);
