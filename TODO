@@ -3,11 +3,15 @@ webpage updates:
 
 0.6 release:
 
-- make sure no preview import uses full buffers!
+- desaturated colors in full raw but not preview float map??
 - processed images fight for resources during import and get processed twice?
 - BUG: mem leak in ldr import??
 - BUG: full image stays locked?
 - BUG: linked list mru/lru in image cache broken sometimes after load?
+- BUG: colorin blue shift in colorin lcms: to lab?
+- BUG: leaving darkroom mode: garbled mipf image?
+
+- email export
 
 - tethered shooting
 - storage/format communication:
