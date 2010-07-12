@@ -3,6 +3,7 @@ webpage updates:
 
 0.6 release:
 
+- sqlite3 thread safe/locking?
 - desaturated colors in full raw but not preview float map??
 - BUG: mem leak in ldr import??
 - BUG: full image stays locked?

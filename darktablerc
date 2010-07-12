@@ -5,6 +5,7 @@ cache_memory=536870912
 database_cache_quality=89
 mipmap_cache_thumbnails=1000
 mipmap_cache_full_images=2
+never_use_embedded_thumb=false
 write_dt_files=true
 ask_before_remove=true
 ask_before_delete=true

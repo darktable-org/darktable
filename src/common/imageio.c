@@ -160,7 +160,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
   // if we have a history stack, don't load preview buffer!
-  if(!dt_image_altered(img))
+  if(!dt_image_altered(img) && !dt_conf_get_bool("never_use_embedded_thumb"))
   { // no history stack: get thumbnail
     ret = libraw_open_file(raw, filename);
     HANDLE_ERRORS(ret, 0);

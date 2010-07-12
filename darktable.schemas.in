@@ -93,6 +93,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/never_use_embedded_thumb</key>
+      <applyto>/apps/darktable/never_use_embedded_thumb</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>false</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>don't use embedded preview jpeg, always use half-size raw</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/write_dt_files</key>
       <applyto>/apps/darktable/write_dt_files</applyto>
       <owner>darktable</owner>
