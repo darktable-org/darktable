@@ -41,7 +41,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
-#include <lcms.h>
 #include <string.h>
 #ifdef _OPENMP
 #  include <omp.h>

@@ -25,7 +25,6 @@
 #include "control/conf.h"
 #include "dtgtk/slider.h"
 #include <setjmp.h>
-#include <lcms.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>

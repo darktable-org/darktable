@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/darktable.h"
+#include "common/colorspaces.h"
 #include "common/imageio_module.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -28,7 +29,6 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <glade/glade.h>
-#include <lcms.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)

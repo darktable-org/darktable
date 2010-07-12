@@ -18,10 +18,10 @@
 #ifndef DARKTABLE_IOP_COLORIN_H
 #define DARKTABLE_IOP_COLORIN_H
 
+#include "common/colorspaces.h"
 #include "develop/imageop.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <lcms.h>
 
 // max iccprofile file name length
 #define DT_IOP_COLOR_ICC_LEN 100

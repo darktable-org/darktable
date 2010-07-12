@@ -18,11 +18,11 @@
 #ifndef DARKTABLE_IOP_COLOROUT_H
 #define DARKTABLE_IOP_COLOROUT_H
 
+#include "common/colorspaces.h"
 #include "develop/imageop.h"
 #include "iop/colorin.h" // common structs
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <lcms.h>
 
 typedef struct dt_iop_colorout_global_data_t
 {

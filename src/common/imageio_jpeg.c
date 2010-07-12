@@ -25,7 +25,6 @@
 #include "common/imageio_jpeg.h"
 #include <setjmp.h>
 
-
 // error functions
 
 struct dt_imageio_jpeg_error_mgr

@@ -24,7 +24,6 @@
 #include "dtgtk/slider.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <lcms.h>
 
 typedef struct dt_iop_colorcorrection_params_t
 {

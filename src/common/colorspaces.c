@@ -22,7 +22,7 @@
 #include "control/control.h"
 #include "common/colormatrices.c"
 
-static LPGAMMATABLE
+static cmsToneCurve*
 build_srgb_gamma(void)
 {
   double Parameters[5];
@@ -33,7 +33,7 @@ build_srgb_gamma(void)
   Parameters[3] = 1. / 12.92;
   Parameters[4] = 0.04045;    // d
 
-  return cmsBuildParametricGamma(1024, 4, Parameters);
+  return cmsBuildParametricToneCurve(NULL, 4, Parameters);
 }
 
 cmsHPROFILE
@@ -51,14 +51,14 @@ dt_colorspaces_create_srgb_profile()
                                    {0.3000, 0.6000, 1.0},
                                    {0.1500, 0.0600, 1.0}
                                    };
-  LPGAMMATABLE Gamma22[3];
+  cmsToneCurve *Gamma22[3];
   cmsHPROFILE  hsRGB;
  
   cmsWhitePointFromTemp(6504, &D65);
   Gamma22[0] = Gamma22[1] = Gamma22[2] = build_srgb_gamma();
            
   hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma22);
-  cmsFreeGamma(Gamma22[0]);
+  cmsFreeToneCurve(Gamma22[0]);
   if (hsRGB == NULL) return NULL;
       
   cmsAddTag(hsRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
@@ -70,7 +70,7 @@ dt_colorspaces_create_srgb_profile()
   return hsRGB;
 }
 
-static LPGAMMATABLE 
+static cmsToneCurve*
 build_adobergb_gamma(void)
 {
   // this is wrong, this should be a TRC not a table gamma
@@ -79,7 +79,7 @@ build_adobergb_gamma(void)
   Parameters[0] = 2.2;
   Parameters[1] = 0;
 
-  return cmsBuildParametricGamma(1024, 1, Parameters);
+  return cmsBuildParametricToneCurve(NULL, 1, Parameters);
 }
 
 // Create the ICC virtual profile for adobe rgb space
@@ -92,14 +92,14 @@ dt_colorspaces_create_adobergb_profile(void)
                                    {0.2100, 0.7100, 1.0},
                                    {0.1500, 0.0600, 1.0}
                                    };
-  LPGAMMATABLE Gamma22[3];
+  cmsToneCurve *Gamma22[3];
   cmsHPROFILE  hAdobeRGB;
 
   cmsWhitePointFromTemp(6504, &D65);
   Gamma22[0] = Gamma22[1] = Gamma22[2] = build_adobergb_gamma();
 
   hAdobeRGB = cmsCreateRGBProfile(&D65, &AdobePrimaries, Gamma22);
-  cmsFreeGamma(Gamma22[0]);
+  cmsFreeToneCurve(Gamma22[0]);
   if (hAdobeRGB == NULL) return NULL;
 
   cmsAddTag(hAdobeRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
@@ -111,7 +111,7 @@ dt_colorspaces_create_adobergb_profile(void)
   return hAdobeRGB;
 }
 
-static LPGAMMATABLE
+static cmsToneCurve*
 build_linear_gamma(void)
 {
   double Parameters[2];
@@ -119,7 +119,7 @@ build_linear_gamma(void)
   Parameters[0] = 1.0;
   Parameters[1] = 0;
 
-  return cmsBuildParametricGamma(1024, 1, Parameters);
+  return cmsBuildParametricToneCurve(0, 1, Parameters);
 }
 
 cmsHPROFILE
@@ -146,13 +146,13 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
                                    {preset->gXYZ[0]/gxyz, preset->gXYZ[1]/gxyz, 1.0},
                                    {preset->bXYZ[0]/bxyz, preset->bXYZ[1]/bxyz, 1.0}
                                    };
-  LPGAMMATABLE Gamma[3];
+  cmsToneCurve *Gamma[3];
   cmsHPROFILE  hp;
  
   Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
            
   hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
-  cmsFreeGamma(Gamma[0]);
+  cmsFreeToneCurve(Gamma[0]);
   if (hp == NULL) return NULL;
       
   char name[512];

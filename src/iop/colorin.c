@@ -375,7 +375,7 @@ void gui_init(struct dt_iop_module_t *self)
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
   // (void)cmsErrorAction(LCMS_ERROR_IGNORE);
-  (void)cmsErrorAction(LCMS_ERROR_SHOW);
+  // (void)cmsErrorAction(LCMS_ERROR_SHOW);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
@@ -387,6 +387,14 @@ void gui_init(struct dt_iop_module_t *self)
       {
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
         strcpy(prof->name, cmsTakeProductDesc(tmpprof));
+        // FIXME:
+//         cmsUInt32Number cmsGetProfileInfo(cmsHPROFILE hProfile,
+// cmsInfoType Info,
+// const char LanguageCode[3],
+// const char CountryCode[3],
+// wchar_t* Buffer,
+// cmsUInt32Number BufferSize);
+
         strcpy(prof->filename, d_name);
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);

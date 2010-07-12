@@ -18,7 +18,7 @@
 #ifndef DT_COLORSPACES_H
 #define DT_COLORSPACES_H
 
-#include <lcms.h>
+#include <lcms2.h>
 
 /** create the lab profile. */
 cmsHPROFILE dt_colorspaces_create_lab_profile();

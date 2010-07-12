@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
-#include <lcms.h> 
 #include <OpenEXR/ImfFrameBuffer.h>
 #include <OpenEXR/ImfTiledOutputFile.h>
 #include <OpenEXR/ImfChannelList.h>

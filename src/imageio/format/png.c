@@ -24,7 +24,6 @@
 #include "common/colorspaces.h"
 #include "control/conf.h"
 #include "dtgtk/slider.h"
-#include <lcms.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <png.h>

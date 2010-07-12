@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <memory.h>
-#include <lcms.h> 
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
