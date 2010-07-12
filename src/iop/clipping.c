@@ -329,7 +329,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   intk &= ~0x40000000;
   float floatk = *(float *)&intk;
   if(fabsf(floatk) < .0001) d->keystone = 2;
-  d->ki = floatk;
+  if(floatk >= -1.0 && floatk <= 1.0) d->ki = floatk;
+  else d->ki = 0.0f;
   d->angle = M_PI/180.0 * p->angle;
   d->cx = p->cx;
   d->cy = p->cy;

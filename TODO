@@ -25,6 +25,10 @@ webpage updates:
   . restore job's priority for in-view images.
 - film strip view keyboard bindings
 
+- conf key to disable the use of thumbnails alltogether
+- more sophisticated auto complete in preset creation
+- colorin default: read input color profile from ldr images
+
 - color transfer capture/apply temp buffer
 - benchmark import/thumbnail creation speed.
 - write_dt_files option not working?
@@ -86,6 +90,8 @@ webpage updates:
 
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 - mipf not loaded on time in develop for small displays.
+
+- customizable key accels
 
 - read additional tags from exif?
 - mouse wheel zoom in navigation
