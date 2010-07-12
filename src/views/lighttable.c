@@ -237,11 +237,8 @@ failure:
   sqlite3_finalize(stmt);
 
   oldpan = pan;
-#ifdef _DEBUG
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
-#endif
-
 }
 
 static void
@@ -484,10 +481,8 @@ failure:
   lib->zoom_y = zoom_y;
   lib->track  = 0;
   lib->center = center;
-#ifdef _DEBUG
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
-#endif
 }
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)

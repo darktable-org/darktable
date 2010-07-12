@@ -377,7 +377,7 @@ void dt_image_import_unlock(dt_image_t *img)
   pthread_mutex_unlock(&darktable.db_insert);
 }
 
-int dt_image_reimport(dt_image_t *img, const char *filename)
+int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t mip)
 {
   // this brute-force lock might be a bit too much:
   // dt_image_t *imgl = dt_image_cache_use(img->id, 'w');
@@ -386,6 +386,16 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
   {
     // fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
     return 1;
+  }
+  if(!img->force_reimport)
+  {
+    dt_image_buffer_t mip1 = dt_image_get(img, mip, 'r');
+    dt_image_release(img, mip1, 'r');
+    if(mip1 == mip)
+    { // already loaded
+      dt_image_import_unlock(img);
+      return 0;
+    }
   }
   img->output_width = img->output_height = 0;
   dt_imageio_retval_t ret = dt_imageio_open_preview(img, filename);
@@ -402,6 +412,8 @@ int dt_image_reimport(dt_image_t *img, const char *filename)
     dt_image_remove(img->id);
     return 1;
   }
+
+  // fprintf(stderr, "[image_reimport] loading `%s' to fill mip %d!\n", filename, mip);
 
   // already some db entry there?
   int altered = img->force_reimport;
@@ -504,7 +516,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   g_free(imgfname);
 
   // single images will probably want to load immediately.
-  if(img->film_id == 1) (void)dt_image_reimport(img, filename);
+  if(img->film_id == 1) (void)dt_image_reimport(img, filename, DT_IMAGE_MIPF);
 
   dt_image_cache_release(img, 'w');
   return id;
@@ -665,8 +677,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   if(mip != DT_IMAGE_FULL &&
     (img->force_reimport || img->width == 0 || img->height == 0))
   {
-    ret = dt_image_reimport(img, filename);
-    dt_image_release(img, mip, 'w');
+    ret = dt_image_reimport(img, filename, mip);
   }
   // img not in database. => mip == FULL or kicked out or corrupt or first time load..
   if(mip == DT_IMAGE_MIPF)
@@ -674,25 +685,23 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     ret = 0;
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     {
-      if(dt_image_reimport(img, filename)) ret = 1;
+      if(dt_image_reimport(img, filename, mip)) ret = 1;
     }
     else
     {
       ret = dt_image_raw_to_preview(img, img->pixels);
       dt_image_release(img, DT_IMAGE_FULL, 'r');
     }
-    dt_image_release(img, mip, 'w');
   }
   else if(mip == DT_IMAGE_FULL)
   {
     ret = dt_imageio_open(img, filename);
     ret = dt_image_raw_to_preview(img, img->pixels);
-    dt_image_release(img, mip, 'w');
+    dt_image_release(img, mip, 'r');
   }
   else
   {
-    ret = dt_image_reimport(img, filename);
-    dt_image_release(img, mip, 'w');
+    ret = dt_image_reimport(img, filename, mip);
   }
   // TODO: insert abstract hook here?
   dt_control_queue_draw_all();
