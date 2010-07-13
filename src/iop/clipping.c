@@ -640,7 +640,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->label5 = GTK_LABEL(gtk_label_new(_("angle")));
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.5, p->angle, 2));
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.25, p->angle, 2));
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   gtk_object_set (GTK_OBJECT(g->scale5), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), NULL);
