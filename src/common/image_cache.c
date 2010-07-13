@@ -36,9 +36,9 @@ void dt_image_cache_write(dt_image_cache_t *cache)
   char dbfilename[1024];
   char *homedir = getenv("HOME");
   gchar *filename = dt_conf_get_string("cachefile");
-  if(!filename)               snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
-  else if(filename[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, filename);
-  else                        snprintf(dbfilename, 512, "%s", filename);
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
+  else                                 snprintf(dbfilename, 512, "%s", filename);
   g_free(filename);
 
   int written = 0;
@@ -122,9 +122,9 @@ void dt_image_cache_read(dt_image_cache_t *cache)
   char *homedir = getenv("HOME");
   char dbfilename[1024];
   gchar *filename = dt_conf_get_string("cachefile");
-  if(!filename)               snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
-  else if(filename[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, filename);
-  else                        snprintf(dbfilename, 512, "%s", filename);
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
+  else                                 snprintf(dbfilename, 512, "%s", filename);
   g_free(filename);
 
   FILE *f = fopen(dbfilename, "rb");
