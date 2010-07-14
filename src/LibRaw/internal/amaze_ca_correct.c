@@ -1,4 +1,4 @@
-// ported from rawtherapee code wyattolson-rawtherapee-staging Revision:  785341c36a
+// ported from rawtherapee code wyattolson-rawtherapee-staging Revision:  59b02ef900
 ////////////////////////////////////////////////////////////////
 //
 //		Chromatic Aberration Auto-correction
@@ -117,8 +117,8 @@ void CLASS CA_correct_RT() {
 	int polyord=4, numpar=16, numblox[3]={0,0,0};
 
 	int rrmin, rrmax, ccmin, ccmax;
-	int top, bottom, left, right, row, col;
-	int rr, cc, rr1, cc1, c, indx, indx1, i, j, k, m, n, dir;
+	int top, left, row, col;
+	int rr, cc, c, indx, indx1, i, j, k, m, n, dir;
 	int areawt[2][3];
 	int GRBdir[2][3], offset[2][3];
 	int	shifthfloor[3], shiftvfloor[3], shifthceil[3], shiftvceil[3];
@@ -138,6 +138,7 @@ void CLASS CA_correct_RT() {
 	float	blockave[2][3]={{0,0,0},{0,0,0}}, blocksqave[2][3]={{0,0,0},{0,0,0}}, blockdenom[2][3]={{0,0,0},{0,0,0}}, blockvar[2][3];
 	float	glpfh, glpfv, ghpfh, ghpfv;
 	
+	static const float bslim = 3.99;
 	static const float gaussg[5] = {0.171582, 0.15839, 0.124594, 0.083518, 0.0477063};//sig=2.5
 	static const float gaussrb[3] = {0.332406, 0.241376, 0.0924212};//sig=1.25
 	
@@ -161,20 +162,20 @@ void CLASS CA_correct_RT() {
 	
 	/* assign working space; this would not be necessary
 	 if the algorithm is part of the larger pre-interpolation processing */
-	buffer = (char *) malloc(44*TS*TS);
+	buffer = (char *) malloc(11*sizeof(float)*TS*TS);
 	//merror(buffer,"CA_correct()");
-	memset(buffer,0,44*TS*TS);
+	memset(buffer,0,11*sizeof(float)*TS*TS);
 	
 	// rgb array
 	rgb         = (float (*)[3])		buffer;
-	grbdiff		= (float (*))			(buffer +	12*TS*TS);
-	gshift		= (float (*))			(buffer +	16*TS*TS);
-	rbhpfh		= (float (*))			(buffer +	20*TS*TS);
-	rbhpfv		= (float (*))			(buffer +	24*TS*TS);
-	rblpfh		= (float (*))			(buffer +	28*TS*TS);
-	rblpfv		= (float (*))			(buffer +	32*TS*TS);
-	grblpfh		= (float (*))			(buffer +	36*TS*TS);
-	grblpfv		= (float (*))			(buffer +	40*TS*TS);
+	grbdiff		= (float (*))			(buffer +	3*sizeof(float)*TS*TS);
+	gshift		= (float (*))			(buffer +	4*sizeof(float)*TS*TS);
+	rbhpfh		= (float (*))			(buffer +	5*sizeof(float)*TS*TS);
+	rbhpfv		= (float (*))			(buffer +	6*sizeof(float)*TS*TS);
+	rblpfh		= (float (*))			(buffer +	7*sizeof(float)*TS*TS);
+	rblpfv		= (float (*))			(buffer +	8*sizeof(float)*TS*TS);
+	grblpfh		= (float (*))			(buffer +	9*sizeof(float)*TS*TS);
+	grblpfv		= (float (*))			(buffer +	10*sizeof(float)*TS*TS);
 
 	
 	if((height+border2)%(TS-border2)==0) vz1=1; else vz1=0;
@@ -196,10 +197,10 @@ void CLASS CA_correct_RT() {
 	//#pragma omp parallel for shared(image,height,width) private(top,left,indx,indx1) schedule(dynamic)
 	for (top=-border, vblock=1; top < height; top += TS-border2, vblock++)
 		for (left=-border, hblock=1; left < width; left += TS-border2, hblock++) {
-			bottom = MIN( top+TS,height+border);
-			right  = MIN(left+TS, width+border);
-			rr1 = bottom - top;
-			cc1 = right - left;
+			int bottom = MIN( top+TS,height+border);
+			int right  = MIN(left+TS, width+border);
+			int rr1 = bottom - top;
+			int cc1 = right - left;
 			//t1_init = clock();
 			// rgb from input CFA data
 			// rgb values should be floating point number between 0 and 1 
@@ -259,7 +260,7 @@ void CLASS CA_correct_RT() {
 						c=FC(rr,cc);
 						//rgb[(rr)*TS+cc][c] = (ri->data[border2-rr][border2-cc])/65535.0f;
 						//rgb[(rr)*TS+cc][c] = (rgb[(border2-rr)*TS+(border2-cc)][c]);//for dcraw implementation
-						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c])/65535.0f;//for dcraw implementation
+						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c]);//for dcraw implementation
 					}
 			}
 			if (rrmax<rr1 && ccmax<cc1) {
@@ -533,7 +534,7 @@ void CLASS CA_correct_RT() {
 		for (dir=0; dir<2; dir++) {
 			res = LinEqSolve(c, dir, numpar, polymat[c][dir], shiftmat[c][dir], fitparams[c][dir]);
 			if (res) {
-				for (i=0; i<numpar; i++) fitparams[c][dir][i]=0;
+				return;
 			}
 		}
 	//fitparams[polyord*i+j] gives the coefficients of (vblock^i hblock^j) in a polynomial fit for i,j<=4
@@ -541,25 +542,14 @@ void CLASS CA_correct_RT() {
 	//end of initialization for CA correction pass
 	
 	
-	blockshifts[(vblock)*hblsz+hblock][0][0] = blockshifts[(vblock)*hblsz+hblock][0][1] = 0;
-	blockshifts[(vblock)*hblsz+hblock][2][0] = blockshifts[(vblock)*hblsz+hblock][2][1] = 0;
-	for (i=0; i<polyord; i++)
-		for (j=0; j<polyord; j++) {
-			blockshifts[(vblock)*hblsz+hblock][0][0] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[0][0][polyord*i+j];
-			blockshifts[(vblock)*hblsz+hblock][0][1] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[0][1][polyord*i+j];
-			blockshifts[(vblock)*hblsz+hblock][2][0] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[2][0][polyord*i+j];
-			blockshifts[(vblock)*hblsz+hblock][2][1] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[2][1][polyord*i+j];
-		}
-	
-	
 	// Main algorithm: Tile loop
 	//#pragma omp parallel for shared(image,height,width) private(top,left,indx,indx1) schedule(dynamic)
 	for (top=-border, vblock=1; top < height; top += TS-border2, vblock++)
 		for (left=-border, hblock=1; left < width; left += TS-border2, hblock++) {
-			bottom = MIN( top+TS,height+border);
-			right  = MIN(left+TS, width+border);
-			rr1 = bottom - top;
-			cc1 = right - left;
+			int bottom = MIN( top+TS,height+border);
+			int right  = MIN(left+TS, width+border);
+			int rr1 = bottom - top;
+			int cc1 = right - left;
 			//t1_init = clock();
 			// rgb from input CFA data
 			// rgb values should be floating point number between 0 and 1 
@@ -569,6 +559,7 @@ void CLASS CA_correct_RT() {
 			if (bottom>height) {rrmax=height-top;} else {rrmax=rr1;}
 			if (right>width) {ccmax=width-left;} else {ccmax=cc1;}
 			
+
 			for (rr=rrmin; rr < rrmax; rr++)
 				for (row=rr+top, cc=ccmin; cc < ccmax; cc++) {
 					col = cc+left;
@@ -627,7 +618,7 @@ void CLASS CA_correct_RT() {
 						c=FC(rr,cc);
 						//rgb[(rr)*TS+cc][c] = (ri->data[border2-rr][border2-cc])/65535.0f;
 						//rgb[(rr)*TS+cc][c] = (rgb[(border2-rr)*TS+(border2-cc)][c]);//for dcraw implementation
-						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c])/65535.0f;
+						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c]);//for dcraw implementation
 
 						rgb[(rr)*TS+cc][1] = Gtmp[(border2-rr)*width+border2-cc];
 					}
@@ -666,6 +657,20 @@ void CLASS CA_correct_RT() {
 			//end of border fill
 			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%			
 			
+			blockshifts[(vblock)*hblsz+hblock][0][0] = blockshifts[(vblock)*hblsz+hblock][0][1] = 0;
+			blockshifts[(vblock)*hblsz+hblock][2][0] = blockshifts[(vblock)*hblsz+hblock][2][1] = 0;
+			for (i=0; i<polyord; i++)
+				for (j=0; j<polyord; j++) {
+					blockshifts[(vblock)*hblsz+hblock][0][0] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[0][0][polyord*i+j];
+					blockshifts[(vblock)*hblsz+hblock][0][1] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[0][1][polyord*i+j];
+					blockshifts[(vblock)*hblsz+hblock][2][0] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[2][0][polyord*i+j];
+					blockshifts[(vblock)*hblsz+hblock][2][1] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[2][1][polyord*i+j];
+				}
+			blockshifts[(vblock)*hblsz+hblock][0][0] = LIM(blockshifts[(vblock)*hblsz+hblock][0][0], -bslim, bslim);
+			blockshifts[(vblock)*hblsz+hblock][0][1] = LIM(blockshifts[(vblock)*hblsz+hblock][0][1], -bslim, bslim);
+			blockshifts[(vblock)*hblsz+hblock][2][0] = LIM(blockshifts[(vblock)*hblsz+hblock][2][0], -bslim, bslim);
+			blockshifts[(vblock)*hblsz+hblock][2][1] = LIM(blockshifts[(vblock)*hblsz+hblock][2][1], -bslim, bslim);
+
 			
 			for (c=0; c<3; c+=2) {
 				
