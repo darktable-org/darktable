@@ -5,7 +5,7 @@ webpage updates:
 
 - sqlite3 thread safe/locking?
 - desaturated colors in full raw but not preview float map??
-- BUG: mem leak in ldr import??
+- BUG: mem leak in import?? (check if mip cache actually works correctly)
 - BUG: full image stays locked?
 - BUG: linked list mru/lru in image cache broken sometimes after load?
 - BUG: colorin blue shift in colorin lcms: to lab?
@@ -43,8 +43,6 @@ webpage updates:
 - ctrl-z ctrl-shift-z up/down in history stack
 
 - prevent tab on/off for some form widgets
-
-- exposure dragging in hist with more active areas: black/gain/exp
 
 
 0.7 release:

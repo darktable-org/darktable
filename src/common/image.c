@@ -32,6 +32,34 @@
 #include <stdlib.h>
 #include <assert.h>
 
+static int64_t dt_image_debug_malloc_size = 0;
+
+static void *
+dt_image_debug_malloc(const void *ptr, const size_t size)
+{
+#ifdef _DEBUG
+  assert(ptr == NULL || ptr == (void *)1);
+  pthread_mutex_lock(&darktable.db_insert);
+  dt_image_debug_malloc_size += size;
+  // dt_image_debug_malloc_size ++;
+  pthread_mutex_unlock(&darktable.db_insert);
+#endif
+  return malloc(size);
+}
+
+static void
+dt_image_debug_free(void *p, size_t size)
+{
+#ifdef _DEBUG
+  if(!p) return;
+  pthread_mutex_lock(&darktable.db_insert);
+  dt_image_debug_malloc_size -= size;
+  // dt_image_debug_malloc_size --;
+  pthread_mutex_unlock(&darktable.db_insert);
+#endif
+  free(p);
+}
+
 void dt_image_write_dt_files(dt_image_t *img)
 {
   // write .dt file
@@ -759,6 +787,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
+  int64_t buffers = 0;
   uint64_t bytes = 0;
   for(int k=0;k<(int)DT_IMAGE_NONE;k++)
   {
@@ -772,12 +801,14 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
         users += cache->mip_lru[k][i]->lock[k].users;
         write += cache->mip_lru[k][i]->lock[k].write;
         bytes += cache->mip_lru[k][i]->mip_buf_size[k];
+        if(cache->mip_lru[k][i]->mip_buf_size[k]) buffers ++;
       }
     }
     printf("[mipmap_cache] mip %d: fill: %d/%d, users: %d, writers: %d\n", k, entries, cache->num_entries[k], users, write);
     printf("[mipmap_cache] total memory in mip %d: %.2f MB\n", k, cache->total_size[k]/(1024.0*1024.0));
   }
-  printf("[mipmap_cache] occupies %.2f MB\n", bytes/(1024.0*1024.0));
+  // printf("[mipmap_cache] occupies %.2f MB in %"PRIi64" (%"PRIi64") buffers\n", bytes/(1024.0*1024.0), buffers, dt_image_debug_malloc_size);
+  printf("[mipmap_cache] occupies %.2f MB in %"PRIi64" (%.2f) buffers\n", bytes/(1024.0*1024.0), buffers, dt_image_debug_malloc_size/(1024.0*1024.0));
 }
 
 void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t size)
@@ -829,9 +860,9 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   }
 
   // printf("allocing %d x %d x %d for %s (%d)\n", wd, ht, size/(wd*ht), img->filename, mip);
-  if     ((int)mip <  (int)DT_IMAGE_MIPF) { img->mip[mip] = (uint8_t *)malloc(size); }
-  else if(mip == DT_IMAGE_MIPF) { img->mipf = (float *)malloc(size); }
-  else if(mip == DT_IMAGE_FULL) { img->pixels = (float *)malloc(size); }
+  if     ((int)mip <  (int)DT_IMAGE_MIPF) { img->mip[mip] = (uint8_t *)dt_image_debug_malloc(img->mip[mip], size); }
+  else if(mip == DT_IMAGE_MIPF) { img->mipf = (float *)dt_image_debug_malloc(img->mipf, size); }
+  else if(mip == DT_IMAGE_FULL) { img->pixels = (float *)dt_image_debug_malloc(img->pixels, size); }
 
   if((mip == DT_IMAGE_FULL && img->pixels == NULL) || (mip == DT_IMAGE_MIPF && img->mipf == NULL) || ((int)mip <  (int)DT_IMAGE_MIPF && img->mip[mip] == NULL))
   {
@@ -904,9 +935,9 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip)
   // mutex is already locked, as only alloc is allowed to free.
   if(!img) return;
   // dt_image_release(img, mip, "w");
-  if((int)mip < (int)DT_IMAGE_MIPF) { if(img->mip[mip] != (uint8_t *)1) free(img->mip[mip]); img->mip[mip] = NULL; }
-  else if(mip == DT_IMAGE_MIPF) { if(img->mipf != (float *)1) free(img->mipf); img->mipf = NULL; }
-  else if(mip == DT_IMAGE_FULL) { free(img->pixels); img->pixels = NULL; }
+  if((int)mip < (int)DT_IMAGE_MIPF) { if(img->mip[mip] != (uint8_t *)1) dt_image_debug_free(img->mip[mip], img->mip_buf_size[mip]); img->mip[mip] = NULL; }
+  else if(mip == DT_IMAGE_MIPF) { if(img->mipf != (float *)1) dt_image_debug_free(img->mipf, img->mip_buf_size[mip]); img->mipf = NULL; }
+  else if(mip == DT_IMAGE_FULL) { dt_image_debug_free(img->pixels, img->mip_buf_size[mip]); img->pixels = NULL; }
   else return;
   for(int k=0;k<darktable.mipmap_cache->num_entries[mip];k++)
     if(darktable.mipmap_cache->mip_lru[mip][k] == img) darktable.mipmap_cache->mip_lru[mip][k] = NULL;

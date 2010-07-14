@@ -547,7 +547,6 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return retval;
-  return DT_IMAGEIO_OK;
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.

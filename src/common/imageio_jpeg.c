@@ -107,7 +107,7 @@ int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
   uint8_t *tmp = out;
 	while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
 	{
-		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
+		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) { free(row_pointer[0]); return 1; }
 		for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
 			tmp[4*i+k] = row_pointer[0][3*i+k];
     tmp += 4*jpg->width;

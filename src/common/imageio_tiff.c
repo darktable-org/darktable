@@ -47,7 +47,7 @@ int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16
   }
   
    // Create tiff image
-  TIFF *tif=TIFFOpen(filename,"w");  
+  TIFF *tif=TIFFOpen(filename, "wb");  
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
@@ -81,6 +81,7 @@ int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16
   if(exif)
     dt_exif_write_blob(exif,exif_len,filename);
   
+  free(profile);
   return 1;
 }
 
@@ -152,6 +153,8 @@ int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t
   if(exif)
     dt_exif_write_blob(exif,exif_len,filename);
   
+  free(profile);
+  free(rowdata);
   return 1;
 }
 
@@ -168,6 +171,6 @@ int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
 
 int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
 {
-    TIFFClose(tiff->handle);
+  TIFFClose(tiff->handle);
   return 1;
 }
