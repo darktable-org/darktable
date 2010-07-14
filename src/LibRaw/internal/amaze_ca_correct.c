@@ -260,7 +260,7 @@ void CLASS CA_correct_RT() {
 						c=FC(rr,cc);
 						//rgb[(rr)*TS+cc][c] = (ri->data[border2-rr][border2-cc])/65535.0f;
 						//rgb[(rr)*TS+cc][c] = (rgb[(border2-rr)*TS+(border2-cc)][c]);//for dcraw implementation
-						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c]);//for dcraw implementation
+						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c])/65535.0f;//for dcraw implementation
 					}
 			}
 			if (rrmax<rr1 && ccmax<cc1) {
@@ -618,7 +618,7 @@ void CLASS CA_correct_RT() {
 						c=FC(rr,cc);
 						//rgb[(rr)*TS+cc][c] = (ri->data[border2-rr][border2-cc])/65535.0f;
 						//rgb[(rr)*TS+cc][c] = (rgb[(border2-rr)*TS+(border2-cc)][c]);//for dcraw implementation
-						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c]);//for dcraw implementation
+						rgb[(rr)*TS+cc][c] = (image[(border2-rr)*width+(border2-cc)][c])/65535.0f;//for dcraw implementation
 
 						rgb[(rr)*TS+cc][1] = Gtmp[(border2-rr)*width+border2-cc];
 					}
