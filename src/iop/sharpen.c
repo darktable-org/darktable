@@ -68,7 +68,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  const int rad = MIN(MAXR, data->radius * roi_in->scale / (piece->iscale * piece->iscale));
+  const int rad = MIN(MAXR, data->radius * roi_in->scale / piece->iscale);
   if(rad == 0)
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
@@ -77,7 +77,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float mat[2*(MAXR+1)*2*(MAXR+1)];
   const int wd = 2*rad+1;
   float *m = mat + rad*wd + rad;
-  const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale)*(data->radius*roi_in->scale);
+  const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
   // init gaussian kernel
   for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
