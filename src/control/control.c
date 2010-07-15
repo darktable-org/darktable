@@ -191,7 +191,7 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    sqlite3_exec(darktable.db, "create table color_labels (imgid integer primary key, color integer)", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
 
     // add dummy film roll for single images
     char datetime[20];

@@ -186,7 +186,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
-      // JPEG: decode with magick (directly rescaled to mip4)
+      // JPEG: decode (directly rescaled to mip4)
       const int orientation = img->orientation;// & 4 ? img->orientation : img->orientation ^ 1;
       dt_imageio_jpeg_t jpg;
       if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw_corrupted;
