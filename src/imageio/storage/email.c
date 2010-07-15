@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2010 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,6 +54,13 @@ name ()
 {
   return _("send with email");
 }
+
+int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height) {
+  *width=1280;
+  *height=1280;
+  return 1;
+}
+
 
 void
 gui_init (dt_imageio_module_storage_t *self)
@@ -124,7 +131,7 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   gchar *subject="images exported from darktable";
   gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
   gchar *attachmentFormat="&attachment=file://%s";
-  
+    
   while( d->images ) {
     gchar exif[256]={0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
@@ -144,7 +151,6 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   
   // build uri and launch before we quit...
   g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
-  fprintf(stderr,"\n%s\n",uri);
   gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
  
   free(params);
