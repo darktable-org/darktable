@@ -134,7 +134,7 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
   
-  #ifdef HAVE_GCONF
+#ifdef HAVE_GCONF
   gchar *defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
   if( defaultHandler == NULL ) goto default_handler;
   
@@ -146,13 +146,14 @@ free_params(dt_imageio_module_storage_t *self, void *params)
     goto proceed;
   }
   
-  #endif
-  
 default_handler: ;    // default handler using standard mailto: format...
+#endif
   uriFormat="mailto:?subject=%s&body=%s%s";   // subject, body, and list of attachments with format &attachment=<filename>
   attachmentFormat="&attachment=file://%s";
 
+#ifdef HAVE_GCONF
 proceed: ; // Let's build up uri / command
+#endif
   while( d->images ) {
     gchar exif[256]={0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
