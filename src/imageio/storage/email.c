@@ -179,10 +179,11 @@ proceed: ; // Let's build up uri / command
   //fprintf(stderr,"\n%s\n", uri );
   
   // So what should we do...
+  int res=0;
   if( strncmp( uri, "mailto:", 7) == 0 )
     gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
   else // Launch subprocess
-    system( uri );
+    res = system( uri );
  
   free(params);
 }
