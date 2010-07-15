@@ -214,6 +214,20 @@ storage_changed (GtkComboBox *widget, dt_lib_export_t *d)
       if(module->widget) gtk_container_add(d->storage_box, module->widget);
     }
     
+    // Check if plugin recommends a max dimension and set 
+    // if not implemnted the stored gconf values are used..
+    uint32_t w=0,h=0;
+    w = dt_conf_get_int("plugins/lighttable/export/width");
+    h = dt_conf_get_int("plugins/lighttable/export/height");
+    module->recommended_dimension( module, &w, &h );    
+    // Set the recommended dimension, prevent signal changed...
+    g_signal_handlers_block_by_func( d->width, width_changed, (gpointer)0 );
+    g_signal_handlers_block_by_func( d->height, height_changed, (gpointer)0 );
+    gtk_spin_button_set_value( d->width, w );
+    gtk_spin_button_set_value( d->height, h );
+    g_signal_handlers_unblock_by_func( d->width, width_changed, (gpointer)0 );
+    g_signal_handlers_unblock_by_func( d->height, height_changed, (gpointer)0 );
+  
     // Let's update formats combobox with supported formats of selected storage module...
     _update_formats_combobox( d );
     

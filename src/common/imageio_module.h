@@ -126,6 +126,8 @@ typedef struct dt_imageio_module_storage_t
   int (*supported)    (struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
   int (*dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
+  /* get storage recommended image dimension, return 0 if no recommendation exists. */
+  int (*recommended_dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
 
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total);

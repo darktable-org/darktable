@@ -148,6 +148,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
 
   if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
   if(!g_module_symbol(module->module, "dimension",                   (gpointer)&(module->dimension)))         	module->dimension = _default_storage_dimension;
+  if(!g_module_symbol(module->module, "recommended_dimension",                   (gpointer)&(module->recommended_dimension)))         	module->recommended_dimension = _default_storage_dimension;
   
   return 0;
 error:
