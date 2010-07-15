@@ -113,6 +113,7 @@ void*
 get_params(dt_imageio_module_storage_t *self)
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)g_malloc(sizeof(dt_imageio_email_t));
+  memset( d,0,sizeof( dt_imageio_email_t));
   return d;
 }
 
@@ -127,20 +128,43 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   gchar body[4096]={0};
   gchar attachments[4096]={0};
   
-  gchar *uriFormat="mailto:?subject=%s&body=%s%s";   // subject, body, and list of attachments with format &attachment=<filename>
+  gchar *uriFormat=NULL;
   gchar *subject="images exported from darktable";
   gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
-  gchar *attachmentFormat="&attachment=file://%s";
-    
+  gchar *attachmentFormat=NULL;
+  gchar *attachmentSeparator="";
+  
+  #ifdef HAVE_GCONF
+  gchar *defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
+  if( defaultHandler == NULL ) goto default_handler;
+  
+  // Ok we got default command for mail let's handle cases..
+  if( g_strrstr(defaultHandler,"thunderbird") ) {
+      uriFormat="thunderbird -compose \"to='',subject='%s',body='%s',attachment='%s'\"";   // subject, body, and list of attachments with format "<filename>,"
+      attachmentFormat="%s";
+      attachmentSeparator=",";
+    goto proceed;
+  }
+  
+  #endif
+  
+default_handler: ;    // default handler using standard mailto: format...
+  uriFormat="mailto:?subject=%s&body=%s%s";   // subject, body, and list of attachments with format &attachment=<filename>
+  attachmentFormat="&attachment=file://%s";
+
+proceed: ; // Let's build up uri / command
   while( d->images ) {
     gchar exif[256]={0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
     const gchar *filename = g_basename( attachment->file );
-    
     //void dt_image_print_exif(dt_image_t *img, char *line, int len);
     dt_image_t *img = dt_image_cache_use( attachment->imgid, 'r');
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
+    
+    if( strlen( attachments ) )
+      g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), "%s", attachmentSeparator );
+    
     g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), attachmentFormat, attachment->file );
   
     // Free attachment item and remove
@@ -148,10 +172,16 @@ free_params(dt_imageio_module_storage_t *self, void *params)
     g_free( d->images->data );
     d->images = g_list_remove( d->images, d->images->data );
   }
-  
+
   // build uri and launch before we quit...
   g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
-  gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
+  //fprintf(stderr,"\n%s\n", uri );
+  
+  // So what should we do...
+  if( strncmp( uri, "mailto:", 7) == 0 )
+    gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
+  else // Launch subprocess
+    system( uri );
  
   free(params);
 }
