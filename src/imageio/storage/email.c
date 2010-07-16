@@ -52,7 +52,7 @@ dt_imageio_email_t;
 const char*
 name ()
 {
-  return _("send with email");
+  return _("send as email");
 }
 
 int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height) {
