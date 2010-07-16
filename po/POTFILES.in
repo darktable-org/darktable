@@ -49,6 +49,7 @@ src/iop/bilateral.cc
 src/iop/profile_gamma.c
 src/iop/clahe.c
 src/iop/colortransfer.c
+src/iop/channelmixer.c
 src/imageio/format/jpeg.c
 src/imageio/format/png.c
 src/imageio/format/exr.cc
