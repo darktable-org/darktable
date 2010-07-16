@@ -31,8 +31,10 @@
 #include "dtgtk/slider.h"
 #include "dtgtk/label.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -49,18 +51,22 @@ typedef  enum _channelmixer_output_t {
   /** mixes into green channel of image */
   CHANNEL_GREEN,
   /** mixes into blue channel of image */
-  CHANNEL_BLUE
+  CHANNEL_BLUE,	
+  /** mixes into gray channel of image = monochrome*/
+  CHANNEL_GRAY,
+  
+  CHANNEL_SIZE
 } _channelmixer_output_t;
 
 typedef struct dt_iop_channelmixer_params_t
 {
-  _channelmixer_output_t output_channel;
+  //_channelmixer_output_t output_channel;
   /** amount of red to mix value -1.0 - 1.0 */
-  float red;
+  float red[CHANNEL_SIZE];
   /** amount of green to mix value -1.0 - 1.0 */
-  float green;
+  float green[CHANNEL_SIZE];
   /** amount of blue to mix value -1.0 - 1.0 */
-  float blue;
+  float blue[CHANNEL_SIZE];
 }
 dt_iop_channelmixer_params_t;
 
@@ -76,12 +82,13 @@ dt_iop_channelmixer_gui_data_t;
 
 typedef struct dt_iop_channelmixer_data_t
 {
-  _channelmixer_output_t output_channel;
-  float red;
-  float green;
-  float blue;
+  //_channelmixer_output_t output_channel;
+  float red[CHANNEL_SIZE];
+  float green[CHANNEL_SIZE];
+  float blue[CHANNEL_SIZE];
 } 
 dt_iop_channelmixer_data_t;
+
 
 const char *name()
 {
@@ -138,14 +145,43 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  float h,s,l,/*ra,ga,ba,*/mix;
+  float h,s,l, hmix,smix,lmix,rmix,gmix,bmix,graymix;
  
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
-  /*  ra = ( data->red >= 0.0)      ? ( in[0] * data->red)      : in[0] - ( in[0] * (1.0+data->red) );
-    ga = ( data->green >= 0.0)  ? ( in[1] * data->green)  : in[1] - ( in[1] * (1.0+data->green) );
-    ba = ( data->blue >= 0.0)     ? ( in[2] * data->blue)    : in[2] - ( in[2] * (1.0+data->blue) );*/
-    mix = CLIP( in[0] * data->red)+( in[1] * data->green)+( in[2] * data->blue );
+      // Calculate the HSL mix
+      hmix = CLIP( in[0] * data->red[CHANNEL_HUE] )+( in[1] * data->green[CHANNEL_HUE])+( in[2] * data->blue[CHANNEL_HUE] );
+      smix = CLIP( in[0] * data->red[CHANNEL_SATURATION] )+( in[1] * data->green[CHANNEL_SATURATION])+( in[2] * data->blue[CHANNEL_SATURATION] );
+      lmix = CLIP( in[0] * data->red[CHANNEL_LIGHTNESS] )+( in[1] * data->green[CHANNEL_LIGHTNESS])+( in[2] * data->blue[CHANNEL_LIGHTNESS] );
+    
+      // If HSL mix is used apply to out[]
+      if( hmix != 0.0 || smix != 0.0 || lmix != 0.0 ) {
+         // mix into HSL output channels
+        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+        h = (hmix != 0.0 )  ? hmix : h;
+        s = (smix != 0.0 )  ? smix : s;
+        l = (lmix != 0.0 )  ? lmix : l;
+        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+      } else // no HSL copt in[] to out[]
+        for(int i=0;i<3;i++) out[i]=in[i];
+     
+      // Calculate graymix and RGB mix
+      graymix = CLIP( out[0] * data->red[CHANNEL_GRAY] )+( out[1] * data->green[CHANNEL_GRAY])+( out[2] * data->blue[CHANNEL_GRAY] );
+      
+      rmix = CLIP( out[0] * data->red[CHANNEL_RED] )+( out[1] * data->green[CHANNEL_RED])+( out[2] * data->blue[CHANNEL_RED] );
+      gmix = CLIP( out[0] * data->red[CHANNEL_GREEN] )+( out[1] * data->green[CHANNEL_GREEN])+( out[2] * data->blue[CHANNEL_GREEN] );
+      bmix = CLIP( out[0] * data->red[CHANNEL_BLUE] )+( out[1] * data->green[CHANNEL_BLUE])+( out[2] * data->blue[CHANNEL_BLUE] );
+    
+      
+      if( graymix != 0.0 )  // Graymix is used...
+        out[0] = out[1] = out[2] = graymix;
+      else { // RGB mix is used...
+        out[0] = rmix;
+        out[1] = gmix;
+        out[2] = bmix;
+      }
+    
+    /*mix = CLIP( in[0] * data->red)+( in[1] * data->green)+( in[2] * data->blue );
    
     if( data->output_channel <= CHANNEL_LIGHTNESS ) {
       // mix into HSL output channels
@@ -154,15 +190,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       s = ( data->output_channel == CHANNEL_SATURATION )   ? mix : s;
       l = ( data->output_channel == CHANNEL_LIGHTNESS )     ?  mix : l;
       hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
-    } else {
+    } else  if( data->output_channel > CHANNEL_LIGHTNESS && data->output_channel  < CHANNEL_GRAY) {
       // mix into rgb output channels
       out[0] = ( data->output_channel == CHANNEL_RED )      ? mix : in[0]; 
       out[1] = ( data->output_channel == CHANNEL_GREEN )  ? mix : in[1]; 
       out[2] = ( data->output_channel == CHANNEL_BLUE )     ? mix : in[2]; 
-    
-      
+    } else   if( data->output_channel <= CHANNEL_GRAY ) {
+      out[0]=out[1]=out[2] = mix;
     }
-      
+    */
     out += 3; in += 3; 
   }
 }
@@ -170,10 +206,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 static void
 red_callback(GtkDarktableSlider *slider, gpointer user_data)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;  
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  p->red= dtgtk_slider_get_value(slider);
+  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+  p->red[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -183,7 +220,8 @@ green_callback(GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  p->green= dtgtk_slider_get_value(slider);
+  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+  p->green[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -194,7 +232,8 @@ blue_callback(GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  p->blue= dtgtk_slider_get_value(slider);
+  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+  p->blue[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -204,8 +243,13 @@ output_callback(GtkComboBox *combo, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  p->output_channel= gtk_combo_box_get_active(combo);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+ 
+  // p->output_channel= gtk_combo_box_get_active(combo);
+  dtgtk_slider_set_value( g->scale1, p->red[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dtgtk_slider_set_value( g->scale2, p->green[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dtgtk_slider_set_value( g->scale3, p->blue[ gtk_combo_box_get_active( g->combo1 ) ] );
+  //dt_dev_add_history_item(darktable.develop, self);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -216,10 +260,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #else
   dt_iop_channelmixer_data_t *d = (dt_iop_channelmixer_data_t *)piece->data;
-  d->output_channel= p->output_channel;
-  d->red= p->red;
-  d->blue= p->blue;
-  d->green= p->green;
+ // d->output_channel= p->output_channel;
+  for( int i=0;i<CHANNEL_SIZE;i++) {
+    d->red[i]= p->red[i];
+    d->blue[i]= p->blue[i];
+    d->green[i]= p->green[i];
+  }
 #endif
 }
 
@@ -251,10 +297,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)module->params;
-  gtk_combo_box_set_active(g->combo1, p->output_channel);
-  dtgtk_slider_set_value(g->scale1, p->red);
-  dtgtk_slider_set_value(g->scale2, p->green);
-  dtgtk_slider_set_value(g->scale3, p->blue);
+ // gtk_combo_box_set_active(g->combo1, p->output_channel);
+  dtgtk_slider_set_value(g->scale1, p->red[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dtgtk_slider_set_value(g->scale2, p->green[ gtk_combo_box_get_active( g->combo1 ) ] );
+  dtgtk_slider_set_value(g->scale3, p->blue[ gtk_combo_box_get_active( g->combo1 ) ] );
 }
 
 void init(dt_iop_module_t *module)
@@ -262,10 +308,10 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 967;
+  module->priority = 965;
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
-  dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t){3,1,0,0};
+  dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t){ {0,0,0,1,0,0,0},{0,0,0,0,1,0,0},{0,0,0,0,0,1,0} };
   memcpy(module->params, &tmp, sizeof(dt_iop_channelmixer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_channelmixer_params_t));
 }
@@ -294,7 +340,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->combo1,_("red"));
   gtk_combo_box_append_text(g->combo1,_("green"));
   gtk_combo_box_append_text(g->combo1,_("blue"));
-  gtk_combo_box_set_active(g->combo1, p->output_channel );
+  gtk_combo_box_append_text(g->combo1,_("gray"));
+  gtk_combo_box_set_active(g->combo1, CHANNEL_RED );
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dtlabel1), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->combo1), TRUE, TRUE, 5);
   
@@ -317,9 +364,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.05, p->red, 3));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.05, p->green, 3));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.05, p->blue, 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3));
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3));
   /*dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_PERCENT);*/
@@ -339,6 +386,19 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (blue_callback), self);           
   g_signal_connect (G_OBJECT (g->combo1), "changed",
                     G_CALLBACK (output_callback), self);          
+}
+
+void init_presets (dt_iop_module_t *self)
+{
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+
+  dt_gui_presets_add_generic(_("swap r and b"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,1,0},{0,0,0,0,1,0,0},{0,0,0,1,0,0,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("swap g and b"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,0},{0,0,0,0,0,1,0},{0,0,0,0,1,0,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("b/w"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,0.21},{0,0,0,0,0,0,0.72},{0,0,0,0,0,0,0.7} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("b/w detail boost"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,-1},{0,0,0,0,0,0,-1},{0,0,0,0,0,0,2} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("b/w smooth skin"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,0.7},{0,0,0,0,0,0,0.2},{0,0,0,0,0,0,0.1} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("b/w blue artifacts reduce"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,0.4},{0,0,0,0,0,0,0.750},{0,0,0,0,0,0,-0.15} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
