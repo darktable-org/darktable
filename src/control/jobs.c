@@ -606,7 +606,7 @@ void dt_control_export_job_run(dt_job_t *job)
 	if( sh==0 || fh==0) h=sh>fh?sh:fh;
 	else h=sh<fh?sh:fh;
 
-	fprintf(stderr,"fmw=%d fmh=%d w=%d h=%d\n",fdata->max_width,fdata->max_height,w,h);
+	// fprintf(stderr,"fmw=%d fmh=%d w=%d h=%d\n",fdata->max_width,fdata->max_height,w,h);
 	fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
 	fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
 	
