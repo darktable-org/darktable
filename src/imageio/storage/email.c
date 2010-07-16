@@ -144,6 +144,13 @@ free_params(dt_imageio_module_storage_t *self, void *params)
       attachmentFormat="%s";
       attachmentSeparator=",";
     goto proceed;
+  } else if( g_strrstr(defaultHandler,"kmail") ) {
+      // When I enter the mailto:... in konqueror everything is ok, yet from dt we have no attachements. WTF?
+      // So we launch it directly.
+      uriFormat="kmail --composer --subject \"%s\" --body \"%s\" --attach \"%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
+      attachmentFormat="%s";
+      attachmentSeparator="\" --attach \"";
+    goto proceed;
   }
   
 default_handler: ;    // default handler using standard mailto: format...
