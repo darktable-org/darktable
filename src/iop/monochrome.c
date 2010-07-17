@@ -26,6 +26,7 @@
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
+#include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
@@ -331,14 +332,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (size_callback), self);
-  g->hsRGB = cmsCreate_sRGBProfile();
-  g->hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+  g->hsRGB = dt_colorspaces_create_srgb_profile();
+  g->hLab  = dt_colorspaces_create_lab_profile();
   g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, 
       INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_colorspaces_cleanup_profile(g->hsRGB);
+  dt_colorspaces_cleanup_profile(g->hLab);
+  cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;
 }

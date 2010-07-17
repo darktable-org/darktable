@@ -20,6 +20,9 @@
 
 #include <lcms.h>
 
+/** create the lab profile. */
+cmsHPROFILE dt_colorspaces_create_lab_profile();
+
 /** create the ICC virtual profile for srgb space. */
 cmsHPROFILE dt_colorspaces_create_srgb_profile(void);
 
@@ -35,10 +38,16 @@ cmsHPROFILE dt_colorspaces_create_adobergb_profile(void);
 /** create a ICC virtual profile for XYZ. */
 cmsHPROFILE dt_colorspaces_create_xyz_profile(void);
 
+/** create a profile from a color matrix from dcraw. */
+cmsHPROFILE dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4]);
+
 /** create a ICC virtual profile from the shipped presets in darktable. */
 cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel);
 
 /** get the icc profile this image would be exported with. */
 cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid);
+
+/** free the resources of a profile created with the functions above. */
+void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
 
 #endif

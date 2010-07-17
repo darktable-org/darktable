@@ -109,58 +109,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
-static LPGAMMATABLE
-build_linear_gamma(void)
-{
-  return cmsBuildGamma(1024, 1.0);
-}
-
-static cmsHPROFILE
-create_cmatrix_profile(float cmatrix[3][4])
-{
-  cmsCIExyY D65;
-  float x[3], y[3];
-  float mat[3][3];
-  // sRGB D65, the linear part:
-  const float rgb_to_xyz[3][3] = {
-    {0.4124564, 0.3575761, 0.1804375},
-    {0.2126729, 0.7151522, 0.0721750},
-    {0.0193339, 0.1191920, 0.9503041}
-  };
-
-  for(int c=0;c<3;c++) for(int j=0;j<3;j++)
-  {
-    mat[c][j] = 0;
-    for(int k=0;k<3;k++) mat[c][j] += rgb_to_xyz[c][k]*cmatrix[k][j];
-  }
-  for(int k=0;k<3;k++)
-  {
-    const float norm = mat[0][k] + mat[1][k] + mat[2][k];
-    x[k] = mat[0][k] / norm;
-    y[k] = mat[1][k] / norm;
-  }
-  cmsCIExyYTRIPLE CameraPrimaries = {
-    {x[0], y[0], 1.0},
-    {x[1], y[1], 1.0},
-    {x[2], y[2], 1.0}
-    };
-  LPGAMMATABLE linear[3];
-  cmsHPROFILE  cmat;
-
-  cmsWhitePointFromTemp(6504, &D65);
-  linear[0] = linear[1] = linear[2] = build_linear_gamma();
-
-  cmat = cmsCreateRGBProfile(&D65, &CameraPrimaries, linear);
-  cmsFreeGamma(linear[0]);
-  if (cmat == NULL) return NULL;
-
-  cmsAddTag(cmat, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(cmat, icSigDeviceModelDescTag,    (LPVOID) "color matrix built-in");
-  cmsAddTag(cmat, icSigProfileDescriptionTag, (LPVOID) "color matrix built-in");
-
-  return cmat;
-}
-
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -173,7 +121,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(d->input) cmsCloseProfile(d->input);
   d->input = NULL;
   if(d->xform) cmsDeleteTransform(d->xform);
-  d->Lab = cmsCreateLabProfile(NULL);
   d->cmatrix[0][0] = -666.0;
   char datadir[1024];
   char filename[1024];
@@ -209,7 +156,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
         cmat[i][k] = raw->color.rgb_cam[i][k];
       }
-      d->input = create_cmatrix_profile(cmat);
+      d->input = dt_colorspaces_create_cmatrix_profile(cmat);
     }
     libraw_close(raw);
   }
@@ -246,10 +193,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     { // use linear_rgb as fallback for missing profiles:
       d->input = dt_colorspaces_create_linear_rgb_profile();
     }
-    if(!d->input) // sRGB fallback
-      d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
-    else
-      d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
+    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
@@ -264,6 +209,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
   d->xform = NULL;
+  d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -276,7 +222,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #else
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
-  if(d->input) cmsCloseProfile(d->input);
+  if(d->input) dt_colorspaces_cleanup_profile(d->input);
+  dt_colorspaces_cleanup_profile(d->Lab);
   if(d->xform) cmsDeleteTransform(d->xform);
   free(piece->data);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);

@@ -24,10 +24,10 @@
 #include <strings.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <lcms.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
+#include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -561,8 +561,8 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
 
   g->flowback_set = 0;
-  g->hsRGB = cmsCreate_sRGBProfile();
-  g->hLab  = cmsCreateLabProfile(NULL);
+  g->hsRGB = dt_colorspaces_create_srgb_profile();
+  g->hLab  = dt_colorspaces_create_lab_profile();
   g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
@@ -590,6 +590,10 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  dt_colorspaces_cleanup_profile(g->hsRGB);
+  dt_colorspaces_cleanup_profile(g->hLab);
+  cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;
 }

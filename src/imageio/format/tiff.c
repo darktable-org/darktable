@@ -54,7 +54,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
       profile=malloc(profile_len);
       _cmsSaveProfileToMem(out_profile, profile, &profile_len);
     }
-    cmsCloseProfile(out_profile);
+    dt_colorspaces_cleanup_profile(out_profile);
   }
   
    // Create tiff image

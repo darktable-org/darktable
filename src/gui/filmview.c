@@ -60,6 +60,7 @@ count_film_rolls(const char *filter)
   rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count += sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
   return count;
 }
 
@@ -106,6 +107,7 @@ dt_gui_filmview_update(const char *filter)
                         DT_GUI_FILM_COL_TOOLTIP, path,
                         -1);
   }
+  sqlite3_finalize(stmt);
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_GUI_FILM_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);

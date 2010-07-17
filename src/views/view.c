@@ -734,6 +734,7 @@ void dt_view_film_strip_prefetch()
     sqlite3_prepare_v2(darktable.db, "select id from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       imgid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
 
     snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
     sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);

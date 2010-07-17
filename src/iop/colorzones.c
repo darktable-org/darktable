@@ -22,7 +22,7 @@
 #include <math.h>
 #include <string.h>
 #include <inttypes.h>
-#include <lcms.h>
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "gui/histogram.h"
 #include "develop/develop.h"
@@ -836,8 +836,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(self->widget), tb, FALSE, FALSE, 5);
 
-  c->hsRGB = cmsCreate_sRGBProfile();
-  c->hLab  = cmsCreateLabProfile(NULL);
+  c->hsRGB = dt_colorspaces_create_srgb_profile();
+  c->hLab  = dt_colorspaces_create_lab_profile();
   c->xform = cmsCreateTransform(c->hLab, TYPE_Lab_DBL, c->hsRGB, TYPE_RGB_DBL, 
       INTENT_PERCEPTUAL, 0);
 }
@@ -845,6 +845,9 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  dt_colorspaces_cleanup_profile(c->hsRGB);
+  dt_colorspaces_cleanup_profile(c->hLab);
+  cmsDeleteTransform(c->xform);
   dt_draw_curve_destroy(c->minmax_curve);
   free(self->gui_data);
   self->gui_data = NULL;

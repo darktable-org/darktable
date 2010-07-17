@@ -137,7 +137,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  if(d->output) cmsCloseProfile(d->output);
+  if(d->output) dt_colorspaces_cleanup_profile(d->output);
+  d->output = NULL;
+  if(d->xform) cmsDeleteTransform(d->xform);
 
   if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
   {
@@ -169,11 +171,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       snprintf(filename, 1024, "%s/color/out/%s", datadir, p->iccprofile);
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
-    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    if(d->output)
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
-    else
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, cmsCreate_sRGBProfile(), TYPE_RGB_DBL, p->intent, 0);
+    if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
+    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
   }
   else
   {
@@ -202,11 +201,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       snprintf(filename, 1024, "%s/color/out/%s", datadir, p->displayprofile);
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
-    d->Lab   = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-    if(d->output)
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
-    else
-      d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, dt_colorspaces_create_srgb_profile(), TYPE_RGB_DBL, p->displayintent, 0);
+    if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
+    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
   }
 #endif
   g_free(overprofile);
@@ -221,6 +217,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = malloc(sizeof(dt_iop_colorout_data_t));
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->output = NULL;
+  d->xform = NULL;
+  d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -233,7 +231,9 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #else
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
-  if(d->output) cmsCloseProfile(d->output);
+  if(d->output) dt_colorspaces_cleanup_profile(d->output);
+  dt_colorspaces_cleanup_profile(d->Lab);
+  if(d->xform) cmsDeleteTransform(d->xform);
   free(piece->data);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif

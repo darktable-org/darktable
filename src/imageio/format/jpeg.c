@@ -475,7 +475,7 @@ write_image (dt_imageio_jpeg_t *jpg, const char *filename, const uint8_t *in, vo
       _cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
     }
-    cmsCloseProfile(out_profile);
+    dt_colorspaces_cleanup_profile(out_profile);
   }
 
   if(exif && exif_len > 0 && exif_len < 65534)

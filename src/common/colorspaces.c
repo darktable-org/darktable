@@ -37,7 +37,13 @@ build_srgb_gamma(void)
 }
 
 cmsHPROFILE
-dt_colorspaces_create_srgb_profile(void)
+dt_colorspaces_create_lab_profile()
+{
+  return cmsCreateLabProfile(NULL);
+}
+
+cmsHPROFILE
+dt_colorspaces_create_srgb_profile()
 {
   cmsCIExyY       D65;
   cmsCIExyYTRIPLE Rec709Primaries = {
@@ -294,3 +300,54 @@ dt_colorspaces_create_output_profile(const int imgid)
   return output;
 }
 
+cmsHPROFILE
+create_cmatrix_profile(float cmatrix[3][4])
+{
+  cmsCIExyY D65;
+  float x[3], y[3];
+  float mat[3][3];
+  // sRGB D65, the linear part:
+  const float rgb_to_xyz[3][3] = {
+    {0.4124564, 0.3575761, 0.1804375},
+    {0.2126729, 0.7151522, 0.0721750},
+    {0.0193339, 0.1191920, 0.9503041}
+  };
+
+  for(int c=0;c<3;c++) for(int j=0;j<3;j++)
+  {
+    mat[c][j] = 0;
+    for(int k=0;k<3;k++) mat[c][j] += rgb_to_xyz[c][k]*cmatrix[k][j];
+  }
+  for(int k=0;k<3;k++)
+  {
+    const float norm = mat[0][k] + mat[1][k] + mat[2][k];
+    x[k] = mat[0][k] / norm;
+    y[k] = mat[1][k] / norm;
+  }
+  cmsCIExyYTRIPLE CameraPrimaries = {
+    {x[0], y[0], 1.0},
+    {x[1], y[1], 1.0},
+    {x[2], y[2], 1.0}
+    };
+  LPGAMMATABLE linear[3];
+  cmsHPROFILE  cmat;
+
+  cmsWhitePointFromTemp(6504, &D65);
+  linear[0] = linear[1] = linear[2] = build_linear_gamma();
+
+  cmat = cmsCreateRGBProfile(&D65, &CameraPrimaries, linear);
+  cmsFreeGamma(linear[0]);
+  if (cmat == NULL) return NULL;
+
+  cmsAddTag(cmat, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
+  cmsAddTag(cmat, icSigDeviceModelDescTag,    (LPVOID) "color matrix built-in");
+  cmsAddTag(cmat, icSigProfileDescriptionTag, (LPVOID) "color matrix built-in");
+
+  return cmat;
+}
+
+void
+dt_colorspaces_cleanup_profile(cmsHPROFILE p)
+{
+  cmsCloseProfile(p);
+}

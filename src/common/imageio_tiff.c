@@ -43,7 +43,7 @@ int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16
       profile=malloc(profile_len);
       _cmsSaveProfileToMem(out_profile, profile, &profile_len);
     }
-    cmsCloseProfile(out_profile);
+    dt_colorspaces_cleanup_profile(out_profile);
   }
   
    // Create tiff image
