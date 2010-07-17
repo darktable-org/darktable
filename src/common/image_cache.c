@@ -160,7 +160,6 @@ void dt_image_cache_read(dt_image_cache_t *cache)
     { // read all available mips
       if(!image->mip[mip]) continue;
       image->mip[mip] = NULL;
-#if 1
       // printf("reading mip %d for image %d\n", mip, image->id);
       dt_image_get_mip_size(image, mip, &wd, &ht);
       uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
@@ -183,12 +182,10 @@ void dt_image_cache_read(dt_image_cache_t *cache)
         dt_image_release(image, mip, 'r');
       }
       free(blob);
-#endif
     }
     if(image->mipf)
     { // read float preview
       image->mipf = NULL;
-#if 1
       dt_image_get_mip_size(image, DT_IMAGE_MIPF, &wd, &ht);
       uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
       int32_t length = wd*ht;
@@ -205,7 +202,6 @@ void dt_image_cache_read(dt_image_cache_t *cache)
         dt_image_release(image, DT_IMAGE_MIPF, 'r');
       }
       free(buf);
-#endif
     }
   }
   fclose(f);
@@ -216,6 +212,42 @@ read_error:
   if(f) fclose(f);
   fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
   pthread_mutex_unlock(&(cache->mutex));
+}
+
+void dt_image_cache_check_consistency(dt_image_cache_t *cache)
+{
+#ifdef _DEBUG
+  pthread_mutex_lock(&(cache->mutex));
+  int i = cache->lru;
+  assert(cache->line[i].lru == -1);
+  int num = 1;
+  for(int k=0;k<cache->num_lines;k++)
+  {
+    i = cache->line[i].mru;
+    assert(i < cache->num_lines);
+    assert(i >= 0);
+    num ++;
+    assert(cache->line[i].image.cacheline == i);
+    // printf("next lru: `%s'\n", cache->line[i].image.filename);
+    if(i == cache->mru) break;
+  }
+  assert(num == cache->num_lines);
+  i = cache->mru;
+  assert(cache->line[i].mru == cache->num_lines);
+  num = 1;
+  for(int k=0;k<cache->num_lines;k++)
+  {
+    i = cache->line[i].lru;
+    assert(i < cache->num_lines);
+    assert(i >= 0);
+    num ++;
+    assert(cache->line[i].image.cacheline == i);
+    // printf("next mru: `%s'\n", cache->line[i].image.filename);
+    if(i == cache->lru) break;
+  }
+  assert(num == cache->num_lines);
+  pthread_mutex_unlock(&(cache->mutex));
+#endif
 }
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
@@ -238,26 +270,7 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
   dt_image_cache_read(cache);
-#if 0 // these tests are passed, even after reading.
-  int i = cache->lru;
-  for(int k=0;k<cache->num_lines;k++)
-  {
-    i = cache->line[i].mru;
-    assert(cache->line[i].image.cacheline == i);
-    printf("next lru: `%s'\n", cache->line[i].image.filename);
-    if(i == cache->mru) break;
-  }
-#endif
-#if 0
-  i = cache->mru;
-  for(int k=0;k<cache->num_lines;k++)
-  {
-    i = cache->line[i].lru;
-    assert(cache->line[i].image.cacheline == i);
-    printf("next mru: `%s'\n", cache->line[i].image.filename);
-    if(i == cache->lru) break;
-  }
-#endif
+  dt_image_cache_check_consistency(cache);
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
@@ -324,6 +337,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
 {
   // printf("[image_cache_use] locking image %d %s\n", id, mode == 'w' ? "for writing" : "");
   dt_image_cache_t *cache = darktable.image_cache;
+  dt_image_cache_check_consistency(cache);
   pthread_mutex_lock(&(cache->mutex));
   // int16_t *res = bsearch(&id, cache->by_id, cache->num_lines, sizeof(int16_t), (int(*)(const void *, const void *))&dt_image_cache_compare_id);
   int32_t res = dt_image_cache_bsearch(id);
@@ -374,6 +388,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
   // new top:
   if(cache->mru != res)
   {
+    // mru next pointer is end marker, but we are not already stored as cache->mru ???
     assert(cache->line[res].mru != cache->num_lines);
     // fill gap:
     if(cache->line[res].lru >= 0)
@@ -387,6 +402,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
     cache->mru = res;
   }
   pthread_mutex_unlock(&(cache->mutex));
+  dt_image_cache_check_consistency(cache);
   return ret;
 }
 
