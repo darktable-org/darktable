@@ -21,7 +21,6 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
-#include "common/variables.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -127,45 +126,54 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   gchar uri[4096]={0};
   gchar body[4096]={0};
   gchar attachments[4096]={0};
-  
+   gchar *defaultHandler=NULL;
   gchar *uriFormat=NULL;
   gchar *subject="images exported from darktable";
   gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
   
+  if(  strlen( defaultHandler = dt_conf_get_string("plugins/imageio/storage/email/client") ) <= 0 ) {
 #ifdef HAVE_GCONF
-  gchar *defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
-  if( defaultHandler == NULL ) goto default_handler;
-  
-  // Ok we got default command for mail let's handle cases..
-  if( g_strrstr(defaultHandler,"thunderbird") ) {
+    defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
+#endif
+  }
+   
+  if( defaultHandler ) { 
+    // Detected a default handler let's do special case handling for each email client..
+    if( g_strrstr(defaultHandler,"thunderbird") ) 
+    {
       uriFormat="thunderbird -compose \"to='',subject='%s',body='%s',attachment='%s'\"";   // subject, body, and list of attachments with format "<filename>,"
       attachmentFormat="%s";
       attachmentSeparator=",";
-    goto proceed;
-  } else if( g_strrstr(defaultHandler,"kmail") ) {
+      goto proceed; 
+    }
+    else if( g_strrstr(defaultHandler,"kmail") ) 
+    {
       // When I enter the mailto:... in konqueror everything is ok, yet from dt we have no attachements. WTF?
       // So we launch it directly.
       uriFormat="kmail --composer --subject \"%s\" --body \"%s\" --attach \"%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
       attachmentFormat="%s";
       attachmentSeparator="\" --attach \"";
-    goto proceed;
+      goto proceed;
+    } 
+    else if( g_strrstr(defaultHandler,"evolution") ) 
+    {
+      uriFormat="evolution \"mailto:?subject=%s&body=%s%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
+      attachmentFormat="&attachment=file://%s";
+      goto proceed;
+    }
   }
-  
-default_handler: ;    // default handler using standard mailto: format...
-#endif
+
+  // If no default handler detected above, we use gtk_show_uri with mailto:// and hopes things goes right..
   uriFormat="mailto:?subject=%s&body=%s%s";   // subject, body, and list of attachments with format &attachment=<filename>
   attachmentFormat="&attachment=file://%s";
 
-#ifdef HAVE_GCONF
 proceed: ; // Let's build up uri / command
-#endif
   while( d->images ) {
     gchar exif[256]={0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
     const gchar *filename = g_basename( attachment->file );
-    //void dt_image_print_exif(dt_image_t *img, char *line, int len);
     dt_image_t *img = dt_image_cache_use( attachment->imgid, 'r');
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
@@ -174,16 +182,14 @@ proceed: ; // Let's build up uri / command
       g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), "%s", attachmentSeparator );
     
     g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), attachmentFormat, attachment->file );
-  
     // Free attachment item and remove
     dt_image_cache_release(img, 'r');
     g_free( d->images->data );
     d->images = g_list_remove( d->images, d->images->data );
   }
-
+  
   // build uri and launch before we quit...
   g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
-  //fprintf(stderr,"\n%s\n", uri );
   
   // So what should we do...
   int res=0;
