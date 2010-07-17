@@ -211,6 +211,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
     if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
+    free(module);
     iio->plugins_format = g_list_delete_link(iio->plugins_format, iio->plugins_format);
   }
   while(iio->plugins_storage)
@@ -218,6 +219,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
     if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
+    free(module);
     iio->plugins_storage = g_list_delete_link(iio->plugins_storage, iio->plugins_storage);
   }
 }

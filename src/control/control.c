@@ -657,127 +657,115 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 
 void *dt_control_expose(void *voidptr)
 {
-  // darktable.control->gui_thread = pthread_self();
-  while(1)
+  int width, height, pointerx, pointery;
+  gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_get_pointer(widget, &pointerx, &pointery);
+
+  //create a gtk-independant surface to draw on
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+
+  // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
+  // 
+  float tb = 8;//fmaxf(10, width/100.0);
+  darktable.control->tabborder = tb;
+  darktable.control->width = width;
+  darktable.control->height = height;
+
+  cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
+  cairo_set_line_width(cr, tb);
+  cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
+  cairo_stroke(cr);
+  cairo_set_line_width(cr, 1.5);
+  cairo_set_source_rgb (cr, .1, .1, .1);
+  cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
+  cairo_stroke(cr);
+
+  cairo_save(cr);
+  cairo_translate(cr, tb, tb);
+  cairo_rectangle(cr, 0, 0, width - 2*tb, height - 2*tb);
+  cairo_clip(cr);
+  cairo_new_path(cr);
+  // draw view
+  dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb, pointerx-tb, pointery-tb);
+  cairo_restore(cr);
+
+  // draw status bar, if any
+  if(darktable.control->progress < 100.0)
   {
-    int width, height, pointerx, pointery;
-    // ! gdk_threads_enter();
-    gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-    gtk_widget_get_pointer(widget, &pointerx, &pointery);
-    // ! gdk_threads_leave();
-
-    //create a gtk-independant surface to draw on
-    cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *cr = cairo_create(cst);
-
-    // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
-    // 
-    float tb = 8;//fmaxf(10, width/100.0);
-    darktable.control->tabborder = tb;
-    darktable.control->width = width;
-    darktable.control->height = height;
-
-    cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
-    cairo_set_line_width(cr, tb);
-    cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
+    tb = fmaxf(20, width/40.0);
+    char num[10];
+    cairo_rectangle(cr, width*0.4, height*0.85, width*0.2*darktable.control->progress/100.0f, tb);
+    cairo_fill(cr);
+    cairo_set_source_rgb(cr, 0., 0., 0.);
+    cairo_rectangle(cr, width*0.4, height*0.85, width*0.2, tb);
     cairo_stroke(cr);
-    cairo_set_line_width(cr, 1.5);
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
-    cairo_stroke(cr);
-
-    cairo_save(cr);
-    cairo_translate(cr, tb, tb);
-    cairo_rectangle(cr, 0, 0, width - 2*tb, height - 2*tb);
-    cairo_clip(cr);
-    cairo_new_path(cr);
-    // draw view
-    dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb, pointerx-tb, pointery-tb);
-    cairo_restore(cr);
-
-    // draw status bar, if any
-    if(darktable.control->progress < 100.0)
-    {
-      tb = fmaxf(20, width/40.0);
-      char num[10];
-      cairo_rectangle(cr, width*0.4, height*0.85, width*0.2*darktable.control->progress/100.0f, tb);
-      cairo_fill(cr);
-      cairo_set_source_rgb(cr, 0., 0., 0.);
-      cairo_rectangle(cr, width*0.4, height*0.85, width*0.2, tb);
-      cairo_stroke(cr);
-      cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
-      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, tb/3);
-      cairo_move_to (cr, width/2.0-10, height*0.85+2.*tb/3.);
-      snprintf(num, 10, "%d%%", (int)darktable.control->progress);
-      cairo_show_text (cr, num);
-    }
-    // draw log message, if any
-    pthread_mutex_lock(&darktable.control->log_mutex);
-    if(darktable.control->log_ack != darktable.control->log_pos)
-    {
-      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      const float fontsize = 14;
-      cairo_set_font_size (cr, fontsize);
-      cairo_text_extents_t ext;
-      cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_ack], &ext);
-      const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
-      float rad = 14;
-      cairo_set_line_width(cr, 1.);
-      for(int k=0;k<5;k++)
-      {
-        cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
-        cairo_line_to (cr, xc+wd, yc-rad);
-        cairo_arc (cr, xc+wd, yc, rad, 3.0*M_PI/2.0, M_PI/2.0);
-        cairo_line_to (cr, xc-wd, yc+rad);
-        if(k == 0)
-        {
-          cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-          cairo_fill_preserve (cr);
-        }
-        cairo_set_source_rgba(cr, 0., 0., 0., 1.0/(1+k));
-        cairo_stroke (cr);
-        rad += .5f;
-      }
-      cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-      cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
-      cairo_show_text (cr, darktable.control->log_message[darktable.control->log_ack]);
-    }
-    // draw busy indicator
-    if(darktable.control->log_busy > 0)
-    {
-      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      const float fontsize = 14;
-      cairo_set_font_size (cr, fontsize);
-      cairo_text_extents_t ext;
-      cairo_text_extents (cr, _("working.."), &ext);
-      const float xc = width/2.0, yc = height*0.85-30, wd = ext.width*.5f;
-      cairo_move_to (cr, xc-wd, yc + 1./3.*fontsize);
-      cairo_text_path (cr, _("working.."));
-      cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 0.7);
-      cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-      cairo_stroke(cr);
-    }
-    pthread_mutex_unlock(&darktable.control->log_mutex);
-
-    cairo_destroy(cr);
-
-    // ! gdk_threads_enter();
-    cairo_t *cr_pixmap = gdk_cairo_create(darktable.gui->pixmap);
-    cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-    cairo_paint(cr_pixmap);
-    cairo_destroy(cr_pixmap);
-
-    // GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-    // gtk_widget_queue_draw(widget);
-    // ! gdk_threads_leave();
-
-    cairo_surface_destroy(cst);
-    return NULL;
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size (cr, tb/3);
+    cairo_move_to (cr, width/2.0-10, height*0.85+2.*tb/3.);
+    snprintf(num, 10, "%d%%", (int)darktable.control->progress);
+    cairo_show_text (cr, num);
   }
+  // draw log message, if any
+  pthread_mutex_lock(&darktable.control->log_mutex);
+  if(darktable.control->log_ack != darktable.control->log_pos)
+  {
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    const float fontsize = 14;
+    cairo_set_font_size (cr, fontsize);
+    cairo_text_extents_t ext;
+    cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_ack], &ext);
+    const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
+    float rad = 14;
+    cairo_set_line_width(cr, 1.);
+    for(int k=0;k<5;k++)
+    {
+      cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
+      cairo_line_to (cr, xc+wd, yc-rad);
+      cairo_arc (cr, xc+wd, yc, rad, 3.0*M_PI/2.0, M_PI/2.0);
+      cairo_line_to (cr, xc-wd, yc+rad);
+      if(k == 0)
+      {
+        cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+        cairo_fill_preserve (cr);
+      }
+      cairo_set_source_rgba(cr, 0., 0., 0., 1.0/(1+k));
+      cairo_stroke (cr);
+      rad += .5f;
+    }
+    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
+    cairo_show_text (cr, darktable.control->log_message[darktable.control->log_ack]);
+  }
+  // draw busy indicator
+  if(darktable.control->log_busy > 0)
+  {
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    const float fontsize = 14;
+    cairo_set_font_size (cr, fontsize);
+    cairo_text_extents_t ext;
+    cairo_text_extents (cr, _("working.."), &ext);
+    const float xc = width/2.0, yc = height*0.85-30, wd = ext.width*.5f;
+    cairo_move_to (cr, xc-wd, yc + 1./3.*fontsize);
+    cairo_text_path (cr, _("working.."));
+    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 0.7);
+    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+    cairo_stroke(cr);
+  }
+  pthread_mutex_unlock(&darktable.control->log_mutex);
+
+  cairo_destroy(cr);
+
+  cairo_t *cr_pixmap = gdk_cairo_create(darktable.gui->pixmap);
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+
+  cairo_surface_destroy(cst);
   return NULL;
 }
 

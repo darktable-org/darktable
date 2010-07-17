@@ -257,7 +257,7 @@ void dt_gettime(char *datetime)
 
 void *dt_alloc_align(size_t alignment, size_t size)
 {
-#if defined(__MACH__) || defined(__APPLE__)
+#if defined(__MACH__) || defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 700013)
   return malloc(size);
 #else
   void *ptr = NULL;

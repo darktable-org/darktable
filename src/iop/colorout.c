@@ -454,7 +454,10 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   while(g->profiles)
+  {
+    free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
+  }
   free(self->gui_data);
   self->gui_data = NULL;
 }

@@ -273,6 +273,7 @@ void dt_iop_unload_module(dt_iop_module_t *module)
 {
   free(module->factory_params);
   module->cleanup(module);
+  free(module->default_params);
   pthread_mutex_destroy(&module->params_mutex);
   if(module->module) g_module_close(module->module);
 }

@@ -522,6 +522,7 @@ void leave(dt_view_t *self)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
     // printf("removing history item %d - %s, data %f %f\n", hist->module->instance, hist->module->op, *(float *)hist->params, *((float *)hist->params+1));
     free(hist->params); hist->params = NULL;
+    free(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
   while(dev->iop)
@@ -534,6 +535,7 @@ void leave(dt_view_t *self)
 
     module->gui_cleanup(module);
     module->cleanup(module);
+    free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);

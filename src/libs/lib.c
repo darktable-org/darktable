@@ -196,6 +196,7 @@ dt_lib_cleanup (dt_lib_t *lib)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);
     dt_lib_unload_module(module);
+    free(module);
     lib->plugins = g_list_delete_link(lib->plugins, lib->plugins);
   }
 }
