@@ -394,9 +394,12 @@ void init_presets (dt_iop_module_t *self)
 
   dt_gui_presets_add_generic(_("swap r and b"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,1,0},{0,0,0,0,1,0,0},{0,0,0,1,0,0,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
   dt_gui_presets_add_generic(_("swap g and b"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,0},{0,0,0,0,0,1,0},{0,0,0,0,1,0,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("b/w"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,0.21},{0,0,0,0,0,0,0.72},{0,0,0,0,0,0,0.7} } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("b/w detail boost"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,-1},{0,0,0,0,0,0,-1},{0,0,0,0,0,0,2} } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("b/w smooth skin"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,0.7},{0,0,0,0,0,0,0.2},{0,0,0,0,0,0,0.1} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("color contrast boost"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0.8,1,0,0,0},{0,0,0.1,0,1,0,0},{0,0,0.1,0,0,1,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("color details boost"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0.1,1,0,0,0},{0,0,0.8,0,1,0,0},{0,0,0.1,0,0,1,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("color artifacts boost"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0.1,1,0,0,0},{0,0,0.1,0,1,0,0},{0,0,0.800,0,0,1,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("b/w"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,0.21},{0,0,0,0,1,0,0.72},{0,0,0,0,0,1,0.07} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("b/w artifacts boost"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,-0.275},{0,0,0,0,1,0,-0.275},{0,0,0,0,0,1,1.275} } , sizeof(dt_iop_channelmixer_params_t), 1);
+  dt_gui_presets_add_generic(_("b/w smooth skin"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,0.7},{0,0,0,0,0,1,0.2},{0,0,0,0,0,0,1.1} } , sizeof(dt_iop_channelmixer_params_t), 1);
   dt_gui_presets_add_generic(_("b/w blue artifacts reduce"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,0.4},{0,0,0,0,0,0,0.750},{0,0,0,0,0,0,-0.15} } , sizeof(dt_iop_channelmixer_params_t), 1);
   sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
