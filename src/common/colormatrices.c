@@ -63,7 +63,7 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Artis Rozentals, Wolf Faust IT8, direct sunlight, well lit
   { "Canon PowerShot S60",          { 879990, 321808,  23041}, { 272324, 1104752, -410950}, { 75500, -184097, 1373230}, {702026, 740524, 622131}},
 
-  // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
+  // Pascal de Bruijn, CMP Digital Target 3, camera strobe, well lit
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
 
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
@@ -82,7 +82,10 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   { "SONY DSLR-A550",               {1031235, 405899,   1572}, { 185623, 1122162, -272659}, {-25528, -329514, 1249969}, {729797, 753586, 633530}},
 
   // Mark Haun, Wolf Faust IT8, direct sunlight, well lit
-  { "OLYMPUS E-PL1",                { 824387, 288086,  -7355}, { 299500, 1148865, -308929}, { 91858, -198425, 1346603}, {720139, 750717, 619751}}
+  { "OLYMPUS E-PL1",                { 824387, 288086,  -7355}, { 299500, 1148865, -308929}, { 91858, -198425, 1346603}, {720139, 750717, 619751}},
+
+  // Henrik Andersson, Homebrew ColorChecker, camera strobe, well lit
+  { "OLYMPUS SP570UZ",              { 780991, 262283,  27969}, { 147522, 1135239, -422974}, {142731, -293610, 1316803}, {769669, 804474, 676895}}
 
 };
 
