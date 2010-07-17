@@ -525,6 +525,8 @@ void leave(dt_view_t *self)
     free(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
+  dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
+  dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
