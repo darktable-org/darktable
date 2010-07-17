@@ -74,25 +74,24 @@
     	</div>
 
     	<div class="listtext">
-    	<img src="images/sails.jpg" alt="people" class="img" /><a name="people"><h1>people</h1></a>
+    	<img src="images/sails.jpg" alt="people" class="img" /><h1><a name="people">people</a></h1>
       <table>
       <tr class="odd"><td><em>photo</em></td><td><em>irc nick</em></td><td><em>real name</em></td>
                       <td><em>project role</em></td><td><em>homepage</em></td><td><em>gallery</em></td></tr>
-      <tr class="even"><td><img width="52" src="http://www.gravatar.com/avatar/07d83b598e6a654dacf173f221b8a241.png" /></td>
+      <tr class="even"><td><img width="52" src="http://www.gravatar.com/avatar/07d83b598e6a654dacf173f221b8a241.png" alt="henrik"/></td>
           <td>dinamic</td><td>henrik andersson</td><td>developer</td><td><a href="http://www.ohloh.net/accounts/hean01/">homepage</a></td>
           <td><a href="http://www.dinamic.se/">gallery</a></td></tr>
       <tr class="odd"><td><img width="52" src="images/avatar.jpg" alt="jo" /></td><td>hanatos</td><td>johannes hanika</td>
           <td>project founder/<br />developer</td>
           <td></td><td></td></tr>
-      <tr class="even"><td><img width="52" src="http://planet.ubuntu-nl.org/static/images/hackergotchis/pmjdebruijn.png" alt="photo" /></td>
+      <tr class="even"><td><img width="52" src="http://planet.ubuntu-nl.org/static/images/hackergotchis/pmjdebruijn.png" alt="pascal" /></td>
           <td>pmjdebruijn</td><td>pascal de bruijn</td><td>color management</td><td><a href="http://blog.pcode.nl/">homepage</a></td>
           <td><a href="http://photos.pcode.nl/">gallery</a></td></tr>
-      <tr class="odd"><td><img width="52" src="http://l-userpic.livejournal.com/87071852/1121493" alt="photo" /></td>
+      <tr class="odd"><td><img width="52" src="http://l-userpic.livejournal.com/87071852/1121493" alt="alexandre" /></td>
           <td>prokoudine</td><td>alexandre prokoudine</td><td>translation expert/day one battle tester</td>
           <td><a href="http://prokoudine.info/">homepage</a></td>
           <td><a href="http://prokoudine.info/gallery/">gallery</a></td></tr>
        </table>
-      </ul>
     	</div>
     </div> <!-- page -->
     <!--#include virtual="footer.html" -->
