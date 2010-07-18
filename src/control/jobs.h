@@ -20,6 +20,7 @@
 
 #include <glib.h>
 
+#include "gui/background_jobs.h"
 #include "common/image.h"
 #include "common/variables.h"
 #include "control/control.h"
@@ -78,6 +79,8 @@ typedef struct dt_camera_import_t
 {
 	GList *images;
 	struct dt_camera_t *camera;
+	const dt_gui_job_t *bgj;
+	double fraction;
 	dt_variables_params_t *vp;
 	dt_film_t *film;
 	gchar *path;

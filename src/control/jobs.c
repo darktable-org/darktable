@@ -197,7 +197,7 @@ void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *fil
 	job->execute = &dt_camera_import_job_run;
 	dt_camera_import_t *t = (dt_camera_import_t *)job->param;
 	dt_variables_params_init(&t->vp);
-	
+	t->fraction=0;
 	t->images=g_list_copy(images);
 	t->camera=camera;
 	t->vp->jobcode=g_strdup(jobcode);
@@ -214,6 +214,9 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 	dt_film_image_import(t->film,filename);
 	dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
+	t->fraction+=1.0/g_list_length(t->images);
+	dt_gui_background_jobs_set_progress( t->bgj, t->fraction );
+	
 	if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )
 	{ // Backup is enabled, let's initialize a backup job of imported image...
 		char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
@@ -290,6 +293,10 @@ void dt_camera_import_job_run(dt_job_t *job)
 	// Import path is ok, lets actually create the filmroll in database..
 	if(dt_film_new(t->film,t->film->dirname) > 0)
 	{
+		int total = g_list_length( t->images );
+		char message[512]={0};
+		sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
+		t->bgj = dt_gui_background_jobs_new( message);
 		
 		// Switch to new filmroll
 		dt_film_open(t->film->id);

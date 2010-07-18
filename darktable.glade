@@ -1366,7 +1366,7 @@ all film rolls</property>
                                   <widget class="GtkExpander" id="jobs_list_expander">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="spacing">10</property>
+                                    <property name="spacing">0</property>
                                     <child>
                                      <widget class="GtkVBox" id="jobs_content_box">
                                       <property name="visible">True</property>
@@ -1389,7 +1389,7 @@ all film rolls</property>
                                 </child>
                               </widget>
                               <packing>
-                                <property name="expand">true</property>
+                                <property name="expand">True</property>
                                 <property name="fill">False</property>
                                 <property name="position">6</property>
                               </packing>
