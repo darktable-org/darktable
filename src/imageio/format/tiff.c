@@ -120,7 +120,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     free(rowdata);
   }
   
-  //if(exif) dt_exif_write_blob(exif,exif_len,filename);
+  if(exif) dt_exif_write_blob(exif,exif_len,filename);
   free(profile);
   
   return 1;
