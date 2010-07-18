@@ -823,7 +823,7 @@ gboolean center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_
   return TRUE;
 }
 
-
+#include "background_jobs.h"
 int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
@@ -876,7 +876,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // Update the devices module with available devices
   dt_gui_devices_init();
   
-  
+  dt_gui_background_jobs_init();
   
   /* connect the signals in the interface */
 

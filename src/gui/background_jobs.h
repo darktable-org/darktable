@@ -40,6 +40,8 @@ typedef struct dt_gui_job_t {
 	
 } dt_gui_job_t;
 
+void dt_gui_background_jobs_init();
+
 /** initializes a new background job to display */
 const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gchar *message);
 /** Set's the message to display of the current job. */
