@@ -40,16 +40,6 @@ typedef struct dt_gui_job_t {
 	
 } dt_gui_job_t;
 
-typedef struct dt_gui_jobs_t
-{
-  GList *jobs;
-  
-}
-dt_gui_jobs_t;
-
-void dt_gui_background_jobs_init( dt_gui_jobs_t *j);
-void dt_gui_background_jobs_cleanup( dt_gui_jobs_t *j);
-
 /** initializes a new background job to display */
 const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gchar *message);
 /** Set's the message to display of the current job. */

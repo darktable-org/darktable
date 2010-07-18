@@ -25,15 +25,6 @@
 
 GStaticMutex _gui_background_mutex = G_STATIC_MUTEX_INIT;
 
-void dt_gui_background_jobs_init( dt_gui_jobs_t *j)
-{
-  j->jobs=NULL;
-}
-
-void dt_gui_background_jobs_cleanup( dt_gui_jobs_t *j)
-{
-}
-
 GtkLabel *_gui_background_jobs_get_label( GtkWidget *w ) {
   return g_list_nth_data( gtk_container_get_children( GTK_CONTAINER( gtk_bin_get_child ( GTK_BIN( w ) ) ) ), 0);
 }
@@ -44,6 +35,7 @@ GtkProgressBar *_gui_background_jobs_get_progressbar( GtkWidget *w ) {
 
 const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gchar *message)
 {
+  gdk_threads_enter();
   dt_gui_job_t *j=g_malloc(sizeof(dt_gui_job_t));
   memset(j,0,sizeof( dt_gui_job_t ) );
   j->message = g_strdup( message );
@@ -61,7 +53,7 @@ const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gch
   if( type == DT_JOB_PROGRESS )
     gtk_box_pack_start( GTK_BOX( vbox ), gtk_progress_bar_new( ), TRUE, FALSE, 0);
   
-  g_static_mutex_lock ( &_gui_background_mutex );
+  //g_static_mutex_lock ( &_gui_background_mutex );
   
   // add job widget to 
   GtkWidget *w = glade_xml_get_widget( darktable.gui->main_window, "jobs_content_box" );
@@ -71,21 +63,26 @@ const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gch
   
   w = glade_xml_get_widget( darktable.gui->main_window, "jobs_list_expander" );
   gtk_expander_set_expanded( GTK_EXPANDER( w ), TRUE );
-  g_static_mutex_unlock ( &_gui_background_mutex );
-
+ // g_static_mutex_unlock ( &_gui_background_mutex );
+  gdk_threads_leave();
   return j;
 }
 
 void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *message)
 {
-  g_static_mutex_lock ( &_gui_background_mutex );
+  gdk_threads_enter();
+ 
+ // g_static_mutex_lock ( &_gui_background_mutex );
   gtk_label_set_text( _gui_background_jobs_get_label( j->widget ), j->message );
-  g_static_mutex_unlock( &_gui_background_mutex );
+  //g_static_mutex_unlock( &_gui_background_mutex );
+  gdk_threads_leave();
 }
 
 void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
 {
-   g_static_mutex_lock ( &_gui_background_mutex );
+  gdk_threads_enter();
+  
+  // g_static_mutex_lock ( &_gui_background_mutex );
  
   if( progress >= 1.0 ) {	// job is finished free and destroy the widget..
     
@@ -104,7 +101,7 @@ void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
     if( j->type == DT_JOB_PROGRESS )
       gtk_progress_bar_set_fraction( _gui_background_jobs_get_progressbar( j->widget ), progress );
   }
-   g_static_mutex_unlock ( &_gui_background_mutex );
- 
+  //g_static_mutex_unlock ( &_gui_background_mutex );
+  gdk_threads_leave();
 }
 
