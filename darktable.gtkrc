@@ -17,7 +17,7 @@ style "clearlooks-default"
 	#GtkOptionMenu::indicator_spacing = { 4, 5, 2, 2 }
 	GtkTreeView::expander_size = 14
 	GtkExpander::expander_size = 12
-
+	GtkProgressBar::min-horizontal-bar-height = 12
 	font_name = "Sans 8"
 
 	xthickness = 1
@@ -214,6 +214,7 @@ widget "*.metadata_eventbox" style "clearlooks-brightbg"
 widget "*.history_eventbox" style "clearlooks-brightbg"
 widget "*.module_list_eventbox" style "clearlooks-brightbg"
 widget "*.right.GtkEventBox" style "clearlooks-brightbg"
+widget "*.background_job_eventbox" style "clearlooks-brightbg"
 widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkAccelMenuItem.*" style "clearlooks-menu-item"
 widget_class "*.GtkRadioMenuItem.*" style "clearlooks-menu-item"

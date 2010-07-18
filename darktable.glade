@@ -1360,6 +1360,40 @@ all film rolls</property>
                                 <property name="position">5</property>
                               </packing>
                             </child>
+                            <child>
+                              <widget class="GtkEventBox" id="jobs_list_eventbox">
+                                <child>
+                                  <widget class="GtkExpander" id="jobs_list_expander">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="spacing">10</property>
+                                    <child>
+                                     <widget class="GtkVBox" id="jobs_content_box">
+                                      <property name="visible">True</property>
+                                      <property name="border_width">5</property>
+                                      <child>
+                                        <placeholder/>
+                                      </child>
+                                      </widget>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkLabel" id="label28">
+                                        <property name="visible">True</property>
+                                        <property name="label" translatable="yes">background jobs</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="type">label_item</property>
+                                      </packing>
+                                    </child>
+                                  </widget>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="expand">true</property>
+                                <property name="fill">False</property>
+                                <property name="position">6</property>
+                              </packing>
+                            </child>
                           </widget>
                         </child>
                       </widget>

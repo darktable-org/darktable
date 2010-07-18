@@ -22,6 +22,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "gui/background_jobs.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include <glade/glade.h>
@@ -73,6 +74,11 @@ void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char
 void dt_camera_capture_job_run(dt_job_t *job)
 {
 	dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
+	int total = t->count*t->brackets;
+	char message[512]={0};
+	sprintf(message, ngettext ("capturing %d image", "capturing %d images", total), total );
+	double fraction=0;
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
 	for(int i=0;i<t->count;i++)
 	{
 		
@@ -83,6 +89,8 @@ void dt_camera_capture_job_run(dt_job_t *job)
 			// else if( t->brackets>0
 			//  set next bracket
 			dt_camctl_camera_capture(darktable.camctl,NULL);
+			fraction+=1.0/total;
+			dt_gui_background_jobs_set_progress( j, fraction);
 		}
 		
 		// Delay if active
@@ -415,11 +423,18 @@ void dt_control_duplicate_images_job_run(dt_job_t *job)
 	long int imgid = -1;
 	dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
 	GList *t = t1->index;
+	int total = g_list_length(t);
+	char message[512]={0};
+	double fraction=0;
+	sprintf(message, ngettext ("duplicating %d image", "duplicating %d images", total), total );
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
 	while(t)
 	{
 		imgid = (long int)t->data;
 		dt_image_duplicate(imgid);
 		t = g_list_delete_link(t, t);
+		fraction=1.0/total;
+		dt_gui_background_jobs_set_progress(j, fraction);
 	}
 }
 
@@ -428,11 +443,18 @@ void dt_control_remove_images_job_run(dt_job_t *job)
 	long int imgid = -1;
 	dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
 	GList *t = t1->index;
+	int total = g_list_length(t);
+	char message[512]={0};
+	double fraction=0;
+	sprintf(message, ngettext ("removing %d image", "removing %d images", total), total );
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
 	while(t)
 	{
 		imgid = (long int)t->data;
 		dt_image_remove(imgid);
 		t = g_list_delete_link(t, t);
+		fraction=1.0/total;
+		dt_gui_background_jobs_set_progress(j, fraction);
 	}
 }
 
@@ -441,6 +463,11 @@ void dt_control_delete_images_job_run(dt_job_t *job)
 	long int imgid = -1;
 	dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
 	GList *t = t1->index;
+	int total = g_list_length(t);
+	char message[512]={0};
+	double fraction=0;
+	sprintf(message, ngettext ("deleting %d image", "deleting %d images", total), total );
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
 	while(t)
 	{
 		imgid = (long int)t->data;
@@ -475,6 +502,8 @@ void dt_control_delete_images_job_run(dt_job_t *job)
 		(void)g_unlink(dtfilename);
 		dt_image_cache_release(img, 'r');
 		t = g_list_delete_link(t, t);
+		fraction=1.0/total;
+		dt_gui_background_jobs_set_progress(j, fraction);
 	}
 }
 
@@ -622,11 +651,17 @@ void dt_control_export_job_run(dt_job_t *job)
 		return;
 	}
 	dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
+	char message[512]={0};
+	sprintf(message, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
+	double fraction=0;
 	while(t)
 	{
 		imgid = (long int)t->data;
 		t = g_list_delete_link(t, t);
 		mstorage->store(sdata, imgid, mformat, fdata, total-g_list_length(t), total);
+		fraction+=1.0/total;
+		dt_gui_background_jobs_set_progress( j, fraction );
 	}
 	mformat->free_params (mformat,  fdata);
 	mstorage->free_params(mstorage, sdata);
