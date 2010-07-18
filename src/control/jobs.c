@@ -42,16 +42,27 @@ void dt_image_load_job_run(dt_job_t *job)
 {
 	dt_image_load_t *t = (dt_image_load_t *)job->param;
 	dt_image_t *img = dt_image_cache_get(t->imgid, 'r');
+	
+	char message[512]={0};
+	sprintf(message, _("loading image %s"), img->filename);
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
+	
 	if(!img) return;
 	int ret = dt_image_load(img, t->mip);
 	// drop read lock, as this is only speculative async loading.
 	if(!ret) dt_image_release(img, t->mip, 'r');
 	dt_image_cache_release(img, 'r');
+	dt_gui_background_jobs_set_progress( j, 1.0 );
 }
 
 void dt_captured_image_import_job_run(dt_job_t *job)
 {
 	dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
+	
+	char message[512]={0};
+	sprintf(message, _("importing image %s"), t->filename);
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
+	
 	int id = dt_image_import(t->film_id, t->filename);
 	if(id)
 	{
@@ -60,6 +71,7 @@ void dt_captured_image_import_job_run(dt_job_t *job)
 		dt_control_queue_draw_all();
 		//dt_ctl_switch_mode_to(DT_DEVELOP);
 	}
+	dt_gui_background_jobs_set_progress( j , 1.0 );
 }
 
 void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char *filename)
@@ -78,7 +90,7 @@ void dt_camera_capture_job_run(dt_job_t *job)
 	char message[512]={0};
 	sprintf(message, ngettext ("capturing %d image", "capturing %d images", total), total );
 	double fraction=0;
-	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
 	for(int i=0;i<t->count;i++)
 	{
 		
@@ -296,7 +308,7 @@ void dt_camera_import_job_run(dt_job_t *job)
 		int total = g_list_length( t->images );
 		char message[512]={0};
 		sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
-		t->bgj = dt_gui_background_jobs_new( message);
+		t->bgj = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
 		
 		// Switch to new filmroll
 		dt_film_open(t->film->id);
@@ -434,7 +446,7 @@ void dt_control_duplicate_images_job_run(dt_job_t *job)
 	char message[512]={0};
 	double fraction=0;
 	sprintf(message, ngettext ("duplicating %d image", "duplicating %d images", total), total );
-	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
 	while(t)
 	{
 		imgid = (long int)t->data;
@@ -454,7 +466,7 @@ void dt_control_remove_images_job_run(dt_job_t *job)
 	char message[512]={0};
 	double fraction=0;
 	sprintf(message, ngettext ("removing %d image", "removing %d images", total), total );
-	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
 	while(t)
 	{
 		imgid = (long int)t->data;
@@ -474,7 +486,7 @@ void dt_control_delete_images_job_run(dt_job_t *job)
 	char message[512]={0};
 	double fraction=0;
 	sprintf(message, ngettext ("deleting %d image", "deleting %d images", total), total );
-	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
+	const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
 	while(t)
 	{
 		imgid = (long int)t->data;
@@ -660,7 +672,7 @@ void dt_control_export_job_run(dt_job_t *job)
 	dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
 	char message[512]={0};
 	sprintf(message, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
-	const dt_gui_job_t *j = dt_gui_background_jobs_new( message);
+	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
 	double fraction=0;
 	while(t)
 	{
