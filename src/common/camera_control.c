@@ -356,7 +356,8 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         {
           // Remove device property summary:
           char *eos=strstr(camera->summary.text,"Device Property Summary:\n");
-          eos[0]='\0';
+	  if( eos )
+		eos[0]='\0';
         }
         
         // Add to camera list
