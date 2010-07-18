@@ -876,13 +876,14 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
   fprintf(f, "stars: %d\n", stars & 0x7);
   fprintf(f, "rawimport: %f %f %d\n", denoise, bright, raw_params);
   // Store colorlabels in dttags
-  fprintf(f, "colorlabels: ");
+  fprintf(f, "colorlabels:");
   rc = sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
-    fprintf(f, "%d ", sqlite3_column_int(stmt, 0));
+    fprintf(f, " %d", sqlite3_column_int(stmt, 0));
   rc = sqlite3_finalize(stmt);
   fprintf(f, "\n");
+  
   fprintf(f, "tags:\n");
   // print each tag in one line.
   rc = sqlite3_prepare_v2(darktable.db, "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
