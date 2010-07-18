@@ -27,6 +27,7 @@
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
+#include "common/colorlabels.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
@@ -915,11 +916,8 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
     } 
     else if( strncmp( line, "colorlabels:",12) == 0) 
     {
-      // remove from color_labels
-      rc = sqlite3_prepare_v2(darktable.db, "delete from color_labels where imgid = ?1", -1, &stmt, NULL);
-      rc = sqlite3_bind_int(stmt, 1, img->id);
-      rc = sqlite3_step(stmt);
-      rc = sqlite3_finalize(stmt);
+      // Remove associated color labels
+      dt_colorlabels_remove_labels( img->id );
       
       if( strlen(line+12) > 1 ) {
         char *colors=line+12;
@@ -927,12 +925,7 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
         while( *p!=0) { if(*p==' ') *p='\0'; p++; }
         p=colors;
         while( *p != '\0' ) {
-          /// \todo move sql into  a new func dt_colorlabels_set(imgid,color)
-          rc = sqlite3_prepare_v2(darktable.db, "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt, NULL);
-          rc = sqlite3_bind_int (stmt, 1, img->id);
-          rc = sqlite3_bind_int (stmt, 2, atoi( p ));
-          rc = sqlite3_step(stmt);
-          rc = sqlite3_finalize(stmt);
+          dt_colorlabels_set_label( img->id, atoi(p) );
           p+=strlen(p)+1;
         }
         
