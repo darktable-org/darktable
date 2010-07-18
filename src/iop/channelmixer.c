@@ -35,6 +35,18 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+/** Crazy presets b&w ...
+	Film Type			R		G		B						R	G	B
+	AGFA 200X		18		41		41		Ilford Pan F		33	36	31
+	Agfapan 25		25		39		36		Ilford SFX		36	31	33
+	Agfapan 100		21		40		39		Ilford XP2 Super	21	42	37
+	Agfapan 400		20		41		39		Kodak T-Max 100	24	37	39
+	Ilford Delta 100	21		42		37		Kodak T-Max 400	27	36	37
+	Ilford Delta 400	22		42		36		Kodak Tri-X 400	25	35	40
+	Ilford Delta 3200	31		36		33		Normal Contrast	43	33	30
+	Ilford FP4		28		41		31		High Contrast		40	34	60
+	Ilford HP5		23		37		40		Generic B/W		24	68	8
+*/
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
