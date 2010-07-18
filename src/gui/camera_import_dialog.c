@@ -423,11 +423,7 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
       thumb = gdk_pixbuf_scale_simple( pixbuf, sw*scale,75 , GDK_INTERP_BILINEAR );
     }
   }
-  
- 
-  
-  
-  
+
  #if 0 
   // libgphoto only supports fetching exif in jpegs, not raw  
   char buffer[1024]={0};
@@ -460,6 +456,24 @@ void _camera_import_dialog_free(_camera_import_dialog_t *data) {
   g_free( data->vp );
 }
 
+static void _control_status(dt_camctl_status_t status,void *user_data) {
+	 _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
+	switch( status ) {
+		case CAMERA_CONTROL_BUSY:
+		{
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, FALSE);
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, FALSE);
+			
+		} break;
+		case CAMERA_CONTROL_AVAILABLE:
+		{
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, TRUE);
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, TRUE);
+			
+		} break;
+	}
+}
+
 void _camera_import_dialog_run(_camera_import_dialog_t *data) 
 {
   gtk_widget_show_all(data->dialog);
@@ -473,6 +487,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   {
     dt_camctl_listener_t listener={0};
     listener.data=data;
+    listener.control_status=_control_status;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
     
     dt_job_t j;
