@@ -226,7 +226,7 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 		
 	}
 
-	dt_control_log("new session initiated '%s'",cv->jobcode,cv->film->id);
+	dt_control_log(_("new session initiated '%s'"),cv->jobcode,cv->film->id);
 	
 	
 }
