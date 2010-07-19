@@ -301,7 +301,7 @@ dt_colorspaces_create_output_profile(const int imgid)
 }
 
 cmsHPROFILE
-create_cmatrix_profile(float cmatrix[3][4])
+dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4])
 {
   cmsCIExyY D65;
   float x[3], y[3];

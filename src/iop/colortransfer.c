@@ -80,6 +80,7 @@ typedef struct dt_iop_colortransfer_gui_data_t
 {
   int flowback_set;
   dt_iop_colortransfer_params_t flowback;
+  GtkWidget *apply_button;
   GtkSpinButton *spinbutton;
   GtkWidget *area;
   cmsHPROFILE hsRGB;
@@ -272,6 +273,7 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  // FIXME: this returns nan!!
   dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
@@ -342,7 +344,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #else   // fuzzy weighting
         get_clusters(in+j, data->n, mean, weight);
         out[j+1] = out[j+2] = 0.0f;
-        for(int c=0;c<data->n;c++)
+        if(out[j] > 0.0001f) for(int c=0;c<data->n;c++)
         {
           out[j+1] += weight[c] * 100.0/out[j] * ((Lab[1] - mean[c][0])*data->var[mapio[c]][0]/var[c][0] + data->mean[mapio[c]][0]);
           out[j+2] += weight[c] * 100.0/out[j] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
@@ -381,6 +383,19 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   self->request_color_pick = 1;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   p->flag = ACQUIRE;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void
+apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  self->request_color_pick = 1;
+  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  memcpy(p, &(g->flowback), self->params_size);
+  p->flag = APPLY;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -424,6 +439,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
       memcpy (&g->flowback, d, self->params_size);
       g->flowback_set = 1;
+      FILE *f = fopen("/tmp/dt_colortransfer_loaded", "wb");
+      if(f)
+      {
+        int written = 0;
+        g->flowback.flag = APPLY;
+        written = fwrite(&g->flowback, self->params_size, 1, f);
+        fclose(f);
+      }
       dt_control_queue_draw(self->widget);
     }
   }
@@ -505,8 +528,10 @@ void cleanup(dt_iop_module_t *module)
 static gboolean
 cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
-  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+  // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)&g->flowback;
+  if(!g->flowback_set) p = (dt_iop_colortransfer_params_t *)self->params;
   const int inset = 5;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -517,6 +542,8 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   cairo_translate(cr, inset, inset);
   width -= 2*inset; height -= 2*inset;
 
+  if(g->flowback_set) gtk_widget_set_sensitive(g->apply_button, TRUE);
+#if 0
   if(g->flowback_set)
   {
     memcpy(self->params, &g->flowback, self->params_size);
@@ -524,6 +551,7 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
     p->flag = APPLY;
     dt_dev_add_history_item(darktable.develop, self);
   }
+#endif
 
   const float sep = 2.0;
   const float qwd = (width-(p->n-1)*sep)/(float)p->n;
@@ -583,9 +611,23 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->spinbutton), "value-changed", G_CALLBACK(spinbutton_changed), (gpointer)self);
 
   button = gtk_button_new_with_label(_("acquire"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("analyze this image and store parameters"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("analyze this image"), NULL);
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
+
+  g->apply_button = gtk_button_new_with_label(_("apply"));
+  gtk_object_set(GTK_OBJECT(g->apply_button), "tooltip-text", _("apply previously analyzed image look to this image"), NULL);
+  gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
+  FILE *f = fopen("/tmp/dt_colortransfer_loaded", "rb");
+  if(f)
+  {
+    int read = 0;
+    read = fread(&g->flowback, self->params_size, 1, f);
+    g->flowback_set = 1;
+    fclose(f);
+  }
+  else gtk_widget_set_sensitive(GTK_WIDGET(g->apply_button), FALSE);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
