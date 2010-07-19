@@ -1,19 +1,11 @@
-color transfer: nans??
-
-webpage updates:
-- freebsd has dt (has had for a while :)
-
 0.6 release:
 
 - sqlite3 thread safe/locking?
 - desaturated colors in full raw but not preview float map??
-- BUG: mem leak in import?? (check if mip cache actually works correctly)
 - BUG: full image stays locked?
 - BUG: linked list mru/lru in image cache broken sometimes after load?
 - BUG: colorin blue shift in colorin lcms: to lab?
 - BUG: leaving darkroom mode: garbled mipf image?
-
-- email export
 
 - tethered shooting
 - storage/format communication:
@@ -31,13 +23,10 @@ webpage updates:
   . restore job's priority for in-view images.
 - film strip view keyboard bindings
 
-- conf key to disable the use of thumbnails alltogether
 - more sophisticated auto complete in preset creation
 - colorin default: read input color profile from ldr images
 
-- color transfer capture/apply temp buffer
 - benchmark import/thumbnail creation speed.
-- write_dt_files option not working?
 - mirror after crop?
 - gui_update in rawimport implemented correctly?
 - ctrl-c/ctrl-v in darkroom mode
