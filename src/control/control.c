@@ -720,6 +720,7 @@ void *dt_control_expose(void *voidptr)
     const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
     float rad = 14;
     cairo_set_line_width(cr, 1.);
+    cairo_move_to( cr, xc-wd,yc+rad);
     for(int k=0;k<5;k++)
     {
       cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
