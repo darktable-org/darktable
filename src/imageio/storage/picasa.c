@@ -663,6 +663,17 @@ gui_init (dt_imageio_module_storage_t *self)
 
   GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
   ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
+
+  GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox1);
+  GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(ui->comboBox1));
+  GList *it = renderers;
+  while(it)
+  {
+    GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
+    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+    it = g_list_next(it);
+  }
+  g_list_free(renderers);
   
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
   gtk_object_set(GTK_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), NULL);
