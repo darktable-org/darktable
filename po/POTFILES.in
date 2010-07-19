@@ -67,6 +67,7 @@ src/gui/filmview.c
 src/gui/devices.c
 src/gui/camera_import_dialog.c
 src/gui/presets.c
+src/gui/background_jobs.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/filmstrip.c
