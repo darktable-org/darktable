@@ -4562,6 +4562,12 @@ void CLASS parse_makernote (int base, int uptag)
       color_flags.cam_mul_state = LIBRAW_COLORSTATE_LOADED;
 #endif
     }
+    if (tag == 0xd && type == 7 && get2() == 0xaaaa) {
+      fread (buf97, 1, sizeof buf97, ifp);
+      i = (uchar *) memmem (buf97, sizeof buf97,"\xbb\xbb",2) - buf97 + 10;
+      if (i < 70 && buf97[i] < 3)
+       flip = "065"[buf97[i]]-'0';
+    }
     if (tag == 0x10 && type == 4)
       unique_id = get4();
     if (tag == 0x11 && is_raw && !strncmp(make,"NIKON",5)) {
