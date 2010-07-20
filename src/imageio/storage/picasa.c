@@ -619,6 +619,20 @@ void button1_clicked(GtkButton *button,gpointer data) {
   refresh_albums(ui);
 }
 
+static gboolean
+focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+{
+  dt_control_tab_shortcut_off(darktable.control);
+  return FALSE;
+}
+
+static gboolean
+focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+{
+  dt_control_tab_shortcut_on(darktable.control);
+  return FALSE;
+}
+
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
@@ -649,6 +663,19 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->entry2 = GTK_ENTRY( gtk_entry_new() );
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
   ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
+
+  gtk_widget_add_events(GTK_WIDGET(ui->entry1), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry1), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry1), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  gtk_widget_add_events(GTK_WIDGET(ui->entry2), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry2), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry2), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  gtk_widget_add_events(GTK_WIDGET(ui->entry3), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry3), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry3), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  gtk_widget_add_events(GTK_WIDGET(ui->entry4), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry4), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry4), "focus-out-event", G_CALLBACK(focus_out), NULL);
 
   GHashTable* table = dt_pwstorage_get("picasa");
   gchar* _username = g_hash_table_lookup(table, "username");

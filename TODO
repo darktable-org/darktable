@@ -12,8 +12,6 @@
   . gui_update after params change
   . storage to enforce constraints on format/wd/ht
 
-- lighttable view prefetching
-  . restore job's priority for in-view images.
 - film strip view keyboard bindings
 
 - more sophisticated auto complete in preset creation
@@ -25,7 +23,6 @@
 - ctrl-e in darkroom mode: export with current settings
 - ctrl-z ctrl-shift-z up/down in history stack
 
-- prevent tab on/off for some form widgets
 
 
 0.7 release:

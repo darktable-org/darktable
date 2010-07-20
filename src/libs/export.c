@@ -318,6 +318,20 @@ void _update_formats_combobox(dt_lib_export_t *d) {
   }
 }
 
+static gboolean
+focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+{
+  dt_control_tab_shortcut_off(darktable.control);
+  return FALSE;
+}
+
+static gboolean
+focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+{
+  dt_control_tab_shortcut_on(darktable.control);
+  return FALSE;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -325,7 +339,7 @@ gui_init (dt_lib_module_t *self)
   self->data = (void *)d;
   self->widget = gtk_table_new(8, 2, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
-  
+
   GtkWidget *label;
 
   label = dtgtk_label_new(_("target storage"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
@@ -370,6 +384,14 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
+
+  gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (d->width), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  gtk_widget_add_events(GTK_WIDGET(d->height), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  
   label = gtk_label_new(_("max size"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);

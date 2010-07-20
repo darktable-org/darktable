@@ -369,6 +369,7 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
 
+  s->tab_shortcut_on = 1;
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
@@ -405,6 +406,16 @@ void dt_control_init(dt_control_t *s)
   s->button_down = 0;
   s->button_down_which = 0;
   s->history_start = 1;
+}
+
+void dt_control_tab_shortcut_off(dt_control_t *s)
+{
+  s->tab_shortcut_on = 0;
+}
+
+void dt_control_tab_shortcut_on(dt_control_t *s)
+{
+  s->tab_shortcut_on = 1;
 }
 
 void dt_control_change_cursor(dt_cursor_t curs)
@@ -1100,6 +1111,7 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
+      if(darktable.control->tab_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "left");
       visible = GTK_WIDGET_VISIBLE(widget);
       if(visible) gtk_widget_hide(widget);

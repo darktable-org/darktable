@@ -147,6 +147,9 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
+struct dt_control_t;
+void dt_control_tab_shortcut_on(struct dt_control_t *s);
+void dt_control_tab_shortcut_off(struct dt_control_t *s);
 
 /**
  * smalles unit of work.
@@ -195,6 +198,7 @@ typedef struct dt_control_t
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
   pthread_mutex_t global_mutex, image_mutex;
+  int tab_shortcut_on;
 
   // xatom color profile:
   uint8_t *xprofile_data;

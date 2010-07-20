@@ -176,6 +176,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   gtk_widget_hide_all(module->widget);
   gtk_expander_set_expanded(module->expander, FALSE);
   GtkWidget *evb = gtk_event_box_new();
+
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
   return evb;
