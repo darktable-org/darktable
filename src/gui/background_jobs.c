@@ -19,6 +19,7 @@
 #include <string.h>
 #include <glade/glade.h>
 #include "common/darktable.h"
+#include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/background_jobs.h"
 
@@ -76,6 +77,7 @@ const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gch
 
 void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *message)
 {
+  if(!darktable.control->running) return;
   gdk_threads_enter();
  
  // g_static_mutex_lock ( &_gui_background_mutex );
@@ -86,6 +88,7 @@ void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *messa
 
 void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
 {
+  if(!darktable.control->running) return;
   gdk_threads_enter();
   
   // g_static_mutex_lock ( &_gui_background_mutex );

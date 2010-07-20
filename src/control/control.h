@@ -28,7 +28,7 @@
 #include <gtk/gtk.h>
 // #include "control/job.def"
 
-#define DT_CONTROL_MAX_JOBS 30
+#define DT_CONTROL_MAX_JOBS 300
 #define DT_CONTROL_JOB_DEBUG
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers
