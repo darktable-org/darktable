@@ -329,6 +329,94 @@ select_this_image(const int imgid)
 }
 
 static void
+dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
+{
+  g_assert(dev->gui_attached);
+  // commit image ops to db
+  dt_dev_write_history(dev);
+  // write .dt file
+  dt_image_write_dt_files(dev->image);
+
+  // commit updated mipmaps to db
+  // TODO: bg process?
+  dt_dev_process_to_mip(dev);
+  // release full buffer
+  if(dev->image && dev->image->pixels)
+    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
+
+  dt_image_cache_flush(dev->image);
+
+  dev->image = image;
+  while(dev->history)
+  { // clear history of old image
+    free(((dt_dev_history_item_t *)dev->history->data)->params);
+    free( (dt_dev_history_item_t *)dev->history->data);
+    dev->history = g_list_delete_link(dev->history, dev->history);
+  }
+  GList *modules = g_list_last(dev->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    if(strcmp(module->op, "gamma"))
+    {
+      char var[1024];
+      snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
+      dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
+      // remove widget:
+      GtkWidget *top = GTK_WIDGET(module->topwidget);
+      GtkWidget *exp = GTK_WIDGET(module->expander);
+      GtkWidget *shh = GTK_WIDGET(module->showhide);
+      GtkWidget *parent = NULL;
+      g_object_get(G_OBJECT(module->widget), "parent", &parent, NULL);
+      gtk_container_remove(GTK_CONTAINER(parent), module->widget);
+      // re-init and re-gui_init
+      module->gui_cleanup(module);
+      module->cleanup(module);
+      // TODO: cleanup/init thread safe with pixelpipe processing?
+      module->init(module);
+      module->gui_init(module);
+      // reparent
+      gtk_container_add(GTK_CONTAINER(parent), module->widget);
+      // load default params (dt_iop_)
+      dt_iop_load_default_params(module);
+      // copy over already inited stuff:
+      module->topwidget = top;
+      module->expander = GTK_EXPANDER(exp);
+      module->showhide = shh;
+      gtk_widget_show_all(module->topwidget);
+      // all the signal handlers get passed module*, which is still valid.
+    }
+    modules = g_list_previous(modules);
+  }
+  // hack: now hide all custom expander widgets again.
+  modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    if(strcmp(module->op, "gamma"))
+    {
+      char option[1024];
+      snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+      gboolean active = dt_conf_get_bool (option);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+
+      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+      active = dt_conf_get_bool (option);
+      gtk_expander_set_expanded (module->expander, active);
+    }
+    else
+    {
+      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+    }
+    modules = g_list_next(modules);
+  }
+  dt_dev_read_history(dev);
+  dt_dev_pop_history_items(dev, dev->history_end);
+  dt_dev_raw_reload(dev);
+}
+
+static void
 film_strip_activated(const int imgid, void *data)
 { // switch images in darkroom mode:
   dt_view_t *self = (dt_view_t *)data;
