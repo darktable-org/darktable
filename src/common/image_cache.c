@@ -224,6 +224,7 @@ void dt_image_cache_check_consistency(dt_image_cache_t *cache)
   for(int k=0;k<cache->num_lines;k++)
   {
     i = cache->line[i].mru;
+    if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
     assert(i < cache->num_lines);
     assert(i >= 0);
     num ++;
@@ -238,6 +239,7 @@ void dt_image_cache_check_consistency(dt_image_cache_t *cache)
   for(int k=0;k<cache->num_lines;k++)
   {
     i = cache->line[i].lru;
+    if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
     assert(i < cache->num_lines);
     assert(i >= 0);
     num ++;

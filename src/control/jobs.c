@@ -44,7 +44,7 @@ void dt_image_load_job_run(dt_job_t *job)
 	dt_image_t *img = dt_image_cache_get(t->imgid, 'r');
 	
 	char message[512]={0};
-	sprintf(message, _("loading image %s"), img->filename);
+	snprintf(message, 512, _("loading image %s"), img->filename);
 	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
 	
 	if(!img) return;
