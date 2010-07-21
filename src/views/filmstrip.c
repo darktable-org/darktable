@@ -214,7 +214,7 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
-  dt_colorlabels_register_key_accels();
+  dt_colorlabels_unregister_key_accels();
   dt_gui_key_accel_unregister(star_key_accel_callback);
 }
 
