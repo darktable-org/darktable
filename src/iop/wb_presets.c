@@ -2,7 +2,7 @@
  * UFRaw - Unidentified Flying Raw converter for digital camera images
  *
  * wb_presets.c - White balance preset values for various cameras
- * Copyright 2004-2009 by Udi Fuchs
+ * Copyright 2004-2010 by Udi Fuchs
  *
  * Thanks goes for all the people who sent in the preset values
  * for their cameras.
@@ -13,22 +13,8 @@
  * (at your option) any later version.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <glib.h>
+#include "ufraw.h"
 #include <glib/gi18n.h>
-
-typedef struct
-{
-  const char *make;
-  const char *model;
-  const char *name;
-  int tuning;
-  double channel[4];
-}
-wb_data;
 
 /* Column 1 - "make" of the camera.
  * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
@@ -42,37 +28,46 @@ wb_data;
  *
  * WB name is standardized to one of the following: */
 // "Sunlight" and other variation should be switched to this:
-static const char Daylight[] = N_("daylight");
+static const char Daylight[] = N_("Daylight");
 // Probably same as above:
-static const char DirectSunlight[] = N_("direct sunlight");
-static const char Cloudy[] = N_("cloudy");
+static const char DirectSunlight[] = N_("Direct sunlight");
+static const char Cloudy[] = N_("Cloudy");
 // "Shadows" should be switched to this:
-static const char Shade[] = N_("shade");
-static const char Incandescent[] = N_("incandescent");
-static const char IncandescentWarm[] = N_("incandescent warm");
+static const char Shade[] = N_("Shade");
+static const char Incandescent[] = N_("Incandescent");
+static const char IncandescentWarm[] = N_("Incandescent warm");
 // Same as "Incandescent":
-static const char Tungsten[] = N_("tungsten");
-static const char Fluorescent[] = N_("fluorescent");
+static const char Tungsten[] = N_("Tungsten");
+static const char Fluorescent[] = N_("Fluorescent");
 // In Canon cameras and some newer Nikon cameras:
-static const char FluorescentHigh[] = N_("fluorescent high");
-static const char CoolWhiteFluorescent[] = N_("cool white fluorescent");
-static const char WarmWhiteFluorescent[] = N_("warm white fluorescent");
-static const char DaylightFluorescent[] = N_("daylight fluorescent");
-static const char NeutralFluorescent[] = N_("neutral fluorescent");
-static const char WhiteFluorescent[] = N_("white fluorescent");
+static const char FluorescentHigh[] = N_("Fluorescent high");
+static const char CoolWhiteFluorescent[] = N_("Cool white fluorescent");
+static const char WarmWhiteFluorescent[] = N_("Warm white fluorescent");
+static const char DaylightFluorescent[] = N_("Daylight fluorescent");
+static const char NeutralFluorescent[] = N_("Neutral fluorescent");
+static const char WhiteFluorescent[] = N_("White fluorescent");
 // In some newer Nikon cameras:
-static const char SodiumVaporFluorescent[] = N_("sodium-vapor fluorescent");
-static const char DayWhiteFluorescent[] = N_("day white fluorescent");
-static const char HighTempMercuryVaporFluorescent[] = N_("high temp. mercury-vapor fluorescent");
+static const char SodiumVaporFluorescent[] = N_("Sodium-vapor fluorescent");
+static const char DayWhiteFluorescent[] = N_("Day white fluorescent");
+static const char HighTempMercuryVaporFluorescent[] = N_("High temp. mercury-vapor fluorescent");
 
-static const char Flash[] = N_("flash");
+static const char Flash[] = N_("Flash");
 // For Olympus with no real "Flash" preset:
-static const char FlashAuto[] = N_("flash (auto mode)");
-static const char EveningSun[] = N_("evening sun");
-static const char Underwater[] = N_("underwater");
-static const char BlackNWhite[] = N_("black & white");
+static const char FlashAuto[] = N_("Flash (auto mode)");
+static const char EveningSun[] = N_("Evening sun");
+static const char Underwater[] = N_("Underwater");
+static const char BlackNWhite[] = N_("Black & white");
+
+const char uf_spot_wb[] = "Spot WB";
+const char uf_manual_wb[] = N_("Manual WB");
+const char uf_camera_wb[] = N_("Camera WB");
+const char uf_auto_wb[] = N_("Auto WB");
 
 const wb_data wb_preset[] = {
+
+  { "", "", uf_camera_wb, 0,	{ 0, 0, 0, 0 } },
+  { "", "", uf_manual_wb, 0,	{ 0, 0, 0, 0 } },
+  { "", "", uf_auto_wb, 0,	{ 0, 0, 0, 0 } },
 
   { "Canon", "PowerShot A630", Daylight, 0,	{ 1.831422, 1, 1.245671, 0 } },
   { "Canon", "PowerShot A630", Cloudy, 0,	{ 1.669924, 1, 1.326299, 0 } },
@@ -132,6 +127,14 @@ const wb_data wb_preset[] = {
   { "Canon", "PowerShot G10", Flash, 0,		{ 1.926829, 1, 1.501591, 0 } },
   { "Canon", "PowerShot G10", Underwater, 0,	{ 1.822314, 1, 1.841942, 0 } },
 
+  { "Canon", "PowerShot G11", Daylight, 0,	{ 1.721591, 1, 2.097727, 0 } },
+  { "Canon", "PowerShot G11", Cloudy, 0,	{ 1.910936, 1, 1.856821, 0 } },
+  { "Canon", "PowerShot G11", Tungsten, 0,	{ 1.380435, 1, 3.576087, 0 } },
+  { "Canon", "PowerShot G11", Fluorescent, 0,	{ 1.649143, 1, 2.693714, 0 } },
+  { "Canon", "PowerShot G11", FluorescentHigh, 0, { 2.008168, 1, 1.961494, 0 } },
+  { "Canon", "PowerShot G11", Flash, 0,		{ 1.985556, 1, 1.703333, 0 } },
+  { "Canon", "PowerShot G11", Underwater, 0,	{ 2.225624, 1, 1.577098, 0 } },
+
   /* Canon PowerShot S3 IS does not support native WB presets. These are made
      as custom WB presets. */
   { "Canon", "PowerShot S3 IS", Daylight, 0,	{ 1.627271, 1, 1.823491, 0 } },
@@ -176,13 +179,13 @@ const wb_data wb_preset[] = {
   { "Canon", "PowerShot S70", Flash, 0,		{ 2.389189, 1, 1.147297, 0 } },
   { "Canon", "PowerShot S70", Underwater, 0,	{ 3.110565, 1, 1.162162, 0 } },
 
-  { "Canon", "PowerShot S90", Daylight, 0,        { 1.955056, 1, 1.797753, 0 } },
-  { "Canon", "PowerShot S90", Cloudy, 0,          { 1.945067, 1, 1.795964, 0 } },
-  { "Canon", "PowerShot S90", Tungsten, 0,        { 2,        1, 1.828018, 0 } },
-  { "Canon", "PowerShot S90", Fluorescent, 0,     { 2.019473, 1, 1.841924, 0 } },
-  { "Canon", "PowerShot S90", FluorescentHigh, 0, { 2.009143, 1, 1.84,     0 } },
-  { "Canon", "PowerShot S90", Flash, 0,           { 2.045784, 1, 1.671692, 0 } },
-  { "Canon", "PowerShot S90", Underwater, 0,      { 2.022297, 1, 1.830546, 0 } },
+  { "Canon", "PowerShot S90", Daylight, 0,	{ 1.955056, 1, 1.797753, 0 } },
+  { "Canon", "PowerShot S90", Cloudy, 0,	{ 1.945067, 1, 1.795964, 0 } },
+  { "Canon", "PowerShot S90", Tungsten, 0,	{ 2.000000, 1, 1.828018, 0 } },
+  { "Canon", "PowerShot S90", Fluorescent, 0,	{ 2.019473, 1, 1.841924, 0 } },
+  { "Canon", "PowerShot S90", FluorescentHigh, 0, { 2.009143, 1, 1.840000, 0 } },
+  { "Canon", "PowerShot S90", Flash, 0,		{ 2.045784, 1, 1.671692, 0 } },
+  { "Canon", "PowerShot S90", Underwater, 0,	{ 2.022297, 1, 1.830546, 0 } },
 
   { "Canon", "PowerShot Pro1", Daylight, 0,	{ 1.829238, 1, 1.571253, 0 } },
   { "Canon", "PowerShot Pro1", Cloudy, 0,	{ 1.194139, 1, 2.755800, 0 } },
@@ -211,19 +214,32 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 5D", Shade, 0,		{ 2.300781, 1, 1.208008, 0 } }, /*7200K*/
   { "Canon", "EOS 5D", Daylight, 0,		{ 1.988281, 1, 1.457031, 0 } }, /*5250K*/
 
-  { "Canon", "EOS 5D Mark II", Daylight, 0,	{ 2.188477, 1, 1.686523, 0 } }, /* 5200K */
-  { "Canon", "EOS 5D Mark II", Shade, 0,	{ 2.515625, 1, 1.391602, 0 } }, /* 7000K */
-  { "Canon", "EOS 5D Mark II", Cloudy, 0,	{ 2.354492, 1, 1.519531, 0 } }, /* 6000K */
-  { "Canon", "EOS 5D Mark II", Tungsten, 0,	{ 1.564033, 1, 2.665758, 0 } }, /* 3200K */
-  { "Canon", "EOS 5D Mark II", Fluorescent, 0,	{ 1.877243, 1, 2.479698, 0 } }, /* 4000K */
-  { "Canon", "EOS 5D Mark II", Flash, 0,	{ 2.370117, 1, 1.503906, 0 } }, /* 5621K */
+  { "Canon", "EOS 5D Mark II", Daylight, 0,	{ 2.188477, 1, 1.686523, 0 } }, /*5200K*/
+  { "Canon", "EOS 5D Mark II", Shade, 0,	{ 2.515625, 1, 1.391602, 0 } }, /*7000K*/
+  { "Canon", "EOS 5D Mark II", Cloudy, 0,	{ 2.354492, 1, 1.519531, 0 } }, /*6000K*/
+  { "Canon", "EOS 5D Mark II", Tungsten, 0,	{ 1.564033, 1, 2.665758, 0 } }, /*3200K*/
+  { "Canon", "EOS 5D Mark II", Fluorescent, 0,	{ 1.877243, 1, 2.479698, 0 } }, /*4000K*/
+  { "Canon", "EOS 5D Mark II", Flash, 0,	{ 2.370117, 1, 1.503906, 0 } }, /*5621K*/
 
-  { "Canon", "EOS 7D", Daylight, 0,		{ 2.111328, 1, 1.432617, 0 } }, /*6935K*/
-  { "Canon", "EOS 7D", Shade, 0,		{ 2.444336, 1, 1.221680, 0 } }, /*11162K*/
-  { "Canon", "EOS 7D", Cloudy, 0,		{ 2.270508, 1, 1.319336, 0 } }, /*8490K*/
-  { "Canon", "EOS 7D", Tungsten, 0,		{ 1.507813, 1, 2.102539, 0 } }, /*3888K*/
-  { "Canon", "EOS 7D", Fluorescent, 0,		{ 1.868164, 1, 1.980469, 0 } }, /*4643K*/
-  { "Canon", "EOS 7D", Flash, 0,		{ 2.322266, 1, 1.312500, 0 } }, /*8928K*/
+  /* Fine-tuning for the 7D are the camera's Amber-Blue bracketing. */
+  { "Canon", "EOS 7D", Daylight, -3,		{ 2.036, 1, 1.595, 0 } },
+  { "Canon", "EOS 7D", Daylight, 0,		{ 2.120, 1, 1.506, 0 } },
+  { "Canon", "EOS 7D", Daylight, 3,		{ 2.217, 1, 1.437, 0 } },
+  { "Canon", "EOS 7D", Shade, -3,		{ 2.349, 1, 1.348, 0 } },
+  { "Canon", "EOS 7D", Shade, 0,		{ 2.468, 1, 1.276, 0 } },
+  { "Canon", "EOS 7D", Shade, 3,		{ 2.573, 1, 1.228, 0 } },
+  { "Canon", "EOS 7D", Cloudy, -3,		{ 2.188, 1, 1.457, 0 } },
+  { "Canon", "EOS 7D", Cloudy, 0,		{ 2.286, 1, 1.384, 0 } },
+  { "Canon", "EOS 7D", Cloudy, 3,		{ 2.393, 1, 1.319, 0 } },
+  { "Canon", "EOS 7D", Tungsten, -3,		{ 1.426, 1, 2.398, 0 } },
+  { "Canon", "EOS 7D", Tungsten, 0,		{ 1.490, 1, 2.261, 0 } },
+  { "Canon", "EOS 7D", Tungsten, 3,		{ 1.557, 1, 2.156, 0 } },
+  { "Canon", "EOS 7D", WhiteFluorescent, -3,	{ 1.771, 1, 2.235, 0 } },
+  { "Canon", "EOS 7D", WhiteFluorescent, 0,	{ 1.858, 1, 2.124, 0 } },
+  { "Canon", "EOS 7D", WhiteFluorescent, 3,	{ 1.936, 1, 2.023, 0 } },
+  { "Canon", "EOS 7D", Flash, -3,		{ 2.240, 1, 1.448, 0 } },
+  { "Canon", "EOS 7D", Flash, 0,		{ 2.338, 1, 1.376, 0 } },
+  { "Canon", "EOS 7D", Flash, 3,		{ 2.462, 1, 1.312, 0 } },
 
   { "Canon", "EOS 10D", Daylight, 0,		{ 2.159856, 1, 1.218750, 0 } },
   { "Canon", "EOS 10D", Shade, 0,		{ 2.533654, 1, 1.036058, 0 } },
@@ -258,16 +274,16 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 50D", Daylight, -8,		{ 1.889648, 1, 1.580078, 0 } },
   { "Canon", "EOS 50D", Daylight, -7,		{ 1.910156, 1, 1.556641, 0 } },
   { "Canon", "EOS 50D", Daylight, -6,		{ 1.935547, 1, 1.535156, 0 } },
-  { "Canon", "EOS 50D", Daylight, -5,		{ 1.96582,  1, 1.512695, 0 } },
+  { "Canon", "EOS 50D", Daylight, -5,		{ 1.965820, 1, 1.512695, 0 } },
   { "Canon", "EOS 50D", Daylight, -4,		{ 1.992188, 1, 1.490234, 0 } },
-  { "Canon", "EOS 50D", Daylight, -3,		{ 2.015625, 1, 1.46875,  0 } },
+  { "Canon", "EOS 50D", Daylight, -3,		{ 2.015625, 1, 1.468750, 0 } },
   { "Canon", "EOS 50D", Daylight, -2,		{ 2.043945, 1, 1.448242, 0 } },
   { "Canon", "EOS 50D", Daylight, -1,		{ 2.068359, 1, 1.425781, 0 } },
   { "Canon", "EOS 50D", Daylight, 0,		{ 2.098633, 1, 1.402344, 0 } },
   { "Canon", "EOS 50D", Daylight, 1,		{ 2.124023, 1, 1.381836, 0 } },
-  { "Canon", "EOS 50D", Daylight, 2,		{ 2.15625,  1, 1.358398, 0 } },
+  { "Canon", "EOS 50D", Daylight, 2,		{ 2.156250, 1, 1.358398, 0 } },
   { "Canon", "EOS 50D", Daylight, 3,		{ 2.183594, 1, 1.334961, 0 } },
-  { "Canon", "EOS 50D", Daylight, 4,		{ 2.211914, 1, 1.3125,   0 } },
+  { "Canon", "EOS 50D", Daylight, 4,		{ 2.211914, 1, 1.312500, 0 } },
   { "Canon", "EOS 50D", Daylight, 5,		{ 2.240234, 1, 1.288086, 0 } },
   { "Canon", "EOS 50D", Daylight, 6,		{ 2.265625, 1, 1.270508, 0 } },
   { "Canon", "EOS 50D", Daylight, 7,		{ 2.291016, 1, 1.251953, 0 } },
@@ -281,15 +297,15 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 50D", Shade, -4,		{ 2.260742, 1, 1.272461, 0 } },
   { "Canon", "EOS 50D", Shade, -3,		{ 2.291016, 1, 1.254883, 0 } },
   { "Canon", "EOS 50D", Shade, -2,		{ 2.322266, 1, 1.236328, 0 } },
-  { "Canon", "EOS 50D", Shade, -1,		{ 2.354492, 1, 1.21582,  0 } },
+  { "Canon", "EOS 50D", Shade, -1,		{ 2.354492, 1, 1.215820, 0 } },
   { "Canon", "EOS 50D", Shade, 0,		{ 2.386719, 1, 1.196289, 0 } },
-  { "Canon", "EOS 50D", Shade, 1,		{ 2.40332,  1, 1.186523, 0 } },
+  { "Canon", "EOS 50D", Shade, 1,		{ 2.403320, 1, 1.186523, 0 } },
   { "Canon", "EOS 50D", Shade, 2,		{ 2.420898, 1, 1.175781, 0 } },
   { "Canon", "EOS 50D", Shade, 3,		{ 2.438477, 1, 1.165039, 0 } },
   { "Canon", "EOS 50D", Shade, 4,		{ 2.461914, 1, 1.152344, 0 } },
   { "Canon", "EOS 50D", Shade, 5,		{ 2.485352, 1, 1.136719, 0 } },
   { "Canon", "EOS 50D", Shade, 6,		{ 2.522461, 1, 1.115234, 0 } },
-  { "Canon", "EOS 50D", Shade, 7,		{ 2.55957,  1, 1.094727, 0 } },
+  { "Canon", "EOS 50D", Shade, 7,		{ 2.559570, 1, 1.094727, 0 } },
   { "Canon", "EOS 50D", Shade, 8,		{ 2.598633, 1, 1.072266, 0 } },
   { "Canon", "EOS 50D", Shade, 9,		{ 2.645508, 1, 1.051758, 0 } },
   { "Canon", "EOS 50D", Cloudy, -9,		{ 1.996094, 1, 1.486328, 0 } },
@@ -297,27 +313,27 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 50D", Cloudy, -7,		{ 2.043945, 1, 1.444336, 0 } },
   { "Canon", "EOS 50D", Cloudy, -6,		{ 2.073242, 1, 1.421875, 0 } },
   { "Canon", "EOS 50D", Cloudy, -5,		{ 2.102539, 1, 1.400391, 0 } },
-  { "Canon", "EOS 50D", Cloudy, -4,		{ 2.128906, 1, 1.37793,  0 } },
-  { "Canon", "EOS 50D", Cloudy, -3,		{ 2.15625,  1, 1.356445, 0 } },
+  { "Canon", "EOS 50D", Cloudy, -4,		{ 2.128906, 1, 1.377930, 0 } },
+  { "Canon", "EOS 50D", Cloudy, -3,		{ 2.156250, 1, 1.356445, 0 } },
   { "Canon", "EOS 50D", Cloudy, -2,		{ 2.188477, 1, 1.333008, 0 } },
-  { "Canon", "EOS 50D", Cloudy, -1,		{ 2.211914, 1, 1.30957,  0 } },
+  { "Canon", "EOS 50D", Cloudy, -1,		{ 2.211914, 1, 1.309570, 0 } },
   { "Canon", "EOS 50D", Cloudy, 0,		{ 2.240234, 1, 1.285156, 0 } },
   { "Canon", "EOS 50D", Cloudy, 1,		{ 2.270508, 1, 1.268555, 0 } },
-  { "Canon", "EOS 50D", Cloudy, 2,		{ 2.295898, 1, 1.25,     0 } },
+  { "Canon", "EOS 50D", Cloudy, 2,		{ 2.295898, 1, 1.250000, 0 } },
   { "Canon", "EOS 50D", Cloudy, 3,		{ 2.327148, 1, 1.232422, 0 } },
   { "Canon", "EOS 50D", Cloudy, 4,		{ 2.359375, 1, 1.211914, 0 } },
   { "Canon", "EOS 50D", Cloudy, 5,		{ 2.392578, 1, 1.195313, 0 } },
-  { "Canon", "EOS 50D", Cloudy, 6,		{ 2.40918,  1, 1.183594, 0 } },
+  { "Canon", "EOS 50D", Cloudy, 6,		{ 2.409180, 1, 1.183594, 0 } },
   { "Canon", "EOS 50D", Cloudy, 7,		{ 2.426758, 1, 1.172852, 0 } },
   { "Canon", "EOS 50D", Cloudy, 8,		{ 2.444336, 1, 1.161133, 0 } },
   { "Canon", "EOS 50D", Cloudy, 9,		{ 2.467773, 1, 1.149414, 0 } },
   { "Canon", "EOS 50D", Tungsten, -9,		{ 1.379189, 1, 2.206349, 0 } },
-  { "Canon", "EOS 50D", Tungsten, -8,		{ 1.39469,  1, 2.176991, 0 } },
-  { "Canon", "EOS 50D", Tungsten, -7,		{ 1.4126,   1, 2.15528,  0 } },
+  { "Canon", "EOS 50D", Tungsten, -8,		{ 1.394690, 1, 2.176991, 0 } },
+  { "Canon", "EOS 50D", Tungsten, -7,		{ 1.412600, 1, 2.155280, 0 } },
   { "Canon", "EOS 50D", Tungsten, -6,		{ 1.428317, 1, 2.127337, 0 } },
   { "Canon", "EOS 50D", Tungsten, -5,		{ 1.448122, 1, 2.101073, 0 } },
   { "Canon", "EOS 50D", Tungsten, -4,		{ 1.467684, 1, 2.078097, 0 } },
-  { "Canon", "EOS 50D", Tungsten, -3,		{ 1.48422,  1, 2.054103, 0 } },
+  { "Canon", "EOS 50D", Tungsten, -3,		{ 1.484220, 1, 2.054103, 0 } },
   { "Canon", "EOS 50D", Tungsten, -2,		{ 1.501357, 1, 2.027149, 0 } },
   { "Canon", "EOS 50D", Tungsten, -1,		{ 1.521818, 1, 2.003636, 0 } },
   { "Canon", "EOS 50D", Tungsten, 0,		{ 1.542466, 1, 1.976256, 0 } },
@@ -325,7 +341,7 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 50D", Tungsten, 2,		{ 1.581567, 1, 1.923502, 0 } },
   { "Canon", "EOS 50D", Tungsten, 3,		{ 1.602778, 1, 1.894444, 0 } },
   { "Canon", "EOS 50D", Tungsten, 4,		{ 1.624767, 1, 1.867784, 0 } },
-  { "Canon", "EOS 50D", Tungsten, 5,		{ 1.64794,  1, 1.84176,  0 } },
+  { "Canon", "EOS 50D", Tungsten, 5,		{ 1.647940, 1, 1.841760, 0 } },
   { "Canon", "EOS 50D", Tungsten, 6,		{ 1.669492, 1, 1.815443, 0 } },
   { "Canon", "EOS 50D", Tungsten, 7,		{ 1.686553, 1, 1.789773, 0 } },
   { "Canon", "EOS 50D", Tungsten, 8,		{ 1.708294, 1, 1.766444, 0 } },
@@ -344,10 +360,10 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 50D", WhiteFluorescent, 2,	{ 1.931774, 1, 1.822612, 0 } },
   { "Canon", "EOS 50D", WhiteFluorescent, 3,	{ 1.958008, 1, 1.799805, 0 } },
   { "Canon", "EOS 50D", WhiteFluorescent, 4,	{ 1.988281, 1, 1.771484, 0 } },
-  { "Canon", "EOS 50D", WhiteFluorescent, 5,	{ 2.011719, 1, 1.74707,  0 } },
+  { "Canon", "EOS 50D", WhiteFluorescent, 5,	{ 2.011719, 1, 1.747070, 0 } },
   { "Canon", "EOS 50D", WhiteFluorescent, 6,	{ 2.036133, 1, 1.720703, 0 } },
   { "Canon", "EOS 50D", WhiteFluorescent, 7,	{ 2.064453, 1, 1.698242, 0 } },
-  { "Canon", "EOS 50D", WhiteFluorescent, 8,	{ 2.09375,  1, 1.678711, 0 } },
+  { "Canon", "EOS 50D", WhiteFluorescent, 8,	{ 2.093750, 1, 1.678711, 0 } },
   { "Canon", "EOS 50D", WhiteFluorescent, 9,	{ 2.120117, 1, 1.654297, 0 } },
   { "Canon", "EOS 50D", Flash, -9,		{ 2.027344, 1, 1.466797, 0 } },
   { "Canon", "EOS 50D", Flash, -8,		{ 2.056641, 1, 1.446289, 0 } },
@@ -356,7 +372,7 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 50D", Flash, -5,		{ 2.137695, 1, 1.379883, 0 } },
   { "Canon", "EOS 50D", Flash, -4,		{ 2.169922, 1, 1.358398, 0 } },
   { "Canon", "EOS 50D", Flash, -3,		{ 2.192383, 1, 1.334961, 0 } },
-  { "Canon", "EOS 50D", Flash, -2,		{ 2.22168,  1, 1.311523, 0 } },
+  { "Canon", "EOS 50D", Flash, -2,		{ 2.221680, 1, 1.311523, 0 } },
   { "Canon", "EOS 50D", Flash, -1,		{ 2.250977, 1, 1.288086, 0 } },
   { "Canon", "EOS 50D", Flash, 0,		{ 2.275391, 1, 1.268555, 0 } },
   { "Canon", "EOS 50D", Flash, 1,		{ 2.306641, 1, 1.251953, 0 } },
@@ -414,134 +430,350 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS Kiss Digital N", Cloudy, 0,	{ 2.409449, 1, 1.344488, 0 } },
 
   // Canon EOS 400D (firmware 1.1.1) white balance presets, 5 mireds per step
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -9, { 1.972656, 1, 1.735352, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -8, { 2.003906, 1, 1.707031, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -7, { 2.036133, 1, 1.675781, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -6, { 2.073242, 1, 1.646484, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -5, { 2.111328, 1, 1.615234, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -4, { 2.151367, 1, 1.583008, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -3, { 2.183594, 1, 1.553711, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -2, { 2.22168,  1, 1.523438, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,         -1, { 2.260742, 1, 1.495117, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          0, { 2.300781, 1, 1.462891, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          1, { 2.337891, 1, 1.436523, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          2, { 2.375977, 1, 1.408203, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          3, { 2.415039, 1, 1.379883, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          4, { 2.461914, 1, 1.354492, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          5, { 2.503906, 1, 1.328125, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          6, { 2.541016, 1, 1.304688, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          7, { 2.579102, 1, 1.280273, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          8, { 2.619141, 1, 1.256836, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Daylight,          9, { 2.666992, 1, 1.232422, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -9, { 2.333008, 1, 1.44043,  0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -8, { 2.370117, 1, 1.410156, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -7, { 2.40918,  1, 1.383789, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -6, { 2.456055, 1, 1.356445, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -5, { 2.503906, 1, 1.330078, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -4, { 2.541016, 1, 1.305664, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -3, { 2.579102, 1, 1.283203, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -2, { 2.619141, 1, 1.259766, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,            -1, { 2.660156, 1, 1.235352, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             0, { 2.708984, 1, 1.208984, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             1, { 2.745117, 1, 1.189453, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             2, { 2.782227, 1, 1.168945, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             3, { 2.829102, 1, 1.148438, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             4, { 2.875977, 1, 1.125,    0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             5, { 2.916992, 1, 1.105469, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             6, { 2.951172, 1, 1.087891, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             7, { 2.994141, 1, 1.069336, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             8, { 3.039063, 1, 1.048828, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Shade,             9, { 3.083984, 1, 1.030273, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -9, { 2.15625,  1, 1.580078, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -8, { 2.188477, 1, 1.551758, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -7, { 2.226563, 1, 1.521484, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -6, { 2.265625, 1, 1.490234, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -5, { 2.306641, 1, 1.460938, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -4, { 2.342773, 1, 1.432617, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -3, { 2.381836, 1, 1.404297, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -2, { 2.420898, 1, 1.375977, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,           -1, { 2.467773, 1, 1.350586, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            0, { 2.509766, 1, 1.323242, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            1, { 2.546875, 1, 1.300781, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            2, { 2.585938, 1, 1.27832,  0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            3, { 2.625977, 1, 1.25293,  0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            4, { 2.673828, 1, 1.229492, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            5, { 2.723633, 1, 1.205078, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            6, { 2.75293,  1, 1.185547, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            7, { 2.790039, 1, 1.165039, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            8, { 2.836914, 1, 1.142578, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Cloudy,            9, { 2.884766, 1, 1.120117, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -9, { 1.320106, 1, 2.752205, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -8, { 1.340708, 1, 2.70354,  0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -7, { 1.35968,  1, 2.655417, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -6, { 1.381802, 1, 2.606601, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -5, { 1.406446, 1, 2.555953, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -4, { 1.428957, 1, 2.504496, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -3, { 1.452575, 1, 2.459801, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -2, { 1.475931, 1, 2.419619, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,         -1, { 1.501825, 1, 2.377737, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          0, { 1.526123, 1, 2.330889, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          1, { 1.548893, 1, 2.2869,   0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          2, { 1.572753, 1, 2.238184, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          3, { 1.599254, 1, 2.198509, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          4, { 1.624765, 1, 2.149156, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          5, { 1.653774, 1, 2.10283,  0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          6, { 1.681861, 1, 2.064577, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          7, { 1.709369, 1, 2.022945, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          8, { 1.737247, 1, 1.982676, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Tungsten,          9, { 1.770349, 1, 1.946705, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -9,	{ 1.972656, 1, 1.735352, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -8,	{ 2.003906, 1, 1.707031, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -7,	{ 2.036133, 1, 1.675781, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -6,	{ 2.073242, 1, 1.646484, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -5,	{ 2.111328, 1, 1.615234, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -4,	{ 2.151367, 1, 1.583008, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -3,	{ 2.183594, 1, 1.553711, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -2,	{ 2.221680, 1, 1.523438, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, -1,	{ 2.260742, 1, 1.495117, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 0,	{ 2.300781, 1, 1.462891, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 1,	{ 2.337891, 1, 1.436523, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 2,	{ 2.375977, 1, 1.408203, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 3,	{ 2.415039, 1, 1.379883, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 4,	{ 2.461914, 1, 1.354492, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 5,	{ 2.503906, 1, 1.328125, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 6,	{ 2.541016, 1, 1.304688, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 7,	{ 2.579102, 1, 1.280273, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 8,	{ 2.619141, 1, 1.256836, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Daylight, 9,	{ 2.666992, 1, 1.232422, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -9,	{ 2.333008, 1, 1.440430, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -8,	{ 2.370117, 1, 1.410156, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -7,	{ 2.409180, 1, 1.383789, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -6,	{ 2.456055, 1, 1.356445, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -5,	{ 2.503906, 1, 1.330078, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -4,	{ 2.541016, 1, 1.305664, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -3,	{ 2.579102, 1, 1.283203, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -2,	{ 2.619141, 1, 1.259766, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, -1,	{ 2.660156, 1, 1.235352, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 0,	{ 2.708984, 1, 1.208984, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 1,	{ 2.745117, 1, 1.189453, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 2,	{ 2.782227, 1, 1.168945, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 3,	{ 2.829102, 1, 1.148438, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 4,	{ 2.875977, 1, 1.125000, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 5,	{ 2.916992, 1, 1.105469, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 6,	{ 2.951172, 1, 1.087891, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 7,	{ 2.994141, 1, 1.069336, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 8,	{ 3.039063, 1, 1.048828, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Shade, 9,	{ 3.083984, 1, 1.030273, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -9,	{ 2.156250, 1, 1.580078, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -8,	{ 2.188477, 1, 1.551758, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -7,	{ 2.226563, 1, 1.521484, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -6,	{ 2.265625, 1, 1.490234, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -5,	{ 2.306641, 1, 1.460938, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -4,	{ 2.342773, 1, 1.432617, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -3,	{ 2.381836, 1, 1.404297, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -2,	{ 2.420898, 1, 1.375977, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, -1,	{ 2.467773, 1, 1.350586, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 0,	{ 2.509766, 1, 1.323242, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 1,	{ 2.546875, 1, 1.300781, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 2,	{ 2.585938, 1, 1.278320, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 3,	{ 2.625977, 1, 1.252930, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 4,	{ 2.673828, 1, 1.229492, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 5,	{ 2.723633, 1, 1.205078, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 6,	{ 2.752930, 1, 1.185547, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 7,	{ 2.790039, 1, 1.165039, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 8,	{ 2.836914, 1, 1.142578, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Cloudy, 9,	{ 2.884766, 1, 1.120117, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -9,	{ 1.320106, 1, 2.752205, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -8,	{ 1.340708, 1, 2.703540, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -7,	{ 1.359680, 1, 2.655417, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -6,	{ 1.381802, 1, 2.606601, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -5,	{ 1.406446, 1, 2.555953, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -4,	{ 1.428957, 1, 2.504496, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -3,	{ 1.452575, 1, 2.459801, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -2,	{ 1.475931, 1, 2.419619, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, -1,	{ 1.501825, 1, 2.377737, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 0,	{ 1.526123, 1, 2.330889, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 1,	{ 1.548893, 1, 2.286900, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 2,	{ 1.572753, 1, 2.238184, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 3,	{ 1.599254, 1, 2.198509, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 4,	{ 1.624765, 1, 2.149156, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 5,	{ 1.653774, 1, 2.102830, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 6,	{ 1.681861, 1, 2.064577, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 7,	{ 1.709369, 1, 2.022945, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 8,	{ 1.737247, 1, 1.982676, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Tungsten, 9,	{ 1.770349, 1, 1.946705, 0 } },
   { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -9, { 1.638122, 1, 2.485267, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -8, { 1.6679,   1, 2.445883, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -8, { 1.667900, 1, 2.445883, 0 } },
   { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -7, { 1.695814, 1, 2.404651, 0 } },
   { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -6, { 1.723364, 1, 2.361682, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -5, { 1.75282,  1, 2.317669, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -5, { 1.752820, 1, 2.317669, 0 } },
   { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -4, { 1.788079, 1, 2.263009, 0 } },
   { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -3, { 1.815414, 1, 2.221694, 0 } },
   { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -2, { 1.844828, 1, 2.175287, 0 } },
   { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, -1, { 1.880309, 1, 2.127413, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  0, { 1.910506, 1, 2.080739, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  1, { 1.950195, 1, 2.043945, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  2, { 1.984375, 1, 2.007813, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  3, { 2.015625, 1, 1.96875,  0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  4, { 2.047852, 1, 1.928711, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  5, { 2.085938, 1, 1.892578, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  6, { 2.124023, 1, 1.858398, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  7, { 2.165039, 1, 1.825195, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  8, { 2.197266, 1, 1.790039, 0 } },
-  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent,  9, { 2.235352, 1, 1.756836, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -9, { 2.398438, 1, 1.432617, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -8, { 2.438477, 1, 1.402344, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -7, { 2.485352, 1, 1.375977, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -6, { 2.52832,  1, 1.349609, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -5, { 2.566406, 1, 1.323242, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -4, { 2.605469, 1, 1.299805, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -3, { 2.645508, 1, 1.276367, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -2, { 2.694336, 1, 1.251953, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,            -1, { 2.738281, 1, 1.227539, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             0, { 2.767578, 1, 1.203125, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             1, { 2.813477, 1, 1.183594, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             2, { 2.860352, 1, 1.164063, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             3, { 2.900391, 1, 1.141602, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             4, { 2.942383, 1, 1.118164, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             5, { 2.976563, 1, 1.101563, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             6, { 3.020508, 1, 1.082031, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             7, { 3.06543,  1, 1.063477, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             8, { 3.12207,  1, 1.041992, 0 } },
-  { "Canon", "EOS 400D DIGITAL", Flash,             9, { 3.169922, 1, 1.024414, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 0, { 1.910506, 1, 2.080739, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 1, { 1.950195, 1, 2.043945, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 2, { 1.984375, 1, 2.007813, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 3, { 2.015625, 1, 1.968750, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 4, { 2.047852, 1, 1.928711, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 5, { 2.085938, 1, 1.892578, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 6, { 2.124023, 1, 1.858398, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 7, { 2.165039, 1, 1.825195, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 8, { 2.197266, 1, 1.790039, 0 } },
+  { "Canon", "EOS 400D DIGITAL", WhiteFluorescent, 9, { 2.235352, 1, 1.756836, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -9,	{ 2.398438, 1, 1.432617, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -8,	{ 2.438477, 1, 1.402344, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -7,	{ 2.485352, 1, 1.375977, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -6,	{ 2.528320, 1, 1.349609, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -5,	{ 2.566406, 1, 1.323242, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -4,	{ 2.605469, 1, 1.299805, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -3,	{ 2.645508, 1, 1.276367, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -2,	{ 2.694336, 1, 1.251953, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, -1,	{ 2.738281, 1, 1.227539, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 0,	{ 2.767578, 1, 1.203125, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 1,	{ 2.813477, 1, 1.183594, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 2,	{ 2.860352, 1, 1.164063, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 3,	{ 2.900391, 1, 1.141602, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 4,	{ 2.942383, 1, 1.118164, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 5,	{ 2.976563, 1, 1.101563, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 6,	{ 3.020508, 1, 1.082031, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 7,	{ 3.065430, 1, 1.063477, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 8,	{ 3.122070, 1, 1.041992, 0 } },
+  { "Canon", "EOS 400D DIGITAL", Flash, 9,	{ 3.169922, 1, 1.024414, 0 } },
 
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -9, { 1.972656, 1, 1.735352, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -8, { 2.003906, 1, 1.707031, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -7, { 2.036133, 1, 1.675781, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -6, { 2.073242, 1, 1.646484, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -5, { 2.111328, 1, 1.615234, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -4, { 2.151367, 1, 1.583008, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -3, { 2.183594, 1, 1.553711, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -2, { 2.221680, 1, 1.523438, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, -1, { 2.260742, 1, 1.495117, 0 } },
   { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 0, { 2.300781, 1, 1.462891, 0 } },
-  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 0, { 2.708984, 1, 1.208984, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 1, { 2.337891, 1, 1.436523, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 2, { 2.375977, 1, 1.408203, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 3, { 2.415039, 1, 1.379883, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 4, { 2.461914, 1, 1.354492, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 5, { 2.503906, 1, 1.328125, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 6, { 2.541016, 1, 1.304688, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 7, { 2.579102, 1, 1.280273, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 8, { 2.619141, 1, 1.256836, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Daylight, 9, { 2.666992, 1, 1.232422, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -9, { 2.333008, 1, 1.440430, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -8, { 2.370117, 1, 1.410156, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -7, { 2.409180, 1, 1.383789, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -6, { 2.456055, 1, 1.356445, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -5, { 2.503906, 1, 1.330078, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -4, { 2.541016, 1, 1.305664, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -3, { 2.579102, 1, 1.283203, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -2, { 2.619141, 1, 1.259766, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, -1, { 2.660156, 1, 1.235352, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 0,	{ 2.708984, 1, 1.208984, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 1,	{ 2.745117, 1, 1.189453, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 2,	{ 2.782227, 1, 1.168945, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 3,	{ 2.829102, 1, 1.148438, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 4,	{ 2.875977, 1, 1.125000, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 5,	{ 2.916992, 1, 1.105469, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 6,	{ 2.951172, 1, 1.087891, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 7,	{ 2.994141, 1, 1.069336, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 8,	{ 3.039063, 1, 1.048828, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Shade, 9,	{ 3.083984, 1, 1.030273, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -9, { 2.156250, 1, 1.580078, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -8, { 2.188477, 1, 1.551758, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -7, { 2.226563, 1, 1.521484, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -6, { 2.265625, 1, 1.490234, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -5, { 2.306641, 1, 1.460938, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -4, { 2.342773, 1, 1.432617, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -3, { 2.381836, 1, 1.404297, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -2, { 2.420898, 1, 1.375977, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, -1, { 2.467773, 1, 1.350586, 0 } },
   { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 0, { 2.509766, 1, 1.323242, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 1, { 2.546875, 1, 1.300781, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 2, { 2.585938, 1, 1.278320, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 3, { 2.625977, 1, 1.252930, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 4, { 2.673828, 1, 1.229492, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 5, { 2.723633, 1, 1.205078, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 6, { 2.752930, 1, 1.185547, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 7, { 2.790039, 1, 1.165039, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 8, { 2.836914, 1, 1.142578, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Cloudy, 9, { 2.884766, 1, 1.120117, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -9, { 1.320106, 1, 2.752205, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -8, { 1.340708, 1, 2.703540, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -7, { 1.359680, 1, 2.655417, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -6, { 1.381802, 1, 2.606601, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -5, { 1.406446, 1, 2.555953, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -4, { 1.428957, 1, 2.504496, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -3, { 1.452575, 1, 2.459801, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -2, { 1.475931, 1, 2.419619, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, -1, { 1.501825, 1, 2.377737, 0 } },
   { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 0, { 1.526123, 1, 2.330889, 0 } },
-  { "Canon", "EOS DIGITAL REBEL XTi", Fluorescent, 0, { 1.910506, 1, 2.080739, 0 } },
-  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 0, { 2.708984, 1, 1.272461, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 1, { 1.548893, 1, 2.286900, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 2, { 1.572753, 1, 2.238184, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 3, { 1.599254, 1, 2.198509, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 4, { 1.624765, 1, 2.149156, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 5, { 1.653774, 1, 2.102830, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 6, { 1.681861, 1, 2.064577, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 7, { 1.709369, 1, 2.022945, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 8, { 1.737247, 1, 1.982676, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Tungsten, 9, { 1.770349, 1, 1.946705, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -9, { 1.638122, 1, 2.485267, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -8, { 1.667900, 1, 2.445883, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -7, { 1.695814, 1, 2.404651, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -6, { 1.723364, 1, 2.361682, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -5, { 1.752820, 1, 2.317669, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -4, { 1.788079, 1, 2.263009, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -3, { 1.815414, 1, 2.221694, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -2, { 1.844828, 1, 2.175287, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, -1, { 1.880309, 1, 2.127413, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 0, { 1.910506, 1, 2.080739, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 1, { 1.950195, 1, 2.043945, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 2, { 1.984375, 1, 2.007813, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 3, { 2.015625, 1, 1.968750, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 4, { 2.047852, 1, 1.928711, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 5, { 2.085938, 1, 1.892578, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 6, { 2.124023, 1, 1.858398, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 7, { 2.165039, 1, 1.825195, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 8, { 2.197266, 1, 1.790039, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", WhiteFluorescent, 9, { 2.235352, 1, 1.756836, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -9, { 2.398438, 1, 1.432617, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -8, { 2.438477, 1, 1.402344, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -7, { 2.485352, 1, 1.375977, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -6, { 2.528320, 1, 1.349609, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -5, { 2.566406, 1, 1.323242, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -4, { 2.605469, 1, 1.299805, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -3, { 2.645508, 1, 1.276367, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -2, { 2.694336, 1, 1.251953, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, -1, { 2.738281, 1, 1.227539, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 0,	{ 2.767578, 1, 1.203125, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 1,	{ 2.813477, 1, 1.183594, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 2,	{ 2.860352, 1, 1.164063, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 3,	{ 2.900391, 1, 1.141602, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 4,	{ 2.942383, 1, 1.118164, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 5,	{ 2.976563, 1, 1.101563, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 6,	{ 3.020508, 1, 1.082031, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 7,	{ 3.065430, 1, 1.063477, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 8,	{ 3.122070, 1, 1.041992, 0 } },
+  { "Canon", "EOS DIGITAL REBEL XTi", Flash, 9,	{ 3.169922, 1, 1.024414, 0 } },
 
-  { "Canon", "EOS Kiss Digital X", Daylight, 0, { 2.300781, 1, 1.462891, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -9, { 1.972656, 1, 1.735352, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -8, { 2.003906, 1, 1.707031, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -7, { 2.036133, 1, 1.675781, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -6, { 2.073242, 1, 1.646484, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -5, { 2.111328, 1, 1.615234, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -4, { 2.151367, 1, 1.583008, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -3, { 2.183594, 1, 1.553711, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -2, { 2.221680, 1, 1.523438, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, -1, { 2.260742, 1, 1.495117, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 0,	{ 2.300781, 1, 1.462891, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 1,	{ 2.337891, 1, 1.436523, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 2,	{ 2.375977, 1, 1.408203, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 3,	{ 2.415039, 1, 1.379883, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 4,	{ 2.461914, 1, 1.354492, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 5,	{ 2.503906, 1, 1.328125, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 6,	{ 2.541016, 1, 1.304688, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 7,	{ 2.579102, 1, 1.280273, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 8,	{ 2.619141, 1, 1.256836, 0 } },
+  { "Canon", "EOS Kiss Digital X", Daylight, 9,	{ 2.666992, 1, 1.232422, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -9,	{ 2.333008, 1, 1.440430, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -8,	{ 2.370117, 1, 1.410156, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -7,	{ 2.409180, 1, 1.383789, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -6,	{ 2.456055, 1, 1.356445, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -5,	{ 2.503906, 1, 1.330078, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -4,	{ 2.541016, 1, 1.305664, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -3,	{ 2.579102, 1, 1.283203, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -2,	{ 2.619141, 1, 1.259766, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, -1,	{ 2.660156, 1, 1.235352, 0 } },
   { "Canon", "EOS Kiss Digital X", Shade, 0,	{ 2.708984, 1, 1.208984, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 1,	{ 2.745117, 1, 1.189453, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 2,	{ 2.782227, 1, 1.168945, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 3,	{ 2.829102, 1, 1.148438, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 4,	{ 2.875977, 1, 1.125000, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 5,	{ 2.916992, 1, 1.105469, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 6,	{ 2.951172, 1, 1.087891, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 7,	{ 2.994141, 1, 1.069336, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 8,	{ 3.039063, 1, 1.048828, 0 } },
+  { "Canon", "EOS Kiss Digital X", Shade, 9,	{ 3.083984, 1, 1.030273, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -9,	{ 2.156250, 1, 1.580078, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -8,	{ 2.188477, 1, 1.551758, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -7,	{ 2.226563, 1, 1.521484, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -6,	{ 2.265625, 1, 1.490234, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -5,	{ 2.306641, 1, 1.460938, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -4,	{ 2.342773, 1, 1.432617, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -3,	{ 2.381836, 1, 1.404297, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -2,	{ 2.420898, 1, 1.375977, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, -1,	{ 2.467773, 1, 1.350586, 0 } },
   { "Canon", "EOS Kiss Digital X", Cloudy, 0,	{ 2.509766, 1, 1.323242, 0 } },
-  { "Canon", "EOS Kiss Digital X", Tungsten, 0, { 1.526123, 1, 2.330889, 0 } },
-  { "Canon", "EOS Kiss Digital X", Fluorescent, 0, { 1.910506, 1, 2.080739, 0 } },
-  { "Canon", "EOS Kiss Digital X", Flash, 0,	{ 2.708984, 1, 1.272461, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 1,	{ 2.546875, 1, 1.300781, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 2,	{ 2.585938, 1, 1.278320, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 3,	{ 2.625977, 1, 1.252930, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 4,	{ 2.673828, 1, 1.229492, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 5,	{ 2.723633, 1, 1.205078, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 6,	{ 2.752930, 1, 1.185547, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 7,	{ 2.790039, 1, 1.165039, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 8,	{ 2.836914, 1, 1.142578, 0 } },
+  { "Canon", "EOS Kiss Digital X", Cloudy, 9,	{ 2.884766, 1, 1.120117, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -9, { 1.320106, 1, 2.752205, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -8, { 1.340708, 1, 2.703540, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -7, { 1.359680, 1, 2.655417, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -6, { 1.381802, 1, 2.606601, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -5, { 1.406446, 1, 2.555953, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -4, { 1.428957, 1, 2.504496, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -3, { 1.452575, 1, 2.459801, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -2, { 1.475931, 1, 2.419619, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, -1, { 1.501825, 1, 2.377737, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 0,	{ 1.526123, 1, 2.330889, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 1,	{ 1.548893, 1, 2.286900, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 2,	{ 1.572753, 1, 2.238184, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 3,	{ 1.599254, 1, 2.198509, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 4,	{ 1.624765, 1, 2.149156, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 5,	{ 1.653774, 1, 2.102830, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 6,	{ 1.681861, 1, 2.064577, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 7,	{ 1.709369, 1, 2.022945, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 8,	{ 1.737247, 1, 1.982676, 0 } },
+  { "Canon", "EOS Kiss Digital X", Tungsten, 9,	{ 1.770349, 1, 1.946705, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -9, { 1.638122, 1, 2.485267, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -8, { 1.667900, 1, 2.445883, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -7, { 1.695814, 1, 2.404651, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -6, { 1.723364, 1, 2.361682, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -5, { 1.752820, 1, 2.317669, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -4, { 1.788079, 1, 2.263009, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -3, { 1.815414, 1, 2.221694, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -2, { 1.844828, 1, 2.175287, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, -1, { 1.880309, 1, 2.127413, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 0, { 1.910506, 1, 2.080739, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 1, { 1.950195, 1, 2.043945, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 2, { 1.984375, 1, 2.007813, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 3, { 2.015625, 1, 1.968750, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 4, { 2.047852, 1, 1.928711, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 5, { 2.085938, 1, 1.892578, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 6, { 2.124023, 1, 1.858398, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 7, { 2.165039, 1, 1.825195, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 8, { 2.197266, 1, 1.790039, 0 } },
+  { "Canon", "EOS Kiss Digital X", WhiteFluorescent, 9, { 2.235352, 1, 1.756836, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -9,	{ 2.398438, 1, 1.432617, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -8,	{ 2.438477, 1, 1.402344, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -7,	{ 2.485352, 1, 1.375977, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -6,	{ 2.528320, 1, 1.349609, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -5,	{ 2.566406, 1, 1.323242, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -4,	{ 2.605469, 1, 1.299805, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -3,	{ 2.645508, 1, 1.276367, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -2,	{ 2.694336, 1, 1.251953, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, -1,	{ 2.738281, 1, 1.227539, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 0,	{ 2.767578, 1, 1.203125, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 1,	{ 2.813477, 1, 1.183594, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 2,	{ 2.860352, 1, 1.164063, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 3,	{ 2.900391, 1, 1.141602, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 4,	{ 2.942383, 1, 1.118164, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 5,	{ 2.976563, 1, 1.101563, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 6,	{ 3.020508, 1, 1.082031, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 7,	{ 3.065430, 1, 1.063477, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 8,	{ 3.122070, 1, 1.041992, 0 } },
+  { "Canon", "EOS Kiss Digital X", Flash, 9,	{ 3.169922, 1, 1.024414, 0 } },
 
   { "Canon", "EOS 450D", Daylight, 0,		{ 2.216797, 1, 1.471680, 0 } },
   { "Canon", "EOS 450D", Shade, 0,		{ 2.566406, 1, 1.241211, 0 } },
@@ -571,12 +803,12 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 500D", Fluorescent, 0,	{ 1.799224, 1, 1.824442, 0 } },
   { "Canon", "EOS 500D", Flash, 0,		{ 2.207031, 1, 1.295898, 0 } },
 
-  { "Canon", "EOS DIGITAL REBEL T1i", Daylight, 0, { 2.023438, 1, 1.417969, 0 } },
-  { "Canon", "EOS DIGITAL REBEL T1i", Shade, 0,	{ 2.291016, 1, 1.217773, 0 } },
-  { "Canon", "EOS DIGITAL REBEL T1i", Cloudy, 0, { 2.156250, 1, 1.304687, 0 } },
-  { "Canon", "EOS DIGITAL REBEL T1i", Tungsten, 0, { 1.481347, 1, 1.976342, 0 } },
-  { "Canon", "EOS DIGITAL REBEL T1i", Fluorescent, 0, { 1.799224, 1, 1.824442, 0 } },
-  { "Canon", "EOS DIGITAL REBEL T1i", Flash, 0,	{ 2.207031, 1, 1.295898, 0 } },
+  { "Canon", "EOS REBEL T1i", Daylight, 0,	{ 2.023438, 1, 1.417969, 0 } },
+  { "Canon", "EOS REBEL T1i", Shade, 0,		{ 2.291016, 1, 1.217773, 0 } },
+  { "Canon", "EOS REBEL T1i", Cloudy, 0,	{ 2.156250, 1, 1.304687, 0 } },
+  { "Canon", "EOS REBEL T1i", Tungsten, 0,	{ 1.481347, 1, 1.976342, 0 } },
+  { "Canon", "EOS REBEL T1i", Fluorescent, 0,	{ 1.799224, 1, 1.824442, 0 } },
+  { "Canon", "EOS REBEL T1i", Flash, 0,		{ 2.207031, 1, 1.295898, 0 } },
 
   { "Canon", "EOS Kiss Digital X3", Daylight, 0, { 2.023438, 1, 1.417969, 0 } },
   { "Canon", "EOS Kiss Digital X3", Shade, 0,	{ 2.291016, 1, 1.217773, 0 } },
@@ -585,26 +817,26 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS Kiss Digital X3", Fluorescent, 0, { 1.799224, 1, 1.824442, 0 } },
   { "Canon", "EOS Kiss Digital X3", Flash, 0,	{ 2.207031, 1, 1.295898, 0 } },
 
-  { "Canon", "EOS 550D", Daylight, 0,		{ 2.1426, 1.0000, 1.5488, 1.0000 } },
-  { "Canon", "EOS 550D", Shade, 0,		{ 2.4619, 1.0000, 1.3193, 1.0000 } },
-  { "Canon", "EOS 550D", Cloudy, 0,		{ 2.3066, 1.0000, 1.4258, 1.0000 } },
-  { "Canon", "EOS 550D", Tungsten, 0,		{ 1.5264, 1.0000, 2.3428, 1.0000 } },
-  { "Canon", "EOS 550D", WhiteFluorescent, 0,	{ 1.9072, 1.0000, 2.1973, 1.0000 } },
-  { "Canon", "EOS 550D", Flash, 0,		{ 2.3701, 1.0000, 1.4141, 1.0000 } },
+  { "Canon", "EOS 550D", Daylight, 0,		{ 2.1426, 1, 1.5488, 0 } },
+  { "Canon", "EOS 550D", Shade, 0,		{ 2.4619, 1, 1.3193, 0 } },
+  { "Canon", "EOS 550D", Cloudy, 0,		{ 2.3066, 1, 1.4258, 0 } },
+  { "Canon", "EOS 550D", Tungsten, 0,		{ 1.5264, 1, 2.3428, 0 } },
+  { "Canon", "EOS 550D", WhiteFluorescent, 0,	{ 1.9072, 1, 2.1973, 0 } },
+  { "Canon", "EOS 550D", Flash, 0,		{ 2.3701, 1, 1.4141, 0 } },
 
-  { "Canon", "EOS REBEL T2i", Daylight, 0,           { 2.1426, 1.0000, 1.5488, 1.0000 } },
-  { "Canon", "EOS REBEL T2i", Shade, 0,              { 2.4619, 1.0000, 1.3193, 1.0000 } },
-  { "Canon", "EOS REBEL T2i", Cloudy, 0,             { 2.3066, 1.0000, 1.4258, 1.0000 } },
-  { "Canon", "EOS REBEL T2i", Tungsten, 0,           { 1.5264, 1.0000, 2.3428, 1.0000 } },
-  { "Canon", "EOS REBEL T2i", WhiteFluorescent, 0,   { 1.9072, 1.0000, 2.1973, 1.0000 } },
-  { "Canon", "EOS REBEL T2i", Flash, 0,              { 2.3701, 1.0000, 1.4141, 1.0000 } },
+  { "Canon", "EOS REBEL T2i", Daylight, 0,	{ 2.1426, 1, 1.5488, 0 } },
+  { "Canon", "EOS REBEL T2i", Shade, 0,		{ 2.4619, 1, 1.3193, 0 } },
+  { "Canon", "EOS REBEL T2i", Cloudy, 0,	{ 2.3066, 1, 1.4258, 0 } },
+  { "Canon", "EOS REBEL T2i", Tungsten, 0,	{ 1.5264, 1, 2.3428, 0 } },
+  { "Canon", "EOS REBEL T2i", WhiteFluorescent, 0, { 1.9072, 1, 2.1973, 0 } },
+  { "Canon", "EOS REBEL T2i", Flash, 0,		{ 2.3701, 1, 1.4141, 0 } },
 
-  { "Canon", "EOS Kiss Digital X4", Daylight, 0,           { 2.1426, 1.0000, 1.5488, 1.0000 } },
-  { "Canon", "EOS Kiss Digital X4", Shade, 0,              { 2.4619, 1.0000, 1.3193, 1.0000 } },
-  { "Canon", "EOS Kiss Digital X4", Cloudy, 0,             { 2.3066, 1.0000, 1.4258, 1.0000 } },
-  { "Canon", "EOS Kiss Digital X4", Tungsten, 0,           { 1.5264, 1.0000, 2.3428, 1.0000 } },
-  { "Canon", "EOS Kiss Digital X4", WhiteFluorescent, 0,   { 1.9072, 1.0000, 2.1973, 1.0000 } },
-  { "Canon", "EOS Kiss Digital X4", Flash, 0,              { 2.3701, 1.0000, 1.4141, 1.0000 } },
+  { "Canon", "EOS Kiss Digital X4", Daylight, 0, { 2.1426, 1, 1.5488, 0 } },
+  { "Canon", "EOS Kiss Digital X4", Shade, 0,	{ 2.4619, 1, 1.3193, 0 } },
+  { "Canon", "EOS Kiss Digital X4", Cloudy, 0,	{ 2.3066, 1, 1.4258, 0 } },
+  { "Canon", "EOS Kiss Digital X4", Tungsten, 0, { 1.5264, 1, 2.3428, 0 } },
+  { "Canon", "EOS Kiss Digital X4", WhiteFluorescent, 0, { 1.9072, 1, 2.1973, 0 } },
+  { "Canon", "EOS Kiss Digital X4", Flash, 0,	{ 2.3701, 1, 1.4141, 0 } },
 
   { "Canon", "EOS 1000D", Daylight, 0,		{ 2.183594, 1, 1.526367, 0 } },
   { "Canon", "EOS 1000D", Shade, 0,		{ 2.553711, 1, 1.262695, 0 } },
@@ -1204,49 +1436,6 @@ const wb_data wb_preset[] = {
   { "NIKON", "D1X", Shade, 2,			{ 2.500000, 1, 1.035156, 0 } }, /*7100K*/
   { "NIKON", "D1X", Shade, 3,			{ 2.441406, 1, 1.046875, 0 } }, /*6700K*/
 
-  { "NIKON", "D100", Incandescent, -3,		{ 1.527344, 1, 2.539062, 0 } }, /*3300K*/
-  { "NIKON", "D100", Incandescent, -2,		{ 1.476562, 1, 2.656250, 0 } }, /*3200K*/
-  { "NIKON", "D100", Incandescent, -1,		{ 1.457031, 1, 2.707031, 0 } }, /*3100K*/
-  { "NIKON", "D100", Incandescent, 0,		{ 1.406250, 1, 2.828125, 0 } }, /*3000K*/
-  { "NIKON", "D100", Incandescent, 1,		{ 1.367188, 1, 2.937500, 0 } }, /*2900K*/
-  { "NIKON", "D100", Incandescent, 2,		{ 1.316406, 1, 3.046875, 0 } }, /*2800K*/
-  { "NIKON", "D100", Incandescent, 3,		{ 1.269531, 1, 3.167969, 0 } }, /*2700K*/
-  { "NIKON", "D100", Fluorescent, -3,		{ 3.148438, 1, 1.847656, 0 } }, /*7200K*/
-  { "NIKON", "D100", Fluorescent, -2,		{ 2.609375, 1, 1.617187, 0 } }, /*6500K*/
-  { "NIKON", "D100", Fluorescent, -1,		{ 2.250000, 1, 2.039062, 0 } }, /*5000K*/
-  { "NIKON", "D100", Fluorescent, 0,		{ 2.058594, 1, 2.617187, 0 } }, /*4200K*/
-  { "NIKON", "D100", Fluorescent, 1,		{ 1.886719, 1, 2.726562, 0 } }, /*3700K*/
-  { "NIKON", "D100", Fluorescent, 2,		{ 1.429688, 1, 3.359375, 0 } }, /*3000K*/
-  { "NIKON", "D100", Fluorescent, 3,		{ 1.250000, 1, 2.699219, 0 } }, /*2700K*/
-  { "NIKON", "D100", DirectSunlight, -3,	{ 2.386719, 1, 1.687500, 0 } }, /*5600K*/
-  { "NIKON", "D100", DirectSunlight, -2,	{ 2.316406, 1, 1.726563, 0 } }, /*5400K*/
-  { "NIKON", "D100", DirectSunlight, -1,	{ 2.296875, 1, 1.738281, 0 } }, /*5300K*/
-  { "NIKON", "D100", DirectSunlight, 0,		{ 2.257812, 1, 1.757812, 0 } }, /*5200K*/
-  { "NIKON", "D100", DirectSunlight, 1,		{ 2.187500, 1, 1.796875, 0 } }, /*5000K*/
-  { "NIKON", "D100", DirectSunlight, 2,		{ 2.156250, 1, 1.816406, 0 } }, /*4900K*/
-  { "NIKON", "D100", DirectSunlight, 3,		{ 2.117187, 1, 1.847656, 0 } }, /*4800K*/
-  { "NIKON", "D100", Flash, -3,			{ 2.718750, 1, 1.519531, 0 } }, /*6000K*/
-  { "NIKON", "D100", Flash, -2,			{ 2.656250, 1, 1.527344, 0 } }, /*5800K*/
-  { "NIKON", "D100", Flash, -1,			{ 2.597656, 1, 1.527344, 0 } }, /*5600K*/
-  { "NIKON", "D100", Flash, 0,			{ 2.539062, 1, 1.539062, 0 } }, /*5400K*/
-  { "NIKON", "D100", Flash, 1,			{ 2.476562, 1, 1.539062, 0 } }, /*5200K*/
-  { "NIKON", "D100", Flash, 2,			{ 2.437500, 1, 1.546875, 0 } }, /*5000K*/
-  { "NIKON", "D100", Flash, 3,			{ 2.398438, 1, 1.546875, 0 } }, /*4800K*/
-  { "NIKON", "D100", Cloudy, -3,		{ 2.648438, 1, 1.558594, 0 } }, /*6600K*/
-  { "NIKON", "D100", Cloudy, -2,		{ 2.609375, 1, 1.578125, 0 } }, /*6400K*/
-  { "NIKON", "D100", Cloudy, -1,		{ 2.558594, 1, 1.597656, 0 } }, /*6200K*/
-  { "NIKON", "D100", Cloudy, 0,			{ 2.507813, 1, 1.628906, 0 } }, /*6000K*/
-  { "NIKON", "D100", Cloudy, 1,			{ 2.449219, 1, 1.656250, 0 } }, /*5800K*/
-  { "NIKON", "D100", Cloudy, 2,			{ 2.398438, 1, 1.687500, 0 } }, /*5600K*/
-  { "NIKON", "D100", Cloudy, 3,			{ 2.316406, 1, 1.726563, 0 } }, /*5400K*/
-  { "NIKON", "D100", Shade, -3,			{ 3.046875, 1, 1.386719, 0 } }, /*9200K*/
-  { "NIKON", "D100", Shade, -2,			{ 3.000000, 1, 1.406250, 0 } }, /*8800K*/
-  { "NIKON", "D100", Shade, -1,			{ 2.957031, 1, 1.417969, 0 } }, /*8400K*/
-  { "NIKON", "D100", Shade, 0,			{ 2.906250, 1, 1.437500, 0 } }, /*8000K*/
-  { "NIKON", "D100", Shade, 1,			{ 2.816406, 1, 1.476562, 0 } }, /*7500K*/
-  { "NIKON", "D100", Shade, 2,			{ 2.750000, 1, 1.519531, 0 } }, /*7100K*/
-  { "NIKON", "D100", Shade, 3,			{ 2.667969, 1, 1.546875, 0 } }, /*6700K*/
-
   /*
    * D2X with firmware A 1.01 and B 1.01
    */
@@ -1371,13 +1560,189 @@ const wb_data wb_preset[] = {
   { "NIKON", "D3", "9090K", 0,			{ 2.38281, 1, 1.03515, 0 } },
   { "NIKON", "D3", "10000K", 0,			{ 2.48046, 1, 1.00000, 0 } },
 
+  { "NIKON", "D3S", Incandescent, 0,		{ 1.191406, 1, 2.242188, 0 } },
+  { "NIKON", "D3S", SodiumVaporFluorescent, 0,	{ 1.132812, 1, 2.511719, 0 } },
+  { "NIKON", "D3S", WarmWhiteFluorescent, 0,	{ 1.179688, 1, 1.996094, 0 } },
+  { "NIKON", "D3S", WhiteFluorescent, 0,	{ 1.394531, 1, 2.402344, 0 } },
+  { "NIKON", "D3S", CoolWhiteFluorescent, 0,	{ 1.703125, 1, 2.066406, 0 } },
+  { "NIKON", "D3S", DayWhiteFluorescent, 0,	{ 1.710938, 1, 1.390625, 0 } },
+  { "NIKON", "D3S", DaylightFluorescent, 0,	{ 1.941406, 1, 1.113281, 0 } },
+  { "NIKON", "D3S", HighTempMercuryVaporFluorescent, 0, { 2.289062, 1, 1.355469, 0 } },
+  { "NIKON", "D3S", DirectSunlight, 0,		{ 1.835938, 1, 1.359375, 0 } },
+  { "NIKON", "D3S", Flash, 0,			{ 2.035156, 1, 1.183594, 0 } },
+  { "NIKON", "D3S", Cloudy, 0,			{ 1.964844, 1, 1.226562, 0 } },
+  { "NIKON", "D3S", Shade, 0,			{ 2.253906, 1, 1.089844, 0 } },
+  { "NIKON", "D3S", "2500K", 0,			{ 1.031250, 1, 2.851562, 0 } },
+  { "NIKON", "D3S", "2560K", 0,			{ 1.050781, 1, 2.753906, 0 } },
+  { "NIKON", "D3S", "2630K", 0,			{ 1.070312, 1, 2.656250, 0 } },
+  { "NIKON", "D3S", "2700K", 0,			{ 1.093750, 1, 2.558594, 0 } },
+  { "NIKON", "D3S", "2780K", 0,			{ 1.117188, 1, 2.468750, 0 } },
+  { "NIKON", "D3S", "2860K", 0,			{ 1.144531, 1, 2.382812, 0 } },
+  { "NIKON", "D3S", "2940K", 0,			{ 1.171875, 1, 2.300781, 0 } },
+  { "NIKON", "D3S", "3030K", 0,			{ 1.199219, 1, 2.214844, 0 } },
+  { "NIKON", "D3S", "3130K", 0,			{ 1.230469, 1, 2.125000, 0 } },
+  { "NIKON", "D3S", "3230K", 0,			{ 1.265625, 1, 2.050781, 0 } },
+  { "NIKON", "D3S", "3330K", 0,			{ 1.296875, 1, 1.984375, 0 } },
+  { "NIKON", "D3S", "3450K", 0,			{ 1.335938, 1, 1.921875, 0 } },
+  { "NIKON", "D3S", "3570K", 0,			{ 1.375000, 1, 1.843750, 0 } },
+  { "NIKON", "D3S", "3700K", 0,			{ 1.414062, 1, 1.769531, 0 } },
+  { "NIKON", "D3S", "3850K", 0,			{ 1.453125, 1, 1.695312, 0 } },
+  { "NIKON", "D3S", "4000K", 0,			{ 1.500000, 1, 1.628906, 0 } },
+  { "NIKON", "D3S", "4170K", 0,			{ 1.542969, 1, 1.562500, 0 } },
+  { "NIKON", "D3S", "4350K", 0,			{ 1.621094, 1, 1.550781, 0 } },
+  { "NIKON", "D3S", "4550K", 0,			{ 1.687500, 1, 1.511719, 0 } },
+  { "NIKON", "D3S", "4760K", 0,			{ 1.742188, 1, 1.460938, 0 } },
+  { "NIKON", "D3S", "5000K", 0,			{ 1.796875, 1, 1.402344, 0 } },
+  { "NIKON", "D3S", "5260K", 0,			{ 1.847656, 1, 1.343750, 0 } },
+  { "NIKON", "D3S", "5560K", 0,			{ 1.894531, 1, 1.292969, 0 } },
+  { "NIKON", "D3S", "5880K", 0,			{ 1.949219, 1, 1.242188, 0 } },
+  { "NIKON", "D3S", "6250K", 0,			{ 2.003906, 1, 1.199219, 0 } },
+  { "NIKON", "D3S", "6670K", 0,			{ 2.066406, 1, 1.160156, 0 } },
+  { "NIKON", "D3S", "7140K", 0,			{ 2.140625, 1, 1.132812, 0 } },
+  { "NIKON", "D3S", "7690K", 0,			{ 2.214844, 1, 1.101562, 0 } },
+  { "NIKON", "D3S", "8330K", 0,			{ 2.292969, 1, 1.070312, 0 } },
+  { "NIKON", "D3S", "9090K", 0,			{ 2.390625, 1, 1.046875, 0 } },
+  { "NIKON", "D3S", "10000K", 0,		{ 2.492188, 1, 1.003906, 0 } },
+
+  /* D3X with firmware A 1.00 and B 1.01 */
+  { "NIKON", "D3X", Incandescent, -4,		{ 1.441406, 1, 2.125000, 0 } },
+  { "NIKON", "D3X", Incandescent, -3,		{ 1.421875, 1, 2.167969, 0 } },
+  { "NIKON", "D3X", Incandescent, -2,		{ 1.402344, 1, 2.210938, 0 } },
+  { "NIKON", "D3X", Incandescent, -1,		{ 1.382813, 1, 2.250000, 0 } },
+  { "NIKON", "D3X", Incandescent, 0,		{ 1.367188, 1, 2.292969, 0 } },
+  { "NIKON", "D3X", Incandescent, 1,		{ 1.351563, 1, 2.332031, 0 } },
+  { "NIKON", "D3X", Incandescent, 2,		{ 1.332031, 1, 2.371093, 0 } },
+  { "NIKON", "D3X", Incandescent, 3,		{ 1.316406, 1, 2.414063, 0 } },
+  { "NIKON", "D3X", Incandescent, 4,		{ 1.300781, 1, 2.457031, 0 } },
+  { "NIKON", "D3X", Fluorescent, -4,		{ 2.183594, 1, 1.980469, 0 } },
+  { "NIKON", "D3X", Fluorescent, -3,		{ 2.136719, 1, 2.015625, 0 } },
+  { "NIKON", "D3X", Fluorescent, -2,		{ 2.089844, 1, 2.054688, 0 } },
+  { "NIKON", "D3X", Fluorescent, -1,		{ 2.039064, 1, 2.089844, 0 } },
+  { "NIKON", "D3X", Fluorescent, 0,		{ 1.984375, 1, 2.128906, 0 } },
+  { "NIKON", "D3X", Fluorescent, 1,		{ 1.929688, 1, 2.167969, 0 } },
+  { "NIKON", "D3X", Fluorescent, 2,		{ 1.875000, 1, 2.207031, 0 } },
+  { "NIKON", "D3X", Fluorescent, 3,		{ 1.816406, 1, 2.246094, 0 } },
+  { "NIKON", "D3X", Fluorescent, 4,		{ 1.753906, 1, 2.292969, 0 } },
+  { "NIKON", "D3X", DirectSunlight, -4,		{ 2.289063, 1, 1.308594, 0 } },
+  { "NIKON", "D3X", DirectSunlight, -3,		{ 2.253906, 1, 1.335938, 0 } },
+  { "NIKON", "D3X", DirectSunlight, -2,		{ 2.222656, 1, 1.359375, 0 } },
+  { "NIKON", "D3X", DirectSunlight, -1,		{ 2.187500, 1, 1.386719, 0 } },
+  { "NIKON", "D3X", DirectSunlight, 0,		{ 2.156250, 1, 1.417969, 0 } },
+  { "NIKON", "D3X", DirectSunlight, 1,		{ 2.125000, 1, 1.445313, 0 } },
+  { "NIKON", "D3X", DirectSunlight, 2,		{ 2.093750, 1, 1.472656, 0 } },
+  { "NIKON", "D3X", DirectSunlight, 3,		{ 2.062500, 1, 1.496094, 0 } },
+  { "NIKON", "D3X", DirectSunlight, 4,		{ 2.027344, 1, 1.519531, 0 } },
+  { "NIKON", "D3X", Flash, -4,			{ 2.566406, 1, 1.183594, 0 } },
+  { "NIKON", "D3X", Flash, -3,			{ 2.523438, 1, 1.199219, 0 } },
+  { "NIKON", "D3X", Flash, -2,			{ 2.484375, 1, 1.214844, 0 } },
+  { "NIKON", "D3X", Flash, -1,			{ 2.445313, 1, 1.226563, 0 } },
+  { "NIKON", "D3X", Flash, 0,			{ 2.402344, 1, 1.242187, 0 } },
+  { "NIKON", "D3X", Flash, 1,			{ 2.371094, 1, 1.257813, 0 } },
+  { "NIKON", "D3X", Flash, 2,			{ 2.343750, 1, 1.273438, 0 } },
+  { "NIKON", "D3X", Flash, 3,			{ 2.320313, 1, 1.292969, 0 } },
+  { "NIKON", "D3X", Flash, 4,			{ 2.289063, 1, 1.308594, 0 } },
+  { "NIKON", "D3X", Cloudy, -4,			{ 2.488281, 1, 1.214844, 0 } },
+  { "NIKON", "D3X", Cloudy, -3,			{ 2.445313, 1, 1.230469, 0 } },
+  { "NIKON", "D3X", Cloudy, -2,			{ 2.406250, 1, 1.250000, 0 } },
+  { "NIKON", "D3X", Cloudy, -1,			{ 2.363281, 1, 1.265625, 0 } },
+  { "NIKON", "D3X", Cloudy, 0,			{ 2.328125, 1, 1.289062, 0 } },
+  { "NIKON", "D3X", Cloudy, 1,			{ 2.289063, 1, 1.308594, 0 } },
+  { "NIKON", "D3X", Cloudy, 2,			{ 2.253906, 1, 1.335938, 0 } },
+  { "NIKON", "D3X", Cloudy, 3,			{ 2.222656, 1, 1.359375, 0 } },
+  { "NIKON", "D3X", Cloudy, 4,			{ 2.187500, 1, 1.386719, 0 } },
+  { "NIKON", "D3X", Shade, -4,			{ 2.937500, 1, 1.089844, 0 } },
+  { "NIKON", "D3X", Shade, -3,			{ 2.878906, 1, 1.113281, 0 } },
+  { "NIKON", "D3X", Shade, -2,			{ 2.820313, 1, 1.128906, 0 } },
+  { "NIKON", "D3X", Shade, -1,			{ 2.761719, 1, 1.144531, 0 } },
+  { "NIKON", "D3X", Shade, 0,			{ 2.707031, 1, 1.160156, 0 } },
+  { "NIKON", "D3X", Shade, 1,			{ 2.652344, 1, 1.171875, 0 } },
+  { "NIKON", "D3X", Shade, 2,			{ 2.601563, 1, 1.183594, 0 } },
+  { "NIKON", "D3X", Shade, 3,			{ 2.554688, 1, 1.199219, 0 } },
+  { "NIKON", "D3X", Shade, 4,			{ 2.507813, 1, 1.210938, 0 } },
+
+  /* D3X Kelvin presets */
+  { "NIKON", "D3X", "2500K", 0,			{ 1.179688, 1, 2.898438, 0 } },
+  { "NIKON", "D3X", "2560K", 0,			{ 1.203125, 1, 2.796875, 0 } },
+  { "NIKON", "D3X", "2630K", 0,			{ 1.226563, 1, 2.699219, 0 } },
+  { "NIKON", "D3X", "2700K", 0,			{ 1.253906, 1, 2.605469, 0 } },
+  { "NIKON", "D3X", "2780K", 0,			{ 1.281250, 1, 2.519531, 0 } },
+  { "NIKON", "D3X", "2860K", 0,			{ 1.312500, 1, 2.429688, 0 } },
+  { "NIKON", "D3X", "2940K", 0,			{ 1.343750, 1, 2.347656, 0 } },
+  { "NIKON", "D3X", "3030K", 0,			{ 1.378906, 1, 2.269531, 0 } },
+  { "NIKON", "D3X", "3130K", 0,			{ 1.414063, 1, 2.187500, 0 } },
+  { "NIKON", "D3X", "3230K", 0,			{ 1.453125, 1, 2.097656, 0 } },
+  { "NIKON", "D3X", "3330K", 0,			{ 1.492187, 1, 2.015625, 0 } },
+  { "NIKON", "D3X", "3450K", 0,			{ 1.539062, 1, 1.933594, 0 } },
+  { "NIKON", "D3X", "3570K", 0,			{ 1.585937, 1, 1.859375, 0 } },
+  { "NIKON", "D3X", "3700K", 0,			{ 1.636719, 1, 1.792969, 0 } },
+  { "NIKON", "D3X", "3850K", 0,			{ 1.695312, 1, 1.734375, 0 } },
+  { "NIKON", "D3X", "4000K", 0,			{ 1.753906, 1, 1.683594, 0 } },
+  { "NIKON", "D3X", "4170K", 0,			{ 1.824219, 1, 1.636719, 0 } },
+  { "NIKON", "D3X", "4350K", 0,			{ 1.902344, 1, 1.593750, 0 } },
+  { "NIKON", "D3X", "4550K", 0,			{ 1.976562, 1, 1.554687, 0 } },
+  { "NIKON", "D3X", "4760K", 0,			{ 2.042969, 1, 1.511719, 0 } },
+  { "NIKON", "D3X", "5000K", 0,			{ 2.105469, 1, 1.460938, 0 } },
+  { "NIKON", "D3X", "5260K", 0,			{ 2.167969, 1, 1.406250, 0 } },
+  { "NIKON", "D3X", "5560K", 0,			{ 2.234375, 1, 1.351563, 0 } },
+  { "NIKON", "D3X", "5880K", 0,			{ 2.304688, 1, 1.300781, 0 } },
+  { "NIKON", "D3X", "6250K", 0,			{ 2.378906, 1, 1.257813, 0 } },
+  { "NIKON", "D3X", "6670K", 0,			{ 2.464844, 1, 1.226562, 0 } },
+  { "NIKON", "D3X", "7140K", 0,			{ 2.554687, 1, 1.199219, 0 } },
+  { "NIKON", "D3X", "7690K", 0,			{ 2.652344, 1, 1.171875, 0 } },
+  { "NIKON", "D3X", "8330K", 0,			{ 2.761719, 1, 1.144531, 0 } },
+  { "NIKON", "D3X", "9090K", 0,			{ 2.878906, 1, 1.113281, 0 } },
+  { "NIKON", "D3X", "10000K", 0,		{ 3.000000, 1, 1.062500, 0 } },
+
+  { "NIKON", "D100", Incandescent, -3,		{ 1.527344, 1, 2.539062, 0 } }, /*3300K*/
+  { "NIKON", "D100", Incandescent, -2,		{ 1.476562, 1, 2.656250, 0 } }, /*3200K*/
+  { "NIKON", "D100", Incandescent, -1,		{ 1.457031, 1, 2.707031, 0 } }, /*3100K*/
+  { "NIKON", "D100", Incandescent, 0,		{ 1.406250, 1, 2.828125, 0 } }, /*3000K*/
+  { "NIKON", "D100", Incandescent, 1,		{ 1.367188, 1, 2.937500, 0 } }, /*2900K*/
+  { "NIKON", "D100", Incandescent, 2,		{ 1.316406, 1, 3.046875, 0 } }, /*2800K*/
+  { "NIKON", "D100", Incandescent, 3,		{ 1.269531, 1, 3.167969, 0 } }, /*2700K*/
+  { "NIKON", "D100", Fluorescent, -3,		{ 3.148438, 1, 1.847656, 0 } }, /*7200K*/
+  { "NIKON", "D100", Fluorescent, -2,		{ 2.609375, 1, 1.617187, 0 } }, /*6500K*/
+  { "NIKON", "D100", Fluorescent, -1,		{ 2.250000, 1, 2.039062, 0 } }, /*5000K*/
+  { "NIKON", "D100", Fluorescent, 0,		{ 2.058594, 1, 2.617187, 0 } }, /*4200K*/
+  { "NIKON", "D100", Fluorescent, 1,		{ 1.886719, 1, 2.726562, 0 } }, /*3700K*/
+  { "NIKON", "D100", Fluorescent, 2,		{ 1.429688, 1, 3.359375, 0 } }, /*3000K*/
+  { "NIKON", "D100", Fluorescent, 3,		{ 1.250000, 1, 2.699219, 0 } }, /*2700K*/
+  { "NIKON", "D100", DirectSunlight, -3,	{ 2.386719, 1, 1.687500, 0 } }, /*5600K*/
+  { "NIKON", "D100", DirectSunlight, -2,	{ 2.316406, 1, 1.726563, 0 } }, /*5400K*/
+  { "NIKON", "D100", DirectSunlight, -1,	{ 2.296875, 1, 1.738281, 0 } }, /*5300K*/
+  { "NIKON", "D100", DirectSunlight, 0,		{ 2.257812, 1, 1.757812, 0 } }, /*5200K*/
+  { "NIKON", "D100", DirectSunlight, 1,		{ 2.187500, 1, 1.796875, 0 } }, /*5000K*/
+  { "NIKON", "D100", DirectSunlight, 2,		{ 2.156250, 1, 1.816406, 0 } }, /*4900K*/
+  { "NIKON", "D100", DirectSunlight, 3,		{ 2.117187, 1, 1.847656, 0 } }, /*4800K*/
+  { "NIKON", "D100", Flash, -3,			{ 2.718750, 1, 1.519531, 0 } }, /*6000K*/
+  { "NIKON", "D100", Flash, -2,			{ 2.656250, 1, 1.527344, 0 } }, /*5800K*/
+  { "NIKON", "D100", Flash, -1,			{ 2.597656, 1, 1.527344, 0 } }, /*5600K*/
+  { "NIKON", "D100", Flash, 0,			{ 2.539062, 1, 1.539062, 0 } }, /*5400K*/
+  { "NIKON", "D100", Flash, 1,			{ 2.476562, 1, 1.539062, 0 } }, /*5200K*/
+  { "NIKON", "D100", Flash, 2,			{ 2.437500, 1, 1.546875, 0 } }, /*5000K*/
+  { "NIKON", "D100", Flash, 3,			{ 2.398438, 1, 1.546875, 0 } }, /*4800K*/
+  { "NIKON", "D100", Cloudy, -3,		{ 2.648438, 1, 1.558594, 0 } }, /*6600K*/
+  { "NIKON", "D100", Cloudy, -2,		{ 2.609375, 1, 1.578125, 0 } }, /*6400K*/
+  { "NIKON", "D100", Cloudy, -1,		{ 2.558594, 1, 1.597656, 0 } }, /*6200K*/
+  { "NIKON", "D100", Cloudy, 0,			{ 2.507813, 1, 1.628906, 0 } }, /*6000K*/
+  { "NIKON", "D100", Cloudy, 1,			{ 2.449219, 1, 1.656250, 0 } }, /*5800K*/
+  { "NIKON", "D100", Cloudy, 2,			{ 2.398438, 1, 1.687500, 0 } }, /*5600K*/
+  { "NIKON", "D100", Cloudy, 3,			{ 2.316406, 1, 1.726563, 0 } }, /*5400K*/
+  { "NIKON", "D100", Shade, -3,			{ 3.046875, 1, 1.386719, 0 } }, /*9200K*/
+  { "NIKON", "D100", Shade, -2,			{ 3.000000, 1, 1.406250, 0 } }, /*8800K*/
+  { "NIKON", "D100", Shade, -1,			{ 2.957031, 1, 1.417969, 0 } }, /*8400K*/
+  { "NIKON", "D100", Shade, 0,			{ 2.906250, 1, 1.437500, 0 } }, /*8000K*/
+  { "NIKON", "D100", Shade, 1,			{ 2.816406, 1, 1.476562, 0 } }, /*7500K*/
+  { "NIKON", "D100", Shade, 2,			{ 2.750000, 1, 1.519531, 0 } }, /*7100K*/
+  { "NIKON", "D100", Shade, 3,			{ 2.667969, 1, 1.546875, 0 } }, /*6700K*/
+
   /* D200 basic + fine tune WB presets */
   { "NIKON", "D200", Incandescent, -2,		{ 1.199219, 1, 2.238281, 0 } },
   { "NIKON", "D200", Incandescent, -1,		{ 1.183594, 1, 2.289063, 0 } },
   { "NIKON", "D200", Incandescent, 0,		{ 1.148437, 1, 2.398438, 0 } },
   { "NIKON", "D200", Incandescent, 1,		{ 1.113281, 1, 2.519531, 0 } },
   { "NIKON", "D200", Incandescent, 2,		{ 1.074219, 1, 2.648438, 0 } },
-  { "NIKON", "D200", Incandescent, 3,		{ 1.03125, 1, 2.804688, 0 } },
+  { "NIKON", "D200", Incandescent, 3,		{ 1.031250, 1, 2.804688, 0 } },
   { "NIKON", "D200", Fluorescent, -3,		{ 2.273438, 1, 1.410156, 0 } },
   { "NIKON", "D200", Fluorescent, -2,		{ 1.933594, 1, 1.152344, 0 } },
   { "NIKON", "D200", Fluorescent, -1,		{ 1.675781, 1, 1.453125, 0 } },
@@ -1387,11 +1752,11 @@ const wb_data wb_preset[] = {
   { "NIKON", "D200", Fluorescent, 3,		{ 1.035156, 1, 2.410156, 0 } },
   { "NIKON", "D200", DirectSunlight, -3,	{ 1.863281, 1, 1.320312, 0 } },
   { "NIKON", "D200", DirectSunlight, -2,	{ 1.835938, 1, 1.355469, 0 } },
-  { "NIKON", "D200", DirectSunlight, -1,	{ 1.820313, 1, 1.375, 0 } },
+  { "NIKON", "D200", DirectSunlight, -1,	{ 1.820313, 1, 1.375000, 0 } },
   { "NIKON", "D200", DirectSunlight, 0,		{ 1.804688, 1, 1.398437, 0 } },
   { "NIKON", "D200", DirectSunlight, 1,		{ 1.746094, 1, 1.425781, 0 } },
-  { "NIKON", "D200", DirectSunlight, 2,		{ 1.714844, 1, 1.4375, 0 } },
-  { "NIKON", "D200", DirectSunlight, 3,		{ 1.6875, 1, 1.449219, 0 } },
+  { "NIKON", "D200", DirectSunlight, 2,		{ 1.714844, 1, 1.437500, 0 } },
+  { "NIKON", "D200", DirectSunlight, 3,		{ 1.687500, 1, 1.449219, 0 } },
   { "NIKON", "D200", Flash, -3,			{ 2.066406, 1, 1.183594, 0 } },
   { "NIKON", "D200", Flash, -2,			{ 2.046875, 1, 1.191406, 0 } },
   { "NIKON", "D200", Flash, -1,			{ 2.027344, 1, 1.199219, 0 } },
@@ -1409,14 +1774,14 @@ const wb_data wb_preset[] = {
   { "NIKON", "D200", Shade, -3,			{ 2.378906, 1, 1.066406, 0 } },
   { "NIKON", "D200", Shade, -2,			{ 2.332031, 1, 1.085938, 0 } },
   { "NIKON", "D200", Shade, -1,			{ 2.289063, 1, 1.105469, 0 } },
-  { "NIKON", "D200", Shade, 0,			{ 2.234375, 1, 1.125, 0 } },
+  { "NIKON", "D200", Shade, 0,			{ 2.234375, 1, 1.125000, 0 } },
   { "NIKON", "D200", Shade, 1,			{ 2.167969, 1, 1.152344, 0 } },
   { "NIKON", "D200", Shade, 2,			{ 2.105469, 1, 1.175781, 0 } },
   { "NIKON", "D200", Shade, 3,			{ 2.046875, 1, 1.199219, 0 } },
 
   /* D200 Kelvin presets */
-  { "NIKON", "D200", "2500K", 0,		{ 1, 1, 3.121094, 0 } },
-  { "NIKON", "D200", "2550K", 0,		{ 1, 1, 3.035156, 0 } },
+  { "NIKON", "D200", "2500K", 0,		{ 1.000000, 1, 3.121094, 0 } },
+  { "NIKON", "D200", "2550K", 0,		{ 1.000000, 1, 3.035156, 0 } },
   { "NIKON", "D200", "2650K", 0,		{ 1.011719, 1, 2.878906, 0 } },
   { "NIKON", "D200", "2700K", 0,		{ 1.031250, 1, 2.804688, 0 } },
   { "NIKON", "D200", "2800K", 0,		{ 1.074219, 1, 2.648438, 0 } },
@@ -1447,196 +1812,230 @@ const wb_data wb_preset[] = {
   { "NIKON", "D200", "9300K", 0,		{ 2.367188, 1, 1.070313, 0 } },
   { "NIKON", "D200", "10000K", 0,		{ 2.453125, 1, 1.035156, 0 } },
 
-  /* D300 basic + fine tune WB presets */
   { "NIKON", "D300", Incandescent, -6,		{ 1.097656, 1, 1.898438, 0 } },
-  { "NIKON", "D300", Incandescent, -5,		{ 1.085938, 1, 1.929687, 0 } },
+  { "NIKON", "D300", Incandescent, -5,		{ 1.085938, 1, 1.929688, 0 } },
   { "NIKON", "D300", Incandescent, -4,		{ 1.070313, 1, 1.964844, 0 } },
-  { "NIKON", "D300", Incandescent, -3,		{ 1.058594, 1, 2, 0 } },
+  { "NIKON", "D300", Incandescent, -3,		{ 1.058594, 1, 2.000000, 0 } },
   { "NIKON", "D300", Incandescent, -2,		{ 1.042969, 1, 2.035156, 0 } },
-  { "NIKON", "D300", Incandescent, -1,		{ 1.03125, 1, 2.074219, 0 } },
+  { "NIKON", "D300", Incandescent, -1,		{ 1.031250, 1, 2.074219, 0 } },
   { "NIKON", "D300", Incandescent, 0,		{ 1.019531, 1, 2.109375, 0 } },
   { "NIKON", "D300", Incandescent, 1,		{ 1.007813, 1, 2.144531, 0 } },
-  { "NIKON", "D300", Incandescent, 2,		{ 1, 1, 2.183594, 0 } },
-  { "NIKON", "D300", Incandescent, 3,		{ 1, 1, 2.21875, 0 } },
-  { "NIKON", "D300", Incandescent, 4,		{ 1, 1, 2.257812, 0 } },
-  { "NIKON", "D300", Incandescent, 5,		{ 1, 1, 2.296875, 0 } },
-  { "NIKON", "D300", Incandescent, 6,		{ 1, 1, 2.335937, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, -6, { 1.03125, 1, 2.101563, 0 } },
+  { "NIKON", "D300", Incandescent, 2,		{ 0.996094, 1, 2.183594, 0 } },
+  { "NIKON", "D300", Incandescent, 3,		{ 0.984375, 1, 2.218750, 0 } },
+  { "NIKON", "D300", Incandescent, 4,		{ 0.972656, 1, 2.257813, 0 } },
+  { "NIKON", "D300", Incandescent, 5,		{ 0.964844, 1, 2.296875, 0 } },
+  { "NIKON", "D300", Incandescent, 6,		{ 0.953125, 1, 2.335938, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, -6, { 1.031250, 1, 2.101563, 0 } },
   { "NIKON", "D300", SodiumVaporFluorescent, -5, { 1.015625, 1, 2.136719, 0 } },
   { "NIKON", "D300", SodiumVaporFluorescent, -4, { 1.003906, 1, 2.167969, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, -3, { 0.9882813, 1, 2.207031, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, -2, { 0.9765625, 1, 2.242187, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, -1, { 0.9609375, 1, 2.28125, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, 0,	{ 0.9492188, 1, 2.320313, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, 1,	{ 0.9492188, 1, 2.363281, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, 2, { 0.9492188, 1, 2.410156, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, 3,	{ 0.9492188, 1, 2.457031, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, 4,	{ 0.9492188, 1, 2.503906, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, 5,	{ 0.9492188, 1, 2.558594, 0 } },
-  { "NIKON", "D300", SodiumVaporFluorescent, 6,	{ 0.9492188, 1, 2.613281, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, -3, { 0.988281, 1, 2.207031, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, -2, { 0.976563, 1, 2.242188, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, -1, { 0.960938, 1, 2.281250, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, 0,	{ 0.949219, 1, 2.320313, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, 1,	{ 0.937500, 1, 2.363281, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, 2,	{ 0.925781, 1, 2.410156, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, 3,	{ 0.914063, 1, 2.457031, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, 4,	{ 0.902344, 1, 2.503906, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, 5,	{ 0.890625, 1, 2.558594, 0 } },
+  { "NIKON", "D300", SodiumVaporFluorescent, 6,	{ 0.878906, 1, 2.613281, 0 } },
   { "NIKON", "D300", WarmWhiteFluorescent, -6,	{ 1.128906, 1, 1.847656, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, -5,	{ 1.113281, 1, 1.867187, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, -5,	{ 1.113281, 1, 1.867188, 0 } },
   { "NIKON", "D300", WarmWhiteFluorescent, -4,	{ 1.097656, 1, 1.886719, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, -3,	{ 1.085938, 1, 1.90625, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, -3,	{ 1.085938, 1, 1.906250, 0 } },
   { "NIKON", "D300", WarmWhiteFluorescent, -2,	{ 1.070313, 1, 1.925781, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, -1,	{ 1.058594, 1, 1.945312, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, 0,	{ 1.046875, 1, 1.960937, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, -1,	{ 1.058594, 1, 1.945313, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, 0,	{ 1.046875, 1, 1.960938, 0 } },
   { "NIKON", "D300", WarmWhiteFluorescent, 1,	{ 1.035156, 1, 1.980469, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, 2,	{ 1.023437, 1, 1.996094, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, 2,	{ 1.023438, 1, 1.996094, 0 } },
   { "NIKON", "D300", WarmWhiteFluorescent, 3,	{ 1.007813, 1, 2.015625, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, 4,	{ 1, 1, 2.03125, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, 5,	{ 1, 1, 2.046875, 0 } },
-  { "NIKON", "D300", WarmWhiteFluorescent, 6,	{ 1, 1, 2.0625, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, 4,	{ 1.000000, 1, 2.031250, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, 5,	{ 0.988281, 1, 2.046875, 0 } },
+  { "NIKON", "D300", WarmWhiteFluorescent, 6,	{ 0.976563, 1, 2.062500, 0 } },
   { "NIKON", "D300", WhiteFluorescent, -6,	{ 1.453125, 1, 2.050781, 0 } },
-  { "NIKON", "D300", WhiteFluorescent, -5,	{ 1.414062, 1, 2.09375, 0 } },
+  { "NIKON", "D300", WhiteFluorescent, -5,	{ 1.414063, 1, 2.093750, 0 } },
   { "NIKON", "D300", WhiteFluorescent, -4,	{ 1.371094, 1, 2.132813, 0 } },
   { "NIKON", "D300", WhiteFluorescent, -3,	{ 1.328125, 1, 2.175781, 0 } },
-  { "NIKON", "D300", WhiteFluorescent, -2,	{ 1.285156, 1, 2.21875, 0 } },
+  { "NIKON", "D300", WhiteFluorescent, -2,	{ 1.285156, 1, 2.218750, 0 } },
   { "NIKON", "D300", WhiteFluorescent, -1,	{ 1.238281, 1, 2.261719, 0 } },
   { "NIKON", "D300", WhiteFluorescent, 0,	{ 1.191406, 1, 2.304688, 0 } },
   { "NIKON", "D300", WhiteFluorescent, 1,	{ 1.140625, 1, 2.351563, 0 } },
   { "NIKON", "D300", WhiteFluorescent, 2,	{ 1.089844, 1, 2.394531, 0 } },
-  { "NIKON", "D300", WhiteFluorescent, 3,	{ 1.039062, 1, 2.441406, 0 } },
-  { "NIKON", "D300", WhiteFluorescent, 4,	{ 1, 1, 2.488281, 0 } },
-  { "NIKON", "D300", WhiteFluorescent, 5,	{ 1, 1, 2.535156, 0 } },
-  { "NIKON", "D300", WhiteFluorescent, 6,	{ 1, 1, 2.582031, 0 } },
+  { "NIKON", "D300", WhiteFluorescent, 3,	{ 1.039063, 1, 2.441406, 0 } },
+  { "NIKON", "D300", WhiteFluorescent, 4,	{ 0.984375, 1, 2.488281, 0 } },
+  { "NIKON", "D300", WhiteFluorescent, 5,	{ 0.925781, 1, 2.535156, 0 } },
+  { "NIKON", "D300", WhiteFluorescent, 6,	{ 0.867188, 1, 2.582031, 0 } },
   { "NIKON", "D300", CoolWhiteFluorescent, -6,	{ 1.667969, 1, 1.800781, 0 } },
   { "NIKON", "D300", CoolWhiteFluorescent, -5,	{ 1.636719, 1, 1.835938, 0 } },
-  { "NIKON", "D300", CoolWhiteFluorescent, -4,	{ 1.605469, 1, 1.875, 0 } },
-  { "NIKON", "D300", CoolWhiteFluorescent, -3,	{ 1.574219, 1, 1.914062, 0 } },
+  { "NIKON", "D300", CoolWhiteFluorescent, -4,	{ 1.605469, 1, 1.875000, 0 } },
+  { "NIKON", "D300", CoolWhiteFluorescent, -3,	{ 1.574219, 1, 1.914063, 0 } },
   { "NIKON", "D300", CoolWhiteFluorescent, -2,	{ 1.539063, 1, 1.953125, 0 } },
   { "NIKON", "D300", CoolWhiteFluorescent, -1,	{ 1.503906, 1, 1.996094, 0 } },
-  { "NIKON", "D300", CoolWhiteFluorescent, 0,	{ 1.46875, 1, 2.035156, 0 } },
-  { "NIKON", "D300", CoolWhiteFluorescent, 1,	{ 1.429687, 1, 2.074219, 0 } },
+  { "NIKON", "D300", CoolWhiteFluorescent, 0,	{ 1.468750, 1, 2.035156, 0 } },
+  { "NIKON", "D300", CoolWhiteFluorescent, 1,	{ 1.429688, 1, 2.074219, 0 } },
   { "NIKON", "D300", CoolWhiteFluorescent, 2,	{ 1.386719, 1, 2.117188, 0 } },
   { "NIKON", "D300", CoolWhiteFluorescent, 3,	{ 1.347656, 1, 2.160156, 0 } },
-  { "NIKON", "D300", CoolWhiteFluorescent, 4,	{ 1.304687, 1, 2.203125, 0 } },
-  { "NIKON", "D300", CoolWhiteFluorescent, 5,	{ 1.257812, 1, 2.246094, 0 } },
-  { "NIKON", "D300", CoolWhiteFluorescent, 6,	{ 1.210937, 1, 2.289063, 0 } },
-  { "NIKON", "D300", DayWhiteFluorescent, -6,	{ 1.625, 1, 1.195313, 0 } },
+  { "NIKON", "D300", CoolWhiteFluorescent, 4,	{ 1.304688, 1, 2.203125, 0 } },
+  { "NIKON", "D300", CoolWhiteFluorescent, 5,	{ 1.257813, 1, 2.246094, 0 } },
+  { "NIKON", "D300", CoolWhiteFluorescent, 6,	{ 1.210938, 1, 2.289063, 0 } },
+  { "NIKON", "D300", DayWhiteFluorescent, -6,	{ 1.625000, 1, 1.195313, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, -5,	{ 1.601563, 1, 1.222656, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, -4,	{ 1.582031, 1, 1.253906, 0 } },
-  { "NIKON", "D300", DayWhiteFluorescent, -3,	{ 1.558594, 1, 1.28125, 0 } },
+  { "NIKON", "D300", DayWhiteFluorescent, -3,	{ 1.558594, 1, 1.281250, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, -2,	{ 1.535156, 1, 1.308594, 0 } },
-  { "NIKON", "D300", DayWhiteFluorescent, -1,	{ 1.515625, 1, 1.335937, 0 } },
+  { "NIKON", "D300", DayWhiteFluorescent, -1,	{ 1.515625, 1, 1.335938, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, 0,	{ 1.492188, 1, 1.363281, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, 1,	{ 1.472656, 1, 1.390625, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, 2,	{ 1.453125, 1, 1.417969, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, 3,	{ 1.433594, 1, 1.441406, 0 } },
-  { "NIKON", "D300", DayWhiteFluorescent, 4,	{ 1.410156, 1, 1.46875, 0 } },
+  { "NIKON", "D300", DayWhiteFluorescent, 4,	{ 1.410156, 1, 1.468750, 0 } },
   { "NIKON", "D300", DayWhiteFluorescent, 5,	{ 1.390625, 1, 1.492188, 0 } },
-  { "NIKON", "D300", DayWhiteFluorescent, 6,	{ 1.375, 1, 1.519531, 0 } },
-  { "NIKON", "D300", DaylightFluorescent, -6,	{ 1.851563, 1, 1, 0 } },
-  { "NIKON", "D300", DaylightFluorescent, -5,	{ 1.824219, 1, 1, 0 } },
-  { "NIKON", "D300", DaylightFluorescent, -4,	{ 1.796875, 1, 1, 0 } },
+  { "NIKON", "D300", DayWhiteFluorescent, 6,	{ 1.375000, 1, 1.519531, 0 } },
+  { "NIKON", "D300", DaylightFluorescent, -6,	{ 1.851563, 1, 1.000000, 0 } },
+  { "NIKON", "D300", DaylightFluorescent, -5,	{ 1.824219, 1, 1.000000, 0 } },
+  { "NIKON", "D300", DaylightFluorescent, -4,	{ 1.796875, 1, 1.000000, 0 } },
   { "NIKON", "D300", DaylightFluorescent, -3,	{ 1.773438, 1, 1.007813, 0 } },
-  { "NIKON", "D300", DaylightFluorescent, -2,	{ 1.75, 1, 1.039062, 0 } },
+  { "NIKON", "D300", DaylightFluorescent, -2,	{ 1.750000, 1, 1.039063, 0 } },
   { "NIKON", "D300", DaylightFluorescent, -1,	{ 1.722656, 1, 1.070313, 0 } },
   { "NIKON", "D300", DaylightFluorescent, 0,	{ 1.699219, 1, 1.101563, 0 } },
   { "NIKON", "D300", DaylightFluorescent, 1,	{ 1.675781, 1, 1.128906, 0 } },
   { "NIKON", "D300", DaylightFluorescent, 2,	{ 1.652344, 1, 1.160156, 0 } },
-  { "NIKON", "D300", DaylightFluorescent, 3,	{ 1.628906, 1, 1.1875, 0 } },
-  { "NIKON", "D300", DaylightFluorescent, 4,	{ 1.605469, 1, 1.21875, 0 } },
+  { "NIKON", "D300", DaylightFluorescent, 3,	{ 1.628906, 1, 1.187500, 0 } },
+  { "NIKON", "D300", DaylightFluorescent, 4,	{ 1.605469, 1, 1.218750, 0 } },
   { "NIKON", "D300", DaylightFluorescent, 5,	{ 1.585938, 1, 1.246094, 0 } },
-  { "NIKON", "D300", DaylightFluorescent, 6,	{ 1.5625, 1, 1.273437, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, -6, { 2.039063, 1, 1.15625, 0 } },
+  { "NIKON", "D300", DaylightFluorescent, 6,	{ 1.562500, 1, 1.273438, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, -6, { 2.039063, 1, 1.156250, 0 } },
   { "NIKON", "D300", HighTempMercuryVaporFluorescent, -5, { 2.027344, 1, 1.183594, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, -4, { 2.015625, 1, 1.210937, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, -4, { 2.015625, 1, 1.210938, 0 } },
   { "NIKON", "D300", HighTempMercuryVaporFluorescent, -3, { 2.003906, 1, 1.238281, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, -2, { 1.992187, 1, 1.269531, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, -2, { 1.992188, 1, 1.269531, 0 } },
   { "NIKON", "D300", HighTempMercuryVaporFluorescent, -1, { 1.976563, 1, 1.300781, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 0, { 1.960937, 1, 1.328125, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 1, { 1.945312, 1, 1.359375, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 2, { 1.929687, 1, 1.390625, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 3, { 1.914062, 1, 1.421875, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 0, { 1.960938, 1, 1.328125, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 1, { 1.945313, 1, 1.359375, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 2, { 1.929688, 1, 1.390625, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 3, { 1.914063, 1, 1.421875, 0 } },
   { "NIKON", "D300", HighTempMercuryVaporFluorescent, 4, { 1.894531, 1, 1.457031, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 5, { 1.875, 1, 1.488281, 0 } },
-  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 6, { 1.855469, 1, 1.523437, 0 } },
-  { "NIKON", "D300", DirectSunlight, -6,	{ 1.6875, 1, 1.167969, 0 } },
-  { "NIKON", "D300", DirectSunlight, -5,	{ 1.664062, 1, 1.1875, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 5, { 1.875000, 1, 1.488281, 0 } },
+  { "NIKON", "D300", HighTempMercuryVaporFluorescent, 6, { 1.855469, 1, 1.523438, 0 } },
+  { "NIKON", "D300", DirectSunlight, -6,	{ 1.687500, 1, 1.167969, 0 } },
+  { "NIKON", "D300", DirectSunlight, -5,	{ 1.664063, 1, 1.187500, 0 } },
   { "NIKON", "D300", DirectSunlight, -4,	{ 1.644531, 1, 1.207031, 0 } },
-  { "NIKON", "D300", DirectSunlight, -3,	{ 1.625, 1, 1.230469, 0 } },
+  { "NIKON", "D300", DirectSunlight, -3,	{ 1.625000, 1, 1.230469, 0 } },
   { "NIKON", "D300", DirectSunlight, -2,	{ 1.601563, 1, 1.253906, 0 } },
-  { "NIKON", "D300", DirectSunlight, -1,	{ 1.582031, 1, 1.28125, 0 } },
-  { "NIKON", "D300", DirectSunlight, 0,		{ 1.5625, 1, 1.308594, 0 } },
-  { "NIKON", "D300", DirectSunlight, 1,		{ 1.542969, 1, 1.335937, 0 } },
-  { "NIKON", "D300", DirectSunlight, 2,		{ 1.523437, 1, 1.359375, 0 } },
+  { "NIKON", "D300", DirectSunlight, -1,	{ 1.582031, 1, 1.281250, 0 } },
+  { "NIKON", "D300", DirectSunlight, 0,		{ 1.562500, 1, 1.308594, 0 } },
+  { "NIKON", "D300", DirectSunlight, 1,		{ 1.542969, 1, 1.335938, 0 } },
+  { "NIKON", "D300", DirectSunlight, 2,		{ 1.523438, 1, 1.359375, 0 } },
   { "NIKON", "D300", DirectSunlight, 3,		{ 1.503906, 1, 1.386719, 0 } },
-  { "NIKON", "D300", DirectSunlight, 4,		{ 1.480469, 1, 1.414062, 0 } },
-  { "NIKON", "D300", DirectSunlight, 5,		{ 1.457031, 1, 1.4375, 0 } },
-  { "NIKON", "D300", DirectSunlight, 6,		{ 1.429687, 1, 1.457031, 0 } },
+  { "NIKON", "D300", DirectSunlight, 4,		{ 1.480469, 1, 1.414063, 0 } },
+  { "NIKON", "D300", DirectSunlight, 5,		{ 1.457031, 1, 1.437500, 0 } },
+  { "NIKON", "D300", DirectSunlight, 6,		{ 1.429688, 1, 1.457031, 0 } },
   { "NIKON", "D300", Flash, -6,			{ 1.910156, 1, 1.058594, 0 } },
   { "NIKON", "D300", Flash, -5,			{ 1.863281, 1, 1.078125, 0 } },
-  { "NIKON", "D300", Flash, -4,			{ 1.820313, 1, 1.09375, 0 } },
-  { "NIKON", "D300", Flash, -3,			{ 1.78125, 1, 1.105469, 0 } },
+  { "NIKON", "D300", Flash, -4,			{ 1.820313, 1, 1.093750, 0 } },
+  { "NIKON", "D300", Flash, -3,			{ 1.781250, 1, 1.105469, 0 } },
   { "NIKON", "D300", Flash, -2,			{ 1.746094, 1, 1.121094, 0 } },
   { "NIKON", "D300", Flash, -1,			{ 1.714844, 1, 1.136719, 0 } },
-  { "NIKON", "D300", Flash, 0,			{ 1.6875, 1, 1.152344, 0 } },
-  { "NIKON", "D300", Flash, 1,			{ 1.660156, 1, 1.164062, 0 } },
-  { "NIKON", "D300", Flash, 2,			{ 1.636719, 1, 1.179687, 0 } },
+  { "NIKON", "D300", Flash, 0,			{ 1.687500, 1, 1.152344, 0 } },
+  { "NIKON", "D300", Flash, 1,			{ 1.660156, 1, 1.164063, 0 } },
+  { "NIKON", "D300", Flash, 2,			{ 1.636719, 1, 1.179688, 0 } },
   { "NIKON", "D300", Flash, 3,			{ 1.613281, 1, 1.195313, 0 } },
-  { "NIKON", "D300", Flash, 4,			{ 1.59375, 1, 1.210937, 0 } },
+  { "NIKON", "D300", Flash, 4,			{ 1.593750, 1, 1.210938, 0 } },
   { "NIKON", "D300", Flash, 5,			{ 1.574219, 1, 1.230469, 0 } },
   { "NIKON", "D300", Flash, 6,			{ 1.554688, 1, 1.246094, 0 } },
-  { "NIKON", "D300", Cloudy, -6,		{ 1.820313, 1, 1.09375, 0 } },
+  { "NIKON", "D300", Cloudy, -6,		{ 1.820313, 1, 1.093750, 0 } },
   { "NIKON", "D300", Cloudy, -5,		{ 1.789063, 1, 1.105469, 0 } },
   { "NIKON", "D300", Cloudy, -4,		{ 1.761719, 1, 1.117188, 0 } },
   { "NIKON", "D300", Cloudy, -3,		{ 1.734375, 1, 1.132813, 0 } },
-  { "NIKON", "D300", Cloudy, -2,		{ 1.710937, 1, 1.148437, 0 } },
-  { "NIKON", "D300", Cloudy, -1,		{ 1.6875, 1, 1.167969, 0 } },
-  { "NIKON", "D300", Cloudy, 0,			{ 1.664062, 1, 1.1875, 0 } },
+  { "NIKON", "D300", Cloudy, -2,		{ 1.710938, 1, 1.148438, 0 } },
+  { "NIKON", "D300", Cloudy, -1,		{ 1.687500, 1, 1.167969, 0 } },
+  { "NIKON", "D300", Cloudy, 0,			{ 1.664063, 1, 1.187500, 0 } },
   { "NIKON", "D300", Cloudy, 1,			{ 1.644531, 1, 1.207031, 0 } },
-  { "NIKON", "D300", Cloudy, 2,			{ 1.625, 1, 1.230469, 0 } },
+  { "NIKON", "D300", Cloudy, 2,			{ 1.625000, 1, 1.230469, 0 } },
   { "NIKON", "D300", Cloudy, 3,			{ 1.601563, 1, 1.253906, 0 } },
-  { "NIKON", "D300", Cloudy, 4,			{ 1.582031, 1, 1.28125, 0 } },
-  { "NIKON", "D300", Cloudy, 5,			{ 1.5625, 1, 1.308594, 0 } },
-  { "NIKON", "D300", Cloudy, 6,			{ 1.542969, 1, 1.335937, 0 } },
-  { "NIKON", "D300", Shade, -6,			{ 2.15625, 1, 1, 0 } },
-  { "NIKON", "D300", Shade, -5,			{ 2.109375, 1, 1, 0 } },
-  { "NIKON", "D300", Shade, -4,			{ 2.0625, 1, 1.011719, 0 } },
+  { "NIKON", "D300", Cloudy, 4,			{ 1.582031, 1, 1.281250, 0 } },
+  { "NIKON", "D300", Cloudy, 5,			{ 1.562500, 1, 1.308594, 0 } },
+  { "NIKON", "D300", Cloudy, 6,			{ 1.542969, 1, 1.335938, 0 } },
+  { "NIKON", "D300", Shade, -6,			{ 2.156250, 1, 1.000000, 0 } },
+  { "NIKON", "D300", Shade, -5,			{ 2.109375, 1, 1.000000, 0 } },
+  { "NIKON", "D300", Shade, -4,			{ 2.062500, 1, 1.011719, 0 } },
   { "NIKON", "D300", Shade, -3,			{ 2.019531, 1, 1.027344, 0 } },
   { "NIKON", "D300", Shade, -2,			{ 1.976563, 1, 1.042969, 0 } },
-  { "NIKON", "D300", Shade, -1,			{ 1.9375, 1, 1.054688, 0 } },
+  { "NIKON", "D300", Shade, -1,			{ 1.937500, 1, 1.054688, 0 } },
   { "NIKON", "D300", Shade, 0,			{ 1.902344, 1, 1.066406, 0 } },
-  { "NIKON", "D300", Shade, 1,			{ 1.867187, 1, 1.074219, 0 } },
+  { "NIKON", "D300", Shade, 1,			{ 1.867188, 1, 1.074219, 0 } },
   { "NIKON", "D300", Shade, 2,			{ 1.832031, 1, 1.085938, 0 } },
   { "NIKON", "D300", Shade, 3,			{ 1.804688, 1, 1.097656, 0 } },
   { "NIKON", "D300", Shade, 4,			{ 1.773438, 1, 1.113281, 0 } },
-  { "NIKON", "D300", Shade, 5,			{ 1.746094, 1, 1.125, 0 } },
+  { "NIKON", "D300", Shade, 5,			{ 1.746094, 1, 1.125000, 0 } },
   { "NIKON", "D300", Shade, 6,			{ 1.722656, 1, 1.140625, 0 } },
-
-  /* D300 Kelvin presets */
-  { "NIKON", "D300", "2500K", 0,		{ 1, 1, 2.632813, 0 } },
-  { "NIKON", "D300", "2560K", 0,		{ 1, 1, 2.550781, 0 } },
-  { "NIKON", "D300", "2630K", 0,		{ 1, 1, 2.46875, 0 } },
-  { "NIKON", "D300", "2700K", 0,		{ 1, 1, 2.390625, 0 } },
-  { "NIKON", "D300", "2780K", 0,		{ 1, 1, 2.3125, 0 } },
-  { "NIKON", "D300", "2860K", 0,		{ 1, 1, 2.234375, 0 } },
+  { "NIKON", "D300", "2500K", 0,		{ 0.894531, 1, 2.632813, 0 } },
+  { "NIKON", "D300", "2560K", 0,		{ 0.906250, 1, 2.550781, 0 } },
+  { "NIKON", "D300", "2630K", 0,		{ 0.921875, 1, 2.468750, 0 } },
+  { "NIKON", "D300", "2700K", 0,		{ 0.941406, 1, 2.390625, 0 } },
+  { "NIKON", "D300", "2780K", 0,		{ 0.960938, 1, 2.312500, 0 } },
+  { "NIKON", "D300", "2860K", 0,		{ 0.980469, 1, 2.234375, 0 } },
   { "NIKON", "D300", "2940K", 0,		{ 1.003906, 1, 2.160156, 0 } },
   { "NIKON", "D300", "3030K", 0,		{ 1.027344, 1, 2.085938, 0 } },
   { "NIKON", "D300", "3130K", 0,		{ 1.050781, 1, 2.015625, 0 } },
-  { "NIKON", "D300", "3230K", 0,		{ 1.078125, 1, 1.945312, 0 } },
-  { "NIKON", "D300", "3330K", 0,		{ 1.109375, 1, 1.875, 0 } },
+  { "NIKON", "D300", "3230K", 0,		{ 1.078125, 1, 1.945313, 0 } },
+  { "NIKON", "D300", "3330K", 0,		{ 1.109375, 1, 1.875000, 0 } },
   { "NIKON", "D300", "3450K", 0,		{ 1.136719, 1, 1.808594, 0 } },
-  { "NIKON", "D300", "3570K", 0,		{ 1.167969, 1, 1.742187, 0 } },
+  { "NIKON", "D300", "3570K", 0,		{ 1.167969, 1, 1.742188, 0 } },
   { "NIKON", "D300", "3700K", 0,		{ 1.203125, 1, 1.679688, 0 } },
   { "NIKON", "D300", "3850K", 0,		{ 1.238281, 1, 1.617188, 0 } },
   { "NIKON", "D300", "4000K", 0,		{ 1.277344, 1, 1.554688, 0 } },
-  { "NIKON", "D300", "4170K", 0,		{ 1.316406, 1, 1.5, 0 } },
+  { "NIKON", "D300", "4170K", 0,		{ 1.316406, 1, 1.500000, 0 } },
   { "NIKON", "D300", "4350K", 0,		{ 1.386719, 1, 1.484375, 0 } },
   { "NIKON", "D300", "4550K", 0,		{ 1.441406, 1, 1.449219, 0 } },
   { "NIKON", "D300", "4760K", 0,		{ 1.488281, 1, 1.402344, 0 } },
-  { "NIKON", "D300", "5000K", 0,		{ 1.53125, 1, 1.351563, 0 } },
+  { "NIKON", "D300", "5000K", 0,		{ 1.531250, 1, 1.351563, 0 } },
   { "NIKON", "D300", "5260K", 0,		{ 1.570313, 1, 1.296875, 0 } },
   { "NIKON", "D300", "5560K", 0,		{ 1.613281, 1, 1.246094, 0 } },
   { "NIKON", "D300", "5880K", 0,		{ 1.652344, 1, 1.199219, 0 } },
   { "NIKON", "D300", "6250K", 0,		{ 1.695313, 1, 1.160156, 0 } },
-  { "NIKON", "D300", "6670K", 0,		{ 1.746094, 1, 1.125, 0 } },
+  { "NIKON", "D300", "6670K", 0,		{ 1.746094, 1, 1.125000, 0 } },
   { "NIKON", "D300", "7140K", 0,		{ 1.804688, 1, 1.097656, 0 } },
-  { "NIKON", "D300", "7690K", 0,		{ 1.867187, 1, 1.074219, 0 } },
-  { "NIKON", "D300", "8330K", 0,		{ 1.9375, 1, 1.054688, 0 } },
+  { "NIKON", "D300", "7690K", 0,		{ 1.867188, 1, 1.074219, 0 } },
+  { "NIKON", "D300", "8330K", 0,		{ 1.937500, 1, 1.054688, 0 } },
   { "NIKON", "D300", "9090K", 0,		{ 2.019531, 1, 1.027344, 0 } },
-  { "NIKON", "D300", "10000K", 0,		{ 2.109375, 1, 1, 0 } },
+  { "NIKON", "D300", "10000K", 0,		{ 2.109375, 1, 1.000000, 0 } },
+
+  { "NIKON", "D300S", DirectSunlight, -6,	{ 1.687, 1, 1.168, 0 } },
+  { "NIKON", "D300S", DirectSunlight, 0,	{ 1.563, 1, 1.309, 0 } },
+  { "NIKON", "D300S", DirectSunlight, 6,	{ 1.430, 1, 1.457, 0 } },
+  { "NIKON", "D300S", Flash, -6,		{ 1.910, 1, 1.059, 0 } },
+  { "NIKON", "D300S", Flash, 0,			{ 1.687, 1, 1.152, 0 } },
+  { "NIKON", "D300S", Flash, 6,			{ 1.555, 1, 1.246, 0 } },
+  { "NIKON", "D300S", Cloudy, -6,		{ 1.820, 1, 1.094, 0 } },
+  { "NIKON", "D300S", Cloudy, 0,		{ 1.664, 1, 1.187, 0 } },
+  { "NIKON", "D300S", Cloudy, 6,		{ 1.543, 1, 1.336, 0 } },
+  { "NIKON", "D300S", Shade, -6,		{ 2.156, 1, 1.000, 0 } },
+  { "NIKON", "D300S", Shade, 0,			{ 1.902, 1, 1.066, 0 } },
+  { "NIKON", "D300S", Shade, 6,			{ 1.723, 1, 1.141, 0 } },
+  { "NIKON", "D300S", Incandescent, -6,		{ 1.098, 1, 1.898, 0 } },
+  { "NIKON", "D300S", Incandescent, 0,		{ 1.020, 1, 2.109, 0 } },
+  { "NIKON", "D300S", Incandescent, 6,		{ 1, 1.049, 2.451, 0 } },
+  { "NIKON", "D300S", SodiumVaporFluorescent, -6, { 1.031, 1, 2.102, 0 } },
+  { "NIKON", "D300S", SodiumVaporFluorescent, 0, { 1, 1.053, 2.444, 0 } },
+  { "NIKON", "D300S", SodiumVaporFluorescent, 6, { 1, 1.138, 2.973, 0 } },
+  { "NIKON", "D300S", WarmWhiteFluorescent, -6,	{ 1.129, 1, 1.848, 0 } },
+  { "NIKON", "D300S", WarmWhiteFluorescent, 0,	{ 1.047, 1, 1.961, 0 } },
+  { "NIKON", "D300S", WarmWhiteFluorescent, 6,	{ 1, 1.024, 2.112, 0 } },
+  { "NIKON", "D300S", WhiteFluorescent, -6,	{ 1.453, 1, 2.051, 0 } },
+  { "NIKON", "D300S", WhiteFluorescent, 0,	{ 1.191, 1, 2.305, 0 } },
+  { "NIKON", "D300S", WhiteFluorescent, 6,	{ 1, 1.153, 2.977, 0 } },
+  { "NIKON", "D300S", CoolWhiteFluorescent, -6,	{ 1.668, 1, 1.801, 0 } },
+  { "NIKON", "D300S", CoolWhiteFluorescent, 0,	{ 1.469, 1, 2.035, 0 } },
+  { "NIKON", "D300S", CoolWhiteFluorescent, 6,	{ 1.211, 1, 2.289, 0 } },
+  { "NIKON", "D300S", DayWhiteFluorescent, -6,	{ 1.625, 1, 1.195, 0 } },
+  { "NIKON", "D300S", DayWhiteFluorescent, 0,	{ 1.492, 1, 1.363, 0 } },
+  { "NIKON", "D300S", DayWhiteFluorescent, 6,	{ 1.375, 1, 1.520, 0 } },
+  { "NIKON", "D300S", DaylightFluorescent, -6,	{ 1.852, 1, 1.000, 0 } },
+  { "NIKON", "D300S", DaylightFluorescent, 0,	{ 1.699, 1, 1.102, 0 } },
+  { "NIKON", "D300S", DaylightFluorescent, 6,	{ 1.563, 1, 1.273, 0 } },
+  { "NIKON", "D300S", HighTempMercuryVaporFluorescent, -6, { 2.039, 1, 1.156, 0 } }, 
+  { "NIKON", "D300S", HighTempMercuryVaporFluorescent, 0, { 1.961, 1, 1.328, 0 } },
+  { "NIKON", "D300S", HighTempMercuryVaporFluorescent, 6, { 1.855, 1, 1.523, 0 } },
 
   { "NIKON", "D700", DirectSunlight, -6,	{ 1.980469, 1, 1.199219, 0 } },
   { "NIKON", "D700", DirectSunlight, 0,		{ 1.816406, 1, 1.355469, 0 } },
@@ -1771,6 +2170,7 @@ const wb_data wb_preset[] = {
   { "NIKON", "D50", Fluorescent, 0,		{ 1.945312, 1, 2.191406, 0 } },
   { "NIKON", "D50", DirectSunlight, 0,		{ 2.140625, 1, 1.398438, 0 } },
   { "NIKON", "D50", Flash, 0,			{ 2.398438, 1, 1.339844, 0 } },
+  { "NIKON", "D50", Cloudy, 0,			{ 2.360269, 1, 1.282828, 0 } },
   { "NIKON", "D50", Shade, 0,			{ 2.746094, 1, 1.156250, 0 } },
 
   { "NIKON", "D60", DirectSunlight, 0,		{ 1.792969, 1, 1.371094, 0 } },
@@ -1786,43 +2186,91 @@ const wb_data wb_preset[] = {
   { "NIKON", "D60", DaylightFluorescent, 0,	{ 1.953125, 1, 1.121094, 0 } },
   { "NIKON", "D60", HighTempMercuryVaporFluorescent, 0, { 2.296875, 1, 1.398438, 0 } },
 
-  { "NIKON", "D70", Incandescent, -3,		{ 1.429688, 1, 2.539062, 0 } },
+  { "NIKON", "D70", Incandescent, -3,		{ 1.429688, 1, 2.539063, 0 } }, /*3300K*/
+  { "NIKON", "D70", Incandescent, -2,		{ 1.398438, 1, 2.632813, 0 } }, /*3200K*/
+  { "NIKON", "D70", Incandescent, -1,		{ 1.378906, 1, 2.687500, 0 } }, /*3100K*/
   { "NIKON", "D70", Incandescent, 0,		{ 1.343750, 1, 2.816406, 0 } }, /*3000K*/
-  { "NIKON", "D70", Incandescent, 3,		{ 1.253906, 1, 3.250000, 0 } },
-  { "NIKON", "D70", Fluorescent, -3,		{ 2.734375, 1, 1.621094, 0 } },
+  { "NIKON", "D70", Incandescent, 1,		{ 1.312500, 1, 2.937500, 0 } }, /*2900K*/
+  { "NIKON", "D70", Incandescent, 2,		{ 1.281250, 1, 3.089844, 0 } }, /*2800K*/
+  { "NIKON", "D70", Incandescent, 3,		{ 1.253906, 1, 3.250000, 0 } }, /*2700K*/
+  { "NIKON", "D70", Fluorescent, -3,		{ 2.734375, 1, 1.621094, 0 } }, /*7200K*/
+  { "NIKON", "D70", Fluorescent, -2,		{ 2.417969, 1, 1.343750, 0 } }, /*6500K*/
+  { "NIKON", "D70", Fluorescent, -1,		{ 2.078125, 1, 1.691406, 0 } }, /*5000K*/
   { "NIKON", "D70", Fluorescent, 0,		{ 1.964844, 1, 2.476563, 0 } }, /*4200K*/
-  { "NIKON", "D70", Fluorescent, 3,		{ 1.312500, 1, 2.562500, 0 } },
-  { "NIKON", "D70", DirectSunlight, -3,		{ 2.156250, 1, 1.523438, 0 } },
+  { "NIKON", "D70", Fluorescent, 1,		{ 1.566406, 1, 2.753906, 0 } }, /*3700K*/
+  { "NIKON", "D70", Fluorescent, 2,		{ 1.406250, 1, 2.550781, 0 } }, /*3000K*/
+  { "NIKON", "D70", Fluorescent, 3,		{ 1.312500, 1, 2.562500, 0 } }, /*2700K*/
+  { "NIKON", "D70", DirectSunlight, -3,		{ 2.156250, 1, 1.523438, 0 } }, /*5600K*/
+  { "NIKON", "D70", DirectSunlight, -2,		{ 2.109375, 1, 1.562500, 0 } }, /*5400K*/
+  { "NIKON", "D70", DirectSunlight, -1,		{ 2.089844, 1, 1.574219, 0 } }, /*5300K*/
   { "NIKON", "D70", DirectSunlight, 0,		{ 2.062500, 1, 1.597656, 0 } }, /*5200K*/
-  { "NIKON", "D70", DirectSunlight, 3,		{ 1.953125, 1, 1.695312, 0 } },
-  { "NIKON", "D70", Flash, -3,			{ 2.578125, 1, 1.476562, 0 } },
+  { "NIKON", "D70", DirectSunlight, 1,		{ 2.007813, 1, 1.648438, 0 } }, /*5000K*/
+  { "NIKON", "D70", DirectSunlight, 2,		{ 1.980469, 1, 1.671875, 0 } }, /*4900K*/
+  { "NIKON", "D70", DirectSunlight, 3,		{ 1.953125, 1, 1.695313, 0 } }, /*4800K*/
+  { "NIKON", "D70", Flash, -3,			{ 2.578125, 1, 1.476563, 0 } }, /*6000K*/
+  { "NIKON", "D70", Flash, -2,			{ 2.535156, 1, 1.484375, 0 } }, /*5800K*/
+  { "NIKON", "D70", Flash, -1,			{ 2.488281, 1, 1.492188, 0 } }, /*5600K*/
   { "NIKON", "D70", Flash, 0,			{ 2.441406, 1, 1.500000, 0 } }, /*5400K*/
-  { "NIKON", "D70", Flash, 3,			{ 2.378906, 1, 1.523438, 0 } },
-  { "NIKON", "D70", Cloudy, -3,			{ 2.375000, 1, 1.386719, 0 } },
+  { "NIKON", "D70", Flash, 1,			{ 2.421875, 1, 1.507813, 0 } }, /*5200K*/
+  { "NIKON", "D70", Flash, 2,			{ 2.398438, 1, 1.515625, 0 } }, /*5000K*/
+  { "NIKON", "D70", Flash, 3,			{ 2.378906, 1, 1.523438, 0 } }, /*4800K*/
+  { "NIKON", "D70", Cloudy, -3,			{ 2.375000, 1, 1.386719, 0 } }, /*6600K*/
+  { "NIKON", "D70", Cloudy, -2,			{ 2.343750, 1, 1.406250, 0 } }, /*6400K*/
+  { "NIKON", "D70", Cloudy, -1,			{ 2.300781, 1, 1.429688, 0 } }, /*6200K*/
   { "NIKON", "D70", Cloudy, 0,			{ 2.257813, 1, 1.457031, 0 } }, /*6000K*/
-  { "NIKON", "D70", Cloudy, 3,			{ 2.109375, 1, 1.562500, 0 } },
-  { "NIKON", "D70", Shade, -3,			{ 2.757812, 1, 1.226562, 0 } },
+  { "NIKON", "D70", Cloudy, 1,			{ 2.207031, 1, 1.488281, 0 } }, /*5800K*/
+  { "NIKON", "D70", Cloudy, 2,			{ 2.156250, 1, 1.523438, 0 } }, /*5600K*/
+  { "NIKON", "D70", Cloudy, 3,			{ 2.109375, 1, 1.562500, 0 } }, /*5400K*/
+  { "NIKON", "D70", Shade, -3,			{ 2.757813, 1, 1.226563, 0 } }, /*9200K*/
+  { "NIKON", "D70", Shade, -2,			{ 2.710938, 1, 1.242188, 0 } }, /*8800K*/
+  { "NIKON", "D70", Shade, -1,			{ 2.660156, 1, 1.257813, 0 } }, /*8400K*/
   { "NIKON", "D70", Shade, 0,			{ 2.613281, 1, 1.277344, 0 } }, /*8000K*/
-  { "NIKON", "D70", Shade, 3,			{ 2.394531, 1, 1.375000, 0 } },
+  { "NIKON", "D70", Shade, 1,			{ 2.531250, 1, 1.308594, 0 } }, /*7500K*/
+  { "NIKON", "D70", Shade, 2,			{ 2.472656, 1, 1.335938, 0 } }, /*7100K*/
+  { "NIKON", "D70", Shade, 3,			{ 2.394531, 1, 1.375000, 0 } }, /*6700K*/
 
-  { "NIKON", "D70s", Incandescent, -3,		{ 1.429688, 1, 2.539062, 0 } },
+  { "NIKON", "D70s", Incandescent, -3,		{ 1.429688, 1, 2.539063, 0 } }, /*3300K*/
+  { "NIKON", "D70s", Incandescent, -2,		{ 1.398438, 1, 2.632813, 0 } }, /*3200K*/
+  { "NIKON", "D70s", Incandescent, -1,		{ 1.378906, 1, 2.687500, 0 } }, /*3100K*/
   { "NIKON", "D70s", Incandescent, 0,		{ 1.343750, 1, 2.816406, 0 } }, /*3000K*/
-  { "NIKON", "D70s", Incandescent, 3,		{ 1.253906, 1, 3.250000, 0 } },
-  { "NIKON", "D70s", Fluorescent, -3,		{ 2.734375, 1, 1.621094, 0 } },
+  { "NIKON", "D70s", Incandescent, 1,		{ 1.312500, 1, 2.937500, 0 } }, /*2900K*/
+  { "NIKON", "D70s", Incandescent, 2,		{ 1.281250, 1, 3.089844, 0 } }, /*2800K*/
+  { "NIKON", "D70s", Incandescent, 3,		{ 1.253906, 1, 3.250000, 0 } }, /*2700K*/
+  { "NIKON", "D70s", Fluorescent, -3,		{ 2.734375, 1, 1.621094, 0 } }, /*7200K*/
+  { "NIKON", "D70s", Fluorescent, -2,		{ 2.417969, 1, 1.343750, 0 } }, /*6500K*/
+  { "NIKON", "D70s", Fluorescent, -1,		{ 2.078125, 1, 1.691406, 0 } }, /*5000K*/
   { "NIKON", "D70s", Fluorescent, 0,		{ 1.964844, 1, 2.476563, 0 } }, /*4200K*/
-  { "NIKON", "D70s", Fluorescent, 3,		{ 1.312500, 1, 2.562500, 0 } },
-  { "NIKON", "D70s", DirectSunlight, -3,	{ 2.156250, 1, 1.523438, 0 } },
+  { "NIKON", "D70s", Fluorescent, 1,		{ 1.566406, 1, 2.753906, 0 } }, /*3700K*/
+  { "NIKON", "D70s", Fluorescent, 2,		{ 1.406250, 1, 2.550781, 0 } }, /*3000K*/
+  { "NIKON", "D70s", Fluorescent, 3,		{ 1.312500, 1, 2.562500, 0 } }, /*2700K*/
+  { "NIKON", "D70s", DirectSunlight, -3,	{ 2.156250, 1, 1.523438, 0 } }, /*5600K*/
+  { "NIKON", "D70s", DirectSunlight, -2,	{ 2.109375, 1, 1.562500, 0 } }, /*5400K*/
+  { "NIKON", "D70s", DirectSunlight, -1,	{ 2.089844, 1, 1.574219, 0 } }, /*5300K*/
   { "NIKON", "D70s", DirectSunlight, 0,		{ 2.062500, 1, 1.597656, 0 } }, /*5200K*/
-  { "NIKON", "D70s", DirectSunlight, 3,		{ 1.953125, 1, 1.695312, 0 } },
-  { "NIKON", "D70s", Flash, -3,			{ 2.578125, 1, 1.476562, 0 } },
+  { "NIKON", "D70s", DirectSunlight, 1,		{ 2.007813, 1, 1.648438, 0 } }, /*5000K*/
+  { "NIKON", "D70s", DirectSunlight, 2,		{ 1.980469, 1, 1.671875, 0 } }, /*4900K*/
+  { "NIKON", "D70s", DirectSunlight, 3,		{ 1.953125, 1, 1.695313, 0 } }, /*4800K*/
+  { "NIKON", "D70s", Flash, -3,			{ 2.578125, 1, 1.476563, 0 } }, /*6000K*/
+  { "NIKON", "D70s", Flash, -2,			{ 2.535156, 1, 1.484375, 0 } }, /*5800K*/
+  { "NIKON", "D70s", Flash, -1,			{ 2.488281, 1, 1.492188, 0 } }, /*5600K*/
   { "NIKON", "D70s", Flash, 0,			{ 2.441406, 1, 1.500000, 0 } }, /*5400K*/
-  { "NIKON", "D70s", Flash, 3,			{ 2.378906, 1, 1.523438, 0 } },
-  { "NIKON", "D70s", Cloudy, -3,		{ 2.375000, 1, 1.386719, 0 } },
+  { "NIKON", "D70s", Flash, 1,			{ 2.421875, 1, 1.507813, 0 } }, /*5200K*/
+  { "NIKON", "D70s", Flash, 2,			{ 2.398438, 1, 1.515625, 0 } }, /*5000K*/
+  { "NIKON", "D70s", Flash, 3,			{ 2.378906, 1, 1.523438, 0 } }, /*4800K*/
+  { "NIKON", "D70s", Cloudy, -3,		{ 2.375000, 1, 1.386719, 0 } }, /*6600K*/
+  { "NIKON", "D70s", Cloudy, -2,		{ 2.343750, 1, 1.406250, 0 } }, /*6400K*/
+  { "NIKON", "D70s", Cloudy, -1,		{ 2.300781, 1, 1.429688, 0 } }, /*6200K*/
   { "NIKON", "D70s", Cloudy, 0,			{ 2.257813, 1, 1.457031, 0 } }, /*6000K*/
-  { "NIKON", "D70s", Cloudy, 3,			{ 2.109375, 1, 1.562500, 0 } },
-  { "NIKON", "D70s", Shade, -3,			{ 2.757812, 1, 1.226562, 0 } },
+  { "NIKON", "D70s", Cloudy, 1,			{ 2.207031, 1, 1.488281, 0 } }, /*5800K*/
+  { "NIKON", "D70s", Cloudy, 2,			{ 2.156250, 1, 1.523438, 0 } }, /*5600K*/
+  { "NIKON", "D70s", Cloudy, 3,			{ 2.109375, 1, 1.562500, 0 } }, /*5400K*/
+  { "NIKON", "D70s", Shade, -3,			{ 2.757813, 1, 1.226563, 0 } }, /*9200K*/
+  { "NIKON", "D70s", Shade, -2,			{ 2.710938, 1, 1.242188, 0 } }, /*8800K*/
+  { "NIKON", "D70s", Shade, -1,			{ 2.660156, 1, 1.257813, 0 } }, /*8400K*/
   { "NIKON", "D70s", Shade, 0,			{ 2.613281, 1, 1.277344, 0 } }, /*8000K*/
-  { "NIKON", "D70s", Shade, 3,			{ 2.394531, 1, 1.375000, 0 } },
+  { "NIKON", "D70s", Shade, 1,			{ 2.531250, 1, 1.308594, 0 } }, /*7500K*/
+  { "NIKON", "D70s", Shade, 2,			{ 2.472656, 1, 1.335938, 0 } }, /*7100K*/
+  { "NIKON", "D70s", Shade, 3,			{ 2.394531, 1, 1.375000, 0 } }, /*6700K*/
 
   { "NIKON", "D80", Incandescent, -3,		{ 1.234375, 1, 2.140625, 0 } },
   { "NIKON", "D80", Incandescent, 0,		{ 1.148438, 1, 2.386719, 0 } },
@@ -1913,6 +2361,19 @@ const wb_data wb_preset[] = {
   { "NIKON", "D90", "8330K", 0,			{ 2.218750, 1, 1.050781, 0 } },
   { "NIKON", "D90", "9090K", 0,			{ 2.308594, 1, 1.027344, 0 } },
   { "NIKON", "D90", "10000K", 0,		{ 2.414063, 1, 1.007813, 0 } },
+
+  { "NIKON", "D3000", DirectSunlight, 0,	{ 1.851563, 1, 1.347656, 0 } },
+  { "NIKON", "D3000", Flash, 0,			{ 2.113281, 1, 1.164062, 0 } },
+  { "NIKON", "D3000", Cloudy, 0,		{ 2.019531, 1, 1.214844, 0 } },
+  { "NIKON", "D3000", Shade, 0,			{ 2.355469, 1, 1.082031, 0 } },
+  { "NIKON", "D3000", Incandescent, 0,		{ 1.171875, 1, 2.316406, 0 } },
+  { "NIKON", "D3000", SodiumVaporFluorescent, 0, { 1.023438, 1, 2.371094, 0 } },
+  { "NIKON", "D3000", WarmWhiteFluorescent, 0,	{ 1.179688, 1, 2.074219, 0 } },
+  { "NIKON", "D3000", WhiteFluorescent, 0,	{ 1.355469, 1, 2.328125, 0 } },
+  { "NIKON", "D3000", CoolWhiteFluorescent, 0,	{ 1.703125, 1, 2.019531, 0 } },
+  { "NIKON", "D3000", DayWhiteFluorescent, 0,	{ 1.750000, 1, 1.386719, 0 } },
+  { "NIKON", "D3000", DaylightFluorescent, 0,	{ 1.960937, 1, 1.105469, 0 } },
+  { "NIKON", "D3000", HighTempMercuryVaporFluorescent, 0, { 2.351563, 1, 1.328125, 0 } },
 
   { "NIKON", "D5000", DirectSunlight, 0,	{ 1.800781, 1, 1.308594, 0 } },
   { "NIKON", "D5000", Flash, 0,			{ 1.976562, 1, 1.152344, 0 } },
@@ -2145,36 +2606,6 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "C8080WZ", Tungsten, 7,		{ 2.140625, 1, 1.828125, 0 } }, /*3000K*/
 // Fin ajout
 
-  { "OLYMPUS", "E-1", Tungsten, -7,		{ 1.015625, 1, 1.867188, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, -6,		{ 1.007812, 1, 1.875000, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, -5,		{ 1, 1, 1.890625, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, -4,		{ 1, 1.007874, 1.913386, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, -3,		{ 1, 1.015873, 1.944444, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, -2,		{ 1, 1.015873, 1.952381, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, -1,		{ 1, 1.024000, 1.984000, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 0,		{ 1, 1.024000, 1.992000, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 1,		{ 1, 1.032258, 2.008065, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 2,		{ 1, 1.040650, 2.040650, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 3,		{ 1, 1.040650, 2.048780, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 4,		{ 1, 1.049180, 2.081967, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 5,		{ 1, 1.057851, 2.107438, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 6,		{ 1, 1.066667, 2.141667, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", Tungsten, 7,		{ 1, 1.075630, 2.168067, 0 } }, /*3000K*/
-  { "OLYMPUS", "E-1", "3300K", -7,		{ 1.109375, 1, 1.695312, 0 } },
-  { "OLYMPUS", "E-1", "3300K", -6,		{ 1.101562, 1, 1.710938, 0 } },
-  { "OLYMPUS", "E-1", "3300K", -5,		{ 1.093750, 1, 1.718750, 0 } },
-  { "OLYMPUS", "E-1", "3300K", -4,		{ 1.093750, 1, 1.734375, 0 } },
-  { "OLYMPUS", "E-1", "3300K", -3,		{ 1.085938, 1, 1.742188, 0 } },
-  { "OLYMPUS", "E-1", "3300K", -2,		{ 1.078125, 1, 1.750000, 0 } },
-  { "OLYMPUS", "E-1", "3300K", -1,		{ 1.070312, 1, 1.765625, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 0,		{ 1.070312, 1, 1.773438, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 1,		{ 1.054688, 1, 1.781250, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 2,		{ 1.046875, 1, 1.796875, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 3,		{ 1.046875, 1, 1.804688, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 4,		{ 1.039062, 1, 1.820312, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 5,		{ 1.031250, 1, 1.828125, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 6,		{ 1.023438, 1, 1.843750, 0 } },
-  { "OLYMPUS", "E-1", "3300K", 7,		{ 1.015625, 1, 1.851562, 0 } },
   { "OLYMPUS", "E-1", Incandescent, -7,		{ 1.195312, 1, 1.562500, 0 } }, /*3600K*/
   { "OLYMPUS", "E-1", Incandescent, -6,		{ 1.187500, 1, 1.578125, 0 } }, /*3600K*/
   { "OLYMPUS", "E-1", Incandescent, -5,		{ 1.187500, 1, 1.585938, 0 } }, /*3600K*/
@@ -2190,21 +2621,21 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-1", Incandescent, 5,		{ 1.117188, 1, 1.695312, 0 } }, /*3600K*/
   { "OLYMPUS", "E-1", Incandescent, 6,		{ 1.109375, 1, 1.703125, 0 } }, /*3600K*/
   { "OLYMPUS", "E-1", Incandescent, 7,		{ 1.101562, 1, 1.718750, 0 } }, /*3600K*/
-  { "OLYMPUS", "E-1", "3900K", -7,		{ 1.335938, 1, 1.414062, 0 } },
-  { "OLYMPUS", "E-1", "3900K", -6,		{ 1.320312, 1, 1.429688, 0 } },
-  { "OLYMPUS", "E-1", "3900K", -5,		{ 1.304688, 1, 1.445312, 0 } },
-  { "OLYMPUS", "E-1", "3900K", -4,		{ 1.289062, 1, 1.460938, 0 } },
-  { "OLYMPUS", "E-1", "3900K", -3,		{ 1.273438, 1, 1.476562, 0 } },
-  { "OLYMPUS", "E-1", "3900K", -2,		{ 1.257812, 1, 1.492188, 0 } },
-  { "OLYMPUS", "E-1", "3900K", -1,		{ 1.242188, 1, 1.507812, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 0,		{ 1.234375, 1, 1.523438, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 1,		{ 1.218750, 1, 1.531250, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 2,		{ 1.210938, 1, 1.546875, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 3,		{ 1.203125, 1, 1.554688, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 4,		{ 1.195312, 1, 1.562500, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 5,		{ 1.187500, 1, 1.578125, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 6,		{ 1.187500, 1, 1.585938, 0 } },
-  { "OLYMPUS", "E-1", "3900K", 7,		{ 1.179688, 1, 1.601562, 0 } },
+  { "OLYMPUS", "E-1", IncandescentWarm, -7,	{ 1.015625, 1, 1.867188, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, -6,	{ 1.007812, 1, 1.875000, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, -5,	{ 1.000000, 1, 1.890625, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, -4,	{ 1, 1.007874, 1.913386, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, -3,	{ 1, 1.015873, 1.944444, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, -2,	{ 1, 1.015873, 1.952381, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, -1,	{ 1, 1.024000, 1.984000, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 0,	{ 1, 1.024000, 1.992000, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 1,	{ 1, 1.032258, 2.008065, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 2,	{ 1, 1.040650, 2.040650, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 3,	{ 1, 1.040650, 2.048780, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 4,	{ 1, 1.049180, 2.081967, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 5,	{ 1, 1.057851, 2.107438, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 6,	{ 1, 1.066667, 2.141667, 0 } }, /*3000K*/
+  { "OLYMPUS", "E-1", IncandescentWarm, 7,	{ 1, 1.075630, 2.168067, 0 } }, /*3000K*/
   { "OLYMPUS", "E-1", WhiteFluorescent, -7,	{ 2.296875, 1, 1.445312, 0 } }, /*4000K*/
   { "OLYMPUS", "E-1", WhiteFluorescent, -6,	{ 2.273438, 1, 1.468750, 0 } }, /*4000K*/
   { "OLYMPUS", "E-1", WhiteFluorescent, -5,	{ 2.242188, 1, 1.492188, 0 } }, /*4000K*/
@@ -2220,21 +2651,6 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-1", WhiteFluorescent, 5,	{ 1.968750, 1, 1.812500, 0 } }, /*4000K*/
   { "OLYMPUS", "E-1", WhiteFluorescent, 6,	{ 1.945312, 1, 1.835938, 0 } }, /*4000K*/
   { "OLYMPUS", "E-1", WhiteFluorescent, 7,	{ 1.929688, 1, 1.867188, 0 } }, /*4000K*/
-  { "OLYMPUS", "E-1", "4300K", -7,		{ 1.484375, 1, 1.281250, 0 } },
-  { "OLYMPUS", "E-1", "4300K", -6,		{ 1.468750, 1, 1.289062, 0 } },
-  { "OLYMPUS", "E-1", "4300K", -5,		{ 1.460938, 1, 1.296875, 0 } },
-  { "OLYMPUS", "E-1", "4300K", -4,		{ 1.445312, 1, 1.304688, 0 } },
-  { "OLYMPUS", "E-1", "4300K", -3,		{ 1.437500, 1, 1.312500, 0 } },
-  { "OLYMPUS", "E-1", "4300K", -2,		{ 1.429688, 1, 1.328125, 0 } },
-  { "OLYMPUS", "E-1", "4300K", -1,		{ 1.414062, 1, 1.335938, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 0,		{ 1.414062, 1, 1.343750, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 1,		{ 1.390625, 1, 1.359375, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 2,		{ 1.375000, 1, 1.375000, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 3,		{ 1.359375, 1, 1.390625, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 4,		{ 1.343750, 1, 1.406250, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 5,		{ 1.328125, 1, 1.421875, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 6,		{ 1.312500, 1, 1.437500, 0 } },
-  { "OLYMPUS", "E-1", "4300K", 7,		{ 1.296875, 1, 1.453125, 0 } },
   { "OLYMPUS", "E-1", NeutralFluorescent, -7,	{ 1.984375, 1, 1.203125, 0 } }, /*4500K*/
   { "OLYMPUS", "E-1", NeutralFluorescent, -6,	{ 1.960938, 1, 1.218750, 0 } }, /*4500K*/
   { "OLYMPUS", "E-1", NeutralFluorescent, -5,	{ 1.937500, 1, 1.234375, 0 } }, /*4500K*/
@@ -2250,21 +2666,21 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-1", NeutralFluorescent, 5,	{ 1.695312, 1, 1.437500, 0 } }, /*4500K*/
   { "OLYMPUS", "E-1", NeutralFluorescent, 6,	{ 1.656250, 1, 1.476562, 0 } }, /*4500K*/
   { "OLYMPUS", "E-1", NeutralFluorescent, 7,	{ 1.617188, 1, 1.515625, 0 } }, /*4500K*/
-  { "OLYMPUS", "E-1", "4800K", -7,		{ 1.601562, 1, 1.179688, 0 } },
-  { "OLYMPUS", "E-1", "4800K", -6,		{ 1.593750, 1, 1.187500, 0 } },
-  { "OLYMPUS", "E-1", "4800K", -5,		{ 1.585938, 1, 1.195312, 0 } },
-  { "OLYMPUS", "E-1", "4800K", -4,		{ 1.578125, 1, 1.203125, 0 } },
-  { "OLYMPUS", "E-1", "4800K", -3,		{ 1.562500, 1, 1.203125, 0 } },
-  { "OLYMPUS", "E-1", "4800K", -2,		{ 1.554688, 1, 1.210938, 0 } },
-  { "OLYMPUS", "E-1", "4800K", -1,		{ 1.546875, 1, 1.218750, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 0,		{ 1.546875, 1, 1.226562, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 1,		{ 1.531250, 1, 1.234375, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 2,		{ 1.515625, 1, 1.242188, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 3,		{ 1.507812, 1, 1.257812, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 4,		{ 1.500000, 1, 1.265625, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 5,		{ 1.484375, 1, 1.273438, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 6,		{ 1.476562, 1, 1.281250, 0 } },
-  { "OLYMPUS", "E-1", "4800K", 7,		{ 1.460938, 1, 1.289062, 0 } },
+  { "OLYMPUS", "E-1", DaylightFluorescent, -7,	{ 2.819820, 1.153153, 1, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, -6,	{ 2.669565, 1.113043, 1, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, -5,	{ 2.521008, 1.075630, 1, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, -4,	{ 2.390244, 1.040650, 1, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, -3,	{ 2.259843, 1.007874, 1, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, -2,	{ 2.195312, 1, 1.023438, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, -1,	{ 2.140625, 1, 1.054688, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 0,	{ 2.101562, 1, 1.085938, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 1,	{ 2.070312, 1, 1.101562, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 2,	{ 2.046875, 1, 1.117188, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 3,	{ 2.023438, 1, 1.132812, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 4,	{ 2.000000, 1, 1.156250, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 5,	{ 1.976562, 1, 1.171875, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 6,	{ 1.953125, 1, 1.187500, 0 } }, /*6600K*/
+  { "OLYMPUS", "E-1", DaylightFluorescent, 7,	{ 1.929688, 1, 1.203125, 0 } }, /*6600K*/
   { "OLYMPUS", "E-1", Daylight, -7,		{ 1.726562, 1, 1.093750, 0 } }, /*5300K*/
   { "OLYMPUS", "E-1", Daylight, -6,		{ 1.710938, 1, 1.101562, 0 } }, /*5300K*/
   { "OLYMPUS", "E-1", Daylight, -5,		{ 1.703125, 1, 1.109375, 0 } }, /*5300K*/
@@ -2283,7 +2699,7 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-1", Cloudy, -7,		{ 2.008130, 1.040650, 1, 0 } }, /*6000K*/
   { "OLYMPUS", "E-1", Cloudy, -6,		{ 1.967742, 1.032258, 1, 0 } }, /*6000K*/
   { "OLYMPUS", "E-1", Cloudy, -5,		{ 1.920635, 1.015873, 1, 0 } }, /*6000K*/
-  { "OLYMPUS", "E-1", Cloudy, -4,		{ 1.867188, 1, 1, 0 } }, /*6000K*/
+  { "OLYMPUS", "E-1", Cloudy, -4,		{ 1.867188, 1, 1.000000, 0 } }, /*6000K*/
   { "OLYMPUS", "E-1", Cloudy, -3,		{ 1.851562, 1, 1.007812, 0 } }, /*6000K*/
   { "OLYMPUS", "E-1", Cloudy, -2,		{ 1.828125, 1, 1.023438, 0 } }, /*6000K*/
   { "OLYMPUS", "E-1", Cloudy, -1,		{ 1.812500, 1, 1.031250, 0 } }, /*6000K*/
@@ -2295,21 +2711,6 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-1", Cloudy, 5,		{ 1.742188, 1, 1.078125, 0 } }, /*6000K*/
   { "OLYMPUS", "E-1", Cloudy, 6,		{ 1.734375, 1, 1.085938, 0 } }, /*6000K*/
   { "OLYMPUS", "E-1", Cloudy, 7,		{ 1.726562, 1, 1.093750, 0 } }, /*6000K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, -7,	{ 2.819820, 1.153153, 1, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, -6,	{ 2.669565, 1.113043, 1, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, -5,	{ 2.521008, 1.075630, 1, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, -4,	{ 2.390244, 1.040650, 1, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, -3,	{ 2.259843, 1.007874, 1, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, -2,	{ 2.195312, 1, 1.023438, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, -1,	{ 2.140625, 1, 1.054688, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 0,	{ 2.101562, 1, 1.085938, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 1,	{ 2.070312, 1, 1.101562, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 2,	{ 2.046875, 1, 1.117188, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 3,	{ 2.023438, 1, 1.132812, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 4,	{ 2.000000, 1, 1.156250, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 5,	{ 1.976562, 1, 1.171875, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 6,	{ 1.953125, 1, 1.187500, 0 } }, /*6600K*/
-  { "OLYMPUS", "E-1", DaylightFluorescent, 7,	{ 1.929688, 1, 1.203125, 0 } }, /*6600K*/
   { "OLYMPUS", "E-1", Shade, -7,		{ 2.584906, 1.207547, 1, 0 } }, /*7500K*/
   { "OLYMPUS", "E-1", Shade, -6,		{ 2.532710, 1.196262, 1, 0 } }, /*7500K*/
   { "OLYMPUS", "E-1", Shade, -5,		{ 2.467890, 1.174312, 1, 0 } }, /*7500K*/
@@ -2324,7 +2725,67 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-1", Shade, 4,			{ 2.000000, 1.040650, 1, 0 } }, /*7500K*/
   { "OLYMPUS", "E-1", Shade, 5,			{ 1.944000, 1.024000, 1, 0 } }, /*7500K*/
   { "OLYMPUS", "E-1", Shade, 6,			{ 1.897638, 1.007874, 1, 0 } }, /*7500K*/
-  { "OLYMPUS", "E-1", Shade, 7,			{ 1.859375, 1, 1, 0 } }, /*7500K*/
+  { "OLYMPUS", "E-1", Shade, 7,			{ 1.859375, 1, 1.000000, 0 } }, /*7500K*/
+  { "OLYMPUS", "E-1", "3300K", -7,		{ 1.109375, 1, 1.695312, 0 } },
+  { "OLYMPUS", "E-1", "3300K", -6,		{ 1.101562, 1, 1.710938, 0 } },
+  { "OLYMPUS", "E-1", "3300K", -5,		{ 1.093750, 1, 1.718750, 0 } },
+  { "OLYMPUS", "E-1", "3300K", -4,		{ 1.093750, 1, 1.734375, 0 } },
+  { "OLYMPUS", "E-1", "3300K", -3,		{ 1.085938, 1, 1.742188, 0 } },
+  { "OLYMPUS", "E-1", "3300K", -2,		{ 1.078125, 1, 1.750000, 0 } },
+  { "OLYMPUS", "E-1", "3300K", -1,		{ 1.070312, 1, 1.765625, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 0,		{ 1.070312, 1, 1.773438, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 1,		{ 1.054688, 1, 1.781250, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 2,		{ 1.046875, 1, 1.796875, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 3,		{ 1.046875, 1, 1.804688, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 4,		{ 1.039062, 1, 1.820312, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 5,		{ 1.031250, 1, 1.828125, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 6,		{ 1.023438, 1, 1.843750, 0 } },
+  { "OLYMPUS", "E-1", "3300K", 7,		{ 1.015625, 1, 1.851562, 0 } },
+  { "OLYMPUS", "E-1", "3900K", -7,		{ 1.335938, 1, 1.414062, 0 } },
+  { "OLYMPUS", "E-1", "3900K", -6,		{ 1.320312, 1, 1.429688, 0 } },
+  { "OLYMPUS", "E-1", "3900K", -5,		{ 1.304688, 1, 1.445312, 0 } },
+  { "OLYMPUS", "E-1", "3900K", -4,		{ 1.289062, 1, 1.460938, 0 } },
+  { "OLYMPUS", "E-1", "3900K", -3,		{ 1.273438, 1, 1.476562, 0 } },
+  { "OLYMPUS", "E-1", "3900K", -2,		{ 1.257812, 1, 1.492188, 0 } },
+  { "OLYMPUS", "E-1", "3900K", -1,		{ 1.242188, 1, 1.507812, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 0,		{ 1.234375, 1, 1.523438, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 1,		{ 1.218750, 1, 1.531250, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 2,		{ 1.210938, 1, 1.546875, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 3,		{ 1.203125, 1, 1.554688, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 4,		{ 1.195312, 1, 1.562500, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 5,		{ 1.187500, 1, 1.578125, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 6,		{ 1.187500, 1, 1.585938, 0 } },
+  { "OLYMPUS", "E-1", "3900K", 7,		{ 1.179688, 1, 1.601562, 0 } },
+  { "OLYMPUS", "E-1", "4300K", -7,		{ 1.484375, 1, 1.281250, 0 } },
+  { "OLYMPUS", "E-1", "4300K", -6,		{ 1.468750, 1, 1.289062, 0 } },
+  { "OLYMPUS", "E-1", "4300K", -5,		{ 1.460938, 1, 1.296875, 0 } },
+  { "OLYMPUS", "E-1", "4300K", -4,		{ 1.445312, 1, 1.304688, 0 } },
+  { "OLYMPUS", "E-1", "4300K", -3,		{ 1.437500, 1, 1.312500, 0 } },
+  { "OLYMPUS", "E-1", "4300K", -2,		{ 1.429688, 1, 1.328125, 0 } },
+  { "OLYMPUS", "E-1", "4300K", -1,		{ 1.414062, 1, 1.335938, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 0,		{ 1.414062, 1, 1.343750, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 1,		{ 1.390625, 1, 1.359375, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 2,		{ 1.375000, 1, 1.375000, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 3,		{ 1.359375, 1, 1.390625, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 4,		{ 1.343750, 1, 1.406250, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 5,		{ 1.328125, 1, 1.421875, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 6,		{ 1.312500, 1, 1.437500, 0 } },
+  { "OLYMPUS", "E-1", "4300K", 7,		{ 1.296875, 1, 1.453125, 0 } },
+  { "OLYMPUS", "E-1", "4800K", -7,		{ 1.601562, 1, 1.179688, 0 } },
+  { "OLYMPUS", "E-1", "4800K", -6,		{ 1.593750, 1, 1.187500, 0 } },
+  { "OLYMPUS", "E-1", "4800K", -5,		{ 1.585938, 1, 1.195312, 0 } },
+  { "OLYMPUS", "E-1", "4800K", -4,		{ 1.578125, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-1", "4800K", -3,		{ 1.562500, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-1", "4800K", -2,		{ 1.554688, 1, 1.210938, 0 } },
+  { "OLYMPUS", "E-1", "4800K", -1,		{ 1.546875, 1, 1.218750, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 0,		{ 1.546875, 1, 1.226562, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 1,		{ 1.531250, 1, 1.234375, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 2,		{ 1.515625, 1, 1.242188, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 3,		{ 1.507812, 1, 1.257812, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 4,		{ 1.500000, 1, 1.265625, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 5,		{ 1.484375, 1, 1.273438, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 6,		{ 1.476562, 1, 1.281250, 0 } },
+  { "OLYMPUS", "E-1", "4800K", 7,		{ 1.460938, 1, 1.289062, 0 } },
 
   { "OLYMPUS", "E-10", Incandescent, 0,		{ 1, 1.153153, 3.441442, 0 } }, /*3000K*/
   { "OLYMPUS", "E-10", IncandescentWarm, 0,	{ 1.101562, 1, 2.351562, 0 } }, /*3700K*/
@@ -2337,8 +2798,8 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-3", Daylight, 0,		{ 2.007813, 1, 1.390625, 0 } },
   { "OLYMPUS", "E-3", Shade, 0,			{ 2.421875, 1, 1.085937, 0 } },
   { "OLYMPUS", "E-3", Cloudy, 0,		{ 2.218750, 1, 1.257812, 0 } },
-  { "OLYMPUS", "E-3", Tungsten, 0,		{ 1.156250, 1, 2.679687, 0 } },
-  { "OLYMPUS", "E-3", Fluorescent, 0,		{ 1.828125, 1, 2.078125, 0 } },
+  { "OLYMPUS", "E-3", Incandescent, 0,		{ 1.156250, 1, 2.679687, 0 } },
+  { "OLYMPUS", "E-3", WhiteFluorescent, 0,	{ 1.828125, 1, 2.078125, 0 } },
   { "OLYMPUS", "E-3", NeutralFluorescent, 0,	{ 1.867188, 1, 1.679688, 0 } },
   { "OLYMPUS", "E-3", DaylightFluorescent, 0,	{ 2.195313, 1, 1.406250, 0 } },
   { "OLYMPUS", "E-3", Flash, 0,			{ 2.210937, 1, 1.265625, 0 } },
@@ -2398,6 +2859,87 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-3", "12000K", 0,		{ 3.292453, 1.207547, 1, 0 } },
   { "OLYMPUS", "E-3", "13000K", 0,		{ 3.504950, 1.267327, 1, 0 } },
   { "OLYMPUS", "E-3", "14000K", 0,		{ 3.653061, 1.306122, 1, 0 } },
+
+  { "OLYMPUS", "E-30", Daylight, -7,		{ 1.554688, 1, 1.515625, 0 } },
+  { "OLYMPUS", "E-30", Daylight, 0,		{ 1.812500, 1, 1.335937, 0 } },
+  { "OLYMPUS", "E-30", Daylight, 7,		{ 2.062500, 1, 1.148437, 0 } },
+  { "OLYMPUS", "E-30", Shade, -7,		{ 1.867188, 1, 1.171875, 0 } },
+  { "OLYMPUS", "E-30", Shade, 0,		{ 2.179688, 1, 1.031250, 0 } },
+  { "OLYMPUS", "E-30", Shade, 7,		{ 2.814159, 1.132743, 1, 0 } },
+  { "OLYMPUS", "E-30", Cloudy, -7,		{ 1.710938, 1, 1.359375, 0 } },
+  { "OLYMPUS", "E-30", Cloudy, 0,		{ 1.992187, 1, 1.195312, 0 } },
+  { "OLYMPUS", "E-30", Cloudy, 7,		{ 2.265625, 1, 1.023438, 0 } },
+  { "OLYMPUS", "E-30", Incandescent, -7,	{ 1, 1.103448, 3.137931, 0 } },
+  { "OLYMPUS", "E-30", Incandescent, 0,		{ 1.054687, 1, 2.500000, 0 } },
+  { "OLYMPUS", "E-30", Incandescent, 7,		{ 1.195313, 1, 2.148437, 0 } },
+  { "OLYMPUS", "E-30", WhiteFluorescent, -7,	{ 1.453125, 1, 2.187500, 0 } },
+  { "OLYMPUS", "E-30", WhiteFluorescent, 0,	{ 1.695313, 1, 1.921875, 0 } },
+  { "OLYMPUS", "E-30", WhiteFluorescent, 7,	{ 1.929687, 1, 1.648437, 0 } },
+  { "OLYMPUS", "E-30", NeutralFluorescent, -7,	{ 1.437500, 1, 1.929687, 0 } },
+  { "OLYMPUS", "E-30", NeutralFluorescent, 0,	{ 1.679687, 1, 1.695313, 0 } },
+  { "OLYMPUS", "E-30", NeutralFluorescent, 7,	{ 1.914063, 1, 1.453125, 0 } },
+  { "OLYMPUS", "E-30", DaylightFluorescent, -7,	{ 1.765625, 1, 1.500000, 0 } },
+  { "OLYMPUS", "E-30", DaylightFluorescent, 0,	{ 2.054688, 1, 1.320313, 0 } },
+  { "OLYMPUS", "E-30", DaylightFluorescent, 7,	{ 2.335938, 1, 1.132812, 0 } },
+  { "OLYMPUS", "E-30", Flash, -7,		{ 1.710938, 1, 1.359375, 0 } },
+  { "OLYMPUS", "E-30", Flash, 0,		{ 1.992187, 1, 1.195312, 0 } },
+  { "OLYMPUS", "E-30", Flash, 7,		{ 2.265625, 1, 1.023438, 0 } },
+  { "OLYMPUS", "E-30", "2000K",  0,		{ 1, 2.509804, 10.058823, 0 } },
+  { "OLYMPUS", "E-30", "2050K",  0,		{ 1, 2.206897, 8.534483, 0 } },
+  { "OLYMPUS", "E-30", "2100K",  0,		{ 1, 1.969231, 7.384615, 0 } },
+  { "OLYMPUS", "E-30", "2150K",  0,		{ 1, 1.802817, 6.563380, 0 } },
+  { "OLYMPUS", "E-30", "2200K",  0,		{ 1, 1.641026, 5.782051, 0 } },
+  { "OLYMPUS", "E-30", "2250K",  0,		{ 1, 1.523809, 5.202381, 0 } },
+  { "OLYMPUS", "E-30", "2300K",  0,		{ 1, 1.422222, 4.711111, 0 } },
+  { "OLYMPUS", "E-30", "2350K",  0,		{ 1, 1.347368, 4.326316, 0 } },
+  { "OLYMPUS", "E-30", "2400K",  0,		{ 1, 1.267327, 3.950495, 0 } },
+  { "OLYMPUS", "E-30", "2450K",  0,		{ 1, 1.219048, 3.695238, 0 } },
+  { "OLYMPUS", "E-30", "2500K",  0,		{ 1, 1.163636, 3.436364, 0 } },
+  { "OLYMPUS", "E-30", "2550K",  0,		{ 1, 1.113043, 3.191304, 0 } },
+  { "OLYMPUS", "E-30", "2600K",  0,		{ 1, 1.075630, 2.991597, 0 } },
+  { "OLYMPUS", "E-30", "2650K",  0,		{ 1, 1.032258, 2.798387, 0 } },
+  { "OLYMPUS", "E-30", "2700K",  0,		{ 1.000000, 1, 2.632813, 0 } },
+  { "OLYMPUS", "E-30", "2750K",  0,		{ 1.031250, 1, 2.562500, 0 } },
+  { "OLYMPUS", "E-30", "2800K",  0,		{ 1.054687, 1, 2.500000, 0 } },
+  { "OLYMPUS", "E-30", "2900K",  0,		{ 1.109375, 1, 2.367187, 0 } },
+  { "OLYMPUS", "E-30", "3000K",  0,		{ 1.164062, 1, 2.250000, 0 } },
+  { "OLYMPUS", "E-30", "3100K",  0,		{ 1.210938, 1, 2.132812, 0 } },
+  { "OLYMPUS", "E-30", "3200K",  0,		{ 1.257812, 1, 2.031250, 0 } },
+  { "OLYMPUS", "E-30", "3300K",  0,		{ 1.304687, 1, 1.929687, 0 } },
+  { "OLYMPUS", "E-30", "3400K",  0,		{ 1.335937, 1, 1.875000, 0 } },
+  { "OLYMPUS", "E-30", "3500K",  0,		{ 1.375000, 1, 1.812500, 0 } },
+  { "OLYMPUS", "E-30", "3600K",  0,		{ 1.406250, 1, 1.757812, 0 } },
+  { "OLYMPUS", "E-30", "3700K",  0,		{ 1.437500, 1, 1.718750, 0 } },
+  { "OLYMPUS", "E-30", "3800K",  0,		{ 1.468750, 1, 1.679688, 0 } },
+  { "OLYMPUS", "E-30", "3900K",  0,		{ 1.500000, 1, 1.632813, 0 } },
+  { "OLYMPUS", "E-30", "4000K",  0,		{ 1.515625, 1, 1.625000, 0 } },
+  { "OLYMPUS", "E-30", "4200K",  0,		{ 1.546875, 1, 1.601562, 0 } },
+  { "OLYMPUS", "E-30", "4400K",  0,		{ 1.585938, 1, 1.562500, 0 } },
+  { "OLYMPUS", "E-30", "4600K",  0,		{ 1.640625, 1, 1.500000, 0 } },
+  { "OLYMPUS", "E-30", "4800K",  0,		{ 1.695313, 1, 1.445312, 0 } },
+  { "OLYMPUS", "E-30", "5000K",  0,		{ 1.742187, 1, 1.406250, 0 } },
+  { "OLYMPUS", "E-30", "5200K",  0,		{ 1.789062, 1, 1.359375, 0 } },
+  { "OLYMPUS", "E-30", "5400K",  0,		{ 1.835938, 1, 1.320313, 0 } },
+  { "OLYMPUS", "E-30", "5600K",  0,		{ 1.890625, 1, 1.273438, 0 } },
+  { "OLYMPUS", "E-30", "5800K",  0,		{ 1.937500, 1, 1.234375, 0 } },
+  { "OLYMPUS", "E-30", "6000K",  0,		{ 1.992187, 1, 1.195312, 0 } },
+  { "OLYMPUS", "E-30", "6200K",  0,		{ 2.015625, 1, 1.171875, 0 } },
+  { "OLYMPUS", "E-30", "6400K",  0,		{ 2.046875, 1, 1.148438, 0 } },
+  { "OLYMPUS", "E-30", "6600K",  0,		{ 2.070312, 1, 1.125000, 0 } },
+  { "OLYMPUS", "E-30", "6800K",  0,		{ 2.093750, 1, 1.101563, 0 } },
+  { "OLYMPUS", "E-30", "7000K",  0,		{ 2.125000, 1, 1.078125, 0 } },
+  { "OLYMPUS", "E-30", "7400K",  0,		{ 2.164063, 1, 1.046875, 0 } },
+  { "OLYMPUS", "E-30", "7800K",  0,		{ 2.203125, 1, 1.007813, 0 } },
+  { "OLYMPUS", "E-30", "8200K",  0,		{ 2.296000, 1.024000, 1, 0 } },
+  { "OLYMPUS", "E-30", "8600K",  0,		{ 2.385246, 1.049180, 1, 0 } },
+  { "OLYMPUS", "E-30", "9000K",  0,		{ 2.500000, 1.084746, 1, 0 } },
+  { "OLYMPUS", "E-30", "9400K",  0,		{ 2.591304, 1.113043, 1, 0 } },
+  { "OLYMPUS", "E-30", "9800K",  0,		{ 2.663717, 1.132743, 1, 0 } },
+  { "OLYMPUS", "E-30", "10000K",  0,		{ 2.729730, 1.153153, 1, 0 } },
+  { "OLYMPUS", "E-30", "11000K",  0,		{ 2.952381, 1.219048, 1, 0 } },
+  { "OLYMPUS", "E-30", "12000K",  0,		{ 3.118812, 1.267327, 1, 0 } },
+  { "OLYMPUS", "E-30", "13000K",  0,		{ 3.333333, 1.333333, 1, 0 } },
+  { "OLYMPUS", "E-30", "14000K",  0,		{ 3.483871, 1.376344, 1, 0 } },
 
   { "OLYMPUS", "E-300", Incandescent, -7,	{ 1.179688, 1, 2.125000, 0 } },
   { "OLYMPUS", "E-300", Incandescent, 0,	{ 1.140625, 1, 2.203125, 0 } },
@@ -2507,7 +3049,7 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-520", Shade, 0,		{ 2.234375, 1, 1.140625, 0 } },
   { "OLYMPUS", "E-520", Cloudy, 0,		{ 2.046875, 1, 1.296875, 0 } },
   { "OLYMPUS", "E-520", Tungsten, 0,		{ 1.062500, 1, 2.687500, 0 } },
-  { "OLYMPUS", "E-520", Fluorescent, 0,		{ 1.703125, 1, 2.109375, 0 } },
+  { "OLYMPUS", "E-520", WhiteFluorescent, 0,	{ 1.703125, 1, 2.109375, 0 } },
   { "OLYMPUS", "E-520", NeutralFluorescent, 0,	{ 1.718750, 1, 1.765625, 0 } },
   { "OLYMPUS", "E-520", DaylightFluorescent, 0,	{ 2.101563, 1, 1.375000, 0 } },
   { "OLYMPUS", "E-520", Flash, 0,		{ 2.039063, 1, 1.296875, 0 } },
@@ -2568,6 +3110,131 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-520", "13000K", 0,		{ 2.919643, 1.142857, 1, 0 } },
   { "OLYMPUS", "E-520", "14000K", 0,		{ 3.036697, 1.174312, 1, 0 } },
 
+  /* -7/+7 fine tuning is -7/+7 in both amber-blue and green-magenta */
+  { "OLYMPUS", "E-600", Daylight, -7,		{ 1.804688, 1, 1.671875, 0 } },
+  { "OLYMPUS", "E-600", Daylight, 0,		{ 1.851563, 1, 1.289063, 0 } },
+  { "OLYMPUS", "E-600", Daylight, 7,		{ 1.917355, 1.057851, 1, 0 } },
+  { "OLYMPUS", "E-600", Shade, -7,		{ 2.179688, 1, 1.281250, 0 } },
+  { "OLYMPUS", "E-600", Shade, 0,		{ 2.244094, 1.007874, 1, 0 } },
+  { "OLYMPUS", "E-600", Shade, 7,		{ 2.989247, 1.376344, 1, 0 } },
+  { "OLYMPUS", "E-600", Cloudy, -7,		{ 2.000000, 1, 1.500000, 0 } },
+  { "OLYMPUS", "E-600", Cloudy, 0,		{ 2.046875, 1, 1.164062, 0 } },
+  { "OLYMPUS", "E-600", Cloudy, 7,		{ 2.327273, 1.163636, 1, 0 } },
+  { "OLYMPUS", "E-600", Incandescent, -7,	{ 1.062500, 1, 3.156250, 0 } },
+  { "OLYMPUS", "E-600", Incandescent, 0,	{ 1.093750, 1, 2.437500, 0 } },
+  { "OLYMPUS", "E-600", Incandescent, 7,	{ 1.062500, 1, 1.796875, 0 } },
+  { "OLYMPUS", "E-600", WhiteFluorescent, -7,	{ 1.703125, 1, 2.398438, 0 } },
+  { "OLYMPUS", "E-600", WhiteFluorescent, 0,	{ 1.750000, 1, 1.851563, 0 } },
+  { "OLYMPUS", "E-600", WhiteFluorescent, 7,	{ 1.710938, 1, 1.359375, 0 } },
+  { "OLYMPUS", "E-600", NeutralFluorescent, -7,	{ 1.671875, 1, 2.109375, 0 } },
+  { "OLYMPUS", "E-600", NeutralFluorescent, 0,	{ 1.710938, 1, 1.625000, 0 } },
+  { "OLYMPUS", "E-600", NeutralFluorescent, 7,	{ 1.671875, 1, 1.195312, 0 } },
+  { "OLYMPUS", "E-600", DaylightFluorescent, -7, { 2.039063, 1, 1.632813, 0 } },
+  { "OLYMPUS", "E-600", DaylightFluorescent, 0,	{ 2.085937, 1, 1.265625, 0 } },
+  { "OLYMPUS", "E-600", DaylightFluorescent, 7,	{ 2.193277, 1.075630, 1, 0 } },
+  { "OLYMPUS", "E-600", Flash, -7, 		{ 1.992187, 1, 1.492187, 0 } },
+  { "OLYMPUS", "E-600", Flash, 0,		{ 2.039063, 1, 1.156250, 0 } },
+  { "OLYMPUS", "E-600", Flash, 7,		{ 2.339450, 1.174312, 1, 0 } },
+
+  /* -7/+7 fine tuning is -7/+7 in both amber-blue and green-magenta */
+  { "OLYMPUS", "E-620", Daylight, -7,		{ 1.804688, 1, 1.726563, 0 } },
+  { "OLYMPUS", "E-620", Daylight, 0,		{ 1.851563, 1, 1.335938, 0 } },
+  { "OLYMPUS", "E-620", Daylight, 7,		{ 1.841270, 1.015873, 1, 0 } },
+  { "OLYMPUS", "E-620", Shade, -7,		{ 2.171875, 1, 1.320312, 0 } },
+  { "OLYMPUS", "E-620", Shade, 0,		{ 2.218750, 1, 1.023438, 0 } },
+  { "OLYMPUS", "E-620", Shade, 7,		{ 2.885417, 1.333333, 1, 0 } },
+  { "OLYMPUS", "E-620", Cloudy, -7,		{ 1.992187, 1, 1.539062, 0 } },
+  { "OLYMPUS", "E-620", Cloudy, 0,		{ 2.039063, 1, 1.187500, 0 } },
+  { "OLYMPUS", "E-620", Cloudy, 7,		{ 2.297297, 1.153153, 1, 0 } },
+  { "OLYMPUS", "E-620", Incandescent, -7,	{ 1.070312, 1, 3.281250, 0 } },
+  { "OLYMPUS", "E-620", Incandescent, 0,	{ 1.101563, 1, 2.531250, 0 } },
+  { "OLYMPUS", "E-620", Incandescent, 7,	{ 1.070313, 1, 1.867188, 0 } },
+  { "OLYMPUS", "E-620", WhiteFluorescent, -7,	{ 1.679687, 1, 2.500000, 0 } },
+  { "OLYMPUS", "E-620", WhiteFluorescent, 0,	{ 1.718750, 1, 1.929687, 0 } },
+  { "OLYMPUS", "E-620", WhiteFluorescent, 7,	{ 1.679688, 1, 1.421875, 0 } },
+  { "OLYMPUS", "E-620", NeutralFluorescent, -7,	{ 1.632813, 1, 2.179688, 0 } },
+  { "OLYMPUS", "E-620", NeutralFluorescent, 0,	{ 1.671875, 1, 1.679688, 0 } },
+  { "OLYMPUS", "E-620", NeutralFluorescent, 7,	{ 1.625000, 1, 1.234375, 0 } },
+  { "OLYMPUS", "E-620", DaylightFluorescent, -7, { 2.000000, 1, 1.687500, 0 } },
+  { "OLYMPUS", "E-620", DaylightFluorescent, 0,	{ 2.046875, 1, 1.304687, 0 } },
+  { "OLYMPUS", "E-620", DaylightFluorescent, 7,	{ 2.098361, 1.049180, 1, 0 } },
+  { "OLYMPUS", "E-620", Flash, -7, 		{ 1.992187, 1, 1.546875, 0 } },
+  { "OLYMPUS", "E-620", Flash, 0,		{ 2.039063, 1, 1.195313, 0 } },
+  { "OLYMPUS", "E-620", Flash, 7,		{ 2.276786, 1.142857, 1, 0 } },
+
+  { "OLYMPUS", "E-P1", Daylight, 0,		{ 1.835938, 1, 1.351563, 0 } },
+  { "OLYMPUS", "E-P1", Shade, 0,		{ 2.195313, 1, 1.046875, 0 } },
+  { "OLYMPUS", "E-P1", Cloudy, 0,		{ 2.031250, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-P1", Incandescent, 0,		{ 1.078125, 1, 2.570312, 0 } },
+  { "OLYMPUS", "E-P1", WhiteFluorescent, 0,	{ 1.695313, 1, 1.937500, 0 } },
+  { "OLYMPUS", "E-P1", NeutralFluorescent, 0,	{ 1.687500, 1, 1.703125, 0 } },
+  { "OLYMPUS", "E-P1", DaylightFluorescent, 0,	{ 2.070312, 1, 1.312500, 0 } },
+
+  { "OLYMPUS", "E-PL1", Daylight, 0,		{ 1.742187, 1, 1.343750, 0 } },
+  { "OLYMPUS", "E-PL1", Shade, 0,		{ 2.101563, 1, 1.031250, 0 } },
+  { "OLYMPUS", "E-PL1", Cloudy, 0,		{ 1.921875, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-PL1", Incandescent, 0,	{ 1, 1.007874, 2.606299, 0 } },
+  { "OLYMPUS", "E-PL1", WhiteFluorescent, 0,	{ 1.664062, 1, 1.960937, 0 } },
+  { "OLYMPUS", "E-PL1", NeutralFluorescent, 0,	{ 1.625000, 1, 1.703125, 0 } },
+  { "OLYMPUS", "E-PL1", DaylightFluorescent, 0,	{ 2.039063, 1, 1.320313, 0 } },
+  { "OLYMPUS", "E-PL1", Flash, 0,		{ 1.914063, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-PL1", "2000K", 0,		{ 1, 2.844444, 11.933333, 0 } },
+  { "OLYMPUS", "E-PL1", "2050K", 0,		{ 1, 2.415094, 9.773585, 0 } },
+  { "OLYMPUS", "E-PL1", "2100K", 0,		{ 1, 2.169492, 8.508474, 0 } },
+  { "OLYMPUS", "E-PL1", "2150K", 0,		{ 1, 1.969231, 7.492308, 0 } },
+  { "OLYMPUS", "E-PL1", "2200K", 0,		{ 1, 1.777778, 6.541667, 0 } },
+  { "OLYMPUS", "E-PL1", "2250K", 0,		{ 1, 1.641026, 5.846154, 0 } },
+  { "OLYMPUS", "E-PL1", "2300K", 0,		{ 1, 1.542169, 5.325301, 0 } },
+  { "OLYMPUS", "E-PL1", "2350K", 0,		{ 1, 1.454545, 4.875000, 0 } },
+  { "OLYMPUS", "E-PL1", "2400K", 0,		{ 1, 1.361702, 4.425532, 0 } },
+  { "OLYMPUS", "E-PL1", "2450K", 0,		{ 1, 1.306122, 4.122449, 0 } },
+  { "OLYMPUS", "E-PL1", "2500K", 0,		{ 1, 1.242718, 3.815534, 0 } },
+  { "OLYMPUS", "E-PL1", "2550K", 0,		{ 1, 1.196262, 3.560748, 0 } },
+  { "OLYMPUS", "E-PL1", "2600K", 0,		{ 1, 1.142857, 3.303572, 0 } },
+  { "OLYMPUS", "E-PL1", "2650K", 0,		{ 1, 1.103448, 3.094827, 0 } },
+  { "OLYMPUS", "E-PL1", "2700K", 0,		{ 1, 1.066667, 2.908333, 0 } },
+  { "OLYMPUS", "E-PL1", "2750K", 0,		{ 1, 1.032258, 2.733871, 0 } },
+  { "OLYMPUS", "E-PL1", "2800K", 0,		{ 1, 1.007874, 2.606299, 0 } },
+  { "OLYMPUS", "E-PL1", "2900K", 0,		{ 1.046875, 1, 2.445313, 0 } },
+  { "OLYMPUS", "E-PL1", "3000K", 0,		{ 1.093750, 1, 2.320313, 0 } },
+  { "OLYMPUS", "E-PL1", "3100K", 0,		{ 1.148438, 1, 2.195313, 0 } },
+  { "OLYMPUS", "E-PL1", "3200K", 0,		{ 1.187500, 1, 2.078125, 0 } },
+  { "OLYMPUS", "E-PL1", "3300K", 0,		{ 1.234375, 1, 1.976562, 0 } },
+  { "OLYMPUS", "E-PL1", "3400K", 0,		{ 1.257812, 1, 1.921875, 0 } },
+  { "OLYMPUS", "E-PL1", "3500K", 0,		{ 1.289062, 1, 1.859375, 0 } },
+  { "OLYMPUS", "E-PL1", "3600K", 0,		{ 1.320313, 1, 1.796875, 0 } },
+  { "OLYMPUS", "E-PL1", "3700K", 0,		{ 1.351562, 1, 1.750000, 0 } },
+  { "OLYMPUS", "E-PL1", "3800K", 0,		{ 1.382813, 1, 1.703125, 0 } },
+  { "OLYMPUS", "E-PL1", "3900K", 0,		{ 1.414062, 1, 1.656250, 0 } },
+  { "OLYMPUS", "E-PL1", "4000K", 0,		{ 1.437500, 1, 1.648437, 0 } },
+  { "OLYMPUS", "E-PL1", "4200K", 0,		{ 1.484375, 1, 1.617188, 0 } },
+  { "OLYMPUS", "E-PL1", "4400K", 0,		{ 1.531250, 1, 1.578125, 0 } },
+  { "OLYMPUS", "E-PL1", "4600K", 0,		{ 1.585938, 1, 1.515625, 0 } },
+  { "OLYMPUS", "E-PL1", "4800K", 0,		{ 1.640625, 1, 1.453125, 0 } },
+  { "OLYMPUS", "E-PL1", "5000K", 0,		{ 1.679688, 1, 1.414063, 0 } },
+  { "OLYMPUS", "E-PL1", "5200K", 0,		{ 1.718750, 1, 1.367188, 0 } },
+  { "OLYMPUS", "E-PL1", "5400K", 0,		{ 1.765625, 1, 1.328125, 0 } },
+  { "OLYMPUS", "E-PL1", "5600K", 0,		{ 1.820313, 1, 1.281250, 0 } },
+  { "OLYMPUS", "E-PL1", "5800K", 0,		{ 1.867188, 1, 1.242187, 0 } },
+  { "OLYMPUS", "E-PL1", "6000K", 0,		{ 1.921875, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-PL1", "6200K", 0,		{ 1.945313, 1, 1.179688, 0 } },
+  { "OLYMPUS", "E-PL1", "6400K", 0,		{ 1.968750, 1, 1.156250, 0 } },
+  { "OLYMPUS", "E-PL1", "6600K", 0,		{ 2.000000, 1, 1.125000, 0 } },
+  { "OLYMPUS", "E-PL1", "6800K", 0,		{ 2.023438, 1, 1.109375, 0 } },
+  { "OLYMPUS", "E-PL1", "7000K", 0,		{ 2.046875, 1, 1.078125, 0 } },
+  { "OLYMPUS", "E-PL1", "7400K", 0,		{ 2.085937, 1, 1.046875, 0 } },
+  { "OLYMPUS", "E-PL1", "7800K", 0,		{ 2.125000, 1, 1.007813, 0 } },
+  { "OLYMPUS", "E-PL1", "8200K", 0,		{ 2.233871, 1.032258, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "8600K", 0,		{ 2.314050, 1.057851, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "9000K", 0,		{ 2.406780, 1.084746, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "9400K", 0,		{ 2.517544, 1.122807, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "9800K", 0,		{ 2.589286, 1.142857, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "10000K", 0,		{ 2.654546, 1.163636, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "11000K", 0,		{ 2.865385, 1.230769, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "12000K", 0,		{ 3.060606, 1.292929, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "13000K", 0,		{ 3.276596, 1.361702, 1, 0 } },
+  { "OLYMPUS", "E-PL1", "14000K", 0,		{ 3.428572, 1.406593, 1, 0 } },
+
   { "OLYMPUS", "SP500UZ", Daylight, -7,		{ 1.136719, 1, 2.359375, 0 } },
   { "OLYMPUS", "SP500UZ", Daylight, 0,		{ 1.960937, 1, 1.585937, 0 } },
   { "OLYMPUS", "SP500UZ", Daylight, 7,		{ 3.927660, 1.089362, 1, 0 } },
@@ -2606,7 +3273,7 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-FZ28", Daylight, 0,	{ 1.684411, 1, 1.802281, 0 } },
   { "Panasonic", "DMC-FZ28", Cloudy, 0,		{ 1.825095, 1, 1.676806, 0 } },
   { "Panasonic", "DMC-FZ28", Shade, 0,		{ 1.996198, 1, 1.566540, 0 } },
-  { "Panasonic", "DMC-FZ28", Incandescent, 0,	{ 1.117871, 1, 2.558935 , 0 } },
+  { "Panasonic", "DMC-FZ28", Incandescent, 0,	{ 1.117871, 1, 2.558935, 0 } },
   { "Panasonic", "DMC-FZ28", Flash, 0,		{ 1.939164, 1, 1.596958, 0 } },
   { "Panasonic", "DMC-FZ28", "3000K", 0,	{ 1.015209, 1, 2.771863, 0 } },
   { "Panasonic", "DMC-FZ28", "4000K", 0,	{ 1.277566, 1, 2.171103, 0 } },
@@ -2625,6 +3292,12 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-FZ50", Shade, 0,		{ 2.463878, 1, 1.414449, 0 } },
   { "Panasonic", "DMC-FZ50", Incandescent, 0,	{ 1.365019, 1, 2.311787, 0 } },
   { "Panasonic", "DMC-FZ50", Flash, 0,		{ 2.338403, 1, 1.338403, 0 } },
+
+  { "Panasonic", "DMC-G1", Daylight, 0,		{ 1.942966, 1, 1.448669, 0 } },
+  { "Panasonic", "DMC-G1", Cloudy, 0,		{ 2.106464, 1, 1.326996, 0 } },
+  { "Panasonic", "DMC-G1", Shade, 0,		{ 2.323194, 1, 1.224335, 0 } },
+  { "Panasonic", "DMC-G1", Incandescent, 0,	{ 1.319392, 1, 2.148289, 0 } },
+  { "Panasonic", "DMC-G1", Flash, 0,		{ 1.528517, 1, 1.277567, 0 } },
 
   { "Panasonic", "DMC-L1", Daylight, 0,		{ 1.980989, 1, 1.444867, 0 } },
   { "Panasonic", "DMC-L1", Cloudy, 0,		{ 2.129278, 1, 1.300380, 0 } },
@@ -2710,14 +3383,14 @@ const wb_data wb_preset[] = {
   { "PENTAX", "*ist DL", Flash, 0,		{ 1.621094, 1, 1.027344, 0 } },
 
   /* It seems that the *ist DS WB settings are not really presets. */
-  { "PENTAX", "*ist DS", Daylight, 0,		{ 1.632812, 1, 1, 0 } },
-  { "PENTAX", "*ist DS", Shade, 0,		{ 1.964844, 1, 1, 0 } },
-  { "PENTAX", "*ist DS", Cloudy, 0,		{ 1.761719, 1, 1, 0 } },
-  { "PENTAX", "*ist DS", DaylightFluorescent, 0, { 1.910156, 1, 1, 0 } },
+  { "PENTAX", "*ist DS", Daylight, 0,		{ 1.632812, 1, 1.000000, 0 } },
+  { "PENTAX", "*ist DS", Shade, 0,		{ 1.964844, 1, 1.000000, 0 } },
+  { "PENTAX", "*ist DS", Cloudy, 0,		{ 1.761719, 1, 1.000000, 0 } },
+  { "PENTAX", "*ist DS", DaylightFluorescent, 0, { 1.910156, 1, 1.000000, 0 } },
   { "PENTAX", "*ist DS", NeutralFluorescent, 0,	{ 1.521569, 1.003922, 1, 0 } },
   { "PENTAX", "*ist DS", WhiteFluorescent, 0,	{ 1.496094, 1, 1.023438, 0 } },
-  { "PENTAX", "*ist DS", Tungsten, 0,		{ 1, 1, 2.027344, 0 } },
-  { "PENTAX", "*ist DS", Flash, 0,		{ 1.695312, 1, 1, 0 } },
+  { "PENTAX", "*ist DS", Tungsten, 0,		{ 1.000000, 1, 2.027344, 0 } },
+  { "PENTAX", "*ist DS", Flash, 0,		{ 1.695312, 1, 1.000000, 0 } },
 
   { "PENTAX", "K10D", Daylight, 0,		{ 1.660156, 1, 1.066406, 0 } },
   { "PENTAX", "K10D", Shade, 0,			{ 2.434783, 1.236715, 1, 0 } },
@@ -2738,16 +3411,16 @@ const wb_data wb_preset[] = {
   { "PENTAX", "K20D", Flash, 0,			{ 1.792969, 1, 1.183594, 0 } },
 
   { "PENTAX", "K100D", Daylight, 0,		{ 1.468750, 1, 1.023438, 0 } },
-  { "PENTAX", "K100D", Shade, 0,		{ 1.769531, 1, 1, 0 } },
-  { "PENTAX", "K100D", Cloudy, 0,		{ 1.589844, 1, 1, 0 } },
+  { "PENTAX", "K100D", Shade, 0,		{ 1.769531, 1, 1.000000, 0 } },
+  { "PENTAX", "K100D", Cloudy, 0,		{ 1.589844, 1, 1.000000, 0 } },
   { "PENTAX", "K100D", DaylightFluorescent, 0,	{ 1.722656, 1, 1.039063, 0 } },
   { "PENTAX", "K100D", NeutralFluorescent, 0,	{ 1.425781, 1, 1.160156, 0 } },
   { "PENTAX", "K100D", WhiteFluorescent, 0,	{ 1.265625, 1, 1.414063, 0 } },
   { "PENTAX", "K100D", Tungsten, 0,		{ 1, 1.015873, 2.055556, 0 } },
-  { "PENTAX", "K100D", Flash, 0,		{ 1.527344, 1, 1, 0 } },
+  { "PENTAX", "K100D", Flash, 0,		{ 1.527344, 1, 1.000000, 0 } },
 
   { "PENTAX", "K100D Super", Daylight, 0,	{ 1.593750, 1, 1.011719, 0 } },
-  { "PENTAX", "K100D Super", Shade, 0,		{ 1.917969, 1, 1, 0 } },
+  { "PENTAX", "K100D Super", Shade, 0,		{ 1.917969, 1, 1.000000, 0 } },
   { "PENTAX", "K100D Super", Cloudy, 0,		{ 1.703125, 1, 1.015625, 0 } },
   { "PENTAX", "K100D Super", DaylightFluorescent, 0, { 1.708502, 1.036437, 1, 0 } },
   { "PENTAX", "K100D Super", NeutralFluorescent, 0, { 1.634538, 1.028112, 1, 0 } },
@@ -2756,13 +3429,13 @@ const wb_data wb_preset[] = {
   { "PENTAX", "K100D Super", Flash, 0,		{ 1.670588, 1.003922, 1, 0 } },
 
   { "PENTAX", "K110D", Daylight, 0,		{ 1.468750, 1, 1.023438, 0 } },
-  { "PENTAX", "K110D", Shade, 0,		{ 1.769531, 1, 1, 0 } },
-  { "PENTAX", "K110D", Cloudy, 0,		{ 1.589844, 1, 1, 0 } },
+  { "PENTAX", "K110D", Shade, 0,		{ 1.769531, 1, 1.000000, 0 } },
+  { "PENTAX", "K110D", Cloudy, 0,		{ 1.589844, 1, 1.000000, 0 } },
   { "PENTAX", "K110D", DaylightFluorescent, 0,	{ 1.722656, 1, 1.039063, 0 } },
   { "PENTAX", "K110D", NeutralFluorescent, 0,	{ 1.425781, 1, 1.160156, 0 } },
   { "PENTAX", "K110D", WhiteFluorescent, 0,	{ 1.265625, 1, 1.414063, 0 } },
   { "PENTAX", "K110D", Tungsten, 0,		{ 1, 1.015873, 2.055556, 0 } },
-  { "PENTAX", "K110D", Flash, 0,		{ 1.527344, 1, 1, 0 } },
+  { "PENTAX", "K110D", Flash, 0,		{ 1.527344, 1, 1.000000, 0 } },
 
   { "PENTAX", "K200D", Daylight, 0,		{ 1.804688, 1, 1.304688, 0 } },
   { "PENTAX", "K200D", Shade, 0,		{ 2.140625, 1, 1.085937, 0 } },
@@ -2773,15 +3446,24 @@ const wb_data wb_preset[] = {
   { "PENTAX", "K200D", Tungsten, 0,		{ 1.000000, 1, 2.835937, 0 } },
   { "PENTAX", "K200D", Flash, 0,		{ 1.917969, 1, 1.214844, 0 } },
 
-  { "PENTAX", "K-7", Daylight, 0,		{ 1.757812, 1, 1.320312, 0 } },
-  { "PENTAX", "K-7", Shade, 0,			{ 2.105469, 1, 1.007812, 0 } },
-  { "PENTAX", "K-7", Cloudy, 0,			{ 1.906250, 1, 1.167969, 0 } },
-  { "PENTAX", "K-7", DaylightFluorescent, 0,	{ 2.218750, 1, 1.222656, 0 } },
-  { "PENTAX", "K-7", NeutralFluorescent, 0,	{ 1.882812, 1, 1.394531, 0 } },
-  { "PENTAX", "K-7", CoolWhiteFluorescent, 0,	{ 1.757812, 1, 1.734375, 0 } },
-  { "PENTAX", "K-7", WarmWhiteFluorescent, 0,	{ 1.546875, 1, 2.222656, 0 } },
-  { "PENTAX", "K-7", Tungsten, 0,		{ 1.074219, 1, 2.414062, 0 } },
-  { "PENTAX", "K-7", Flash, 0,			{ 2.035156, 1, 1.109375, 0 } },
+  { "PENTAX", "K-7", Daylight, 0,		{ 1.808594, 1, 1.285156, 0 } },
+  { "PENTAX", "K-7", Shade, 0,			{ 2.207171, 1.019920, 1, 0 } },
+  { "PENTAX", "K-7", Cloudy, 0,			{ 1.960937, 1, 1.136719, 0 } },
+  { "PENTAX", "K-7", DaylightFluorescent, 0,	{ 2.281250, 1, 1.191406, 0 } },
+  { "PENTAX", "K-7", NeutralFluorescent, 0,	{ 1.937500, 1, 1.355469, 0 } },
+  { "PENTAX", "K-7", CoolWhiteFluorescent, 0,	{ 1.808594, 1, 1.687500, 0 } },
+  { "PENTAX", "K-7", WarmWhiteFluorescent, 0,	{ 1.589844, 1, 2.164063, 0 } },
+  { "PENTAX", "K-7", Tungsten, 0,		{ 1.105469, 1, 2.347656, 0 } },
+  { "PENTAX", "K-7", Flash, 0,			{ 2.093750, 1, 1.082031, 0 } },
+
+  { "PENTAX", "K-m", Daylight, 0,		{ 1.738281, 1, 1.363281, 0 } },
+  { "PENTAX", "K-m", Shade, 0,			{ 2.027344, 1, 1.027344, 0 } },
+  { "PENTAX", "K-m", Cloudy, 0,			{ 1.832031, 1, 1.183594, 0 } },
+  { "PENTAX", "K-m", DaylightFluorescent, 0,	{ 2.183594, 1, 1.250000, 0 } },
+  { "PENTAX", "K-m", NeutralFluorescent, 0,	{ 1.824219, 1, 1.417969, 0 } },
+  { "PENTAX", "K-m", WhiteFluorescent, 0,	{ 1.644531, 1, 1.714844, 0 } },
+  { "PENTAX", "K-m", Tungsten, 0,		{ 1.429687, 1, 1.980469, 0 } },
+  { "PENTAX", "K-m", Flash, 0,			{ 1.738281, 1, 1.363281, 0 } },
 
   { "RICOH", "Caplio GX100", Daylight, 0,	{ 1.910001, 1, 1.820002, 0 } },
   { "RICOH", "Caplio GX100", Cloudy, 0,		{ 2.240003, 1, 1.530002, 0 } },
