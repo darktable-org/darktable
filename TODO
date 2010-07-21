@@ -1,7 +1,6 @@
 0.6 release:
 
 - sqlite3 thread safe/locking?
-- desaturated colors in full raw but not preview float map??
 - BUG: full image stays locked?
 - BUG: full image not loaded due to 1st buffer > mem limit
 - BUG: linked list mru/lru in image cache broken sometimes after load?

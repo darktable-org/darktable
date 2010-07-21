@@ -714,6 +714,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     {
       if(dt_image_reimport(img, filename, mip)) ret = 1;
+      else dt_image_preview_to_raw(img);
     }
     else
     {

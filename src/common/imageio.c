@@ -243,8 +243,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
-      if(retval == DT_IMAGEIO_OK)
-        retval = dt_image_preview_to_raw(img);
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
       return retval;
@@ -276,8 +274,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
           for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
-      retval = dt_image_preview_to_raw(img);
-      // store in db.
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
       if(retval == DT_IMAGEIO_OK)
         retval = dt_image_update_mipmaps(img);
@@ -542,10 +538,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     }
   }
   free(tmp);
-  dt_imageio_retval_t retval = dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  if(retval == DT_IMAGEIO_OK)
-    retval = dt_image_update_mipmaps(img);
+  dt_imageio_retval_t retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return retval;
 }

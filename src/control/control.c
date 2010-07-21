@@ -547,6 +547,16 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
   int32_t i;
   pthread_mutex_lock(&s->queue_mutex);
+  for(i=0;i<s->queued_top;i++)
+  { // find equivalent job and quit if already there
+    const int j = s->queued[i];
+    if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
+    {
+      dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
+      pthread_mutex_unlock(&s->queue_mutex);
+      return -1;
+    }
+  }
   dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", s->idle_top);
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
