@@ -15,6 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef _XOPEN_SOURCE
+  #define _XOPEN_SOURCE 600 // for setenv
+#endif
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -827,6 +830,15 @@ gboolean center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_
 int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
+  // unset gtk rc from kde:
+  char path[1024], datadir[1024];
+  dt_get_datadir(datadir, 1024);
+  gchar *themefile = dt_conf_get_string("themefile");
+  snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
+  if(!g_file_test(path, G_FILE_TEST_EXISTS))
+    snprintf(path, 1023, "%s/%s", DATADIR, themefile ? themefile : "darktable.gtkrc");
+  (void)setenv("GTK2_RC_FILES", path, 1);
+
   GtkWidget *widget;
 
   gui->num_snapshots = 0;
@@ -841,20 +853,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gdk_threads_enter();
   gtk_init (&argc, &argv);
 
-  char path[1024], datadir[1024];
-  dt_get_datadir(datadir, 1024);
-  gchar *themefile = dt_conf_get_string("themefile");
-  snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
   if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
   else
   {
-    snprintf(path, 1023, "%s/%s", DATADIR, themefile ? themefile : "darktable.gtkrc");
-    if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
-    else
-    {
-      fprintf(stderr, "[gtk_init] could not find darktable.gtkrc in . or %s!\n", DATADIR);
-      return 1;
-    }
+    fprintf(stderr, "[gtk_init] could not find darktable.gtkrc in . or %s!\n", datadir);
+    return 1;
   }
   g_free(themefile);
 

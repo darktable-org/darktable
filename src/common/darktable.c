@@ -98,6 +98,7 @@ int dt_init(int argc, char *argv[])
   char filename[512];
   snprintf(filename, 512, "%s/.darktablerc", homedir);
 
+
   // Initialize the filesystem watcher  
   darktable.fswatch=dt_fswatch_new();	
   
