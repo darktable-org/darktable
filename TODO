@@ -7,6 +7,8 @@
 - BUG: linked list mru/lru in image cache broken sometimes after load?
 - BUG: colorin blue shift in colorin lcms: to lab?
 - BUG: leaving darkroom mode: garbled mipf image?
+- clear mipmap cache when image is removed
+- color labels into dttags files.
 
 - named presets for export: comboentry (copy blob)
   . params_size

@@ -218,6 +218,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
     dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
+    dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
     dev->preview_loading = 0;
   }
   else
@@ -400,8 +401,6 @@ void dt_dev_raw_reload(dt_develop_t *dev)
   dev->image->output_width = dev->image->output_height = 0;
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
-  dt_dev_pixelpipe_flush_caches(dev->pipe);
-  dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
@@ -440,6 +439,7 @@ restart:
     dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height, 1.0);
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
+    if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
     dev->image_loading = 0;
     dev->image_dirty = 1;
     dev->image_force_reload = 0;
