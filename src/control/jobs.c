@@ -60,7 +60,7 @@ void dt_captured_image_import_job_run(dt_job_t *job)
 	dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
 	
 	char message[512]={0};
-	sprintf(message, _("importing image %s"), t->filename);
+	snprintf(message, 512, _("importing image %s"), t->filename);
 	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
 	
 	int id = dt_image_import(t->film_id, t->filename);
@@ -88,7 +88,7 @@ void dt_camera_capture_job_run(dt_job_t *job)
 	dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
 	int total = t->count*t->brackets;
 	char message[512]={0};
-	sprintf(message, ngettext ("capturing %d image", "capturing %d images", total), total );
+	snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
 	double fraction=0;
 	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
 	for(int i=0;i<t->count;i++)
@@ -445,7 +445,7 @@ void dt_control_duplicate_images_job_run(dt_job_t *job)
 	int total = g_list_length(t);
 	char message[512]={0};
 	double fraction=0;
-	sprintf(message, ngettext ("duplicating %d image", "duplicating %d images", total), total );
+	snprintf(message, 512, ngettext ("duplicating %d image", "duplicating %d images", total), total );
 	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
 	while(t)
 	{
@@ -465,7 +465,7 @@ void dt_control_remove_images_job_run(dt_job_t *job)
 	int total = g_list_length(t);
 	char message[512]={0};
 	double fraction=0;
-	sprintf(message, ngettext ("removing %d image", "removing %d images", total), total );
+	snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
 	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
 	while(t)
 	{
@@ -485,7 +485,7 @@ void dt_control_delete_images_job_run(dt_job_t *job)
 	int total = g_list_length(t);
 	char message[512]={0};
 	double fraction=0;
-	sprintf(message, ngettext ("deleting %d image", "deleting %d images", total), total );
+	snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
 	const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
 	while(t)
 	{
@@ -671,7 +671,7 @@ void dt_control_export_job_run(dt_job_t *job)
 	}
 	dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
 	char message[512]={0};
-	sprintf(message, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
+	snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
 	const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
 	double fraction=0;
 	while(t)
