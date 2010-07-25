@@ -10,11 +10,6 @@
 - clear mipmap cache when image is removed
 - color labels into dttags files.
 
-- named presets for export: comboentry (copy blob)
-  . params_size
-  . gui_update after params change
-  . storage to enforce constraints on format/wd/ht
-
 - film strip view keyboard bindings
 
 - more sophisticated auto complete in preset creation

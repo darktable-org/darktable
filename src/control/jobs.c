@@ -634,9 +634,10 @@ void dt_control_export_job_run(dt_job_t *job)
 	dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
 	GList *t = t1->index;
 	const int total = g_list_length(t);
+  int size = 0;
 	dt_imageio_module_format_t  *mformat  = dt_imageio_get_format();
 	g_assert(mformat);
-	dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+	dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
 	fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
 	fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
 	dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
@@ -658,13 +659,13 @@ void dt_control_export_job_run(dt_job_t *job)
 	fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
 	fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
 	
-	dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
+	dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage, &size);
 	if( sdata == NULL || fdata == NULL ) {
 		if( sdata ) {
-			mstorage->free_params(mstorage,sdata);
+			mstorage->free_params(mstorage, sdata);
 			dt_control_log(_("failed to get parameters from format module, aborting export.."));
 		} else {
-			mformat->free_params (mformat,  fdata);
+			mformat->free_params (mformat, fdata);
 			dt_control_log(_("failed to get parameters from storage module, aborting export.."));
 		}
 		return;
@@ -682,6 +683,7 @@ void dt_control_export_job_run(dt_job_t *job)
 		fraction+=1.0/total;
 		dt_gui_background_jobs_set_progress( j, fraction );
 	}
+  if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
 	mformat->free_params (mformat,  fdata);
 	mstorage->free_params(mstorage, sdata);
 }

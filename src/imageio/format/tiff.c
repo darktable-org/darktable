@@ -39,6 +39,12 @@ typedef struct dt_imageio_tiff_t
 }
 dt_imageio_tiff_t;
 
+typedef struct dt_imageio_tiff_gui_t
+{
+  GtkToggleButton *b8, *b16;
+}
+dt_imageio_tiff_gui_t;
+
 
 int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
 {
@@ -146,9 +152,11 @@ int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
 #endif
 
 void*
-get_params(dt_imageio_module_format_t *self)
+get_params(dt_imageio_module_format_t *self, int *size)
 {
+  *size = sizeof(dt_imageio_tiff_t) - sizeof(TIFF*);
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
+  bzero(d, sizeof(dt_imageio_tiff_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
   if(d->bpp < 12) d->bpp = 8;
   else            d->bpp = 16;
@@ -159,6 +167,18 @@ void
 free_params(dt_imageio_module_format_t *self, void *params)
 {
   free(params);
+}
+
+int
+set_params(dt_imageio_module_format_t *self, void *params, int size)
+{
+  if(size != sizeof(dt_imageio_tiff_t) - sizeof(TIFF*)) return 1;
+  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
+  dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
+  if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);
+  else            gtk_toggle_button_set_active(g->b16, TRUE);
+  dt_conf_set_int("plugins/imageio/format/tiff/bpp", d->bpp);
+  return 0;
 }
 
 int bpp(dt_imageio_tiff_t *p)
@@ -195,13 +215,17 @@ radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
 // TODO: some quality/compression stuff?
 void gui_init (dt_imageio_module_format_t *self)
 {
+  dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
+  self->gui_data = (void *)gui;
   int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
   self->widget = gtk_hbox_new(TRUE, 5);
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
+  gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)8);
   if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
   radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
+  gui->b16 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)16);
   if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
@@ -209,6 +233,7 @@ void gui_init (dt_imageio_module_format_t *self)
 
 void gui_cleanup (dt_imageio_module_format_t *self)
 {
+  free(self->gui_data);
 }
 
 void gui_reset   (dt_imageio_module_format_t *self)

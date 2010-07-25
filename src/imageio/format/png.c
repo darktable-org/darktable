@@ -231,8 +231,9 @@ int read_image (dt_imageio_png_t *png, uint8_t *out)
 }
 
 void*
-get_params(dt_imageio_module_format_t *self)
+get_params(dt_imageio_module_format_t *self, int *size)
 {
+  *size = sizeof(dt_imageio_png_t);
   dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
   return d;
 }
@@ -241,6 +242,13 @@ void
 free_params(dt_imageio_module_format_t *self, void *params)
 {
   free(params);
+}
+
+int
+set_params(dt_imageio_module_format_t *self, void *params, int size)
+{
+  if(size != sizeof(dt_imageio_png_t)) return 1;
+  return 0;
 }
 
 int bpp(dt_imageio_module_data_t *p)

@@ -109,16 +109,29 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 }
 
 void*
-get_params(dt_imageio_module_storage_t *self)
+get_params(dt_imageio_module_storage_t *self, int *size)
 {
+  *size = sizeof(dt_imageio_email_t) - sizeof(GList *);
   dt_imageio_email_t *d = (dt_imageio_email_t *)g_malloc(sizeof(dt_imageio_email_t));
   memset( d,0,sizeof( dt_imageio_email_t));
   return d;
 }
 
+int
+set_params(dt_imageio_module_format_t *self, void *params, int size)
+{
+  if(size != sizeof(dt_imageio_email_t) - sizeof(GList *)) return 1;
+  return 0;
+}
 
 void
 free_params(dt_imageio_module_storage_t *self, void *params)
+{
+  free(params);
+}
+
+void
+finalize_store(dt_imageio_module_storage_t *self, void *params)
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)params;
   
@@ -126,7 +139,7 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   gchar uri[4096]={0};
   gchar body[4096]={0};
   gchar attachments[4096]={0};
-   gchar *defaultHandler=NULL;
+  gchar *defaultHandler=NULL;
   gchar *uriFormat=NULL;
   gchar *subject="images exported from darktable";
   gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
@@ -197,7 +210,5 @@ proceed: ; // Let's build up uri / command
     gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
   else // Launch subprocess
     res = system( uri );
- 
-  free(params);
 }
 

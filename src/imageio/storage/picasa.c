@@ -53,7 +53,7 @@ typedef struct dt_storage_picasa_gui_data_t {
 
 typedef struct dt_storage_picasa_params_t
 {
-  dt_imageio_module_data_t data;
+  int64_t hash;
   struct _picasa_api_context_t *picasa_api;
   gboolean export_tags;
 } dt_storage_picasa_params_t;
@@ -832,11 +832,15 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 }
 
 void*
-get_params(dt_imageio_module_storage_t *self)
+get_params(dt_imageio_module_storage_t *self, int *size)
 {
+  // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
+  // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of the struct!
+  *size = sizeof(int64_t);
   dt_storage_picasa_gui_data_t *ui =(dt_storage_picasa_gui_data_t *)self->gui_data;
   dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)malloc(sizeof(dt_storage_picasa_params_t));
   memset(d,0,sizeof(dt_storage_picasa_params_t));
+  d->hash = 1;
   
   // fill d from controls in ui
   if( ui->picasa_api ) {
@@ -867,6 +871,15 @@ get_params(dt_imageio_module_storage_t *self)
     return NULL;
   
   return d;
+}
+
+int
+set_params(dt_imageio_module_format_t *self, void *params, int size)
+{
+  if(size != sizeof(int64_t)) return 1;
+  // gui stuff not updated, as sensitive user data is not stored in the preset.
+  // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
+  return 0;
 }
 
 int dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height) {

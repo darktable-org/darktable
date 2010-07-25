@@ -64,6 +64,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "dimension",                   (gpointer)&(module->dimension)))                   module->dimension = _default_format_dimension;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
+  if(!g_module_symbol(module->module, "set_params",                   (gpointer)&(module->set_params)))                   goto error;
   if(!g_module_symbol(module->module, "write_image",                  (gpointer)&(module->write_image)))                  goto error;
   if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
 
@@ -145,10 +146,12 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
+  if(!g_module_symbol(module->module, "finalize_store",         (gpointer)&(module->finalize_store)))         module->finalize_store = NULL;
+  if(!g_module_symbol(module->module, "set_params",             (gpointer)&(module->set_params)))             goto error;
 
   if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
-  if(!g_module_symbol(module->module, "dimension",                   (gpointer)&(module->dimension)))         	module->dimension = _default_storage_dimension;
-  if(!g_module_symbol(module->module, "recommended_dimension",                   (gpointer)&(module->recommended_dimension)))         	module->recommended_dimension = _default_storage_dimension;
+  if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
+  if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
   
   return 0;
 error:
@@ -242,3 +245,28 @@ dt_imageio_module_storage_t *dt_imageio_get_storage()
   return (dt_imageio_module_storage_t *)it->data;
 }
 
+dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = iio->plugins_format;
+  while(it)
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    if(!strcmp(module->plugin_name, name)) return module;
+    it = g_list_next(it);
+  }
+  return NULL;
+}
+
+dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = iio->plugins_storage;
+  while(it)
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    if(!strcmp(module->plugin_name, name)) return module;
+    it = g_list_next(it);
+  }
+  return NULL;
+}

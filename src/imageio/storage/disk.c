@@ -187,13 +187,17 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 }
 
 void*
-get_params(dt_imageio_module_storage_t *self)
+get_params(dt_imageio_module_storage_t *self, int* size)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
+  bzero(d, sizeof(dt_imageio_disk_t));
+  // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
+  *size = sizeof(dt_imageio_disk_t) - sizeof(void *);
   disk_t *g = (disk_t *)self->gui_data;
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
-  memcpy(d->filename, gtk_entry_get_text(GTK_ENTRY(g->entry)), 1024);
+  const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
+  strncpy(d->filename, text, 1024);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return d;
 }
@@ -206,3 +210,13 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+int
+set_params(dt_imageio_module_storage_t *self, void *params, int size)
+{
+  if(size != sizeof(dt_imageio_disk_t) - sizeof(void *)) return 1;
+  dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
+  disk_t *g = (disk_t *)self->gui_data;
+  gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
+  dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
+  return 0;
+}

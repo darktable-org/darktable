@@ -48,8 +48,9 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint
 }
 
 void*
-get_params(dt_imageio_module_format_t *self)
+get_params(dt_imageio_module_format_t *self, int *size)
 {
+  *size = sizeof(dt_imageio_module_data_t);
   dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)malloc(sizeof(dt_imageio_module_data_t));
   return d;
 }
@@ -58,6 +59,13 @@ void
 free_params(dt_imageio_module_format_t *self, void *params)
 {
   free(params);
+}
+
+int
+set_params(dt_imageio_module_format_t *self, void *params, int size)
+{
+  if(size != sizeof(dt_imageio_module_data_t)) return 1;
+  return 0;
 }
 
 int bpp(dt_imageio_module_data_t *p)
