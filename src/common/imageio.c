@@ -22,6 +22,7 @@
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/imageio_jpeg.h"
+#include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
 #include "common/image_compression.h"
@@ -478,6 +479,11 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
 
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_tiff_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
@@ -520,7 +526,6 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
   const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
 
-  for(int i=0;i<4*p_wd*p_ht;i++) img->mip[DT_IMAGE_MIP4][i] = 100;
   if(img->width == p_wd && img->height == p_ht)
   { // use 1:1
     for (int j=0; j < jpg.height; j++)
@@ -547,6 +552,11 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_tiff(img, filename);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);

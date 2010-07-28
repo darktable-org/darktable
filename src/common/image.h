@@ -41,7 +41,8 @@ typedef enum
   DT_IMAGE_OKAY = 2,
   DT_IMAGE_NICE = 3,
   DT_IMAGE_EXCELLENT = 4,
-  DT_IMAGE_THUMBNAIL = 16
+  DT_IMAGE_THUMBNAIL = 16,
+  DT_IMAGE_LDR = 32
 }
 dt_image_flags_t;
 

@@ -16,161 +16,211 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <memory.h>
-#include <lcms.h> 
+#include <stdio.h>
+#include <tiffio.h>
+#include <inttypes.h>
+#include <strings.h>
+#include "imageio.h"
 #include "imageio_tiff.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
-#define DT_TIFFIO_STRIPE 20
 
-
-
-int dt_imageio_tiff_write_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len)
+dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
 {
-  return dt_imageio_tiff_write_with_icc_profile_16(filename,in,width,height,exif,exif_len,0);
-}
+  const char *ext = filename + strlen(filename);
+  while(*ext != '.' && ext > filename) ext--;
+  if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5) && strncmp(ext, ".TIFF", 5))
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!img->exif_inited)
+    (void) dt_exif_read(img, filename);
 
-int dt_imageio_tiff_write_with_icc_profile_16(const char *filename, const uint16_t *in, const int width, const int height, void *exif, int exif_len, int imgid)
-{
-  // Fetch colorprofile into buffer if wanted
-  uint8_t *profile=NULL;
-  size_t profile_len = 0;
-  if(imgid > 0)
+  TIFF *image;
+  uint32_t width, height, bpp, imagesize, config;
+
+  if((image = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  TIFFGetField(image, TIFFTAG_IMAGEWIDTH, &width);
+  TIFFGetField(image, TIFFTAG_IMAGELENGTH, &height);
+  TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
+  if(bpp < 12) imagesize =   4*(height * width + 1);
+  else         imagesize = 2*4*(height * width + 1);
+
+  img->width = width;
+  img->height = height;
+  
+  if(dt_image_alloc(img, DT_IMAGE_FULL))
   {
-    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
-    _cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if (profile_len > 0)
+    TIFFClose(image);
+    return DT_IMAGEIO_CACHE_FULL;
+  }
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(float));
+
+	uint32_t imagelength;
+  int32_t scanlinesize = TIFFScanlineSize(image);
+  int32_t mul = scanlinesize/width;
+	tdata_t buf;
+	buf = _TIFFmalloc(scanlinesize);
+  uint16_t *buf16 = (uint16_t *)buf;
+  uint8_t *buf8 = (uint8_t *)buf;
+	uint32_t row;
+
+	TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
+	TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
+  if (config == PLANARCONFIG_CONTIG)
+  {
+    for (row = 0; row < imagelength; row++)
     {
-      profile=malloc(profile_len);
-      _cmsSaveProfileToMem(out_profile, profile, &profile_len);
+      TIFFReadScanline(image, buf, row, 0);
+      if(bpp < 12) for(int i=0;i<width;i++)
+        for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = buf8[mul*i + k]*(1.0/255.0);
+      else for(int i=0;i<width;i++)
+        for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = buf16[mul/2*i + k]*(1.0/65535.0);
+        // for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = ((buf16[mul*i + k]>>8)|((buf16[mul*i + k]<<8)&0xff00))*(1.0/65535.0);
     }
-    dt_colorspaces_cleanup_profile(out_profile);
   }
-  
-   // Create tiff image
-  TIFF *tif=TIFFOpen(filename, "wb");  
-  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-  TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-  if(profile!=NULL)
-    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
-  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
-  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
-  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
-  
-  uint32_t rowsize=(width*3)*sizeof(uint16_t);
-  uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
-  const uint8_t *in8=(const uint8_t *)in;
-  uint8_t *stripedata=(uint8_t*)in;
-  uint32_t stripe=0;
-  uint32_t insize=((width*height)*3)*sizeof(uint16_t);
-  while(stripedata<(in8+insize)-(stripesize)) {
-    TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
-    stripedata+=stripesize;  
-  }
-  TIFFWriteEncodedStrip(tif,stripe++,stripedata,(in8+insize)-stripedata);
-  TIFFClose(tif);
-  
-  if(exif)
-    dt_exif_write_blob(exif,exif_len,filename);
-  
-  free(profile);
-  return 1;
-}
-
-int dt_imageio_tiff_write_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len)
-{
-  return dt_imageio_tiff_write_with_icc_profile_8(filename,in,width,height,exif,exif_len,0);
-}
-
-int dt_imageio_tiff_write_with_icc_profile_8(const char *filename, const uint8_t *in, const int width, const int height, void *exif, int exif_len, int imgid)
-{
-  // Fetch colorprofile into buffer if wanted
-  uint8_t *profile=NULL;
-  size_t profile_len = 0;
-  if(imgid > 0)
+  else if (config == PLANARCONFIG_SEPARATE)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
-    _cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if (profile_len > 0)
+    assert(0);
+    // uint16_t s, nsamples;
+    // TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &nsamples);
+    // for (s = 0; s < nsamples; s++)
+    //   for (row = 0; row < imagelength; row++)
+    //     TIFFReadScanline(image, buf, row, s);
+  }
+  _TIFFfree(buf);
+  TIFFClose(image);
+  dt_image_release(img, DT_IMAGE_FULL, 'w');
+  img->flags |= DT_IMAGE_LDR;
+  return DT_IMAGEIO_OK;
+}
+
+dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *filename)
+{
+  const char *ext = filename + strlen(filename);
+  while(*ext != '.' && ext > filename) ext--;
+  if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5) && strncmp(ext, ".TIFF", 5))
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!img->exif_inited)
+    (void) dt_exif_read(img, filename);
+
+  TIFF *image;
+  uint32_t width, height, bpp, imagesize, config;
+
+  if((image = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  TIFFGetField(image, TIFFTAG_IMAGEWIDTH, &width);
+  TIFFGetField(image, TIFFTAG_IMAGELENGTH, &height);
+  TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
+  if(bpp < 12) imagesize =   4*(height * width + 1);
+  else         imagesize = 2*4*(height * width + 1);
+
+  img->width = width;
+  img->height = height;
+  
+
+	uint32_t imagelength;
+  int32_t scanlinesize = TIFFScanlineSize(image);
+  int32_t mul = scanlinesize/width;
+	tdata_t buf;
+	buf = _TIFFmalloc(scanlinesize);
+	uint32_t row;
+  void *tmp;
+  if(bpp < 12) tmp = (void *)malloc(sizeof(uint8_t)*3*width*height);
+  else         tmp = (void *)malloc(sizeof(uint16_t)*3*width*height);
+  uint16_t *buf16 = (uint16_t *)buf, *tmp16 = (uint16_t *)tmp;
+  uint8_t  *buf8  = (uint8_t *)buf,  *tmp8  = (uint8_t *)tmp;
+
+  const int orientation = 0;
+	TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
+	TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
+  if (config == PLANARCONFIG_CONTIG)
+  {
+    for (row = 0; row < imagelength; row++)
     {
-      profile=malloc(profile_len);
-      _cmsSaveProfileToMem(out_profile, profile, &profile_len);
+      TIFFReadScanline(image, buf, row, 0);
+      if(bpp < 12) for(int i=0;i<width;i++)
+        for(int k=0;k<3;k++) tmp8[3*(width*row + i) + k] = buf8[mul*i + k];
+      else for(int i=0;i<width;i++)
+        for(int k=0;k<3;k++) tmp16[3*(width*row + i) + k] = buf16[mul/2*i + k];
     }
-    cmsCloseProfile(out_profile);
   }
 
-  // Create tiff image
-  TIFF *tif=TIFFOpen(filename,"w");  
-  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-  TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-  if(profile!=NULL)
-    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
-  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
-  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
-  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
-  
-  uint32_t rowsize=width*3;
-  uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
-  uint8_t *rowdata=malloc(stripesize);
-  uint8_t *wdata=rowdata;
-  uint32_t stripe=0;
-  
-  for (int y = 0; y < height; y++)
+  if(dt_image_alloc(img, DT_IMAGE_MIP4))
   {
-    for(int x=0;x<width;x++) 
-      for(int k=0;k<3;k++) 
-      {
-        (wdata)[0] = in[4*width*y + 4*x + k];
-          wdata++;
-      }
-    if((wdata-stripesize)==rowdata)
+    free(tmp);
+    _TIFFfree(buf);
+    TIFFClose(image);
+    return DT_IMAGEIO_CACHE_FULL;
+  }
+
+  int p_wd, p_ht;
+  float f_wd, f_ht;
+  dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
+  dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
+
+  // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
+  // FIXME: there is a black border on the left side of a portrait image!
+
+  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+  const int p_wd2 = orientation & 4 ? p_ht : p_wd;
+  const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
+  const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
+  if(img->width == p_wd && img->height == p_ht)
+  { // use 1:1
+    for (int j=0; j < height; j++)
+      for (int i=0; i < width; i++)
+        if(bpp >= 12)
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp16[3*width*j+3*i+k]>>8;
+        else
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp8 [3*width*j+3*i+k];
+  }
+  else
+  { // scale to fit
+    bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+    const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
+    for(int j=0;j<p_ht2 && scale*j<height;j++) for(int i=0;i<p_wd2 && scale*i < width;i++)
     {
-      TIFFWriteEncodedStrip(tif,stripe++,rowdata,rowsize*DT_TIFFIO_STRIPE);
-      wdata=rowdata;
+      uint8_t cam[3];
+      if(bpp < 12) for(int k=0;k<3;k++) cam[k] = tmp8 [3*((int)(scale*j)*width + (int)(scale*i)) + k];
+      else         for(int k=0;k<3;k++) cam[k] = tmp16[3*((int)(scale*j)*width + (int)(scale*i)) + k] >> 8;
+      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
     }
-  }	
-  if((wdata-stripesize)!=rowdata)
-	TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
-  TIFFClose(tif);
-  
-  if(exif)
-    dt_exif_write_blob(exif,exif_len,filename);
-  
-  free(profile);
-  free(rowdata);
-  return 1;
-}
-
-int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
-{
-  tiff->handle = TIFFOpen(filename, "r");
-  if( tiff->handle )
-  {
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
-    TIFFGetField(tiff->handle, TIFFTAG_IMAGELENGTH, &tiff->height);
   }
-  return 1;
+  free(tmp);
+  _TIFFfree(buf);
+  TIFFClose(image);
+
+  dt_image_release(img, DT_IMAGE_MIP4, 'w');
+  dt_imageio_retval_t retval = dt_image_update_mipmaps(img);
+  dt_image_release(img, DT_IMAGE_MIP4, 'r');
+  img->flags |= DT_IMAGE_LDR;
+  return retval;
+
+#if 0
+  // this updates mipf/mip4..0 from raw pixels.
+  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
+  if(dt_image_get(img, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+  {
+    dt_image_release(img, DT_IMAGE_MIP4, 'w');
+    dt_image_release(img, DT_IMAGE_MIP4, 'r');
+    return DT_IMAGEIO_CACHE_FULL;
+  }
+  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  dt_imageio_retval_t ret = DT_IMAGEIO_OK;
+  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
+  dt_image_release(img, DT_IMAGE_MIP4, 'w');
+  ret = dt_image_update_mipmaps(img);
+  dt_image_release(img, DT_IMAGE_MIPF, 'r');
+  dt_image_release(img, DT_IMAGE_MIP4, 'r');
+  img->flags |= DT_IMAGE_LDR;
+  return ret;
+#endif
 }
 
-int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
-{
-  TIFFClose(tiff->handle);
-  return 1;
-}
+
+
+
+
+

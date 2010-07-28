@@ -44,7 +44,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   if(ret != 2) goto error_corrupt;
 
   if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(float));
   if(cols == 3) ret = fread(img->pixels, 3*sizeof(float), img->width*img->height, f);
   else for(int j=0; j < img->height; j++)
     for(int i=0; i < img->width; i++)
