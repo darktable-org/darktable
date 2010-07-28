@@ -679,9 +679,25 @@ void dt_control_export_job_run(dt_job_t *job)
 	{
 		imgid = (long int)t->data;
 		t = g_list_delete_link(t, t);
-		mstorage->store(sdata, imgid, mformat, fdata, total-g_list_length(t), total);
+    // check if image still exists:
+    char imgfilename[1024];
+    dt_image_t *image = dt_image_cache_use(imgid, 'r');
+    if(image)
+    {
+      dt_image_full_path(image, imgfilename, 1024);
+      dt_image_cache_release(image, 'r');
+      if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+      {
+        dt_control_log(_("image does no longer exist"));
+        dt_image_remove(imgid);
+      }
+      else
+      {
+        mstorage->store(sdata, imgid, mformat, fdata, total-g_list_length(t), total);
+      }
+    }
 		fraction+=1.0/total;
-		dt_gui_background_jobs_set_progress( j, fraction );
+    dt_gui_background_jobs_set_progress( j, fraction );
 	}
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
 	mformat->free_params (mformat,  fdata);
