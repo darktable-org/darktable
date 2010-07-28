@@ -176,7 +176,7 @@ static gboolean _slider_postponed_value_change(gpointer data) {
   {
     g_signal_emit_by_name(G_OBJECT(data),"value-changed");
     if(DTGTK_SLIDER(data)->type==DARKTABLE_SLIDER_VALUE)
-	DTGTK_SLIDER(data)->is_changed=FALSE;
+  DTGTK_SLIDER(data)->is_changed=FALSE;
   }
   gdk_threads_leave();
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
@@ -552,7 +552,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
       break;
       case DARKTABLE_SLIDER_FORMAT_PERCENT:
       {
-	 gdouble min=gtk_adjustment_get_lower(slider->adjustment);
+   gdouble min=gtk_adjustment_get_lower(slider->adjustment);
          gdouble max=gtk_adjustment_get_upper(slider->adjustment);
          gdouble value=gtk_adjustment_get_value(slider->adjustment);
          double f= (value-min)/(max-min);   
@@ -585,15 +585,16 @@ static void _slider_destroy(GtkObject *object)
   g_return_if_fail(DTGTK_IS_SLIDER(object));
 
   slider = DTGTK_SLIDER(object);
-  // this is a very annoying workaround for a weird bug in libgtk2.0-0 2.19.6 in ubuntu lucid:
-#if (GTK_MAJOR_VERSION==2) && (GTK_MINOR_VERSION<20) || ((GTK_MINOR_VERSION==20) && (GTK_MICRO_VERSION==1))
-  if(GTK_IS_WIDGET(slider->hbox)) gtk_widget_destroy(GTK_WIDGET(slider->hbox));
-#endif
-  // but at least the hbox seems to destroy the entry as well:
-  // this causes uninitialized mem accesses and segfaults somewhere.. (??)
-  // g_assert( !GTK_IS_WIDGET(slider->entry));
+  /* first off remove the keysnooper */
   if( slider->key_snooper_id > 0 )
     gtk_key_snooper_remove(slider->key_snooper_id);
+  
+  /* then destroy entry */
+  if (GTK_IS_WIDGET (slider->entry)) gtk_widget_destroy (slider->entry);
+  
+  /* and at last the container */
+  if (GTK_IS_WIDGET (slider->hbox)) gtk_widget_destroy (GTK_WIDGET(slider->hbox));
+
   
   klass = gtk_type_class(gtk_widget_get_type());
 
