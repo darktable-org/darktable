@@ -303,6 +303,8 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  dt_gui_key_accel_unregister(key_accel_copy_callback);
+  dt_gui_key_accel_unregister(key_accel_paste_callback);
   free(self->data);
   self->data = NULL;
 }
