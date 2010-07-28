@@ -248,7 +248,7 @@ void gui_update(struct dt_iop_module_t *self)
     prof = g_list_next(prof);
   }
   gtk_combo_box_set_active(g->cbox2, 0);
-  fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
+  if(strcmp(p->iccprofile, "darktable")) fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
 void init(dt_iop_module_t *module)
