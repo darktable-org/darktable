@@ -586,7 +586,7 @@ static void _slider_destroy(GtkObject *object)
 
   slider = DTGTK_SLIDER(object);
   // this is a very annoying workaround for a weird bug in libgtk2.0-0 2.19.6 in ubuntu lucid:
-#if (GTK_MAJOR_VERSION==2) && (GTK_MINOR_VERSION<=20) && (GTK_MICRO_VERSION==1)
+#if (GTK_MAJOR_VERSION==2) && (GTK_MINOR_VERSION<20) || ((GTK_MINOR_VERSION==20) && (GTK_MICRO_VERSION==1))
   if(GTK_IS_WIDGET(slider->hbox)) gtk_widget_destroy(GTK_WIDGET(slider->hbox));
 #endif
   // but at least the hbox seems to destroy the entry as well:
