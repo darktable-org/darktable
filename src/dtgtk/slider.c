@@ -589,7 +589,8 @@ static void _slider_destroy(GtkObject *object)
   if(GTK_IS_WIDGET(slider->hbox))
     gtk_widget_destroy(GTK_WIDGET(slider->hbox));
   // but at least the hbox seems to destroy the entry as well:
-  g_assert( !GTK_IS_WIDGET(slider->entry));
+  // this causes uninitialized mem accesses and segfaults somewhere.. (??)
+  // g_assert( !GTK_IS_WIDGET(slider->entry));
   if( slider->key_snooper_id > 0 )
     gtk_key_snooper_remove(slider->key_snooper_id);
   
