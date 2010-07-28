@@ -140,7 +140,6 @@ gui_reset (dt_lib_module_t *self)
 static void
 set_format_by_name (dt_lib_export_t *d, const char *name)
 {
-  assert(strcmp(name, "8-bit png"));
   // Find index of selected format plugin among all existing plugins
   int k=-1;
   GList *it = g_list_first(darktable.imageio->plugins_format);
