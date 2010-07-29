@@ -869,6 +869,14 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS Kiss Digital F", Fluorescent, 0, { 1.889648, 1, 2.133789, 0 } },
   { "Canon", "EOS Kiss Digital F", Flash, 0,	{ 2.541830, 1, 1.769099, 0 } },
 
+  // Firmware Version 1.1.6
+  { "Canon", "EOS-1Ds Mark II", "Daylight", 0,		{ 1.992188, 1, 1.503906, 0 } },
+  { "Canon", "EOS-1Ds Mark II", "Shade", 0,		{ 2.300781, 1, 1.243164, 0 } },
+  { "Canon", "EOS-1Ds Mark II", "Cloudy", 0,		{ 2.146484, 1, 1.363281, 0 } },
+  { "Canon", "EOS-1Ds Mark II", "Tungsten", 0,		{ 1.395018, 1, 2.370107, 0 } },
+  { "Canon", "EOS-1Ds Mark II", "Fluorescent", 0,	{ 1.854792, 1, 2.067764, 0 } },
+  { "Canon", "EOS-1Ds Mark II", "Flash", 0,		{ 2.235352, 1, 1.297852, 0 } },
+
   { "Canon", "EOS-1D Mark II", Cloudy, 0,	{ 2.093750, 1, 1.166016, 0 } },
   { "Canon", "EOS-1D Mark II", Daylight, 0,	{ 1.957031, 1, 1.295898, 0 } },
   { "Canon", "EOS-1D Mark II", Flash, 0,	{ 2.225586, 1, 1.172852, 0 } },
@@ -882,6 +890,14 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS-1D Mark II N", Fluorescent, 0, { 1.802899, 1, 1.990338, 0 } },
   { "Canon", "EOS-1D Mark II N", Shade, 0,	{ 2.337891, 1, 1.112305, 0 } },
   { "Canon", "EOS-1D Mark II N", Tungsten, 0,	{ 1.408514, 1, 2.147645, 0 } },
+
+  // Firmware Version 1.0.6 (Temporary)
+  { "Canon", "EOS-1D Mark IV", "Daylight", 0,		{ 2.040039, 1, 1.558594, 0 } },
+  { "Canon", "EOS-1D Mark IV", "Shade", 0,		{ 2.342773, 1, 1.333008, 0 } },
+  { "Canon", "EOS-1D Mark IV", "Cloudy", 0,		{ 2.188477, 1, 1.440430, 0 } },
+  { "Canon", "EOS-1D Mark IV", "Tungsten", 0,		{ 1.458333, 1, 2.305254, 0 } },
+  { "Canon", "EOS-1D Mark IV", "Fluorescent", 0,	{ 1.767892, 1, 2.205029, 0 } },
+  { "Canon", "EOS-1D Mark IV", "Flash", 0,		{ 2.230469, 1, 1.423828, 0 } },
 
   { "FUJIFILM", "FinePix E900", Daylight, 0,	{ 1.571875, 1, 1.128125, 0 } },
   { "FUJIFILM", "FinePix E900", Shade, 0,	{ 1.668750, 1, 1.006250, 0 } },
