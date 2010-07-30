@@ -49,7 +49,6 @@ typedef struct _GtkDarktableSlider
   GtkHBox *hbox;
   GtkAdjustment *adjustment;
   gboolean is_dragging;
-  gboolean is_ctrl_key_pressed;
   gboolean is_sensibility_key_pressed;
   gboolean is_entry_active;
   gboolean is_changed;
