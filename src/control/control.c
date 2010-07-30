@@ -369,6 +369,7 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
 
+  s->esc_shortcut_on = 1;
   s->tab_shortcut_on = 1;
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
@@ -416,6 +417,16 @@ void dt_control_tab_shortcut_off(dt_control_t *s)
 void dt_control_tab_shortcut_on(dt_control_t *s)
 {
   s->tab_shortcut_on = 1;
+}
+
+void dt_control_esc_shortcut_off(dt_control_t *s)
+{
+  s->esc_shortcut_on = 0;
+}
+
+void dt_control_esc_shortcut_on(dt_control_t *s)
+{
+  s->esc_shortcut_on = 1;
 }
 
 void dt_control_change_cursor(dt_cursor_t curs)
@@ -1114,6 +1125,7 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Escape: case KEYCODE_Caps:
+      if(darktable.control->esc_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
