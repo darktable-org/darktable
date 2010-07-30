@@ -44,9 +44,10 @@ void dt_gui_background_jobs_init();
 
 /** initializes a new background job to display */
 const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gchar *message);
+void dt_gui_background_jobs_destroy(const dt_gui_job_t *j);
 /** Set's the message to display of the current job. */
 void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *message);
-/** set's the progress of job, if progress>=1.0 the job is removed from displayed jobs and, job is an invalid handle */
+/** set's the progress of job */
 void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j, double progress);
 
 #endif
