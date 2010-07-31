@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-25 22:17+0200\n"
-"PO-Revision-Date: \n"
+"POT-Creation-Date: 2010-07-31 19:59+0200\n"
+"PO-Revision-Date: 2010-07-31 20:24+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team:  <g.siemerink@gmail.com>\n"
 "MIME-Version: 1.0\n"
@@ -350,13 +350,10 @@ msgstr ""
 "hoogte van de geëxporteerde afbeelding, of 0 als herschalen niet nodig is"
 
 #: ../darktable.schemas.in.h:21
-#, fuzzy
 msgid ""
 "how many full-resolution floating point buffers of loaded raw images to keep "
 "in main memory at maximum. only read at startup."
 msgstr ""
-"how many full-resolution floating point buffers of loaded raw images to keep "
-"in main memory at maximum. only read at startup."
 
 #: ../darktable.schemas.in.h:22
 msgid "how many images are in one row"
@@ -619,141 +616,146 @@ msgid "optional DCB refinement...\n"
 msgstr "optionele DCB verfijning...\n"
 
 #. single images
-#: ../src/common/image.c:91 ../src/control/control.c:1286
-#: ../src/control/control.c:1287 ../src/libs/collect.c:205
+#: ../src/common/image.c:91 ../src/control/control.c:1298
+#: ../src/control/control.c:1299 ../src/libs/collect.c:205
 #: ../src/gui/filmview.c:56 ../src/gui/filmview.c:82 ../src/gui/filmview.c:86
 #: ../src/gui/filmview.c:88
 #, c-format
 msgid "single images"
 msgstr "losse afbeeldingen"
 
-#: ../src/control/control.c:771 ../src/control/control.c:774
+#: ../src/control/control.c:782 ../src/control/control.c:785
 msgid "working.."
 msgstr "bezig..."
 
-#: ../src/control/control.c:845
+#: ../src/control/control.c:856
 #, c-format
 msgid "switch to %s mode"
 msgstr "schakel over op %s mode"
 
-#: ../src/control/control.c:853
+#: ../src/control/control.c:864
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 
-#: ../src/control/control.c:1243
+#: ../src/control/control.c:1255
 msgid "0 - original"
 msgstr "0 - orgineel"
 
 #: ../src/control/jobs.c:48
+#, c-format
 msgid "loading image %s"
 msgstr "afbeelding laden %s"
 
-#: ../src/control/jobs.c:63
-#, fuzzy, c-format
+#: ../src/control/jobs.c:64
+#, c-format
 msgid "importing image %s"
-msgstr "importeer een afbeelding"
+msgstr "importeren afbeelding %s"
 
-#: ../src/control/jobs.c:91
-#, fuzzy, c-format
+#: ../src/control/jobs.c:93
+#, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
-msgstr[0] "exporteer %d afbeelding"
+msgstr[0] "vastleggen %d afbeeldingen"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs.c:227
-#, fuzzy, c-format
+#: ../src/control/jobs.c:230
+#, c-format
 msgid "%d/%d imported to %s"
-msgstr "%d/%d geëxporteerd naar `%s%s'"
+msgstr "%d/%d geïmporteerd naar %s"
 
-#: ../src/control/jobs.c:284
+#: ../src/control/jobs.c:287
 msgid "starting import job of images from camera"
 msgstr "start importeer opdracht afbeeldingen vanuit de camera"
 
-#: ../src/control/jobs.c:301
+#: ../src/control/jobs.c:304
 #, c-format
 msgid "failed to create import path %s, import of images aborted."
 msgstr ""
 "aanmaak importeer pad %s is mislukt, het importeren van afbeeldingen is "
 "afgebroken"
 
-#: ../src/control/jobs.c:310
-#, fuzzy, c-format
+#: ../src/control/jobs.c:313
+#, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
-msgstr[0] "importeer afbeeldingen vanaf de camera"
+msgstr[0] "importeren %d afbeeldingen van de camera"
 msgstr[1] "importeer afbeeldingen vanaf de camera"
 
-#: ../src/control/jobs.c:333
+#: ../src/control/jobs.c:336
 msgid "failed to create filmroll for camera import, import of images aborted."
 msgstr ""
 "de aanmaak van een serie vanuit de camera is mislukt, het importeren van de "
 "afbeeldingen is afgebroken."
 
-#: ../src/control/jobs.c:448
+#: ../src/control/jobs.c:451
 #, fuzzy, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs.c:468
+#: ../src/control/jobs.c:472
 #, fuzzy, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs.c:488
+#: ../src/control/jobs.c:493
 #, fuzzy, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs.c:599
+#: ../src/control/jobs.c:605
 msgid "do you really want to remove all selected images from the collection?"
 msgstr ""
 "wilt u echt alle geselecteerde afbeeldingen van de verzameling verplaatsen?"
 
-#: ../src/control/jobs.c:600
+#: ../src/control/jobs.c:606
 msgid "remove images?"
 msgstr "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs.c:620
+#: ../src/control/jobs.c:626
 msgid "do you really want to physically delete all selected images from disk?"
 msgstr ""
 "wilt u echt alle geselecteerde afbeeldingen fysiek van de schijf verwijderen?"
 
-#: ../src/control/jobs.c:621
+#: ../src/control/jobs.c:627
 msgid "delete images?"
 msgstr "afbeeldingen verwijderen"
 
-#: ../src/control/jobs.c:665
+#: ../src/control/jobs.c:672
 msgid "failed to get parameters from format module, aborting export.."
 msgstr ""
 "het ophalen van de instellingen van de opmaak module is mislukt, het "
 "exporteren wordt afgebroken"
 
-#: ../src/control/jobs.c:668
+#: ../src/control/jobs.c:675
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr ""
 "het ophalen van de instellingen van de opslag module is mislukt, het "
 "exporteren wordt afgebroken"
 
-#: ../src/control/jobs.c:672
+#: ../src/control/jobs.c:679
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs.c:674
+#: ../src/control/jobs.c:681
 #, fuzzy, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
+
+#: ../src/control/jobs.c:697 ../src/views/darkroom.c:302
+msgid "image does no longer exist"
+msgstr "de afbeelding bestaat niet meer"
 
 #: ../src/develop/develop.c:818
 #, c-format
@@ -778,11 +780,11 @@ msgstr "%s is ingeschakeld"
 msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
-#: ../src/develop/imageop.c:425 ../src/libs/lib.c:163
+#: ../src/develop/imageop.c:425 ../src/libs/lib.c:496
 msgid "reset parameters"
 msgstr "herstel parameters"
 
-#: ../src/develop/imageop.c:426
+#: ../src/develop/imageop.c:426 ../src/libs/lib.c:502
 msgid "presets"
 msgstr "voorkeuren"
 
@@ -868,23 +870,63 @@ msgstr ""
 "open dt sidecar bestand\n"
 "en pas het toe op de geselecteerde afbeeldingen"
 
-#: ../src/libs/export.c:65
+#: ../src/libs/lib.c:55 ../src/gui/presets.c:78 ../src/gui/presets.c:490
+#: ../src/gui/presets.c:503
+msgid "(default)"
+msgstr "(standaard)"
+
+#: ../src/libs/lib.c:114
+#, c-format
+msgid "edit `%s'"
+msgstr "bewerk `%s'"
+
+#: ../src/libs/lib.c:135 ../src/gui/presets.c:204
+msgid "name of the preset"
+msgstr "naam van deze voorkeur"
+
+#: ../src/libs/lib.c:139 ../src/gui/presets.c:208
+msgid "description or further information"
+msgstr "beschrijving dan wel extra informatie"
+
+#. then show edit dialog
+#: ../src/libs/lib.c:169 ../src/libs/lib.c:174 ../src/libs/lib.c:180
+#: ../src/gui/presets.c:364 ../src/gui/presets.c:369 ../src/gui/presets.c:376
+msgid "new preset"
+msgstr "nieuwe voorkeur"
+
+#: ../src/libs/lib.c:236
+msgid "deleting preset for obsolete module"
+msgstr "verwijder voorkeur voor achterhaalde module"
+
+#: ../src/libs/lib.c:300 ../src/gui/presets.c:524
+msgid "edit this preset.."
+msgstr "bewerk deze voorkeur"
+
+#: ../src/libs/lib.c:304 ../src/gui/presets.c:528
+msgid "delete this preset"
+msgstr "verwijder deze voorkeur"
+
+#: ../src/libs/lib.c:311 ../src/gui/presets.c:542
+msgid "store new preset.."
+msgstr "bewaar nieuwe voorkeur"
+
+#: ../src/libs/export.c:66
 msgid "export selected"
 msgstr "exporteer selectie"
 
-#: ../src/libs/export.c:345
+#: ../src/libs/export.c:369
 msgid "target storage"
 msgstr "doel opslag"
 
-#: ../src/libs/export.c:365
+#: ../src/libs/export.c:389
 msgid "file format"
 msgstr "bestandsformaat"
 
-#: ../src/libs/export.c:380
+#: ../src/libs/export.c:404
 msgid "global options"
 msgstr "algemene opties"
 
-#: ../src/libs/export.c:384
+#: ../src/libs/export.c:408
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -892,7 +934,7 @@ msgstr ""
 "maximaal uitgaande breedte\n"
 "Kies 0 voor geen herschaling"
 
-#: ../src/libs/export.c:386
+#: ../src/libs/export.c:410
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -900,77 +942,77 @@ msgstr ""
 "maximaal uitgaande hoogte\n"
 "Kies 0 voor geen herschaling"
 
-#: ../src/libs/export.c:395
+#: ../src/libs/export.c:419
 msgid "max size"
 msgstr "maximaal formaat"
 
-#: ../src/libs/export.c:400
+#: ../src/libs/export.c:424
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:404 ../src/iop/colorin.c:378
+#: ../src/libs/export.c:428 ../src/iop/colorin.c:378
 msgid "intent"
 msgstr "voornemen"
 
-#: ../src/libs/export.c:408 ../src/libs/export.c:474
+#: ../src/libs/export.c:432 ../src/libs/export.c:498
 msgid "image settings"
 msgstr "afbeeldings instellingen"
 
-#: ../src/libs/export.c:409 ../src/iop/colorin.c:385 ../src/iop/colorout.c:380
+#: ../src/libs/export.c:433 ../src/iop/colorin.c:385 ../src/iop/colorout.c:380
 #: ../src/iop/colorout.c:385
 msgid "perceptual"
 msgstr "perceptueel"
 
-#: ../src/libs/export.c:410 ../src/iop/colorin.c:386 ../src/iop/colorout.c:381
+#: ../src/libs/export.c:434 ../src/iop/colorin.c:386 ../src/iop/colorout.c:381
 #: ../src/iop/colorout.c:386
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
-#: ../src/libs/export.c:411 ../src/iop/colorin.c:387 ../src/iop/colorout.c:382
+#: ../src/libs/export.c:435 ../src/iop/colorin.c:387 ../src/iop/colorout.c:382
 #: ../src/iop/colorout.c:387
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/libs/export.c:412 ../src/iop/colorin.c:388 ../src/iop/colorout.c:383
+#: ../src/libs/export.c:436 ../src/iop/colorin.c:388 ../src/iop/colorout.c:383
 #: ../src/iop/colorout.c:388
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
-#: ../src/libs/export.c:419 ../src/iop/colorout.c:407
+#: ../src/libs/export.c:443 ../src/iop/colorout.c:407
 #: ../src/iop/colorout.c:408
 msgid "srgb (web-safe)"
 msgstr "srgb (web-veilig)"
 
-#: ../src/libs/export.c:426 ../src/iop/colorin.c:401 ../src/iop/colorout.c:412
+#: ../src/libs/export.c:450 ../src/iop/colorin.c:401 ../src/iop/colorout.c:412
 #: ../src/iop/colorout.c:413
 msgid "adobe rgb"
 msgstr "adobe rgb"
 
-#: ../src/libs/export.c:438 ../src/iop/colorin.c:403 ../src/iop/colorout.c:402
+#: ../src/libs/export.c:462 ../src/iop/colorin.c:403 ../src/iop/colorout.c:402
 #: ../src/iop/colorout.c:403
 msgid "linear rgb"
 msgstr "linear rgb"
 
-#: ../src/libs/export.c:469 ../src/iop/colorin.c:379
+#: ../src/libs/export.c:493 ../src/iop/colorin.c:379
 msgid "profile"
 msgstr "profiel"
 
-#: ../src/libs/export.c:479 ../src/iop/colorout.c:397
+#: ../src/libs/export.c:503 ../src/iop/colorout.c:397
 #: ../src/iop/colorout.c:398
 msgid "system display profile"
 msgstr "systeem weergave profiel"
 
-#: ../src/libs/export.c:486
+#: ../src/libs/export.c:510
 #, c-format
 msgid "output icc profiles in %s/color/out"
 msgstr "uitgaande icc profielen in%s/color/out"
 
-#: ../src/libs/export.c:495
+#: ../src/libs/export.c:519
 msgid "export"
 msgstr "exporteer"
 
-#: ../src/libs/export.c:496
+#: ../src/libs/export.c:520
 msgid "export with current settings (ctrl-e)"
 msgstr "exporteer met de huidige instellingen (ctrl-e)"
 
@@ -1328,7 +1370,7 @@ msgstr "sluitersnelheid"
 msgid "wb"
 msgstr "witbalans"
 
-#: ../src/libs/camera.c:437 ../src/imageio/format/jpeg.c:621
+#: ../src/libs/camera.c:437 ../src/imageio/format/jpeg.c:634
 msgid "quality"
 msgstr "kwaliteit"
 
@@ -2126,133 +2168,110 @@ msgstr "fijnafstelling witbalans voorkeur"
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
 #: ../src/iop/wb_presets.c:45
-#, fuzzy
 msgid "Daylight"
 msgstr "daglicht"
 
 #. Probably same as above:
 #: ../src/iop/wb_presets.c:47
-#, fuzzy
 msgid "Direct sunlight"
 msgstr "direct zonlicht"
 
 #: ../src/iop/wb_presets.c:48
-#, fuzzy
 msgid "Cloudy"
 msgstr "bewolkt"
 
 #. "Shadows" should be switched to this:
 #: ../src/iop/wb_presets.c:50
-#, fuzzy
 msgid "Shade"
 msgstr "schaduw"
 
 #: ../src/iop/wb_presets.c:51
-#, fuzzy
 msgid "Incandescent"
-msgstr "gloeiend"
+msgstr "gloeilamp"
 
 #: ../src/iop/wb_presets.c:52
-#, fuzzy
 msgid "Incandescent warm"
-msgstr "gloeiend warm"
+msgstr "gloeilamp warm"
 
 #. Same as "Incandescent":
 #: ../src/iop/wb_presets.c:54
-#, fuzzy
 msgid "Tungsten"
 msgstr "wolfraam"
 
 #: ../src/iop/wb_presets.c:55
-#, fuzzy
 msgid "Fluorescent"
 msgstr "fluoriserend"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
-#, fuzzy
 msgid "Fluorescent high"
 msgstr "hoog fluoriserend"
 
 #: ../src/iop/wb_presets.c:58
-#, fuzzy
 msgid "Cool white fluorescent"
 msgstr "koud wit fluoriserend"
 
 #: ../src/iop/wb_presets.c:59
-#, fuzzy
 msgid "Warm white fluorescent"
 msgstr "warm wit fluoriserend"
 
 #: ../src/iop/wb_presets.c:60
-#, fuzzy
 msgid "Daylight fluorescent"
 msgstr "daglicht fluoriserend"
 
 #: ../src/iop/wb_presets.c:61
-#, fuzzy
 msgid "Neutral fluorescent"
 msgstr "neutraal fluoriserend"
 
 #: ../src/iop/wb_presets.c:62
-#, fuzzy
 msgid "White fluorescent"
 msgstr "wit fluoriserend"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
-#, fuzzy
 msgid "Sodium-vapor fluorescent"
 msgstr "natriumdamp fluoriserend"
 
 #: ../src/iop/wb_presets.c:65
-#, fuzzy
 msgid "Day white fluorescent"
 msgstr "wit daglicht fluoriserend"
 
 #: ../src/iop/wb_presets.c:66
-#, fuzzy
 msgid "High temp. mercury-vapor fluorescent"
-msgstr "hoge temperaturen kwik dampen fluoriserend"
+msgstr "hoge temp. kwikdamp fluoriserend"
 
 #: ../src/iop/wb_presets.c:68
-#, fuzzy
 msgid "Flash"
 msgstr "flits"
 
 #. For Olympus with no real "Flash" preset:
 #: ../src/iop/wb_presets.c:70
-#, fuzzy
 msgid "Flash (auto mode)"
 msgstr "flits (automatisch)"
 
 #: ../src/iop/wb_presets.c:71
-#, fuzzy
 msgid "Evening sun"
 msgstr "avondzon"
 
 #: ../src/iop/wb_presets.c:72
-#, fuzzy
 msgid "Underwater"
 msgstr "onderwater"
 
 #: ../src/iop/wb_presets.c:73
-#, fuzzy
 msgid "Black & white"
-msgstr "zwart en wit"
+msgstr "zwart-wit"
 
 #: ../src/iop/wb_presets.c:76
 msgid "Manual WB"
-msgstr ""
+msgstr "handmatig"
 
 #: ../src/iop/wb_presets.c:77
-#, fuzzy
 msgid "Camera WB"
 msgstr "camera"
 
 #: ../src/iop/wb_presets.c:78
 msgid "Auto WB"
-msgstr ""
+msgstr "automatisch"
 
 #: ../src/iop/tonecurve.c:39
 msgid "tone curve"
@@ -2295,14 +2314,22 @@ msgid "olympus like"
 msgstr "gelijk aan olympus"
 
 #: ../src/iop/basecurve.c:55
+msgid "panasonic like"
+msgstr "gelijk aan panasonic"
+
+#: ../src/iop/basecurve.c:56
+msgid "leica like"
+msgstr "gelijk aan leica"
+
+#: ../src/iop/basecurve.c:57
 msgid "fotogenetic (point & shoot)"
 msgstr "fotogenetic - point and shoot v4.1"
 
-#: ../src/iop/basecurve.c:56
+#: ../src/iop/basecurve.c:58
 msgid "fotogenetic (ev3)"
 msgstr "fotogenetic - EV3 v4.2"
 
-#: ../src/iop/basecurve.c:112
+#: ../src/iop/basecurve.c:117
 msgid "base curve"
 msgstr "basis curve"
 
@@ -2430,7 +2457,8 @@ msgstr "de hoeveelheid toe te passen verzadiging"
 
 #: ../src/iop/velvia.c:234
 msgid "the vibrance amount"
-msgstr "de hoeveelheid levendigheid (verzadiging van minder verzadigde kleuren)"
+msgstr ""
+"de hoeveelheid levendigheid (verzadiging van minder verzadigde kleuren)"
 
 #: ../src/iop/velvia.c:235
 msgid "how much to spare highlights and shadows"
@@ -2570,7 +2598,7 @@ msgstr "analyseer deze afbeelding"
 
 #: ../src/iop/colortransfer.c:618
 msgid "apply"
-msgstr ""
+msgstr "toepassen"
 
 #: ../src/iop/colortransfer.c:619
 msgid "apply previously analyzed image look to this image"
@@ -2628,35 +2656,35 @@ msgstr "b/w gladde huid"
 msgid "b/w blue artifacts reduce"
 msgstr "b/w reduceren van blauwe artefacten"
 
-#: ../src/imageio/format/jpeg.c:601
+#: ../src/imageio/format/jpeg.c:614
 msgid "8-bit jpeg"
 msgstr "8-bit jpg"
 
-#: ../src/imageio/format/png.c:266
+#: ../src/imageio/format/png.c:274
 msgid "8-bit png"
 msgstr "8-bit png"
 
-#: ../src/imageio/format/exr.cc:142
+#: ../src/imageio/format/exr.cc:150
 msgid "openexr"
 msgstr "openEXR"
 
-#: ../src/imageio/format/ppm.c:83
+#: ../src/imageio/format/ppm.c:91
 msgid "16-bit ppm"
 msgstr "16-bit ppm"
 
-#: ../src/imageio/format/pfm.c:130
+#: ../src/imageio/format/pfm.c:138
 msgid "float pfm"
 msgstr "zwevend pfm"
 
-#: ../src/imageio/format/tiff.c:184
+#: ../src/imageio/format/tiff.c:204
 msgid "8/16-bit tiff"
 msgstr "8/16-bit tiff"
 
-#: ../src/imageio/format/tiff.c:200
+#: ../src/imageio/format/tiff.c:222
 msgid "8-bit"
 msgstr "8-bit"
 
-#: ../src/imageio/format/tiff.c:204
+#: ../src/imageio/format/tiff.c:227
 msgid "16-bit"
 msgstr "16-bit "
 
@@ -3063,22 +3091,10 @@ msgstr ""
 "bepaal a.u.b. de instellingen voor de bestandsnaam patronen voordat wordt "
 "geïmporteerd"
 
-#: ../src/gui/presets.c:78 ../src/gui/presets.c:490 ../src/gui/presets.c:503
-msgid "(default)"
-msgstr "(standaard)"
-
 #: ../src/gui/presets.c:179
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "bewerk `%s' voor module `%s'"
-
-#: ../src/gui/presets.c:204
-msgid "name of the preset"
-msgstr "naam van deze voorkeur"
-
-#: ../src/gui/presets.c:208
-msgid "description or further information"
-msgstr "beschrijving dan wel extra informatie"
 
 #: ../src/gui/presets.c:210
 msgid "auto apply this preset to matching images"
@@ -3143,27 +3159,10 @@ msgstr "minimale brandpuntsafstand (mm)"
 msgid "maximum focal length"
 msgstr "maximale brandpuntsafstand (mm)"
 
-#. then show edit dialog
-#: ../src/gui/presets.c:364 ../src/gui/presets.c:369 ../src/gui/presets.c:376
-msgid "new preset"
-msgstr "nieuwe voorkeur"
-
-#: ../src/gui/presets.c:524
-msgid "edit this preset.."
-msgstr "bewerk deze voorkeur"
-
-#: ../src/gui/presets.c:528
-msgid "delete this preset"
-msgstr "verwijder deze voorkeur"
-
 #. only show if it is not the default already
 #: ../src/gui/presets.c:535
 msgid "use preset as default"
 msgstr "sla voorkeuren op als standaard"
-
-#: ../src/gui/presets.c:542
-msgid "store new preset.."
-msgstr "bewaar nieuwe voorkeur"
 
 #. only show this if presets already contains a default
 #: ../src/gui/presets.c:551
@@ -3193,10 +3192,6 @@ msgstr "toon %s"
 msgid "no image selected!"
 msgstr "geen afbeelding geselecteerd!"
 
-#: ../src/views/darkroom.c:302
-msgid "image does no longer exist"
-msgstr "de afbeelding bestaat niet meer"
-
 #: ../src/views/lighttable.c:71
 msgid "lighttable"
 msgstr "lichttafel"
@@ -3217,7 +3212,7 @@ msgstr "aanmaak sessie pad mislukt %s"
 #: ../src/views/capture.c:229
 #, c-format
 msgid "new session initiated '%s'"
-msgstr ""
+msgstr "nieuwe sessie gestart-'%s'"
 
 #~ msgid ""
 #~ "how many most-recently used thumbnail mipmaps should be kept in the "
