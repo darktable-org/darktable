@@ -60,6 +60,12 @@ else
 fi
 if test "$try_openmp" = "yes"; then
     AC_OPENMP
+    if test "$CC" = "icc"; then
+      OPENMP_LDFLAGS="-lguide"
+    else
+      OPENMP_LDFLAGS="-lgomp"
+    fi
+    AC_SUBST([OPENMP_LDFLAGS])
 fi
 AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG([0.22])
