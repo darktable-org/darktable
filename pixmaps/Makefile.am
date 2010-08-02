@@ -5,3 +5,5 @@ pxdataroot_DATA=darktable-16.png darktable-32.png darktable-48.png darktable.png
 # for .desktop:
 pixmapdatarootdir=$(datarootdir)/pixmaps
 pixmapdataroot_DATA=darktable.png
+scalabledatarootdir=$(datarootdir)/icons/hicolor/scalable/apps
+scalabledataroot_DATA=darktable.svg
