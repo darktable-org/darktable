@@ -391,7 +391,7 @@ msgid ""
 "values here will be synched with the new defaults."
 msgstr ""
 "als het nummer lager is dan het Darktable interne versie nummer, dan zullen "
-"de waarden worden gesynchroniseerd naar de nieuw standaarden"
+"de waarden worden gesynchroniseerd naar de nieuw standaard waarden"
 
 #: ../darktable.schemas.in.h:28
 msgid "image cache file"
@@ -2017,7 +2017,7 @@ msgid ""
 "that it may produce new artifacts\n"
 "usually 0 or 1 should work fine, in some situations even 10 is not enough."
 msgstr ""
-"aantal doorgangen van DCB correctie routines(standaard is nul)\n"
+"aantal doorgangen van DCB correctie routines(standaard waarde is nul)\n"
 "Dit helpt als er veel verkeerde interpolatie richtingen worden waargenomen "
 "maar onthoud wel dat er een kans bestaat op veel artefacten.\n"
 "Normaal gesproken zal 0 of 1 goed werken maar in sommige situaties is zelfs "
@@ -2084,7 +2084,7 @@ msgid ""
 "to darktable's defaults"
 msgstr ""
 "herstel RAW laad parameters\n"
-"naar de standaard van Darktable"
+"naar de standaard waarde van Darktable"
 
 #: ../src/iop/rawimport.c:515
 msgid "re-import"
@@ -2441,7 +2441,7 @@ msgstr "keert het affect van afname om, standaard is donker afnemen"
 
 #: ../src/iop/velvia.c:66
 msgid "velvia"
-msgstr "velvia (fujifilm effect)"
+msgstr "velvia"
 
 #: ../src/iop/velvia.c:215
 msgid "vibrance"
@@ -2901,11 +2901,11 @@ msgstr "geen ondersteunde apparaten gevonden"
 
 #: ../src/gui/camera_import_dialog.c:215
 msgid "store value as default"
-msgstr "sla parameters op als standaard"
+msgstr "sla parameters op als standaard waarde"
 
 #: ../src/gui/camera_import_dialog.c:222
 msgid "reset value to default"
-msgstr "herstel parameters naar de standaard"
+msgstr "herstel parameters naar de standaard waarde"
 
 #: ../src/gui/camera_import_dialog.c:245
 msgid "import images from camera"
@@ -3162,12 +3162,12 @@ msgstr "maximale brandpuntsafstand (mm)"
 #. only show if it is not the default already
 #: ../src/gui/presets.c:535
 msgid "use preset as default"
-msgstr "sla voorkeuren op als standaard"
+msgstr "sla voorkeuren op als standaard waarde"
 
 #. only show this if presets already contains a default
 #: ../src/gui/presets.c:551
 msgid "remove default"
-msgstr "verplaats standaard"
+msgstr "verwijder standaard waarde"
 
 #: ../src/gui/background_jobs.c:31
 msgid "background jobs"
@@ -3271,10 +3271,10 @@ msgstr "nieuwe sessie gestart-'%s'"
 #~ msgstr "ruis verhouding"
 
 #~ msgid "store as default for this camera"
-#~ msgstr "opslaan als standaard voor deze camera"
+#~ msgstr "opslaan als standaard waarde voor deze camera"
 
 #~ msgid "remove default for this camera"
-#~ msgstr "verplaats de standaard van deze camera"
+#~ msgstr "verwijder standaard waarde van deze camera"
 
 #~ msgid "clipping"
 #~ msgstr "comprimeren"
