@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-31 19:59+0200\n"
+"POT-Creation-Date: 2010-08-02 18:40+0200\n"
 "PO-Revision-Date: 2010-07-31 20:24+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team:  <g.siemerink@gmail.com>\n"
@@ -585,32 +585,32 @@ msgstr "\tAHD partiële interpolatie"
 msgid "  H, V = %4.2f, %4.2f (%%)\n"
 msgstr "  H, V = %4.2f, %4.2f (%%)\n"
 
-#: ../src/LibRaw/internal/dcb_demosaicing.c:531
+#: ../src/LibRaw/internal/dcb_demosaicing.c:585
 #, c-format
 msgid "FBDD full noise reduction...\n"
 msgstr "FBDD volledige ruisreductie...\n"
 
-#: ../src/LibRaw/internal/dcb_demosaicing.c:549
+#: ../src/LibRaw/internal/dcb_demosaicing.c:602
 #, c-format
 msgid "FBDD noise reduction...\n"
 msgstr "FBDD ruisreductie...\n"
 
-#: ../src/LibRaw/internal/dcb_demosaicing.c:567
+#: ../src/LibRaw/internal/dcb_demosaicing.c:631
 #, c-format
 msgid "DCB demosaicing...\n"
 msgstr "DCB mozaïek wegwerken...\n"
 
-#: ../src/LibRaw/internal/dcb_demosaicing.c:577
+#: ../src/LibRaw/internal/dcb_demosaicing.c:649
 #, c-format
 msgid "DCB correction pass %d...\n"
 msgstr "DCB correctie is geslaagd %d...\n"
 
-#: ../src/LibRaw/internal/dcb_demosaicing.c:592
+#: ../src/LibRaw/internal/dcb_demosaicing.c:661
 #, c-format
 msgid "finishing DCB...\n"
 msgstr "afwerken DCB...\n"
 
-#: ../src/LibRaw/internal/dcb_demosaicing.c:615
+#: ../src/LibRaw/internal/dcb_demosaicing.c:681
 #, c-format
 msgid "optional DCB refinement...\n"
 msgstr "optionele DCB verfijning...\n"
