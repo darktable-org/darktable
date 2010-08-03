@@ -4,21 +4,18 @@
  * Created: Sat Mar  8, 2008
  *
  * LibRaw redefinitions of dcraw internal variables
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
+
+LibRaw is free software; you can redistribute it and/or modify
+it under the terms of the one of three licenses as you choose:
+
+1. GNU LESSER GENERAL PUBLIC LICENSE version 2.1
+   (See file LICENSE.LGPL provided in LibRaw distribution archive for details).
+
+2. COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
+   (See file LICENSE.CDDL provided in LibRaw distribution archive for details).
+
+3. LibRaw Software License 27032010
+   (See file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
  */
 
 #ifndef VAR_DEFINES_H
@@ -114,13 +111,6 @@
 #define no_auto_bright  (imgdata.params.no_auto_bright)
 #define use_fuji_rotate (imgdata.params.use_fuji_rotate)
 #define filtering_mode (imgdata.params.filtering_mode)
-// DCB
-#define dcb_iterations   (imgdata.params.iterations)
-#define dcb_enhance_fl   (imgdata.params.dcb_enhance)
-#define fbdd_noiserd     (imgdata.params.fbdd_noiserd)
-// VCD
-#define eeci_refine    (imgdata.params.eeci_refine)
-#define es_med_passes  (imgdata.params.es_med_passes)
 
 //rgb_constants
 #define xyz_rgb         (rgb_constants.xyz_rgb)

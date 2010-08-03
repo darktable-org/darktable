@@ -237,17 +237,7 @@ typedef struct
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
     int         green_matching;
-    int         pre_interpolate_median_filter;
     enum LibRaw_filtering    filtering_mode; 
-    /*DCB*/
-    int dcb_iterations;
-    int dcb_enhance_fl;
-    int fbdd_noiserd;
-    /* VCD*/
-    int eeci_refine;
-    int es_med_passes;
-    /* AMaZE*/
-    int amaze_ca_refine;
 }libraw_output_params_t;
 
 typedef struct

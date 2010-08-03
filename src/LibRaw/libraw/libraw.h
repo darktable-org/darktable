@@ -188,12 +188,6 @@ class DllDef LibRaw
     void        vng_interpolate();
     void        ppg_interpolate();
     void        ahd_interpolate();
-    /*new interpolation algos*/
-    void        dcb(int iterations, int dcb_enhance);
-    void        fbdd(int noiserd);
-    void        vcd_interpolate(int ahd_cutoff);
-    void        amaze_demosaic_RT();
-    void        CA_correct_RT();
 
     void        bad_pixels(const char*);
     void        subtract(const char*);
@@ -204,7 +198,6 @@ class DllDef LibRaw
     void        blend_highlights();
     void        recover_highlights();
     void        green_matching();
-    void        pre_interpolate_median_filter();
 
     void        fuji_rotate();
     void        stretch();

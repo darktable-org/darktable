@@ -186,7 +186,6 @@ LibRaw:: LibRaw(unsigned int flags)
     imgdata.params.auto_bright_thr = LIBRAW_DEFAULT_AUTO_BRIGHTNESS_THRESHOLD;
     imgdata.params.adjust_maximum_thr= LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD;
     imgdata.params.green_matching = 0;
-    imgdata.params.pre_interpolate_median_filter = 0;
     imgdata.parent_class = this;
     imgdata.progress_flags = 0;
     tls = new LibRaw_TLS;
@@ -663,7 +662,9 @@ int LibRaw::open_datastream(LibRaw_abstract_datastream *stream)
             S.width  += S.width  & 1;
         }
 
-    IO.shrink = P1.filters && (O.half_size || O.threshold || O.aber[0] != 1 || O.aber[2] != 1);
+    IO.shrink = P1.filters && (O.half_size ||
+	((O.threshold || O.aber[0] != 1 || O.aber[2] != 1) ));
+
     S.iheight = (S.height + IO.shrink) >> IO.shrink;
     S.iwidth  = (S.width  + IO.shrink) >> IO.shrink;
     
@@ -1221,7 +1222,7 @@ void LibRaw::kodak_thumb_loader()
 
 
 
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ thumbnail пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ thumb_format пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// Достает thumbnail из файла, ставит thumb_format в соответствии с форматом
 int LibRaw::unpack_thumb(void)
 {
     CHECK_ORDER_LOW(LIBRAW_PROGRESS_IDENTIFY);
@@ -1413,8 +1414,6 @@ int LibRaw::rotate_fuji_raw(void)
 int LibRaw::dcraw_process(void)
 {
     int quality,i;
-    int iterations=-1, dcb_enhance=1, noiserd=0;
-    int eeci_refine_fl=0, es_med_passes_fl=0;
 
 
     CHECK_ORDER_LOW(LIBRAW_PROGRESS_LOAD_RAW);
@@ -1471,20 +1470,9 @@ int LibRaw::dcraw_process(void)
         if (O.user_black >= 0) C.black = O.user_black;
         if (O.user_sat > 0) C.maximum = O.user_sat;
 
-	if (O.dcb_iterations >= 0) iterations = O.dcb_iterations;
-	if (O.dcb_enhance_fl >=0 ) dcb_enhance = O.dcb_enhance_fl;
-	if (O.fbdd_noiserd >=0 ) noiserd = O.fbdd_noiserd;
-        //if (O.user_qual == 6) {verbose=1;} else {verbose=0;}
-	if (O.eeci_refine >=0 ) eeci_refine_fl = O.eeci_refine;
-	if (O.es_med_passes >0 ) es_med_passes_fl = O.es_med_passes;
-
         if (O.green_matching)
             {
                 green_matching();
-            }
-        if (O.pre_interpolate_median_filter)
-            {
-                pre_interpolate_median_filter();
             }
 
         if ( O.document_mode < 2)
@@ -1496,26 +1484,16 @@ int LibRaw::dcraw_process(void)
         pre_interpolate();
         SET_PROC_FLAG(LIBRAW_PROGRESS_PRE_INTERPOLATE);
 
-        if (quality == 5 && O.amaze_ca_refine >0 ) {CA_correct_RT();}
         if (P1.filters && !O.document_mode) 
             {
-		if (noiserd>0) fbdd(noiserd);	
                 if (quality == 0)
                     lin_interpolate();
                 else if (quality == 1 || P1.colors > 3)
                     vng_interpolate();
                 else if (quality == 2)
                     ppg_interpolate();
-                else if (quality == 3)
+                else 
                     ahd_interpolate();
-                else if (quality == 4)
-		    dcb(iterations, dcb_enhance);
-                else if (quality == 5)
-		    amaze_demosaic_RT();
-                else if (quality == 6)
-		    vcd_interpolate(12);
-		//else vcd_interpolate(0);
-		else ahd_interpolate();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_INTERPOLATE);
             }
         if (IO.mix_green)
@@ -1527,13 +1505,7 @@ int LibRaw::dcraw_process(void)
 
         if (P1.colors == 3) 
             {
-		if (quality == 6) {
-		    if (eeci_refine_fl == 1) refinement();
-		    if (O.med_passes > 0)    median_filter_new();
-		    if (es_med_passes_fl > 0) es_median_filter();
-		} else {
-		    median_filter();
-		}
+                median_filter();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
             }
         
@@ -1639,6 +1611,7 @@ static const char  *static_camera_list[] =
 "Canon PowerShot S90",
 "Canon PowerShot SX1 IS",
 "Canon PowerShot SX110 IS (CHDK hack)",
+"Canon PowerShot SX20 IS (CHDK hack)",
 "Canon EOS D30",
 "Canon EOS D60",
 "Canon EOS 5D",
@@ -1808,6 +1781,7 @@ static const char  *static_camera_list[] =
 "Nikon D2X",
 "Nikon D2Xs",
 "Nikon D3",
+"Nikon D3s",
 "Nikon D3X",
 "Nikon D40",
 "Nikon D40X",
@@ -1870,6 +1844,7 @@ static const char  *static_camera_list[] =
 "Olympus E-520",
 "Olympus E-620",
 "Olympus E-P1",
+"Olympus E-P2",
 "Olympus E-PL1",
 "Olympus SP310",
 "Olympus SP320",
@@ -1889,6 +1864,7 @@ static const char  *static_camera_list[] =
 "Panasonic DMC-G1",
 "Panasonic DMC-G10",
 "Panasonic DMC-G2",
+"Panasonic DMC-GF1",
 "Panasonic DMC-GH1",
 "Panasonic DMC-L1",
 "Panasonic DMC-L10",
@@ -1926,6 +1902,7 @@ static const char  *static_camera_list[] =
 "Pixelink A782",
 "Rollei d530flex",
 "RoverShot 3320af",
+"Samsung EX1",
 "Samsung GX-1S",
 "Samsung GX-10",
 "Samsung NX-10",
@@ -1949,7 +1926,7 @@ static const char  *static_camera_list[] =
 "Sony DSLR-A330",
 "Sony DSLR-A350",
 "Sony DSLR-A380",
-"Sony DSLR-A450 (beta)",
+"Sony DSLR-A450",
 "Sony DSLR-A500",
 "Sony DSLR-A550",
 "Sony DSLR-A700",
