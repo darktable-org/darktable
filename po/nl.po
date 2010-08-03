@@ -1034,7 +1034,7 @@ msgstr "fysiek verwijderen van de schijf"
 
 #: ../src/libs/image.c:90
 msgid "write dt files"
-msgstr "schrijf dt bestanden"
+msgstr "schrijf dt bestand"
 
 #: ../src/libs/image.c:91
 msgid "write history stack and tags to sidecar files"
@@ -1832,7 +1832,7 @@ msgstr "doel geometrie"
 
 #: ../src/iop/lens.c:1201
 msgid "rectilinear"
-msgstr "rechtlijnige"
+msgstr "rechtlijnig"
 
 #: ../src/iop/lens.c:1202
 msgid "fish-eye"
@@ -1920,19 +1920,19 @@ msgstr ""
 
 #: ../src/iop/rawimport.c:441
 msgid "median passes"
-msgstr "passeert mediaan"
+msgstr "mediaan doorgangen"
 
 #: ../src/iop/rawimport.c:444
 msgid ""
 "number of 3x3 median filter passes\n"
 "on R-G and B-G after demosaicing"
 msgstr ""
-"number of 3x3 median filter passes\n"
+"aantal 3x3 mediaan filter doorgangen\n"
 "op R-G en B-G na het demozaïek proces"
 
 #: ../src/iop/rawimport.c:448
 msgid "demosaic method"
-msgstr "mozaïek verwijder methode"
+msgstr "demozaïek methode"
 
 #: ../src/iop/rawimport.c:451
 msgctxt "demosaic"
