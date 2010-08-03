@@ -2,7 +2,8 @@ SUBDIRS=LibRaw iop views libs imageio # gegl-operations
 include shared.am
 AM_CFLAGS+=-Werror -rdynamic -Wno-deprecated-declarations
 AM_CPPFLAGS=$(OPENEXR_CFLAGS)
-lib_LTLIBRARIES=libdarktable.la
+libdarktable_LTLIBRARIES=libdarktable.la
+libdarktabledir=$(libdir)/darktable
 libdarktable_la_LDFLAGS=-avoid-version -fPIC
 libdarktable_la_LIBADD=LibRaw/libraw_r.la $(CARBON_LIBS) $(OPENMP_LDFLAGS) $(CURL_LIBS) $(GEGL_LIBS) $(GPHOTO2_LIBS) $(OPENEXR_LIBS) $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS) $(LCMS_LIBS) $(EXIV2_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) $(GCONF_LIBS) $(DBUSGLIB_LIBS)
 libdarktable_la_SOURCES=control/jobs.c gui/gtk.c gui/devices.c gui/camera_import_dialog.c gui/navigation.c gui/histogram.c gui/filmview.c gui/presets.c gui/background_jobs.c develop/develop.c develop/imageop.c common/tags.c common/variables.c common/camera_control.c common/imageio.c common/imageio_module.c common/darktable.c control/control.c common/film.c common/image.c common/image_cache.c common/image_compression.c gui/metadata.c develop/pixelpipe.c common/exif.cc common/imageio_jpeg.c common/imageio_tiff.c common/imageio_pfm.c common/imageio_rgbe.c views/view.c libs/lib.c dtgtk/label.c dtgtk/togglebutton.c dtgtk/gradientslider.c dtgtk/slider.c dtgtk/button.c dtgtk/paint.c common/fswatch.c common/colorspaces.c common/colorlabels.c common/colormatrices.c common/pwstorage/pwstorage.c common/pwstorage/backend_gconf.c common/pwstorage/backend_kwallet.c
