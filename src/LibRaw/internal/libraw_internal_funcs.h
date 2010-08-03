@@ -174,6 +174,12 @@ void        crw_init_tables (unsigned table, ushort *huff[2]);
 // Tiff writer
     void        tiff_set (ushort *ntag, ushort tag, ushort type, int count, int val);
     void        tiff_head (struct tiff_hdr *th, int full);
+// dcb interpolation
+#include "internal/libraw_internal_funcs_dcb.h"
+// vcd interpolation
+#include "internal/libraw_internal_funcs_vcd.h"
+// AMaZE interpolation
+#include "internal/libraw_internal_funcs_amaze.h"
 #endif
 
 #endif

@@ -4282,6 +4282,19 @@ void CLASS median_filter()
   }
 }
 
+/*DCB*/
+#include "internal/dcb_demosaicing.c"
+/* VCD*/
+#include "internal/ahd_interpolate_mod.c"
+#include "internal/ahd_partial_interpolate.c"
+#include "internal/refinement.c"
+#include "internal/vcd_interpolate.c"
+#include "internal/es_median_filter.c"
+#include "internal/median_filter_new.c"
+/*AMaZE*/
+#include "internal/amaze_demosaicing.c"
+#include "internal/amaze_ca_correct.c"
+
 void CLASS blend_highlights()
 {
   int clip=INT_MAX, row, col, c, i, j;

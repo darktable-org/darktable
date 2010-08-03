@@ -1223,7 +1223,7 @@ void LibRaw::kodak_thumb_loader()
 
 
 
-// Достает thumbnail из файла, ставит thumb_format в соответствии с форматом
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ thumbnail пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ thumb_format пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int LibRaw::unpack_thumb(void)
 {
     CHECK_ORDER_LOW(LIBRAW_PROGRESS_IDENTIFY);
@@ -1415,6 +1415,8 @@ int LibRaw::rotate_fuji_raw(void)
 int LibRaw::dcraw_process(void)
 {
     int quality,i;
+    int iterations=-1, dcb_enhance=1, noiserd=0;
+    int eeci_refine_fl=0, es_med_passes_fl=0;
 
 
     CHECK_ORDER_LOW(LIBRAW_PROGRESS_LOAD_RAW);
@@ -1471,6 +1473,13 @@ int LibRaw::dcraw_process(void)
         if (O.user_black >= 0) C.black = O.user_black;
         if (O.user_sat > 0) C.maximum = O.user_sat;
 
+	if (O.dcb_iterations >= 0) iterations = O.dcb_iterations;
+	if (O.dcb_enhance_fl >=0 ) dcb_enhance = O.dcb_enhance_fl;
+	if (O.fbdd_noiserd >=0 ) noiserd = O.fbdd_noiserd;
+        //if (O.user_qual == 6) {verbose=1;} else {verbose=0;}
+	if (O.eeci_refine >=0 ) eeci_refine_fl = O.eeci_refine;
+	if (O.es_med_passes >0 ) es_med_passes_fl = O.es_med_passes;
+
         if (O.green_matching)
             {
                 green_matching();
@@ -1489,16 +1498,26 @@ int LibRaw::dcraw_process(void)
         pre_interpolate();
         SET_PROC_FLAG(LIBRAW_PROGRESS_PRE_INTERPOLATE);
 
+        if (quality == 5 && O.amaze_ca_refine >=0 ) {CA_correct_RT();}
         if (P1.filters && !O.document_mode) 
             {
+		if (noiserd>0) fbdd(noiserd);	
                 if (quality == 0)
                     lin_interpolate();
                 else if (quality == 1 || P1.colors > 3)
                     vng_interpolate();
                 else if (quality == 2)
                     ppg_interpolate();
-                else 
+                else if (quality == 3)
                     ahd_interpolate();
+                else if (quality == 4)
+		    dcb(iterations, dcb_enhance);
+                else if (quality == 5)
+		    amaze_demosaic_RT();
+                else if (quality == 6)
+		    vcd_interpolate(12);
+		//else vcd_interpolate(0);
+		else ahd_interpolate();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_INTERPOLATE);
             }
         if (IO.mix_green)
@@ -1510,7 +1529,13 @@ int LibRaw::dcraw_process(void)
 
         if (P1.colors == 3) 
             {
-                median_filter();
+		if (quality == 6) {
+		    if (eeci_refine_fl == 1) refinement();
+		    if (O.med_passes > 0)    median_filter_new();
+		    if (es_med_passes_fl > 0) es_median_filter();
+		} else {
+		    median_filter();
+		}
                 SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
             }
         

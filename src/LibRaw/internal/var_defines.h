@@ -111,6 +111,13 @@ it under the terms of the one of three licenses as you choose:
 #define no_auto_bright  (imgdata.params.no_auto_bright)
 #define use_fuji_rotate (imgdata.params.use_fuji_rotate)
 #define filtering_mode (imgdata.params.filtering_mode)
+// DCB
+#define dcb_iterations   (imgdata.params.iterations)
+#define dcb_enhance_fl   (imgdata.params.dcb_enhance)
+#define fbdd_noiserd     (imgdata.params.fbdd_noiserd)
+// VCD
+#define eeci_refine    (imgdata.params.eeci_refine)
+#define es_med_passes  (imgdata.params.es_med_passes)
 
 //rgb_constants
 #define xyz_rgb         (rgb_constants.xyz_rgb)
