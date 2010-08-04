@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # icon-theme-installer
 # Copyright (C) 2006 Novell, Inc.
@@ -160,7 +160,7 @@ if test -z "$INSTALL_BASE_DIR"; then
 	fi
 	done
 	
-	gtk_update_icon_cache_bin="$((which gtk-update-icon-cache || echo /opt/gnome/bin/gtk-update-icon-cache)2>/dev/null)"
+	gtk_update_icon_cache_bin="$( (which gtk-update-icon-cache || echo /opt/gnome/bin/gtk-update-icon-cache) 2>/dev/null)"
 	gtk_update_icon_cache="$gtk_update_icon_cache_bin -f -t $INSTALL_BASE_DIR"
 	
 	if test -z "$INSTALL_DEST_DIR"; then
