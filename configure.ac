@@ -212,6 +212,12 @@ AC_CONFIG_FILES([
     src/views/Makefile
     src/libs/Makefile
     pixmaps/Makefile
+    pixmaps/16x16/Makefile
+    pixmaps/22x22/Makefile
+    pixmaps/32x32/Makefile
+    pixmaps/48x48/Makefile
+    pixmaps/64x64/Makefile
+    pixmaps/scalable/Makefile
     pixmaps/plugins/Makefile
     pixmaps/plugins/darkroom/Makefile
     color/Makefile
