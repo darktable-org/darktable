@@ -195,7 +195,7 @@ void cleanup(dt_iop_module_t *module)
 void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -log2f(fmaxf(0.001, white)));
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -dt_log2f(fmaxf(0.001, white)));
 }
 
 float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
@@ -250,7 +250,7 @@ black_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   p->black = dtgtk_slider_get_value(slider);
   float white = exp2f(-dtgtk_slider_get_value(g->scale2));
-  if(white < p->black) dtgtk_slider_set_value(g->scale2, - log2f(p->black));
+  if(white < p->black) dtgtk_slider_set_value(g->scale2, - dt_log2f(p->black));
   dt_dev_add_history_item(darktable.develop, self);
 }
 

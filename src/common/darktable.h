@@ -26,6 +26,7 @@
 #include <sqlite3.h>
 #include <pthread.h>
 #include <glib/gi18n.h>
+#include <math.h>
 #ifdef _OPENMP
   #include <omp.h>
 #endif
@@ -162,6 +163,15 @@ static inline int dt_get_thread_num()
   return omp_get_thread_num();
 #else
   return 0;
+#endif
+}
+
+static inline float dt_log2f(const float f)
+{
+#ifdef FREEBSD
+  return logf(f)/logf(2.0f);
+#else
+  return log2f(f);
 #endif
 }
 
