@@ -168,10 +168,10 @@ static inline int dt_get_thread_num()
 
 static inline float dt_log2f(const float f)
 {
-#ifdef FREEBSD
-  return logf(f)/logf(2.0f);
-#else
+#ifdef __GLIBC__
   return log2f(f);
+#else
+  return logf(f)/logf(2.0f);
 #endif
 }
 
