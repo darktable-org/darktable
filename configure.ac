@@ -118,6 +118,22 @@ PKG_CHECK_MODULES(GPHOTO2, [libgphoto2 >= 2.4.5])
 PKG_CHECK_MODULES(CURL, [libcurl >= 7.18.0])
 PKG_CHECK_MODULES(DBUSGLIB, [dbus-glib-1 >= 0.80])
 
+AC_ARG_ENABLE(gnome-keyring,
+	      AC_HELP_STRING([--enable-gnome-keyring], [build the gnome keyring pw storage backend]),
+        [
+          if test "$enable_gnome-keyring" = "yes"; then
+             PKG_CHECK_MODULES(GNOME_KEYRING, gnome-keyring-1 >= 2.28.0)
+             AC_DEFINE(HAVE_GNOME_KEYRING, 1, [whether build the gnome-keyring pwstorage backend])
+          fi
+          AM_CONDITIONAL([HAVE_GNOME_KEYRING], [test "$enable_gnome-keyring" = yes])
+        ],
+        [
+          PKG_CHECK_MODULES(GNOME_KEYRING, gnome-keyring-1 >= 2.28.0)
+          AC_DEFINE(HAVE_GNOME_KEYRING, 1,  [whether build the gnome-keyring pwstorage backend])
+          AM_CONDITIONAL([HAVE_GNOME_KEYRING], [true])
+        ]
+        )
+
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),
         [
