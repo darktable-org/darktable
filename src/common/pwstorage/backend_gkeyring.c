@@ -26,7 +26,7 @@
 const backend_gkeyring_context_t* 
 dt_pwstorage_gkeyring_new() 
 {
-		backend_gkeyring_context_t *context = g_slice_new0 (backend_gkeyring_context_t);
+		backend_gkeyring_context_t *context = (backend_gkeyring_context_t*)g_malloc(sizeof(backend_gkeyring_context_t));
 		/* Check if darktable keyring exists, if not create it */
 		gboolean keyring_exists = FALSE;
 		GList *keyrings = NULL,*item = NULL;
@@ -60,30 +60,40 @@ dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
 {
 	GnomeKeyringResult result;
 	GnomeKeyringAttributeList * attributes;
-//	char attribute_name[256]={0};
 	
 	/* build up attributes for slot */
 	attributes = g_array_new (FALSE, FALSE, sizeof (GnomeKeyringAttribute));
+	gnome_keyring_attribute_list_append_string (attributes,"magic",PACKAGE_NAME);
+	gnome_keyring_attribute_list_append_string (attributes,"slot",slot);
+	
+	/* search for existing item for slot */
+	GList *items=NULL;
+	gnome_keyring_find_items_sync (GNOME_KEYRING_ITEM_GENERIC_SECRET,attributes,&items);
+	guint item_id;
+
+	/* add attributes from hash table*/
 	GHashTableIter iter;
 	g_hash_table_iter_init (&iter, table);
 	gpointer key, value;
 	while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-		//sprintf (attribute_name,"%s_%s",slot,(const char*)key);
 		gnome_keyring_attribute_list_append_string (attributes,key,value);
+
+	if (items) 
+	{
+		GnomeKeyringFound *f = (GnomeKeyringFound *)items->data;
+		gnome_keyring_item_set_attributes_sync(DARKTABLE_KEYRING,f->item_id,attributes);
 	}
-	gnome_keyring_attribute_list_append_string (attributes,"magic",PACKAGE_NAME);
-	gnome_keyring_attribute_list_append_string (attributes,"slot",slot);
-	
-	/* create/update item with attributes */
-	guint item_id;
-	result = gnome_keyring_item_create_sync(DARKTABLE_KEYRING,
-		GNOME_KEYRING_ITEM_GENERIC_SECRET,
-		slot,
-		attributes,
-		NULL,
-		TRUE,
-		&item_id);
+	else
+	{
+		/* create/update item with attributes */
+		result = gnome_keyring_item_create_sync(DARKTABLE_KEYRING,
+			GNOME_KEYRING_ITEM_GENERIC_SECRET,
+			slot,
+			attributes,
+			NULL,
+			TRUE,
+			&item_id);
+	}
 	
 	gnome_keyring_attribute_list_free(attributes);
 	
