@@ -58,7 +58,7 @@ dt_pwstorage_gkeyring_new()
 gboolean 
 dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
 {
-	GnomeKeyringResult result;
+	GnomeKeyringResult result=0;
 	GnomeKeyringAttributeList * attributes;
 	
 	/* build up attributes for slot */
