@@ -133,6 +133,8 @@ AC_ARG_ENABLE(gnome-keyring,
           AM_CONDITIONAL([HAVE_GNOME_KEYRING], [true])
         ]
         )
+AC_SUBST(GNOME_KEYRING_CFLAGS)
+	
 
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),

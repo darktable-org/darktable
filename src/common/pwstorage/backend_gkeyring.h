@@ -20,7 +20,7 @@
 #include "pwstorage.h"
 
 typedef struct backend_gkeyring_context_t {
-	
+	char dummy;
 } backend_gkeyring_context_t;
 
 /** Initializes a new kwallet backend context. */
