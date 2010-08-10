@@ -23,10 +23,13 @@
 #include <gnome-keyring.h>
 #include <glib.h>
 #define DARKTABLE_KEYRING	PACKAGE_NAME
+#undef DARKTABLE_KEYRING
+
 const backend_gkeyring_context_t* 
 dt_pwstorage_gkeyring_new() 
 {
 		backend_gkeyring_context_t *context = (backend_gkeyring_context_t*)g_malloc(sizeof(backend_gkeyring_context_t));
+#ifdef DARKTABLE_KEYRING
 		/* Check if darktable keyring exists, if not create it */
 		gboolean keyring_exists = FALSE;
 		GList *keyrings = NULL,*item = NULL;
@@ -47,7 +50,9 @@ dt_pwstorage_gkeyring_new()
 		
 		if (keyring_exists == FALSE) 
 			gnome_keyring_create_sync (DARKTABLE_KEYRING,NULL);
-		
+#else
+	#define DARKTABLE_KEYRING NULL	
+#endif
 		/* unlock darktable keyring */
 		// Keep this locked until accessed..
 		//gnome_keyring_lock_sync(DARKTABLE_KEYRING);
@@ -60,7 +65,7 @@ dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
 {
 	GnomeKeyringResult result=0;
 	GnomeKeyringAttributeList * attributes;
-	
+	gchar name[256]="/darktable/";
 	/* build up attributes for slot */
 	attributes = g_array_new (FALSE, FALSE, sizeof (GnomeKeyringAttribute));
 	gnome_keyring_attribute_list_append_string (attributes,"magic",PACKAGE_NAME);
@@ -85,10 +90,11 @@ dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
 	}
 	else
 	{
+		strcat(name,slot);
 		/* create/update item with attributes */
 		result = gnome_keyring_item_create_sync(DARKTABLE_KEYRING,
 			GNOME_KEYRING_ITEM_GENERIC_SECRET,
-			slot,
+			name,
 			attributes,
 			NULL,
 			TRUE,
