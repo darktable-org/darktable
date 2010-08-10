@@ -70,25 +70,36 @@ dt_collection_update (const dt_collection_t *collection)
   uint32_t result;
   gchar sq[512]={0};   // sort query
   gchar selq[512]={0};   // selection query
-  gchar wq[512]={0};   // where query
+  gchar wq[2048]={0};   // where query
   gchar *query=g_malloc (MAX_QUERY_STRING_LENGTH);
 
   dt_lib_sort_t sort = dt_conf_get_int ("ui_last/combo_sort");
   
   /* build where part */
-  if (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
-    g_snprintf (wq,512,"(film_id = %d)",collection->params.film_id);
-  
-  if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_STAR)
-    g_snprintf (wq+strlen(wq),512-strlen(wq)," and (flags & 7) >= %d",collection->params.star);
-  else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_STAR)
-    g_snprintf (wq+strlen(wq),512-strlen(wq)," and (flags & 7) == %d",collection->params.star);
+  if (!(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
+  {
+    /* add default filters */
+    if (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
+      g_snprintf (wq,2048,"(film_id = %d)",collection->params.film_id);
+    
+    if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_STAR)
+      g_snprintf (wq+strlen(wq),2048-strlen(wq),"%s (flags & 7) >= %d", (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)?" and":"", collection->params.star);
+    else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_STAR)
+      g_snprintf (wq+strlen(wq),2048-strlen(wq),"%s (flags & 7) == %d", (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)?" and":"", collection->params.star);
 
-  if (collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-    g_snprintf (wq+strlen(wq),512-strlen(wq)," and id in (select imgid from history where imgid=id)");
-  else if (collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-    g_snprintf (wq+strlen(wq),512-strlen(wq)," and id not in (select imgid from history where imgid=id)");
+    if (collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," and id in (select imgid from history where imgid=id)");
+    else if (collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," and id not in (select imgid from history where imgid=id)");
+    
+    /* add where ext if wanted */
+    if ((collection->params.query_flags&COLLECTION_QUERY_USE_WHERE_EXT))
+       g_snprintf (wq+strlen(wq),2048-strlen(wq)," and %s",collection->where_ext);
+  } 
+  else
+    g_snprintf (wq,512,"%s",collection->where_ext);
   
+    
   
   /* build select part includes where */
   if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
@@ -157,6 +168,16 @@ dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags)
   params->query_flags = flags;
 }
 
+void 
+dt_collection_set_extended_where(const dt_collection_t *collection,gchar *extended_where)
+{
+  /* free extended where if alread exists */
+  if (collection->where_ext)
+    g_free (collection->where_ext);
+  
+  /* set new from parameter */
+  ((dt_collection_t *)collection)->where_ext = g_strdup(extended_where);
+}
 
 void 
 dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id)

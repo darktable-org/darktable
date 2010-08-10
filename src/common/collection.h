@@ -21,9 +21,12 @@
 #include <inttypes.h>
 #include <glib.h>
 
-#define COLLECTION_QUERY_SIMPLE                      0           // a query with only select and where statement
-#define COLLECTION_QUERY_USE_SORT                 1           // if query should include order by statement
-#define COLLECTION_QUERY_USE_LIMIT                 2           // if query should include "limit ?1,?2" part
+#define COLLECTION_QUERY_SIMPLE                                 0           // a query with only select and where statement
+#define COLLECTION_QUERY_USE_SORT                             1           // if query should include order by statement
+#define COLLECTION_QUERY_USE_LIMIT                             2           // if query should include "limit ?1,?2" part
+#define COLLECTION_QUERY_USE_WHERE_EXT                  4          // if query should include extended where part
+#define COLLECTION_QUERY_USE_ONLY_WHERE_EXT        8          // if query should only use extended where part
+
 #define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT)         
 
 
@@ -52,7 +55,9 @@ typedef struct dt_collection_params_t
 typedef struct dt_collection_t
 {
   gchar *query;
+  gchar *where_ext;
   dt_collection_params_t params;
+  dt_collection_params_t store;
 } dt_collection_t;
 
 
@@ -68,6 +73,8 @@ const gchar *dt_collection_get_query (const dt_collection_t *collection);
 int dt_collection_update (const dt_collection_t *collection);
 /** reset collection to default dummy selection */
 void dt_collection_reset (const dt_collection_t *collection);
+/** sets an extended where part */
+void dt_collection_set_extended_where(const dt_collection_t *collection,gchar *extended_where);
 
 /** get filter flags for collection */
 uint32_t dt_collection_get_filter_flags (const dt_collection_t *collection);

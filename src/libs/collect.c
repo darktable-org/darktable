@@ -17,6 +17,7 @@
 */
 #include "common/darktable.h"
 #include "common/film.h"
+#include "common/collection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "libs/lib.h"
@@ -63,49 +64,51 @@ update_query(dt_lib_collect_t *d)
 {
   char query[1024];
   int imgsel = -666;
+  
   if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->text)) != -1)
     DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
 
   // film roll, camera, tag, day, history
   int property = gtk_combo_box_get_active(d->combo);
   gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->text));
+  
   switch(property)
   {
     case 0: // film roll
       if(imgsel == -666)
-        snprintf(query, 1024, "select distinct * from images where (film_id in (select id from film_rolls where folder like '%%%s%%'))", text);
+        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%%%s%%'))", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select distinct * from images where (film_id in (select id from film_rolls where folder in "
+        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder in "
                               "(select folder from film_rolls where id = (select film_id from images where id = %d))))", imgsel);
       else
-        snprintf(query, 1024, "select distinct * from images where (film_id in (select id from film_rolls where id in "
+        snprintf(query, 1024, "(film_id in (select id from film_rolls where id in "
                               "(select film_id from images as a join selected_images as b on a.id = b.imgid)))");
       break;
       
     case 4: // history
-      snprintf(query, 1024, "select distinct * from images where (id %s in (select imgid from history where imgid=images.id)) ",(strcmp(text,_("altered"))==0)?"":"not");
+      snprintf(query, 1024, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(text,_("altered"))==0)?"":"not");
     break;
       
     case 1: // camera
       if(imgsel == -666)
-        snprintf(query, 1024, "select distinct * from images where (maker || ' ' || model like '%%%s%%')", text);
+        snprintf(query, 1024, "(maker || ' ' || model like '%%%s%%')", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select distinct * from images where (maker || ' ' || model in "
+        snprintf(query, 1024, "(maker || ' ' || model in "
                               "(select maker || ' ' || model from images where id = %d))", imgsel);
       else
-        snprintf(query, 1024, "select distinct * from images where (maker || ' ' || model in "
+        snprintf(query, 1024, "(maker || ' ' || model in "
                               "(select maker || ' ' || model from images as a join selected_images as b on a.id = b.imgid))");
       break;
     case 2: // tag
       if(imgsel == -666)
-        snprintf(query, 1024, "select distinct * from images where (id in (select imgid from tagged_images as a join "
+        snprintf(query, 1024, "(id in (select imgid from tagged_images as a join "
                               "tags as b on a.tagid = b.id where name like '%%%s%%'))", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select distinct * from images where (id in "
+        snprintf(query, 1024, "(id in "
                               "(select imgid from tagged_images as a join tags as b on a.tagid = b.id where "
                               "b.id in (select tagid from tagged_images where imgid = %d)))", imgsel);
       else
-        snprintf(query, 1024, "select distinct * from images where (id in "
+        snprintf(query, 1024, "(id in "
                               "(select imgid from tagged_images as a join tags as b on a.tagid = b.id where "
                               "b.id in (select tagid from tagged_images as c join selected_images as d on c.imgid = d.imgid)))");
       break;
@@ -113,41 +116,24 @@ update_query(dt_lib_collect_t *d)
 
     default: // case 3: // day
       if(imgsel == -666)
-        snprintf(query, 1024, "select distinct * from images where (datetime_taken like '%%%s%%')", text);
+        snprintf(query, 1024, "(datetime_taken like '%%%s%%')", text);
       else if(imgsel > 0)
-        snprintf(query, 1024, "select distinct * from images where (datetime_taken in (select datetime_taken from images where id = %d))", imgsel);
+        snprintf(query, 1024, "(datetime_taken in (select datetime_taken from images where id = %d))", imgsel);
       else
-        snprintf(query, 1024, "select distinct * from images where (datetime_taken in (select datetime_taken from images as a join selected_images as b on a.id = b.imgid)");
+        snprintf(query, 1024, "(datetime_taken in (select datetime_taken from images as a join selected_images as b on a.id = b.imgid)");
       break;
   }
-  g_free(text);
-  // TODO: similar tagxtag query!
-  dt_lib_sort_t   sort   = dt_conf_get_int ("ui_last/combo_sort");
-  dt_lib_filter_t filter = dt_conf_get_int ("ui_last/combo_filter");
-  char *sortstring[5] = {"datetime_taken", "flags & 7 desc", "filename", "id", "color, filename"};
-  int sortindex = 4;
-  if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
-  else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
-  else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
-  else if(sort == DT_LIB_SORT_ID)       sortindex = 3;
-
-  char newquery[1024];
-  if(sortindex == 4)
-  {
-    if(filter == DT_LIB_FILTER_STAR_NO)
-      sprintf(newquery, "select distinct * from (%s and (flags & 7) < 1) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", query, sortstring[sortindex]);
-    else
-      sprintf(newquery, "select distinct * from (%s and (flags & 7) >= %d) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", query, filter-1, sortstring[sortindex]);
-  }
-  else
-  {
-    if(filter == DT_LIB_FILTER_STAR_NO)
-      sprintf(newquery, "%s and (flags & 7) < 1 order by %s limit ?1, ?2", query, sortstring[sortindex]);
-    else
-      sprintf(newquery, "%s and (flags & 7) >= %d order by %s limit ?1, ?2", query, filter-1, sortstring[sortindex]);
-  }
-  // printf("query `%s'\n", query);
-  dt_conf_set_string ("plugins/lighttable/query", newquery);
+  
+  /* set the extended where and the use of it in the query */
+  dt_collection_set_extended_where (darktable.collection,query);
+  dt_collection_set_query_flags (darktable.collection, (dt_collection_get_query_flags (darktable.collection) | COLLECTION_QUERY_USE_WHERE_EXT));
+  
+  /* remove film id from default filter */
+  dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) & ~COLLECTION_FILTER_FILM_ID));
+  
+  /* update query and at last the visual */
+  dt_collection_update (darktable.collection);
+  
   dt_control_queue_draw_all();
 }
 
