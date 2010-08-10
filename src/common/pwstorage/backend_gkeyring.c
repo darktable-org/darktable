@@ -65,7 +65,7 @@ dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
 {
 	GnomeKeyringResult result=0;
 	GnomeKeyringAttributeList * attributes;
-	gchar name[256]="/darktable/";
+	gchar name[256]="Darktable account information for ";
 	/* build up attributes for slot */
 	attributes = g_array_new (FALSE, FALSE, sizeof (GnomeKeyringAttribute));
 	gnome_keyring_attribute_list_append_string (attributes,"magic",PACKAGE_NAME);
