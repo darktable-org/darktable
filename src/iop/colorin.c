@@ -99,12 +99,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float YY = xyz[0]+xyz[1]+xyz[2];
     const float zz = xyz[2]/YY;
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float bound_z = 0.7f, bound_Y = 0.5f;
-    const float amount = 0.05f;
-    // if(YY > bound_Y && zz > bound_z)
-    if(zz > bound_z)
+    const float bound = 0.7f;
+    const float amount = 0.1f;
+    if(zz > bound)
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+      const float t = (zz - bound)/(1.0f-bound);
       xyz[1] += t*amount;
       xyz[2] -= t*amount;
     }
