@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -39,27 +40,15 @@ static void
 button_clicked(GtkWidget *widget, gpointer user_data)
 {
   char fullq[2048];
-  gchar *query = dt_conf_get_string("plugins/lighttable/query");
-  if(!query) return;
-  gchar *c;
-  c = g_strrstr(query, "limit");
-  if(c) *c = '\0';
   
-  // fix to group first where within () for use an addition statement to existing where
-  c = g_strstr_len(query, -1, "where");
-  if(c) *c = '\0';
-  snprintf(fullq, 2048, "insert into selected_images select distinct id %s", query + 17);
-  strcat(fullq,"where (");
-  snprintf(fullq+strlen(fullq), 2048-strlen(fullq), "%s", query+strlen(query) + 6);
-  gchar *c2 = g_strrstr(fullq, "as a join color");
-  if(c2) *(c2-1) = ')';
-  else 
-  {
-    c2 = g_strrstr(fullq, "order by");
-    if(c2) *(c2-1) = ')';
-    else strcat(fullq,")");
-  }
-
+  /* create a copy of darktable collection */
+  const dt_collection_t *collection = dt_collection_new (dt_collection_params (darktable.collection));
+  
+  /* set query flags to simple for just a select without order or limit part */
+  dt_collection_set_query_flags (collection, COLLECTION_QUERY_SIMPLE); 
+  dt_collection_update (collection);
+  snprintf (fullq, 2048, "insert into selected_images %s", dt_collection_get_query (collection));
+  
   switch((long int)user_data)
   {
     case 0: // all
@@ -79,8 +68,10 @@ button_clicked(GtkWidget *widget, gpointer user_data)
       sqlite3_exec(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
       break;
     case 4: // untouched
+      dt_collection_set_filter_flags (collection, (dt_collection_get_filter_flags(collection)|COLLECTION_FILTER_UNALTERED));
+      dt_collection_update (collection);
+      snprintf (fullq, 2048, "insert into selected_images %s", dt_collection_get_query (collection));
       sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-      strcat(fullq+strlen(fullq)," and id not in (select imgid from history where imgid=id)");
       sqlite3_exec(darktable.db, fullq, NULL, NULL, NULL);
       break;
     default: // case 3: same film roll
@@ -92,7 +83,10 @@ button_clicked(GtkWidget *widget, gpointer user_data)
       sqlite3_exec(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
       break;
   }
-  g_free(query);
+  
+  /* free temporary collection and redraw visual*/  
+  dt_collection_free(collection);
+ 
   dt_control_queue_draw_all();
 }
 

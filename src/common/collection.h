@@ -19,13 +19,25 @@
 #define DT_COLLECTION_H
 
 #include <inttypes.h>
+#include <glib.h>
+
+#define COLLECTION_QUERY_SIMPLE                      0           // a query with only select and where statement
+#define COLLECTION_QUERY_USE_SORT                 1           // if query should include order by statement
+#define COLLECTION_QUERY_USE_LIMIT                 2           // if query should include "limit ?1,?2" part
+#define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT)         
+
 
 #define COLLECTION_FILTER_FILM_ID                    1             // use film_id in filter
 #define COLLECTION_FILTER_ATLEAST_STAR          2             // show all stars including and above selected star filter
 #define COLLECTION_FILTER_EQUAL_STAR            4             // show only selected star filter
+#define COLLECTION_FILTER_ALTERED                  8             // show only altered images
+#define COLLECTION_FILTER_UNALTERED            16            // show only unaltered images
 
 typedef struct dt_collection_params_t
 {
+  /** flags for which query parts to use, see COLLECTION_QUERY_x defines... */
+  uint32_t query_flags;
+  
   /** flags for which filters to use, see COLLECTION_FILTER_x defines... */
   uint32_t filter_flags;
   
@@ -45,7 +57,7 @@ typedef struct dt_collection_t
 
 
 /** instansiates a collection context, if params equals NULL default query is constructed. */
-const dt_collection_t * dt_collection_new (dt_collection_params_t *params);
+const dt_collection_t * dt_collection_new (const dt_collection_params_t *params);
 /** frees a collection context. */
 void dt_collection_free (const dt_collection_t *collection);
 /** fetch params for collection for storing. */
@@ -61,6 +73,11 @@ void dt_collection_reset (const dt_collection_t *collection);
 uint32_t dt_collection_get_filter_flags (const dt_collection_t *collection);
 /** set filter flags for collection */
 void dt_collection_set_filter_flags (const dt_collection_t *collection, uint32_t flags);
+
+/** get filter flags for collection */
+uint32_t dt_collection_get_query_flags (const dt_collection_t *collection);
+/** set filter flags for collection */
+void dt_collection_set_query_flags (const dt_collection_t *collection, uint32_t flags);
 
 /** set the film_id of collection */
 void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id); 

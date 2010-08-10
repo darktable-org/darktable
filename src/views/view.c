@@ -726,7 +726,7 @@ void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)
 void dt_view_film_strip_prefetch()
 {
   char query[1024];
-  gchar *qin = dt_collection_get_query (darktable.collection);
+  const gchar *qin = dt_collection_get_query (darktable.collection);
   int offset = 0;
   if(qin)
   {
