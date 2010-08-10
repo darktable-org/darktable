@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-09 21:59+0200\n"
-"PO-Revision-Date: 2010-08-09 23:21+0200\n"
+"POT-Creation-Date: 2010-08-10 09:43+0200\n"
+"PO-Revision-Date: 2010-08-10 10:12+0200\n"
 "Last-Translator: Henrik Andersson <>\n"
 "Language-Team:  <>\n"
 "MIME-Version: 1.0\n"
@@ -495,115 +495,6 @@ msgstr "bredd av den exporterade bilden, eller 0 för att utesluta skalning."
 msgid "write a redundant file for each image"
 msgstr "skapa en kopia av varje orginal"
 
-#: ../src/LibRaw/internal/vcd_interpolate.c:16
-#, c-format
-msgid "VCD interpolation...\n"
-msgstr "VCD interpolering...\n"
-
-#: ../src/LibRaw/internal/vcd_interpolate.c:309
-#, c-format
-msgid ""
-"\tAHD, LH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%"
-"%)\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/vcd_interpolate.c:319
-#, c-format
-msgid "\tLH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%%)\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/vcd_interpolate.c:330
-#: ../src/LibRaw/internal/refinement.c:73
-#, c-format
-msgid "\telapsed time     = %5.3fs\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/refinement.c:11
-#, c-format
-msgid "Post-demosaic refinement..."
-msgstr ""
-
-#: ../src/LibRaw/internal/median_filter_new.c:19
-#, c-format
-msgid "3x3 differential median filter pass %d...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:29
-#, c-format
-msgid "Edge-sensitive median filter pass %d...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:33
-#, c-format
-msgid "\tR-G: 5x5 median filter + 3x3 Laplacian..."
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:35
-#, c-format
-msgid "\tB-G: 5x5 median filter + 3x3 Laplacian..."
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:122
-#, c-format
-msgid " edge = %5.2f (%%)\n"
-msgstr ""
-
-#. Update interpolated pixels after differential median filter
-#: ../src/LibRaw/internal/es_median_filter.c:168
-#, c-format
-msgid "\tUpdate R,G,B..."
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:252
-#, c-format
-msgid "\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/ahd_interpolate_mod.c:18
-#, c-format
-msgid "AHD interpolation (modified for anti-aliasing)...\n"
-msgstr "AHD interpolering (modifierad för antialiasing)...\n"
-
-#: ../src/LibRaw/internal/ahd_partial_interpolate.c:19
-#, c-format
-msgid "\tAHD partial interpolation..."
-msgstr "\tAHD bitvis interpolering..."
-
-#: ../src/LibRaw/internal/ahd_partial_interpolate.c:161
-#, c-format
-msgid "  H, V = %4.2f, %4.2f (%%)\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:585
-#, c-format
-msgid "FBDD full noise reduction...\n"
-msgstr "FBDD full brusreducering...\n"
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:602
-#, c-format
-msgid "FBDD noise reduction...\n"
-msgstr "FBDD brusreducering...\n"
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:631
-#, c-format
-msgid "DCB demosaicing...\n"
-msgstr "DCB demosaicing...\n"
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:649
-#, c-format
-msgid "DCB correction pass %d...\n"
-msgstr "DCB korrigeringspass %d...\n"
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:661
-#, c-format
-msgid "finishing DCB...\n"
-msgstr "avslutar DCB...\n"
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:681
-#, c-format
-msgid "optional DCB refinement...\n"
-msgstr ""
-
 #. single images
 #: ../src/common/image.c:91 ../src/control/control.c:1298
 #: ../src/control/control.c:1299 ../src/libs/collect.c:205
@@ -1035,7 +926,7 @@ msgid "tagging"
 msgstr "taggar"
 
 #: ../src/libs/tagging.c:255
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
 "%d image is assigned this tag!"
@@ -1044,10 +935,10 @@ msgid_plural ""
 "%d images are assigned this tag!"
 msgstr[0] ""
 "vill du verkligen ta bort taggen `%s'?\n"
-"taggen kommer även att tas bort från samtliga taggade bilder!"
+"%d bild har denna tagg!"
 msgstr[1] ""
 "vill du verkligen ta bort taggen `%s'?\n"
-"taggen kommer även att tas bort från samtliga taggade bilder!"
+"%d bilder har denna tagg!"
 
 #: ../src/libs/tagging.c:258
 msgid "delete tag?"
@@ -1935,15 +1826,15 @@ msgstr "VNG4"
 
 #: ../src/iop/rawimport.c:457
 msgid "DCB"
-msgstr ""
+msgstr "DCB"
 
 #: ../src/iop/rawimport.c:458
 msgid "AMaZE"
-msgstr ""
+msgstr "AMaZE"
 
 #: ../src/iop/rawimport.c:459
 msgid "VCD"
-msgstr ""
+msgstr "VCD"
 
 #: ../src/iop/rawimport.c:463
 msgid "hot pixels"
@@ -1975,6 +1866,8 @@ msgid ""
 "turns off the default image refinement if edges are jagged or you prefer "
 "softer demosaicing."
 msgstr ""
+"stänger av bildförfining om kanter är taggiga eller om du föredrar mjukare "
+"demosaicing."
 
 #. GtkSpinButton *iterations_dcb;
 #: ../src/iop/rawimport.c:477
@@ -1989,6 +1882,11 @@ msgid ""
 "that it may produce new artifacts\n"
 "usually 0 or 1 should work fine, in some situations even 10 is not enough."
 msgstr ""
+"antal DCB korrigeringrutiner (standard är inga)\n"
+"detta hjälper om du ser felaktiga interpoleringsriktningar, kom ihåg att "
+"detta kanske skapar fler artefakter\n"
+"normalt så fungerar 0 eller 1 fint, i vissa fall så är inte ens 10 "
+"tillräckligt."
 
 #. GtkComboBox *noiserd_fbdd;
 #: ../src/iop/rawimport.c:485
@@ -2008,6 +1906,7 @@ msgstr "luma+chroma"
 msgid ""
 "fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
 msgstr ""
+"fbdd aktiverar för-demosaicing luma (och valfritt chroma) brusreducering"
 
 #. GtkCheckButton *vcd_eeci_refine;
 #: ../src/iop/rawimport.c:496
@@ -2027,7 +1926,7 @@ msgstr "kant median pass"
 #: ../src/iop/rawimport.c:504
 msgid ""
 "number of passes an edge-sensitive median filter to differential color planes"
-msgstr ""
+msgstr "antal pass av kantkänslig medianfilter på diffrenetierade färgkanaler"
 
 #. GtkCheckButton *amaze_ca_correct;
 #: ../src/iop/rawimport.c:509
@@ -2399,7 +2298,6 @@ msgid "inverts effect of saturation..."
 msgstr "inverterar effecten av färgmättnad"
 
 #: ../src/iop/vignette.c:378
-#, fuzzy
 msgid "inverts effect of fall-off, default is dark fall-off..."
 msgstr ""
 "inverterar effekten av övergång, övergång till svart är standardvärde..."
@@ -2974,6 +2872,11 @@ msgid ""
 "used as basedirectory in the above storage structure and when a image are "
 "downloaded from camera it is replicated to found backup destinations."
 msgstr ""
+"extern backup är ett val för automatisk backup av importerade bild(er) till "
+"en annan fysisk plats, när den är aktiverad letar den efter specifierad "
+"backupkalaog på monterade enheter på din dator... varje katatlog som hittas "
+"används som baskatalog i ovanstående lagringsstruktur och när en bild "
+"importeras från kameran så replikeras den till funna destinationer."
 
 #: ../src/gui/camera_import_dialog.c:361
 msgid "enable backup"
@@ -3005,6 +2908,9 @@ msgid ""
 "if such a folder is found in any mounter media it is used as a backup "
 "destination."
 msgstr ""
+"detta är namnet på en katalog som indikerar en backupdestination,\n"
+"om en sådan katalog är funnen på monterat media så används denna som en "
+"backupdestination."
 
 #: ../src/gui/camera_import_dialog.c:387
 msgid "images"
@@ -3052,6 +2958,8 @@ msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
 msgstr ""
+"var försiktig med detta val. det kan bli den sista gången du ser din "
+"förinställning."
 
 #: ../src/gui/presets.c:228
 #, c-format
@@ -3135,7 +3043,7 @@ msgstr "inga bilder valda!"
 
 #: ../src/views/lighttable.c:71
 msgid "lighttable"
-msgstr "lusbord"
+msgstr "ljusbord"
 
 #: ../src/views/filmstrip.c:63
 msgid "film strip"
@@ -3154,6 +3062,30 @@ msgstr "fallerade att skapa sökväg för session %s."
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "ny session skapad '%s'"
+
+#~ msgid "VCD interpolation...\n"
+#~ msgstr "VCD interpolering...\n"
+
+#~ msgid "AHD interpolation (modified for anti-aliasing)...\n"
+#~ msgstr "AHD interpolering (modifierad för antialiasing)...\n"
+
+#~ msgid "\tAHD partial interpolation..."
+#~ msgstr "\tAHD bitvis interpolering..."
+
+#~ msgid "FBDD full noise reduction...\n"
+#~ msgstr "FBDD full brusreducering...\n"
+
+#~ msgid "FBDD noise reduction...\n"
+#~ msgstr "FBDD brusreducering...\n"
+
+#~ msgid "DCB demosaicing...\n"
+#~ msgstr "DCB demosaicing...\n"
+
+#~ msgid "DCB correction pass %d...\n"
+#~ msgstr "DCB korrigeringspass %d...\n"
+
+#~ msgid "finishing DCB...\n"
+#~ msgstr "avslutar DCB...\n"
 
 #~ msgid ""
 #~ "how many most-recently used thumbnail mipmaps should be kept in the "
