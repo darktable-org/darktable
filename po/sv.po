@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-08-10 09:43+0200\n"
-"PO-Revision-Date: 2010-08-10 10:12+0200\n"
+"PO-Revision-Date: 2010-08-10 10:14+0200\n"
 "Last-Translator: Henrik Andersson <>\n"
 "Language-Team:  <>\n"
 "MIME-Version: 1.0\n"
@@ -2411,7 +2411,7 @@ msgstr "styrkan av applicerat brus"
 
 #: ../src/iop/bilateral.cc:293
 msgid "spatial extent of the gaussian"
-msgstr ""
+msgstr "gaussiska rumslig utrsträckning"
 
 #. gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _(""), NULL);
 #: ../src/iop/bilateral.cc:295
