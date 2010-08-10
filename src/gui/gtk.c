@@ -373,43 +373,12 @@ lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
 static void
 update_query()
 {
-  //const int i = dt_conf_get_int("ui_last/combo_sort");
-  //const int j = dt_conf_get_int("ui_last/combo_filter");
-/*
-  const int i = dt_conf_get_int("ui_last/combo_sort");
-  const int j = dt_conf_get_int("ui_last/combo_filter");
-  // replace sort part
-  char *sortstring[5] = {"datetime_taken, filename", "flags & 7 desc", "filename", "id", "color, filename"};
-  int sortindex = 3;
-  if     (i == 1) sortindex = 0;
-  else if(i == 2) sortindex = 1;
-  else if(i == 0) sortindex = 2;
-  else if(i == 4) sortindex = 4;
-  // else (i == 3)
-  gchar *query = dt_conf_get_string("plugins/lighttable/query");
-  if (query == NULL)
-    return;
-  gchar *q = query;
-  if(!strncmp(query, "select distinct * from (", 24)) q = query + 24;
-  gchar **split = g_regex_split_simple("flags & 7", q, 0, 0);
-  char newquery[1024], filter[512];
-  if(j == 1) snprintf(filter, 512, "flags & 7) < 1");
-  else       snprintf(filter, 512, "flags & 7) >= %d", j-1);
-  // g_strstr_len(split[0], -1, "where ");
-  if(i == 4)
-    snprintf(newquery, 1024, "select distinct * from (%s %s) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
-  else
-    snprintf(newquery, 1024, "%s %s order by %s limit ?1, ?2", split[0], filter, sortstring[sortindex]);
-  g_strfreev(split);
-  g_free(query);
-  dt_conf_set_string("plugins/lighttable/query", newquery);
-*/
-
   /* updates query */
-  dt_collection_update(darktable.collection);
+  dt_collection_update (darktable.collection);
   
+  /* updates visual */
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(win);
+  gtk_widget_queue_draw (win);
 }
 
 static void
@@ -425,11 +394,12 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
 
   
-  /* update collection filter flags */
+  /* update collection star filter flags */
   if         (i == 0) dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_STAR|COLLECTION_FILTER_EQUAL_STAR));
   else if (i == 1) dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_STAR) & ~COLLECTION_FILTER_ATLEAST_STAR);
   else dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_STAR );
   
+  /* set the star filter in collection */
   dt_collection_set_star(darktable.collection, i-1);		
   
   update_query();
