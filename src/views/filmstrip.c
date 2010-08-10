@@ -25,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/darktable.h"
 #include "common/colorlabels.h"
+#include "common/collection.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -99,13 +100,11 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   const int max_cols = (int)(1+width/(float)wd);
   sqlite3_stmt *stmt = NULL;
 
-  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
-  if(!query) return;
-  if(query[0] == '\0')
-  {
-    g_free(query);
+  const gchar *query = dt_collection_get_query (darktable.collection);
+  
+  if (!query || query[0] == '\0') 
     return;
-  }
+  
   char newquery[1024];
   snprintf(newquery, 1024, "select count(id) %s", query + 17);
   sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
@@ -122,7 +121,7 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, offset);
   sqlite3_bind_int (stmt, 2, max_cols);
-  g_free(query);
+
   for(int col = 0; col < max_cols; col++)
   {
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -194,7 +193,7 @@ void enter(dt_view_t *self)
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   int imgid = darktable.view_manager->film_strip_scroll_to;
   char query[1024];
-  gchar *qin = dt_conf_get_string("plugins/lighttable/query");
+  const gchar *qin = dt_collection_get_query (darktable.collection);
   if(qin)
   {
     snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
@@ -208,7 +207,6 @@ void enter(dt_view_t *self)
       strip->offset = sqlite3_column_int(stmt, 0) - 1;
     }
     sqlite3_finalize(stmt);
-    g_free(qin);
   }
 }
 
