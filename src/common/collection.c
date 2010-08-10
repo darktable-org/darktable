@@ -32,7 +32,7 @@
 
 #define MAX_QUERY_STRING_LENGTH 4096
 /* Stores the collection query, returns 1 if changed.. */
-static int _dt_collection_store (gchar *query);
+static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
 
 const dt_collection_t * 
 dt_collection_new (dt_collection_params_t *params)
@@ -96,7 +96,7 @@ dt_collection_update (const dt_collection_t *collection)
   
   /* store the new query */
   g_snprintf (query,MAX_QUERY_STRING_LENGTH,"%s %s", selq, sq);
-  result = _dt_collection_store (query);
+  result = _dt_collection_store (collection,query);
   g_free (query); 
   return result;
 }
@@ -108,17 +108,16 @@ dt_collection_reset(const dt_collection_t *collection)
   params->film_id = -1;
   params->filter_flags = COLLECTION_FILTER_FILM_ID | COLLECTION_FILTER_ATLEAST_STAR;
   params->star = 1;
-  dt_conf_set_string ("plugins/lighttable/query", "select * from images where (film_id = -1) and (flags & 7) >= 1 order by filename limit ?1, ?2");
-  
+
   dt_collection_update (collection);
    // void dt_control_log("[DTCOLLECTION] Failed to ", ...);
 
 }
 
 const gchar *
-dt_collection_get_query (dt_collection_t *collection)
+dt_collection_get_query (const dt_collection_t *collection)
 {
-  return collection.query;
+  return collection->query;
 }
 
 uint32_t 
@@ -149,21 +148,21 @@ dt_collection_set_star (const dt_collection_t *collection, uint32_t star)
 }
 
 static int 
-_dt_collection_store (gchar *query) 
+_dt_collection_store (const dt_collection_t *collection, gchar *query) 
 {
-  if ( strcmp (collection.query,query) == 0) 
+  if (collection->query && strcmp (collection->query,query) == 0) 
     return 0;
   
   /* store query in context */
-  if (collection.query)
-    g_free (collection.query);
+  if (collection->query)
+    g_free (collection->query);
   
-  collection.query = g_strdup(query);
+  ((dt_collection_t *)collection)->query = g_strdup(query);
   
   /* store query in gconf */
-  dt_conf_set_string ("plugins/lighttable/query", collection.query);
+  dt_conf_set_string ("plugins/lighttable/query", collection->query);
   
-  fprintf (stderr,"Collection query: %s\n",collection.query);
+  fprintf (stderr,"Collection query: %s\n",collection->query);
   
   return 1;
 }

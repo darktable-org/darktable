@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "control/conf.h"
@@ -725,7 +726,7 @@ void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)
 void dt_view_film_strip_prefetch()
 {
   char query[1024];
-  gchar *qin = dt_conf_get_string("plugins/lighttable/query");
+  gchar *qin = dt_collection_get_query (darktable.collection);
   int offset = 0;
   if(qin)
   {
@@ -756,7 +757,6 @@ void dt_view_film_strip_prefetch()
       dt_image_cache_release(image, 'r');
     }
     sqlite3_finalize(stmt);
-    g_free(qin);
   }
 }
 

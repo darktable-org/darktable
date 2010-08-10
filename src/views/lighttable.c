@@ -24,6 +24,7 @@
 #include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -146,13 +147,10 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   int id, last_seli = 1<<30, last_selj = 1<<30;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
-  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
-  if(!query) return;
-  if(query[0] == '\0')
-  {
-    g_free(query);
+  const gchar *query = dt_collection_get_query (darktable.collection);
+  if(!query && query[0] == '\0') 
     return;
-  }
+  
   char newquery[1024];
   snprintf(newquery, 1024, "select count(id) %s", query + 17);
   sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
@@ -172,7 +170,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, offset);
   sqlite3_bind_int (stmt, 2, max_rows*iir);
-  g_free(query);
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -293,14 +290,9 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/pointery;
   }
 
-  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
-  if(!query) return;
-  if(query[0] == '\0')
-  {
-    g_free(query);
-    return;
-  }
-
+  const gchar *query = dt_collection_get_query (darktable.collection);
+  if(!query && query[0] == '\0') return;
+  
   if     (track == 0);
   else if(track >  1)  zoom_y += ht;
   else if(track >  0)  zoom_x += wd;
@@ -426,7 +418,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-  g_free(query);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
   for(int row = 0; row < max_rows; row++)
