@@ -39,6 +39,7 @@ typedef struct dt_collection_params_t
 
 typedef struct dt_collection_t
 {
+  gchar *query;
   dt_collection_params_t params;
 } dt_collection_t;
 
@@ -48,16 +49,18 @@ const dt_collection_t * dt_collection_new (dt_collection_params_t *params);
 /** frees a collection context. */
 void dt_collection_free (const dt_collection_t *collection);
 /** fetch params for collection for storing. */
-const dt_collection_params_t * dt_collection_params(const dt_collection_t *collection);
+const dt_collection_params_t * dt_collection_params (const dt_collection_t *collection);
+/** get the generated query for collection */
+const gchar *dt_collection_get_query (dt_collection_t *collection);
 /** updates sql query for a collection. @return 1 if query changed. */
 int dt_collection_update (const dt_collection_t *collection);
 /** reset collection to default dummy selection */
 void dt_collection_reset (const dt_collection_t *collection);
 
 /** get filter flags for collection */
-uint32_t dt_collection_get_filter_flags(const dt_collection_t *collection);
+uint32_t dt_collection_get_filter_flags (const dt_collection_t *collection);
 /** set filter flags for collection */
-void dt_collection_set_filter_flags(const dt_collection_t *collection, uint32_t flags);
+void dt_collection_set_filter_flags (const dt_collection_t *collection, uint32_t flags);
 
 /** set the film_id of collection */
 void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id); 

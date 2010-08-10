@@ -115,6 +115,12 @@ dt_collection_reset(const dt_collection_t *collection)
 
 }
 
+const gchar *
+dt_collection_get_query (dt_collection_t *collection)
+{
+  return collection.query;
+}
+
 uint32_t 
 dt_collection_get_filter_flags(const dt_collection_t *collection)
 {
@@ -145,9 +151,19 @@ dt_collection_set_star (const dt_collection_t *collection, uint32_t star)
 static int 
 _dt_collection_store (gchar *query) 
 {
-  if ( strcmp(dt_conf_get_string("plugins/lighttable/query"),query) == 0) 
+  if ( strcmp (collection.query,query) == 0) 
     return 0;
-  fprintf(stderr,"Collection query: %s\n",query);
-  dt_conf_set_string ("plugins/lighttable/query", query);
+  
+  /* store query in context */
+  if (collection.query)
+    g_free (collection.query);
+  
+  collection.query = g_strdup(query);
+  
+  /* store query in gconf */
+  dt_conf_set_string ("plugins/lighttable/query", collection.query);
+  
+  fprintf (stderr,"Collection query: %s\n",collection.query);
+  
   return 1;
 }
