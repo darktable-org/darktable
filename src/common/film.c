@@ -19,6 +19,7 @@
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "common/film.h"
+#include "common/collection.h"
 #include "views/view.h"
 
 #include <stdio.h>
@@ -93,6 +94,7 @@ void dt_film_cleanup(dt_film_t *film)
 
 void dt_film_set_query(const int32_t id)
 {
+/*
   dt_lib_sort_t   sort   = dt_conf_get_int ("ui_last/combo_sort");
   dt_lib_filter_t filter = dt_conf_get_int ("ui_last/combo_filter");
   char *sortstring[5] = {"datetime_taken", "flags & 7 desc", "filename", "id", "color, filename"};
@@ -118,7 +120,12 @@ void dt_film_set_query(const int32_t id)
     else
       snprintf(query, 512, "select distinct * from images where (film_id = %d) and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
   }
-  dt_conf_set_string ("plugins/lighttable/query", query);
+  dt_conf_set_string ("plugins/lighttable/query", query);*/
+  
+  /* enable film id filter and set film id */
+  dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_FILM_ID) );
+  dt_collection_set_film_id (darktable.collection, id);
+  dt_collection_update (darktable.collection);
   dt_conf_set_int ("ui_last/film_roll", id);
 }
 

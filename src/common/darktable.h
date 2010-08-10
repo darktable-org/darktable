@@ -116,6 +116,7 @@ typedef struct darktable_t
   const struct dt_fswatch_t	*fswatch;
   const struct dt_pwstorage_t *pwstorage;
   const struct dt_camctl_t *camctl;
+  const struct dt_collection_t *collection;
   struct dt_points_t       *points;
   struct dt_imageio_t      *imageio;
   pthread_mutex_t db_insert;

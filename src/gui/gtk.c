@@ -30,6 +30,7 @@
 
 #include "common/darktable.h"
 #include "common/camera_control.h"
+#include "common/collection.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/label.h"
@@ -372,6 +373,9 @@ lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
 static void
 update_query()
 {
+  //const int i = dt_conf_get_int("ui_last/combo_sort");
+  //const int j = dt_conf_get_int("ui_last/combo_filter");
+/*
   const int i = dt_conf_get_int("ui_last/combo_sort");
   const int j = dt_conf_get_int("ui_last/combo_filter");
   // replace sort part
@@ -399,6 +403,11 @@ update_query()
   g_strfreev(split);
   g_free(query);
   dt_conf_set_string("plugins/lighttable/query", newquery);
+*/
+
+  /* updates query */
+  dt_collection_update(darktable.collection);
+  
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
 }
@@ -415,6 +424,14 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
   else if(i == 4)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_3);
   else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
 
+  
+  /* update collection filter flags */
+  if         (i == 0) dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_STAR|COLLECTION_FILTER_EQUAL_STAR));
+  else if (i == 1) dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_STAR) & ~COLLECTION_FILTER_ATLEAST_STAR);
+  else dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_STAR );
+  
+  dt_collection_set_star(darktable.collection, i-1);		
+  
   update_query();
 }
 

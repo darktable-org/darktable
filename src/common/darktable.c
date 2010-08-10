@@ -19,6 +19,7 @@
   #include "../config.h"
 #endif
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/camera_control.h"
@@ -98,7 +99,6 @@ int dt_init(int argc, char *argv[])
   char filename[512];
   snprintf(filename, 512, "%s/.darktablerc", homedir);
 
-
   // Initialize the filesystem watcher  
   darktable.fswatch=dt_fswatch_new();	
   
@@ -108,6 +108,9 @@ int dt_init(int argc, char *argv[])
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
+
+  // initialize collection query
+  darktable.collection = dt_collection_new(NULL);  
 
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();	
@@ -187,7 +190,9 @@ int dt_init(int argc, char *argv[])
   if(!id)
   {
     // dummy selection:
-    dt_conf_set_string ("plugins/lighttable/query", "select * from images where (film_id = -1) and (flags & 7) >= 1 order by filename limit ?1, ?2");
+    // dt_conf_set_string ("plugins/lighttable/query", "select * from images where (film_id = -1) and (flags & 7) >= 1 order by filename limit ?1, ?2");
+    dt_collection_reset (darktable.collection);
+    
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
