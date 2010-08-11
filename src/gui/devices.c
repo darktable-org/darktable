@@ -126,24 +126,23 @@ void dt_gui_devices_update()
   GtkButton *scan=GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
   gtk_object_set(GTK_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), NULL);
   g_signal_connect (G_OBJECT(scan), "clicked",G_CALLBACK (scan_callback), NULL);
-  gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(scan),TRUE,TRUE,5);
+  gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(scan),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(gtk_label_new("")),TRUE,TRUE,0);
     
   uint32_t count=0;
   GtkWidget *expander= glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
 
-  if( (citem=g_list_first(darktable.camctl->cameras))!=NULL) 
+  if( (citem = g_list_first (darktable.camctl->cameras))!=NULL) 
   {    
     // Add detected supported devices
     char buffer[512]={0};
     do
     {
-      //gtk_widget_set_sensitive(expander,FALSE);
-  
       dt_camera_t *camera=(dt_camera_t *)citem->data;
       count++;
       // Add camera label
-      GtkWidget *label=GTK_WIDGET(dtgtk_label_new(camera->model,DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
-      gtk_box_pack_start(GTK_BOX(widget),label,TRUE,TRUE,0);
+      GtkWidget *label = GTK_WIDGET (dtgtk_label_new (camera->model,DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_LEFT));
+      gtk_box_pack_start (GTK_BOX (widget),label,TRUE,TRUE,0);
       
       // Set summary if exists for tooltip
       if( camera->summary.text !=NULL && strlen(camera->summary.text) >0 ) 
@@ -158,18 +157,20 @@ void dt_gui_devices_update()
       
       // Add camera action buttons
       GtkWidget *ib=NULL,*tb=NULL;
+      GtkWidget *vbx=gtk_vbox_new(FALSE,0);
       if( camera->can_import==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),(ib=gtk_button_new_with_label(_("import from camera"))),FALSE,FALSE,0);
+        gtk_box_pack_start (GTK_BOX (vbx),(ib=gtk_button_new_with_label (_("import from camera"))),FALSE,FALSE,0);
       if( camera->can_tether==TRUE )
-        gtk_box_pack_start(GTK_BOX(widget),(tb=gtk_button_new_with_label(_("tethered shoot"))),FALSE,FALSE,0);
+        gtk_box_pack_start (GTK_BOX (vbx),(tb=gtk_button_new_with_label (_("tethered shoot"))),FALSE,FALSE,0);
       
       if( ib ) {
-        g_signal_connect (G_OBJECT(ib), "clicked",G_CALLBACK (import_callback), camera);
+        g_signal_connect (G_OBJECT (ib), "clicked",G_CALLBACK (import_callback), camera);
       }
       if( tb ) {
-        g_signal_connect (G_OBJECT(tb), "clicked",G_CALLBACK (tethered_callback), camera);
+        g_signal_connect (G_OBJECT (tb), "clicked",G_CALLBACK (tethered_callback), camera);
       }
-    } while((citem=g_list_next(citem))!=NULL);
+      gtk_box_pack_start (GTK_BOX (widget),vbx,FALSE,FALSE,0);
+    } while ((citem=g_list_next (citem))!=NULL);
   } 
   
   if( count == 0 )

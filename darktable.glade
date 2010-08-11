@@ -496,10 +496,18 @@ file manager</property>
 																		<property name="can_focus">True</property>
 																		<property name="spacing">10</property>
 																		<child>
-																			<widget class="GtkVBox" id="devices_expander_body">
+																			<widget class="GtkAlignment" id="devices_alignment">
 																				<property name="visible">True</property>
-																				<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-																				<property name="border_width">5</property>
+																				<property name="bottom_padding">10</property>
+																				<property name="left_padding">5</property>
+																				<property name="right_padding">10</property>
+																				<child>
+																					<widget class="GtkVBox" id="devices_expander_body">
+																						<property name="visible">True</property>
+																						<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+																						<property name="spacing">5</property>
+																					</widget>
+																				</child>
 																			</widget>
 																		</child>
 																		<child>
