@@ -237,7 +237,7 @@ dt_gui_filmview_init()
 
 
   GtkWidget *entry = glade_xml_get_widget (darktable.gui->main_window, "entry_film");
-  g_signal_connect(entry, "key-release-event", G_CALLBACK(entry_callback), NULL);
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(entry_callback), NULL);
 
   GtkWidget *button = glade_xml_get_widget (darktable.gui->main_window, "button_film_remove");
   g_signal_connect(button, "clicked", G_CALLBACK(button_callback), (gpointer)0);
