@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-02 18:40+0200\n"
+"POT-Creation-Date: 2010-08-11 13:09+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: \n"
 "X-Poedit-Language: German\n"
 "X-Poedit-Country: GERMANY\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
@@ -504,115 +504,6 @@ msgstr ""
 msgid "write a redundant file for each image"
 msgstr "schreibe eine redundante Datei für jedes Bild"
 
-#: ../src/LibRaw/internal/vcd_interpolate.c:16
-#, c-format
-msgid "VCD interpolation...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/vcd_interpolate.c:309
-#, c-format
-msgid ""
-"\tAHD, LH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%"
-"%)\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/vcd_interpolate.c:319
-#, c-format
-msgid "\tLH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%%)\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/vcd_interpolate.c:330
-#: ../src/LibRaw/internal/refinement.c:73
-#, c-format
-msgid "\telapsed time     = %5.3fs\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/refinement.c:11
-#, c-format
-msgid "Post-demosaic refinement..."
-msgstr ""
-
-#: ../src/LibRaw/internal/median_filter_new.c:19
-#, c-format
-msgid "3x3 differential median filter pass %d...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:29
-#, c-format
-msgid "Edge-sensitive median filter pass %d...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:33
-#, c-format
-msgid "\tR-G: 5x5 median filter + 3x3 Laplacian..."
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:35
-#, c-format
-msgid "\tB-G: 5x5 median filter + 3x3 Laplacian..."
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:122
-#, c-format
-msgid " edge = %5.2f (%%)\n"
-msgstr ""
-
-#. Update interpolated pixels after differential median filter
-#: ../src/LibRaw/internal/es_median_filter.c:168
-#, c-format
-msgid "\tUpdate R,G,B..."
-msgstr ""
-
-#: ../src/LibRaw/internal/es_median_filter.c:252
-#, c-format
-msgid "\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/ahd_interpolate_mod.c:18
-#, c-format
-msgid "AHD interpolation (modified for anti-aliasing)...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/ahd_partial_interpolate.c:19
-#, c-format
-msgid "\tAHD partial interpolation..."
-msgstr ""
-
-#: ../src/LibRaw/internal/ahd_partial_interpolate.c:161
-#, c-format
-msgid "  H, V = %4.2f, %4.2f (%%)\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:585
-#, c-format
-msgid "FBDD full noise reduction...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:602
-#, c-format
-msgid "FBDD noise reduction...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:631
-#, c-format
-msgid "DCB demosaicing...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:649
-#, c-format
-msgid "DCB correction pass %d...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:661
-#, c-format
-msgid "finishing DCB...\n"
-msgstr ""
-
-#: ../src/LibRaw/internal/dcb_demosaicing.c:681
-#, c-format
-msgid "optional DCB refinement...\n"
-msgstr ""
-
 #. single images
 #: ../src/common/image.c:91 ../src/control/control.c:1298
 #: ../src/control/control.c:1299 ../src/libs/collect.c:205
@@ -641,21 +532,21 @@ msgid "0 - original"
 msgstr "0 - Original"
 
 #: ../src/control/jobs.c:48
-#, fuzzy, c-format
+#, c-format
 msgid "loading image %s"
-msgstr "Einzelbilder"
+msgstr "Bild %s laden"
 
 #: ../src/control/jobs.c:64
-#, fuzzy, c-format
+#, c-format
 msgid "importing image %s"
-msgstr "einzelnes Bild importieren"
+msgstr "Bild %s importieren"
 
 #: ../src/control/jobs.c:93
-#, fuzzy, c-format
+#, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
-msgstr[0] "exportiere %d Bild …"
-msgstr[1] "exportiere %d Bilder …"
+msgstr[0] "%d Bild aufnehmen"
+msgstr[1] "%d Bilder aufnehmen"
 
 #: ../src/control/jobs.c:230
 #, c-format
@@ -673,11 +564,11 @@ msgstr ""
 "Fehler beim Erstellen des Import-Pfades %s, Import der Bilder abgebrochen"
 
 #: ../src/control/jobs.c:313
-#, fuzzy, c-format
+#, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
-msgstr[0] "Bilder von Kamera importieren"
-msgstr[1] "Bilder von Kamera importieren"
+msgstr[0] "%d Bild von Kamera importieren"
+msgstr[1] "%d Bilder von Kamera importieren"
 
 #: ../src/control/jobs.c:336
 msgid "failed to create filmroll for camera import, import of images aborted."
@@ -686,25 +577,25 @@ msgstr ""
 "Bilder abgebrochen"
 
 #: ../src/control/jobs.c:451
-#, fuzzy, c-format
+#, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
-msgstr[0] "exportiere %d Bild …"
-msgstr[1] "exportiere %d Bilder …"
+msgstr[0] "dupliziere %d Bild"
+msgstr[1] "dupliziere %d Bilder"
 
 #: ../src/control/jobs.c:472
-#, fuzzy, c-format
+#, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] "exportiere %d Bild …"
-msgstr[1] "exportiere %d Bilder …"
+msgstr[0] "%d Bild entfernen"
+msgstr[1] "%d Bilder entfernen"
 
 #: ../src/control/jobs.c:493
-#, fuzzy, c-format
+#, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
-msgstr[0] "exportiere %d Bild …"
-msgstr[1] "exportiere %d Bilder …"
+msgstr[0] "%d Bild löschen"
+msgstr[1] "%d Bilder löschen"
 
 #: ../src/control/jobs.c:605
 msgid "do you really want to remove all selected images from the collection?"
@@ -743,11 +634,11 @@ msgstr[0] "exportiere %d Bild …"
 msgstr[1] "exportiere %d Bilder …"
 
 #: ../src/control/jobs.c:681
-#, fuzzy, c-format
+#, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
-msgstr[0] "exportiere %d Bild …"
-msgstr[1] "exportiere %d Bilder …"
+msgstr[0] "%d Bild nach %s exportieren"
+msgstr[1] "%d Bilder nach %s exportieren"
 
 #: ../src/control/jobs.c:697 ../src/views/darkroom.c:302
 msgid "image does no longer exist"
@@ -873,9 +764,9 @@ msgid "(default)"
 msgstr ""
 
 #: ../src/libs/lib.c:114
-#, fuzzy, c-format
+#, c-format
 msgid "edit `%s'"
-msgstr "‚%s‘"
+msgstr "‚%s‘ bearbeiten"
 
 #: ../src/libs/lib.c:135 ../src/gui/presets.c:204
 msgid "name of the preset"
@@ -1363,7 +1254,7 @@ msgstr ""
 
 #: ../src/libs/camera.c:427
 msgid "wb"
-msgstr ""
+msgstr "Weißabgleich"
 
 #: ../src/libs/camera.c:437 ../src/imageio/format/jpeg.c:634
 msgid "quality"
@@ -1419,7 +1310,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:659
 msgid "right"
-msgstr "Rechte"
+msgstr ""
 
 #: ../src/iop/clipping.c:660
 msgid "up"
@@ -2012,15 +1903,13 @@ msgid "fbdd denoising"
 msgstr ""
 
 #: ../src/iop/rawimport.c:488
-#, fuzzy
 msgctxt "fbdd noise"
 msgid "none"
 msgstr "keine"
 
 #: ../src/iop/rawimport.c:490
-#, fuzzy
 msgid "luma+chroma"
-msgstr "Chrominanz"
+msgstr "Luminanz+Chrominanz"
 
 #: ../src/iop/rawimport.c:491
 msgid ""
@@ -2150,133 +2039,111 @@ msgstr "Weißabgleichsvorgabe feinabstimmen"
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
 #: ../src/iop/wb_presets.c:45
-#, fuzzy
 msgid "Daylight"
 msgstr "Tageslicht"
 
 #. Probably same as above:
 #: ../src/iop/wb_presets.c:47
-#, fuzzy
 msgid "Direct sunlight"
 msgstr "direkte Sonneneinstrahlung"
 
 #: ../src/iop/wb_presets.c:48
-#, fuzzy
 msgid "Cloudy"
-msgstr "wolkig"
+msgstr "Wolkig"
 
 #. "Shadows" should be switched to this:
 #: ../src/iop/wb_presets.c:50
-#, fuzzy
 msgid "Shade"
 msgstr "Schatten"
 
 #: ../src/iop/wb_presets.c:51
-#, fuzzy
 msgid "Incandescent"
-msgstr "strahlend"
+msgstr "Strahlend"
 
 #: ../src/iop/wb_presets.c:52
-#, fuzzy
 msgid "Incandescent warm"
-msgstr "strahlend warm"
+msgstr "Strahlend warm"
 
 #. Same as "Incandescent":
 #: ../src/iop/wb_presets.c:54
-#, fuzzy
 msgid "Tungsten"
 msgstr "Wolfram"
 
 #: ../src/iop/wb_presets.c:55
-#, fuzzy
 msgid "Fluorescent"
-msgstr "fluoreszierend"
+msgstr "Fluoreszierend"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
-#, fuzzy
 msgid "Fluorescent high"
-msgstr "hoch fluoreszierend"
+msgstr "Hoch fluoreszierend"
 
 #: ../src/iop/wb_presets.c:58
-#, fuzzy
 msgid "Cool white fluorescent"
-msgstr "kalt weiß fluoreszierend"
+msgstr "Kalt weiß fluoreszierend"
 
 #: ../src/iop/wb_presets.c:59
-#, fuzzy
 msgid "Warm white fluorescent"
-msgstr "warm weiß fluoreszierend"
+msgstr "Warm weiß fluoreszierend"
 
 #: ../src/iop/wb_presets.c:60
-#, fuzzy
 msgid "Daylight fluorescent"
 msgstr "Tageslicht-fluoreszierend"
 
 #: ../src/iop/wb_presets.c:61
-#, fuzzy
 msgid "Neutral fluorescent"
-msgstr "neutral fluoreszierend"
+msgstr "Neutral fluoreszierend"
 
 #: ../src/iop/wb_presets.c:62
-#, fuzzy
 msgid "White fluorescent"
-msgstr "weiß fluoreszierend"
+msgstr "Weiß fluoreszierend"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
-#, fuzzy
 msgid "Sodium-vapor fluorescent"
 msgstr "Natriumdampf-fluoreszierend"
 
 #: ../src/iop/wb_presets.c:65
-#, fuzzy
 msgid "Day white fluorescent"
 msgstr "Tagesweiß-fluoreszierend"
 
+# too long?
 #: ../src/iop/wb_presets.c:66
-#, fuzzy
 msgid "High temp. mercury-vapor fluorescent"
 msgstr "Hochtemperatur-Quecksilberdampf-fluoreszierend"
 
 #: ../src/iop/wb_presets.c:68
-#, fuzzy
 msgid "Flash"
 msgstr "Blitz"
 
 #. For Olympus with no real "Flash" preset:
 #: ../src/iop/wb_presets.c:70
-#, fuzzy
 msgid "Flash (auto mode)"
 msgstr "Blitz (automatischer Modus)"
 
 #: ../src/iop/wb_presets.c:71
-#, fuzzy
 msgid "Evening sun"
 msgstr "Abendsonne"
 
 #: ../src/iop/wb_presets.c:72
-#, fuzzy
 msgid "Underwater"
-msgstr "unter Wasser"
+msgstr "Unter Wasser"
 
 #: ../src/iop/wb_presets.c:73
-#, fuzzy
 msgid "Black & white"
-msgstr "Scwarz & Weiß"
+msgstr "Schwarz & Weiß"
 
 #: ../src/iop/wb_presets.c:76
 msgid "Manual WB"
-msgstr ""
+msgstr "Manueller Weißabgleich"
 
 #: ../src/iop/wb_presets.c:77
-#, fuzzy
 msgid "Camera WB"
-msgstr "Kamera"
+msgstr "Kamera Weißabgleich"
 
 #: ../src/iop/wb_presets.c:78
 msgid "Auto WB"
-msgstr ""
+msgstr "Automatischer Weißabgleich"
 
 #: ../src/iop/tonecurve.c:39
 msgid "tone curve"
@@ -2319,14 +2186,12 @@ msgid "olympus like"
 msgstr ""
 
 #: ../src/iop/basecurve.c:55
-#, fuzzy
 msgid "panasonic like"
-msgstr "Nikon-artig"
+msgstr "Panasonic-artig"
 
 #: ../src/iop/basecurve.c:56
-#, fuzzy
 msgid "leica like"
-msgstr "Nikon-artig"
+msgstr "Leica-artig"
 
 #: ../src/iop/basecurve.c:57
 msgid "fotogenetic (point & shoot)"
@@ -2603,9 +2468,8 @@ msgid "acquire"
 msgstr "berechnen"
 
 #: ../src/iop/colortransfer.c:614
-#, fuzzy
 msgid "analyze this image"
-msgstr "analysiere dieses Bild und speichere die Parameter"
+msgstr "dieses Bild analysieren"
 
 #: ../src/iop/colortransfer.c:618
 msgid "apply"
@@ -2616,24 +2480,20 @@ msgid "apply previously analyzed image look to this image"
 msgstr ""
 
 #: ../src/iop/channelmixer.c:107
-#, fuzzy
 msgid "channel mixer"
-msgstr "Kanal"
+msgstr "Kanalmixer"
 
 #: ../src/iop/channelmixer.c:347
-#, fuzzy
 msgid "output channel"
-msgstr "Ausgabevorsatz"
+msgstr "Ausgabekanal"
 
 #: ../src/iop/channelmixer.c:355
-#, fuzzy
 msgid "gray"
-msgstr "Körnung"
+msgstr ""
 
 #: ../src/iop/channelmixer.c:360
-#, fuzzy
 msgid "source channels"
-msgstr "Kanal"
+msgstr "Quell-Kanal"
 
 #: ../src/iop/channelmixer.c:407
 msgid "swap r and b"
@@ -2644,9 +2504,8 @@ msgid "swap g and b"
 msgstr ""
 
 #: ../src/iop/channelmixer.c:409
-#, fuzzy
 msgid "color contrast boost"
-msgstr "lokaler Kontrast"
+msgstr "lokalen Kontrast verstärken"
 
 #: ../src/iop/channelmixer.c:410
 msgid "color details boost"
@@ -2759,65 +2618,65 @@ msgstr "%d/%d nach ‚%s%s‘ exportiert"
 msgid "picasa webalbum"
 msgstr "Picassa Webalbum"
 
-#: ../src/imageio/storage/picasa.c:562
+#: ../src/imageio/storage/picasa.c:547
 msgid "authenticated"
 msgstr "authentifiziert"
 
 #. Add standard action
-#: ../src/imageio/storage/picasa.c:566 ../src/imageio/storage/picasa.c:599
+#: ../src/imageio/storage/picasa.c:568 ../src/imageio/storage/picasa.c:601
 msgid "create new album"
 msgstr "neues Album erstellen"
 
 #. Failed to authenticated, let's notify somehow...
-#: ../src/imageio/storage/picasa.c:589
+#: ../src/imageio/storage/picasa.c:591
 msgid "authentication failed"
 msgstr "Authentifizierung fehlgeschlagen"
 
-#: ../src/imageio/storage/picasa.c:648
+#: ../src/imageio/storage/picasa.c:650
 msgid "user"
 msgstr "Benutzer"
 
-#: ../src/imageio/storage/picasa.c:649
+#: ../src/imageio/storage/picasa.c:651
 msgid "password"
 msgstr "Passwort"
 
-#: ../src/imageio/storage/picasa.c:650
+#: ../src/imageio/storage/picasa.c:652
 msgid "albums"
 msgstr "Alben"
 
-#: ../src/imageio/storage/picasa.c:652
+#: ../src/imageio/storage/picasa.c:654
 msgid "title"
 msgstr "Titel"
 
-#: ../src/imageio/storage/picasa.c:653
+#: ../src/imageio/storage/picasa.c:655
 msgid "summary"
 msgstr "Zusammenfassung"
 
-#: ../src/imageio/storage/picasa.c:654
+#: ../src/imageio/storage/picasa.c:656
 msgid "rights"
 msgstr "Rechte"
 
-#: ../src/imageio/storage/picasa.c:686
+#: ../src/imageio/storage/picasa.c:688
 msgid "my new album"
 msgstr "mein neues Album"
 
-#: ../src/imageio/storage/picasa.c:687
+#: ../src/imageio/storage/picasa.c:689
 msgid "exported from darktable"
 msgstr "aus darktable exportiert"
 
-#: ../src/imageio/storage/picasa.c:705
+#: ../src/imageio/storage/picasa.c:707
 msgid "refresh album list"
 msgstr ""
 
-#: ../src/imageio/storage/picasa.c:711
+#: ../src/imageio/storage/picasa.c:713
 msgid "public album"
 msgstr "öffentliches Album"
 
-#: ../src/imageio/storage/picasa.c:712
+#: ../src/imageio/storage/picasa.c:714
 msgid "export tags"
 msgstr "Tags exportieren"
 
-#: ../src/imageio/storage/picasa.c:830
+#: ../src/imageio/storage/picasa.c:831
 #, c-format
 msgid "%d/%d exported to picasa webalbum"
 msgstr "%d/%d ins Picasa-Webalbum exportiert"
