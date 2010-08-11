@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "dtgtk/label.h"
 #include "gui/background_jobs.h"
 
 GStaticMutex _gui_background_mutex = G_STATIC_MUTEX_INIT;
@@ -28,7 +29,7 @@ GStaticMutex _gui_background_mutex = G_STATIC_MUTEX_INIT;
 
 void dt_gui_background_jobs_init() {
 	GtkWidget *w = glade_xml_get_widget( darktable.gui->main_window, "jobs_content_box" );
-	GtkWidget *label = gtk_label_new(_("background jobs"));
+	GtkWidget *label =  dtgtk_label_new (_("background jobs"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 	gtk_box_pack_start( GTK_BOX( w ), label, TRUE, TRUE, 0);
 	gtk_widget_show( label );

@@ -907,7 +907,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (key_pressed_override), NULL);
   g_signal_connect (G_OBJECT (widget), "key-release-event",
                     G_CALLBACK (key_released), NULL);
-		    
+        
   gtk_widget_show_all(widget);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
@@ -1010,6 +1010,19 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)2);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_4_togglebutton");
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)3);
+
+  /* add recent filmrolls section label */
+  widget = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
+  GtkWidget *label = dtgtk_label_new (_("recent used film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
+  gtk_widget_show(label);
+  gtk_container_add (GTK_CONTAINER(widget),label);
+  
+   /* add all filmrolls section label */
+  widget = glade_xml_get_widget (darktable.gui->main_window, "all_film_rolls_section_box");
+  label = dtgtk_label_new (_("all film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
+  gtk_widget_show(label);
+  gtk_container_add (GTK_CONTAINER(widget),label);
+  
 
   // color picker
   widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");

@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-10 09:43+0200\n"
-"PO-Revision-Date: 2010-08-10 10:14+0200\n"
+"POT-Creation-Date: 2010-08-11 18:01+0200\n"
+"PO-Revision-Date: 2010-08-11 18:02+0200\n"
 "Last-Translator: Henrik Andersson <>\n"
 "Language-Team:  <>\n"
 "MIME-Version: 1.0\n"
@@ -16,38 +16,22 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1\n"
 
 #: ../darktable.glade.h:1
-msgid ""
-"\n"
-"all film rolls"
-msgstr ""
-"\n"
-"alla filmrullar"
-
-#: ../darktable.glade.h:3
-msgid ""
-"\n"
-"recently used film rolls"
-msgstr ""
-"\n"
-"tidigare använda filmrullar"
-
-#: ../darktable.glade.h:5
 msgid "( --- )"
 msgstr "( --- )"
 
-#: ../darktable.glade.h:6
+#: ../darktable.glade.h:2
 msgid "-"
 msgstr "-"
 
-#: ../darktable.glade.h:7
+#: ../darktable.glade.h:3
 msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
 
-#: ../darktable.glade.h:8
+#: ../darktable.glade.h:4
 msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>Ljusbordsvy</b></big></span>"
 
-#: ../darktable.glade.h:9
+#: ../darktable.glade.h:5
 msgid ""
 "all\n"
 "no star\n"
@@ -64,49 +48,49 @@ msgstr ""
 "4 stjärnor"
 
 #. aperture
-#: ../darktable.glade.h:15 ../src/libs/camera.c:387 ../src/gui/presets.c:278
+#: ../darktable.glade.h:11 ../src/libs/camera.c:387 ../src/gui/presets.c:278
 msgid "aperture"
 msgstr "bländare"
 
-#: ../darktable.glade.h:16
+#: ../darktable.glade.h:12
 msgid "before module"
 msgstr "före modul"
 
-#: ../darktable.glade.h:17
+#: ../darktable.glade.h:13
 msgid "button"
 msgstr "knapp"
 
-#: ../darktable.glade.h:18
+#: ../darktable.glade.h:14
 msgid "compress history stack"
 msgstr "komprimera historikstack"
 
-#: ../darktable.glade.h:19
+#: ../darktable.glade.h:15
 msgid "create a minimal history stack which produces the same image"
 msgstr "skapar en minimal historikstack som producerar samma bildresultat"
 
-#: ../darktable.glade.h:20
+#: ../darktable.glade.h:16
 msgid "date/time"
 msgstr "datum/tid"
 
-#: ../darktable.glade.h:21
+#: ../darktable.glade.h:17
 msgid "devices"
 msgstr "enheter"
 
 #. exposure
-#: ../darktable.glade.h:22 ../src/iop/exposure.c:38 ../src/iop/exposure.c:304
+#: ../darktable.glade.h:18 ../src/iop/exposure.c:38 ../src/iop/exposure.c:304
 #: ../src/gui/presets.c:263
 msgid "exposure"
 msgstr "exponering"
 
-#: ../darktable.glade.h:23
+#: ../darktable.glade.h:19
 msgid "f-length"
 msgstr "brännvidd"
 
-#: ../darktable.glade.h:24
+#: ../darktable.glade.h:20
 msgid "filename"
 msgstr "filnamn"
 
-#: ../darktable.glade.h:25
+#: ../darktable.glade.h:21
 msgid ""
 "filename\n"
 "time\n"
@@ -120,56 +104,56 @@ msgstr ""
 "id\n"
 "färgmarkering"
 
-#: ../darktable.glade.h:30 ../src/libs/collect.c:282
+#: ../darktable.glade.h:26 ../src/libs/collect.c:282
 msgid "film roll"
 msgstr "filmrulle"
 
-#: ../darktable.glade.h:31
+#: ../darktable.glade.h:27
 msgid "height"
 msgstr "höjd"
 
-#: ../darktable.glade.h:32
+#: ../darktable.glade.h:28
 msgid "histogram"
 msgstr "histogram"
 
-#: ../darktable.glade.h:33 ../src/libs/collect.c:286
+#: ../darktable.glade.h:29 ../src/libs/collect.c:286
 msgid "history"
 msgstr "historik"
 
-#: ../darktable.glade.h:34
+#: ../darktable.glade.h:30
 msgid "images sorted by"
 msgstr "bilder sorteras efter"
 
-#: ../darktable.glade.h:35
+#: ../darktable.glade.h:31
 msgid "import film roll"
 msgstr "importera filmrulle"
 
-#: ../darktable.glade.h:36
+#: ../darktable.glade.h:32
 msgid "import single image"
 msgstr "importera en bild"
 
 #. iso
-#: ../darktable.glade.h:37 ../src/libs/camera.c:417 ../src/gui/presets.c:250
+#: ../darktable.glade.h:33 ../src/libs/camera.c:417 ../src/gui/presets.c:250
 msgid "iso"
 msgstr "iso"
 
-#: ../darktable.glade.h:38 ../src/iop/lens.c:1166 ../src/gui/presets.c:243
+#: ../darktable.glade.h:34 ../src/iop/lens.c:1166 ../src/gui/presets.c:243
 msgid "lens"
 msgstr "objektiv"
 
-#: ../darktable.glade.h:39
+#: ../darktable.glade.h:35
 msgid "library"
 msgstr "bibliotek"
 
-#: ../darktable.glade.h:40
+#: ../darktable.glade.h:36
 msgid "list"
 msgstr "visa"
 
-#: ../darktable.glade.h:41 ../src/gui/presets.c:236
+#: ../darktable.glade.h:37 ../src/gui/presets.c:236
 msgid "maker"
 msgstr "tillverkare"
 
-#: ../darktable.glade.h:42
+#: ../darktable.glade.h:38
 msgid ""
 "mean\n"
 "min\n"
@@ -179,75 +163,75 @@ msgstr ""
 "lägst\n"
 "högst"
 
-#: ../darktable.glade.h:45
+#: ../darktable.glade.h:41
 msgid "metadata"
 msgstr "metadata"
 
-#: ../darktable.glade.h:46 ../src/gui/presets.c:229
+#: ../darktable.glade.h:42 ../src/gui/presets.c:229
 msgid "model"
 msgstr "modell"
 
-#: ../darktable.glade.h:47
+#: ../darktable.glade.h:43
 msgid "more plugins"
 msgstr "fler plug-ins"
 
-#: ../darktable.glade.h:48
+#: ../darktable.glade.h:44
 msgid "navigation"
 msgstr "navigera"
 
-#: ../darktable.glade.h:49
+#: ../darktable.glade.h:45
 msgid "no module selected"
 msgstr "ingen modul vald"
 
-#: ../darktable.glade.h:50
+#: ../darktable.glade.h:46
 msgid "open"
 msgstr "öppna"
 
-#: ../darktable.glade.h:51
+#: ../darktable.glade.h:47
 msgid "open selected film roll in light table"
 msgstr "öppna vald filmrulle på ljusbordet"
 
-#: ../darktable.glade.h:52
+#: ../darktable.glade.h:48
 msgid "original"
 msgstr "orginal"
 
-#: ../darktable.glade.h:53
+#: ../darktable.glade.h:49
 msgid "pick"
 msgstr "välj bilder"
 
-#: ../darktable.glade.h:54 ../src/libs/image.c:77
+#: ../darktable.glade.h:50 ../src/libs/image.c:77
 msgid "remove"
 msgstr "ta bort"
 
-#: ../darktable.glade.h:55
+#: ../darktable.glade.h:51
 msgid "remove selected film roll from collection"
 msgstr "ta bort vald filmrulle från samling"
 
-#: ../darktable.glade.h:56
+#: ../darktable.glade.h:52
 msgid "search film rolls by folder"
 msgstr "sök filmrulle utifrån katalog"
 
-#: ../darktable.glade.h:57
+#: ../darktable.glade.h:53
 msgid "snapshots"
 msgstr "avbilder"
 
-#: ../darktable.glade.h:58
+#: ../darktable.glade.h:54
 msgid "switch to darkroom mode"
 msgstr "byt till mörkerrumsläge"
 
-#: ../darktable.glade.h:59
+#: ../darktable.glade.h:55
 msgid "take snapshot"
 msgstr "skapa avbild"
 
-#: ../darktable.glade.h:60
+#: ../darktable.glade.h:56
 msgid "togglebutton"
 msgstr "knappval"
 
-#: ../darktable.glade.h:61
+#: ../darktable.glade.h:57
 msgid "width"
 msgstr "bredd"
 
-#: ../darktable.glade.h:62
+#: ../darktable.glade.h:58
 msgid ""
 "zoomable light table\n"
 "file manager"
@@ -823,7 +807,7 @@ msgstr "maximal storlek"
 msgid "x"
 msgstr "×"
 
-#: ../src/libs/export.c:428 ../src/iop/colorin.c:397
+#: ../src/libs/export.c:428 ../src/iop/colorin.c:378
 msgid "intent"
 msgstr "avsikt"
 
@@ -831,23 +815,23 @@ msgstr "avsikt"
 msgid "image settings"
 msgstr "bildinställningar"
 
-#: ../src/libs/export.c:433 ../src/iop/colorin.c:404 ../src/iop/colorout.c:380
+#: ../src/libs/export.c:433 ../src/iop/colorin.c:385 ../src/iop/colorout.c:380
 #: ../src/iop/colorout.c:385
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/libs/export.c:434 ../src/iop/colorin.c:405 ../src/iop/colorout.c:381
+#: ../src/libs/export.c:434 ../src/iop/colorin.c:386 ../src/iop/colorout.c:381
 #: ../src/iop/colorout.c:386
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
-#: ../src/libs/export.c:435 ../src/iop/colorin.c:406 ../src/iop/colorout.c:382
+#: ../src/libs/export.c:435 ../src/iop/colorin.c:387 ../src/iop/colorout.c:382
 #: ../src/iop/colorout.c:387
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
-#: ../src/libs/export.c:436 ../src/iop/colorin.c:407 ../src/iop/colorout.c:383
+#: ../src/libs/export.c:436 ../src/iop/colorin.c:388 ../src/iop/colorout.c:383
 #: ../src/iop/colorout.c:388
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
@@ -857,17 +841,17 @@ msgstr "absolut färgmetri"
 msgid "srgb (web-safe)"
 msgstr "srgb (webb-säker)"
 
-#: ../src/libs/export.c:450 ../src/iop/colorin.c:420 ../src/iop/colorout.c:412
+#: ../src/libs/export.c:450 ../src/iop/colorin.c:401 ../src/iop/colorout.c:412
 #: ../src/iop/colorout.c:413
 msgid "adobe rgb"
 msgstr "adobe rgb"
 
-#: ../src/libs/export.c:462 ../src/iop/colorin.c:422 ../src/iop/colorout.c:402
+#: ../src/libs/export.c:462 ../src/iop/colorin.c:403 ../src/iop/colorout.c:402
 #: ../src/iop/colorout.c:403
 msgid "linear rgb"
 msgstr "linjär rgb"
 
-#: ../src/libs/export.c:493 ../src/iop/colorin.c:398
+#: ../src/libs/export.c:493 ../src/iop/colorin.c:379
 msgid "profile"
 msgstr "profil"
 
@@ -1435,31 +1419,31 @@ msgstr "mättnad"
 msgid "input color profile"
 msgstr "ingående färgprofil"
 
-#: ../src/iop/colorin.c:414
+#: ../src/iop/colorin.c:395
 msgid "standard color matrix"
 msgstr "standard färgmatris"
 
-#: ../src/iop/colorin.c:416
+#: ../src/iop/colorin.c:397
 msgid "enhanced color matrix"
 msgstr "förbättrad färgmatris"
 
-#: ../src/iop/colorin.c:418
+#: ../src/iop/colorin.c:399
 msgid "srgb (e.g. jpg)"
 msgstr "srgb (tex. jpg)"
 
-#: ../src/iop/colorin.c:424
+#: ../src/iop/colorin.c:405
 msgid "linear infrared bgr"
 msgstr "linear infraröd bgr"
 
-#: ../src/iop/colorin.c:426
+#: ../src/iop/colorin.c:407
 msgid "linear xyz"
 msgstr "linjär xyz"
 
-#: ../src/iop/colorin.c:437 ../src/iop/colorout.c:432
+#: ../src/iop/colorin.c:418 ../src/iop/colorout.c:432
 msgid "rendering intent"
 msgstr "återgivningsavsikt"
 
-#: ../src/iop/colorin.c:438
+#: ../src/iop/colorin.c:419
 #, c-format
 msgid "icc profiles in %s/color/in"
 msgstr "ingående icc profil i %s/color/in"
@@ -2698,6 +2682,14 @@ msgstr "importera bild"
 #: ../src/gui/gtk.c:644
 msgid "supported images"
 msgstr "supporterade bilder"
+
+#: ../src/gui/gtk.c:1016
+msgid "recent used film rolls"
+msgstr "tidigare använda filmrullar"
+
+#: ../src/gui/gtk.c:1022
+msgid "all film rolls"
+msgstr "alla filmrullar"
 
 #: ../src/gui/histogram.c:33 ../src/gui/histogram.c:183
 msgid ""
