@@ -205,9 +205,5 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
   
   ((dt_collection_t *)collection)->query = g_strdup(query);
   
-  /* store query in gconf */
-  // dt_conf_set_string ("plugins/lighttable/query", collection->query);  
-  fprintf (stderr,"[%x]Collection query: %s\n",(int)collection,collection->query);
-  
   return 1;
 }
