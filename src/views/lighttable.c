@@ -146,20 +146,16 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   sqlite3_stmt *stmt = NULL;
   int id, last_seli = 1<<30, last_selj = 1<<30;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
-
-  const gchar *query = dt_collection_get_query (darktable.collection);
-  if(!query && query[0] == '\0') 
-    return;
   
-  char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 17);
-  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, 0);
-  sqlite3_bind_int (stmt, 2, -1);
-  int count = 1;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  /* get the count of current collection */
+  int count = dt_collection_get_count (darktable.collection);
+
+  /* get the collection query */
+  const gchar *query=dt_collection_get_query (darktable.collection);
+  if(!query)
+	return;
+  
+  
   if(offset < 0)         lib->offset = offset = 0;
   if(offset > count-iir) lib->offset = offset = count-iir;
   dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_rows*iir);
