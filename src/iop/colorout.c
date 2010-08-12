@@ -112,15 +112,31 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    double RGB[3];
+    double rgb[3];
     cmsCIELab Lab;
     // convert from La/Lb/L to be able to change L without changing saturation.
     Lab.L = in[3*k+0];
     Lab.a = in[3*k+1]*Lab.L*(1.0/100.0);
     Lab.b = in[3*k+2]*Lab.L*(1.0/100.0);
-    cmsDoTransform(d->xform, &Lab, RGB, 1);
+#if 0
+    double xyz[3];
+    const float delta = 6.0/29.0;
+    const float f_y = (Lab.L + 16.0)/116.0;
+    const float f_x = f_y + Lab.a / 500.0;
+    const float f_z = f_y - Lab.b / 200.0;
+    if(f_y > delta) xyz[1] = D50Y*powf(f_y, 3.0f);
+    else xyz[1] = (f_y-16.0/116.0)*3.0f*delta*D50Y;
+    if(f_x > delta) xyz[0] = D50X*powf(f_x, 3.0f);
+    else xyz[0] = (f_x-16.0/116.0)*3.0f*delta*D50X;
+    if(f_z > delta) xyz[2] = D50Z*powf(f_z, 3.0f);
+    else xyz[2] = (f_z-16.0/116.0)*3.0f*delta*D50Z;
+
+    cmsDoTransform(d->xform, xyz, rgb, 1);
+#else
+    cmsDoTransform(d->xform, &Lab, rgb, 1);
+#endif
     // RGB[0] = Lab.L; RGB[1] = Lab.a; RGB[2] = Lab.b;
-    for(int c=0;c<3;c++) out[3*k + c] = RGB[c];
+    for(int c=0;c<3;c++) out[3*k + c] = rgb[c];
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }

@@ -86,10 +86,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // not thread safe.
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    const float x_n = 0.3457, y_n = 0.3585; // D50
-    const float Y_n = 1.0f;
-    const float X_n = Y_n/y_n * x_n;
-    const float Z_n = Y_n/y_n * (1.0f-x_n-y_n);
+    // const float x_n = 0.31271, y_n = 0.32902; // D65
+    // const float Y_n = 1.0f;
+    // const float X_n = Y_n/y_n * x_n;
+    // const float Z_n = Y_n/y_n * (1.0f-x_n-y_n);
+    // const float x_n = 0.3457, y_n = 0.3585; // D50
+    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
+    // cmsCIEXYZ wp;
+    // cmsTakeMediaWhitePoint(&wp, d->input);
+    // const float X_n = wp.X, Y_n = wp.Y, Z_n = wp.Z;
+    // printf("wp: %f %f %f\n", X_n, Y_n, Z_n);
     double cam[3] = {0., 0., 0.};
     double xyz[3];
     cmsCIELab Lab;
