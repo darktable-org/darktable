@@ -1000,7 +1000,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   /* add recent filmrolls section label */
   widget = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
-  GtkWidget *label = dtgtk_label_new (_("recent used film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
+  GtkWidget *label = dtgtk_label_new (_("recently used film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
   gtk_widget_show(label);
   gtk_container_add (GTK_CONTAINER(widget),label);
   

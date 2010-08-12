@@ -2684,7 +2684,7 @@ msgid "supported images"
 msgstr "supporterade bilder"
 
 #: ../src/gui/gtk.c:1016
-msgid "recent used film rolls"
+msgid "recently used film rolls"
 msgstr "tidigare använda filmrullar"
 
 #: ../src/gui/gtk.c:1022
