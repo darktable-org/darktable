@@ -490,7 +490,7 @@ void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t ca
 {
   va_list argp;
   va_start(argp, msg);
-  dt_control_job_init(j,argp);
+  dt_control_job_init(j,msg,argp);
   j->finished_callback = callback;
 }
 
