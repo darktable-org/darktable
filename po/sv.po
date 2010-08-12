@@ -2590,7 +2590,7 @@ msgstr "picasa webbalbum"
 
 #: ../src/imageio/storage/picasa.c:547
 msgid "authenticated"
-msgstr "authenticerad"
+msgstr "inloggad"
 
 #. Add standard action
 #: ../src/imageio/storage/picasa.c:568 ../src/imageio/storage/picasa.c:601
@@ -2600,7 +2600,7 @@ msgstr "skapa nytt album"
 #. Failed to authenticated, let's notify somehow...
 #: ../src/imageio/storage/picasa.c:591
 msgid "authentication failed"
-msgstr "authenticering misslyckades"
+msgstr "inloggning misslyckades"
 
 #: ../src/imageio/storage/picasa.c:650
 msgid "user"
