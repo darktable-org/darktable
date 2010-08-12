@@ -100,20 +100,15 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   const int max_cols = (int)(1+width/(float)wd);
   sqlite3_stmt *stmt = NULL;
 
-  const gchar *query = dt_collection_get_query (darktable.collection);
+
+    /* get the count of current collection */
+  int count = dt_collection_get_count (darktable.collection);
+
+  /* get the collection query */
+  const gchar *query=dt_collection_get_query (darktable.collection);
+  if(!query)
+	return;
   
-  if (!query || query[0] == '\0') 
-    return;
-  
-  char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 17);
-  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, 0);
-  sqlite3_bind_int (stmt, 2, -1);
-  int count = 1, id;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
   if(offset < 0)                strip->offset = offset = 0;
   if(offset > count-max_cols+1) strip->offset = offset = count-max_cols+1;
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
@@ -126,7 +121,7 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   {
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      id = sqlite3_column_int(stmt, 0);
+      int id = sqlite3_column_int(stmt, 0);
       dt_image_t *image = dt_image_cache_get(id, 'r');
       // set mouse over id
       if(seli == col)

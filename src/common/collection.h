@@ -90,7 +90,8 @@ void dt_collection_set_query_flags (const dt_collection_t *collection, uint32_t 
 void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id); 
 /** set the star level for filter */
 void dt_collection_set_star (const dt_collection_t *collection, uint32_t star); 
-
+/** get the count of query */
+uint32_t dt_collection_get_count(const dt_collection_t *collection);
 
 
 #endif
