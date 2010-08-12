@@ -26,11 +26,17 @@ G_BEGIN_DECLS
 #define DTGTK_IS_BUTTON(obj) GTK_CHECK_TYPE(obj, dtgtk_button_get_type())
 #define DTGTK_IS_BUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_button_get_type())
 
+typedef enum _darktable_button_flags
+{
+  DARKTABLE_BUTTON_SHOW_LABEL				= 1
+}
+_darktable_button_flags_t;
+
 typedef struct _GtkDarktableButton
 {
   GtkButton widget;
   DTGTKCairoPaintIconFunc icon;
-  gint icon_flag;
+  gint icon_flags;
 } GtkDarktableButton;
 
 typedef struct _GtkDarktableButtonClass
@@ -41,6 +47,7 @@ typedef struct _GtkDarktableButtonClass
 GType dtgtk_button_get_type (void);
 
 /** Instansiate a new darktable button control passing paint function as content */
-GtkWidget* dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget* dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
+GtkWidget* dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags);
 G_END_DECLS
 #endif 
