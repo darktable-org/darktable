@@ -57,7 +57,7 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   int state = gtk_widget_get_state(widget);
 
   /* create pango text settings if label exists */
-  PangoLayout *layout;    
+  PangoLayout *layout=NULL;    
   int pw=0,ph=0;
   const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
   if (text)
