@@ -26,6 +26,7 @@
 
 #include "control/settings.h"
 #include <gtk/gtk.h>
+#include "gui/background_jobs.h"
 // #include "control/job.def"
 
 #define DT_CONTROL_MAX_JOBS 30
