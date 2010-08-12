@@ -1,17 +1,17 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: DarkTable 0.4\n"
+"Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-02 18:40+0200\n"
-"PO-Revision-Date: 2010-06-17 17:00+0100\n"
-"Last-Translator: Sebastien Delcoigne <sebastien.delcoigne@gmail.com>\n"
+"POT-Creation-Date: 2010-08-08 12:41+0200\n"
+"PO-Revision-Date: 2010-08-09 01:28+0100\n"
+"Last-Translator: Olivier TRIBOUT <olivier.tribout@noos.fr>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: French\n"
 "X-Poedit-Country: FRANCE\n"
-"X-Poedit-Bookmarks: 103,191,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: ../darktable.glade.h:1
 msgid ""
@@ -62,13 +62,15 @@ msgstr ""
 "4 étoiles"
 
 #. aperture
-#: ../darktable.glade.h:15 ../src/libs/camera.c:387 ../src/gui/presets.c:278
+#: ../darktable.glade.h:15
+#: ../src/libs/camera.c:387
+#: ../src/gui/presets.c:278
 msgid "aperture"
 msgstr "ouverture"
 
 #: ../darktable.glade.h:16
 msgid "before module"
-msgstr ""
+msgstr "avant le module"
 
 #: ../darktable.glade.h:17
 msgid "button"
@@ -91,7 +93,9 @@ msgid "devices"
 msgstr "appareils"
 
 #. exposure
-#: ../darktable.glade.h:22 ../src/iop/exposure.c:38 ../src/iop/exposure.c:304
+#: ../darktable.glade.h:22
+#: ../src/iop/exposure.c:38
+#: ../src/iop/exposure.c:304
 #: ../src/gui/presets.c:263
 msgid "exposure"
 msgstr "exposition"
@@ -102,7 +106,7 @@ msgstr "focale"
 
 #: ../darktable.glade.h:24
 msgid "filename"
-msgstr "fichier"
+msgstr "nom de fichier"
 
 #: ../darktable.glade.h:25
 msgid ""
@@ -118,7 +122,8 @@ msgstr ""
 "id\n"
 "label de couleur"
 
-#: ../darktable.glade.h:30 ../src/libs/collect.c:282
+#: ../darktable.glade.h:30
+#: ../src/libs/collect.c:282
 msgid "film roll"
 msgstr "film"
 
@@ -130,7 +135,8 @@ msgstr "hauteur"
 msgid "histogram"
 msgstr "histogramme"
 
-#: ../darktable.glade.h:33 ../src/libs/collect.c:286
+#: ../darktable.glade.h:33
+#: ../src/libs/collect.c:286
 msgid "history"
 msgstr "historique"
 
@@ -147,11 +153,15 @@ msgid "import single image"
 msgstr "importer une image"
 
 #. iso
-#: ../darktable.glade.h:37 ../src/libs/camera.c:417 ../src/gui/presets.c:250
+#: ../darktable.glade.h:37
+#: ../src/libs/camera.c:417
+#: ../src/gui/presets.c:250
 msgid "iso"
 msgstr "iso"
 
-#: ../darktable.glade.h:38 ../src/iop/lens.c:1166 ../src/gui/presets.c:243
+#: ../darktable.glade.h:38
+#: ../src/iop/lens.c:1166
+#: ../src/gui/presets.c:243
 msgid "lens"
 msgstr "objectif"
 
@@ -163,7 +173,8 @@ msgstr "librairie"
 msgid "list"
 msgstr "liste"
 
-#: ../darktable.glade.h:41 ../src/gui/presets.c:236
+#: ../darktable.glade.h:41
+#: ../src/gui/presets.c:236
 msgid "maker"
 msgstr "fabricant"
 
@@ -181,7 +192,8 @@ msgstr ""
 msgid "metadata"
 msgstr "méta-données"
 
-#: ../darktable.glade.h:46 ../src/gui/presets.c:229
+#: ../darktable.glade.h:46
+#: ../src/gui/presets.c:229
 msgid "model"
 msgstr "modèle"
 
@@ -213,13 +225,14 @@ msgstr "original"
 msgid "pick"
 msgstr "sélectionner"
 
-#: ../darktable.glade.h:54 ../src/libs/image.c:77
+#: ../darktable.glade.h:54
+#: ../src/libs/image.c:77
 msgid "remove"
-msgstr "supprimer"
+msgstr "enlever"
 
 #: ../darktable.glade.h:55
 msgid "remove selected film roll from collection"
-msgstr "supprimer le film selectionné de la collection"
+msgstr "enlever le film sélectionné de la collection"
 
 #: ../darktable.glade.h:56
 msgid "search film rolls by folder"
@@ -238,22 +251,20 @@ msgid "take snapshot"
 msgstr "prendre un instantané"
 
 #: ../darktable.glade.h:60
-#, fuzzy
 msgid "togglebutton"
-msgstr "bouton toggle"
+msgstr "bouton bascule"
 
 #: ../darktable.glade.h:61
 msgid "width"
 msgstr "largeur"
 
 #: ../darktable.glade.h:62
-#, fuzzy
 msgid ""
 "zoomable light table\n"
 "file manager"
 msgstr ""
 "lighttable zoomable\n"
-"gestionaire de fichiers"
+"gestionnaire de fichiers"
 
 #: ../darktable.schemas.in.h:1
 msgid "0 -- append on top of stack, 1 -- replace it."
@@ -265,11 +276,11 @@ msgstr "0: moyenne, 1: min, 2: max"
 
 #: ../darktable.schemas.in.h:3
 msgid "Capture view mode"
-msgstr ""
+msgstr "mode de vue capture"
 
 #: ../darktable.schemas.in.h:4
 msgid "Default client to use, this overrides detection of default client."
-msgstr ""
+msgstr "client par défaut à utiliser, cela surcharge la détection de client par défaut"
 
 #: ../darktable.schemas.in.h:5
 msgid "always ask the user before any image file is deleted."
@@ -277,7 +288,7 @@ msgstr "toujours demander avant de supprimer un fichier image."
 
 #: ../darktable.schemas.in.h:6
 msgid "always ask the user before any image is removed from db."
-msgstr "toujours demander avant de supprimer une image de la base de données."
+msgstr "toujours demander avant d'enlever une image de la base de données."
 
 #: ../darktable.schemas.in.h:7
 msgid "append or replace history stack if pasted"
@@ -289,7 +300,7 @@ msgstr "demander avant de supprimer des images"
 
 #: ../darktable.schemas.in.h:9
 msgid "ask before removing images"
-msgstr "demander avant de supprimer des images"
+msgstr "demander avant d'enlever des images"
 
 #: ../darktable.schemas.in.h:10
 msgid "database file"
@@ -297,11 +308,11 @@ msgstr "fichier de la base de données"
 
 #: ../darktable.schemas.in.h:11
 msgid "don't use embedded preview jpeg, always use half-size raw"
-msgstr ""
+msgstr "ne pas utiliser les miniatures jpeg, toujours utiliser les raw réduits"
 
 #: ../darktable.schemas.in.h:12
 msgid "downsample the preview pixels"
-msgstr "sous échantillonner les pixels pour la prévisualisation"
+msgstr "sous-échantillonner les pixels pour la prévisualisation"
 
 #: ../darktable.schemas.in.h:13
 msgid "filename of your custom theme in share/darktable/"
@@ -313,22 +324,19 @@ msgstr "nom de fichier relatif au dossier home, ou commençant par un '/'"
 
 #: ../darktable.schemas.in.h:15
 msgid "flag if backup of imported images should be performed"
-msgstr ""
+msgstr "marquer si la sauvegarde des images importées doit être effectuée "
 
 #: ../darktable.schemas.in.h:16
 msgid "flag if originals on camera should be deleted"
-msgstr ""
+msgstr "marquer si les originaux du boîtier doivent être supprimés "
 
 #: ../darktable.schemas.in.h:17
-msgid ""
-"flag if user should be interactivly warned about non present backup "
-"destinations"
-msgstr ""
+msgid "flag if user should be interactivly warned about non present backup destinations"
+msgstr "marquer si l'utilisateur doit être prévenu lorsque les destinations de sauvegarde ne sont pas présentes "
 
 #: ../darktable.schemas.in.h:18
 msgid "full resolution image buffers to keep in main memory cache"
-msgstr ""
-"garder les buffers des images en résolution max dans le cache principal"
+msgstr "garder les buffers des images en résolution max dans le cache principal"
 
 #: ../darktable.schemas.in.h:19
 msgid "height of the exported image"
@@ -339,88 +347,68 @@ msgid "height of the exported image, or 0 if no scaling should be done."
 msgstr "hauteur de l'image exportée, ou 0 pour ne pas changer d'échelle "
 
 #: ../darktable.schemas.in.h:21
-msgid ""
-"how many full-resolution floating point buffers of loaded raw images to keep "
-"in main memory at maximum. only read at startup."
-msgstr ""
-"combien de buffers d'images raw (résolution max en virgule flottante) en "
-"mémoire principale au maximum. lu uniquement au démarrage."
+msgid "how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. only read at startup."
+msgstr "combien de buffers d'images raw (résolution max en virgule flottante) en mémoire principale au maximum. lu uniquement au démarrage."
 
 #: ../darktable.schemas.in.h:22
 msgid "how many images are in one row"
 msgstr "nombre d'images dans une ligne"
 
 #: ../darktable.schemas.in.h:23
-msgid ""
-"how many smallest-size thumbnails to keep in main memory at maximum. this "
-"also affects larger mipmap counts, these get fewer by size. only read at "
-"startup."
-msgstr ""
-"nombre max de petits aperçus conservés en mémoire principale. la quantité "
-"d'aperçus affichés dépend également de leur résolution. lu uniquement au "
-"démarrage. "
+msgid "how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts, these get fewer by size. only read at startup."
+msgstr "nombre max de petits aperçus conservés en mémoire principale. la quantité d'aperçus affichés dépend également de leur résolution. lu uniquement au démarrage. "
 
 #: ../darktable.schemas.in.h:24
 msgid "icc profile to use for export"
 msgstr "profils ICC à utiliser pour l'export"
 
 #: ../darktable.schemas.in.h:25
-#, fuzzy
 msgid "icc rendering intent"
-msgstr "Rendu"
+msgstr "mode de rendu ICC"
 
 #: ../darktable.schemas.in.h:26
-msgid ""
-"if non-negative, this overrides the per-image output color profile rendering "
-"intent on export."
-msgstr ""
+msgid "if non-negative, this overrides the per-image output color profile rendering intent on export."
+msgstr "si non-négatif, cela surcharge le mode de rendu du profil de couleur de sortie à l'export."
 
 #: ../darktable.schemas.in.h:27
-msgid ""
-"if this number is smaller than the darktable internal version number, the "
-"values here will be synched with the new defaults."
-msgstr ""
-"si ce nombre est plus petit que la version interne de darktable, il les "
-"valeurs suivantes seront remises à défaut."
+msgid "if this number is smaller than the darktable internal version number, the values here will be synched with the new defaults."
+msgstr "si ce nombre est plus petit que la version interne de darktable, les valeurs suivantes seront réinitialisées."
 
 #: ../darktable.schemas.in.h:28
 msgid "image cache file"
-msgstr ""
+msgstr "fichier de cache image"
 
 #: ../darktable.schemas.in.h:29
 msgid "jobcode of import job"
-msgstr ""
+msgstr "code projet de l'importation"
 
 #: ../darktable.schemas.in.h:30
 msgid "jpeg quality of on-disk thumbnails"
-msgstr "qualité jpeg des aperçus sauvegarder sur le disque"
+msgstr "qualité jpeg des aperçus sauvegardés sur le disque"
 
 #: ../darktable.schemas.in.h:31
 msgid "memory in bytes to use for mipmap cache"
-msgstr ""
+msgstr "memoire (en octets) à utiliser pour le cache mipmap"
 
 #: ../darktable.schemas.in.h:32
 msgid "name of capture job"
-msgstr ""
+msgstr "nom du projet de capture"
 
 #: ../darktable.schemas.in.h:33
 msgid "order by and limit clauses go last"
 msgstr "trier par et garder les clauses à la fin (db)"
 
 #: ../darktable.schemas.in.h:34
-#, fuzzy
 msgid "path of storage for captured images"
-msgstr "largeur de l'image exportée"
+msgstr "chemin de stockage des images capturées"
 
 #: ../darktable.schemas.in.h:35
 msgid "rename pattern for captured images"
-msgstr ""
+msgstr "modèle de renommage pour les images capturées"
 
 #: ../darktable.schemas.in.h:36
 msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
-msgstr ""
-"selectionné un affichage pour la table lumineuse: 0 -zoomable ou 1 -"
-"gestionnaire de fichiers"
+msgstr "sélectionner un affichage pour la table lumineuse: 0 -zoomable ou 1 -gestionnaire de fichiers"
 
 #: ../darktable.schemas.in.h:37
 msgid "small thumbnails to keep in main memory cache"
@@ -431,47 +419,36 @@ msgid "sql query to select images for current view"
 msgstr "requête sql de sélection d'images pour la vue en cours"
 
 #: ../darktable.schemas.in.h:39
-#, fuzzy
 msgid "storage backend to use"
-msgstr "structure de stockage"
+msgstr "stockage à utiliser"
 
 #: ../darktable.schemas.in.h:40
 msgid "subpath pattern in storage for captured images"
-msgstr ""
+msgstr "modèle de sous-répertoire pour le stockage des images capturées"
 
 #: ../darktable.schemas.in.h:41
 msgid "the name of backup directory to search for on mounted medias"
-msgstr ""
+msgstr "nom du répertoire de sauvegarde à chercher dans les supports montés"
 
 #: ../darktable.schemas.in.h:42
-msgid ""
-"the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
-"kwallet, 3 - gnome keyring (not implemented yet)"
-msgstr ""
+msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring (not implemented yet)"
+msgstr "interface pour pwstorage: 0 - aucun, 1 - gconf (ne pas utiliser), 2 - kwallet, 3 - gnome keyring (non encore implémenté)"
 
 #: ../darktable.schemas.in.h:43
-msgid ""
-"these files can later be re-imported into a different database, preserving "
-"your changes to the image."
-msgstr ""
-"ces fichiers pourront être réimportés dans une base de données différente "
-"par la suite, tout en préservant les modifications apportées aux images."
+msgid "these files can later be re-imported into a different database, preserving your changes to the image."
+msgstr "ces fichiers pourront être réimportés dans une base de données différente par la suite, tout en préservant les modifications apportées aux images."
 
 #: ../darktable.schemas.in.h:44
 msgid "this overrides the per-image settings, if not set to `image'."
-msgstr ""
+msgstr "cela surcharge les réglages par image, sauf si `image' est sélectionné."
 
 #: ../darktable.schemas.in.h:45
-msgid ""
-"this value smaller than 1.0 downsamples the preview pixels for faster "
-"feedback."
-msgstr ""
-"cette valeur inférieure à 1.0 sous-échantillonne les pixels de pré-"
-"visualisation pour un rendu plus rapide."
+msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
+msgstr "cette valeur inférieure à 1.0 sous-échantillonne les pixels de pré-visualisation pour un rendu plus rapide."
 
 #: ../darktable.schemas.in.h:46
 msgid "version of these dt-gconf entries"
-msgstr "version des entrées dt-gconf "
+msgstr "version des entrées dt-gconf"
 
 #: ../darktable.schemas.in.h:47
 msgid "which layout should lighttable mode show"
@@ -492,124 +469,127 @@ msgstr "écrire un fichier redondant pour chaque image"
 #: ../src/LibRaw/internal/vcd_interpolate.c:16
 #, c-format
 msgid "VCD interpolation...\n"
-msgstr ""
+msgstr "interpolation VCD...\n"
 
 #: ../src/LibRaw/internal/vcd_interpolate.c:309
 #, c-format
-msgid ""
-"\tAHD, LH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%"
-"%)\n"
-msgstr ""
+msgid "\tAHD, LH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%%)\n"
+msgstr "\tAHD, LH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%%)\n"
 
 #: ../src/LibRaw/internal/vcd_interpolate.c:319
 #, c-format
 msgid "\tLH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%%)\n"
-msgstr ""
+msgstr "\tLH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f (%%)\n"
 
 #: ../src/LibRaw/internal/vcd_interpolate.c:330
 #: ../src/LibRaw/internal/refinement.c:73
 #, c-format
 msgid "\telapsed time     = %5.3fs\n"
-msgstr ""
+msgstr "\ttemps écoulé     = %5.3fs\n"
 
 #: ../src/LibRaw/internal/refinement.c:11
 #, c-format
 msgid "Post-demosaic refinement..."
-msgstr ""
+msgstr "raffinement post-dématriçage..."
 
 #: ../src/LibRaw/internal/median_filter_new.c:19
 #, c-format
 msgid "3x3 differential median filter pass %d...\n"
-msgstr ""
+msgstr "itération du filtre médian différentiel 3x3 %d...\n"
 
 #: ../src/LibRaw/internal/es_median_filter.c:29
 #, c-format
 msgid "Edge-sensitive median filter pass %d...\n"
-msgstr ""
+msgstr "itération du filtre médian avec préservation des contours %d...\n"
 
 #: ../src/LibRaw/internal/es_median_filter.c:33
 #, c-format
 msgid "\tR-G: 5x5 median filter + 3x3 Laplacian..."
-msgstr ""
+msgstr "\tR-V: filtre médian 5x5 + Laplacien 3x3..."
 
 #: ../src/LibRaw/internal/es_median_filter.c:35
 #, c-format
 msgid "\tB-G: 5x5 median filter + 3x3 Laplacian..."
-msgstr ""
+msgstr "\tB-V: filtre médian 5x5 + Laplacien 3x3..."
 
 #: ../src/LibRaw/internal/es_median_filter.c:122
 #, c-format
 msgid " edge = %5.2f (%%)\n"
-msgstr ""
+msgstr " contour = %5.2f (%%)\n"
 
 #. Update interpolated pixels after differential median filter
 #: ../src/LibRaw/internal/es_median_filter.c:168
 #, c-format
 msgid "\tUpdate R,G,B..."
-msgstr ""
+msgstr "\tmise à jour R,V,B..."
 
 #: ../src/LibRaw/internal/es_median_filter.c:252
 #, c-format
 msgid "\n"
-msgstr ""
+msgstr "\n"
 
 #: ../src/LibRaw/internal/ahd_interpolate_mod.c:18
 #, c-format
 msgid "AHD interpolation (modified for anti-aliasing)...\n"
-msgstr ""
+msgstr "interpolation AHD (modifié pour l'anticrénelage)...\n"
 
 #: ../src/LibRaw/internal/ahd_partial_interpolate.c:19
 #, c-format
 msgid "\tAHD partial interpolation..."
-msgstr ""
+msgstr "\tinterpolation partielle AHD..."
 
 #: ../src/LibRaw/internal/ahd_partial_interpolate.c:161
 #, c-format
 msgid "  H, V = %4.2f, %4.2f (%%)\n"
-msgstr ""
+msgstr "  H, V = %4.2f, %4.2f (%%)\n"
 
 #: ../src/LibRaw/internal/dcb_demosaicing.c:585
 #, c-format
 msgid "FBDD full noise reduction...\n"
-msgstr ""
+msgstr "FBDD réduction du bruit (fort)...\n"
 
 #: ../src/LibRaw/internal/dcb_demosaicing.c:602
 #, c-format
 msgid "FBDD noise reduction...\n"
-msgstr ""
+msgstr "FBDD réduction du bruit...\n"
 
 #: ../src/LibRaw/internal/dcb_demosaicing.c:631
 #, c-format
 msgid "DCB demosaicing...\n"
-msgstr ""
+msgstr "dématriçage DCB...\n"
 
 #: ../src/LibRaw/internal/dcb_demosaicing.c:649
 #, c-format
 msgid "DCB correction pass %d...\n"
-msgstr ""
+msgstr "itération de correction DCB %d...\n"
 
 #: ../src/LibRaw/internal/dcb_demosaicing.c:661
 #, c-format
 msgid "finishing DCB...\n"
-msgstr ""
+msgstr "terminaison de DCB...\n"
 
 #: ../src/LibRaw/internal/dcb_demosaicing.c:681
 #, c-format
 msgid "optional DCB refinement...\n"
-msgstr ""
+msgstr "raffinement DCB optionnel...\n"
 
 #. single images
-#: ../src/common/image.c:91 ../src/control/control.c:1298
-#: ../src/control/control.c:1299 ../src/libs/collect.c:205
-#: ../src/gui/filmview.c:56 ../src/gui/filmview.c:82 ../src/gui/filmview.c:86
+#: ../src/common/image.c:91
+#: ../src/control/control.c:1298
+#: ../src/control/control.c:1299
+#: ../src/libs/collect.c:205
+#: ../src/gui/filmview.c:56
+#: ../src/gui/filmview.c:82
+#: ../src/gui/filmview.c:86
 #: ../src/gui/filmview.c:88
 #, c-format
 msgid "single images"
-msgstr "image unique"
+msgstr "images uniques"
 
-#: ../src/control/control.c:782 ../src/control/control.c:785
+#: ../src/control/control.c:782
+#: ../src/control/control.c:785
 msgid "working.."
-msgstr "en cours ..."
+msgstr "en cours..."
 
 #: ../src/control/control.c:856
 #, c-format
@@ -626,119 +606,113 @@ msgid "0 - original"
 msgstr "0 - original"
 
 #: ../src/control/jobs.c:48
-#, fuzzy, c-format
+#, c-format
 msgid "loading image %s"
-msgstr "image unique"
+msgstr "chargement de l'image %s"
 
 #: ../src/control/jobs.c:64
-#, fuzzy, c-format
+#, c-format
 msgid "importing image %s"
-msgstr "importer une image"
+msgstr "importation de l'image %s"
 
 #: ../src/control/jobs.c:93
-#, fuzzy, c-format
+#, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
-msgstr[0] "importation de %d image.."
-msgstr[1] "importation de %d images.."
+msgstr[0] "capture de %d image"
+msgstr[1] "capture de %d images"
 
 #: ../src/control/jobs.c:230
 #, c-format
 msgid "%d/%d imported to %s"
-msgstr "%d%d importé vers %s"
+msgstr "%d/%d importé vers %s"
 
 #: ../src/control/jobs.c:287
 msgid "starting import job of images from camera"
-msgstr ""
+msgstr "début de l'import d'images depuis le boîtier"
 
 #: ../src/control/jobs.c:304
 #, c-format
 msgid "failed to create import path %s, import of images aborted."
-msgstr ""
-"échec de la création du chemin d'import %s, abandon de l'import des images."
+msgstr "échec de la création du chemin d'import %s, abandon de l'import des images."
 
 #: ../src/control/jobs.c:313
-#, fuzzy, c-format
+#, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
-msgstr[0] "importer des images depuis l'appareil photo"
-msgstr[1] "importer des images depuis l'appareil photo"
+msgstr[0] "importation de %d image depuis l'appareil photo"
+msgstr[1] "importation de %d images depuis l'appareil photo"
 
 #: ../src/control/jobs.c:336
 msgid "failed to create filmroll for camera import, import of images aborted."
-msgstr ""
-"échec de la création du film lors de l'import depuis l'appareil photo, "
-"abandon de l'import des images."
+msgstr "échec de la création du film lors de l'import depuis le boîtier, abandon de l'import des images."
 
 #: ../src/control/jobs.c:451
-#, fuzzy, c-format
+#, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
-msgstr[0] "importation de %d image.."
-msgstr[1] "importation de %d images.."
+msgstr[0] "duplication de %d image"
+msgstr[1] "duplication de %d images"
 
 #: ../src/control/jobs.c:472
-#, fuzzy, c-format
+#, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] "importation de %d image.."
-msgstr[1] "importation de %d images.."
+msgstr[0] "enlèvement de %d image"
+msgstr[1] "enlèvement de %d images"
 
 #: ../src/control/jobs.c:493
-#, fuzzy, c-format
+#, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
-msgstr[0] "importation de %d image.."
-msgstr[1] "importation de %d images.."
+msgstr[0] "suppression de %d image"
+msgstr[1] "suppression de %d images"
 
 #: ../src/control/jobs.c:605
 msgid "do you really want to remove all selected images from the collection?"
-msgstr ""
-"êtes-vous sûr de vouloir supprimer de la collection toutes les images "
-"sélectionnées ?"
+msgstr "êtes-vous sûr de vouloir enlever de la collection toutes les images sélectionnées ?"
 
 #: ../src/control/jobs.c:606
 msgid "remove images?"
-msgstr "supprimer les images?"
+msgstr "enlever les images ?"
 
 #: ../src/control/jobs.c:626
 msgid "do you really want to physically delete all selected images from disk?"
-msgstr ""
-"êtes-vous sûr de vouloir supprimer physiquement les images sélectionnées du "
-"disque?"
+msgstr "êtes-vous sûr de vouloir supprimer physiquement les images sélectionnées du disque ?"
 
 #: ../src/control/jobs.c:627
 msgid "delete images?"
-msgstr "supprimer les images?"
+msgstr "supprimer les images ?"
 
 #: ../src/control/jobs.c:672
 msgid "failed to get parameters from format module, aborting export.."
-msgstr ""
+msgstr "impossible d'obtenir les paramètres du module de format, exportation abandonnée..."
 
 #: ../src/control/jobs.c:675
 msgid "failed to get parameters from storage module, aborting export.."
-msgstr ""
+msgstr "impossible d'obtenir les paramètres du module de stockage, exportation abandonnée..."
 
 #: ../src/control/jobs.c:679
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "importation de %d image.."
-msgstr[1] "importation de %d images.."
+msgstr[0] "exportation de %d image..."
+msgstr[1] "exportation de %d images..."
 
 #: ../src/control/jobs.c:681
-#, fuzzy, c-format
+#, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
-msgstr[0] "importation de %d image.."
-msgstr[1] "importation de %d images.."
+msgstr[0] "exportation de %d image vers %s"
+msgstr[1] "exportation de %d images vers %s"
 
-#: ../src/control/jobs.c:697 ../src/views/darkroom.c:302
+#: ../src/control/jobs.c:697
+#: ../src/views/darkroom.c:302
 msgid "image does no longer exist"
 msgstr "cette image n'existe plus"
 
 #: ../src/develop/develop.c:818
-#, fuzzy, c-format
+#, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module '%s' version non cohérentes: %d != %d"
 
@@ -750,23 +724,27 @@ msgstr "activé"
 msgid "off"
 msgstr "désactivé"
 
-#: ../src/develop/imageop.c:316 ../src/develop/imageop.c:411
+#: ../src/develop/imageop.c:316
+#: ../src/develop/imageop.c:411
 #, c-format
 msgid "%s is switched on"
-msgstr "%s activé"
+msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:316 ../src/develop/imageop.c:411
+#: ../src/develop/imageop.c:316
+#: ../src/develop/imageop.c:411
 #, c-format
 msgid "%s is switched off"
-msgstr "%s désactivé"
+msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:425 ../src/libs/lib.c:496
+#: ../src/develop/imageop.c:425
+#: ../src/libs/lib.c:496
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:426 ../src/libs/lib.c:502
+#: ../src/develop/imageop.c:426
+#: ../src/libs/lib.c:502
 msgid "presets"
-msgstr "présélections"
+msgstr "pré-réglages"
 
 #: ../src/libs/copy_history.c:45
 msgid "history stack"
@@ -774,21 +752,22 @@ msgstr "historique"
 
 #: ../src/libs/copy_history.c:57
 msgid "open dt sidecar file"
-msgstr ""
+msgstr "ouvrir un fichier dt"
 
 #: ../src/libs/copy_history.c:67
-#, fuzzy
 msgid "dt sidecar files"
-msgstr "Fichier de la base de données"
+msgstr "fichiers dt"
 
-#: ../src/libs/copy_history.c:72 ../src/gui/gtk.c:649
+#: ../src/libs/copy_history.c:72
+#: ../src/gui/gtk.c:649
 msgid "all files"
 msgstr "tous les fichiers"
 
-#: ../src/libs/copy_history.c:90 ../src/gui/gtk.c:669
+#: ../src/libs/copy_history.c:90
+#: ../src/gui/gtk.c:669
 #, c-format
 msgid "error loading file '%s'"
-msgstr "erreur au chargement du fichier '%s'"
+msgstr "erreur de chargement du fichier '%s'"
 
 #: ../src/libs/copy_history.c:254
 msgid "copy"
@@ -805,15 +784,15 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:259
 msgid "discard"
-msgstr "annuler"
+msgstr "effacer"
 
 #: ../src/libs/copy_history.c:260
 msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"abandonner l'historique des\n"
-"images selectionnées"
+"supprimer l'historique des\n"
+"images sélectionnées"
 
 #: ../src/libs/copy_history.c:267
 msgid "append"
@@ -825,7 +804,7 @@ msgstr "écraser"
 
 #: ../src/libs/copy_history.c:269
 msgid "how to handle existing history"
-msgstr "gestion de l'historique actuel"
+msgstr "gestion de l'historique pré-existant"
 
 #: ../src/libs/copy_history.c:273
 msgid "paste"
@@ -836,7 +815,7 @@ msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
 msgstr ""
-"coller l'historique pour\n"
+"appliquer l'historique à\n"
 "toutes les images sélectionnées (ctrl-v)"
 
 #: ../src/libs/copy_history.c:283
@@ -848,8 +827,12 @@ msgid ""
 "open a dt sidecar file\n"
 "and apply it to selected images"
 msgstr ""
+"charger un fichier dt\n"
+"et l'appliquer aux images sélectionnées"
 
-#: ../src/libs/lib.c:55 ../src/gui/presets.c:78 ../src/gui/presets.c:490
+#: ../src/libs/lib.c:55
+#: ../src/gui/presets.c:78
+#: ../src/gui/presets.c:490
 #: ../src/gui/presets.c:503
 msgid "(default)"
 msgstr "(défaut)"
@@ -857,55 +840,62 @@ msgstr "(défaut)"
 #: ../src/libs/lib.c:114
 #, c-format
 msgid "edit `%s'"
-msgstr ""
+msgstr "modifier `%s'"
 
-#: ../src/libs/lib.c:135 ../src/gui/presets.c:204
+#: ../src/libs/lib.c:135
+#: ../src/gui/presets.c:204
 msgid "name of the preset"
-msgstr "nom du réglage"
+msgstr "nom du pré-réglage"
 
-#: ../src/libs/lib.c:139 ../src/gui/presets.c:208
+#: ../src/libs/lib.c:139
+#: ../src/gui/presets.c:208
 msgid "description or further information"
-msgstr ""
+msgstr "description ou information complémentaire"
 
 #. then show edit dialog
-#: ../src/libs/lib.c:169 ../src/libs/lib.c:174 ../src/libs/lib.c:180
-#: ../src/gui/presets.c:364 ../src/gui/presets.c:369 ../src/gui/presets.c:376
+#: ../src/libs/lib.c:169
+#: ../src/libs/lib.c:174
+#: ../src/libs/lib.c:180
+#: ../src/gui/presets.c:364
+#: ../src/gui/presets.c:369
+#: ../src/gui/presets.c:376
 msgid "new preset"
-msgstr "nouveau réglage"
+msgstr "nouveau pré-réglage"
 
 #: ../src/libs/lib.c:236
 msgid "deleting preset for obsolete module"
-msgstr ""
+msgstr "supprimer les pré-réglages pour les modules obsolètes"
 
-#: ../src/libs/lib.c:300 ../src/gui/presets.c:524
+#: ../src/libs/lib.c:300
+#: ../src/gui/presets.c:524
 msgid "edit this preset.."
-msgstr "modifier ce réglage.."
+msgstr "modifier ce pré-réglage.."
 
-#: ../src/libs/lib.c:304 ../src/gui/presets.c:528
+#: ../src/libs/lib.c:304
+#: ../src/gui/presets.c:528
 msgid "delete this preset"
-msgstr "supprimer ce réglage ?"
+msgstr "supprimer ce pré-réglage ?"
 
-#: ../src/libs/lib.c:311 ../src/gui/presets.c:542
+#: ../src/libs/lib.c:311
+#: ../src/gui/presets.c:542
 msgid "store new preset.."
-msgstr "enregistrer nouveau réglage.."
+msgstr "enregistrer nouveau pré-réglage.."
 
 #: ../src/libs/export.c:66
 msgid "export selected"
 msgstr "exporter la sélection"
 
 #: ../src/libs/export.c:369
-#, fuzzy
 msgid "target storage"
-msgstr "Géométrie des images (distortion)"
+msgstr "stockage cible"
 
 #: ../src/libs/export.c:389
 msgid "file format"
 msgstr "format de fichier"
 
 #: ../src/libs/export.c:404
-#, fuzzy
 msgid "global options"
-msgstr "sections harmonieuses"
+msgstr "options globales"
 
 #: ../src/libs/export.c:408
 msgid ""
@@ -926,7 +916,6 @@ msgstr ""
 "d'échelle "
 
 #: ../src/libs/export.c:419
-#, fuzzy
 msgid "max size"
 msgstr "taille max"
 
@@ -934,64 +923,80 @@ msgstr "taille max"
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:428 ../src/iop/colorin.c:378
+#: ../src/libs/export.c:428
+#: ../src/iop/colorin.c:397
 msgid "intent"
 msgstr "intention"
 
-#: ../src/libs/export.c:432 ../src/libs/export.c:498
+#: ../src/libs/export.c:432
+#: ../src/libs/export.c:498
 msgid "image settings"
 msgstr "paramètres d'image"
 
-#: ../src/libs/export.c:433 ../src/iop/colorin.c:385 ../src/iop/colorout.c:380
+#: ../src/libs/export.c:433
+#: ../src/iop/colorin.c:404
+#: ../src/iop/colorout.c:380
 #: ../src/iop/colorout.c:385
 msgid "perceptual"
 msgstr "perceptuelle"
 
-#: ../src/libs/export.c:434 ../src/iop/colorin.c:386 ../src/iop/colorout.c:381
+#: ../src/libs/export.c:434
+#: ../src/iop/colorin.c:405
+#: ../src/iop/colorout.c:381
 #: ../src/iop/colorout.c:386
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/libs/export.c:435 ../src/iop/colorin.c:387 ../src/iop/colorout.c:382
+#: ../src/libs/export.c:435
+#: ../src/iop/colorin.c:406
+#: ../src/iop/colorout.c:382
 #: ../src/iop/colorout.c:387
-#, fuzzy
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/libs/export.c:436 ../src/iop/colorin.c:388 ../src/iop/colorout.c:383
+#: ../src/libs/export.c:436
+#: ../src/iop/colorin.c:407
+#: ../src/iop/colorout.c:383
 #: ../src/iop/colorout.c:388
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
-#: ../src/libs/export.c:443 ../src/iop/colorout.c:407
+#: ../src/libs/export.c:443
+#: ../src/iop/colorout.c:407
 #: ../src/iop/colorout.c:408
 msgid "srgb (web-safe)"
 msgstr "srgb (adapté au web)"
 
-#: ../src/libs/export.c:450 ../src/iop/colorin.c:401 ../src/iop/colorout.c:412
+#: ../src/libs/export.c:450
+#: ../src/iop/colorin.c:420
+#: ../src/iop/colorout.c:412
 #: ../src/iop/colorout.c:413
 msgid "adobe rgb"
 msgstr "adobe rgb"
 
-#: ../src/libs/export.c:462 ../src/iop/colorin.c:403 ../src/iop/colorout.c:402
+#: ../src/libs/export.c:462
+#: ../src/iop/colorin.c:422
+#: ../src/iop/colorout.c:402
 #: ../src/iop/colorout.c:403
 msgid "linear rgb"
 msgstr "rgb linéaire"
 
-#: ../src/libs/export.c:493 ../src/iop/colorin.c:379
+#: ../src/libs/export.c:493
+#: ../src/iop/colorin.c:398
 msgid "profile"
 msgstr "profil"
 
-#: ../src/libs/export.c:503 ../src/iop/colorout.c:397
+#: ../src/libs/export.c:503
+#: ../src/iop/colorout.c:397
 #: ../src/iop/colorout.c:398
 msgid "system display profile"
 msgstr "profil d'affichage système"
 
 #: ../src/libs/export.c:510
-#, fuzzy, c-format
+#, c-format
 msgid "output icc profiles in %s/color/out"
-msgstr "profils ICC dans %s/couleur/sortie"
+msgstr "profils ICC dans %s/color/out"
 
 #: ../src/libs/export.c:519
 msgid "export"
@@ -999,7 +1004,7 @@ msgstr "exporter"
 
 #: ../src/libs/export.c:520
 msgid "export with current settings (ctrl-e)"
-msgstr ""
+msgstr "exporter avec les réglages actuels (ctrl-e)"
 
 #: ../src/libs/image.c:37
 msgid "selected image[s]"
@@ -1007,9 +1012,10 @@ msgstr "image(s) sélectionnée(s)"
 
 #: ../src/libs/image.c:78
 msgid "remove from the collection"
-msgstr "supprimer de la collection"
+msgstr "enlever de la collection"
 
-#: ../src/libs/image.c:82 ../src/libs/tagging.c:379
+#: ../src/libs/image.c:82
+#: ../src/libs/tagging.c:379
 msgid "delete"
 msgstr "supprimer"
 
@@ -1023,7 +1029,7 @@ msgstr "écrire les fichiers dt"
 
 #: ../src/libs/image.c:91
 msgid "write history stack and tags to sidecar files"
-msgstr "ecrire l'historique et les tags dans un fichier attaché"
+msgstr "écrire l'historique et les tags dans un fichier attaché"
 
 #: ../src/libs/image.c:95
 msgid "duplicate"
@@ -1031,14 +1037,14 @@ msgstr "dupliquer"
 
 #: ../src/libs/image.c:96
 msgid "add a duplicate to the collection"
-msgstr "ajouter un duplicat à la collection"
+msgstr "ajouter un duplicata à la collection"
 
 #: ../src/libs/tagging.c:50
 msgid "tagging"
 msgstr "tagger"
 
 #: ../src/libs/tagging.c:255
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
 "%d image is assigned this tag!"
@@ -1046,22 +1052,22 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"souhaitez vous vraiment supprimer le tag `%s'?\n"
-"%d image a été taggée avec!"
+"voulez-vous réellement supprimer le tag `%s'?\n"
+"ce tag est assigné à %d image"
 msgstr[1] ""
-"souhaitez vous vraiment supprimer le tag `%s'?\n"
-"%d imageq ont été taggées avec!"
+"voulez-vous réellement supprimer le tag `%s'?\n"
+"ce tag est assigné à %d images"
 
 #: ../src/libs/tagging.c:258
 msgid "delete tag?"
-msgstr "supprimer le tag?"
+msgstr "supprimer le tag ?"
 
 #: ../src/libs/tagging.c:318
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
 msgstr ""
-"attacher les tags,\n"
+"tags attachés,\n"
 "double-clic pour détacher"
 
 #: ../src/libs/tagging.c:325
@@ -1089,7 +1095,7 @@ msgid ""
 "related tags,\n"
 "doubleclick to attach"
 msgstr ""
-"tag liés, \n"
+"tags liés, \n"
 "double-clic pour attacher"
 
 #: ../src/libs/tagging.c:373
@@ -1114,7 +1120,7 @@ msgstr "sélectionner"
 
 #: ../src/libs/select.c:124
 msgid "select all"
-msgstr "tout sélectionner"
+msgstr "tout"
 
 #: ../src/libs/select.c:125
 msgid "select all images in current collection (ctrl-a)"
@@ -1122,7 +1128,7 @@ msgstr "sélectionner toutes les images de la collection courante (Ctrl+a)"
 
 #: ../src/libs/select.c:130
 msgid "select none"
-msgstr "aucune sélection"
+msgstr "aucune"
 
 #: ../src/libs/select.c:131
 msgid "clear selection (ctrl-shift-a)"
@@ -1130,7 +1136,7 @@ msgstr "vider la sélection (Ctrl+Shift+a)"
 
 #: ../src/libs/select.c:139
 msgid "invert selection"
-msgstr "inverser la sélection"
+msgstr "inverser"
 
 #: ../src/libs/select.c:140
 msgid ""
@@ -1142,7 +1148,7 @@ msgstr ""
 
 #: ../src/libs/select.c:145
 msgid "select film roll"
-msgstr "sélectionner un film"
+msgstr "film"
 
 #: ../src/libs/select.c:146
 msgid ""
@@ -1154,7 +1160,7 @@ msgstr ""
 
 #: ../src/libs/select.c:153
 msgid "select untouched"
-msgstr "selectionner les images intouchées"
+msgstr "intouchées"
 
 #: ../src/libs/select.c:154
 msgid ""
@@ -1166,20 +1172,21 @@ msgstr ""
 
 #: ../src/libs/collect.c:46
 msgid "collect images"
-msgstr "collecter des images"
+msgstr "filtrer les images"
 
 #. history
-#: ../src/libs/collect.c:86 ../src/libs/collect.c:183
+#: ../src/libs/collect.c:86
+#: ../src/libs/collect.c:183
 msgid "altered"
 msgstr "modifiée"
 
 #: ../src/libs/collect.c:188
 msgid "not altered"
-msgstr "inchangé"
+msgstr "inchangée"
 
 #: ../src/libs/collect.c:283
 msgid "camera"
-msgstr "appareil"
+msgstr "boîtier"
 
 #: ../src/libs/collect.c:284
 msgid "tag"
@@ -1192,22 +1199,21 @@ msgstr "date"
 #: ../src/libs/collect.c:292
 #, c-format
 msgid "type your query, use `%' as wildcard"
-msgstr "saisissez votre requête, utilisez `%' en caractère de remplacement"
+msgstr "saisissez votre requête, utilisez `%' en caractère joker"
 
 #: ../src/libs/collect.c:300
 msgid "matches selected images"
-msgstr "correspondance sur les images sélectionnées"
+msgstr "fait correspondre les images sélectionnées"
 
 #: ../src/libs/collect.c:319
 msgid "doubleclick to select"
-msgstr "sélection sur double-clic"
+msgstr "sélection par double-clic"
 
 #: ../src/libs/colorlabels.c:31
 msgid "color labels"
 msgstr "labels de couleurs"
 
 #: ../src/libs/colorlabels.c:68
-#, fuzzy
 msgctxt "color label"
 msgid "red"
 msgstr "rouge"
@@ -1217,20 +1223,23 @@ msgid ""
 "toggle red label\n"
 "of selected images (ctrl-1)"
 msgstr ""
+"active/désactive le label rouge\n"
+"pour les images sélectionnées (ctrl-1)"
 
 #: ../src/libs/colorlabels.c:73
 msgctxt "color label"
 msgid "yellow"
-msgstr ""
+msgstr "jaune"
 
 #: ../src/libs/colorlabels.c:74
 msgid ""
 "toggle yellow label\n"
 "of selected images (ctrl-2)"
 msgstr ""
+"active/désactive le label jaune\n"
+"pour les images sélectionnées (ctrl-2)"
 
 #: ../src/libs/colorlabels.c:81
-#, fuzzy
 msgctxt "color label"
 msgid "green"
 msgstr "vert"
@@ -1240,6 +1249,8 @@ msgid ""
 "toggle green label\n"
 "of selected images (ctrl-3)"
 msgstr ""
+"active/désactive le label vert\n"
+"pour les images sélectionnées (ctrl-3)"
 
 #: ../src/libs/colorlabels.c:86
 msgid "clear"
@@ -1247,29 +1258,29 @@ msgstr "effacer"
 
 #: ../src/libs/colorlabels.c:87
 msgid "clear all labels of selected images"
-msgstr "vider tous les labels des images sélectionnées"
+msgstr "effacer tous les labels des images sélectionnées"
 
 #: ../src/libs/capture.c:50
 msgid "session"
 msgstr "session"
 
 #. jobcode
-#: ../src/libs/capture.c:100 ../src/gui/camera_import_dialog.c:267
+#: ../src/libs/capture.c:100
+#: ../src/gui/camera_import_dialog.c:267
 msgid "jobcode"
-msgstr ""
+msgstr "code de projet"
 
 #: ../src/libs/capture.c:107
-#, fuzzy
 msgid "create"
-msgstr "capture"
+msgstr "créer"
 
 #: ../src/libs/camera.c:70
 msgid "camera settings"
-msgstr "paramètres de l'appareil photo"
+msgstr "paramètres du boîtier"
 
 #: ../src/libs/camera.c:113
 msgid "toggle view property in center view"
-msgstr ""
+msgstr "active/désactive la vue propriétés dans la fenêtre centrale"
 
 #: ../src/libs/camera.c:245
 msgid "battery"
@@ -1281,9 +1292,8 @@ msgstr "n/a"
 
 #. Camera control
 #: ../src/libs/camera.c:313
-#, fuzzy
 msgid "camera control"
-msgstr "Contraste moyen"
+msgstr "pilotage du boîtier"
 
 #: ../src/libs/camera.c:317
 msgid "modes"
@@ -1303,11 +1313,11 @@ msgstr "capturer des images"
 
 #: ../src/libs/camera.c:349
 msgid "toggle delayed capture mode"
-msgstr ""
+msgstr "active/désactive le mode de capture retardé"
 
 #: ../src/libs/camera.c:350
 msgid "toggle sequenced capture mode"
-msgstr ""
+msgstr "active/désactive le mode de capture en séquence"
 
 #: ../src/libs/camera.c:351
 msgid "the count of seconds before actually doing a capture"
@@ -1316,12 +1326,10 @@ msgstr "le nombre de secondes avant d'effectuer une capture"
 #: ../src/libs/camera.c:352
 msgid ""
 "the amount of images to capture in a sequence,\n"
-"you can use this in conjuction with delayed mode to create stop-motion "
-"sequences."
+"you can use this in conjuction with delayed mode to create stop-motion sequences."
 msgstr ""
-"le nombre d'images a capturer pendant une séquence,\n"
-"vous pouvez utiliser cela avec le mode de retardement pour créer des "
-"séquences de stop-motion."
+"le nombre d'images à capturer pendant une séquence,\n"
+"vous pouvez utiliser cela avec le mode de retardement pour créer des séquences de stop-motion."
 
 #: ../src/libs/camera.c:363
 msgid "properties"
@@ -1336,19 +1344,21 @@ msgid "focus mode"
 msgstr "mode de focus"
 
 #. focal length
-#: ../src/libs/camera.c:397 ../src/gui/presets.c:293
+#: ../src/libs/camera.c:397
+#: ../src/gui/presets.c:293
 msgid "focal length"
 msgstr "longeur focale"
 
 #: ../src/libs/camera.c:407
 msgid "shutterspeed2"
-msgstr ""
+msgstr "vitesse d'obturation 2"
 
 #: ../src/libs/camera.c:427
 msgid "wb"
 msgstr "balance des blancs"
 
-#: ../src/libs/camera.c:437 ../src/imageio/format/jpeg.c:634
+#: ../src/libs/camera.c:437
+#: ../src/imageio/format/jpeg.c:634
 msgid "quality"
 msgstr "qualité"
 
@@ -1362,18 +1372,19 @@ msgstr "recadrer et pivoter"
 
 #: ../src/iop/clipping.c:440
 msgid "rotate by  90"
-msgstr ""
+msgstr "tourner de 90"
 
 #: ../src/iop/clipping.c:442
 msgid "rotate by -90"
-msgstr ""
+msgstr "tourner de -90"
 
 #: ../src/iop/clipping.c:444
 msgid "rotate by 180"
-msgstr ""
+msgstr "tourner de 180"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:631 ../src/iop/clipping.c:709
+#: ../src/iop/clipping.c:631
+#: ../src/iop/clipping.c:709
 msgid "flip"
 msgstr "symétrie"
 
@@ -1391,27 +1402,23 @@ msgstr "angle"
 
 #: ../src/iop/clipping.c:646
 msgid "right-click and drag a line on the image to drag a straight line"
-msgstr ""
-"clic-droit et déplacer une ligne sur l'image pour déplacer une ligne droite"
+msgstr "clic-droit et déplacer une ligne sur l'image pour déplacer une ligne droite"
 
 #: ../src/iop/clipping.c:651
-#, fuzzy
 msgid "perspective"
-msgstr "propriétés"
+msgstr "perspective"
 
 #: ../src/iop/clipping.c:659
-#, fuzzy
 msgid "right"
-msgstr "droits"
+msgstr "droite"
 
 #: ../src/iop/clipping.c:660
 msgid "up"
-msgstr ""
+msgstr "haut"
 
 #: ../src/iop/clipping.c:666
-#, fuzzy
 msgid "aspect"
-msgstr "Sélectionner"
+msgstr "aspect"
 
 #: ../src/iop/clipping.c:671
 msgid "free"
@@ -1426,9 +1433,8 @@ msgid "golden cut"
 msgstr "rapport d'or"
 
 #: ../src/iop/clipping.c:674
-#, fuzzy
 msgid "1:2"
-msgstr "3:2"
+msgstr "1:2"
 
 #: ../src/iop/clipping.c:675
 msgid "3:2"
@@ -1451,15 +1457,16 @@ msgid ""
 "set the aspect ratio (w/h)\n"
 "press ctrl-x to swap sides"
 msgstr ""
+"entre le ration d'aspect (l/h)\n"
+"utiliser ctrl-x pour inverser les côtés"
 
 #: ../src/iop/clipping.c:689
 msgid "guides"
 msgstr "guides"
 
 #: ../src/iop/clipping.c:692
-#, fuzzy
 msgid "none"
-msgstr "Activé"
+msgstr "auncun"
 
 #: ../src/iop/clipping.c:693
 msgid "grid"
@@ -1470,9 +1477,8 @@ msgid "rules of thirds"
 msgstr "règle des tiers"
 
 #: ../src/iop/clipping.c:695
-#, fuzzy
 msgid "diagonal method"
-msgstr "Méthode de dématriçage"
+msgstr "diagonales"
 
 #: ../src/iop/clipping.c:696
 msgid "harmonious triangles"
@@ -1483,12 +1489,8 @@ msgid "golden mean"
 msgstr "nombre d'or"
 
 #: ../src/iop/clipping.c:699
-msgid ""
-"with this option, you can display guide lines to help compose your "
-"photograph."
-msgstr ""
-"à l'aide de cette option, vous pouvez afficher des guides pour vous aider à "
-"la composition de votre photo."
+msgid "with this option, you can display guide lines to help compose your photograph."
+msgstr "à l'aide de cette option, vous pouvez afficher des guides pour vous aider à composer votre photo."
 
 #: ../src/iop/clipping.c:703
 msgid "type"
@@ -1505,31 +1507,27 @@ msgstr "retourner les guides horizontalement"
 #. -------------------------------------------
 #: ../src/iop/clipping.c:719
 msgid "golden sections"
-msgstr "sections harmonieuses"
+msgstr "sections d'or"
 
 #: ../src/iop/clipping.c:720
-#, fuzzy
 msgid "enable this option to show golden sections."
-msgstr "selectionner cette option pour afficher les sections harmonieuses"
+msgstr "sélectionner pour afficher les sections d'or"
 
 #: ../src/iop/clipping.c:723
 msgid "spiral sections"
-msgstr "sections en spirale"
+msgstr "sections de spirale"
 
 #: ../src/iop/clipping.c:724
-#, fuzzy
 msgid "enable this option to show golden spiral sections."
-msgstr ""
-"selectionner cette option pour afficher les sections de la spirale d'or"
+msgstr "sélectionner pour afficher les sections de la spirale d'or"
 
 #: ../src/iop/clipping.c:727
 msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/iop/clipping.c:728
-#, fuzzy
 msgid "enable this option to show a golden spiral guide."
-msgstr "selectionner cette option pour afficher le guide en spirale d'or"
+msgstr "sélectionner pour afficher un guide en spirale d'or"
 
 #: ../src/iop/clipping.c:731
 msgid "golden triangles"
@@ -1537,15 +1535,18 @@ msgstr "triangles d'or"
 
 #: ../src/iop/clipping.c:732
 msgid "enable this option to show golden triangles."
-msgstr "selectioner cette option pour afficher les triangles d'or"
+msgstr "sélectionner cette option pour afficher les triangles d'or"
 
 #: ../src/iop/colorcorrection.c:42
 msgid "color correction"
 msgstr "correction des couleurs"
 
-#: ../src/iop/colorcorrection.c:175 ../src/iop/vignette.c:342
-#: ../src/iop/velvia.c:214 ../src/iop/splittoning.c:453
-#: ../src/iop/splittoning.c:487 ../src/iop/grain.c:509
+#: ../src/iop/colorcorrection.c:175
+#: ../src/iop/vignette.c:342
+#: ../src/iop/velvia.c:214
+#: ../src/iop/splittoning.c:453
+#: ../src/iop/splittoning.c:487
+#: ../src/iop/grain.c:509
 #: ../src/iop/channelmixer.c:350
 msgid "saturation"
 msgstr "saturation"
@@ -1554,33 +1555,32 @@ msgstr "saturation"
 msgid "input color profile"
 msgstr "profil de couleur d'entrée"
 
-#: ../src/iop/colorin.c:395
+#: ../src/iop/colorin.c:414
 msgid "standard color matrix"
 msgstr "matrice de couleur standard"
 
-#: ../src/iop/colorin.c:397
-#, fuzzy
+#: ../src/iop/colorin.c:416
 msgid "enhanced color matrix"
-msgstr "matrice de couleur"
+msgstr "matrice de couleur améliorée"
 
-#: ../src/iop/colorin.c:399
+#: ../src/iop/colorin.c:418
 msgid "srgb (e.g. jpg)"
 msgstr "srgb (ex: jpg)"
 
-#: ../src/iop/colorin.c:405
-#, fuzzy
+#: ../src/iop/colorin.c:424
 msgid "linear infrared bgr"
-msgstr "rgb linéaire"
+msgstr "infrarouge linéaire bvr"
 
-#: ../src/iop/colorin.c:407
+#: ../src/iop/colorin.c:426
 msgid "linear xyz"
 msgstr "linéaire xyz"
 
-#: ../src/iop/colorin.c:418 ../src/iop/colorout.c:432
+#: ../src/iop/colorin.c:437
+#: ../src/iop/colorout.c:432
 msgid "rendering intent"
-msgstr "rendu"
+msgstr "mode de rendu"
 
-#: ../src/iop/colorin.c:419
+#: ../src/iop/colorin.c:438
 #, c-format
 msgid "icc profiles in %s/color/in"
 msgstr "profil ICC dans %s/couleur/entrée"
@@ -1623,7 +1623,8 @@ msgstr "égaliseur"
 msgid "sharpen (strong)"
 msgstr "accentuation (forte)"
 
-#: ../src/iop/equalizer.c:246 ../src/iop/sharpen.c:62
+#: ../src/iop/equalizer.c:246
+#: ../src/iop/sharpen.c:62
 msgid "sharpen"
 msgstr "accentuation"
 
@@ -1631,7 +1632,8 @@ msgstr "accentuation"
 msgid "null"
 msgstr "null"
 
-#: ../src/iop/equalizer.c:262 ../src/iop/rawimport.c:434
+#: ../src/iop/equalizer.c:262
+#: ../src/iop/rawimport.c:434
 #: ../src/iop/bilateral.cc:69
 msgid "denoise"
 msgstr "réduction du bruit"
@@ -1640,7 +1642,8 @@ msgstr "réduction du bruit"
 msgid "denoise (strong)"
 msgstr "réduction du bruit (forte)"
 
-#: ../src/iop/equalizer.c:313 ../src/iop/rawimport.c:489
+#: ../src/iop/equalizer.c:313
+#: ../src/iop/rawimport.c:489
 msgid "luma"
 msgstr "luma"
 
@@ -1661,7 +1664,8 @@ msgid "adjust the exposure correction [ev]"
 msgstr "ajuster la correction d'exposition [ev]"
 
 #. gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-#: ../src/iop/exposure.c:325 ../src/iop/lens.c:1217
+#: ../src/iop/exposure.c:325
+#: ../src/iop/lens.c:1217
 msgid "auto"
 msgstr "auto"
 
@@ -1672,17 +1676,19 @@ msgstr "pourcentage de valeurs hautes tronquées"
 #: ../src/iop/gamma.c:37
 msgctxt "modulename"
 msgid "gamma"
-msgstr "Gamma"
+msgstr "gamma"
 
-#: ../src/iop/gamma.c:152 ../src/iop/profile_gamma.c:169
+#: ../src/iop/gamma.c:152
+#: ../src/iop/profile_gamma.c:169
 msgctxt "gammaslider"
 msgid "linear"
-msgstr "Linéaire"
+msgstr "linéaire"
 
-#: ../src/iop/gamma.c:153 ../src/iop/profile_gamma.c:170
+#: ../src/iop/gamma.c:153
+#: ../src/iop/profile_gamma.c:170
 msgctxt "gammaslider"
 msgid "gamma"
-msgstr "Gamma"
+msgstr "gamma"
 
 #: ../src/iop/highlights.c:70
 msgid "highlight reconstruction"
@@ -1730,7 +1736,7 @@ msgstr "mélanger la teinte (0 revient à tronquer)"
 
 #: ../src/iop/lens.c:42
 msgid "lens distortions"
-msgstr "distortions de l'objectif"
+msgstr "distorsions de l'objectif"
 
 #: ../src/iop/lens.c:663
 #, c-format
@@ -1760,7 +1766,7 @@ msgstr ""
 "modèle:\t\t%s\n"
 "focale(s):\t%s\n"
 "ouverture:\t\t%s\n"
-"crop factor:\t%.1f\n"
+"conversion de focale:\t%.1f\n"
 "type:\t\t%s\n"
 "monture:\t\t%s"
 
@@ -1790,14 +1796,14 @@ msgstr "distance au sujet"
 
 #: ../src/iop/lens.c:1153
 msgid "cam"
-msgstr "appareil"
+msgstr "boîtier"
 
 #: ../src/iop/lens.c:1154
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
 msgstr ""
-"chercher un appareil à partir d'un\n"
+"chercher un boîtier à partir d'un\n"
 "motif (format: [fabricant, ][modèle])"
 
 #: ../src/iop/lens.c:1168
@@ -1815,7 +1821,7 @@ msgstr "géométrie"
 
 #: ../src/iop/lens.c:1200
 msgid "target geometry"
-msgstr "géométrie des images (distortion)"
+msgstr "géométrie des images (distorsion)"
 
 #: ../src/iop/lens.c:1201
 msgid "rectilinear"
@@ -1831,10 +1837,11 @@ msgstr "panoramique"
 
 #: ../src/iop/lens.c:1204
 msgid "equirectangular"
-msgstr "equiréctangulaire"
+msgstr "equi-rectangulaire"
 
 #. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-#: ../src/iop/lens.c:1224 ../src/iop/vignette.c:337
+#: ../src/iop/lens.c:1224
+#: ../src/iop/vignette.c:337
 msgid "scale"
 msgstr "échelle"
 
@@ -1845,44 +1852,46 @@ msgstr "inverser"
 
 #: ../src/iop/lens.c:1231
 msgid "apply distortions instead of correcting them"
-msgstr "appliquer les distortions au lieu de les corriger"
+msgstr "appliquer les distorsions au lieu de les corriger"
 
 #. override linear tca (if not 1.0):
 #: ../src/iop/lens.c:1238
-#, fuzzy
 msgid "tca r"
-msgstr "effacer"
+msgstr "tca r"
 
 #: ../src/iop/lens.c:1241
 msgid "tca b"
-msgstr ""
+msgstr "tca b"
 
 #: ../src/iop/lens.c:1250
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
 msgstr ""
+"surcharge la correction d'aberration chromatique transverse pour le canal rouge\n"
+"mettre 1.0 pour valeur par défaut"
 
 #: ../src/iop/lens.c:1251
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
 msgstr ""
+"surcharge la correction d'aberration chromatique transverse pour le canal bleu\n"
+"mettre 1.0 pour valeur par défaut"
 
 #: ../src/iop/monochrome.c:70
 msgid "monochrome"
 msgstr "monochrome"
 
 #: ../src/iop/monochrome.c:304
-#, fuzzy
 msgid ""
 "drag and scroll\n"
 "to adjust the virtual\n"
 "color filter"
 msgstr ""
-"déposer et défilement\n"
-"pour ajuster le filtre de\n"
-"couleurs virtuelles"
+"glisser et défiler\n"
+"pour modifier le filtre \n"
+"virtuel de couleurs"
 
 #: ../src/iop/monochrome.c:326
 msgid "filter size"
@@ -1893,17 +1902,16 @@ msgid "raw import"
 msgstr "importer un fichier raw"
 
 #: ../src/iop/rawimport.c:429
-#, fuzzy
 msgid ""
 "warning: these are cryptic low level settings!\n"
 "you probably don't have to change them."
 msgstr ""
 "attention: il s'agit de mystérieux réglages\n"
-"bas niveaux! modification à éviter"
+"bas niveaux ! modifications prudentes"
 
 #: ../src/iop/rawimport.c:441
 msgid "median passes"
-msgstr "iterations"
+msgstr "itérations"
 
 #: ../src/iop/rawimport.c:444
 msgid ""
@@ -1944,15 +1952,15 @@ msgstr "VNG4"
 
 #: ../src/iop/rawimport.c:457
 msgid "DCB"
-msgstr ""
+msgstr "DCB"
 
 #: ../src/iop/rawimport.c:458
 msgid "AMaZE"
-msgstr ""
+msgstr "AMaZE"
 
 #: ../src/iop/rawimport.c:459
 msgid "VCD"
-msgstr ""
+msgstr "VCD"
 
 #: ../src/iop/rawimport.c:463
 msgid "hot pixels"
@@ -1964,91 +1972,86 @@ msgstr "filtre médian avant dématriçage"
 
 #: ../src/iop/rawimport.c:467
 msgid "green equilibration"
-msgstr "équilibration des verts"
+msgstr "équilibrage des verts"
 
 #: ../src/iop/rawimport.c:468
 msgid ""
 "work around unequal green channels in some mid-range\n"
 "cameras, e.g. canon eos 400d"
 msgstr ""
+"permet d'améliorer les canaux verts de certains\n"
+"boîtiers de milieu de gamme comme le canon eos 400d"
 
 #. GtkCheckButton *dcb_enhance;
 #: ../src/iop/rawimport.c:472
 msgid "dcb enhance"
-msgstr ""
+msgstr "amélioration dcb"
 
 #: ../src/iop/rawimport.c:473
-msgid ""
-"turns off the default image refinement if edges are jagged or you prefer "
-"softer demosaicing."
-msgstr ""
+msgid "turns off the default image refinement if edges are jagged or you prefer softer demosaicing."
+msgstr "désactive le raffinement par défaut si les contours sont dentelés ou si vous préférez un dématriçage plus doux."
 
 #. GtkSpinButton *iterations_dcb;
 #: ../src/iop/rawimport.c:477
-#, fuzzy
 msgid "dcb iterations"
-msgstr "distortions de l'objectif"
+msgstr "itérations dcb"
 
 #. not enough room for number more then 4
 #: ../src/iop/rawimport.c:480
 msgid ""
 "number of DCB correction routines passes(the default is zero)\n"
-"this helps if you see lots of wrong interpolation directions, just remember "
-"that it may produce new artifacts\n"
+"this helps if you see lots of wrong interpolation directions, just remember that it may produce new artifacts\n"
 "usually 0 or 1 should work fine, in some situations even 10 is not enough."
 msgstr ""
+"nombre d'itérations de correction DCV (zéro par défaut)\n"
+"utile si vous voyez beaucoup de mauvaises interpolations, mais retenez que cela peut engendrer de nouveaux artefacts\n"
+"généralement 0 ou 1 fonctionne, mais dans certains cas même 10 ne suffit pas."
 
 #. GtkComboBox *noiserd_fbdd;
 #: ../src/iop/rawimport.c:485
 msgid "fbdd denoising"
-msgstr ""
+msgstr "réduction de bruit fbdd"
 
 #: ../src/iop/rawimport.c:488
-#, fuzzy
 msgctxt "fbdd noise"
 msgid "none"
-msgstr "Activé"
+msgstr "aucun"
 
 #: ../src/iop/rawimport.c:490
-#, fuzzy
 msgid "luma+chroma"
-msgstr "chroma"
+msgstr "luma+chroma"
 
 #: ../src/iop/rawimport.c:491
-msgid ""
-"fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
-msgstr ""
+msgid "fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
+msgstr "fddb active la réduction de bruit luma (et chroma en option) lors du dématriçage"
 
 #. GtkCheckButton *vcd_eeci_refine;
 #: ../src/iop/rawimport.c:496
 msgid "vcd enhance"
-msgstr ""
+msgstr "amélioration vcd"
 
 #: ../src/iop/rawimport.c:497
 msgid "refine interpolated pixels"
-msgstr ""
+msgstr "raffinement des pixels interpolés"
 
 #. GtkSpinButton *vcd_es_med_passes;
 #: ../src/iop/rawimport.c:501
-#, fuzzy
 msgid "edge median passes"
-msgstr "iterations"
+msgstr "itérations"
 
 #. not enough room for more then 4
 #: ../src/iop/rawimport.c:504
-msgid ""
-"number of passes an edge-sensitive median filter to differential color planes"
-msgstr ""
+msgid "number of passes an edge-sensitive median filter to differential color planes"
+msgstr "nombre d'itérations d'un filtre médian préservant les contours"
 
 #. GtkCheckButton *amaze_ca_correct;
 #: ../src/iop/rawimport.c:509
-#, fuzzy
 msgid "ca autocorrect"
-msgstr "correction des couleurs"
+msgstr "corrige les aberrations chromatiques"
 
 #: ../src/iop/rawimport.c:510
 msgid "artificial ca autocorrection from AMaZE"
-msgstr ""
+msgstr "correction artificielle des aberrations chromatiques par AMaZE"
 
 #: ../src/iop/rawimport.c:513
 msgid "reset"
@@ -2070,11 +2073,14 @@ msgstr "réimporter"
 msgid "trigger re-import of the raw image"
 msgstr "déclenche le réimport de l'image raw"
 
-#: ../src/iop/sharpen.c:243 ../src/iop/bilateral.cc:273 ../src/iop/clahe.c:370
+#: ../src/iop/sharpen.c:243
+#: ../src/iop/bilateral.cc:273
+#: ../src/iop/clahe.c:370
 msgid "radius"
 msgstr "rayon"
 
-#: ../src/iop/sharpen.c:244 ../src/iop/clahe.c:371
+#: ../src/iop/sharpen.c:244
+#: ../src/iop/clahe.c:371
 msgid "amount"
 msgstr "quantité"
 
@@ -2083,10 +2089,9 @@ msgid "threshold"
 msgstr "seuil"
 
 #: ../src/iop/temperature.c:78
-#, fuzzy
 msgctxt "modulename"
 msgid "white balance"
-msgstr "balance des blancs depuis une zone (spot)"
+msgstr "balance des blancs"
 
 #: ../src/iop/temperature.c:322
 msgid "tint"
@@ -2101,24 +2106,30 @@ msgid "temperature in"
 msgstr "température d'entrée"
 
 #. g->label2 = GTK_LABEL(gtk_label_new(_("height")));
-#: ../src/iop/temperature.c:359 ../src/iop/bilateral.cc:275
-#: ../src/iop/channelmixer.c:352 ../src/iop/channelmixer.c:369
+#: ../src/iop/temperature.c:359
+#: ../src/iop/bilateral.cc:275
+#: ../src/iop/channelmixer.c:352
+#: ../src/iop/channelmixer.c:369
 msgid "red"
 msgstr "rouge"
 
-#: ../src/iop/temperature.c:363 ../src/iop/bilateral.cc:276
-#: ../src/iop/channelmixer.c:353 ../src/iop/channelmixer.c:370
+#: ../src/iop/temperature.c:363
+#: ../src/iop/bilateral.cc:276
+#: ../src/iop/channelmixer.c:353
+#: ../src/iop/channelmixer.c:370
 msgid "green"
 msgstr "vert"
 
-#: ../src/iop/temperature.c:367 ../src/iop/bilateral.cc:277
-#: ../src/iop/channelmixer.c:354 ../src/iop/channelmixer.c:371
+#: ../src/iop/temperature.c:367
+#: ../src/iop/bilateral.cc:277
+#: ../src/iop/channelmixer.c:354
+#: ../src/iop/channelmixer.c:371
 msgid "blue"
 msgstr "bleu"
 
 #: ../src/iop/temperature.c:377
 msgid "camera white balance"
-msgstr "balance des blancs de l'appareil"
+msgstr "balance des blancs du boîtier"
 
 #: ../src/iop/temperature.c:378
 msgid "spot white balance"
@@ -2130,7 +2141,7 @@ msgstr "aucune modification"
 
 #: ../src/iop/temperature.c:402
 msgid "fine tune white balance preset"
-msgstr "ajustement des réglages de balance des blancs"
+msgstr "ajustement des pré-réglages de balance des blancs"
 
 #. Column 1 - "make" of the camera.
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
@@ -2145,140 +2156,117 @@ msgstr "ajustement des réglages de balance des blancs"
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
 #: ../src/iop/wb_presets.c:45
-#, fuzzy
 msgid "Daylight"
 msgstr "lumière du jour"
 
 #. Probably same as above:
 #: ../src/iop/wb_presets.c:47
-#, fuzzy
 msgid "Direct sunlight"
-msgstr "lumière directe"
+msgstr "lumière du soleil directe"
 
 #: ../src/iop/wb_presets.c:48
-#, fuzzy
 msgid "Cloudy"
 msgstr "nuageux"
 
 #. "Shadows" should be switched to this:
 #: ../src/iop/wb_presets.c:50
-#, fuzzy
 msgid "Shade"
-msgstr "ombre"
+msgstr "ombragé"
 
 #: ../src/iop/wb_presets.c:51
-#, fuzzy
 msgid "Incandescent"
-msgstr "incandescente"
+msgstr "incandescent"
 
 #: ../src/iop/wb_presets.c:52
-#, fuzzy
 msgid "Incandescent warm"
-msgstr "incandescente (chaud)"
+msgstr "incandescent (chaud)"
 
 #. Same as "Incandescent":
 #: ../src/iop/wb_presets.c:54
-#, fuzzy
 msgid "Tungsten"
-msgstr "tungsten"
+msgstr "tungstene"
 
 #: ../src/iop/wb_presets.c:55
-#, fuzzy
 msgid "Fluorescent"
-msgstr "fluorescente"
+msgstr "fluorescent"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
-#, fuzzy
 msgid "Fluorescent high"
-msgstr "fluorescente forte"
+msgstr "fluorescent (fort)"
 
 #: ../src/iop/wb_presets.c:58
-#, fuzzy
 msgid "Cool white fluorescent"
-msgstr "fluorescente (blanc froid)"
+msgstr "fluorescent (blanc et froid)"
 
 #: ../src/iop/wb_presets.c:59
-#, fuzzy
 msgid "Warm white fluorescent"
-msgstr "fluorescente (blanc chaud)"
+msgstr "fluorescent (blanc et chaud)"
 
 #: ../src/iop/wb_presets.c:60
-#, fuzzy
 msgid "Daylight fluorescent"
-msgstr "fluorescente (lumière du jour)"
+msgstr "fluorescent (lumière du jour)"
 
 #: ../src/iop/wb_presets.c:61
-#, fuzzy
 msgid "Neutral fluorescent"
-msgstr "fluorescente neutre"
+msgstr "fluorescent (neutre)"
 
 #: ../src/iop/wb_presets.c:62
-#, fuzzy
 msgid "White fluorescent"
-msgstr "fluorescente blanche"
+msgstr "fluorescent (blanc)"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
-#, fuzzy
 msgid "Sodium-vapor fluorescent"
-msgstr "fluorescente vapeur de sodium"
+msgstr "fluorescent (vapeur de sodium)"
 
 #: ../src/iop/wb_presets.c:65
-#, fuzzy
 msgid "Day white fluorescent"
-msgstr "fluorescente (lumière blanche naturelle)"
+msgstr "fluorescent (blanc et lumière du jour)"
 
 #: ../src/iop/wb_presets.c:66
-#, fuzzy
 msgid "High temp. mercury-vapor fluorescent"
-msgstr "temp. haute, fluorescente vapeur de mercure"
+msgstr "fluorescent (vapeur de mercure, haute temp.)"
 
 #: ../src/iop/wb_presets.c:68
-#, fuzzy
 msgid "Flash"
 msgstr "flash"
 
 #. For Olympus with no real "Flash" preset:
 #: ../src/iop/wb_presets.c:70
-#, fuzzy
 msgid "Flash (auto mode)"
 msgstr "flash (mode auto)"
 
 #: ../src/iop/wb_presets.c:71
-#, fuzzy
 msgid "Evening sun"
 msgstr "lumière du soir"
 
 #: ../src/iop/wb_presets.c:72
-#, fuzzy
 msgid "Underwater"
-msgstr "sous marin"
+msgstr "sous l'eau"
 
 #: ../src/iop/wb_presets.c:73
-#, fuzzy
 msgid "Black & white"
 msgstr "noir & blanc"
 
 #: ../src/iop/wb_presets.c:76
-#, fuzzy
 msgid "Manual WB"
-msgstr "Balance des blancs manuelle"
+msgstr "balance des blancs manuelle"
 
 #: ../src/iop/wb_presets.c:77
-#, fuzzy
 msgid "Camera WB"
-msgstr "appareil"
+msgstr "balance des blancs du boîtier"
 
 #: ../src/iop/wb_presets.c:78
 msgid "Auto WB"
-msgstr ""
+msgstr "balance des blancs automatique"
 
 #: ../src/iop/tonecurve.c:39
 msgid "tone curve"
 msgstr "courbe de ton"
 
-#: ../src/iop/tonecurve.c:72 ../src/iop/basecurve.c:48
+#: ../src/iop/tonecurve.c:72
+#: ../src/iop/basecurve.c:48
 msgid "linear"
 msgstr "linéaire"
 
@@ -2304,35 +2292,31 @@ msgstr "similaire nikon"
 
 #: ../src/iop/basecurve.c:52
 msgid "sony alpha like"
-msgstr "similaier sony alpha"
+msgstr "similaire sony alpha"
 
 #: ../src/iop/basecurve.c:53
 msgid "pentax like"
-msgstr ""
+msgstr "similaire pentax"
 
 #: ../src/iop/basecurve.c:54
 msgid "olympus like"
-msgstr ""
+msgstr "similaire olympus"
 
 #: ../src/iop/basecurve.c:55
-#, fuzzy
 msgid "panasonic like"
-msgstr "similaire nikon"
+msgstr "similaire panasonic"
 
 #: ../src/iop/basecurve.c:56
-#, fuzzy
 msgid "leica like"
-msgstr "symétrie verticale"
+msgstr "similaire leica"
 
 #: ../src/iop/basecurve.c:57
-#, fuzzy
 msgid "fotogenetic (point & shoot)"
-msgstr "fotogenetic - appareil compact V4.1"
+msgstr "fotogenetic (point & shoot)"
 
 #: ../src/iop/basecurve.c:58
-#, fuzzy
 msgid "fotogenetic (ev3)"
-msgstr "fotogenic - ev3 v4.2"
+msgstr "fotogenetic (ev3)"
 
 #: ../src/iop/basecurve.c:117
 msgid "base curve"
@@ -2343,9 +2327,8 @@ msgid "color zones"
 msgstr "zones de couleurs"
 
 #: ../src/iop/colorzones.c:268
-#, fuzzy
 msgid "red black white"
-msgstr "rouge noir blanc"
+msgstr "n/b et rouge"
 
 #: ../src/iop/colorzones.c:283
 msgid "black white and skin tones"
@@ -2359,15 +2342,18 @@ msgstr "filtre polarisant"
 msgid "natural skin tones"
 msgstr "tons chair naturels"
 
-#: ../src/iop/colorzones.c:794 ../src/iop/colorzones.c:819
+#: ../src/iop/colorzones.c:794
+#: ../src/iop/colorzones.c:819
 msgid "luma (L)"
 msgstr "luminosité (L)"
 
-#: ../src/iop/colorzones.c:795 ../src/iop/colorzones.c:820
+#: ../src/iop/colorzones.c:795
+#: ../src/iop/colorzones.c:820
 msgid "colorness (C)"
 msgstr "couleur (C)"
 
-#: ../src/iop/colorzones.c:796 ../src/iop/colorzones.c:821
+#: ../src/iop/colorzones.c:796
+#: ../src/iop/colorzones.c:821
 msgid "hue (h)"
 msgstr "teinte (H)"
 
@@ -2385,9 +2371,10 @@ msgstr "vignettage"
 
 #: ../src/iop/vignette.c:338
 msgid "fall-off strength"
-msgstr ""
+msgstr "intensité du dégradé"
 
-#: ../src/iop/vignette.c:339 ../src/iop/grain.c:499
+#: ../src/iop/vignette.c:339
+#: ../src/iop/grain.c:499
 msgid "strength"
 msgstr "force"
 
@@ -2397,23 +2384,24 @@ msgstr "uniformité"
 
 #: ../src/iop/vignette.c:341
 msgid "b/s ratio"
-msgstr ""
+msgstr "lum/sat ratio"
 
 #: ../src/iop/vignette.c:343
 msgid "fall-off"
-msgstr ""
+msgstr "dégradé"
 
-#: ../src/iop/vignette.c:363 ../src/iop/vignette.c:364
+#: ../src/iop/vignette.c:363
+#: ../src/iop/vignette.c:364
 msgid "invert"
 msgstr "inverser"
 
 #: ../src/iop/vignette.c:372
 msgid "the radii scale of vignette for start of fall-off"
-msgstr ""
+msgstr "échelle du rayon de début du dégradé"
 
 #: ../src/iop/vignette.c:373
 msgid "the radii scale of vignette for end of fall-off"
-msgstr ""
+msgstr "échelle du rayon de fin du dégradé"
 
 #: ../src/iop/vignette.c:374
 msgid "strength of effect"
@@ -2431,6 +2419,11 @@ msgid ""
 " 0 - 50/50 mix of brightness and saturation\n"
 "+1 - only saturation"
 msgstr ""
+"ratio luminosité/saturation\n"
+"du résultat,\n"
+"-1 - luminosité seule\n"
+" 0 - 50/50 mélange de luminosité et saturation\n"
+"+1 - saturation seule"
 
 #: ../src/iop/vignette.c:377
 msgid "inverts effect of saturation..."
@@ -2438,7 +2431,7 @@ msgstr "inverse l'effet de la saturation..."
 
 #: ../src/iop/vignette.c:378
 msgid "inverts effect of fall-off, default is dark fall-off..."
-msgstr ""
+msgstr "inverse l'effet du dégradé, par défaut le dégradé est sombre..."
 
 #: ../src/iop/velvia.c:66
 msgid "velvia"
@@ -2450,7 +2443,7 @@ msgstr "vibrance"
 
 #: ../src/iop/velvia.c:216
 msgid "mid-tones bias"
-msgstr ""
+msgstr "répartition"
 
 #: ../src/iop/velvia.c:233
 msgid "the amount of saturation to apply"
@@ -2477,8 +2470,10 @@ msgstr "sélectionner ton de couleur"
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/splittoning.c:452 ../src/iop/splittoning.c:486
-#: ../src/iop/grain.c:508 ../src/iop/channelmixer.c:349
+#: ../src/iop/splittoning.c:452
+#: ../src/iop/splittoning.c:486
+#: ../src/iop/grain.c:508
+#: ../src/iop/channelmixer.c:349
 msgid "hue"
 msgstr "teinte (H)"
 
@@ -2505,21 +2500,23 @@ msgstr "sélectionner le ton de la saturation des hautes lumières"
 
 #: ../src/iop/splittoning.c:515
 msgid "balance"
-msgstr "balance"
+msgstr "répartition"
 
 #: ../src/iop/splittoning.c:516
 msgid "compress"
-msgstr "comprime"
+msgstr "intensité"
 
 #: ../src/iop/splittoning.c:531
 msgid "the balance of center of splittoning"
-msgstr ""
+msgstr "répartition du splittonning entre hautes lumières et ombres"
 
 #: ../src/iop/splittoning.c:532
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
 msgstr ""
+"force de l'effet sur les hautes lumières/ombres \n"
+"(préservation des tons moyens)"
 
 #: ../src/iop/grain.c:304
 msgid "grain"
@@ -2530,26 +2527,25 @@ msgid "channel"
 msgstr "cannal"
 
 #: ../src/iop/grain.c:498
-#, fuzzy
 msgid "coarseness"
-msgstr "comprime"
+msgstr "granularité"
 
-#: ../src/iop/grain.c:510 ../src/iop/channelmixer.c:351
+#: ../src/iop/grain.c:510
+#: ../src/iop/channelmixer.c:351
 msgid "lightness"
 msgstr "luminosité"
 
 #: ../src/iop/grain.c:521
 msgid "the grain size (~iso of the film)"
-msgstr ""
+msgstr "taille du grain (~iso du film)"
 
 #: ../src/iop/grain.c:522
 msgid "the strength of applied grain"
 msgstr "force du grain à appliquer"
 
 #: ../src/iop/bilateral.cc:293
-#, fuzzy
 msgid "spatial extent of the gaussian"
-msgstr "extension spatiale du gaussien"
+msgstr "extension spatiale du flou gaussien"
 
 #. gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _(""), NULL);
 #: ../src/iop/bilateral.cc:295
@@ -2565,9 +2561,8 @@ msgid "how much to blur blue"
 msgstr "de combien flouter le bleu"
 
 #: ../src/iop/profile_gamma.c:37
-#, fuzzy
 msgid "unbreak input profile"
-msgstr "Profil de sortie"
+msgstr "profil d'entrée"
 
 #: ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -2582,13 +2577,12 @@ msgid "strength of the effect"
 msgstr "force de l'effet"
 
 #: ../src/iop/colortransfer.c:104
-#, fuzzy
 msgid "color transfer"
-msgstr "Zones de couleurs"
+msgstr "transfert de couleurs"
 
 #: ../src/iop/colortransfer.c:609
 msgid "number of clusters to find in image"
-msgstr ""
+msgstr "nombre de groupes de couleur à trouver dans cette image"
 
 #: ../src/iop/colortransfer.c:613
 msgid "acquire"
@@ -2596,72 +2590,67 @@ msgstr "acquisition"
 
 #: ../src/iop/colortransfer.c:614
 msgid "analyze this image"
-msgstr ""
+msgstr "analyser cette image"
 
 #: ../src/iop/colortransfer.c:618
 msgid "apply"
-msgstr ""
+msgstr "appliquer"
 
 #: ../src/iop/colortransfer.c:619
 msgid "apply previously analyzed image look to this image"
-msgstr ""
+msgstr "appliquer à cette image le style d'une autre image préalablement analysée"
 
 #: ../src/iop/channelmixer.c:107
-#, fuzzy
 msgid "channel mixer"
-msgstr "cannal"
+msgstr "mixeur de canaux"
 
 #: ../src/iop/channelmixer.c:347
-#, fuzzy
 msgid "output channel"
-msgstr "sortie"
+msgstr "canal de sortie"
 
 #: ../src/iop/channelmixer.c:355
-#, fuzzy
 msgid "gray"
-msgstr "grain"
+msgstr "gris"
 
 #: ../src/iop/channelmixer.c:360
-#, fuzzy
 msgid "source channels"
-msgstr "cannal"
+msgstr "canaux source"
 
 #: ../src/iop/channelmixer.c:407
 msgid "swap r and b"
-msgstr ""
+msgstr "échanger r et b"
 
 #: ../src/iop/channelmixer.c:408
 msgid "swap g and b"
-msgstr ""
+msgstr "échanger v et b"
 
 #: ../src/iop/channelmixer.c:409
-#, fuzzy
 msgid "color contrast boost"
-msgstr "contraste local"
+msgstr "renforce le contraste de couleur"
 
 #: ../src/iop/channelmixer.c:410
 msgid "color details boost"
-msgstr ""
+msgstr "renforcer les détails de couleur"
 
 #: ../src/iop/channelmixer.c:411
 msgid "color artifacts boost"
-msgstr ""
+msgstr "renforcer les objets de couleur"
 
 #: ../src/iop/channelmixer.c:412
 msgid "b/w"
-msgstr ""
+msgstr "n/b"
 
 #: ../src/iop/channelmixer.c:413
 msgid "b/w artifacts boost"
-msgstr ""
+msgstr "n/b et renforcement des objets"
 
 #: ../src/iop/channelmixer.c:414
 msgid "b/w smooth skin"
-msgstr ""
+msgstr "n/b et peau lisse"
 
 #: ../src/iop/channelmixer.c:415
 msgid "b/w blue artifacts reduce"
-msgstr ""
+msgstr "n/b et réduction des objets bleus"
 
 #: ../src/imageio/format/jpeg.c:614
 msgid "8-bit jpeg"
@@ -2699,7 +2688,8 @@ msgstr "16-bits"
 msgid "file on disk"
 msgstr "fichier sur le disque"
 
-#: ../src/imageio/storage/disk.c:63 ../src/imageio/storage/disk.c:122
+#: ../src/imageio/storage/disk.c:63
+#: ../src/imageio/storage/disk.c:122
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
@@ -2720,13 +2710,28 @@ msgid ""
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
+"entrer le chemin vers lequel exporter les images:\n"
+"$(FILE_DIRECTORY) - répertoire de l'image originelle\n"
+"$(FILE_NAME) - nom de base de l'image originelle\n"
+"$(FILE_EXTENSION) - extension de l'image originelle\n"
+"$(SEQUENCE) - séquence\n"
+"$(YEAR) - année\n"
+"$(MONTH) - mois\n"
+"$(DAY) - jour\n"
+"$(HOUR) - heure\n"
+"$(MINUTE) - minutes\n"
+"$(SECOND) - secondes\n"
+"$(PICTURES_FOLDER) - dossier images\n"
+"$(HOME_FOLDER) - dossier personnel\n"
+"$(DESKTOP_FOLDER) - bureau"
 
 #: ../src/imageio/storage/disk.c:164
 #, c-format
 msgid "could not create directory %s!"
-msgstr "Ne peut pas créer le repertoire %s!"
+msgstr "impossible de créer le répertoire %s !"
 
-#: ../src/imageio/storage/disk.c:185 ../src/imageio/storage/email.c:104
+#: ../src/imageio/storage/disk.c:185
+#: ../src/imageio/storage/email.c:104
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exporté vers '%s%s'"
@@ -2740,14 +2745,15 @@ msgid "authenticated"
 msgstr "authentifié"
 
 #. Add standard action
-#: ../src/imageio/storage/picasa.c:566 ../src/imageio/storage/picasa.c:599
+#: ../src/imageio/storage/picasa.c:566
+#: ../src/imageio/storage/picasa.c:599
 msgid "create new album"
 msgstr "créer un nouvel album"
 
 #. Failed to authenticated, let's notify somehow...
 #: ../src/imageio/storage/picasa.c:589
 msgid "authentication failed"
-msgstr "l'authentification a échouée"
+msgstr "l'authentification a échoué"
 
 #: ../src/imageio/storage/picasa.c:648
 msgid "user"
@@ -2779,11 +2785,11 @@ msgstr "mon nouvel album"
 
 #: ../src/imageio/storage/picasa.c:687
 msgid "exported from darktable"
-msgstr "exporter depuis darktable"
+msgstr "exporté depuis darktable"
 
 #: ../src/imageio/storage/picasa.c:705
 msgid "refresh album list"
-msgstr ""
+msgstr "rafraîchir la liste d'album"
 
 #: ../src/imageio/storage/picasa.c:711
 msgid "public album"
@@ -2796,17 +2802,17 @@ msgstr "exporter les tags"
 #: ../src/imageio/storage/picasa.c:830
 #, c-format
 msgid "%d/%d exported to picasa webalbum"
-msgstr ""
+msgstr "%d/%d exporté vers picasa web"
 
 #: ../src/imageio/storage/email.c:54
 msgid "send as email"
-msgstr ""
+msgstr "envoyer par e-mail"
 
 #: ../src/gui/gtk.c:235
 #, c-format
 msgctxt "color picker module"
 msgid "`%s'"
-msgstr ""
+msgstr "`%s'"
 
 #. switch(input_color)
 #. {
@@ -2830,66 +2836,61 @@ msgstr "importer une image"
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/gui/histogram.c:33 ../src/gui/histogram.c:183
+#: ../src/gui/histogram.c:33
+#: ../src/gui/histogram.c:183
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
 msgstr ""
-"déplacer pour changer l'exposition,\n"
-"ré-initialisation en double-cliquant"
+"glisser pour changer l'exposition,\n"
+"le double-clic ré-initialise"
 
 #: ../src/gui/histogram.c:178
-#, fuzzy
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
 msgstr ""
-"déplacer pour changer l'exposition,\n"
-"ré-initialisation en double-cliquant"
+"glisser pour changer les noirs,\n"
+"le double-clic réinitialise"
 
 #: ../src/gui/filmview.c:134
 msgid "single images are persistent"
 msgstr "les images uniques sont persistantes"
 
 #: ../src/gui/filmview.c:145
-msgid ""
-"do you really want to remove this film roll and all its images from the "
-"collection?"
-msgstr ""
-"êtes-vous sûr de vouloir supprimer ce film et ainsi que ses images de la "
-"collection?"
+msgid "do you really want to remove this film roll and all its images from the collection?"
+msgstr "êtes-vous sûr de vouloir supprimer ce film ainsi que ses images de la collection ?"
 
 #: ../src/gui/filmview.c:146
 msgid "remove film roll?"
-msgstr "supprimer le film?"
+msgstr "supprimer le film ?"
 
 #. Add the rescan button
 #: ../src/gui/devices.c:126
-#, fuzzy
 msgid "scan for devices"
-msgstr "appareils"
+msgstr "rechercher un boîtier"
 
 #: ../src/gui/devices.c:127
 msgid "scan for newly attached devices"
-msgstr ""
+msgstr "rechercher des appareils branchés récemment"
 
 #: ../src/gui/devices.c:155
-#, fuzzy, c-format
+#, c-format
 msgid "device \"%s\" connected on port \"%s\"."
-msgstr "appareil \"%s\" connecté sur le port \"%s\"."
+msgstr "boîtier \"%s\" connecté sur le port \"%s\"."
 
 #: ../src/gui/devices.c:162
 msgid "import from camera"
-msgstr "importer depuis l'appareil photo"
+msgstr "importer depuis le boîtier"
 
 #: ../src/gui/devices.c:164
-#, fuzzy
 msgid "tethered shoot"
-msgstr "seuil"
+msgstr "commander le boîtier"
 
 #. No supported devices is detected lets notice user..
 #. gtk_widget_set_sensitive(expander,FALSE);
-#: ../src/gui/devices.c:178 ../src/gui/devices.c:180
+#: ../src/gui/devices.c:178
+#: ../src/gui/devices.c:180
 msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
@@ -2903,7 +2904,7 @@ msgstr "réinitialiser à la valeur par défaut"
 
 #: ../src/gui/camera_import_dialog.c:245
 msgid "import images from camera"
-msgstr "importer des images depuis l'appareil photo"
+msgstr "importer des images depuis le boîtier"
 
 #: ../src/gui/camera_import_dialog.c:245
 msgid "cancel"
@@ -2915,21 +2916,20 @@ msgstr "import"
 
 #: ../src/gui/camera_import_dialog.c:253
 msgid "My jobcode"
-msgstr ""
+msgstr "mon code de projet"
 
 #. Top info
 #: ../src/gui/camera_import_dialog.c:261
 msgid "please wait while prefetching thumbnails of images from camera..."
-msgstr ""
+msgstr "merci de patienter pendant la récupération des aperçus de votre boîtier..."
 
 #: ../src/gui/camera_import_dialog.c:279
 msgid "thumbnail"
 msgstr "aperçu"
 
 #: ../src/gui/camera_import_dialog.c:283
-#, fuzzy
 msgid "storage file"
-msgstr "Fichier de la base de données"
+msgstr "fichier de stockage"
 
 #. general settings
 #: ../src/gui/camera_import_dialog.c:302
@@ -2941,12 +2941,8 @@ msgid "delete originals after import"
 msgstr "supprimer les originaux après l'import"
 
 #: ../src/gui/camera_import_dialog.c:308
-msgid ""
-"check this option if you want to delete images on camera after download to "
-"computer"
-msgstr ""
-"cocher cette option si vous souhaitez supprimer les images de l'appareil "
-"après les avoir téléchargées"
+msgid "check this option if you want to delete images on camera after download to computer"
+msgstr "cocher cette option si vous souhaitez supprimer les images de l'appareil après les avoir téléchargées"
 
 #: ../src/gui/camera_import_dialog.c:312
 msgid "override today's date"
@@ -2954,11 +2950,13 @@ msgstr "surcharger la date courante"
 
 #: ../src/gui/camera_import_dialog.c:314
 msgid ""
-"check this, if you want to override the timestamp used when expanding "
-"variables:\n"
+"check this, if you want to override the timestamp used when expanding variables:\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 msgstr ""
+"cochez si vous souhaitez surcharger les paramètres de temps avec les variables:\n"
+"$(YEAR), $(MONTH), $(DAY),\n"
+"$(HOUR), $(MINUTE), $(SECONDS)"
 
 #. Storage structure
 #: ../src/gui/camera_import_dialog.c:325
@@ -2966,29 +2964,25 @@ msgid "storage structure"
 msgstr "structure de stockage"
 
 #: ../src/gui/camera_import_dialog.c:326
-msgid ""
-"the following three settings describe the directory structure and file "
-"renaming for import storage and images; if you dont know how to use this, "
-"keep the default settings."
-msgstr ""
+msgid "the following three settings describe the directory structure and file renaming for import storage and images; if you dont know how to use this, keep the default settings."
+msgstr "les trois réglages suivants décrivent la structure du répertoire et le renommage des images sauvegardées et importées; en cas de doute, laisser les valeurs par défaut."
 
 #: ../src/gui/camera_import_dialog.c:332
 msgid "storage directory"
-msgstr "repertoire de stockage"
+msgstr "répertoire de stockage"
 
 #: ../src/gui/camera_import_dialog.c:335
 msgid "directory structure"
-msgstr ""
+msgstr "structure du dossier"
 
 #: ../src/gui/camera_import_dialog.c:339
-#, fuzzy
 msgid "filename structure"
-msgstr "Fichier"
+msgstr "structure du nom de fichier"
 
 #. Add example
 #: ../src/gui/camera_import_dialog.c:343
 msgid "above settings expands to:"
-msgstr ""
+msgstr "les réglages ci-dessus se détaillent en :"
 
 #. External backup
 #: ../src/gui/camera_import_dialog.c:354
@@ -2996,49 +2990,36 @@ msgid "external backup"
 msgstr "sauvegarde externe"
 
 #: ../src/gui/camera_import_dialog.c:355
-msgid ""
-"external backup is an option to automatic do a backup of the imported image"
-"(s) to another physical location, when activated it does looks for specified "
-"backup foldername of mounted devices on your system... each found folder is "
-"used as basedirectory in the above storage structure and when a image are "
-"downloaded from camera it is replicated to found backup destinations."
-msgstr ""
-"la sauvegarde externe est une option permettant d'effecture une sauvegarde "
-"automatique des images importées sur un support physique extérieur. "
-"Lorsqu'elle est activéen elle recherche le nom du repertoire de sauvegarde "
-"spécifié sur les différents supports montés de votre système. Chaque "
-"repertoire trouvé sera utilisé comme repertoire de base de la structure de "
-"stockage ci dessus et quand une image est téléchargée depuis l'appareil "
-"photo, elle est dupliquée sur chacun des repertoires de sauvegarde."
+msgid "external backup is an option to automatic do a backup of the imported image(s) to another physical location, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."
+msgstr "la sauvegarde externe est une option permettant d'effectuer une sauvegarde automatique des images importées sur un support physique extérieur. Lorsqu'elle est activée elle recherche le nom du répertoire de sauvegarde spécifié sur les différents supports montés de votre système. Chaque répertoire trouvé sera utilisé comme répertoire de base de la structure de stockage ci-dessus et quand une image est téléchargée depuis l'appareil photo, elle est dupliquée sur chacun des répertoires de sauvegarde."
 
 #: ../src/gui/camera_import_dialog.c:361
 msgid "enable backup"
-msgstr "permettre la sauvegarde"
+msgstr "activer la sauvegarde"
 
 #: ../src/gui/camera_import_dialog.c:363
 msgid "check this option to enable automatic backup of imported images"
-msgstr ""
+msgstr "cocher cette option pour activer la sauvegarde automatique des images importées"
 
 #: ../src/gui/camera_import_dialog.c:365
 msgid "warn if no backup destinations are present"
-msgstr "alerter si il n'y a pas de destinations de sauvegarde"
+msgstr "alerter s'il n'y a pas de destinations de sauvegarde"
 
 #: ../src/gui/camera_import_dialog.c:367
-msgid ""
-"check this option to get an interactive warning if no backupdestinations are "
-"present"
-msgstr ""
+msgid "check this option to get an interactive warning if no backupdestinations are present"
+msgstr "cocher cette option pour activer un message d'erreur si aucun support de sauvegarde n'est présent"
 
 #: ../src/gui/camera_import_dialog.c:369
 msgid "backup foldername"
-msgstr "nom du repertoire de sauvegarde"
+msgstr "nom du répertoire de sauvegarde"
 
 #: ../src/gui/camera_import_dialog.c:371
 msgid ""
 "this is the name of folder that indicates a backup destination,\n"
-"if such a folder is found in any mounter media it is used as a backup "
-"destination."
+"if such a folder is found in any mounter media it is used as a backup destination."
 msgstr ""
+"nom du dossier qui indique une destination de sauvegarde,\n"
+"si un tel dossier est trouvé dans n'importe quel support, il est utilisé comme destination de sauvegarde."
 
 #: ../src/gui/camera_import_dialog.c:387
 msgid "images"
@@ -3050,22 +3031,20 @@ msgstr "paramètres"
 
 #. Lets run dialog
 #: ../src/gui/camera_import_dialog.c:499
-msgid ""
-"select the images from the list below that you want to import into a new "
-"filmroll"
-msgstr ""
+msgid "select the images from the list below that you want to import into a new filmroll"
+msgstr "sélectionner les images de la liste ci-dessous que vous souhaitez importer dans un nouveau film"
 
 #: ../src/gui/camera_import_dialog.c:538
 msgid "please set the basedirectory settings before importing"
-msgstr ""
+msgstr "merci de renseigner les paramètres de dossier avant l'importation"
 
 #: ../src/gui/camera_import_dialog.c:545
 msgid "please set the subdirectory settings before importing"
-msgstr ""
+msgstr "merci de renseigner les paramètres de sous-dossier avant l'importation"
 
 #: ../src/gui/camera_import_dialog.c:552
 msgid "please set the filenamepattern settings before importing"
-msgstr ""
+msgstr "merci de renseigner le modèle de nom de fichier avant l'importation"
 
 #: ../src/gui/presets.c:179
 #, c-format
@@ -3074,34 +3053,30 @@ msgstr "éditer `%s' pour le module `%s'"
 
 #: ../src/gui/presets.c:210
 msgid "auto apply this preset to matching images"
-msgstr ""
+msgstr "appliquer automatiquement ce pré-réglage aux images correspondantes"
 
 #: ../src/gui/presets.c:212
 msgid "only show this preset for matching images"
-msgstr ""
+msgstr "ne montrer ce pré-réglage qu'aux images correspondantes"
 
 #: ../src/gui/presets.c:213
-msgid ""
-"be very careful with this option. this might be the last time you see your "
-"preset."
-msgstr ""
-"soyez très vigilants avec cette option. ça pourrait être la dernière fois "
-"que vous voyiez votre réglage."
+msgid "be very careful with this option. this might be the last time you see your preset."
+msgstr "soyez très vigilants avec cette option, ça pourrait être la dernière fois que vous voyez votre pré-réglage."
 
 #: ../src/gui/presets.c:228
 #, c-format
 msgid "string to match model (use % as wildcard)"
-msgstr ""
+msgstr "nom du modèle (use % as wildcard)"
 
 #: ../src/gui/presets.c:235
 #, c-format
 msgid "string to match maker (use % as wildcard)"
-msgstr ""
+msgstr "nom du fabricant (use % as wildcard)"
 
 #: ../src/gui/presets.c:242
 #, c-format
 msgid "string to match lens (use % as wildcard)"
-msgstr ""
+msgstr "nom de l'objectif (use % as wildcard)"
 
 #: ../src/gui/presets.c:254
 msgid "minimum iso value"
@@ -3129,16 +3104,16 @@ msgstr "valeur d'ouverture maximale"
 
 #: ../src/gui/presets.c:300
 msgid "minimum focal length"
-msgstr "longeur focale minimale"
+msgstr "longueur focale minimale"
 
 #: ../src/gui/presets.c:301
 msgid "maximum focal length"
-msgstr "longeur focale maximale"
+msgstr "longueur focale maximale"
 
 #. only show if it is not the default already
 #: ../src/gui/presets.c:535
 msgid "use preset as default"
-msgstr "utiliser ce réglage par défaut"
+msgstr "utiliser ce pré-réglage par défaut"
 
 #. only show this if presets already contains a default
 #: ../src/gui/presets.c:551
@@ -3147,7 +3122,7 @@ msgstr "supprimer les valeurs par défaut"
 
 #: ../src/gui/background_jobs.c:31
 msgid "background jobs"
-msgstr ""
+msgstr "tâches d'arrière-plan"
 
 #: ../src/views/darkroom.c:40
 msgid "darkroom"
@@ -3181,15 +3156,14 @@ msgid "capture"
 msgstr "capture"
 
 #: ../src/views/capture.c:217
-#, fuzzy, c-format
+#, c-format
 msgid "failed to create session path %s."
-msgstr ""
-"échec de la création du chemin d'import %s, abandon de l'import des images."
+msgstr "impossible de créer le chemin de session %s."
 
 #: ../src/views/capture.c:229
 #, c-format
 msgid "new session initiated '%s'"
-msgstr ""
+msgstr "nouvelle session initiée '%s'"
 
 #~ msgid ""
 #~ "how many most-recently used thumbnail mipmaps should be kept in the "
@@ -3197,7 +3171,6 @@ msgstr ""
 #~ msgstr ""
 #~ "combien d'aperçus d'images récemment utilisées sont conservées dans le "
 #~ "cache de la base de données au moment de la fermeture."
-
 #~ msgid ""
 #~ "how many smallest-size most-recently used thumbnail mipmaps should be "
 #~ "kept in the database cache when darktable closes. these do not need a lot "
@@ -3207,49 +3180,34 @@ msgstr ""
 #~ "dans le cache de la base de données au moment de la fermeture. ne "
 #~ "nécessite pas beaucoup de mémoire et permet un aperçu rapide dans le mode "
 #~ "table lumineuse."
-
 #~ msgid "thumbnails to keep in database"
 #~ msgstr "aperçus à conserver en base de données"
-
 #~ msgid "very small thumbnails to keep in database"
 #~ msgstr "aperçus très petits à conserver en base de données"
-
 #~ msgid "srgb"
 #~ msgstr "srgb"
-
 #~ msgid "the scale of the noise"
 #~ msgstr "échelle du bruit"
-
 #~ msgid "store as default for this camera"
 #~ msgstr "Enregistrer comme défaut pour cet appareil"
-
 #~ msgid "remove default for this camera"
 #~ msgstr "Supprimer les valeurs par défaut pour cet appareil"
-
 #~ msgid "8-bit tiff"
 #~ msgstr "tiff 8 bits"
-
 #~ msgid "clipping"
 #~ msgstr "Clipping"
-
 #~ msgid "crop x"
 #~ msgstr "Crop X"
-
 #~ msgid "crop y"
 #~ msgstr "Crop Y"
-
 #~ msgid "crop w"
 #~ msgstr "Crop W"
-
 #~ msgid "crop h"
 #~ msgstr "Crop H"
-
 #~ msgid "horizontal flip"
 #~ msgstr "symétrie horizontale"
-
 #~ msgid "fixed aspect ratio"
 #~ msgstr "rapport hauteur/largeur fixe"
-
 #~ msgid ""
 #~ "leave black and white,\n"
 #~ "but compress brighter\n"
@@ -3258,10 +3216,8 @@ msgstr ""
 #~ "Conserver les noir et blanc\n"
 #~ "en compressant les valeurs\n"
 #~ "lumineuses (non linéaires)"
-
 #~ msgid "four color rgb"
 #~ msgstr "4 couleurs RGB"
-
 #~ msgid ""
 #~ "demosaic treating RGGB as\n"
 #~ "four distinct colors,\n"
@@ -3270,40 +3226,30 @@ msgstr ""
 #~ "Traiter RGGB comme 4 couleurs\n"
 #~ "distinctes pour le dématriçage.\n"
 #~ "à utiliser en cas d'artefacts."
-
 #~ msgid "camera whitebalance"
 #~ msgstr "Balance des blancs de l'appareil"
-
 #~ msgid "black white red"
 #~ msgstr "Noir et blanc rouges"
-
 #~ msgid "go"
 #~ msgstr "go"
-
 #~ msgid ""
 #~ "write a history file for\n"
 #~ "physically delete"
 #~ msgstr ""
 #~ "écrire l'historique pour\n"
 #~ "suppression physique"
-
 #~ msgid "no profile"
 #~ msgstr "Aucun profil"
-
 #~ msgid "adjust the white level"
 #~ msgstr "Ajuster les niveaux de blanc"
-
 #~ msgid "auto exposure"
 #~ msgstr "Exposition auto"
-
 #~ msgid "unclip"
 #~ msgstr "Ne pas tronquer"
-
 #~ msgid "rebuild"
 #~ msgstr "Reconstruire"
-
 #~ msgid "camera wb"
 #~ msgstr "Balance des blancs de l'appareil"
-
 #~ msgid "auto wb"
 #~ msgstr "Balance des blancs auto"
+
