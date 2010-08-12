@@ -226,8 +226,7 @@ failure:
   sqlite3_reset(stmt);
   sqlite3_clear_bindings(stmt);
   const int prefetchrows = .5*max_rows+1;
-  // sqlite3_bind_int (stmt, 1, offset + max_rows*iir);
-  sqlite3_bind_int (stmt, 1, offset);
+  sqlite3_bind_int (stmt, 1, offset + max_rows*iir);
   sqlite3_bind_int (stmt, 2, prefetchrows*iir);
 
   // prefetch jobs in inverse order: supersede previous jobs: most important last
