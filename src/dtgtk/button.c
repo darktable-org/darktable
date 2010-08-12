@@ -110,7 +110,7 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   {
     GdkRectangle t={x,y,x+width,y+height};
     int lx=x+2+height, ly=y+((height/2.0)-(ph/2.0));
-    gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"label",lx,ly,layout);
+    gtk_paint_layout(style,widget->window, GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
   }
 
   return FALSE;
