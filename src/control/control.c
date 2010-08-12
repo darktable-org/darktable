@@ -486,12 +486,13 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
 #endif
 }
 
-void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback, const char *msg, ...)
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...)
 {
   va_list argp;
   va_start(argp, msg);
   dt_control_job_init(j,msg,argp);
   j->finished_callback = callback;
+  j->user_data = user_data;
 }
 
 
@@ -1298,7 +1299,7 @@ void dt_control_clear_history_items(int32_t num)
 
 void dt_control_update_recent_films()
 {
-	
+  
   /*char wdname[20];
   for(int k=1;k<5;k++)
   {

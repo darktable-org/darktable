@@ -163,6 +163,7 @@ typedef struct dt_job_t
 {
   int32_t (*execute) (struct dt_job_t *job);
   dt_job_finished_callback_t finished_callback;
+  void *user_data;
   int32_t param[32];
 #ifdef DT_CONTROL_JOB_DEBUG
   char description[DT_CONTROL_DESCRIPTION_LEN];
@@ -173,7 +174,7 @@ dt_job_t;
 /** intializes a job */
 void dt_control_job_init(dt_job_t *j, const char *msg, ...);
 /** initializes a job with callback on finish. */
-void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback, const char *msg, ...);
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...);
 void dt_control_job_print(dt_job_t *j);
 
 
