@@ -203,7 +203,7 @@ dt_colorspaces_create_xyz_profile(void)
 
        cmsFreeLUT(Lut);
 #else
-       // color shift with this gamma:
+  // color shift with this gamma:
   LPGAMMATABLE Gamma[3];
   Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
   hXYZ = cmsCreateRGBProfile(cmsD50_xyY(), &XYZPrimaries, Gamma);

@@ -118,18 +118,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     Lab.L = in[3*k+0];
     Lab.a = in[3*k+1]*Lab.L*(1.0/100.0);
     Lab.b = in[3*k+2]*Lab.L*(1.0/100.0);
-#if 0
+#if 1
     double xyz[3];
     const float delta = 6.0/29.0;
     const float f_y = (Lab.L + 16.0)/116.0;
     const float f_x = f_y + Lab.a / 500.0;
     const float f_z = f_y - Lab.b / 200.0;
     if(f_y > delta) xyz[1] = D50Y*powf(f_y, 3.0f);
-    else xyz[1] = (f_y-16.0/116.0)*3.0f*delta*D50Y;
+    else xyz[1] = (f_y-16.0/116.0)*3.0f*delta*delta*D50Y;
     if(f_x > delta) xyz[0] = D50X*powf(f_x, 3.0f);
-    else xyz[0] = (f_x-16.0/116.0)*3.0f*delta*D50X;
+    else xyz[0] = (f_x-16.0/116.0)*3.0f*delta*delta*D50X;
     if(f_z > delta) xyz[2] = D50Z*powf(f_z, 3.0f);
-    else xyz[2] = (f_z-16.0/116.0)*3.0f*delta*D50Z;
+    else xyz[2] = (f_z-16.0/116.0)*3.0f*delta*delta*D50Z;
 
     cmsDoTransform(d->xform, xyz, rgb, 1);
 #else
@@ -188,7 +188,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
   }
   else
   {
@@ -218,7 +219,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
   }
 #endif
   g_free(overprofile);
@@ -234,7 +236,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->output = NULL;
   d->xform = NULL;
-  d->Lab = dt_colorspaces_create_lab_profile();
+  // d->Lab = dt_colorspaces_create_lab_profile();
+  d->Lab = dt_colorspaces_create_xyz_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }

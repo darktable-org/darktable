@@ -91,17 +91,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // const float X_n = Y_n/y_n * x_n;
     // const float Z_n = Y_n/y_n * (1.0f-x_n-y_n);
     // const float x_n = 0.3457, y_n = 0.3585; // D50
-    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
     // cmsCIEXYZ wp;
     // cmsTakeMediaWhitePoint(&wp, d->input);
     // const float X_n = wp.X, Y_n = wp.Y, Z_n = wp.Z;
-    // printf("wp: %f %f %f\n", X_n, Y_n, Z_n);
+    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
     double cam[3] = {0., 0., 0.};
     double xyz[3];
     cmsCIELab Lab;
     for(int c=0;c<3;c++) cam[c] = in[3*k + c];
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     cmsDoTransform(d->xform, cam, xyz, 1);
+#if 1
     const float YY = xyz[0]+xyz[1]+xyz[2];
     const float zz = xyz[2]/YY;
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
@@ -114,6 +114,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       xyz[1] += t*amount;
       xyz[2] -= t*amount;
     }
+#endif
 
     Lab.L = 116.0 * lab_f(xyz[1]/Y_n) - 16.0;
     Lab.a = 500.0 * (lab_f(xyz[0]/X_n) - lab_f(xyz[1]/Y_n));
