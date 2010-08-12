@@ -118,7 +118,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     Lab.L = in[3*k+0];
     Lab.a = in[3*k+1]*Lab.L*(1.0/100.0);
     Lab.b = in[3*k+2]*Lab.L*(1.0/100.0);
-#if 1
     double xyz[3];
     const float delta = 6.0/29.0;
     const float f_y = (Lab.L + 16.0)/116.0;
@@ -132,10 +131,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     else xyz[2] = (f_z-16.0/116.0)*3.0f*delta*delta*D50Z;
 
     cmsDoTransform(d->xform, xyz, rgb, 1);
-#else
-    cmsDoTransform(d->xform, &Lab, rgb, 1);
-#endif
-    // RGB[0] = Lab.L; RGB[1] = Lab.a; RGB[2] = Lab.b;
     for(int c=0;c<3;c++) out[3*k + c] = rgb[c];
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -236,7 +231,6 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->output = NULL;
   d->xform = NULL;
-  // d->Lab = dt_colorspaces_create_lab_profile();
   d->Lab = dt_colorspaces_create_xyz_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif

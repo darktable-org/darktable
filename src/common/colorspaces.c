@@ -164,52 +164,9 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
   return hp;
 }
 
-#if 0
-static
-LPLUT Create3x3EmptyLUT(void)
-{
-        LPLUT AToB0 = cmsAllocLUT();
-        if (AToB0 == NULL) return NULL;
-
-        AToB0 -> InputChan = AToB0 -> OutputChan = 3;
-        return AToB0;
-}
-#endif
-
-
 cmsHPROFILE
 dt_colorspaces_create_xyz_profile(void)
 {
-#if 0
-  cmsCIExyYTRIPLE XYZPrimaries   = {
-                                   {1.0, 0.0, 1.0},
-                                   {0.0, 1.0, 1.0},
-                                   {0.0, 0.0, 1.0}
-                                   };
-  cmsHPROFILE  hXYZ;
- 
-#if 0
-  // too dark with this Lut
-  hXYZ = cmsCreateRGBProfile(cmsD50_xyY(), &XYZPrimaries, NULL);
-   LPLUT   Lut = Create3x3EmptyLUT();
-       if (Lut == NULL) {
-           cmsCloseProfile(hXYZ);
-           return NULL;
-           }
-
-       cmsAddTag(hXYZ, icSigAToB0Tag,    (LPVOID) Lut);
-       cmsAddTag(hXYZ, icSigBToA0Tag,    (LPVOID) Lut);
-       cmsAddTag(hXYZ, icSigPreview0Tag, (LPVOID) Lut);
-
-       cmsFreeLUT(Lut);
-#else
-  // color shift with this gamma:
-  LPGAMMATABLE Gamma[3];
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
-  hXYZ = cmsCreateRGBProfile(cmsD50_xyY(), &XYZPrimaries, Gamma);
-  cmsFreeGamma(Gamma[0]);
-#endif
-#else
   cmsHPROFILE hXYZ = cmsCreateXYZProfile();
   // revert some settings which prevent us from using XYZ as output profile:
   cmsSetDeviceClass(hXYZ,      icSigDisplayClass);
@@ -217,16 +174,6 @@ dt_colorspaces_create_xyz_profile(void)
   cmsSetPCS(hXYZ,              icSigXYZData);
   cmsSetRenderingIntent(hXYZ,  INTENT_PERCEPTUAL);
 
-  // LPGAMMATABLE Gamma[3];
-  // Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
-  // cmsAddTag(hXYZ, icSigRedTRCTag,   (LPVOID) Gamma[0]);
-  // cmsAddTag(hXYZ, icSigGreenTRCTag, (LPVOID) Gamma[1]);
-  // cmsAddTag(hXYZ, icSigBlueTRCTag,  (LPVOID) Gamma[2]);
-  // cmsFreeGamma(Gamma[0]);
-
-  // crashes:
-  // cmsHPROFILE hXYZ = cmsCreateRGBProfile(cmsD50_xyY(), NULL, NULL);
-#endif
   if (hXYZ == NULL) return NULL;
       
   cmsAddTag(hXYZ, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");

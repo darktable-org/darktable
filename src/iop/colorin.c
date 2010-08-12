@@ -86,14 +86,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // not thread safe.
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    // const float x_n = 0.31271, y_n = 0.32902; // D65
-    // const float Y_n = 1.0f;
-    // const float X_n = Y_n/y_n * x_n;
-    // const float Z_n = Y_n/y_n * (1.0f-x_n-y_n);
-    // const float x_n = 0.3457, y_n = 0.3585; // D50
-    // cmsCIEXYZ wp;
-    // cmsTakeMediaWhitePoint(&wp, d->input);
-    // const float X_n = wp.X, Y_n = wp.Y, Z_n = wp.Z;
     const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
     double cam[3] = {0., 0., 0.};
     double xyz[3];
@@ -102,9 +94,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     cmsDoTransform(d->xform, cam, xyz, 1);
 #if 1
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
     const float YY = xyz[0]+xyz[1]+xyz[2];
     const float zz = xyz[2]/YY;
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
     const float bound_z = 0.7f, bound_Y = 0.5f;
     const float amount = 0.05f;
     // if(YY > bound_Y && zz > bound_z)
