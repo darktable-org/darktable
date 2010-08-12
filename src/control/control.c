@@ -486,6 +486,15 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
 #endif
 }
 
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback, const char *msg, ...)
+{
+  va_list argp;
+  va_start(argp, msg);
+  dt_control_job_init(j,argp);
+  j->finished_callback = callback;
+}
+
+
 void dt_control_job_print(dt_job_t *j)
 {
 #ifdef DT_CONTROL_JOB_DEBUG
@@ -507,7 +516,13 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
 
-  j->execute(j);
+   /* execute job */
+  int32_t exec_res = j->execute (j);
+  
+  /* pass result to finished callback */
+  if (j->finished_callback)
+    j->finished_callback (exec_res,j);
+  
   return 0;
 }
 
@@ -529,8 +544,14 @@ int32_t dt_control_run_job(dt_control_t *s)
   dt_print(DT_DEBUG_CONTROL, "[run_job %d] ", dt_control_get_threadid());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  j->execute(j);
-
+  
+  /* execute job */
+  int32_t exec_res = j->execute (j);
+  
+  /* pass result to finished callback */
+  if (j->finished_callback)
+    j->finished_callback (exec_res,j);
+   
   pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);
   s->idle[s->idle_top++] = i;

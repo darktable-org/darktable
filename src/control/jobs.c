@@ -38,11 +38,11 @@ void dt_image_load_job_init(dt_job_t *job, int32_t id, dt_image_buffer_t mip)
   t->mip = mip;
 }
 
-void dt_image_load_job_run(dt_job_t *job)
+int32_t dt_image_load_job_run(dt_job_t *job)
 {
   dt_image_load_t *t = (dt_image_load_t *)job->param;
   dt_image_t *img = dt_image_cache_get(t->imgid, 'r');
-  if(!img) return;
+  if(!img) return 1;
   
   char message[512]={0};
   snprintf(message, 512, _("loading image %s"), img->filename);
@@ -54,9 +54,10 @@ void dt_image_load_job_run(dt_job_t *job)
   dt_image_cache_release(img, 'r');
   dt_gui_background_jobs_set_progress( j, 1.0 );
   dt_gui_background_jobs_destroy (j);
+  return 0;
 }
 
-void dt_captured_image_import_job_run(dt_job_t *job)
+int32_t dt_captured_image_import_job_run(dt_job_t *job)
 {
   dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
   
@@ -74,6 +75,7 @@ void dt_captured_image_import_job_run(dt_job_t *job)
   }
   dt_gui_background_jobs_set_progress( j , 1.0 );
   dt_gui_background_jobs_destroy (j);
+  return 0;
 }
 
 void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char *filename)
@@ -85,7 +87,7 @@ void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char
   t->film_id = filmid;
 }
 
-void dt_camera_capture_job_run(dt_job_t *job)
+int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
   int total = t->count*t->brackets;
@@ -113,6 +115,7 @@ void dt_camera_capture_job_run(dt_job_t *job)
    
   }
   dt_gui_background_jobs_destroy (j);
+  return 0;
 }
 
 void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets)
@@ -139,7 +142,7 @@ void dt_camera_get_previews_job_init(dt_job_t *job,dt_camera_t *camera,dt_camctl
   t->flags=flags;
 }
 
-void dt_camera_get_previews_job_run(dt_job_t *job)
+int32_t dt_camera_get_previews_job_run(dt_job_t *job)
 {
   dt_camera_get_previews_t *t=(dt_camera_get_previews_t*)job->param;
   
@@ -147,6 +150,7 @@ void dt_camera_get_previews_job_run(dt_job_t *job)
   dt_camctl_get_previews(darktable.camctl,t->flags,t->camera);
   dt_camctl_unregister_listener(darktable.camctl,t->listener);
   g_free(t->listener);
+  return 0;
 }
 
 void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile, const char *destinationfile)
@@ -158,7 +162,7 @@ void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile, cons
   t->destinationfile=g_strdup(destinationfile);
 }
 
-void dt_camera_import_backup_job_run(dt_job_t *job)
+int32_t dt_camera_import_backup_job_run(dt_job_t *job)
 {  // copy sourcefile to each found destination
   dt_camera_import_backup_t *t = (dt_camera_import_backup_t *)job->param;
   GVolumeMonitor *vmgr= g_volume_monitor_get();
@@ -203,6 +207,7 @@ void dt_camera_import_backup_job_run(dt_job_t *job)
     
   // Release volume manager
   g_object_unref(vmgr);
+  return 0;
 }
 
 
@@ -281,7 +286,7 @@ const char *_camera_import_request_image_path(const dt_camera_t *camera,void *da
   return t->film->dirname;
 }
 
-void dt_camera_import_job_run(dt_job_t *job)
+int32_t dt_camera_import_job_run(dt_job_t *job)
 {
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
   dt_control_log(_("starting import job of images from camera"));
@@ -302,7 +307,7 @@ void dt_camera_import_job_run(dt_job_t *job)
   if( g_mkdir_with_parents(t->film->dirname,0755) == -1 )
   {
     dt_control_log(_("failed to create import path %s, import of images aborted."), t->film->dirname);
-    return;
+    return 1;
   }
   
   // Import path is ok, lets actually create the filmroll in database..
@@ -338,6 +343,7 @@ void dt_camera_import_job_run(dt_job_t *job)
   pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref--;
   pthread_mutex_unlock(&t->film->images_mutex);
+  return 0;
 }
 
 
@@ -352,7 +358,7 @@ void dt_film_import1_init(dt_job_t *job, dt_film_t *film)
   pthread_mutex_unlock(&film->images_mutex);
 }
 
-void dt_film_import1_run(dt_job_t *job)
+int32_t dt_film_import1_run(dt_job_t *job)
 {
   dt_film_import1_t *t = (dt_film_import1_t *)job->param;
   dt_film_import1(t->film);
@@ -364,16 +370,18 @@ void dt_film_import1_run(dt_job_t *job)
     dt_film_cleanup(t->film);
     free(t->film);
   }
+  return 0;
 }
 
 // ====================
 // develop:
 // ====================
 
-void dt_dev_raw_load_job_run(dt_job_t *job)
+int32_t dt_dev_raw_load_job_run(dt_job_t *job)
 {
   dt_dev_raw_load_t *t = (dt_dev_raw_load_t *)job->param;
   dt_dev_raw_load(t->dev, t->image);
+  return 0;
 }
 
 void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *image)
@@ -385,10 +393,11 @@ void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *imag
   t->image = image;
 }
 
-void dt_dev_process_preview_job_run(dt_job_t *job)
+int32_t dt_dev_process_preview_job_run(dt_job_t *job)
 {
   dt_dev_process_t *t = (dt_dev_process_t *)job->param;
   dt_dev_process_preview_job(t->dev);
+  return 0;
 }
 
 void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev)
@@ -399,10 +408,11 @@ void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev)
   t->dev = dev;
 }
 
-void dt_dev_process_image_job_run(dt_job_t *job)
+int32_t dt_dev_process_image_job_run(dt_job_t *job)
 {
   dt_dev_process_t *t = (dt_dev_process_t *)job->param;
   dt_dev_process_image_job(t->dev);
+  return 0;
 }
 
 void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev)
@@ -419,7 +429,7 @@ typedef struct dt_control_image_enumerator_t
 }
 dt_control_image_enumerator_t;
 
-void dt_control_write_dt_files_job_run(dt_job_t *job)
+int32_t dt_control_write_dt_files_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -438,9 +448,10 @@ void dt_control_write_dt_files_job_run(dt_job_t *job)
     dt_image_cache_release(img, 'r');
     t = g_list_delete_link(t, t);
   }
+  return 0;
 }
 
-void dt_control_duplicate_images_job_run(dt_job_t *job)
+int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -459,9 +470,10 @@ void dt_control_duplicate_images_job_run(dt_job_t *job)
     dt_gui_background_jobs_set_progress(j, fraction);
   }
   dt_gui_background_jobs_destroy (j);
+  return 0;
 }
 
-void dt_control_remove_images_job_run(dt_job_t *job)
+int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -480,9 +492,10 @@ void dt_control_remove_images_job_run(dt_job_t *job)
     dt_gui_background_jobs_set_progress(j, fraction);
   }
   dt_gui_background_jobs_destroy (j);
+  return 0;
 }
 
-void dt_control_delete_images_job_run(dt_job_t *job)
+int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -530,6 +543,7 @@ void dt_control_delete_images_job_run(dt_job_t *job)
     dt_gui_background_jobs_set_progress(j, fraction);
   }
   dt_gui_background_jobs_destroy (j);
+  return 0;
 }
 
 void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
@@ -634,7 +648,7 @@ void dt_control_delete_images()
   dt_control_add_job(darktable.control, &j);
 }
 
-void dt_control_export_job_run(dt_job_t *job)
+int32_t dt_control_export_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -674,7 +688,7 @@ void dt_control_export_job_run(dt_job_t *job)
       mformat->free_params (mformat, fdata);
       dt_control_log(_("failed to get parameters from storage module, aborting export.."));
     }
-    return;
+    return 1;
   }
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]={0};
@@ -709,6 +723,7 @@ void dt_control_export_job_run(dt_job_t *job)
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
   mformat->free_params (mformat,  fdata);
   mstorage->free_params(mstorage, sdata);
+  return 0;
 }
 
 void dt_control_export_job_init(dt_job_t *job)

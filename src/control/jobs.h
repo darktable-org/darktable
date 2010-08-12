@@ -34,7 +34,7 @@ typedef struct dt_image_load_t
 }
 dt_image_load_t;
 
-void dt_image_load_job_run(dt_job_t *job);
+int32_t dt_image_load_job_run(dt_job_t *job);
 void dt_image_load_job_init(dt_job_t *job, int32_t imgid, dt_image_buffer_t mip);
 
 /** Tethered image import job */
@@ -44,7 +44,7 @@ typedef struct dt_captured_image_import_t
 	const char *filename;
 }
 dt_captured_image_import_t;
-void dt_captured_image_import_job_run(dt_job_t *job);
+int32_t dt_captured_image_import_job_run(dt_job_t *job);
 void dt_captured_image_import_job_init(dt_job_t *job, uint32_t filmid, const char *filename);
 
 /** Camera capture job */
@@ -60,7 +60,7 @@ typedef struct dt_camera_capture_t
 	uint32_t film_id;
 }
 dt_camera_capture_t;
-void dt_camera_capture_job_run(dt_job_t *job);
+int32_t dt_camera_capture_job_run(dt_job_t *job);
 void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets);
 
 /** camera get previews job. */
@@ -71,7 +71,7 @@ typedef struct dt_camera_get_previews_t
 	struct dt_camctl_listener_t *listener;
 }
 dt_camera_get_previews_t;
-void dt_camera_get_previews_job_run(dt_job_t *job);
+int32_t dt_camera_get_previews_job_run(dt_job_t *job);
 void dt_camera_get_previews_job_init(dt_job_t *job,struct dt_camera_t *camera,struct dt_camctl_listener_t *listener,uint32_t flags);
 
 /** Camera import job */
@@ -88,7 +88,7 @@ typedef struct dt_camera_import_t
 	uint32_t import_count;
 }
 dt_camera_import_t;
-void dt_camera_import_job_run(dt_job_t *job);
+int32_t dt_camera_import_job_run(dt_job_t *job);
 void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera);
 
 /** Camera image import backup job initiated upon import job for each image*/
@@ -98,7 +98,7 @@ typedef struct dt_camera_import_backup_t
 	gchar *destinationfile;
 }
 dt_camera_import_backup_t;
-void dt_camera_import_backup_job_run(dt_job_t *job);
+int32_t dt_camera_import_backup_job_run(dt_job_t *job);
 void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile,const char *destinationfile);
 
 typedef struct dt_film_import1_t
@@ -107,7 +107,7 @@ typedef struct dt_film_import1_t
 }
 dt_film_import1_t;
 
-void dt_film_import1_run(dt_job_t *job);
+int32_t dt_film_import1_run(dt_job_t *job);
 void dt_film_import1_init(dt_job_t *job, dt_film_t *film);
 
 
@@ -118,7 +118,7 @@ typedef struct dt_dev_raw_load_t
 }
 dt_dev_raw_load_t;
 
-void dt_dev_raw_load_job_run(dt_job_t *job);
+int32_t dt_dev_raw_load_job_run(dt_job_t *job);
 void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *image);
 
 typedef struct dt_dev_process_t
@@ -126,9 +126,9 @@ typedef struct dt_dev_process_t
 	dt_develop_t *dev;
 }
 dt_dev_process_t;
-void dt_dev_process_preview_job_run(dt_job_t *job);
+int32_t dt_dev_process_preview_job_run(dt_job_t *job);
 void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev);
-void dt_dev_process_image_job_run(dt_job_t *job);
+int32_t dt_dev_process_image_job_run(dt_job_t *job);
 void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev);
 
 void dt_dev_export_init(dt_job_t *job);
