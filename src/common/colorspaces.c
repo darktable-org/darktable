@@ -39,7 +39,7 @@ build_srgb_gamma(void)
 cmsHPROFILE
 dt_colorspaces_create_lab_profile()
 {
-  return cmsCreateLabProfile(NULL);
+  return cmsCreateLabProfile(cmsD50_xyY());
 }
 
 cmsHPROFILE
@@ -167,20 +167,13 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
 cmsHPROFILE
 dt_colorspaces_create_xyz_profile(void)
 {
-  cmsCIExyY       D65;
-  cmsCIExyYTRIPLE XYZPrimaries   = {
-                                   {1.0, 0.0, 1.0},
-                                   {0.0, 1.0, 1.0},
-                                   {0.0, 0.0, 1.0}
-                                   };
-  LPGAMMATABLE Gamma[3];
-  cmsHPROFILE  hXYZ;
- 
-  cmsWhitePointFromTemp(6504, &D65);
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
-           
-  hXYZ = cmsCreateRGBProfile(&D65, &XYZPrimaries, Gamma);
-  cmsFreeGamma(Gamma[0]);
+  cmsHPROFILE hXYZ = cmsCreateXYZProfile();
+  // revert some settings which prevent us from using XYZ as output profile:
+  cmsSetDeviceClass(hXYZ,      icSigDisplayClass);
+  cmsSetColorSpace(hXYZ,       icSigRgbData);
+  cmsSetPCS(hXYZ,              icSigXYZData);
+  cmsSetRenderingIntent(hXYZ,  INTENT_PERCEPTUAL);
+
   if (hXYZ == NULL) return NULL;
       
   cmsAddTag(hXYZ, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
