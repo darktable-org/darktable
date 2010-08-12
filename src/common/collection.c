@@ -139,6 +139,10 @@ dt_collection_reset(const dt_collection_t *collection)
 const gchar *
 dt_collection_get_query (const dt_collection_t *collection)
 {
+  /* ensure there is a query string for collection */
+  if(!collection->query) 
+    dt_collection_update(collection);
+
   return collection->query;
 }
 
@@ -206,4 +210,19 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
   ((dt_collection_t *)collection)->query = g_strdup(query);
   
   return 1;
+}
+
+uint32_t dt_collection_get_count(const dt_collection_t *collection) {
+  sqlite3_stmt *stmt = NULL;
+  uint32_t count=1;
+  const gchar *query = dt_collection_get_query(collection);
+  char countquery[2048]={0};
+  snprintf(countquery, 2048, "select count(id) %s", query + 18);
+  sqlite3_prepare_v2(darktable.db, countquery, -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, 0);
+  sqlite3_bind_int (stmt, 2, -1);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
 }
