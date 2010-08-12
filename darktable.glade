@@ -591,9 +591,7 @@ file manager</property>
 																						<child>
 																							<widget class="GtkVBox" id="recent_used_film_rolls_section_box">
 																								<property name="visible">True</property>
-																								<child>
-																									<placeholder/>
-																								</child>
+																								<child><placeholder/></child>
 																							</widget>
 																							<packing>
 																								<property name="position">2</property>
@@ -603,60 +601,7 @@ file manager</property>
 																							<widget class="GtkVBox" id="section">
 																								<property name="visible">True</property>
 																								<child>
-																									<widget class="GtkButton" id="recent_film_1">
-																										<property name="label" translatable="yes">button</property>
-																										<property name="can_focus">True</property>
-																										<property name="receives_default">True</property>
-																										<property name="no_show_all">True</property>
-																										<property name="xalign">0</property>
-																									</widget>
-																									<packing>
-																										<property name="expand">False</property>
-																										<property name="fill">False</property>
-																										<property name="position">0</property>
-																									</packing>
-																								</child>
-																								<child>
-																									<widget class="GtkButton" id="recent_film_2">
-																										<property name="label" translatable="yes">button</property>
-																										<property name="can_focus">True</property>
-																										<property name="receives_default">True</property>
-																										<property name="no_show_all">True</property>
-																										<property name="xalign">0</property>
-																									</widget>
-																									<packing>
-																										<property name="expand">False</property>
-																										<property name="fill">False</property>
-																										<property name="position">1</property>
-																									</packing>
-																								</child>
-																								<child>
-																									<widget class="GtkButton" id="recent_film_3">
-																										<property name="label" translatable="yes">button</property>
-																										<property name="can_focus">True</property>
-																										<property name="receives_default">True</property>
-																										<property name="no_show_all">True</property>
-																										<property name="xalign">0</property>
-																									</widget>
-																									<packing>
-																										<property name="expand">False</property>
-																										<property name="fill">False</property>
-																										<property name="position">2</property>
-																									</packing>
-																								</child>
-																								<child>
-																									<widget class="GtkButton" id="recent_film_4">
-																										<property name="label" translatable="yes">button</property>
-																										<property name="can_focus">True</property>
-																										<property name="receives_default">True</property>
-																										<property name="no_show_all">True</property>
-																										<property name="xalign">0</property>
-																									</widget>
-																									<packing>
-																										<property name="expand">False</property>
-																										<property name="fill">False</property>
-																										<property name="position">3</property>
-																									</packing>
+																									<placeholder/>
 																								</child>
 																							</widget>
 																							<packing>

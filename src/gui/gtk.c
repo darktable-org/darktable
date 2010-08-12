@@ -949,8 +949,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   dt_gui_presets_init();
 
+ 
+
   // film history
-  for(long int k=1;k<5;k++)
+  /*for(long int k=1;k<5;k++)
   {
     char wdname[20];
     snprintf(wdname, 20, "recent_film_%ld", k);
@@ -958,7 +960,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     g_signal_connect (G_OBJECT (widget), "clicked",
                       G_CALLBACK (film_button_clicked),
                       (gpointer)(k-1));
-  }
+  }*/
 
   // image op history
   for(long int k=0;k<10;k++)
@@ -1003,6 +1005,22 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GtkWidget *label = dtgtk_label_new (_("recently used film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
   gtk_widget_show(label);
   gtk_container_add (GTK_CONTAINER(widget),label);
+  
+   /* setup film history */
+  GtkWidget *button;
+  GtkWidget *recent_film_vbox =  gtk_vbox_new(FALSE,0);
+  for (long k=1;k<5;k++) 
+  {
+    char wdname[20];
+    snprintf (wdname, 20, "recent_film_%ld", k);
+    button = dtgtk_button_new_with_label (wdname,dtgtk_cairo_paint_filmstrip,0);
+    gtk_box_pack_start (GTK_BOX (recent_film_vbox),button,FALSE,FALSE,0);
+    g_signal_connect (G_OBJECT (button), "clicked",
+                      G_CALLBACK (film_button_clicked),
+                      (gpointer)(k-1));
+  }
+  gtk_widget_show_all(GTK_WIDGET (recent_film_vbox));
+  gtk_container_add (GTK_CONTAINER(widget),recent_film_vbox);
   
    /* add all filmrolls section label */
   widget = glade_xml_get_widget (darktable.gui->main_window, "all_film_rolls_section_box");
