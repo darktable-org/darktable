@@ -93,18 +93,18 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   /* draw icon */
   if (DTGTK_BUTTON (widget)->icon)
   {
-	  if (DTGTK_BUTTON (widget)->icon_flags & CPF_IGNORE_FG_STATE) 
-	  state = GTK_STATE_NORMAL;
-	  cr = gdk_cairo_create (widget->window);
-	  cairo_set_source_rgb (cr,
-		    style->fg[state].red/65535.0, 
-		    style->fg[state].green/65535.0, 
-		    style->fg[state].blue/65535.0);
-	  
-	  if (text)
-	    DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,height-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
-	  else
-	    DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,width-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
+    if (DTGTK_BUTTON (widget)->icon_flags & CPF_IGNORE_FG_STATE) 
+    state = GTK_STATE_NORMAL;
+    cr = gdk_cairo_create (widget->window);
+    cairo_set_source_rgb (cr,
+        style->fg[state].red/65535.0, 
+        style->fg[state].green/65535.0, 
+        style->fg[state].blue/65535.0);
+    
+    if (text)
+      DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,height-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
+    else
+      DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,width-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
   }
   cairo_destroy (cr);
   
@@ -134,15 +134,12 @@ dtgtk_button_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 GtkWidget* 
 dtgtk_button_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
-  GtkDarktableButton *button;
-  button = gtk_type_new (dtgtk_button_get_type());
-  button->icon = paint;
-  button->icon_flags = paintflags;
+  GtkWidget *button = dtgtk_button_new (paint,paintflags);
   
   /* set button label */
   gtk_button_set_label (GTK_BUTTON (button),label);
   
-  return (GtkWidget *)button;
+  return button;
 }
 
 GtkType dtgtk_button_get_type() 
