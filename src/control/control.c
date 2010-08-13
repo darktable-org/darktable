@@ -1231,70 +1231,21 @@ int dt_control_key_released(uint16_t which)
   gtk_widget_queue_draw(widget);
   return 1;
 }
-
+#include "gui/iop_history.h"
 void dt_control_add_history_item(int32_t num_in, const char *label)
 {
-  char wdname[20], numlabel[256];
-  const gchar *lbl = NULL;
-  int32_t num = num_in + 1; // one after orginal
-  GtkWidget *widget = NULL;
-  g_snprintf(numlabel, 256, "%d - %s", num, label);
-  if(num >= 10) for(int i=1;i<9;i++)
-  {
-    darktable.control->history_start = num - 9;
-    snprintf(wdname, 20, "history_%02d", i+1);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    lbl = gtk_button_get_label(GTK_BUTTON(widget));
-    snprintf(wdname, 20, "history_%02d", i);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_button_set_label(GTK_BUTTON(widget), lbl);
-    snprintf(wdname, 20, "history_%02d", 9);
-  }
-  else snprintf(wdname, 20, "history_%02d", num);
-  widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-  gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), numlabel);
-  darktable.gui->reset = 1;
-  gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
-  darktable.gui->reset = 0;
+  dt_gui_iop_history_add_item(num_in+1,label);
 }
 
 void dt_control_clear_history_items(int32_t num)
 {
-  // clear history items down to num (leave num-th on stack)
-  darktable.control->history_start = MAX(0, num - 8);
-  char wdname[20], numlabel[256], numlabel2[256];
-  // hide all but original
-  for(int k=1;k<10;k++)
-  {
-    snprintf(wdname, 20, "history_%02d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_hide(widget);
-  }
-  // 0 - original
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "history_00");
-  gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), _("0 - original"));
-  GList *history = g_list_nth(darktable.develop->history, darktable.control->history_start);
-  for(int k=1;k<9;k++)
-  { // k is button number: history_0k
-    int curr = darktable.control->history_start + k;   // curr: curr-th history item in list in dev
-    if(curr > num+1 || !history) break;                  // curr > num+1: history item stays hidden
-    snprintf(wdname, 20, "history_%02d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_show(widget);
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_dev_get_history_item_label(hist, numlabel2, 256);
-    snprintf(numlabel, 256, "%d - %s", curr, numlabel2);
-    gtk_button_set_label(GTK_BUTTON(widget), numlabel);
-    if(curr == num+1)
-    {
-      darktable.gui->reset = 1;
-      gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
-      darktable.gui->reset = 0;
-    }
-    history = g_list_next(history);
-  }
+  /* reset if empty stack */
+  if( num == 0 ) dt_gui_iop_history_reset();
+  
+  int size = dt_gui_iop_history_get_top () - num;
+  for(int k=1;k<size;k++)
+    dt_gui_iop_history_pop_top ();
+
 }
 
 void dt_control_update_recent_films()

@@ -38,6 +38,7 @@
 #include "gui/gtk.h"
 #include "gui/metadata.h"
 #include "gui/filmview.h"
+#include "gui/iop_history.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
 #include "control/control.h"
@@ -525,53 +526,7 @@ film_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_ctl_switch_mode_to(DT_LIBRARY);
 }
 
-static void
-history_compress_clicked (GtkWidget *widget, gpointer user_data)
-{
-  const int imgid = darktable.develop->image ? darktable.develop->image->id : 0;
-  if(!imgid) return;
-  // make sure the right history is in there:
-  dt_dev_write_history(darktable.develop);
-  sqlite3_stmt *stmt;
-  sqlite3_exec(darktable.db, "create temp table temp_history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
-  // sqlite3_prepare_v2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and enabled = 1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
-  sqlite3_prepare_v2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  sqlite3_exec(darktable.db, "insert into history select imgid,rowid-1,module,operation,op_params,enabled from temp_history", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from temp_history", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "drop table temp_history", NULL, NULL, NULL);
-  dt_dev_reload_history_items(darktable.develop);
-}
 
-static void
-history_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  static int reset = 0;
-  if(reset) return;
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
-  // toggle all buttons:
-  reset = 1;
-  for(int i=0;i<10;i++)
-  {
-    char wdname[30];
-    snprintf(wdname, 30, "history_%02d", i);
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(glade_xml_get_widget (darktable.gui->main_window, wdname));
-    if(b != GTK_TOGGLE_BUTTON(widget)) gtk_object_set(GTK_OBJECT(b), "active", FALSE, NULL);
-    // else gtk_object_set(GTK_OBJECT(b), "active", TRUE, NULL);
-  }
-  reset = 0;
-  if(darktable.gui->reset) return;
-  // revert to given history item.
-  long int num = (long int)user_data;
-  if(num != 0) num += darktable.control->history_start;
-  dt_dev_pop_history_items(darktable.develop, num);
-}
 
 void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
@@ -955,33 +910,20 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   dt_gui_presets_init();
 
- 
-
-  // film history
-  /*for(long int k=1;k<5;k++)
-  {
-    char wdname[20];
-    snprintf(wdname, 20, "recent_film_%ld", k);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    g_signal_connect (G_OBJECT (widget), "clicked",
-                      G_CALLBACK (film_button_clicked),
-                      (gpointer)(k-1));
-  }*/
-
   // image op history
-  for(long int k=0;k<10;k++)
+  dt_gui_iop_history_init();
+ 
+  /*for(long int k=0;k<10;k++)
   {
     char wdname[20];
     snprintf(wdname, 20, "history_%02ld", k);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    g_signal_connect (G_OBJECT (widget), "clicked",
+    GtkWidget *button = dtgtk_togglebutton_new_with_label (wdname,NULL,0);
+    gtk_box_pack_start (GTK_BOX (hvbox),button,FALSE,FALSE,0);
+    g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (history_button_clicked),
                       (gpointer)k);
-  }
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_compress_button");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-      G_CALLBACK (history_compress_clicked),
-      (gpointer)0);
+  }*/
+
 
   // image filtering/sorting
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
