@@ -470,7 +470,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
   gtk_widget_set_visible(widget, FALSE);
-   widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
   gtk_widget_set_visible(widget, TRUE);
@@ -499,7 +499,7 @@ void enter(dt_view_t *self)
       GtkWidget *image = gtk_image_new_from_file(filename);
       gtk_button_set_image(GTK_BUTTON(module->showhide), image);
       g_signal_connect(G_OBJECT(module->showhide), "toggled",
-                       G_CALLBACK(module_show_callback), module);
+          G_CALLBACK(module_show_callback), module);
       gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
           GTK_FILL | GTK_EXPAND | GTK_SHRINK,
           GTK_SHRINK,
@@ -514,7 +514,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                    G_CALLBACK (dt_control_expose_endmarker), 0);
+      G_CALLBACK (dt_control_expose_endmarker), 0);
 
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
@@ -630,7 +630,7 @@ void leave(dt_view_t *self)
   }
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);
   pthread_mutex_unlock(&dev->history_mutex);
-  
+
   // release full buffer
   if(dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
@@ -647,8 +647,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_control_t *ctl = darktable.control;
-  const int32_t width_i  = ctl->width  - ctl->tabborder*2;
-  const int32_t height_i = ctl->height - ctl->tabborder*2;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
   int32_t offx = 0.0f, offy = 0.0f;
   if(width_i  > DT_IMAGE_WINDOW_SIZE) offx =   (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
   if(height_i > DT_IMAGE_WINDOW_SIZE) offy =   (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
@@ -656,8 +656,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   x += offx;
   y += offy;
   if(dev->gui_module && dev->gui_module->request_color_pick &&
-     ctl->button_down &&
-     ctl->button_down_which == 1)
+      ctl->button_down &&
+      ctl->button_down_which == 1)
   { // module requested a color box
     float zoom_x, zoom_y, bzoom_x, bzoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
@@ -666,7 +666,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f+bzoom_y, .5f+zoom_y));
     dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f+bzoom_x, .5f+zoom_x));
     dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f+bzoom_y, .5f+zoom_y));
-    
+
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
     dt_control_queue_draw_all();
@@ -714,9 +714,8 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  dt_control_t *ctl = darktable.control;
-  const int32_t width_i  = ctl->width  - ctl->tabborder*2;
-  const int32_t height_i = ctl->height - ctl->tabborder*2;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
   if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
   if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
 
