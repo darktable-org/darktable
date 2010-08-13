@@ -1239,7 +1239,7 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
 void dt_control_clear_history_items(int32_t num)
 {
   /* reset if empty stack */
-  if( num == 0 ) dt_gui_iop_history_reset();
+  if( num == -1 ) dt_gui_iop_history_reset();
   
   int size = dt_gui_iop_history_get_top () - MAX(0, num);
   for(int k=1;k<size;k++)

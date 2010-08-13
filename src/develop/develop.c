@@ -654,7 +654,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached)
   {
     // update history (on) (off) annotation
-    dt_control_clear_history_items(dev->history_end);
+    dt_control_clear_history_items(dev->history_end-1);
     dt_control_queue_draw_all();
   }
 }
@@ -737,7 +737,7 @@ void dt_dev_write_history(dt_develop_t *dev)
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  if(dev->gui_attached) dt_control_clear_history_items(0);
+  if(dev->gui_attached) dt_control_clear_history_items(-1);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
   int rc;
