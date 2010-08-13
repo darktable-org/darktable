@@ -1233,18 +1233,25 @@ int dt_control_key_released(uint16_t which)
 #include "gui/iop_history.h"
 void dt_control_add_history_item(int32_t num_in, const char *label)
 {
-  dt_gui_iop_history_add_item(num_in+1,label);
+  dt_gui_iop_history_add_item(num_in,label);
 }
 
 void dt_control_clear_history_items(int32_t num)
 {
   /* reset if empty stack */
-  if( num == -1 ) dt_gui_iop_history_reset();
+  if( num == -1 ) 
+  {
+	dt_gui_iop_history_reset();
+	return;
+  }
   
+  /* pop items from top of history */
   int size = dt_gui_iop_history_get_top () - MAX(0, num);
   for(int k=1;k<size;k++)
     dt_gui_iop_history_pop_top ();
 
+  dt_gui_iop_history_update_labels ();
+	
 }
 
 void dt_control_update_recent_films()

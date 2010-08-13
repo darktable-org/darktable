@@ -110,6 +110,15 @@ dt_gui_iop_history_add_item (long int num, const gchar *label)
   GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
   GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
  
+  GList *items = gtk_container_get_children (GTK_CONTAINER (hvbox));
+  
+  /* let's check if top item has same label as this hist change label */
+  if( g_list_nth_data (items,0) && strcmp (gtk_button_get_label ( GTK_BUTTON (g_list_nth_data (items,0))),label) ==0 ) 
+    return GTK_WIDGET(g_list_nth_data (items,0));
+  
+  /* add a new */
+  num++;
+  
   /* create label */
   GtkWidget *widget = NULL;
   gchar numlabel[256];
@@ -118,6 +127,8 @@ dt_gui_iop_history_add_item (long int num, const gchar *label)
   /* create toggle button */
   widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,0);
   g_object_set_data (G_OBJECT (widget),"history_number",(gpointer)num);
+  g_object_set_data (G_OBJECT (widget),"label",(gpointer) g_strdup(label));
+  
   g_signal_connect (G_OBJECT (widget), "clicked",
                       G_CALLBACK (history_button_clicked),
                       (gpointer)num);
@@ -156,3 +167,26 @@ dt_gui_iop_history_pop_top()
   gtk_object_set(GTK_OBJECT (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0)) , "active", TRUE, NULL);
 }
   
+void 
+dt_gui_iop_history_update_labels ()
+{
+  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
+  GList *items = gtk_container_get_children (GTK_CONTAINER (hvbox));
+  
+  /* update labels for all hist items excluding oringal */
+  int hsize = g_list_length(darktable.develop->history);
+  for(int i=0;i<hsize;i++) {
+    gchar numlabel[256]={0}, numlabel2[256]={0};
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)g_list_nth_data (darktable.develop->history, i);
+    if( !hist ) break;
+
+    /* get new label */
+    dt_dev_get_history_item_label (hist, numlabel2, 256);
+    snprintf(numlabel, 256, "%d - %s", i+1, numlabel2);
+ 
+    /* update ui hist item label from bottom to top */
+    GtkWidget *button=g_list_nth_data (items,(hsize-1)-i);
+    gtk_button_set_label (GTK_BUTTON (button),numlabel);
+  }
+}

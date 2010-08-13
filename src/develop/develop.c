@@ -581,9 +581,10 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached)
   {
     // if gui_attached pop all operations down to dev->history_end
-    dt_control_clear_history_items(dev->history_end-1);
+    dt_control_clear_history_items (dev->history_end-1);
+	  
     // remove unused history items:
-    GList *history = g_list_nth(dev->history, dev->history_end);
+    GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
     {
       GList *next = g_list_next(history);
