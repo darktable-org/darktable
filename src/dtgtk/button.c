@@ -91,25 +91,29 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   }
 
   /* draw icon */
-  if (DTGTK_BUTTON (widget)->icon_flags & CPF_IGNORE_FG_STATE) 
-  state = GTK_STATE_NORMAL;
-  cr = gdk_cairo_create (widget->window);
-  cairo_set_source_rgb (cr,
-            style->fg[state].red/65535.0, 
-            style->fg[state].green/65535.0, 
-            style->fg[state].blue/65535.0);
-  
-  if (text)
-    DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,height-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
-  else
-    DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,width-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
+  if (DTGTK_BUTTON (widget)->icon)
+  {
+	  if (DTGTK_BUTTON (widget)->icon_flags & CPF_IGNORE_FG_STATE) 
+	  state = GTK_STATE_NORMAL;
+	  cr = gdk_cairo_create (widget->window);
+	  cairo_set_source_rgb (cr,
+		    style->fg[state].red/65535.0, 
+		    style->fg[state].green/65535.0, 
+		    style->fg[state].blue/65535.0);
+	  
+	  if (text)
+	    DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,height-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
+	  else
+	    DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,width-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
+  }
   cairo_destroy (cr);
   
   /* draw label */
   if (text)
   {
+    int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
+     if (DTGTK_BUTTON (widget)->icon) lx += width;
     GdkRectangle t={x,y,x+width,y+height};
-    int lx=x+2+height, ly=y+((height/2.0)-(ph/2.0));
     gtk_paint_layout(style,widget->window, GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
   }
 
