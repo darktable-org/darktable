@@ -424,29 +424,31 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
 static void
 snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  if(!darktable.develop->image) return;
+ 
+  if (!darktable.develop->image) return;
   char wdname[64], oldfilename[30];
-  GtkWidget *wid;
-  snprintf(wdname, 64, "snapshot_1_togglebutton");
-  wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
-  gchar *label1 = g_strdup(gtk_button_get_label(GTK_BUTTON(wid)));
-  snprintf(oldfilename, 30, "%s", darktable.gui->snapshot[3].filename);
-  for(int k=1;k<4;k++)
+  GtkWidget *sbody =  glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+  GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
+  
+  GtkWidget *wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), 0);
+  gchar *label1 = g_strdup (gtk_button_get_label (GTK_BUTTON (wid)));
+  snprintf (oldfilename, 30, "%s", darktable.gui->snapshot[3].filename);
+  for (int k=1;k<4;k++)
   {
-    snprintf(wdname, 64, "snapshot_%d_togglebutton", k+1);
-    wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    if(k<MIN(4,darktable.gui->num_snapshots+1)) gtk_widget_set_visible(wid, TRUE);
-    gchar *label2 = g_strdup(gtk_button_get_label(GTK_BUTTON(wid)));
-    gtk_button_set_label(GTK_BUTTON(wid), label1);
-    g_free(label1);
+    wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), k);
+    if (k<MIN (4,darktable.gui->num_snapshots+1)) gtk_widget_set_visible (wid, TRUE);
+    gchar *label2 = g_strdup(gtk_button_get_label (GTK_BUTTON (wid)));
+    gtk_button_set_label (GTK_BUTTON (wid), label1);
+    g_free (label1);
     label1 = label2;
     darktable.gui->snapshot[k] = darktable.gui->snapshot[k-1];
   }
+  
   // rotate filenames, so we don't waste hd space
   snprintf(darktable.gui->snapshot[0].filename, 30, "%s", oldfilename);
   g_free(label1);
-  snprintf(wdname, 64, "snapshot_%d_togglebutton", 1);
-  wid = glade_xml_get_widget (darktable.gui->main_window, wdname);
+
+  wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), 0);
   char *fname = darktable.develop->image->filename + strlen(darktable.develop->image->filename);
   while(fname > darktable.develop->image->filename && *fname != '/') fname--;
   snprintf(wdname, 64, "%s", fname);
@@ -455,20 +457,23 @@ snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
   if(*fname != '.') fname = wdname + strlen(wdname);
   if(wdname + 64 - fname > 4) sprintf(fname, "(%d)", darktable.develop->history_end);
   // snprintf(wdname, 64, _("snapshot %d"), darktable.gui->num_snapshots+1);
-  gtk_button_set_label(GTK_BUTTON(wid), wdname);
-  gtk_widget_set_visible(wid, TRUE);
   
-  // get zoom pos from develop
+  gtk_button_set_label (GTK_BUTTON (wid), wdname);
+  gtk_widget_set_visible (wid, TRUE);
+  
+  /* get zoom pos from develop */
   dt_gui_snapshot_t *s = darktable.gui->snapshot + 0;
-  DT_CTL_GET_GLOBAL(s->zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL(s->zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(s->zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(s->closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(s->zoom_scale, dev_zoom_scale);
-  // set take snap bit for darkroom
+  DT_CTL_GET_GLOBAL (s->zoom_y, dev_zoom_y);
+  DT_CTL_GET_GLOBAL (s->zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL (s->zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL (s->closeup, dev_closeup);
+  DT_CTL_GET_GLOBAL (s->zoom_scale, dev_zoom_scale);
+  
+  /* set take snap bit for darkroom */
   darktable.gui->request_snapshot = 1;
   darktable.gui->num_snapshots ++;
-  dt_control_gui_queue_draw();
+  dt_control_gui_queue_draw ();
+  
 }
 
 static void
@@ -485,11 +490,12 @@ snapshot_toggled (GtkToggleButton *widget, long int which)
   }
   else if(gtk_toggle_button_get_active(widget))
   {
-    char wdname[64];
+    GtkWidget *sbody =  glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+    GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
+    
     for(int k=0;k<4;k++)
     {
-      snprintf(wdname, 64, "snapshot_%d_togglebutton", k+1);
-      GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, wdname);
+      GtkWidget *w = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER(sbox)), k);
       if(GTK_TOGGLE_BUTTON(w) != widget)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
     }
@@ -988,9 +994,26 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     (gpointer)0);
 
   // snapshot management
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_take_button");
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(snapshot_add_button_clicked), NULL);
-
+  GtkWidget *sbody = glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+  GtkWidget *svbox = gtk_vbox_new (FALSE,0);
+  GtkWidget *sbutton = gtk_button_new_with_label (_("take snapshot"));
+  gtk_box_pack_start (GTK_BOX (sbody),svbox,FALSE,FALSE,0);
+  gtk_box_pack_start (GTK_BOX (sbody),sbutton,FALSE,FALSE,0);
+  g_signal_connect(G_OBJECT(sbutton), "clicked", G_CALLBACK(snapshot_add_button_clicked), NULL);
+  gtk_widget_show_all(sbody);
+  
+  for (long k=1;k<5;k++) 
+  {
+    char wdname[20];
+    snprintf (wdname, 20, "snapshot_%ld_togglebutton", k);
+    GtkWidget *button = dtgtk_togglebutton_new_with_label (wdname,NULL,0);
+    gtk_box_pack_start (GTK_BOX (svbox),button,FALSE,FALSE,0);
+    g_signal_connect (G_OBJECT (button), "clicked",
+                      G_CALLBACK (snapshot_toggled),
+                      (gpointer)(k-1));
+  }
+  
+ /* 
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_1_togglebutton");
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)0);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_2_togglebutton");
@@ -998,7 +1021,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_3_togglebutton");
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)2);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_4_togglebutton");
-  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)3);
+  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)3);*/
 
   /* add recent filmrolls section label */
   widget = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");

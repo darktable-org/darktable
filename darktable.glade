@@ -733,72 +733,10 @@ file manager</property>
 																		<property name="can_focus">True</property>
 																		<property name="spacing">10</property>
 																		<child>
-																			<widget class="GtkAlignment" id="snapshots_alignment">
+																			<widget class="GtkVBox" id="snapshots_body">
 																				<property name="visible">True</property>
-																				<property name="bottom_padding">10</property>
-																				<property name="left_padding">5</property>
-																				<property name="right_padding">10</property>
 																				<child>
-																					<widget class="GtkVBox" id="snapshots_body">
-																						<property name="visible">True</property>
-																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_1_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">0</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_2_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">1</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_3_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">2</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_4_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">3</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="snapshot_take_button">
-																								<property name="label" translatable="yes">take snapshot</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="padding">5</property>
-																								<property name="position">4</property>
-																							</packing>
-																						</child>
-																					</widget>
+																					<placeholder/>
 																				</child>
 																			</widget>
 																		</child>
