@@ -84,6 +84,7 @@ dt_gui_iop_history_init ()
   GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
   GtkWidget *hvbox = gtk_vbox_new (FALSE,0);
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));  
+  g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"),NULL);
   gtk_box_pack_start (GTK_BOX (hbody),hvbox,FALSE,FALSE,0);
   gtk_box_pack_start (GTK_BOX (hbody),hbutton,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (history_compress_clicked),(gpointer)0);

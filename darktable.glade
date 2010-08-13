@@ -728,15 +728,24 @@ file manager</property>
 															<widget class="GtkEventBox" id="snapshots_eventbox">
 																<property name="no_show_all">True</property>
 																<child>
+																	
 																	<widget class="GtkExpander" id="snapshots_expander">
 																		<property name="visible">True</property>
 																		<property name="can_focus">True</property>
 																		<property name="spacing">10</property>
 																		<child>
-																			<widget class="GtkVBox" id="snapshots_body">
+																			<widget class="GtkAlignment" id="snapshot_alignment">
 																				<property name="visible">True</property>
+																				<property name="bottom_padding">10</property>
+																				<property name="left_padding">5</property>
+																				<property name="right_padding">10</property>
 																				<child>
-																					<placeholder/>
+																					<widget class="GtkVBox" id="snapshots_body">
+																						<property name="visible">True</property>
+																						<child>
+																							<placeholder/>
+																						</child>
+																					</widget>
 																				</child>
 																			</widget>
 																		</child>
@@ -1112,11 +1121,19 @@ file manager</property>
 																		<property name="expanded">True</property>
 																		<property name="spacing">10</property>
 																		<child>
-																			<widget class="GtkVBox" id="history_expander_body">
+																			<widget class="GtkAlignment" id="history_alignment">
 																				<property name="visible">True</property>
-																				<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+																				<property name="bottom_padding">10</property>
+																				<property name="left_padding">5</property>
+																				<property name="right_padding">10</property>
 																				<child>
-																					<placeholder/>
+																					<widget class="GtkVBox" id="history_expander_body">
+																						<property name="visible">True</property>
+																						<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+																						<child>
+																							<placeholder/>
+																						</child>
+																					</widget>
 																				</child>
 																			</widget>
 																		</child>
