@@ -27,8 +27,8 @@ void dt_gui_iop_history_init ();
 /** resets ui history */
 void dt_gui_iop_history_reset ();
 /** add history item to ui */
-GtkWidget * dt_gui_iop_history_add_item (uint32_t num, const gchar *label);
-uint32_t dt_gui_iop_history_get_top();
+GtkWidget * dt_gui_iop_history_add_item (long int, const gchar *label);
+long int dt_gui_iop_history_get_top();
 /** removes item on top */
 void dt_gui_iop_history_pop_top();
 #endif

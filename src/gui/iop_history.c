@@ -108,7 +108,7 @@ dt_gui_iop_history_reset ()
 }
 
 GtkWidget *
-dt_gui_iop_history_add_item (uint32_t num, const gchar *label)
+dt_gui_iop_history_add_item (long int num, const gchar *label)
 {
   GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
   GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
@@ -116,7 +116,7 @@ dt_gui_iop_history_add_item (uint32_t num, const gchar *label)
   /* create label */
   GtkWidget *widget = NULL;
   gchar numlabel[256];
-  g_snprintf(numlabel, 256, "%d - %s", num, label);
+  g_snprintf(numlabel, 256, "%ld - %s", num, label);
   
   /* create toggle button */
   widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,0);
@@ -136,14 +136,14 @@ dt_gui_iop_history_add_item (uint32_t num, const gchar *label)
   return widget;
 }
 
-uint32_t 
+long int
 dt_gui_iop_history_get_top() 
 {
   GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
   GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
   
   GtkWidget *th = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0);
-  return (uint32_t)g_object_get_data (G_OBJECT (th),"history_number");
+  return (long int)g_object_get_data (G_OBJECT (th),"history_number");
 }
 
 void 
