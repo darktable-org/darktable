@@ -73,7 +73,6 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   
   /* revert to given history item. */
   long int num = (long int)user_data;
-  if(num != 0) num += darktable.control->history_start;
   dt_dev_pop_history_items (darktable.develop, num);
 }
 
@@ -99,8 +98,6 @@ dt_gui_iop_history_reset ()
   
   /* clear from history items */
   gtk_container_foreach (GTK_CONTAINER (hvbox),(GtkCallback)gtk_widget_destroy,NULL);
-  
-  darktable.control->history_start = 0;
   
   /* add default history entry */
   GtkWidget *b=dt_gui_iop_history_add_item (0, "orginal");

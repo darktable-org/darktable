@@ -406,7 +406,6 @@ void dt_control_init(dt_control_t *s)
   }
   s->button_down = 0;
   s->button_down_which = 0;
-  s->history_start = 1;
 }
 
 void dt_control_tab_shortcut_off(dt_control_t *s)
@@ -1242,7 +1241,7 @@ void dt_control_clear_history_items(int32_t num)
   /* reset if empty stack */
   if( num == 0 ) dt_gui_iop_history_reset();
   
-  int size = dt_gui_iop_history_get_top () - num;
+  int size = dt_gui_iop_history_get_top () - MAX(0, num);
   for(int k=1;k<size;k++)
     dt_gui_iop_history_pop_top ();
 
@@ -1250,7 +1249,6 @@ void dt_control_clear_history_items(int32_t num)
 
 void dt_control_update_recent_films()
 {
-  
   /*char wdname[20];
   for(int k=1;k<5;k++)
   {
