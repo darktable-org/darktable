@@ -368,21 +368,22 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       GtkWidget *shh = GTK_WIDGET(module->showhide);
       GtkWidget *parent = NULL;
       g_object_get(G_OBJECT(module->widget), "parent", &parent, NULL);
-      gtk_container_remove(GTK_CONTAINER(parent), module->widget);
       // re-init and re-gui_init
       module->gui_cleanup(module);
       module->cleanup(module);
+      gtk_container_remove(GTK_CONTAINER(parent), module->widget);
       // TODO: cleanup/init thread safe with pixelpipe processing?
       module->init(module);
-      module->gui_init(module);
-      // reparent
-      gtk_container_add(GTK_CONTAINER(parent), module->widget);
       // load default params (dt_iop_)
+      memcpy(module->factory_params, module->params, module->params_size);
       dt_iop_load_default_params(module);
+      module->gui_init(module);
       // copy over already inited stuff:
       module->topwidget = top;
       module->expander = GTK_EXPANDER(exp);
       module->showhide = shh;
+      // reparent
+      gtk_container_add(GTK_CONTAINER(parent), module->widget);
       gtk_widget_show_all(module->topwidget);
       // all the signal handlers get passed module*, which is still valid.
     }

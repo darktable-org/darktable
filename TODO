@@ -1,6 +1,7 @@
 0.6 release:
 
-- film strip changing input color profile sRGB instead of enhanced color matrix?
+- more robust .darktablecache corruption detection.
+- film strip size only correct after show/hide once?
 - BUG: color labels set in darkroom mode disappear
 - sqlite3 thread safe/locking?
 - BUG: full image stays locked?
