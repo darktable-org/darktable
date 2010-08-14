@@ -63,7 +63,7 @@ dt_iop_rlce_data_t;
 
 const char *name()
 {
-  return _("local contrast");
+  return _("local contrast (slow)");
 }
 
 
