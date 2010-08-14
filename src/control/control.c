@@ -701,7 +701,7 @@ void *dt_control_work(void *ptr)
 
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  darktable.control->tabborder = fmaxf(10, event->width/100.0);
+  darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
   // re-configure all components:
   dt_view_manager_configure(darktable.view_manager, event->width - 2*tb, event->height - 2*tb);
