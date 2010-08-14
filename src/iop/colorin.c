@@ -213,6 +213,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
     d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_RGB_DBL, p->intent, 0);
   }
+  // user selected a non-supported output profile, check that:
+  if(!d->xform)
+  {
+    fprintf(stderr, "[colorin]: unsupported input profile has been replaced by linear rgb!\n");
+    if(d->input) dt_colorspaces_cleanup_profile(d->input);
+    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_RGB_DBL, p->intent, 0);
+  }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
 }
