@@ -74,6 +74,9 @@ AC_ARG_ENABLE(gegl,
 	      AC_HELP_STRING([--enable-gegl], [use gegl for rendering (dont do this)]),
         [
           if test "$enable_gegl" = "yes"; then
+             AC_MSG_ERROR([
+ gegl version is orphaned and does not work!
+ do not use --enable-gegl!])
              AC_DEFINE(HAVE_GEGL, 1, [whether to use gegl for rendering])
              AC_MSG_RESULT([yes])
              PKG_CHECK_MODULES(GEGL, gegl >= 0.0.22)
