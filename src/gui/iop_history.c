@@ -100,7 +100,7 @@ dt_gui_iop_history_reset ()
   gtk_container_foreach (GTK_CONTAINER (hvbox),(GtkCallback)gtk_widget_destroy,NULL);
   
   /* add default history entry */
-  GtkWidget *b=dt_gui_iop_history_add_item (0, "orginal");
+  GtkWidget *b=dt_gui_iop_history_add_item (-1, "orginal");
   gtk_button_set_label (GTK_BUTTON (b), _("0 - original"));
 }
 
