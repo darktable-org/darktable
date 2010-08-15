@@ -42,10 +42,10 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   char fullq[2048];
   
   /* create a copy of darktable collection */
-  const dt_collection_t *collection = dt_collection_new (dt_collection_params (darktable.collection));
+  const dt_collection_t *collection = dt_collection_new (darktable.collection);
   
-  /* set query flags to simple for just a select without order or limit part */
-  dt_collection_set_query_flags (collection, COLLECTION_QUERY_SIMPLE); 
+  /* set query flags to not include order or limit part */
+  dt_collection_set_query_flags (collection, (dt_collection_get_query_flags(collection)&(~(COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT))));
   dt_collection_update (collection);
   snprintf (fullq, 2048, "insert into selected_images %s", dt_collection_get_query (collection));
   

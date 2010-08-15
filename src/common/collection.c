@@ -36,14 +36,19 @@
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
 
 const dt_collection_t * 
-dt_collection_new (const dt_collection_params_t *params)
+dt_collection_new (const dt_collection_t *clone)
 {
   dt_collection_t *collection = g_malloc (sizeof (dt_collection_t));
   memset (collection,0,sizeof (dt_collection_t));
   
   /* initialize collection context*/
-  if (params)   /* if params are provided let's copy them into this context */
-    memcpy (&collection->params,params,sizeof (dt_collection_params_t));
+  if (clone)   /* if clone is provided let's copy it into this context */
+  {
+    memcpy (&collection->params,&clone->params,sizeof (dt_collection_params_t));
+    memcpy (&collection->store,&clone->store,sizeof (dt_collection_params_t));
+    collection->where_ext = g_strdup(clone->where_ext);
+    collection->query = g_strdup(clone->query);
+  }
   else  /* else we just initialize using the reset */
     dt_collection_reset (collection);
     
@@ -55,6 +60,8 @@ dt_collection_free (const dt_collection_t *collection)
 {
   if (collection->query)
     g_free (collection->query);
+  if (collection->where_ext)
+    g_free (collection->where_ext);
   g_free ((dt_collection_t *)collection);
 }
 
@@ -68,9 +75,9 @@ int
 dt_collection_update (const dt_collection_t *collection)
 {
   uint32_t result;
-  gchar sq[512]={0};   // sort query
-  gchar selq[512]={0};   // selection query
-  gchar wq[2048]={0};   // where query
+  gchar sq[512]   = {0};   // sort query
+  gchar selq[512] = {0};   // selection query
+  gchar wq[2048]  = {0};   // where query
   gchar *query=g_malloc (MAX_QUERY_STRING_LENGTH);
 
   dt_lib_sort_t sort = dt_conf_get_int ("ui_last/combo_sort");
@@ -111,11 +118,11 @@ dt_collection_update (const dt_collection_t *collection)
   /* build sort order part */
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
-    if (sort == DT_LIB_SORT_DATETIME)              g_snprintf (sq,512,ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)           g_snprintf (sq,512,ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       g_snprintf (sq,512,ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)                   g_snprintf (sq,512,ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)            g_snprintf (sq,512, ORDER_BY_QUERY, "color desc, filename");
+    if (sort == DT_LIB_SORT_DATETIME)           g_snprintf (sq, 512, ORDER_BY_QUERY, "datetime_taken");
+    else if(sort == DT_LIB_SORT_RATING)         g_snprintf (sq, 512, ORDER_BY_QUERY, "flags & 7 desc");
+    else if(sort == DT_LIB_SORT_FILENAME)       g_snprintf (sq, 512, ORDER_BY_QUERY, "filename");
+    else if(sort == DT_LIB_SORT_ID)             g_snprintf (sq, 512, ORDER_BY_QUERY, "id");
+    else if(sort == DT_LIB_SORT_COLOR)          g_snprintf (sq, 512, ORDER_BY_QUERY, "color desc, filename");
   }
   
   /* store the new query */
