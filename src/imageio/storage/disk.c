@@ -143,6 +143,7 @@ int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
   dt_image_t *img = dt_image_cache_use(imgid, 'r');
+  if(!img) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
   char filename[1024];

@@ -150,7 +150,11 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else 
     pictures_folder=g_strdup( g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) );
   
-  if(params->filename) file_ext=(g_strrstr(params->filename,".")+1);
+  if(params->filename)
+  {
+    file_ext=(g_strrstr(params->filename,".")+1);
+    if(file_ext == (gchar*)1) file_ext = params->filename + strlen(params->filename);
+  }
   
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
