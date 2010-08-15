@@ -6,7 +6,7 @@ AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_CXX
 IT_PROG_INTLTOOL([0.40])
-ALL_LINGUAS="de es fi fr nl ru sv"
+ALL_LINGUAS="de es fi fr gl nl ru sv"
 AM_GLIB_GNU_GETTEXT
 AM_GLIB_DEFINE_LOCALEDIR(DARKTABLE_LOCALEDIR)
 GETTEXT_PACKAGE=darktable
@@ -118,6 +118,24 @@ PKG_CHECK_MODULES(GPHOTO2, [libgphoto2 >= 2.4.5])
 PKG_CHECK_MODULES(CURL, [libcurl >= 7.18.0])
 PKG_CHECK_MODULES(DBUSGLIB, [dbus-glib-1 >= 0.80])
 
+AC_ARG_ENABLE(gnome-keyring,
+	      AC_HELP_STRING([--enable-gnome-keyring], [build the gnome keyring pw storage backend]),
+        [
+          if test "$enable_gnome-keyring" = "yes"; then
+             PKG_CHECK_MODULES(GNOME_KEYRING, gnome-keyring-1 >= 2.28.0)
+             AC_DEFINE(HAVE_GNOME_KEYRING, 1, [whether build the gnome-keyring pwstorage backend])
+          fi
+          AM_CONDITIONAL([HAVE_GNOME_KEYRING], [test "$enable_gnome-keyring" = yes])
+        ],
+        [
+          PKG_CHECK_MODULES(GNOME_KEYRING, gnome-keyring-1 >= 2.28.0)
+          AC_DEFINE(HAVE_GNOME_KEYRING, 1,  [whether build the gnome-keyring pwstorage backend])
+          AM_CONDITIONAL([HAVE_GNOME_KEYRING], [true])
+        ]
+        )
+AC_SUBST(GNOME_KEYRING_CFLAGS)
+	
+
 AC_ARG_ENABLE(lensfun,
 	      AC_HELP_STRING([--enable-lensfun], [build the lens correction plugin]),
         [
@@ -194,6 +212,12 @@ AC_CONFIG_FILES([
     src/views/Makefile
     src/libs/Makefile
     pixmaps/Makefile
+    pixmaps/16x16/Makefile
+    pixmaps/22x22/Makefile
+    pixmaps/32x32/Makefile
+    pixmaps/48x48/Makefile
+    pixmaps/64x64/Makefile
+    pixmaps/scalable/Makefile
     pixmaps/plugins/Makefile
     pixmaps/plugins/darkroom/Makefile
     color/Makefile

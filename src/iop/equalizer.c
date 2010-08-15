@@ -57,7 +57,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
-  const float l1 = 1.0f + log2f(piece->iscale/scale);                          // finest level
+  const float l1 = 1.0f + dt_log2f(piece->iscale/scale);                          // finest level
   float lm = 0; for(int k=MIN(width,height)*piece->iscale/scale;k;k>>=1) lm++; // coarsest level
   lm = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l1 + lm);
   // level 1 => full resolution

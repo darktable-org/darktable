@@ -517,21 +517,6 @@ name ()
 void entry_changed(GtkEntry *entry, gpointer data) {
   dt_storage_picasa_gui_data_t *ui=(dt_storage_picasa_gui_data_t *)data;
 
-  GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-
-  gchar* username = g_strdup(gtk_entry_get_text(ui->entry1));
-  gchar* password = g_strdup(gtk_entry_get_text(ui->entry2));
-
-  g_hash_table_insert(table, "username", username);
-  g_hash_table_insert(table, "password", password);
-
-  if( !dt_pwstorage_set("picasa", table) ){
-    dt_print(DT_DEBUG_PWSTORAGE,"[picasa] cannot store username/password\n");
-  }
-
-  g_free(username);
-  g_free(password);
-  g_hash_table_destroy(table);
   if( ui->picasa_api != NULL)
   ui->picasa_api->needsReauthentication=TRUE;
 }
@@ -560,6 +545,23 @@ void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
       
   if( ui->picasa_api ) { 
     set_status(ui,_("authenticated"), "#7fe07f");
+  
+    /* Add creds to pwstorage */
+    GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
+    gchar* username = g_strdup(gtk_entry_get_text(ui->entry1));
+    gchar* password = g_strdup(gtk_entry_get_text(ui->entry2));
+
+    g_hash_table_insert(table, "username", username);
+    g_hash_table_insert(table, "password", password);
+
+    if( !dt_pwstorage_set("picasa", table) ){
+      dt_print(DT_DEBUG_PWSTORAGE,"[picasa] cannot store username/password\n");
+    }
+
+    g_free(username);
+    g_free(password);
+    g_hash_table_destroy(table);
+
     if( _picasa_api_get_feed(ui->picasa_api) == 200) {
 
       // Add standard action
@@ -678,14 +680,14 @@ gui_init (dt_imageio_module_storage_t *self)
   g_signal_connect (G_OBJECT (ui->entry4), "focus-out-event", G_CALLBACK(focus_out), NULL);
 
   GHashTable* table = dt_pwstorage_get("picasa");
-  gchar* _username = g_hash_table_lookup(table, "username");
-  gchar* _password = g_hash_table_lookup(table, "password");
+  gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
+  gchar* _password = g_strdup( g_hash_table_lookup(table, "password"));
   g_hash_table_destroy(table);
   gtk_entry_set_text( ui->entry1,  _username == NULL?"":_username );
   gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
   gtk_entry_set_text( ui->entry3, _("my new album") );
   gtk_entry_set_text( ui->entry4, _("exported from darktable") );
-   
+  
   gtk_entry_set_visibility(ui->entry2, FALSE);
 
   GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
@@ -754,9 +756,8 @@ gui_init (dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(album_changed), (gpointer)ui);  
 
   // If username and password is stored, let's populate the combo
-  if( gtk_entry_get_text(ui->entry1) && gtk_entry_get_text(ui->entry2) ) {
+  if( _username && _password )
     refresh_albums(ui);
-  }
   
   gtk_combo_box_set_active( ui->comboBox1, 0);
 }

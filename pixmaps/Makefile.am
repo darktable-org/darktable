@@ -1,20 +1,18 @@
-SUBDIRS=plugins
+SUBDIRS = plugins 16x16 22x22 32x32 48x48 64x64 scalable
+
 theme=hicolor
 themedir=$(datadir)/icons/$(theme)
-theme_icons = \
-apps,darktable.svg \
-apps,darktable-16.png \
-apps,darktable-22.png \
-apps,darktable-32.png \
-apps,darktable-48.png \
-apps,darktable-64.png
 
-install_icon_exec = $(top_srcdir)/pixmaps/icon-theme-installer -t $(theme) -s $(srcdir) -d "x$(DESTDIR)" -b $(themedir) -m "$(mkinstalldirs)" -x "$(INSTALL_DATA)"
-install-data-local:
-	$(install_icon_exec) -i $(theme_icons)
+gtk_update_icon_cache = gtk-update-icon-cache -f -t $(themedir)
 
-uninstall-hook:
-	$(install_icon_exec) -u $(theme_icons)
+install-data-hook: update-icon-cache
+uninstall-hook: update-icon-cache
+update-icon-cache:
+	@-if test -z "$(DESTDIR)"; then \
+		echo "Updating Gtk icon cache."; \
+		$(gtk_update_icon_cache); \
+	else \
+		echo "*** Icon cache not updated.  After (un)install, run this:"; \
+		echo "***   $(gtk_update_icon_cache)"; \
+	fi
 
-MAINTAINERCLEANFILES = Makefile.in
-EXTRA_DIST = $(wildcard *.svg *.png) icon-theme-installer

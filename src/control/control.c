@@ -406,7 +406,6 @@ void dt_control_init(dt_control_t *s)
   }
   s->button_down = 0;
   s->button_down_which = 0;
-  s->history_start = 1;
 }
 
 void dt_control_tab_shortcut_off(dt_control_t *s)
@@ -486,6 +485,16 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
 #endif
 }
 
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...)
+{
+  va_list argp;
+  va_start(argp, msg);
+  dt_control_job_init(j,msg,argp);
+  j->finished_callback = callback;
+  j->user_data = user_data;
+}
+
+
 void dt_control_job_print(dt_job_t *j)
 {
 #ifdef DT_CONTROL_JOB_DEBUG
@@ -507,7 +516,13 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
 
-  j->execute(j);
+   /* execute job */
+  int32_t exec_res = j->execute (j);
+  
+  /* pass result to finished callback */
+  if (j->finished_callback)
+    j->finished_callback (exec_res,j);
+  
   return 0;
 }
 
@@ -529,8 +544,14 @@ int32_t dt_control_run_job(dt_control_t *s)
   dt_print(DT_DEBUG_CONTROL, "[run_job %d] ", dt_control_get_threadid());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  j->execute(j);
-
+  
+  /* execute job */
+  int32_t exec_res = j->execute (j);
+  
+  /* pass result to finished callback */
+  if (j->finished_callback)
+    j->finished_callback (exec_res,j);
+   
   pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);
   s->idle[s->idle_top++] = i;
@@ -680,7 +701,7 @@ void *dt_control_work(void *ptr)
 
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  darktable.control->tabborder = fmaxf(10, event->width/100.0);
+  darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
   // re-configure all components:
   dt_view_manager_configure(darktable.view_manager, event->width - 2*tb, event->height - 2*tb);
@@ -1209,81 +1230,40 @@ int dt_control_key_released(uint16_t which)
   gtk_widget_queue_draw(widget);
   return 1;
 }
-
+#include "gui/iop_history.h"
 void dt_control_add_history_item(int32_t num_in, const char *label)
 {
-  char wdname[20], numlabel[256];
-  const gchar *lbl = NULL;
-  int32_t num = num_in + 1; // one after orginal
-  GtkWidget *widget = NULL;
-  g_snprintf(numlabel, 256, "%d - %s", num, label);
-  if(num >= 10) for(int i=1;i<9;i++)
-  {
-    darktable.control->history_start = num - 9;
-    snprintf(wdname, 20, "history_%02d", i+1);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    lbl = gtk_button_get_label(GTK_BUTTON(widget));
-    snprintf(wdname, 20, "history_%02d", i);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_button_set_label(GTK_BUTTON(widget), lbl);
-    snprintf(wdname, 20, "history_%02d", 9);
-  }
-  else snprintf(wdname, 20, "history_%02d", num);
-  widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-  gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), numlabel);
-  darktable.gui->reset = 1;
-  gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
-  darktable.gui->reset = 0;
+  dt_gui_iop_history_add_item(num_in,label);
 }
 
 void dt_control_clear_history_items(int32_t num)
 {
-  // clear history items down to num (leave num-th on stack)
-  darktable.control->history_start = MAX(0, num - 8);
-  char wdname[20], numlabel[256], numlabel2[256];
-  // hide all but original
-  for(int k=1;k<10;k++)
+  /* reset if empty stack */
+  if( num == -1 ) 
   {
-    snprintf(wdname, 20, "history_%02d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_hide(widget);
+	dt_gui_iop_history_reset();
+	return;
   }
-  // 0 - original
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "history_00");
-  gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), _("0 - original"));
-  GList *history = g_list_nth(darktable.develop->history, darktable.control->history_start);
-  for(int k=1;k<9;k++)
-  { // k is button number: history_0k
-    int curr = darktable.control->history_start + k;   // curr: curr-th history item in list in dev
-    if(curr > num+1 || !history) break;                  // curr > num+1: history item stays hidden
-    snprintf(wdname, 20, "history_%02d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_show(widget);
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_dev_get_history_item_label(hist, numlabel2, 256);
-    snprintf(numlabel, 256, "%d - %s", curr, numlabel2);
-    gtk_button_set_label(GTK_BUTTON(widget), numlabel);
-    if(curr == num+1)
-    {
-      darktable.gui->reset = 1;
-      gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
-      darktable.gui->reset = 0;
-    }
-    history = g_list_next(history);
-  }
+  
+  /* pop items from top of history */
+  int size = dt_gui_iop_history_get_top () - MAX(0, num);
+  for(int k=1;k<size;k++)
+    dt_gui_iop_history_pop_top ();
+
+  dt_gui_iop_history_update_labels ();
+	
 }
 
 void dt_control_update_recent_films()
 {
-  char wdname[20];
+  /*char wdname[20];
   for(int k=1;k<5;k++)
   {
     snprintf(wdname, 20, "recent_film_%d", k);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_hide(widget);
   }
+  
   sqlite3_stmt *stmt;
   int rc, num = 1;
   const char *filename, *cnt;
@@ -1318,6 +1298,55 @@ void dt_control_update_recent_films()
     num++;
   }
   sqlite3_finalize(stmt);
+  */
+  
+  /* get the recent film vbox */
+  GtkWidget *sb = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
+  GtkWidget *recent_used_film_vbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sb)),1);
+  
+  /* hide all childs and vbox*/
+  gtk_widget_hide_all (recent_used_film_vbox);
+  GList *childs = gtk_container_get_children (GTK_CONTAINER(recent_used_film_vbox));
+  
+  /* query database for recent films */
+  sqlite3_stmt *stmt;
+  int rc, num = 0;
+  const char *filename, *cnt;
+  const int label_cnt = 256;
+  char label[256];
+  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int id = sqlite3_column_int(stmt, 1);
+    if(id == 1)
+    {
+      snprintf(label, 256, _("single images"));
+      filename = _("single images");
+    }
+    else
+    {
+      filename = (char *)sqlite3_column_text(stmt, 0);
+      cnt = filename + MIN(512,strlen(filename));
+      int i;
+      for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
+      if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
+      else snprintf(label, label_cnt, "%s", cnt);
+    }
+    GtkWidget *widget = g_list_nth_data (childs,num);
+    gtk_button_set_label (GTK_BUTTON (widget), label);
+    
+    GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)));
+    gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
+    gtk_label_set_max_width_chars (label, 30);
+    
+    g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
+    
+    gtk_widget_show(recent_used_film_vbox);
+    gtk_widget_show(widget);
+    
+    num++;
+  }
+  
   GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
   dt_gui_filmview_update(gtk_entry_get_text(entry));
 }

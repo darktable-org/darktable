@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#include <string.h>
 #include "togglebutton.h"
 
 static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass);
@@ -116,68 +116,94 @@ static void _togglebutton_destroy(GtkObject *object)
 
 static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 {
-  g_return_val_if_fail(widget != NULL, FALSE);
-  g_return_val_if_fail(DTGTK_IS_TOGGLEBUTTON(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
-  static GtkStyle *style=NULL;
+  g_return_val_if_fail (widget != NULL, FALSE);
+  g_return_val_if_fail (DTGTK_IS_TOGGLEBUTTON(widget), FALSE);
+  g_return_val_if_fail (event != NULL, FALSE);
+  GtkStyle *style=gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
+  /* create pango text settings if label exists */
+  PangoLayout *layout=NULL;    
+  int pw=0,ph=0;
+  const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
+  if (text)
+  {
+    layout = gtk_widget_create_pango_layout (widget,NULL);
+    pango_layout_set_font_description (layout,style->font_desc);
+    pango_layout_set_text (layout,text,strlen(text));
+    pango_layout_get_pixel_size (layout,&pw,&ph);
+  }
+  
+  
   int x = widget->allocation.x;
   int y = widget->allocation.y;
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
-  if (!style) {
-    style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkToggleButton", GTK_TYPE_BUTTON);
-  }
- 
-  // Begin cairo drawing 
+  /* begin cairo drawing */
   cairo_t *cr;
-  cr = gdk_cairo_create(widget->window);
+  cr = gdk_cairo_create (widget->window);
   
-  if( state != GTK_STATE_NORMAL )
+  /* draw background dependent on state */
+  if (state != GTK_STATE_NORMAL)
   {
-    cairo_rectangle(cr,x,y,width,height);
-    // bg
-    cairo_set_source_rgba(cr,
-      style->bg[state].red/65535.0, 
-      style->bg[state].green/65535.0, 
-      style->bg[state].blue/65535.0,1.0
-    );
-    cairo_fill(cr);
-    
-    // border
-    cairo_rectangle(cr,x,y,width,height);
-    cairo_set_line_width(cr,1.0);
-    cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-    cairo_set_source_rgba(cr,0,0,0,0.2);
-    cairo_stroke(cr);
-    
+    cairo_rectangle (cr,x,y,width,height);
+    cairo_set_source_rgba (cr,
+                style->bg[state].red/65535.0, 
+                style->bg[state].green/65535.0, 
+                style->bg[state].blue/65535.0,
+                0.5);
+    cairo_fill (cr);
   }
-  
-  cairo_set_source_rgb(cr,
-    style->fg[state].red/65535.0, 
-    style->fg[state].green/65535.0, 
-    style->fg[state].blue/65535.0
-  );
- 
-  gint paint_flags=DTGTK_TOGGLEBUTTON(widget)->icon_flags;
-  
-  paint_flags=(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))==TRUE)? (paint_flags|CPF_ACTIVE) : (paint_flags&~CPF_ACTIVE);
-  DTGTK_TOGGLEBUTTON(widget)->icon(cr,x+4,y+4,width-8,height-8,paint_flags);
 
-  cairo_destroy(cr);
+  /* draw icon */
+  if (DTGTK_TOGGLEBUTTON (widget)->icon)
+  {
+    if (DTGTK_TOGGLEBUTTON (widget)->icon_flags & CPF_IGNORE_FG_STATE) 
+    state = GTK_STATE_NORMAL;
+    cr = gdk_cairo_create (widget->window);
+    cairo_set_source_rgb (cr,
+        style->fg[state].red/65535.0, 
+        style->fg[state].green/65535.0, 
+        style->fg[state].blue/65535.0);
+    
+    if (text)
+      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,height-8,height-8,DTGTK_TOGGLEBUTTON (widget)->icon_flags);
+    else
+      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,width-8,height-8,DTGTK_TOGGLEBUTTON (widget)->icon_flags);
+  }
+  cairo_destroy (cr);
+  
+  /* draw label */
+  if (text)
+  {
+    int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
+     if (DTGTK_TOGGLEBUTTON (widget)->icon) lx += width;
+    GdkRectangle t={x,y,x+width,y+height};
+    gtk_paint_layout(style,widget->window, GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
+  }
+
   return FALSE;
 }
 
 // Public functions
-GtkWidget* dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags)
+GtkWidget* 
+dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableToggleButton *button;	
   button = gtk_type_new(dtgtk_togglebutton_get_type());
   button->icon=paint;
   button->icon_flags=paintflags;
   return (GtkWidget *)button;
+}
+
+
+GtkWidget* 
+dtgtk_togglebutton_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags)
+{
+  GtkWidget *button = dtgtk_togglebutton_new(paint,paintflags);
+  gtk_button_set_label(GTK_BUTTON (button), label);	
+  return button;
 }
 
 GtkType dtgtk_togglebutton_get_type() 

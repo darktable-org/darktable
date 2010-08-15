@@ -167,13 +167,20 @@ entry_callback (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
 }
 
 static void
+focus_out_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
+{
+  /* reset size to default */
+  gtk_widget_set_size_request (view, -1, -1);
+}
+
+static void
 focus_in_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
   int count = 1 + count_film_rolls(gtk_entry_get_text(entry));
-  int ht = 1.5*get_font_height(view, "dreggn");
-  const int size = MAX(4*ht, MIN(win->allocation.height/2, count*ht));
+  int ht = get_font_height(view, "Dreggn");
+  const int size = MAX(2*ht, MIN(win->allocation.height/2, count*ht));
   gtk_widget_set_size_request(view, -1, size);
 }
 
@@ -196,7 +203,7 @@ row_activated_callback (GtkTreeView        *view,
 {
   GtkTreeModel *model;
   GtkTreeIter   iter;
-
+  gtk_widget_set_size_request (GTK_WIDGET (view), -1, -1);
   model = gtk_tree_view_get_model(view);
   if (!gtk_tree_model_get_iter(model, &iter, path)) return;
 
@@ -232,12 +239,13 @@ dt_gui_filmview_init()
   dt_gui_filmview_update("");
 
   g_signal_connect(view, "focus-in-event",  G_CALLBACK(focus_in_callback), view);
+  g_signal_connect(view, "focus-out-event",  G_CALLBACK(focus_out_callback), view);
   GtkWidget *expander = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
   g_signal_connect (expander, "notify::expanded", G_CALLBACK (hide_callback), view);
 
 
   GtkWidget *entry = glade_xml_get_widget (darktable.gui->main_window, "entry_film");
-  g_signal_connect(entry, "key-release-event", G_CALLBACK(entry_callback), NULL);
+  g_signal_connect(entry, "changed", G_CALLBACK(entry_callback), NULL);
 
   GtkWidget *button = glade_xml_get_widget (darktable.gui->main_window, "button_film_remove");
   g_signal_connect(button, "clicked", G_CALLBACK(button_callback), (gpointer)0);

@@ -86,27 +86,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // not thread safe.
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    const float x_n = 0.3457, y_n = 0.3585; // D50
-    const float Y_n = 1.0f;
-    const float X_n = Y_n/y_n * x_n;
-    const float Z_n = Y_n/y_n * (1.0f-x_n-y_n);
+    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
     double cam[3] = {0., 0., 0.};
     double xyz[3];
     cmsCIELab Lab;
     for(int c=0;c<3;c++) cam[c] = in[3*k + c];
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     cmsDoTransform(d->xform, cam, xyz, 1);
+#if 1
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
     const float YY = xyz[0]+xyz[1]+xyz[2];
     const float zz = xyz[2]/YY;
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float bound = 0.7f;
-    const float amount = 0.1f;
-    if(zz > bound)
+    const float bound_z = 0.7f, bound_Y = 0.5f;
+    const float amount = 0.05f;
+    // if(YY > bound_Y && zz > bound_z)
+    if(zz > bound_z)
     {
-      const float t = (zz - bound)/(1.0f-bound);
+      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
       xyz[1] += t*amount;
       xyz[2] -= t*amount;
     }
+#endif
 
     Lab.L = 116.0 * lab_f(xyz[1]/Y_n) - 16.0;
     Lab.a = 500.0 * (lab_f(xyz[0]/X_n) - lab_f(xyz[1]/Y_n));
@@ -212,6 +212,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
     d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_RGB_DBL, p->intent, 0);
+  }
+  // user selected a non-supported output profile, check that:
+  if(!d->xform)
+  {
+    fprintf(stderr, "[colorin]: unsupported input profile has been replaced by linear rgb!\n");
+    if(d->input) dt_colorspaces_cleanup_profile(d->input);
+    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_RGB_DBL, p->intent, 0);
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif

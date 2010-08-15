@@ -581,9 +581,10 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached)
   {
     // if gui_attached pop all operations down to dev->history_end
-    dt_control_clear_history_items(dev->history_end-1);
+    dt_control_clear_history_items (dev->history_end-1);
+	  
     // remove unused history items:
-    GList *history = g_list_nth(dev->history, dev->history_end);
+    GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
     {
       GList *next = g_list_next(history);
@@ -594,40 +595,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
     }
-    // TODO: modules should be add/removable!
-#if 0 // disabled while there is only tonecurve
-    // remove all modules which are not in history anymore:
-    GList *modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      history = dev->history;
-      while(history)
-      {
-        // for all modules in list: go through remaining history. if found, keep it.
-        dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-        if(hist->iop == module->instance)
-        {
-          modules = g_list_next(modules);
-          break;
-        }
-        history = g_list_next(history);
-      }
-      GList *next = g_list_next(modules);
-      module->gui_cleanup(module);
-      module->cleanup(module);
-      dev->iop = g_list_delete_link(dev->iop, modules);
-      modules = *next;
-    }
-#endif
-    /*
-    GList *modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      printf("module instance = %d, op = %s\n", module->instance, module->op);
-      modules = g_list_next(modules);
-    }*/
     history = g_list_nth(dev->history, dev->history_end-1);
     if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance)
     { // new operation, push new item
@@ -771,8 +738,7 @@ void dt_dev_write_history(dt_develop_t *dev)
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  // TODO: on demand loading of modules!
-  if(dev->gui_attached) dt_control_clear_history_items(0);
+  if(dev->gui_attached) dt_control_clear_history_items(-1);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
   int rc;

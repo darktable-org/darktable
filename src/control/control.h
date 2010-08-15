@@ -26,6 +26,7 @@
 
 #include "control/settings.h"
 #include <gtk/gtk.h>
+#include "gui/background_jobs.h"
 // #include "control/job.def"
 
 #define DT_CONTROL_MAX_JOBS 30
@@ -157,9 +158,12 @@ void dt_control_esc_shortcut_off(struct dt_control_t *s);
  * smalles unit of work.
  */
 struct dt_job_t;
+typedef void (*dt_job_finished_callback_t)(int32_t,struct dt_job_t*);
 typedef struct dt_job_t
 {
-  void (*execute)(struct dt_job_t *job);
+  int32_t (*execute) (struct dt_job_t *job);
+  dt_job_finished_callback_t finished_callback;
+  void *user_data;
   int32_t param[32];
 #ifdef DT_CONTROL_JOB_DEBUG
   char description[DT_CONTROL_DESCRIPTION_LEN];
@@ -167,7 +171,10 @@ typedef struct dt_job_t
 }
 dt_job_t;
 
+/** intializes a job */
 void dt_control_job_init(dt_job_t *j, const char *msg, ...);
+/** initializes a job with callback on finish. */
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...);
 void dt_control_job_print(dt_job_t *j);
 
 

@@ -496,10 +496,18 @@ file manager</property>
 																		<property name="can_focus">True</property>
 																		<property name="spacing">10</property>
 																		<child>
-																			<widget class="GtkVBox" id="devices_expander_body">
+																			<widget class="GtkAlignment" id="devices_alignment">
 																				<property name="visible">True</property>
-																				<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-																				<property name="border_width">5</property>
+																				<property name="bottom_padding">10</property>
+																				<property name="left_padding">5</property>
+																				<property name="right_padding">10</property>
+																				<child>
+																					<widget class="GtkVBox" id="devices_expander_body">
+																						<property name="visible">True</property>
+																						<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
+																						<property name="spacing">5</property>
+																					</widget>
+																				</child>
 																			</widget>
 																		</child>
 																		<child>
@@ -538,169 +546,30 @@ file manager</property>
 																				<child>
 																					<widget class="GtkVBox" id="library_expander_body">
 																						<property name="visible">True</property>
+																						<property name="spacing">5</property>
 																						<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
 																						<child>
-																							<widget class="GtkButton" id="button_import">
-																								<property name="label" translatable="yes">import film roll</property>
+																							<widget class="GtkVBox" id="section">
 																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																							</widget>
-																							<packing>
-																								<property name="expand">False</property>
-																								<property name="fill">False</property>
-																								<property name="position">1</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="button_import_single">
-																								<property name="label" translatable="yes">import single image</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																							</widget>
-																							<packing>
-																								<property name="position">2</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkLabel" id="label10">
-																								<property name="visible">True</property>
-																								<property name="xalign">0</property>
-																								<property name="xpad">5</property>
-																								<property name="ypad">5</property>
-																								<property name="label" translatable="yes">
-recently used film rolls</property>
-																							</widget>
-																							<packing>
-																								<property name="position">3</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="recent_film_1">
-																								<property name="label" translatable="yes">button</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="expand">False</property>
-																								<property name="fill">False</property>
-																								<property name="position">4</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="recent_film_2">
-																								<property name="label" translatable="yes">button</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="expand">False</property>
-																								<property name="fill">False</property>
-																								<property name="position">5</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="recent_film_3">
-																								<property name="label" translatable="yes">button</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="expand">False</property>
-																								<property name="fill">False</property>
-																								<property name="position">6</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="recent_film_4">
-																								<property name="label" translatable="yes">button</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="expand">False</property>
-																								<property name="fill">False</property>
-																								<property name="position">7</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkLabel" id="label11">
-																								<property name="visible">True</property>
-																								<property name="xalign">0</property>
-																								<property name="xpad">5</property>
-																								<property name="ypad">5</property>
-																								<property name="label" translatable="yes">
-all film rolls</property>
-																							</widget>
-																							<packing>
-																								<property name="position">8</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkEntry" id="entry_film">
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="events">GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_STRUCTURE_MASK</property>
-																								<property name="tooltip" translatable="yes">search film rolls by folder</property>
-																								<property name="invisible_char">&#x2022;</property>
-																							</widget>
-																							<packing>
-																								<property name="position">9</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkScrolledWindow" id="treeview_film_scrolledwindow">
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="hscrollbar_policy">automatic</property>
-																								<property name="vscrollbar_policy">automatic</property>
 																								<child>
-																									<widget class="GtkTreeView" id="treeview_film">
-																										<property name="visible">True</property>
-																										<property name="can_focus">True</property>
-																										<property name="headers_visible">False</property>
-																										<property name="search_column">0</property>
-																									</widget>
-																								</child>
-																							</widget>
-																							<packing>
-																								<property name="position">10</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkHBox" id="hbox1">
-																								<property name="visible">True</property>
-																								<property name="spacing">5</property>
-																								<child>
-																									<widget class="GtkButton" id="button_film_remove">
-																										<property name="label" translatable="yes">remove</property>
+																									<widget class="GtkButton" id="button_import">
+																										<property name="label" translatable="yes">import film roll</property>
 																										<property name="visible">True</property>
 																										<property name="can_focus">True</property>
 																										<property name="receives_default">True</property>
-																										<property name="has_tooltip">True</property>
-																										<property name="tooltip" translatable="yes">remove selected film roll from collection</property>
 																									</widget>
 																									<packing>
+																										<property name="expand">False</property>
+																										<property name="fill">False</property>
 																										<property name="position">0</property>
 																									</packing>
 																								</child>
 																								<child>
-																									<widget class="GtkButton" id="button_film_open">
-																										<property name="label" translatable="yes">open</property>
+																									<widget class="GtkButton" id="button_import_single">
+																										<property name="label" translatable="yes">import single image</property>
 																										<property name="visible">True</property>
 																										<property name="can_focus">True</property>
 																										<property name="receives_default">True</property>
-																										<property name="has_tooltip">True</property>
-																										<property name="tooltip" translatable="yes">open selected film roll in light table</property>
 																									</widget>
 																									<packing>
 																										<property name="position">1</property>
@@ -708,7 +577,129 @@ all film rolls</property>
 																								</child>
 																							</widget>
 																							<packing>
-																								<property name="position">11</property>
+																								<property name="position">0</property>
+																							</packing>
+																						</child>
+																						<child> 
+																							<widget class="GtkLabel" id="">
+																							<property name="visible">True</property>
+																							</widget>
+																							<packing>
+																								<property name="position">1</property>
+																							</packing>
+																						</child>
+																						<child>
+																							<widget class="GtkVBox" id="recent_used_film_rolls_section_box">
+																								<property name="visible">True</property>
+																								<child><placeholder/></child>
+																							</widget>
+																							<packing>
+																								<property name="position">2</property>
+																							</packing>
+																						</child>
+																						<child>
+																							<widget class="GtkVBox" id="section">
+																								<property name="visible">True</property>
+																								<child>
+																									<placeholder/>
+																								</child>
+																							</widget>
+																							<packing>
+																								<property name="position">3</property>
+																							</packing>
+																						</child>
+																						<child> 
+																							<widget class="GtkLabel" id="">
+																							<property name="visible">True</property>
+																							</widget>
+																							<packing>
+																								<property name="position">4</property>
+																							</packing>
+																						</child>
+																						<child>
+																							<widget class="GtkVBox" id="all_film_rolls_section_box">
+																								<property name="visible">True</property>
+																								<child>
+																									<placeholder/>
+																								</child>
+																							</widget>
+																							<packing>
+																								<property name="position">5</property>
+																							</packing>
+																						</child>
+																						<child><placeholder/></child>
+																						<child>
+																							<widget class="GtkVBox" id="section">
+																								<property name="visible">True</property>
+																								<child>
+																									<widget class="GtkEntry" id="entry_film">
+																										<property name="visible">True</property>
+																										<property name="can_focus">True</property>
+																										<property name="events">GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_STRUCTURE_MASK</property>
+																										<property name="tooltip" translatable="yes">search film rolls by folder</property>
+																										<property name="invisible_char">&#x2022;</property>
+																									</widget>
+																									<packing>
+																										<property name="position">0</property>
+																									</packing>
+																								</child>
+																								<child>
+																									<widget class="GtkScrolledWindow" id="treeview_film_scrolledwindow">
+																										<property name="visible">True</property>
+																										<property name="can_focus">True</property>
+																										<property name="hscrollbar_policy">automatic</property>
+																										<property name="vscrollbar_policy">automatic</property>
+																										<child>
+																											<widget class="GtkTreeView" id="treeview_film">
+																												<property name="visible">True</property>
+																												<property name="can_focus">True</property>
+																												<property name="headers_visible">False</property>
+																												<property name="search_column">0</property>
+																											</widget>
+																										</child>
+																									</widget>
+																									<packing>
+																										<property name="position">1</property>
+																									</packing>
+																								</child>
+																								<child>
+																									<widget class="GtkHBox" id="hbox1">
+																										<property name="visible">True</property>
+																										<property name="spacing">5</property>
+																										<child>
+																											<widget class="GtkButton" id="button_film_remove">
+																												<property name="label" translatable="yes">remove</property>
+																												<property name="visible">True</property>
+																												<property name="can_focus">True</property>
+																												<property name="receives_default">True</property>
+																												<property name="has_tooltip">True</property>
+																												<property name="tooltip" translatable="yes">remove selected film roll from collection</property>
+																											</widget>
+																											<packing>
+																												<property name="position">0</property>
+																											</packing>
+																										</child>
+																										<child>
+																											<widget class="GtkButton" id="button_film_open">
+																												<property name="label" translatable="yes">open</property>
+																												<property name="visible">True</property>
+																												<property name="can_focus">True</property>
+																												<property name="receives_default">True</property>
+																												<property name="has_tooltip">True</property>
+																												<property name="tooltip" translatable="yes">open selected film roll in light table</property>
+																											</widget>
+																											<packing>
+																												<property name="position">1</property>
+																											</packing>
+																										</child>
+																									</widget>
+																									<packing>
+																										<property name="position">11</property>
+																									</packing>
+																								</child>
+																							</widget>
+																							<packing>
+																								<property name="position">6</property>
 																							</packing>
 																						</child>
 																					</widget>
@@ -737,12 +728,13 @@ all film rolls</property>
 															<widget class="GtkEventBox" id="snapshots_eventbox">
 																<property name="no_show_all">True</property>
 																<child>
+																	
 																	<widget class="GtkExpander" id="snapshots_expander">
 																		<property name="visible">True</property>
 																		<property name="can_focus">True</property>
 																		<property name="spacing">10</property>
 																		<child>
-																			<widget class="GtkAlignment" id="snapshots_alignment">
+																			<widget class="GtkAlignment" id="snapshot_alignment">
 																				<property name="visible">True</property>
 																				<property name="bottom_padding">10</property>
 																				<property name="left_padding">5</property>
@@ -751,61 +743,7 @@ all film rolls</property>
 																					<widget class="GtkVBox" id="snapshots_body">
 																						<property name="visible">True</property>
 																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_1_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">0</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_2_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">1</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_3_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">2</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="snapshot_4_togglebutton">
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="no_show_all">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">3</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="snapshot_take_button">
-																								<property name="label" translatable="yes">take snapshot</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="padding">5</property>
-																								<property name="position">4</property>
-																							</packing>
+																							<placeholder/>
 																						</child>
 																					</widget>
 																				</child>
@@ -1193,138 +1131,7 @@ all film rolls</property>
 																						<property name="visible">True</property>
 																						<property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
 																						<child>
-																							<widget class="GtkToggleButton" id="history_09">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">0</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_08">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">1</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_07">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">2</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_06">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">3</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_05">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">4</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_04">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">5</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_03">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">6</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_02">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">7</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_01">
-																								<property name="label" translatable="yes">togglebutton</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">8</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkToggleButton" id="history_00">
-																								<property name="label" translatable="yes">original</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="position">9</property>
-																							</packing>
-																						</child>
-																						<child>
-																							<widget class="GtkButton" id="history_compress_button">
-																								<property name="label" translatable="yes">compress history stack</property>
-																								<property name="visible">True</property>
-																								<property name="can_focus">True</property>
-																								<property name="receives_default">True</property>
-																								<property name="tooltip" translatable="yes">create a minimal history stack which produces the same image</property>
-																								<property name="xalign">0</property>
-																							</widget>
-																							<packing>
-																								<property name="padding">7</property>
-																								<property name="position">10</property>
-																							</packing>
+																							<placeholder/>
 																						</child>
 																					</widget>
 																				</child>

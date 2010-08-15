@@ -33,7 +33,7 @@ void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
   cairo_fill(cr);
   cairo_set_source_rgba(cr,0,0,0,0.6);
   cairo_stroke(cr);
-   cairo_identity_matrix(cr);
+  cairo_identity_matrix(cr);
 }
 
 void dtgtk_cairo_paint_presets(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
@@ -217,23 +217,44 @@ void dtgtk_cairo_paint_timer(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
+  gdouble sw = 0.6;
+  gdouble bend =0.3;
+  
   gint s=w<h?w:h;
-  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
-  cairo_scale(cr,s,s);
-  cairo_set_line_width(cr,0.22);
-  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  cairo_translate (cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+  cairo_scale (cr,0.7,0.7);
+  cairo_translate (cr,0.15,0.15);
   
-  cairo_move_to(cr,0.3,0.25);
-  cairo_line_to(cr,0.7,0.25);
-  cairo_stroke(cr);
-  cairo_move_to(cr,0.3,0.50);
-  cairo_line_to(cr,0.7,0.50);
-  cairo_stroke(cr);
-  cairo_move_to(cr,0.3,0.75);
-  cairo_line_to(cr,0.7,0.75);
-  cairo_stroke(cr);
+  cairo_set_line_cap (cr,CAIRO_LINE_CAP_ROUND);
+ 
+  /* s curve left */
+  cairo_set_line_width (cr,0.15);
+  cairo_move_to (cr, 0.0, 1.0);
+  cairo_curve_to (cr, 0.0, 0.0+bend , (1.0-sw),1.0-bend , (1.0-sw),0.0 );
+  cairo_stroke (cr);
+
+  /* s curve down */
+  cairo_move_to (cr, 1.0, 0.0);
+  cairo_curve_to (cr, 1.0,1.0-bend , sw,0.0+bend , sw,1.0 );
+  cairo_stroke (cr);
+
+  /* filmstrip start,stop and devider */
+  cairo_set_line_width (cr,0.05);
+  cairo_move_to (cr, 0, 1.0);
+  cairo_line_to (cr, sw, 1.0);
+  cairo_stroke (cr);
+  cairo_move_to (cr, 1-sw, 0.0);
+  cairo_line_to (cr, 1.0, 0.0);
+  cairo_stroke( cr);
   
-  cairo_identity_matrix(cr);	
+  cairo_set_line_width (cr,0.07);
+  cairo_move_to (cr, 1-sw, 0.5);
+  cairo_line_to (cr, sw, 0.5);
+  cairo_stroke (cr);
+  
+  
+  cairo_identity_matrix (cr);	
 }
 
 void dtgtk_cairo_paint_directory(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
@@ -271,5 +292,6 @@ void dtgtk_cairo_paint_refresh(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
  
   cairo_identity_matrix(cr);
 }
+
 
 

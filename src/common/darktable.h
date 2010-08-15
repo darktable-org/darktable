@@ -26,6 +26,7 @@
 #include <sqlite3.h>
 #include <pthread.h>
 #include <glib/gi18n.h>
+#include <math.h>
 #ifdef _OPENMP
   #include <omp.h>
 #endif
@@ -115,6 +116,7 @@ typedef struct darktable_t
   const struct dt_fswatch_t	*fswatch;
   const struct dt_pwstorage_t *pwstorage;
   const struct dt_camctl_t *camctl;
+  const struct dt_collection_t *collection;
   struct dt_points_t       *points;
   struct dt_imageio_t      *imageio;
   pthread_mutex_t db_insert;
@@ -162,6 +164,15 @@ static inline int dt_get_thread_num()
   return omp_get_thread_num();
 #else
   return 0;
+#endif
+}
+
+static inline float dt_log2f(const float f)
+{
+#ifdef __GLIBC__
+  return log2f(f);
+#else
+  return logf(f)/logf(2.0f);
 #endif
 }
 
