@@ -281,7 +281,7 @@ restart:
 void dt_dev_process_to_mip(dt_develop_t *dev)
 {
   // TODO: efficiency: check hash on preview_pipe->backbuf
-  if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+  if(dt_image_get_blocking(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
   {
     fprintf(stderr, "[dev_process_to_mip] no float buffer is available yet!\n");
     return; // not loaded yet.
