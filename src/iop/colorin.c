@@ -216,7 +216,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // user selected a non-supported output profile, check that:
   if(!d->xform)
   {
-    fprintf(stderr, "[colorin]: unsupported input profile has been replaced by linear rgb!\n");
+    dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
     d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_RGB_DBL, p->intent, 0);

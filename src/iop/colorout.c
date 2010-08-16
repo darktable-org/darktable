@@ -220,7 +220,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // user selected a non-supported output profile, check that:
   if(!d->xform)
   {
-    fprintf(stderr, "[colorout]: unsupported output profile has been replaced by sRGB!\n");
+    dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     if(d->output) dt_colorspaces_cleanup_profile(d->output);
     d->output = dt_colorspaces_create_srgb_profile();
     d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
