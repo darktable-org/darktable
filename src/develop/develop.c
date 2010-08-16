@@ -322,10 +322,14 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
   dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
   pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
 
-  dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
+  // don't if processing failed and backbuf's not there.
+  if(dev->preview_pipe->backbuf)
+  {
+    dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
       dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
       dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
 
+  }
   dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
   pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
 
