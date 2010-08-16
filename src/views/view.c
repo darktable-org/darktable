@@ -433,15 +433,18 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 
 #if defined(__MACH__) || defined(__APPLE__) // dreggn
 #else
-    const char *ext = img->filename + strlen(img->filename);
-    while(ext > img->filename && *ext != '.') ext--;
-    ext++;
-    cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, .25*width);
+    if(img)
+    {
+      const char *ext = img->filename + strlen(img->filename);
+      while(ext > img->filename && *ext != '.') ext--;
+      ext++;
+      cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size (cr, .25*width);
 
-    cairo_move_to (cr, .01*width, .24*height);
-    cairo_show_text (cr, ext);
+      cairo_move_to (cr, .01*width, .24*height);
+      cairo_show_text (cr, ext);
+    }
 #endif
   }
 
