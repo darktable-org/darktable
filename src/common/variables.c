@@ -150,7 +150,11 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else 
     pictures_folder=g_strdup( g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) );
   
-  if(params->filename) file_ext=(g_strrstr(params->filename,".")+1);
+  if(params->filename)
+  {
+    file_ext=(g_strrstr(params->filename,".")+1);
+    if(file_ext == (gchar*)1) file_ext = params->filename + strlen(params->filename);
+  }
   
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
@@ -167,6 +171,22 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir);
   else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",pictures_folder);
   else if( g_strcmp0(variable,"$(DESKTOP_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+#if 0
+  else if( g_strcmp0(variable,"$(VC)") == 0 && (got_value=TRUE) )
+  {
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select id from images where filename=?1", &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, params->filename);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      if(sqlite3_column_int(stmt) == )
+      {
+      }
+    }
+    sqlite3_finalize(stmt);
+    sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+  }
+#endif
   
   g_free(pictures_folder);
   

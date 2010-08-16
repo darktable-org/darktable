@@ -21,35 +21,35 @@
 #include <inttypes.h>
 #include <glib.h>
 
-#define COLLECTION_QUERY_SIMPLE                                 0           // a query with only select and where statement
-#define COLLECTION_QUERY_USE_SORT                             1           // if query should include order by statement
-#define COLLECTION_QUERY_USE_LIMIT                             2           // if query should include "limit ?1,?2" part
-#define COLLECTION_QUERY_USE_WHERE_EXT                  4          // if query should include extended where part
-#define COLLECTION_QUERY_USE_ONLY_WHERE_EXT        8          // if query should only use extended where part
+#define COLLECTION_QUERY_SIMPLE                 0           // a query with only select and where statement
+#define COLLECTION_QUERY_USE_SORT               1           // if query should include order by statement
+#define COLLECTION_QUERY_USE_LIMIT              2           // if query should include "limit ?1,?2" part
+#define COLLECTION_QUERY_USE_WHERE_EXT          4           // if query should include extended where part
+#define COLLECTION_QUERY_USE_ONLY_WHERE_EXT     8           // if query should only use extended where part
 
 #define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT)         
 
 
-#define COLLECTION_FILTER_FILM_ID                    1             // use film_id in filter
+#define COLLECTION_FILTER_FILM_ID               1             // use film_id in filter
 #define COLLECTION_FILTER_ATLEAST_STAR          2             // show all stars including and above selected star filter
 #define COLLECTION_FILTER_EQUAL_STAR            4             // show only selected star filter
-#define COLLECTION_FILTER_ALTERED                  8             // show only altered images
-#define COLLECTION_FILTER_UNALTERED            16            // show only unaltered images
+#define COLLECTION_FILTER_ALTERED               8             // show only altered images
+#define COLLECTION_FILTER_UNALTERED            16             // show only unaltered images
 
 typedef struct dt_collection_params_t
 {
   /** flags for which query parts to use, see COLLECTION_QUERY_x defines... */
   uint32_t query_flags;
-  
+
   /** flags for which filters to use, see COLLECTION_FILTER_x defines... */
   uint32_t filter_flags;
-  
+
   /** current film id */
   uint32_t film_id;
-  
+
   /** current star filter */
   uint32_t star;
-  
+
 } dt_collection_params_t;
 
 typedef struct dt_collection_t
@@ -58,11 +58,12 @@ typedef struct dt_collection_t
   gchar *where_ext;
   dt_collection_params_t params;
   dt_collection_params_t store;
-} dt_collection_t;
+}
+dt_collection_t;
 
 
-/** instansiates a collection context, if params equals NULL default query is constructed. */
-const dt_collection_t * dt_collection_new (const dt_collection_params_t *params);
+/** instansiates a collection context, if clone equals NULL default query is constructed. */
+const dt_collection_t * dt_collection_new (const dt_collection_t *clone);
 /** frees a collection context. */
 void dt_collection_free (const dt_collection_t *collection);
 /** fetch params for collection for storing. */

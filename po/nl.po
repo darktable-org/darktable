@@ -227,7 +227,7 @@ msgstr "zoek series in mappen"
 
 #: ../darktable.glade.h:57
 msgid "snapshots"
-msgstr "momentopnmae"
+msgstr "momentopnamen"
 
 #: ../darktable.glade.h:58
 msgid "switch to darkroom mode"
