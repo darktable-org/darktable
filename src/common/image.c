@@ -730,6 +730,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   }
   else
   {
+    // refuse to load thumbnails for currently developed image.
+    if(darktable.develop->image == img) return 1;
     ret = dt_image_reimport(img, filename, mip);
   }
   // TODO: insert abstract hook here?

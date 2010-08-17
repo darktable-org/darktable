@@ -50,6 +50,10 @@ void dt_gui_histogram_cleanup(dt_gui_histogram_t *n) {}
 
 gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gui_histogram_t *n)
 {
+  dt_develop_t *dev = darktable.develop;
+  float *hist = dev->histogram;
+  float hist_max = dev->histogram_max;
+  if(hist_max <= 0.0) return TRUE;
   const int inset = DT_HIST_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -103,9 +107,6 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, width, height);
   
-  dt_develop_t *dev = darktable.develop;
-  float *hist = dev->histogram;
-  float hist_max = dev->histogram_max;
   if(hist_max > 0)
   {
     cairo_save(cr);
@@ -128,7 +129,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
 
   if(dev->image)
   {
-    cairo_set_source_rgb(cr, .3, .3, .3);
+    cairo_set_source_rgb(cr, .25, .25, .25);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, .1*height);
 
