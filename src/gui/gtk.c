@@ -648,12 +648,22 @@ void quit()
   GtkWindow *win = GTK_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "main_window"));
   gtk_window_iconify(win);
 
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)0);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)2);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)3);
+
   pthread_mutex_lock(&darktable.control->cond_mutex);
   pthread_mutex_lock(&darktable.control->run_mutex);
   darktable.control->running = 0;
   pthread_mutex_unlock(&darktable.control->run_mutex);
   pthread_mutex_unlock(&darktable.control->cond_mutex);
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
 }
 

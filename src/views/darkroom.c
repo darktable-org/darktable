@@ -605,6 +605,8 @@ void leave(dt_view_t *self)
   // clear gui.
   dev->gui_leaving = 1;
   pthread_mutex_lock(&dev->history_mutex);
+  dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
+  dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   while(dev->history)
   {
@@ -614,8 +616,6 @@ void leave(dt_view_t *self)
     free(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
-  dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
-  dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);

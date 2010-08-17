@@ -438,6 +438,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 
 int dt_control_running()
 {
+  // FIXME: when shutdown, run_mutex is not inited anymore!
   dt_control_t *s = darktable.control;
   pthread_mutex_lock(&s->run_mutex);
   int running = s->running;
