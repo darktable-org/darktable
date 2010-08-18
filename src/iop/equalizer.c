@@ -273,6 +273,14 @@ void init_presets (dt_iop_module_t *self)
   sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 
+void 
+_equalizer_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.6;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
@@ -291,7 +299,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 195, 195);
+  //gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -306,6 +314,10 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_equalizer_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (dt_iop_equalizer_scrolled), self);
+  g_signal_connect (G_OBJECT (c->area), "size-allocate",
+                    G_CALLBACK (_equalizer_size_allocate), self);
+		    
+		    
   // init gtk stuff
   c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);

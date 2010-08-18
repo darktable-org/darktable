@@ -513,6 +513,15 @@ dt_iop_basecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpoint
   return FALSE;
 }
 
+void 
+_basecurve_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+ // Reset size to match panel width
+  int width = a->width*0.8;
+  int height = width;
+  gtk_widget_set_size_request(w,width,height);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_basecurve_gui_data_t));
@@ -531,7 +540,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 258, 258);
+  //gtk_drawing_area_size(c->area, 258, 258);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -544,6 +553,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_basecurve_leave_notify), self);
+  g_signal_connect (G_OBJECT (asp), "size-allocate",
+                    G_CALLBACK (_basecurve_size_allocate), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
