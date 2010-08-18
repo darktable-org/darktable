@@ -365,12 +365,12 @@ spinbutton_changed (GtkSpinButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
-  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+//  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   p->n = gtk_spin_button_get_value(button);
   bzero(p->hist, sizeof(float)*HISTN);
   bzero(p->mean, sizeof(float)*MAXN*2);
   bzero(p->var,  sizeof(float)*MAXN*2);
-  gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
+  //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   dt_control_queue_draw(self->widget);
 }
 
@@ -493,7 +493,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   gtk_spin_button_set_value(g->spinbutton, p->n);
-  gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
+  //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   // redraw color cluster preview
   dt_control_queue_draw(self->widget);
 }
