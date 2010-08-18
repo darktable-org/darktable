@@ -146,8 +146,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(!img) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
-  char filename[1024];
-  char dirname[1024];
+  char filename[1024]={0};
+  char dirname[1024]={0};
   dt_image_full_path(img, dirname, 1024);
   d->vp->filename = dirname;
   d->vp->jobcode = "export";
