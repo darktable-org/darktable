@@ -63,6 +63,8 @@ dt_gui_panel_sizegroup_init()
 void 
 dt_gui_panel_sizegroup_add (GtkWidget *w) 
 {
+  gtk_widget_queue_draw (glade_xml_get_widget (darktable.gui->main_window, "left"));
+  gtk_widget_queue_draw (glade_xml_get_widget (darktable.gui->main_window, "right"));
   gtk_size_group_add_widget (_panel_sizegroup,w);
 }
 
