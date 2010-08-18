@@ -24,11 +24,20 @@
 
 #define DT_HIST_INSET 5
 
+void 
+_histogram_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.6;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
 void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
 {
   n->highlight = 0;
   n->dragging = 0;
   n->exposure = NULL;
+
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
       _("drag to change exposure,\ndoubleclick resets"), NULL);
   g_signal_connect (G_OBJECT (widget), "expose-event",
@@ -43,6 +52,9 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_leave_notify), n);
   g_signal_connect (G_OBJECT (widget), "enter-notify-event",
                     G_CALLBACK (dt_gui_histogram_enter_notify), n);
+  g_signal_connect (G_OBJECT (widget), "size-allocate",
+                    G_CALLBACK (_histogram_size_allocate), n);
+  
   gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 }
 
