@@ -110,22 +110,15 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 
 void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 {
-  if(img->film_id == 1)
+  int rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int(stmt, 1, img->film_id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    snprintf(pathname, len, "%s", img->filename);
+    snprintf(pathname, len, "%s/%s", (char *)sqlite3_column_text(stmt, 0), img->filename);
   }
-  else
-  {
-    int rc;
-    sqlite3_stmt *stmt;
-    rc = sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int(stmt, 1, img->film_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      snprintf(pathname, len, "%s/%s", (char *)sqlite3_column_text(stmt, 0), img->filename);
-    }
-    rc = sqlite3_finalize(stmt);
-  }
+  rc = sqlite3_finalize(stmt);
   pathname[len-1] = '\0';
 }
 
