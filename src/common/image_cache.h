@@ -57,10 +57,11 @@ void dt_image_cache_print(dt_image_cache_t *cache);
 
 /** returns alloc'ed image (newly or from cache) or NULL on failure.
  * lru is freed instead. there is no explicit interface for free.
- * result will have users lock incremented. */
-dt_image_t *dt_image_cache_use(int32_t id, const char mode);
-/** same as use, but init image from db if it was not already loaded. */
+ * result will have users lock incremented.
+ * init image from db if it was not already loaded. */
 dt_image_t *dt_image_cache_get(int32_t id, const char mode);
+/** only use for import. */
+dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode);
 /** decrements users lock. */
 void dt_image_cache_release(dt_image_t *img, const char mode);
 /** synches this image and the db entry. */

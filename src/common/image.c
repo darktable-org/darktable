@@ -407,9 +407,6 @@ void dt_image_import_unlock(dt_image_t *img)
 
 int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t mip)
 {
-  // this brute-force lock might be a bit too much:
-  // dt_image_t *imgl = dt_image_cache_use(img->id, 'w');
-  // if(!imgl)
   if(dt_image_import_testlock(img))
   {
     // fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
@@ -520,7 +517,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   rc = sqlite3_finalize(stmt);
 
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
-  dt_image_t *img = dt_image_cache_use(id, 'w');
+  dt_image_t *img = dt_image_cache_get_uninited(id, 'w');
   strncpy(img->filename, imgfname, 256);
   img->id = id;
   img->film_id = film_id;
@@ -640,10 +637,10 @@ void dt_image_init(dt_image_t *img)
 int dt_image_open(const int32_t id)
 {
   if(id < 1) return 1;
-  dt_image_t *img = dt_image_cache_use(id, 'w');
-  int rc = dt_image_open2(img, id);
+  dt_image_t *img = dt_image_cache_get(id, 'w');
+  if(!img) return 1;
   dt_image_cache_release(img, 'w');
-  return rc;
+  return 0;
 }
 
 int dt_image_open2(dt_image_t *img, const int32_t id)

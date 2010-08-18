@@ -52,7 +52,7 @@ int32_t dt_control_write_dt_files_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    dt_image_t *img = dt_image_cache_get(imgid, 'r');
     char dtfilename[520];
     dt_image_full_path(img, dtfilename, 512);
     char *c = dtfilename + strlen(dtfilename);
@@ -123,7 +123,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    dt_image_t *img = dt_image_cache_get(imgid, 'r');
     char dtfilename[512];
     dt_image_full_path(img, dtfilename, 512);
     int rc;
@@ -303,7 +303,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     t = g_list_delete_link(t, t);
       // check if image still exists:
       char imgfilename[1024];
-      dt_image_t *image = dt_image_cache_use(imgid, 'r');
+      dt_image_t *image = dt_image_cache_get(imgid, 'r');
       if(image)
       {
         dt_image_full_path(image, imgfilename, 1024);
