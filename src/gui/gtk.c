@@ -41,6 +41,7 @@
 #include "gui/iop_history.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
+#include "gui/panel_sizegroup.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -833,6 +834,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
+  /* initialize the panelsize group used for dynamic left/right panel size*/
+  dt_gui_panel_sizegroup_init ();
 
   // Update the devices module with available devices
   dt_gui_devices_init();
@@ -922,6 +925,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // image op history
   dt_gui_iop_history_init();
+  
  
   /*for(long int k=0;k<10;k++)
   {
