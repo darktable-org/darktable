@@ -1,5 +1,6 @@
 0.6 release:
 
+- default in presets system not working?
 - ldr image import -> no float buffer etc..?
 - BUG: color labels set in darkroom mode disappear
 - sqlite3 thread safe/locking?

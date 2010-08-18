@@ -68,7 +68,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  const int rad = MIN(MAXR, data->radius * roi_in->scale / piece->iscale);
+  const int rad = MIN(MAXR, .5f + data->radius * roi_in->scale / piece->iscale);
   if(rad == 0)
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
