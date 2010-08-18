@@ -83,7 +83,7 @@ int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
   
-  dt_image_t *img = dt_image_cache_use(imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
   _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
@@ -187,7 +187,7 @@ proceed: ; // Let's build up uri / command
     gchar exif[256]={0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
     const gchar *filename = g_basename( attachment->file );
-    dt_image_t *img = dt_image_cache_use( attachment->imgid, 'r');
+    dt_image_t *img = dt_image_cache_get( attachment->imgid, 'r');
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
     
