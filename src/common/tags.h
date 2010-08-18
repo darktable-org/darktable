@@ -50,7 +50,7 @@ void dt_tag_attach_list(GList *tags,gint imgid);
 void dt_tag_detach(guint tagid,gint imgid);
 
 /** retreives a list of tags of specified imgid \param[out] result a list of dt_tag_t. */
-uint32_t dt_tag_get_attached(guint imgid,GList **result);
+uint32_t dt_tag_get_attached(gint imgid,GList **result);
 
 /** retreives a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out] result a pointer to list populated with result. \return the count \note the limit of result is decided by gconf value "xxx" */
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);

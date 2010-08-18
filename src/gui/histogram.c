@@ -53,7 +53,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
   dt_develop_t *dev = darktable.develop;
   float *hist = dev->histogram;
   float hist_max = dev->histogram_max;
-  if(hist_max <= 0.0) return TRUE;
+  if(hist_max <= 0.0) return FALSE;
   const int inset = DT_HIST_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);

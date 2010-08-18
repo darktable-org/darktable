@@ -70,12 +70,27 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
+#if 0
 static float
 lab_f(const float t)
 {
   if(t > powf(6.0f/29.0f, 3.0f)) return powf(t, 1.0f/3.0f);
   return 1.0/3.0 * (29.0/6.0)*(29.0/6.0)*t + 4.0/29.0;
 }
+#else
+static double
+lab_f(double t)
+{
+  const double Limit = (24.0/116.0) * (24.0/116.0) * (24.0/116.0);
+
+  if (t <= Limit)
+    return (841.0/108.0) * t + (16.0/116.0);
+  else
+    // return CubeRoot((float) t); 
+    return pow(t, 1.0/3.0); 
+}
+#endif
+
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -87,6 +102,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
+    // const float X_n=0.9504, Y_n=1.00, Z_n=1.0888; // D65
     double cam[3] = {0., 0., 0.};
     double xyz[3];
     cmsCIELab Lab;

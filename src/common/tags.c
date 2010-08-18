@@ -198,7 +198,7 @@ void dt_tag_detach(guint tagid,gint imgid)
   }
 }
 
-uint32_t dt_tag_get_attached(guint imgid,GList **result)
+uint32_t dt_tag_get_attached(gint imgid,GList **result)
 {
   int rc;
   sqlite3_stmt *stmt; 

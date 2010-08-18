@@ -106,7 +106,6 @@ static void
 set_keyword(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   sprintf(d->keyword,"%s",gtk_entry_get_text(d->entry));
-  
   update (self, 1);
 }
 
@@ -211,16 +210,12 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   update(self, 1);
 }
 
-static gboolean
-tag_name_changed (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
+static void
+tag_name_changed (GtkEntry *entry, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  if (event->keyval == GDK_KP_Enter || event->keyval == GDK_Return)
-    new_button_clicked (NULL, user_data);
-  else
-    set_keyword(self, d);
-  return FALSE;
+  set_keyword(self, d);
 }
 
 static void
@@ -344,8 +339,12 @@ gui_init (dt_lib_module_t *self)
   w = gtk_entry_new();
   gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter tag name"), NULL);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(w), "key-release-event",
+  gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
+  // g_signal_connect(G_OBJECT(w), "key-release-event",
+  g_signal_connect(G_OBJECT(w), "changed",
                    G_CALLBACK(tag_name_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT (w), "activate",
+                   G_CALLBACK (new_button_clicked), (gpointer)self);
   d->entry = GTK_ENTRY(w);
 
   // related tree view

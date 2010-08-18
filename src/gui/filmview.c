@@ -167,13 +167,6 @@ entry_callback (GtkEntry *entry, GdkEventKey *event, gpointer user_data)
 }
 
 static void
-focus_out_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
-{
-  /* reset size to default */
-  gtk_widget_set_size_request (view, -1, -1);
-}
-
-static void
 focus_in_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
@@ -239,7 +232,6 @@ dt_gui_filmview_init()
   dt_gui_filmview_update("");
 
   g_signal_connect(view, "focus-in-event",  G_CALLBACK(focus_in_callback), view);
-  g_signal_connect(view, "focus-out-event",  G_CALLBACK(focus_out_callback), view);
   GtkWidget *expander = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
   g_signal_connect (expander, "notify::expanded", G_CALLBACK (hide_callback), view);
 

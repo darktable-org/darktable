@@ -93,7 +93,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
         gtk_widget_destroy (dialog);
         break;
       }
-      dt_image_t *img = dt_image_cache_use(imgid, 'r');
+      dt_image_t *img = dt_image_cache_get(imgid, 'r');
       img->force_reimport = 1;
       dt_image_cache_flush(img);
       dt_image_write_dt_files(img);
@@ -140,7 +140,7 @@ delete_button_clicked (GtkWidget *widget, gpointer user_data)
 
     dt_image_t tmp;
     dt_image_init(&tmp);
-    dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    dt_image_t *img = dt_image_cache_get(imgid, 'r');
     img->force_reimport = 1;
     img->raw_params = tmp.raw_params;
     img->raw_denoise_threshold = tmp.raw_denoise_threshold;
@@ -165,7 +165,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if(d->imageid < 0) return;
 
-  dt_image_t *oimg = dt_image_cache_use(d->imageid, 'r');
+  dt_image_t *oimg = dt_image_cache_get(d->imageid, 'r');
   int rc;
   sqlite3_stmt *stmt, *stmt2;
   rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
@@ -201,7 +201,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
     rc = sqlite3_bind_int(stmt2, 1, imgid);
     rc = sqlite3_step(stmt2);
     rc = sqlite3_finalize(stmt2);
-    dt_image_t *img = dt_image_cache_use(imgid, 'r');
+    dt_image_t *img = dt_image_cache_get(imgid, 'r');
     img->force_reimport = 1;
     img->raw_params = oimg->raw_params;
     img->raw_denoise_threshold = oimg->raw_denoise_threshold;
