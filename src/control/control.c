@@ -828,7 +828,7 @@ void
 dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data)
 {
   // Reset size to match panel width
-  int height = a->width*0.5;
+  int height = a->width*0.25;
   gtk_widget_set_size_request(w,a->width,height);
 }
 
