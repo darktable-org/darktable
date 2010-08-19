@@ -282,6 +282,8 @@ position ()
   return 500;
 }
 
+
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -290,6 +292,8 @@ gui_init (dt_lib_module_t *self)
   d->imgsel = -1;
 
   self->widget = gtk_hbox_new(TRUE, 0);
+  gtk_widget_set_size_request(self->widget,100,-1);
+		
   g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
   darktable.gui->redraw_widgets = g_list_append(darktable.gui->redraw_widgets, self->widget);
 
@@ -300,8 +304,9 @@ gui_init (dt_lib_module_t *self)
 
   // left side, current
   box = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-  w = gtk_scrolled_window_new(NULL, NULL);
+  w = gtk_scrolled_window_new(NULL, NULL);	
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->current = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -321,7 +326,7 @@ gui_init (dt_lib_module_t *self)
 
   // attach/detach buttons
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
-
+ 
   button = gtk_button_new_with_label(_("attach"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("attach tag to all selected images"), NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);

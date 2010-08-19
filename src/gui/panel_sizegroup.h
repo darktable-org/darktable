@@ -29,5 +29,7 @@ void dt_gui_panel_sizegroup_add (GtkWidget *w);
 /** remove widget  frompanel sizegroup */
 void dt_gui_panel_sizegroup_remove (GtkWidget *w);
 
+/** runs thru modules to get each width allocation */
+void dt_gui_panel_sizegroup_modules ();
 
 #endif
