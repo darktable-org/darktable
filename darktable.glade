@@ -87,7 +87,7 @@
 										<property name="visible">True</property>
 										<property name="can_focus">True</property>
 										<property name="hscrollbar_policy">never</property>
-										<property name="vscrollbar_policy">automatic</property>
+										<property name="vscrollbar_policy">always</property>
 										<child>
 											<widget class="GtkViewport" id="viewport1">
 												<!--<property name="width_request">280</property>-->
@@ -469,11 +469,11 @@ file manager</property>
 									</packing>
 								</child>
 								<child>
-									<widget class="GtkScrolledWindow" id="scrolledwindow2">
+									<widget class="GtkScrolledWindow" id="left_scrolledwindow">
 										<property name="visible">True</property>
 										<property name="can_focus">True</property>
 										<property name="hscrollbar_policy">never</property>
-										<property name="vscrollbar_policy">automatic</property>
+										<property name="vscrollbar_policy">always</property>
 										<property name="window_placement">top-right</property>
 										<property name="window_placement_set">True</property>
 										<child>
