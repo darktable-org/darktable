@@ -824,6 +824,14 @@ void *dt_control_expose(void *voidptr)
   return NULL;
 }
 
+void 
+dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.5;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   const int width = widget->allocation.width, height = widget->allocation.height;

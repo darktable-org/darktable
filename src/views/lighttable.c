@@ -592,6 +592,7 @@ star_key_accel_callback(void *data)
   }
 }
 
+
 void enter(dt_view_t *self)
 {
   // add expanders
@@ -617,10 +618,11 @@ void enter(dt_view_t *self)
 
   // end marker widget:
   GtkWidget *endmarker = gtk_drawing_area_new();
-  gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), 0);
+   g_signal_connect (G_OBJECT (endmarker), "size-allocate",
+                    G_CALLBACK (dt_control_size_allocate_endmarker), self);
 
   gtk_widget_show_all(GTK_WIDGET(box));
 
