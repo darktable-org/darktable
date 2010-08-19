@@ -104,6 +104,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     double cam[3] = {0., 0., 0.};
     cmsCIELab Lab;
     for(int c=0;c<3;c++) cam[c] = in[3*k + c];
+#if 1
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+    const float YY = cam[0]+cam[1]+cam[2];
+    const float zz = cam[2]/YY;
+    const float bound_z = 0.5f, bound_Y = 0.5f;
+    const float amount = 0.10f;
+    // if(YY > bound_Y && zz > bound_z)
+    if(zz > bound_z)
+    {
+      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+      cam[1] += t*amount;
+      cam[2] -= t*amount;
+    }
+#endif
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
 #if 0 // manual xyz transition
     double xyz[3];
