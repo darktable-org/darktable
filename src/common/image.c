@@ -214,6 +214,12 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
 {
   float wd = img->output_width  ? img->output_width  : img->width,
         ht = img->output_height ? img->output_height : img->height;
+  if(darktable.develop->image == img)
+  {
+    int tmpw, tmph;
+    dt_dev_get_processed_size(darktable.develop, &tmpw, &tmph);
+    wd = tmpw; ht = tmph;
+  }
   if(mip == DT_IMAGE_MIPF)
   { // use input width, mipf is before processing
     wd = img->width;
@@ -234,8 +240,9 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
   { // full image is full size, rest downscaled by output size
     int mwd, mht;
     dt_image_get_mip_size(img, mip, &mwd, &mht);
-    const int owd = img->output_width  ? img->output_width  : img->width,
-              oht = img->output_height ? img->output_height : img->height;
+    // const int owd = img->output_width  ? img->output_width  : img->width,
+    //           oht = img->output_height ? img->output_height : img->height;
+    const int owd = (int)wd, oht = (int)ht;
     const float scale = fminf(mwd/(float)owd, mht/(float)oht);
     wd = owd*scale;
     ht = oht*scale;
