@@ -448,7 +448,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
-  dt_gui_panel_sizegroup_add (module->widget);
+  dt_gui_panel_sizegroup_add (evb);
   return evb;
 }
 
