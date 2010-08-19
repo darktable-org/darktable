@@ -27,7 +27,7 @@ void
 _navigation_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
 {
   // Reset size to match panel width
-  int height = a->width*0.6;
+  int height = a->width*0.5;
   gtk_widget_set_size_request(w,a->width,height);
 }
 
