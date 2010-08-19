@@ -40,12 +40,8 @@ dt_gui_panel_sizegroup_init()
     strcat (key,lang);
     _panel_need_resize=1;
     _panel_sizegroup_width = dt_conf_get_int(key);
-  }
-  
-
+  } 
 }
-
-
 
 static void 
 _panel_sizegroup_allocate(GtkWidget *w,GtkAllocation *a,gpointer data) 
@@ -53,6 +49,7 @@ _panel_sizegroup_allocate(GtkWidget *w,GtkAllocation *a,gpointer data)
   
   if (_panel_sizegroup_width < a->width) 
   {
+    fprintf(stderr,"Widget %s claims width %d.\n",gtk_widget_get_name(w),a->width);
     _panel_sizegroup_width = a->width;
     gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "left"),_panel_sizegroup_width,-1);
     gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "right"),_panel_sizegroup_width,-1);
@@ -71,7 +68,7 @@ _panel_sizegroup_allocate(GtkWidget *w,GtkAllocation *a,gpointer data)
       dt_conf_set_int(key,_panel_sizegroup_width);
     } 
     
-  }
+  } 
 }
 
 void 

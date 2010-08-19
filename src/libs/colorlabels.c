@@ -61,6 +61,7 @@ gui_init (dt_lib_module_t *self)
 {
   self->data = NULL;
   self->widget = gtk_vbox_new(TRUE, 5);
+  
   GtkBox *hbox;
   GtkWidget *button;
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));

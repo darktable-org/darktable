@@ -291,7 +291,7 @@ gui_init (dt_lib_module_t *self)
   self->data = (void *)d;
   d->imgsel = -1;
 
-  self->widget = gtk_hbox_new(TRUE, 0);
+  self->widget = gtk_vbox_new(TRUE, 0);
   gtk_widget_set_size_request(self->widget,100,-1);
 		
   g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
@@ -304,7 +304,7 @@ gui_init (dt_lib_module_t *self)
 
   // left side, current
   box = GTK_BOX(gtk_vbox_new(FALSE, 0));
-  
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   w = gtk_scrolled_window_new(NULL, NULL);	
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
