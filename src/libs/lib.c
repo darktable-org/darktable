@@ -521,7 +521,9 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
 
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
-  dt_gui_panel_sizegroup_add (module->widget);
+  dt_gui_panel_sizegroup_add (evb);
+  //dt_gui_panel_sizegroup_add (module->widget);
+
   return evb;
 }
 
