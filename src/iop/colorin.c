@@ -77,7 +77,7 @@ lab_f(const float t)
   if(t > powf(6.0f/29.0f, 3.0f)) return powf(t, 1.0f/3.0f);
   return 1.0/3.0 * (29.0/6.0)*(29.0/6.0)*t + 4.0/29.0;
 }
-#else
+// #else
 static double
 lab_f(double t)
 {
@@ -101,13 +101,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // not thread safe.
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
-    // const float X_n=0.9504, Y_n=1.00, Z_n=1.0888; // D65
     double cam[3] = {0., 0., 0.};
-    double xyz[3];
     cmsCIELab Lab;
     for(int c=0;c<3;c++) cam[c] = in[3*k + c];
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+#if 0 // manual xyz transition
+    double xyz[3];
+    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
+    // const float X_n=0.9504, Y_n=1.00, Z_n=1.0888; // D65
     cmsDoTransform(d->xform, cam, xyz, 1);
 #if 1
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
@@ -127,6 +128,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     Lab.L = 116.0 * lab_f(xyz[1]/Y_n) - 16.0;
     Lab.a = 500.0 * (lab_f(xyz[0]/X_n) - lab_f(xyz[1]/Y_n));
     Lab.b = 200.0 * (lab_f(xyz[1]/Y_n) - lab_f(xyz[2]/Z_n));
+#else
+    cmsDoTransform(d->xform, cam, &Lab, 1);
+#endif
     out[3*k + 0] = Lab.L;
     if(Lab.L > 0)
     {
@@ -219,7 +223,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
   if(d->input)
-    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_RGB_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   else
   {
     if(strcmp(p->iccprofile, "sRGB"))
@@ -227,7 +231,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->input = dt_colorspaces_create_linear_rgb_profile();
     }
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
-    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_RGB_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   }
   // user selected a non-supported output profile, check that:
   if(!d->xform)
@@ -235,7 +239,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     fprintf(stderr, "[colorin]: unsupported input profile has been replaced by linear rgb!\n");
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
-    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_RGB_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_Lab_DBL, p->intent, 0);
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
@@ -250,8 +254,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
   d->xform = NULL;
-  // unfortunately we have to do the Lab part ourselves, after a bit of hacky gamut mapping.
-  d->Lab = dt_colorspaces_create_xyz_profile();
+  d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
