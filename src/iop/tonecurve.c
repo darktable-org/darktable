@@ -39,6 +39,16 @@ const char *name()
   return _("tone curve");
 }
 
+
+int 
+groups () 
+{
+	return IOP_GROUP_CORRECT;
+}
+
+
+
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in = (float *)i;

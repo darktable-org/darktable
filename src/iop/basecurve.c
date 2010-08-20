@@ -117,6 +117,13 @@ const char *name()
   return _("base curve");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_BASIC;
+}
+	
+
 void init_presets (dt_iop_module_t *self)
 {
   // transform presets above to db entries.

@@ -114,6 +114,13 @@ const char *name()
   return _("crop and rotate");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_CORRECT;
+}
+
+
 static void
 backtransform(float *x, float *o, const float *m, const float t, const int k)
 {

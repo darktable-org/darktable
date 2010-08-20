@@ -92,6 +92,13 @@ const char
   return _("color zones");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
+
 static float
 lookup(const double *lut, const float i)
 {

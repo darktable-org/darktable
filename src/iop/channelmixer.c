@@ -1,4 +1,4 @@
-/*
+	/*
     This file is part of darktable,
     copyright (c) 2010 Henrik Andersson.
 
@@ -106,6 +106,13 @@ const char *name()
 {
   return _("channel mixer");
 }
+
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
 
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
 {

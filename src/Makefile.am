@@ -53,6 +53,7 @@ libdarktable_la_SOURCES= \
 			gui/gtk.c \
 			gui/histogram.c \
 			gui/iop_history.c \
+			gui/iop_modulegroups.c \
 			gui/metadata.c \
 			gui/navigation.c \
 			gui/panel_sizegroup.c \
@@ -71,6 +72,7 @@ noinst_HEADERS= \
 			gui/navigation.h \
 			gui/filmview.h \
 			gui/iop_history.h \
+			gui/iop_modulegroups.h \
 			gui/draw.h \
 			gui/panel_sizegroup.h \
 			gui/presets.h \

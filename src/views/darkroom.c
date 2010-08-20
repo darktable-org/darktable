@@ -25,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "gui/gtk.h"
+#include "gui/iop_modulegroups.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -46,6 +47,7 @@ init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
+  
 }
 
 
@@ -444,6 +446,7 @@ void enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  
   select_this_image(dev->image->id);
 
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
@@ -457,6 +460,8 @@ void enter(dt_view_t *self)
 
   // adjust gui:
   GtkWidget *widget;
+  gtk_widget_set_visible (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), TRUE);
+
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
@@ -544,6 +549,10 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
+  
+  /* set list of modules to modulegroups */
+  dt_gui_iop_modulegroups_set_list (dev->iop);
+
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.

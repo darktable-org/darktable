@@ -39,6 +39,7 @@
 #include "gui/metadata.h"
 #include "gui/filmview.h"
 #include "gui/iop_history.h"
+#include "gui/iop_modulegroups.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
 #include "gui/panel_sizegroup.h"
@@ -928,6 +929,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // image op history
   dt_gui_iop_history_init();
   
+  /* initializes the module groups buttonbar control */
+  dt_gui_iop_modulegroups_init ();
  
   /*for(long int k=0;k<10;k++)
   {

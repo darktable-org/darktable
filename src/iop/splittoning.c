@@ -76,6 +76,16 @@ const char *name()
   return _("split toning");
 }
 
+
+int 
+groups () 
+{
+	return IOP_GROUP_EFFECT;
+}
+
+
+
+
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
 {
   float pmax=fmax(r,fmax(g,b));

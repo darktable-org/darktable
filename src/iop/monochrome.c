@@ -70,6 +70,15 @@ const char *name()
   return _("monochrome");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
+
+
+
 float
 color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
 {

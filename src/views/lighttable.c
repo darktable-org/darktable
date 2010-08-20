@@ -602,6 +602,8 @@ void enter(dt_view_t *self)
   // Adjust gui
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
   gtk_widget_set_visible(widget, TRUE);
+	
+  gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
   
   while(modules)
   {

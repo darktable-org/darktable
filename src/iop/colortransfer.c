@@ -104,6 +104,13 @@ const char *name()
   return _("color transfer");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_EFFECT|IOP_GROUP_COLOR;
+}
+
+
 static void
 capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 {

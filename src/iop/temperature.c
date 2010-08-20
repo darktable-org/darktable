@@ -78,6 +78,16 @@ const char *name()
   return C_("modulename", "white balance");
 }
 
+
+int 
+groups () 
+{
+	return IOP_GROUP_BASIC;
+}
+
+
+
+
 static void
 convert_k_to_rgb (float temperature, float *rgb)
 {
