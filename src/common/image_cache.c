@@ -326,7 +326,7 @@ int dt_image_cache_compare_id(const int16_t *l1, const int16_t *l2)
 
 dt_image_t *dt_image_cache_get(int32_t id, const char mode)
 {
-  dt_image_t *img = dt_image_cache_use(id, mode);
+  dt_image_t *img = dt_image_cache_get_uninited(id, mode);
   if(img == NULL) return NULL;
   if(img->film_id == -1) if(dt_image_open2(img, id))
   {
@@ -347,14 +347,14 @@ void dt_image_cache_clear(int32_t id)
   pthread_mutex_unlock(&(cache->mutex));
 }
 
-dt_image_t *dt_image_cache_use(int32_t id, const char mode)
+dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
 {
-  // printf("[image_cache_use] locking image %d %s\n", id, mode == 'w' ? "for writing" : "");
+  // printf("[image_cache_get_uninited] locking image %d %s\n", id, mode == 'w' ? "for writing" : "");
   dt_image_cache_t *cache = darktable.image_cache;
   pthread_mutex_lock(&(cache->mutex));
 #ifdef _DEBUG
   if(dt_image_cache_check_consistency(cache))
-    fprintf(stderr, "[image_cache_use] cache is corrupted!\n");
+    fprintf(stderr, "[image_cache_get_uninited] cache is corrupted!\n");
 #endif
   // int16_t *res = bsearch(&id, cache->by_id, cache->num_lines, sizeof(int16_t), (int(*)(const void *, const void *))&dt_image_cache_compare_id);
   int32_t res = dt_image_cache_bsearch(id);
@@ -375,7 +375,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
     }
     if(k == cache->num_lines)
     {
-      fprintf(stderr, "[image_cache_use] all %d slots are in use!\n", cache->num_lines);
+      fprintf(stderr, "[image_cache_get_uninited] all %d slots are in use!\n", cache->num_lines);
       pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }
@@ -420,7 +420,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
   }
 #ifdef _DEBUG
   if(dt_image_cache_check_consistency(cache))
-    fprintf(stderr, "[image_cache_use] cache is corrupted!\n");
+    fprintf(stderr, "[image_cache_get_uninited] cache is corrupted!\n");
 #endif
   pthread_mutex_unlock(&(cache->mutex));
   return ret;

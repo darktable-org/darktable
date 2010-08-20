@@ -803,7 +803,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   
   gint fd=g_file_open_tmp(fname,&tempfilename,NULL);
   close(fd);
-  dt_image_t *img = dt_image_cache_use(imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
   caption = g_path_get_basename( img->filename );
   
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...

@@ -101,6 +101,25 @@ static void display_profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorout] display color profile %s seems to have disappeared!\n", p->displayprofile);
 }
 
+#if 0
+static double
+lab_f_1(double t)
+{
+  const double Limit = (24.0/116.0);
+
+  if (t <= Limit)
+  {
+    double tmp;
+
+    tmp = (108.0/841.0) * (t - (16.0/116.0));
+    if (tmp <= 0.0) return 0.0;
+    else return tmp;
+  }
+
+  return t * t * t;
+}
+#endif
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -114,23 +133,34 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     double rgb[3];
     cmsCIELab Lab;
-    // convert from La/Lb/L to be able to change L without changing saturation.
     Lab.L = in[3*k+0];
     Lab.a = in[3*k+1]*Lab.L*(1.0/100.0);
     Lab.b = in[3*k+2]*Lab.L*(1.0/100.0);
+#if 0 // manual xyz step:
+    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
+    // const float X_n=0.9504, Y_n=1.00, Z_n=1.0888; // D65
+    // convert from La/Lb/L to be able to change L without changing saturation.
     double xyz[3];
-    const float delta = 6.0/29.0;
+    // const float delta = 6.0/29.0;
     const float f_y = (Lab.L + 16.0)/116.0;
-    const float f_x = f_y + Lab.a / 500.0;
-    const float f_z = f_y - Lab.b / 200.0;
-    if(f_y > delta) xyz[1] = D50Y*powf(f_y, 3.0f);
-    else xyz[1] = (f_y-16.0/116.0)*3.0f*delta*delta*D50Y;
-    if(f_x > delta) xyz[0] = D50X*powf(f_x, 3.0f);
-    else xyz[0] = (f_x-16.0/116.0)*3.0f*delta*delta*D50X;
-    if(f_z > delta) xyz[2] = D50Z*powf(f_z, 3.0f);
-    else xyz[2] = (f_z-16.0/116.0)*3.0f*delta*delta*D50Z;
+    const float f_x = f_y + Lab.a * 0.002;
+    const float f_z = f_y - Lab.b * 0.005;
+    xyz[0] = lab_f_1(f_x)*X_n;
+    xyz[1] = lab_f_1(f_y)*Y_n;
+    xyz[2] = lab_f_1(f_z)*Z_n;
+#if 0
+    if(f_y > delta) xyz[1] = Y_n*powf(f_y, 3.0f);
+    else xyz[1] = (f_y-16.0/116.0)*3.0f*delta*delta*Y_n;
+    if(f_x > delta) xyz[0] = X_n*powf(f_x, 3.0f);
+    else xyz[0] = (f_x-16.0/116.0)*3.0f*delta*delta*X_n;
+    if(f_z > delta) xyz[2] = Z_n*powf(f_z, 3.0f);
+    else xyz[2] = (f_z-16.0/116.0)*3.0f*delta*delta*Z_n;
+#endif
 
     cmsDoTransform(d->xform, xyz, rgb, 1);
+#else
+    cmsDoTransform(d->xform, &Lab, rgb, 1);
+#endif
     for(int c=0;c<3;c++) out[3*k + c] = rgb[c];
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -183,8 +213,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
-    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
   }
   else
   {
@@ -214,8 +244,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
-    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
   }
   // user selected a non-supported output profile, check that:
   if(!d->xform)
@@ -223,7 +253,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     fprintf(stderr, "[colorout]: unsupported output profile has been replaced by sRGB!\n");
     if(d->output) dt_colorspaces_cleanup_profile(d->output);
     d->output = dt_colorspaces_create_srgb_profile();
-    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
   }
 #endif
   g_free(overprofile);
@@ -239,7 +270,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->output = NULL;
   d->xform = NULL;
-  d->Lab = dt_colorspaces_create_xyz_profile();
+  d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
