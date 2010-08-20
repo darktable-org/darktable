@@ -48,9 +48,13 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
     while (modules)
     {
       dt_iop_module_t *module=(dt_iop_module_t*)modules->data;
-      if ( ( !module->showhide || (GTK_IS_TOGGLE_BUTTON (module->showhide) && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) )  
-        gtk_widget_show(GTK_WIDGET (module->topwidget));
-       modules = g_list_next(modules);
+        
+      if(strcmp(module->op, "gamma"))
+      {
+        if ( ( !module->showhide || (GTK_IS_TOGGLE_BUTTON (module->showhide) && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) )  
+          gtk_widget_show(GTK_WIDGET (module->topwidget));
+         modules = g_list_next(modules);
+      }
     }
     return;
   }
@@ -89,11 +93,14 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
     {
       
       dt_iop_module_t *module=(dt_iop_module_t*)modules->data;
-      if ( (module->groups () & group ) && ( !module->showhide || (module->showhide && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) )  
-        gtk_widget_show(GTK_WIDGET (module->topwidget));
-      else
-        gtk_widget_hide(GTK_WIDGET (module->topwidget));
-        
+      if(strcmp(module->op, "gamma"))
+      {
+       
+        if ( (module->groups () & group ) && ( !module->showhide || (module->showhide && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) )  
+          gtk_widget_show(GTK_WIDGET (module->topwidget));
+        else
+          gtk_widget_hide(GTK_WIDGET (module->topwidget));
+      }
       modules = g_list_next(modules);
     }
     return;
