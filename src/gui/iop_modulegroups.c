@@ -102,8 +102,13 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
 }
 
 void dt_gui_iop_modulegroups_set_list (GList *modules) {
-  if( !modules ) fprintf(stderr,"setting empty iop list\n");
-  _iop_modulegroups_modules = modules;
+  /* sets the list of iop modules to use, called when entering develop mode */
+  if( !modules ) fprintf (stderr,"setting empty iop list\n");
+    _iop_modulegroups_modules = modules;
+  
+  /* default behavior is to enable view of basic group when entering develop mode */
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget),TRUE);
+  
 }
   
 void dt_gui_iop_modulegroups_init ()
