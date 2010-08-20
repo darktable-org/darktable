@@ -3,6 +3,7 @@ style "clearlooks-default"
 {
   GtkMenuItem::selected_shadow_type = out
   GtkWidget::interior_focus = 1
+  GtkWidget::focus-line-width = 0
   GtkButton::default_border = { 0, 0, 0, 0 }
   GtkButton::default_outside_border = { 0, 0, 0, 0 }
   GtkRange::trough_border = 0
