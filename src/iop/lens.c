@@ -39,14 +39,14 @@ DT_MODULE(2)
 
 const char *name()
 {
-  return _("lens distortions");
+  return _("lens correction");
 }
 
 
 int 
 groups () 
 {
-	return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT;
 }
 
 
