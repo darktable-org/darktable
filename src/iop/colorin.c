@@ -38,6 +38,12 @@ const char *name()
   return _("input color profile");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;

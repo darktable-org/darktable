@@ -79,7 +79,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_ALL;
+	return IOP_GROUP_BASIC;
 }
 
 
