@@ -34,7 +34,7 @@ static GtkWidget *_iop_modulegroups_effect_widget=NULL;
 static void 
 _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
 {
-  int group=(int)data;
+  long group=(long)data;
 
   /* is none of the buttons on, let's show all enabled modules.. */
   
