@@ -118,6 +118,23 @@ void dt_gui_iop_modulegroups_set_list (GList *modules) {
   if( !modules ) fprintf (stderr,"setting empty iop list\n");
     _iop_modulegroups_modules = modules;
   
+  /* clear all */
+  g_signal_handlers_block_matched ( _iop_modulegroups_basic_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_block_matched ( _iop_modulegroups_correct_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_block_matched ( _iop_modulegroups_color_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_block_matched ( _iop_modulegroups_effect_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget),FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_correct_widget),FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_color_widget),FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_effect_widget),FALSE);
+  
+  /* ublock toggled signal emittion */
+  g_signal_handlers_unblock_matched ( _iop_modulegroups_basic_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_unblock_matched ( _iop_modulegroups_correct_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_unblock_matched ( _iop_modulegroups_color_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_unblock_matched ( _iop_modulegroups_effect_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+
   /* default behavior is to enable view of basic group when entering develop mode */
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget),TRUE);
   
