@@ -35,6 +35,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/label.h"
 #include "dtgtk/button.h"
+#include "gui/contrast.h"
 #include "gui/gtk.h"
 #include "gui/metadata.h"
 #include "gui/filmview.h"
@@ -821,6 +822,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
   g_free(themefile);
 
+  
   /* load the interface */
   snprintf(path, 1023, "%s/darktable.glade", datadir);
   if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
@@ -835,6 +837,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
+  
+  
   /* initialize the panelsize group used for dynamic left/right panel size*/
   dt_gui_panel_sizegroup_init ();
   
@@ -1065,6 +1069,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
   darktable.gui->reset = 0;
   for(int i=0;i<3;i++) darktable.gui->bgcolor[i] = 0.1333;
+  
+  /* apply contrast to theme */
+  dt_gui_contrast_init ();
+  
   return 0;
 }
 

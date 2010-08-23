@@ -86,17 +86,13 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_LABEL(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
-  static GtkStyle *style=NULL;
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
   int state = gtk_widget_get_state(widget);
 
   int x = widget->allocation.x;
   int y = widget->allocation.y;
   int width = widget->allocation.width;
   int height = widget->allocation.height;
-
-  if (!style) {
-    style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
-  }
  
   // Formating the display of text and draw it...
   PangoLayout *layout;    

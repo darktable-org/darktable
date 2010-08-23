@@ -26,6 +26,7 @@
 #include "common/imageio.h"
 #include "views/view.h"
 #include "gui/gtk.h"
+#include "gui/contrast.h"
 #include "gui/filmview.h"
 #include "gui/draw.h"
 
@@ -1145,6 +1146,13 @@ int dt_control_key_pressed_override(uint16_t which)
   GtkWidget *widget;
   switch (which)
   {
+    case KEYCODE_F7:
+      dt_gui_contrast_decrease ();
+      break;
+    case KEYCODE_F8:
+      dt_gui_contrast_increase ();
+      break;
+    
     case KEYCODE_F11:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       fullscreen = dt_conf_get_bool("ui_last/fullscreen");
@@ -1250,8 +1258,8 @@ void dt_control_clear_history_items(int32_t num)
   /* reset if empty stack */
   if( num == -1 ) 
   {
-	dt_gui_iop_history_reset();
-	return;
+  dt_gui_iop_history_reset();
+  return;
   }
   
   /* pop items from top of history */
@@ -1260,7 +1268,7 @@ void dt_control_clear_history_items(int32_t num)
     dt_gui_iop_history_pop_top ();
 
   dt_gui_iop_history_update_labels ();
-	
+  
 }
 
 void dt_control_update_recent_films()
