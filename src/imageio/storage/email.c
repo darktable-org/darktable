@@ -89,12 +89,18 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
   attachment->imgid = imgid;
    
+  /* construct a temporary file name */
+  char tmpdir[4096]={0};
+  dt_get_user_local_dir (tmpdir,4096);
+  strcat (tmpdir,"/tmp");
+  g_mkdir_with_parents(tmpdir,0700);
+  
   char dirname[4096];
   dt_image_full_path(img, dirname, 1024);
   const gchar * filename = g_basename( dirname );
   strcpy( g_strrstr( filename,".")+1, format->extension(fdata));
   
-  attachment->file = g_build_filename( g_get_tmp_dir(), filename,NULL );
+  attachment->file = g_build_filename( tmpdir, filename,NULL );
   
   dt_imageio_export(img, attachment->file, format, fdata);
   dt_image_cache_release(img, 'r');
