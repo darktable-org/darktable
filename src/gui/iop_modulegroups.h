@@ -24,5 +24,6 @@
 
 void dt_gui_iop_modulegroups_init ();
 void dt_gui_iop_modulegroups_set_list (GList *modules);
-	
+/* switch to group IOP_GROUP_* */
+void dt_gui_iop_modulegroups_switch(int group);
 #endif
