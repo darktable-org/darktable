@@ -23,7 +23,7 @@
 #include "control/conf.h"
 
 #define CONTRAST_STEP 0.1
-#define CONTRAST_AMOUNT 0.2
+#define CONTRAST_AMOUNT 0.4
 
 GtkStyle *_main_window_orginal_style;
 GtkStyle *_module_orginal_style;
@@ -43,8 +43,13 @@ _gui_contrast_apply ()
 style \"clearlooks-default\" \
 { \
   text[NORMAL] = \"#%.2x%.2x%.2x\" \
+  text[ACTIVE] = \"#%.2x%.2x%.2x\" \
+  text[INSENSITIVE] = \"#%.2x%.2x%.2x\" \
   bg[NORMAL] = \"#%.2x%.2x%.2x\" \
+  bg[ACTIVE] = \"#%.2x%.2x%.2x\" \
+  bg[SELECTED] = \"#%.2x%.2x%.2x\" \
   base[NORMAL] = \"#%.2x%.2x%.2x\" \
+  base[ACTIVE] = \"#%.2x%.2x%.2x\" \
 } \
  \
 style \"clearlooks-brightbg\" = \"clearlooks-default\" \
@@ -59,22 +64,44 @@ style \"clearlooks-vbrightbg\" = \"clearlooks-default\" \
 }   \
 ", 
     /* clearlooks-default */
+    //text[NORMAL]
     (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].red * increase)/65535.0)),
     (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].green * increase)/65535.0)),
     (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].blue * increase)/65535.0)),
-
+    //text[ACTIVE]
+    (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].red * increase)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].green * increase)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].blue * increase)/65535.0)),
+    //text[INSENSITIVE]
+    (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].red * increase)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].green * increase)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].blue * increase)/65535.0)),
+    // bg[NORMAL]
     (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].red * decrease)/65535.0)),
     (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].green * decrease)/65535.0)),
     (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].blue * decrease)/65535.0)),
+    // bg[ACTIVE[
+    (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].red * decrease)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].green * decrease)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].blue * decrease)/65535.0)),
+    // bg[SELECTED]
+    (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].red * decrease)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].green * decrease)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].blue * decrease)/65535.0)),
   
+     // base[NORMAL]
     (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].red * decrease)/65535.0)),
     (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].green * decrease)/65535.0)),
     (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].blue * decrease)/65535.0)),
+      // base[ACTIVE]
+    (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].red * decrease)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].green * decrease)/65535.0)),
+    (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].blue * decrease)/65535.0)),
     
     /* clearlooks-brightbg */
-    (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].red * (1.0-(amount*0.5)) )/65535.0)),
-    (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].green * (1.0-(amount*0.5)) )/65535.0)),
-    (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].blue * (1.0-(amount*0.5)) )/65535.0))
+    (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].red * (1.0+(amount*0.1)) )/65535.0)),
+    (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].green * (1.0+(amount*0.1)) )/65535.0)),
+    (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].blue * (1.0+(amount*0.1)) )/65535.0))
     
     
   );
