@@ -257,6 +257,7 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
   snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
   if(gtk_toggle_button_get_active(togglebutton))
   {
+    dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show_all(GTK_WIDGET(module->topwidget));
     dt_conf_set_bool (option, TRUE);
     gtk_expander_set_expanded(module->expander, TRUE);
