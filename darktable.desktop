@@ -3,10 +3,12 @@ Name=Darktable Photo Workflow Software
 GenericName=Virtual Lighttable and Darkroom
 GenericName[ru]=Программа для отсмотра и проявки цифровых негативов
 GenericName[de]=Virtueller Leuchttisch und Dunkelkammer
+GenericName[sv]=Virtuellt ljusbord och mörkerrum
 
 Comment=Organize and develop images from digital cameras
 Comment[ru]=Организация, сортировка и проявка цифровых негативов
 Comment[de]=Organisiere und entwickle Bilder von Digitalkameras
+Comment[sv]=Organisera och utveckla bilder ifrån digitalkameror
 
 Version=1.0
 
