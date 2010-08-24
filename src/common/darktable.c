@@ -271,6 +271,24 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #endif
 }
 
+void 
+dt_get_user_config_dir (char *data, size_t bufsize)
+{
+  g_snprintf (data,bufsize,"%s/.config/darktable",getenv("HOME"));  
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+    g_mkdir_with_parents (data,0700);
+
+}
+
+void 
+dt_get_user_local_dir (char *data, size_t bufsize)
+{
+  g_snprintf(data,bufsize,"%s/.local",getenv("HOME"));
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+    g_mkdir_with_parents (data,0700);
+
+}
+
 void dt_get_plugindir(char *datadir, size_t bufsize)
 {
 #if defined(__MACH__) || defined(__APPLE__)
