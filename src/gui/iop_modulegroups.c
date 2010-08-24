@@ -113,6 +113,15 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
   
 }
 
+void 
+dt_gui_iop_modulegroups_switch(int group)
+{
+  if(group&IOP_GROUP_BASIC) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget),TRUE);
+  else if(group&IOP_GROUP_CORRECT) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_correct_widget),TRUE);
+  else if(group&IOP_GROUP_COLOR) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_color_widget),TRUE);
+  else if(group&IOP_GROUP_EFFECT) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_effect_widget ),TRUE);
+}
+
 void dt_gui_iop_modulegroups_set_list (GList *modules) {
   /* sets the list of iop modules to use, called when entering develop mode */
   if( !modules ) fprintf (stderr,"setting empty iop list\n");
