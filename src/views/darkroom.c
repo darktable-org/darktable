@@ -814,13 +814,19 @@ void scrolled(dt_view_t *self, double x, double y, int up)
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if(scale > 0.99)            zoom = DT_ZOOM_1;
   if(scale < minscale + 0.01) zoom = DT_ZOOM_FIT;
-  zoom_x -= mouse_off_x/(procw*scale);
-  zoom_y -= mouse_off_y/(proch*scale);
+  if(zoom != DT_ZOOM_1)
+  {
+    zoom_x -= mouse_off_x/(procw*scale);
+    zoom_y -= mouse_off_y/(proch*scale);
+  }
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   DT_CTL_SET_GLOBAL(dev_zoom, zoom);
   DT_CTL_SET_GLOBAL(dev_closeup, closeup);
-  DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-  DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+  if(zoom != DT_ZOOM_1)
+  {
+    DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+    DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+  }
   dt_dev_invalidate(dev);
 }
 
