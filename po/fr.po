@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-08-08 12:41+0200\n"
-"PO-Revision-Date: 2010-08-09 01:28+0100\n"
+"PO-Revision-Date: 2010-08-21 01:53+0100\n"
 "Last-Translator: Olivier TRIBOUT <olivier.tribout@noos.fr>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -27,7 +27,7 @@ msgid ""
 "recently used film rolls"
 msgstr ""
 "\n"
-"films récemment utilisés"
+"films récents"
 
 #: ../darktable.glade.h:5
 msgid "( --- )"
@@ -90,7 +90,7 @@ msgstr "date/heure"
 
 #: ../darktable.glade.h:21
 msgid "devices"
-msgstr "appareils"
+msgstr "boîtiers"
 
 #. exposure
 #: ../darktable.glade.h:22
@@ -167,11 +167,11 @@ msgstr "objectif"
 
 #: ../darktable.glade.h:39
 msgid "library"
-msgstr "librairie"
+msgstr "collection"
 
 #: ../darktable.glade.h:40
 msgid "list"
-msgstr "liste"
+msgstr "afficher"
 
 #: ../darktable.glade.h:41
 #: ../src/gui/presets.c:236
@@ -215,7 +215,7 @@ msgstr "ouvrir"
 
 #: ../darktable.glade.h:51
 msgid "open selected film roll in light table"
-msgstr "ouvrir le film sélectionné dans la table lumineuse"
+msgstr "ouvre le film sélectionné dans la table lumineuse"
 
 #: ../darktable.glade.h:52
 msgid "original"
@@ -232,7 +232,7 @@ msgstr "enlever"
 
 #: ../darktable.glade.h:55
 msgid "remove selected film roll from collection"
-msgstr "enlever le film sélectionné de la collection"
+msgstr "enlève le film sélectionné de la collection"
 
 #: ../darktable.glade.h:56
 msgid "search film rolls by folder"
@@ -244,7 +244,7 @@ msgstr "instantanés"
 
 #: ../darktable.glade.h:58
 msgid "switch to darkroom mode"
-msgstr "passer en mode darkroom"
+msgstr "passer en mode chambre noire"
 
 #: ../darktable.glade.h:59
 msgid "take snapshot"
@@ -263,7 +263,7 @@ msgid ""
 "zoomable light table\n"
 "file manager"
 msgstr ""
-"lighttable zoomable\n"
+"table lumineuse zoomable\n"
 "gestionnaire de fichiers"
 
 #: ../darktable.schemas.in.h:1
@@ -452,7 +452,7 @@ msgstr "version des entrées dt-gconf"
 
 #: ../darktable.schemas.in.h:47
 msgid "which layout should lighttable mode show"
-msgstr "quel affichage doit être utilisé pour le mode lighttable"
+msgstr "quel affichage pour le mode table lumineuse"
 
 #: ../darktable.schemas.in.h:48
 msgid "width of the exported image"
@@ -778,7 +778,7 @@ msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
 msgstr ""
-"copier l'historique de\n"
+"copie l'historique de\n"
 "la première image \n"
 "selectionnée (ctrl-c)"
 
@@ -791,7 +791,7 @@ msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"supprimer l'historique des\n"
+"supprime l'historique des\n"
 "images sélectionnées"
 
 #: ../src/libs/copy_history.c:267
@@ -815,7 +815,7 @@ msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
 msgstr ""
-"appliquer l'historique à\n"
+"applique l'historique à\n"
 "toutes les images sélectionnées (ctrl-v)"
 
 #: ../src/libs/copy_history.c:283
@@ -827,8 +827,8 @@ msgid ""
 "open a dt sidecar file\n"
 "and apply it to selected images"
 msgstr ""
-"charger un fichier dt\n"
-"et l'appliquer aux images sélectionnées"
+"charge un fichier dt\n"
+"et l'applique aux images sélectionnées"
 
 #: ../src/libs/lib.c:55
 #: ../src/gui/presets.c:78
@@ -869,7 +869,7 @@ msgstr "supprimer les pré-réglages pour les modules obsolètes"
 #: ../src/libs/lib.c:300
 #: ../src/gui/presets.c:524
 msgid "edit this preset.."
-msgstr "modifier ce pré-réglage.."
+msgstr "modifier ce pré-réglage..."
 
 #: ../src/libs/lib.c:304
 #: ../src/gui/presets.c:528
@@ -879,7 +879,7 @@ msgstr "supprimer ce pré-réglage ?"
 #: ../src/libs/lib.c:311
 #: ../src/gui/presets.c:542
 msgid "store new preset.."
-msgstr "enregistrer nouveau pré-réglage.."
+msgstr "enregistrer nouveau pré-réglage..."
 
 #: ../src/libs/export.c:66
 msgid "export selected"
@@ -926,7 +926,7 @@ msgstr "x"
 #: ../src/libs/export.c:428
 #: ../src/iop/colorin.c:397
 msgid "intent"
-msgstr "intention"
+msgstr "mode de rendu"
 
 #: ../src/libs/export.c:432
 #: ../src/libs/export.c:498
@@ -1004,7 +1004,7 @@ msgstr "exporter"
 
 #: ../src/libs/export.c:520
 msgid "export with current settings (ctrl-e)"
-msgstr "exporter avec les réglages actuels (ctrl-e)"
+msgstr "exporte avec les réglages actuels (ctrl-e)"
 
 #: ../src/libs/image.c:37
 msgid "selected image[s]"
@@ -1012,7 +1012,7 @@ msgstr "image(s) sélectionnée(s)"
 
 #: ../src/libs/image.c:78
 msgid "remove from the collection"
-msgstr "enlever de la collection"
+msgstr "enleve de la collection"
 
 #: ../src/libs/image.c:82
 #: ../src/libs/tagging.c:379
@@ -1021,7 +1021,7 @@ msgstr "supprimer"
 
 #: ../src/libs/image.c:83
 msgid "physically delete from disk"
-msgstr "supprimer physiquement du disque"
+msgstr "supprime physiquement du disque"
 
 #: ../src/libs/image.c:90
 msgid "write dt files"
@@ -1029,7 +1029,7 @@ msgstr "écrire les fichiers dt"
 
 #: ../src/libs/image.c:91
 msgid "write history stack and tags to sidecar files"
-msgstr "écrire l'historique et les tags dans un fichier attaché"
+msgstr "écrit l'historique et les tags dans un fichier attaché"
 
 #: ../src/libs/image.c:95
 msgid "duplicate"
@@ -1037,7 +1037,7 @@ msgstr "dupliquer"
 
 #: ../src/libs/image.c:96
 msgid "add a duplicate to the collection"
-msgstr "ajouter un duplicata à la collection"
+msgstr "ajoute un duplicata à la collection"
 
 #: ../src/libs/tagging.c:50
 msgid "tagging"
@@ -1076,7 +1076,7 @@ msgstr "attacher"
 
 #: ../src/libs/tagging.c:326
 msgid "attach tag to all selected images"
-msgstr "attacher le tag à toutes les images sélectionnées"
+msgstr "attache le tag à toutes les images sélectionnées"
 
 #: ../src/libs/tagging.c:331
 msgid "detach"
@@ -1084,7 +1084,7 @@ msgstr "détacher"
 
 #: ../src/libs/tagging.c:332
 msgid "detach tag from all selected images"
-msgstr "détacher le tag de toutes les images sélectionnées"
+msgstr "détache le tag de toutes les images sélectionnées"
 
 #: ../src/libs/tagging.c:345
 msgid "enter tag name"
@@ -1107,12 +1107,12 @@ msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"créer un nouveau tag à\n"
+"crée un nouveau tag à\n"
 "partir de la saisie"
 
 #: ../src/libs/tagging.c:380
 msgid "delete selected tag"
-msgstr "supprimer le tag sélectionné"
+msgstr "supprime le tag sélectionné"
 
 #: ../src/libs/select.c:30
 msgid "select"
@@ -1124,7 +1124,7 @@ msgstr "tout"
 
 #: ../src/libs/select.c:125
 msgid "select all images in current collection (ctrl-a)"
-msgstr "sélectionner toutes les images de la collection courante (Ctrl+a)"
+msgstr "sélectionne toutes les images de la collection courante (Ctrl+a)"
 
 #: ../src/libs/select.c:130
 msgid "select none"
@@ -1132,7 +1132,7 @@ msgstr "aucune"
 
 #: ../src/libs/select.c:131
 msgid "clear selection (ctrl-shift-a)"
-msgstr "vider la sélection (Ctrl+Shift+a)"
+msgstr "vide la sélection (Ctrl+Shift+a)"
 
 #: ../src/libs/select.c:139
 msgid "invert selection"
@@ -1143,7 +1143,7 @@ msgid ""
 "select unselected images\n"
 "in current collection (ctrl-!)"
 msgstr ""
-"sélectionner les images non-sélectionnées\n"
+"sélectionne les images non-sélectionnées\n"
 "dans la collection courante (ctrl-!)"
 
 #: ../src/libs/select.c:145
@@ -1155,7 +1155,7 @@ msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
 msgstr ""
-"sélectionner toutes les images \n"
+"sélectionne toutes les images \n"
 "d'un même film"
 
 #: ../src/libs/select.c:153
@@ -1167,7 +1167,7 @@ msgid ""
 "select untouched images in\n"
 "current collection"
 msgstr ""
-"sélectionner les images intouchées\n"
+"sélectionne les images intouchées\n"
 "dans la collection courante"
 
 #: ../src/libs/collect.c:46
@@ -1254,11 +1254,11 @@ msgstr ""
 
 #: ../src/libs/colorlabels.c:86
 msgid "clear"
-msgstr "effacer"
+msgstr "aucun"
 
 #: ../src/libs/colorlabels.c:87
 msgid "clear all labels of selected images"
-msgstr "effacer tous les labels des images sélectionnées"
+msgstr "efface tous les labels des images sélectionnées"
 
 #: ../src/libs/capture.c:50
 msgid "session"
@@ -1268,7 +1268,7 @@ msgstr "session"
 #: ../src/libs/capture.c:100
 #: ../src/gui/camera_import_dialog.c:267
 msgid "jobcode"
-msgstr "code de projet"
+msgstr "code projet"
 
 #: ../src/libs/capture.c:107
 msgid "create"
@@ -1280,7 +1280,7 @@ msgstr "paramètres du boîtier"
 
 #: ../src/libs/camera.c:113
 msgid "toggle view property in center view"
-msgstr "active/désactive la vue propriétés dans la fenêtre centrale"
+msgstr "active/désactive l'affichage des propriétés /ndans la fenêtre centrale"
 
 #: ../src/libs/camera.c:245
 msgid "battery"
@@ -1301,15 +1301,15 @@ msgstr "modes"
 
 #: ../src/libs/camera.c:318
 msgid "timer (s)"
-msgstr "timer (s)"
+msgstr "retardateur (s)"
 
 #: ../src/libs/camera.c:319
 msgid "count"
-msgstr "compte"
+msgstr "nombre"
 
 #: ../src/libs/camera.c:346
 msgid "capture image(s)"
-msgstr "capturer des images"
+msgstr "capturer"
 
 #: ../src/libs/camera.c:349
 msgid "toggle delayed capture mode"
@@ -1390,11 +1390,11 @@ msgstr "symétrie"
 
 #: ../src/iop/clipping.c:638
 msgid "flip image vertically"
-msgstr "retourner l'image verticalement"
+msgstr "retourne l'image verticalement"
 
 #: ../src/iop/clipping.c:639
 msgid "flip image horizontally"
-msgstr "retourner l'image horizontalement"
+msgstr "retourne l'image horizontalement"
 
 #: ../src/iop/clipping.c:641
 msgid "angle"
@@ -1402,7 +1402,7 @@ msgstr "angle"
 
 #: ../src/iop/clipping.c:646
 msgid "right-click and drag a line on the image to drag a straight line"
-msgstr "clic-droit et déplacer une ligne sur l'image pour déplacer une ligne droite"
+msgstr "clic-droit et tracer une ligne pour indiquer l'horizontale"
 
 #: ../src/iop/clipping.c:651
 msgid "perspective"
@@ -1498,11 +1498,11 @@ msgstr "type"
 
 #: ../src/iop/clipping.c:716
 msgid "flip guides vertically"
-msgstr "retourner les guides verticalement"
+msgstr "retourne les guides verticalement"
 
 #: ../src/iop/clipping.c:717
 msgid "flip guides horizontally"
-msgstr "retourner les guides horizontalement"
+msgstr "retourne les guides horizontalement"
 
 #. -------------------------------------------
 #: ../src/iop/clipping.c:719
@@ -1511,7 +1511,7 @@ msgstr "sections d'or"
 
 #: ../src/iop/clipping.c:720
 msgid "enable this option to show golden sections."
-msgstr "sélectionner pour afficher les sections d'or"
+msgstr "affiche les sections d'or"
 
 #: ../src/iop/clipping.c:723
 msgid "spiral sections"
@@ -1519,7 +1519,7 @@ msgstr "sections de spirale"
 
 #: ../src/iop/clipping.c:724
 msgid "enable this option to show golden spiral sections."
-msgstr "sélectionner pour afficher les sections de la spirale d'or"
+msgstr "affiche les sections de la spirale d'or"
 
 #: ../src/iop/clipping.c:727
 msgid "golden spiral"
@@ -1527,7 +1527,7 @@ msgstr "spirale d'or"
 
 #: ../src/iop/clipping.c:728
 msgid "enable this option to show a golden spiral guide."
-msgstr "sélectionner pour afficher un guide en spirale d'or"
+msgstr "affiche un guide en spirale d'or"
 
 #: ../src/iop/clipping.c:731
 msgid "golden triangles"
@@ -1535,7 +1535,7 @@ msgstr "triangles d'or"
 
 #: ../src/iop/clipping.c:732
 msgid "enable this option to show golden triangles."
-msgstr "sélectionner cette option pour afficher les triangles d'or"
+msgstr "affiche les triangles d'or"
 
 #: ../src/iop/colorcorrection.c:42
 msgid "color correction"
@@ -1591,7 +1591,7 @@ msgstr "profil des couleurs de sortie "
 
 #: ../src/iop/colorout.c:367
 msgid "output intent"
-msgstr "sortie"
+msgstr "mode de rendu de sortie"
 
 #: ../src/iop/colorout.c:368
 msgid "output profile"
@@ -1599,7 +1599,7 @@ msgstr "profil de sortie"
 
 #: ../src/iop/colorout.c:369
 msgid "display intent"
-msgstr "affichage"
+msgstr "mode de rendu d'affichage"
 
 #: ../src/iop/colorout.c:370
 msgid "display profile"
@@ -1657,11 +1657,11 @@ msgstr "noir"
 
 #: ../src/iop/exposure.c:313
 msgid "adjust the black level"
-msgstr "ajuster les niveaux de noir"
+msgstr "ajuste les niveaux de noir"
 
 #: ../src/iop/exposure.c:316
 msgid "adjust the exposure correction [ev]"
-msgstr "ajuster la correction d'exposition [ev]"
+msgstr "ajuste la correction d'exposition [ev]"
 
 #. gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 #: ../src/iop/exposure.c:325
@@ -1724,19 +1724,19 @@ msgstr "mélanger h"
 
 #: ../src/iop/highlights.c:348
 msgid "blend lightness (0 is same as clipping)"
-msgstr "mélanger la luminosité (0 revient à tronquer)"
+msgstr "mélange la luminosité (0 revient à tronquer)"
 
 #: ../src/iop/highlights.c:349
 msgid "blend colorness (0 is same as clipping)"
-msgstr "mélanger la coloration (0 revient à tronquer)"
+msgstr "mélange la coloration (0 revient à tronquer)"
 
 #: ../src/iop/highlights.c:350
 msgid "blend hue (0 is same as clipping)"
-msgstr "mélanger la teinte (0 revient à tronquer)"
+msgstr "mélange la teinte (0 revient à tronquer)"
 
 #: ../src/iop/lens.c:42
 msgid "lens distortions"
-msgstr "distorsions de l'objectif"
+msgstr "corrections de l'objectif"
 
 #: ../src/iop/lens.c:663
 #, c-format
@@ -1803,7 +1803,7 @@ msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
 msgstr ""
-"chercher un boîtier à partir d'un\n"
+"cherche un boîtier à partir d'un\n"
 "motif (format: [fabricant, ][modèle])"
 
 #: ../src/iop/lens.c:1168
@@ -1811,7 +1811,7 @@ msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
 msgstr ""
-"chercher un objectif à partir d'un\n"
+"cherche un objectif à partir d'un\n"
 "motif (format: [fabricant, ][modèle])"
 
 #. target geometry
@@ -1852,7 +1852,7 @@ msgstr "inverser"
 
 #: ../src/iop/lens.c:1231
 msgid "apply distortions instead of correcting them"
-msgstr "appliquer les distorsions au lieu de les corriger"
+msgstr "applique les distorsions au lieu de les corriger"
 
 #. override linear tca (if not 1.0):
 #: ../src/iop/lens.c:1238
@@ -1906,7 +1906,7 @@ msgid ""
 "warning: these are cryptic low level settings!\n"
 "you probably don't have to change them."
 msgstr ""
-"attention: il s'agit de mystérieux réglages\n"
+"attention : il s'agit de mystérieux réglages\n"
 "bas niveaux ! modifications prudentes"
 
 #: ../src/iop/rawimport.c:441
@@ -2447,7 +2447,7 @@ msgstr "répartition"
 
 #: ../src/iop/velvia.c:233
 msgid "the amount of saturation to apply"
-msgstr "la quantité de saturation à appliquer"
+msgstr "quantité de saturation à appliquer"
 
 #: ../src/iop/velvia.c:234
 msgid "the vibrance amount"
@@ -2455,15 +2455,15 @@ msgstr "quantité de vibrance"
 
 #: ../src/iop/velvia.c:235
 msgid "how much to spare highlights and shadows"
-msgstr "à quel point préserver les hautes lumières et les ombres"
+msgstr "répartit l'effet entre les ombres et les hautes lumières"
 
 #: ../src/iop/splittoning.c:76
 msgid "split toning"
-msgstr "split toning"
+msgstr "virage partiel"
 
 #: ../src/iop/splittoning.c:300
 msgid "Select tone color"
-msgstr "sélectionner ton de couleur"
+msgstr "sélectionne la couleur"
 
 #. Shadows
 #: ../src/iop/splittoning.c:438
@@ -2479,11 +2479,11 @@ msgstr "teinte (H)"
 
 #: ../src/iop/splittoning.c:466
 msgid "select the hue tone for shadows"
-msgstr "sélectionner le ton de la teinte des ombres"
+msgstr "sélectionne la teinte des ombres"
 
 #: ../src/iop/splittoning.c:470
 msgid "select the saturation shadow tone"
-msgstr "sélectionner le ton de la saturation des ombres"
+msgstr "sélectionner la saturation des ombres"
 
 #. Highlights
 #: ../src/iop/splittoning.c:473
@@ -2492,11 +2492,11 @@ msgstr "hautes lumières"
 
 #: ../src/iop/splittoning.c:501
 msgid "select the hue tone for highlights"
-msgstr "sélectionner le ton de la teinte des hautes lumières"
+msgstr "sélectionne la teinte des hautes lumières"
 
 #: ../src/iop/splittoning.c:505
 msgid "select the saturation highlights tone"
-msgstr "sélectionner le ton de la saturation des hautes lumières"
+msgstr "sélectionne la saturation des hautes lumières"
 
 #: ../src/iop/splittoning.c:515
 msgid "balance"
@@ -2508,15 +2508,15 @@ msgstr "intensité"
 
 #: ../src/iop/splittoning.c:531
 msgid "the balance of center of splittoning"
-msgstr "répartition du splittonning entre hautes lumières et ombres"
+msgstr "limite entre ombres et hautes lumières"
 
 #: ../src/iop/splittoning.c:532
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
 msgstr ""
-"force de l'effet sur les hautes lumières/ombres \n"
-"(préservation des tons moyens)"
+"limite l'effet sur les hautes lumières/ombres \n"
+"et préserve les tons moyens"
 
 #: ../src/iop/grain.c:304
 msgid "grain"
@@ -2524,7 +2524,7 @@ msgstr "grain"
 
 #: ../src/iop/grain.c:497
 msgid "channel"
-msgstr "cannal"
+msgstr "canal"
 
 #: ../src/iop/grain.c:498
 msgid "coarseness"
@@ -2586,7 +2586,7 @@ msgstr "nombre de groupes de couleur à trouver dans cette image"
 
 #: ../src/iop/colortransfer.c:613
 msgid "acquire"
-msgstr "acquisition"
+msgstr "acquérir"
 
 #: ../src/iop/colortransfer.c:614
 msgid "analyze this image"
@@ -2734,7 +2734,7 @@ msgstr "impossible de créer le répertoire %s !"
 #: ../src/imageio/storage/email.c:104
 #, c-format
 msgid "%d/%d exported to `%s%s'"
-msgstr "%d/%d exporté vers '%s%s'"
+msgstr "%d/%d exporté(s) vers '%s%s'"
 
 #: ../src/imageio/storage/picasa.c:513
 msgid "picasa webalbum"
@@ -2872,7 +2872,7 @@ msgstr "rechercher un boîtier"
 
 #: ../src/gui/devices.c:127
 msgid "scan for newly attached devices"
-msgstr "rechercher des appareils branchés récemment"
+msgstr "recherche des boîtiers branchés récemment"
 
 #: ../src/gui/devices.c:155
 #, c-format
@@ -3126,7 +3126,7 @@ msgstr "tâches d'arrière-plan"
 
 #: ../src/views/darkroom.c:40
 msgid "darkroom"
-msgstr "darkroom"
+msgstr "chambre noire"
 
 #: ../src/views/darkroom.c:261
 #, c-format
@@ -3145,7 +3145,7 @@ msgstr "aucune image sélectionnée"
 
 #: ../src/views/lighttable.c:71
 msgid "lighttable"
-msgstr "lighttable"
+msgstr "table lumineuse"
 
 #: ../src/views/filmstrip.c:63
 msgid "film strip"
