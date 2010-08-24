@@ -20,6 +20,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "common/darktable.h"
+#include "control/control.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "gui/iop_modulegroups.h"
@@ -34,6 +35,7 @@ static GtkWidget *_iop_modulegroups_effect_widget=NULL;
 static void 
 _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
 {
+  if(!dt_control_running()) return;
   long group=(long)data;
 
   /* is none of the buttons on, let's show all enabled modules.. */
