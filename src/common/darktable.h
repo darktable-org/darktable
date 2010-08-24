@@ -136,6 +136,10 @@ void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
 void dt_get_datadir(char *datadir, size_t bufsize);
 void dt_get_plugindir(char *datadir, size_t bufsize);
+/** get the user directory of darktable, ~/.config/darktable */
+void dt_get_user_config_dir(char *data, size_t bufsize);
+/** get the user local directory , ~/.local */
+void dt_get_user_local_dir(char *data, size_t bufsize);
 
 static inline double dt_get_wtime()
 {
