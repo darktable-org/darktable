@@ -1,50 +1,51 @@
 # from art.gnome.org: marble-look, adjusted
 style "clearlooks-default"
 {
-	GtkMenuItem::selected_shadow_type = out
-	GtkWidget::interior_focus = 1
-	GtkButton::default_border = { 0, 0, 0, 0 }
-	GtkButton::default_outside_border = { 0, 0, 0, 0 }
-	GtkRange::trough_border = 0
-	GtkWidget::focus_padding = 1
-	GtkPaned::handle_size = 6
-	GtkRange::slider_width = 15
-	GtkRange::stepper_size = 15
-	GtkScrollbar::min_slider_length = 30
-	GtkCheckButton::indicator_size = 12
-	GtkMenuBar::internal-padding = 0
-	#GtkOptionMenu::indicator_size = { 11, 6 }
-	#GtkOptionMenu::indicator_spacing = { 4, 5, 2, 2 }
-	GtkTreeView::expander_size = 14
-	GtkExpander::expander_size = 12
-	GtkProgressBar::min-horizontal-bar-height = 12
-	font_name = "Sans 8"
+  GtkMenuItem::selected_shadow_type = out
+  GtkWidget::interior_focus = 1
+  GtkWidget::focus-line-width = 0
+  GtkButton::default_border = { 0, 0, 0, 0 }
+  GtkButton::default_outside_border = { 0, 0, 0, 0 }
+  GtkRange::trough_border = 0
+  GtkWidget::focus_padding = 1
+  GtkPaned::handle_size = 6
+  GtkRange::slider_width = 15
+  GtkRange::stepper_size = 15
+  GtkScrollbar::min_slider_length = 30
+  GtkCheckButton::indicator_size = 12
+  GtkMenuBar::internal-padding = 0
+  #GtkOptionMenu::indicator_size = { 11, 6 }
+  #GtkOptionMenu::indicator_spacing = { 4, 5, 2, 2 }
+  GtkTreeView::expander_size = 14
+  GtkExpander::expander_size = 12
+  GtkProgressBar::min-horizontal-bar-height = 12
+  font_name = "Sans 8"
 
-	xthickness = 1
-	ythickness = 1
-	fg[NORMAL]        = "#CACAC6"
-	fg[ACTIVE]        = "#CACAC6"
-	fg[INSENSITIVE]   = "#000000"
-	fg[PRELIGHT]      = "#E2E2E2"
-	fg[SELECTED]      = "#E2E2E2"
+  xthickness = 1
+  ythickness = 1
+  fg[NORMAL]        = "#CACAC6"
+  fg[ACTIVE]        = "#CACAC6"
+  fg[INSENSITIVE]   = "#000000"
+  fg[PRELIGHT]      = "#E2E2E2"
+  fg[SELECTED]      = "#E2E2E2"
 
-	bg[ACTIVE]        = "#484949"
-	bg[NORMAL]        = "#222222" # "#333333" # "#5A5C5F"
-	bg[INSENSITIVE]   = "#505050"
-	bg[PRELIGHT]      = "#6A6C6F"
-	bg[SELECTED]      = "#424446"
+  bg[ACTIVE]        = "#484949"
+  bg[NORMAL]        = "#212121" # "#313131" # "#5A5C5F"
+  bg[INSENSITIVE]   = "#505050"
+  bg[PRELIGHT]      = "#6A6C6F"
+  bg[SELECTED]      = "#424446"
 
-	base[NORMAL]      = "#919499"
-	base[ACTIVE]      = "#5A5C5F"
-	base[INSENSITIVE] = "#5A5C5F"
-	base[PRELIGHT]    = "#646668"
-	base[SELECTED]    = "#5A5C5F"
+  base[NORMAL]      = "#919499"
+  base[ACTIVE]      = "#5A5C5F"
+  base[INSENSITIVE] = "#5A5C5F"
+  base[PRELIGHT]    = "#646668"
+  base[SELECTED]    = "#5A5C5F"
 
-	text[NORMAL]      = "#CACAC6"
-	text[ACTIVE]      = "#000000"
-	text[PRELIGHT]    = "#000000"
-	text[SELECTED]    = "#E0D6AD"
-	text[INSENSITIVE] = "#777777"
+  text[NORMAL]      = "#CACAC6"
+  text[ACTIVE]      = "#000000"
+  text[PRELIGHT]    = "#000000"
+  text[SELECTED]    = "#E0D6AD"
+  text[INSENSITIVE] = "#777777"
 
   engine "clearlooks"
   {
@@ -106,34 +107,34 @@ style "clearlooks-brightbg" = "clearlooks-default"
 style "clearlooks-vbrightbg" = "clearlooks-default"
 {
   bg[NORMAL]   = "#606060"
-	bg[PRELIGHT] = "#D0D0D0"
+  bg[PRELIGHT] = "#D0D0D0"
 }
 
 style "clearlooks-entry" = "clearlooks-default"
 {
-	fg[NORMAL]        = "#CACAC6"
-	fg[ACTIVE]        = "#CACAC6"
-	fg[SELECTED]      = "#E2E2E2"
-	fg[PRELIGHT]      = "#E2E2E2"
-	fg[INSENSITIVE]   = "#000000"
+  fg[NORMAL]        = "#CACAC6"
+  fg[ACTIVE]        = "#CACAC6"
+  fg[SELECTED]      = "#E2E2E2"
+  fg[PRELIGHT]      = "#E2E2E2"
+  fg[INSENSITIVE]   = "#000000"
 
-	bg[NORMAL]        = "#333333"
-	bg[ACTIVE]        = "#606060"
-	bg[SELECTED]      = "#606060"
-	bg[PRELIGHT]      = "#333333"
-	bg[INSENSITIVE]   = "#505050"
+  bg[NORMAL]        = "#333333"
+  bg[ACTIVE]        = "#606060"
+  bg[SELECTED]      = "#606060"
+  bg[PRELIGHT]      = "#333333"
+  bg[INSENSITIVE]   = "#505050"
 
-	base[NORMAL]      = "#333333"
-	base[ACTIVE]      = "#606060"
-	base[SELECTED]    = "#606060"
-	base[PRELIGHT]    = "#333333"
-	base[INSENSITIVE] = "#222222"
+  base[NORMAL]      = "#333333"
+  base[ACTIVE]      = "#606060"
+  base[SELECTED]    = "#606060"
+  base[PRELIGHT]    = "#333333"
+  base[INSENSITIVE] = "#222222"
 
   text[NORMAL]      = "#B0B0B0"
-	text[ACTIVE]      = "#B0B0B0"
-	text[SELECTED]    = "#B0B0B0"
-	text[PRELIGHT]    = "#B0B0B0"
-	text[INSENSITIVE] = "#777777"
+  text[ACTIVE]      = "#B0B0B0"
+  text[SELECTED]    = "#B0B0B0"
+  text[PRELIGHT]    = "#B0B0B0"
+  text[INSENSITIVE] = "#777777"
 }
 
 style "clearlooks-panel" = "clearlooks-default"
@@ -171,6 +172,12 @@ style "scale-fixed-font" = "clearlooks-default"
   font_name = "Monospace 8"
 }
 
+style "clearlooks-scrollbar" = "clearlooks-defaults"
+{
+  GtkRange::stepper-size = 0
+  GtkRange::slider-width = 10
+}
+
 style "metacity-frame"
 {
   # Normal base color
@@ -178,7 +185,7 @@ style "metacity-frame"
 
   # Unfocused title background color
   #bg[INSENSITIVE]  = { 0.8, 0.8, 0.8 }
-	bg[INSENSITIVE]   = "#333333"
+  bg[INSENSITIVE]   = "#333333"
 
   # Unfocused title text color
   #fg[INSENSITIVE]  = { 1.55, 1.55, 1.55 }
@@ -188,10 +195,10 @@ style "metacity-frame"
   #fg[NORMAL]  = { 0.2, 0.2, 0.2 }
 
   # Focused title background color
-	bg[SELECTED]      = "#505050"
+  bg[SELECTED]      = "#505050"
 
   # Focused title text color
-	fg[SELECTED]      = "#E2E2E2"
+  fg[SELECTED]      = "#E2E2E2"
 }
 
 class "GtkWidget" style "clearlooks-default"
@@ -203,6 +210,7 @@ class "GtkFrame" style "clearlooks-wide"
 class "GtkStatusbar" style "clearlooks-wide"
 class "GtkMenu" style "clearlooks-menu"
 class "GtkMenuItem" style "clearlooks-menu-item"
+class "GtkRange" style "clearlooks-scrollbar"
 widget "*.plugins_vbox.GtkEventBox" style "clearlooks-brightbg"
 # widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 # widget "*.left_scrolled.GtkEventBox" style "clearlooks-brightbg"

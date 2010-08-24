@@ -137,7 +137,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   // init libraw stuff
-  // img = dt_image_cache_use(img->id, 'r');
   dt_imageio_retval_t retval = DT_IMAGEIO_OK;
   int ret;
   libraw_data_t *raw = libraw_init(0);

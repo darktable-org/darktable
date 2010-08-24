@@ -104,6 +104,13 @@ const char *name()
   return _("color transfer");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
+
 static void
 capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 {
@@ -365,12 +372,12 @@ spinbutton_changed (GtkSpinButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
-  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+//  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   p->n = gtk_spin_button_get_value(button);
   bzero(p->hist, sizeof(float)*HISTN);
   bzero(p->mean, sizeof(float)*MAXN*2);
   bzero(p->var,  sizeof(float)*MAXN*2);
-  gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
+  //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   dt_control_queue_draw(self->widget);
 }
 
@@ -493,7 +500,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   gtk_spin_button_set_value(g->spinbutton, p->n);
-  gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
+  //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   // redraw color cluster preview
   dt_control_queue_draw(self->widget);
 }
@@ -582,6 +589,14 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   return TRUE;
 }
 
+void 
+_colortransfer_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.333;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
@@ -598,9 +613,9 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK(expose), self);
 
   g->area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->area, 300, 100);
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
+  g_signal_connect (G_OBJECT (g->area), "size-allocate", G_CALLBACK (_colortransfer_size_allocate), self);
 
   GtkBox *box = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);

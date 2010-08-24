@@ -142,12 +142,12 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  dt_image_t *img = dt_image_cache_use(imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
   if(!img) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
-  char filename[1024];
-  char dirname[1024];
+  char filename[1024]={0};
+  char dirname[1024]={0};
   dt_image_full_path(img, dirname, 1024);
   d->vp->filename = dirname;
   d->vp->jobcode = "export";

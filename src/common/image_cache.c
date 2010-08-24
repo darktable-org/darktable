@@ -26,13 +26,57 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #include <string.h>
 #include <glib/gstdio.h>
+
+int dt_image_cache_check_consistency(dt_image_cache_t *cache)
+{
+#if 1//def _DEBUG
+  int i = cache->lru;
+  if(cache->line[i].lru != -1) return 1;
+  int num = 1;
+  for(int k=0;k<cache->num_lines;k++)
+  {
+    i = cache->line[i].mru;
+    if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
+    if(i >= cache->num_lines) return 2;
+    if(i < 0) return 3;
+    num ++;
+    if(cache->line[i].image.cacheline != i) return 4;
+    // printf("next lru: `%s'\n", cache->line[i].image.filename);
+    if(i == cache->mru) break;
+  }
+  if(num != cache->num_lines) return 5;
+  i = cache->mru;
+  if(cache->line[i].mru != cache->num_lines) return 6;
+  num = 1;
+  for(int k=0;k<cache->num_lines;k++)
+  {
+    i = cache->line[i].lru;
+    if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
+    if(i >= cache->num_lines) return 7;
+    if(i < 0) return 8;
+    num ++;
+    if(cache->line[i].image.cacheline != i) return 9;
+    // printf("next mru: `%s'\n", cache->line[i].image.filename);
+    if(i == cache->lru) break;
+  }
+  if(num != cache->num_lines) return 10;
+  return 0;
+#else
+  return 0;
+#endif
+}
 
 void dt_image_cache_write(dt_image_cache_t *cache)
 {
   pthread_mutex_lock(&(cache->mutex));
+  if(dt_image_cache_check_consistency(cache))
+  { // consistency check. if failed, don't write!
+    fprintf(stderr, "[image_cache_write] refusing to write corrupted cache.\n");
+    pthread_mutex_unlock(&(cache->mutex));
+    return;
+  }
   char dbfilename[1024];
   char *homedir = getenv("HOME");
   gchar *filename = dt_conf_get_string("cachefile");
@@ -105,6 +149,10 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       free(buf);
     }
   }
+  // write marker at the end
+  int32_t endmarker = 0xD71337;
+  written = fwrite(&endmarker, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
   fclose(f);
   pthread_mutex_unlock(&(cache->mutex));
   return;
@@ -204,6 +252,9 @@ void dt_image_cache_read(dt_image_cache_t *cache)
       free(buf);
     }
   }
+  int32_t endmarker = 0xD71337, readmarker = 0;
+  rd = fread(&readmarker, sizeof(uint32_t), 1, f);
+  if(rd != 1 || readmarker != endmarker) goto read_error;
   fclose(f);
   pthread_mutex_unlock(&(cache->mutex));
   return;
@@ -212,44 +263,6 @@ read_error:
   if(f) fclose(f);
   fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
   pthread_mutex_unlock(&(cache->mutex));
-}
-
-void dt_image_cache_check_consistency(dt_image_cache_t *cache)
-{
-#ifdef _DEBUG
-  pthread_mutex_lock(&(cache->mutex));
-  int i = cache->lru;
-  assert(cache->line[i].lru == -1);
-  int num = 1;
-  for(int k=0;k<cache->num_lines;k++)
-  {
-    i = cache->line[i].mru;
-    if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
-    assert(i < cache->num_lines);
-    assert(i >= 0);
-    num ++;
-    assert(cache->line[i].image.cacheline == i);
-    // printf("next lru: `%s'\n", cache->line[i].image.filename);
-    if(i == cache->mru) break;
-  }
-  assert(num == cache->num_lines);
-  i = cache->mru;
-  assert(cache->line[i].mru == cache->num_lines);
-  num = 1;
-  for(int k=0;k<cache->num_lines;k++)
-  {
-    i = cache->line[i].lru;
-    if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
-    assert(i < cache->num_lines);
-    assert(i >= 0);
-    num ++;
-    assert(cache->line[i].image.cacheline == i);
-    // printf("next mru: `%s'\n", cache->line[i].image.filename);
-    if(i == cache->lru) break;
-  }
-  assert(num == cache->num_lines);
-  pthread_mutex_unlock(&(cache->mutex));
-#endif
 }
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
@@ -272,7 +285,6 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
   dt_image_cache_read(cache);
-  dt_image_cache_check_consistency(cache);
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
@@ -314,7 +326,7 @@ int dt_image_cache_compare_id(const int16_t *l1, const int16_t *l2)
 
 dt_image_t *dt_image_cache_get(int32_t id, const char mode)
 {
-  dt_image_t *img = dt_image_cache_use(id, mode);
+  dt_image_t *img = dt_image_cache_get_uninited(id, mode);
   if(img == NULL) return NULL;
   if(img->film_id == -1) if(dt_image_open2(img, id))
   {
@@ -335,12 +347,15 @@ void dt_image_cache_clear(int32_t id)
   pthread_mutex_unlock(&(cache->mutex));
 }
 
-dt_image_t *dt_image_cache_use(int32_t id, const char mode)
+dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
 {
-  // printf("[image_cache_use] locking image %d %s\n", id, mode == 'w' ? "for writing" : "");
+  // printf("[image_cache_get_uninited] locking image %d %s\n", id, mode == 'w' ? "for writing" : "");
   dt_image_cache_t *cache = darktable.image_cache;
-  dt_image_cache_check_consistency(cache);
   pthread_mutex_lock(&(cache->mutex));
+#ifdef _DEBUG
+  if(dt_image_cache_check_consistency(cache))
+    fprintf(stderr, "[image_cache_get_uninited] cache is corrupted!\n");
+#endif
   // int16_t *res = bsearch(&id, cache->by_id, cache->num_lines, sizeof(int16_t), (int(*)(const void *, const void *))&dt_image_cache_compare_id);
   int32_t res = dt_image_cache_bsearch(id);
   dt_image_t *ret = NULL;
@@ -360,7 +375,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
     }
     if(k == cache->num_lines)
     {
-      fprintf(stderr, "[image_cache_use] all %d slots are in use!\n", cache->num_lines);
+      fprintf(stderr, "[image_cache_get_uninited] all %d slots are in use!\n", cache->num_lines);
       pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }
@@ -391,7 +406,7 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
   if(cache->mru != res)
   {
     // mru next pointer is end marker, but we are not already stored as cache->mru ???
-    assert(cache->line[res].mru != cache->num_lines);
+    g_assert(cache->line[res].mru != cache->num_lines);
     // fill gap:
     if(cache->line[res].lru >= 0)
       cache->line[cache->line[res].lru].mru = cache->line[res].mru;
@@ -403,8 +418,11 @@ dt_image_t *dt_image_cache_use(int32_t id, const char mode)
     cache->line[res].lru = cache->mru;
     cache->mru = res;
   }
+#ifdef _DEBUG
+  if(dt_image_cache_check_consistency(cache))
+    fprintf(stderr, "[image_cache_get_uninited] cache is corrupted!\n");
+#endif
   pthread_mutex_unlock(&(cache->mutex));
-  dt_image_cache_check_consistency(cache);
   return ret;
 }
 
@@ -429,43 +447,6 @@ void dt_image_cache_print(dt_image_cache_t *cache)
     write += cache->line[k].lock.write;
   }
   printf("image cache: fill: %d/%d, users: %d, writers: %d\n", entries, cache->num_lines, users, write);
-#if 0
-  int16_t k = cache->lru;
-  int32_t cnt = 0;
-  int16_t history[500], next[500];
-  printf("checking lru list consistency:  ");
-  for(int i=0;i<=cache->num_lines;i++)
-  {
-    assert(k <= cache->num_lines);
-    for(int j=0;j<cnt;j++) if(history[j] == k)
-    {
-      printf("detected loop !\n");
-      for(int l=j;l<cnt;l++) printf("%d->%d", history[l], next[l]);
-      printf("\n\n");
-      break;
-    }
-    history[cnt] = k;
-    next[cnt] = cache->line[k].mru;
-    cnt++;
-    int next_k = cache->line[k].mru;
-    if(next_k < cache->num_lines) if(cache->line[next_k].lru != k)
-    {
-      printf("%d->%d but %d<-%d !!\n", k, next_k, cache->line[next_k].lru, next_k);
-      assert(0);
-    }
-    k = cache->line[k].mru;
-    if(k == cache->num_lines)
-    {
-      printf("reached %d entries.\n", cnt);
-      assert(cnt == cache->num_lines);
-      return;
-    }
-  }
-  printf("ERROR: bailed out at %d-th entry!!\n", k);
-  for(int l=0;l<cnt;l++) printf("%d->%d ", history[l], next[l]);
-  printf("\n\n");
-  assert(666 == 0);
-#endif
 }
 
 void dt_image_cache_flush(dt_image_t *img)

@@ -26,6 +26,7 @@
 #include "common/imageio.h"
 #include "views/view.h"
 #include "gui/gtk.h"
+#include "gui/contrast.h"
 #include "gui/filmview.h"
 #include "gui/draw.h"
 
@@ -438,6 +439,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 
 int dt_control_running()
 {
+  // FIXME: when shutdown, run_mutex is not inited anymore!
   dt_control_t *s = darktable.control;
   pthread_mutex_lock(&s->run_mutex);
   int running = s->running;
@@ -823,6 +825,14 @@ void *dt_control_expose(void *voidptr)
   return NULL;
 }
 
+void 
+dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.25;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   const int width = widget->allocation.width, height = widget->allocation.height;
@@ -1136,6 +1146,13 @@ int dt_control_key_pressed_override(uint16_t which)
   GtkWidget *widget;
   switch (which)
   {
+    case KEYCODE_F7:
+      dt_gui_contrast_decrease ();
+      break;
+    case KEYCODE_F8:
+      dt_gui_contrast_increase ();
+      break;
+    
     case KEYCODE_F11:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       fullscreen = dt_conf_get_bool("ui_last/fullscreen");
@@ -1241,8 +1258,8 @@ void dt_control_clear_history_items(int32_t num)
   /* reset if empty stack */
   if( num == -1 ) 
   {
-	dt_gui_iop_history_reset();
-	return;
+  dt_gui_iop_history_reset();
+  return;
   }
   
   /* pop items from top of history */
@@ -1251,7 +1268,7 @@ void dt_control_clear_history_items(int32_t num)
     dt_gui_iop_history_pop_top ();
 
   dt_gui_iop_history_update_labels ();
-	
+  
 }
 
 void dt_control_update_recent_films()

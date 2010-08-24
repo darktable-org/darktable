@@ -57,6 +57,8 @@
 #define KEYCODE_4           29
 #define KEYCODE_Escape      61
 #define KEYCODE_Caps        -1
+#define KEYCODE_F7        107
+#define KEYCODE_F8        108
 #define KEYCODE_F11        111
 #define KEYCODE_Up         134
 #define KEYCODE_Down       133
@@ -103,6 +105,8 @@
 #define KEYCODE_4           13  
 #define KEYCODE_Escape       9  
 #define KEYCODE_Caps        66
+#define KEYCODE_F7        73
+#define KEYCODE_F8        74
 #define KEYCODE_F11         95  
 #define KEYCODE_Up         111  
 #define KEYCODE_Down       116  
@@ -118,6 +122,7 @@ typedef GdkCursorType dt_cursor_t;
 // called from gui
 void *dt_control_expose(void *voidptr);
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+void dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data);
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);

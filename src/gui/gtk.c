@@ -35,12 +35,15 @@
 #include "develop/imageop.h"
 #include "dtgtk/label.h"
 #include "dtgtk/button.h"
+#include "gui/contrast.h"
 #include "gui/gtk.h"
 #include "gui/metadata.h"
 #include "gui/filmview.h"
 #include "gui/iop_history.h"
+#include "gui/iop_modulegroups.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
+#include "gui/panel_sizegroup.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -648,12 +651,22 @@ void quit()
   GtkWindow *win = GTK_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "main_window"));
   gtk_window_iconify(win);
 
+  GtkWidget *widget;
+  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)0);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)2);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)3);
+
   pthread_mutex_lock(&darktable.control->cond_mutex);
   pthread_mutex_lock(&darktable.control->run_mutex);
   darktable.control->running = 0;
   pthread_mutex_unlock(&darktable.control->run_mutex);
   pthread_mutex_unlock(&darktable.control->cond_mutex);
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
 }
 
@@ -809,6 +822,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
   g_free(themefile);
 
+  
   /* load the interface */
   snprintf(path, 1023, "%s/darktable.glade", datadir);
   if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
@@ -823,7 +837,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
-
+  
+  
+  /* initialize the panelsize group used for dynamic left/right panel size*/
+  dt_gui_panel_sizegroup_init ();
+  
   // Update the devices module with available devices
   dt_gui_devices_init();
   
@@ -860,6 +878,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
   gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME"-"PACKAGE_VERSION"</b></big></span>");
+  dt_gui_panel_sizegroup_add (widget);
+  
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
 
   g_signal_connect (G_OBJECT (widget), "key-press-event",
@@ -912,6 +932,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // image op history
   dt_gui_iop_history_init();
+  
+  /* initializes the module groups buttonbar control */
+  dt_gui_iop_modulegroups_init ();
  
   /*for(long int k=0;k<10;k++)
   {
@@ -1016,9 +1039,12 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "endmarker_left");
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+  g_signal_connect (G_OBJECT (widget), "size-allocate",
+                    G_CALLBACK (dt_control_size_allocate_endmarker), (gpointer)1);
 
   // switch modes in gui by double-clicking label
   widget = glade_xml_get_widget (darktable.gui->main_window, "view_label_eventbox");
+  dt_gui_panel_sizegroup_add (widget);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
                     G_CALLBACK (view_label_clicked),
                     (gpointer)0);
@@ -1033,17 +1059,20 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow"));
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
-
+  
   dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
 
   darktable.gui->redraw_widgets = NULL;
   darktable.gui->key_accels = NULL;
-
   
   // register ctrl-q to quit:
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
   darktable.gui->reset = 0;
   for(int i=0;i<3;i++) darktable.gui->bgcolor[i] = 0.1333;
+  
+  /* apply contrast to theme */
+  dt_gui_contrast_init ();
+  
   return 0;
 }
 

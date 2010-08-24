@@ -99,9 +99,11 @@ typedef struct dt_dev_pixelpipe_t
   int backbuf_size;
   int backbuf_width, backbuf_height;
   uint64_t backbuf_hash;
-  pthread_mutex_t backbuf_mutex;
+  pthread_mutex_t backbuf_mutex, busy_mutex;
   // working?
   int processing;
+  // shutting down?
+  int shutdown;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;

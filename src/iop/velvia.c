@@ -66,6 +66,16 @@ const char *name()
   return _("velvia");
 }
 
+
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
+
+
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_velvia_data_t *data = (dt_iop_velvia_data_t *)piece->data;
@@ -83,7 +93,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       double pmax=fmax(in[0],fmax(in[1],in[2]));			// max value in RGB set
       double pmin=fmin(in[0],fmin(in[1],in[2]));			// min value in RGB set
       double plum = (pmax+pmin)/2.0;					        // pixel luminocity
-      double psat =(plum<=0.5) ? (pmax-pmin)/(pmax+pmin): (pmax-pmin)/(1e-5 + MAX(0.0, 2.0-pmax-pmin));
+      double psat =(plum<=0.5) ? (pmax-pmin)/(1e-5 + pmax+pmin): (pmax-pmin)/(1e-5 + MAX(0.0, 2.0-pmax-pmin));
 
       double pweight=((1.0- (1.5*psat)) + ((1+(fabs(plum-0.5)*2.0))*(1.0-data->luminance))) / (1.0+(1.0-data->luminance));		// The weight of pixel
       double saturation = ((data->saturation/100.0)*pweight)*(data->vibrance/100.0);			// So lets calculate the final affection of filter on pixel

@@ -24,11 +24,20 @@
 
 #define DT_HIST_INSET 5
 
+void 
+_histogram_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.5;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
 void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
 {
   n->highlight = 0;
   n->dragging = 0;
   n->exposure = NULL;
+
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
       _("drag to change exposure,\ndoubleclick resets"), NULL);
   g_signal_connect (G_OBJECT (widget), "expose-event",
@@ -43,6 +52,9 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_leave_notify), n);
   g_signal_connect (G_OBJECT (widget), "enter-notify-event",
                     G_CALLBACK (dt_gui_histogram_enter_notify), n);
+  g_signal_connect (G_OBJECT (widget), "size-allocate",
+                    G_CALLBACK (_histogram_size_allocate), n);
+  
   gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 }
 
@@ -50,11 +62,16 @@ void dt_gui_histogram_cleanup(dt_gui_histogram_t *n) {}
 
 gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gui_histogram_t *n)
 {
+  dt_develop_t *dev = darktable.develop;
+  float *hist = dev->histogram;
+  float hist_max = dev->histogram_max;
+  if(hist_max <= 0.0) return FALSE;
   const int inset = DT_HIST_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  cairo_set_source_rgb(cr, darktable.gui->bgcolor[0], darktable.gui->bgcolor[1], darktable.gui->bgcolor[2]);
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
+  cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
   cairo_paint(cr);
 
   cairo_translate(cr, 4*inset, inset);
@@ -103,9 +120,6 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, width, height);
   
-  dt_develop_t *dev = darktable.develop;
-  float *hist = dev->histogram;
-  float hist_max = dev->histogram_max;
   if(hist_max > 0)
   {
     cairo_save(cr);
@@ -128,7 +142,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
 
   if(dev->image)
   {
-    cairo_set_source_rgb(cr, .3, .3, .3);
+    cairo_set_source_rgb(cr, .25, .25, .25);
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, .1*height);
 

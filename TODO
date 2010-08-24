@@ -1,8 +1,7 @@
 0.6 release:
 
-- BUG: 0 - origin selection broken?
-- history_mutex deadlock in clear_history_items
-- more robust .darktablecache corruption detection.
+- default in presets system not working?
+- ldr image import -> no float buffer etc..?
 - BUG: color labels set in darkroom mode disappear
 - sqlite3 thread safe/locking?
 - BUG: full image stays locked?

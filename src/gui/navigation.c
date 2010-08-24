@@ -23,10 +23,19 @@
 #include <math.h>
 #define DT_NAVIGATION_INSET 5
 
+void 
+_navigation_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.5;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
 
 void dt_gui_navigation_init(dt_gui_navigation_t *n, GtkWidget *widget)
 {
   n->dragging = 0;
+  
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
   g_signal_connect (G_OBJECT (widget), "expose-event",
@@ -39,6 +48,8 @@ void dt_gui_navigation_init(dt_gui_navigation_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_navigation_motion_notify), n);
   g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (dt_gui_navigation_leave_notify), n);
+  g_signal_connect (G_OBJECT (widget), "size-allocate",
+                    G_CALLBACK (_navigation_size_allocate), n);	
 }
 
 void dt_gui_navigation_cleanup(dt_gui_navigation_t *n) {}
@@ -51,9 +62,10 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   dt_develop_t *dev = darktable.develop;
   if(dev->image && dev->preview_pipe->backbuf && !dev->preview_dirty)
   {
+    GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
     cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cairo_t *cr = cairo_create(cst);
-    cairo_set_source_rgb(cr, darktable.gui->bgcolor[0], darktable.gui->bgcolor[1], darktable.gui->bgcolor[2]);
+    cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
     cairo_paint(cr);
 
     width -= 2*inset; height -= 2*inset;

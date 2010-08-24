@@ -62,13 +62,22 @@ const char *name()
   return _("sharpen");
 }
 
+
+int 
+groups () 
+{
+	return IOP_GROUP_CORRECT;
+}
+
+
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  const int rad = MIN(MAXR, data->radius * roi_in->scale / piece->iscale);
+  const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   if(rad == 0)
   {
     memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);

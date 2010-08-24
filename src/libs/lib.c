@@ -17,6 +17,7 @@
 */
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "gui/panel_sizegroup.h"
 #include "dtgtk/button.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -520,6 +521,12 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
 
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
+  
+  //gtk_widget_set_name(evb,module->name());
+  dt_gui_panel_sizegroup_add (evb);
+  //dt_gui_panel_sizegroup_add (module->widget);
+
+  
   return evb;
 }
 

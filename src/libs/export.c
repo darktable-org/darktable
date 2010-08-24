@@ -505,6 +505,18 @@ gui_init (dt_lib_module_t *self)
       gtk_combo_box_append_text(d->profile, prof->name);
     l = g_list_next(l);
   }
+
+  // set ellipsisation:
+  GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(d->profile));
+  it = renderers;
+  while(it)
+  {
+    GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
+    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+    it = g_list_next(it);
+  }
+  g_list_free(renderers);
+
   gtk_combo_box_set_active(d->profile, 0);
   char tooltip[1024];
   snprintf(tooltip, 1024, _("output icc profiles in %s/color/out"), datadir);

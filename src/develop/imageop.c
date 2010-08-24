@@ -19,6 +19,7 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/panel_sizegroup.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 
@@ -140,6 +141,8 @@ gint sort_plugins(gconstpointer a, gconstpointer b)
   return am->priority - bm->priority;
 }
 
+int _default_groups() { return IOP_GROUP_ALL; }
+
 int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *libname, const char *op)
 {
   pthread_mutex_init(&module->params_mutex, NULL);
@@ -174,6 +177,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   }
   if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
+  if(!g_module_symbol(module->module, "groups",                   (gpointer)&(module->groups)))                   module->groups = _default_groups;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
@@ -447,7 +451,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
-
+  dt_gui_panel_sizegroup_add (evb);
   return evb;
 }
 

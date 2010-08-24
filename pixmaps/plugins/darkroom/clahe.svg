@@ -15,9 +15,9 @@
    sodipodi:version="0.32"
    inkscape:version="0.47 r22583"
    version="1.0"
-   sodipodi:docname="monochrome.svg"
+   sodipodi:docname="clahe.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/han/data/svn/darktable/pixmaps/plugins/darkroom/monochrome.png"
+   inkscape:export-filename="/home/jo/vcs/darktable/pixmaps/plugins/darkroom/clahe.png"
    inkscape:export-xdpi="10.8"
    inkscape:export-ydpi="10.8">
   <defs
@@ -41,8 +41,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8602469"
-     inkscape:cx="50.024834"
-     inkscape:cy="92.24993"
+     inkscape:cx="62.701865"
+     inkscape:cy="92.021292"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -50,13 +50,23 @@
      inkscape:window-width="1268"
      inkscape:window-height="722"
      inkscape:window-x="0"
-     inkscape:window-y="26"
-     inkscape:window-maximized="0">
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     showguides="true"
+     inkscape:guide-bbox="true">
     <inkscape:grid
        type="xygrid"
        id="grid2383"
        visible="true"
        enabled="true" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="130,100"
+       id="guide3589" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="100,85"
+       id="guide3591" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -85,9 +95,16 @@
        d="M 217.5,87.5 A 70,70 0 1 1 77.5,87.5 A 70,70 0 1 1 217.5,87.5 z"
        transform="translate(-47.5,12.5)" />
     <path
-       id="path3587"
-       style="fill:#cacac6;stroke:#cacac6;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;fill-opacity:0.49803922"
-       d="M 100,30 C 70,90 70,90 70,90 l 60,20 -30,60 m 0,0 c -38.65993,0 -69.999999,-31.34007 -70,-70 -1e-6,-38.089399 31.91893,-69.203397 70,-70"
-       sodipodi:nodetypes="cccccsc" />
+       sodipodi:type="arc"
+       style="fill:#cacac6;fill-opacity:0.49803922;fill-rule:evenodd;stroke:#cacac6;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path3593"
+       sodipodi:cx="100"
+       sodipodi:cy="100"
+       sodipodi:rx="20"
+       sodipodi:ry="20"
+       d="m 100,120 a 20,20 0 1 1 0.35864,-0.003"
+       sodipodi:start="1.5707963"
+       sodipodi:end="7.8360488"
+       sodipodi:open="true" />
   </g>
 </svg>
