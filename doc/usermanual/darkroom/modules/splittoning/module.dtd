@@ -1,0 +1,4 @@
+<!ENTITY author_firstname "Henrik">
+<!ENTITY author_surname "Andersson">
+<!ENTITY module_name "Splittoning">
+<!ENTITY module_document SYSTEM "splittoning.xml">

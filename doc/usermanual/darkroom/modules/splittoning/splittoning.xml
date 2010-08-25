@@ -1,0 +1,64 @@
+<sect1><title>Overview</title>
+	<para>Original splittoning method creates a two color linear toning effect where the 
+			shadows and highlights are represented by two different colors.
+			In the example image below you can see an original black and white image and one where
+			a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
+	</para>
+	<para>Darktable splittoning plugin has more parameters that impacts on the default above behavior, 
+			we have balance which offsets the 50% gray level in image and compression that does compress
+			toning in the shadows and highlights which  leaves a gap which are untouched by the effect.
+			Read more and see examples of these additional parameters to splittoning module in Parameters section.
+	</para>
+	<para>The splittoning module does not convert image to black and white and works extensible nice on color images,
+			soo if you want to do traditional splittoning, use the monochrome module to make the image black and white
+			before playing around with splittoning effect.
+	</para>
+</sect1>
+
+<sect1><title>Parameters</title>
+	<para>...</para>
+	<sect2><title>Shadows and Hilights color</title>
+		<para>These controls are used to set the color of the splittoning effect, you select the desire color and 
+				saturation for both shadows and highlights, you can also click the color preview box too bring up a
+				common color picker dialog.</para>
+	</sect2>
+	<sect2><title>Balance</title>
+		<para>The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness 
+		range in image are used for shadows toning and the other 50% for highlights toning.
+		</para>
+	</sect2>
+	<sect2><title>Compression</title>
+		<para>Compression is a percentage of total lightness range that not is affected by color toning, default value is
+			set to 33% which not is the default behaviour of a original splittoning which would be 0% compression.
+			The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original 
+			splittoning method...
+		</para>
+	</sect2>
+</sect1>
+
+<sect1><title>Examples</title>
+	<para>Here follows some examples</para>
+	<sect2>
+		<title>Sepia</title>
+		<para>Sepia is an darkbrown dye and was early used for contrast color instead of black in old black and white images,
+				we can use the splittoning plugin to simulate this effect.
+				What we need is a black and white image, and thint the shadows in brownscales instead of grayscales,
+				enable the monochrome module to make image black and white, then enable splittoning module.
+				Choose a brown color for shadows with about 50% saturation and enshure that highlights saturation slider is 0%,
+				then change compression to 0% to disable it.
+				Now drag the balance slider to the right for expanding the range of the shadows and the toning that suits your image.
+		</para>
+	</sect2>
+	<sect2>
+		<title>Crossdevelop</title>
+		<para>Cross developing is an effect archived by using wrong chemicals with wrong film type when developing the film, 
+				the results is and higher contrast image with bluish shadows and a green/yellow tone of the image.
+				So we need an image, let it be in color, then go into tonecurve and apply "medium contrast" from presets.
+				Enable splittoning and choose an blue color for shadows and boost saturation up to 80%, choose a geenishyellow 
+				color for highlights and put saturation around 60%.
+				Set compression to 0% to allow toning over all lightnesslevels.
+				Depending on image, motives, exposure tune with balance, to empahse the effect apply vignetting with a small
+				size and long fall off value to fade out to the borders..
+		</para>
+	</sect2>
+</sect1>
