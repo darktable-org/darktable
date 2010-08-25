@@ -70,6 +70,14 @@ const char *name()
   return _("highlight reconstruction");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_BASIC;
+}
+
+
+
 static const float xyz_rgb[3][3] = {  /* XYZ from RGB */
   { 0.412453, 0.357580, 0.180423 },
   { 0.212671, 0.715160, 0.072169 },

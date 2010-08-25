@@ -40,14 +40,40 @@
         <tr class="odd"> <td>Canon EOS Kiss Digital X2</td><td>x</td><td>x</td></tr>
         <tr class="even"><td>Canon PowerShot S60</td><td>x</td><td>x</td></tr>
         <tr class="odd"> <td>Canon PowerShot S90</td><td>x</td><td>x</td></tr>
-        <tr class="even"><td>NIKON D60</td><td>experimental</td><td>experimental</td></tr>
-        <tr class="odd"> <td>NIKON D200</td><td>x</td><td>experimental</td></tr>
-        <tr class="even"><td>SONY DSLR-A200</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Nikon D60</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Nikon D90</td><td>x</td><td>x</td></tr>
+        <tr class="even"><td>Nikon D200</td><td>x</td><td>x</td></tr>
+        <tr class="odd"> <td>Sony Alpha 200</td><td>x</td><td>experimental</td></tr>
+        <tr class="even"><td>Sony Alpha 550</td><td>x</td><td>experimental</td></tr>
+        <tr class="odd"> <td>Olympus E-PL1</td><td>x</td><td></td></tr>
+	<tr class="even"><td>Olympus SP570UZ</td><td>x</td><td></td></tr>        
       </table>
       for better color rendition, darktable comes with custom profiled color matrices.
       plus, to reproduce the behavior of the camera's chip, we have reverse-engineered some
       base curves for you.
-    	</div>
+      </div>
+
+      <div class="listtext">
+        <h1>cameras tested for tethering</h1>
+      </div>
+      <div class="text">
+      <table class="bigimg">
+        <tr class="odd">
+          <td><em>camera</em></td>
+          <td><em>firmware</em></td>
+          <td><em>os</em></td>
+          <td><em>gphoto</em></td>
+          <td><em>darktable</em></td>
+          <td><em>tester</em></td>
+        </tr>
+        <tr class="even"><td>Nikon D60</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
+        <tr class="even"><td>Nikon D90</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
+        <tr class="even"><td>Canon EOS 400D</td><td>1.1.1</td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.5+git20100716</td><td>Pascal de Bruijn</td></tr>
+        <tr class="even"><td>Panasonix DMC-FZ50</td><td></td><td>ArchLinux x86_64</td><td>2.4.9</td><td>git 2010/07/29</td><td>Aldrik Dunbar</td></tr>
+      </table>
+      while a lot of camera's might work with darktable's tethering mode only a few 
+      have been tested in real life.
+      </div>
 
       <div class="listtext"><h1>monochrome tool: convert an image to black and white</h1>
       this section briefly shows how to convert an image to black and white using the <em>monochrome</em> tool in darktable.
@@ -91,7 +117,7 @@
     	<a href="images/eaw_smooth.jpg"><img src="images/eaw_smooth_small.jpg" class="bigimg" alt="dreggn" /></a>
       to enhance the climbing skills, you could make some holds disappear by pulling down the luminance curve (Y). you can
       increase/decrease the area of influence of your pointer (indicated by the circle) using the mouse wheel, similar to
-      blenders proportional edit.</br>
+      blenders proportional edit.<br />
       note how the sharp edges (arm, leg) are preserved.
       </div>
       <div class="text">
@@ -112,7 +138,7 @@
       <ul>
         <li>1 -- zoom in on image under cursor</li>
         <li>2, 3, 4 -- zoom out</li>
-        <li>alt-1,2,3,4 -- star rating
+        <li>alt-1,2,3,4 -- star rating</li>
         <li>a, s, d, w -- move around</li>
       </ul>
       <em>darkroom mode</em>

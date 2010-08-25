@@ -1,6 +1,19 @@
 /* 
-   GENERATED FILE, DO NOT EDIT
-   Generated from dcraw/dcraw.c at Sun Jun  6 17:42:15 2010
+  Copyright 2008-2010 LibRaw LLC (info@libraw.org)
+
+LibRaw is free software; you can redistribute it and/or modify
+it under the terms of the one of three licenses as you choose:
+
+1. GNU LESSER GENERAL PUBLIC LICENSE version 2.1
+   (See file LICENSE.LGPL provided in LibRaw distribution archive for details).
+
+2. COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
+   (See file LICENSE.CDDL provided in LibRaw distribution archive for details).
+
+3. LibRaw Software License 27032010
+   (See file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
+
+   This file is generated from Dave Coffin's dcraw.c
    Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
    for copyright information.
 */
@@ -8,7 +21,7 @@
 #line 27 "dcraw/dcraw.c"
 #define NO_JPEG
 #line 32 "dcraw/dcraw.c"
-#define VERSION "9.01"
+#define VERSION "9.04"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE

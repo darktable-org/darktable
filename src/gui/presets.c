@@ -556,7 +556,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
   }
 }
 
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, dt_iop_params_t *params, int32_t params_size, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
+void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, void *params, int32_t params_size, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
 {
   dt_gui_presets_popup_menu_show_internal(op, params, params_size, NULL, image, pick_callback, callback_data);
 }

@@ -26,6 +26,7 @@
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
+#include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
@@ -68,6 +69,15 @@ const char *name()
 {
   return _("monochrome");
 }
+
+int 
+groups () 
+{
+	return IOP_GROUP_EFFECT;
+}
+
+
+
 
 float
 color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
@@ -286,6 +296,15 @@ gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   return TRUE;
 }
 
+void 
+_monochrome_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int width = a->width*0.8;
+  int height = width;
+  gtk_widget_set_size_request(w,width,height);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_monochrome_gui_data_t));
@@ -299,7 +318,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  gtk_drawing_area_size(g->area, 258, 258);
+  //gtk_drawing_area_size(g->area, 258, 258);
   gtk_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag and scroll\nto adjust the virtual\ncolor filter"), NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -315,7 +334,9 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_monochrome_leave_notify), self);
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_monochrome_scrolled), self);
-  
+  g_signal_connect (G_OBJECT (asp), "size-allocate",
+                    G_CALLBACK (_monochrome_size_allocate), self);
+		    
   g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
@@ -331,14 +352,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (size_callback), self);
-  g->hsRGB = cmsCreate_sRGBProfile();
-  g->hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
+  g->hsRGB = dt_colorspaces_create_srgb_profile();
+  g->hLab  = dt_colorspaces_create_lab_profile();
   g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, 
       INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_colorspaces_cleanup_profile(g->hsRGB);
+  dt_colorspaces_cleanup_profile(g->hLab);
+  cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;
 }

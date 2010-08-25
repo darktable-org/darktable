@@ -34,7 +34,9 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+
 #include <librsvg/rsvg.h>
+#include <librsvg/rsvg-cairo.h>
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -79,19 +81,24 @@ typedef struct dt_iop_watermark_gui_data_t
 }
 dt_iop_watermark_gui_data_t;
 
+#if 0
 typedef struct dt_iop_watermark_global_data_t {
   float scale;
   int roi_width;
   int roi_height;
   gchar *svgdata;
 } dt_iop_watermark_global_data_t;
-
+#endif
 
 const char *name()
 {
   return _("watermark");
 }
 
+int groups()
+{
+  return IOP_GROUP_CORRECT;
+}
 
 guint _string_occurence(const gchar *haystack,const gchar *needle) 
 {
@@ -135,6 +142,7 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
   return string;
 }
 
+#if 0
 static void _rsvg_size_func(gint *width,gint *height,gpointer user_data) {
     dt_iop_watermark_global_data_t *gd=(dt_iop_watermark_global_data_t *)user_data;
     float ratio=(float)*width / (float)*height;
@@ -143,7 +151,61 @@ static void _rsvg_size_func(gint *width,gint *height,gpointer user_data) {
     *height = (float)*width/ratio;
   //  fprintf(stderr,"rsvg: new size %dx%d\n",*width,*height);
 }
+#endif
 
+gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
+  gsize length;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+
+  gchar *svgdoc=NULL;
+  gchar configdir[1024],datadir[1024], *filename;
+  dt_get_datadir(datadir, 1024);
+  dt_get_user_config_dir(configdir, 1024);
+  strcat(datadir,"/watermarks/");
+  strcat(configdir,"/watermarks/");
+  strcat(datadir,p->filename);
+  strcat(configdir,p->filename);
+  
+  if (g_file_test(configdir,G_FILE_TEST_EXISTS))
+    filename=configdir;
+  else if (g_file_test(configdir,G_FILE_TEST_EXISTS))
+    filename=datadir;
+  else return NULL;
+  
+  gchar *svgdata=NULL;
+  if( g_file_get_contents( filename, &svgdata, &length, NULL) ) {
+    // File is loaded lets substitute strings if found...
+    
+    // Darktable internal 
+    svgdoc = _string_substitute(svgdata,"$(DARKTABLE.NAME)",PACKAGE_NAME);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    svgdoc = _string_substitute(svgdata,"$(DARKTABLE.VERSION)",PACKAGE_VERSION);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+  
+    // Current image
+    gchar buffer[1024];
+    dt_image_print_exif(darktable.develop->image,buffer,1024);
+    svgdoc = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+    // Image exif
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",darktable.develop->image->exif_datetime_taken);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",darktable.develop->image->exif_maker);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",darktable.develop->image->exif_model);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",darktable.develop->image->exif_lens);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+    svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+  }
+  return svgdoc;
+}
+
+
+#if 0
 void _load_svg( dt_iop_module_t *self ) {
   gsize length;
   dt_iop_watermark_global_data_t *gd = (dt_iop_watermark_global_data_t *)self->data;
@@ -169,7 +231,7 @@ void _load_svg( dt_iop_module_t *self ) {
       gd->svgdata = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
       if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
 
-      // Image exid
+      // Image exif
       gd->svgdata = _string_substitute(svgdata,"$(EXIF.DATE)",darktable.develop->image->exif_datetime_taken);
       if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
       gd->svgdata = _string_substitute(svgdata,"$(EXIF.MAKER)",darktable.develop->image->exif_maker);
@@ -183,9 +245,97 @@ void _load_svg( dt_iop_module_t *self ) {
       if( gd->svgdata != svgdata ) { g_free(svgdata); svgdata = gd->svgdata; }
     }
   }
-    
 }
 
+#endif
+
+#if 1
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
+  float *in  = (float *)ivoid;
+  float *out = (float *)ovoid;
+  
+  /* Load svg if not loaded */
+  gchar *svgdoc = _watermark_get_svgdoc (self);
+  if (!svgdoc) return;
+  
+  /* create the rsvghandle from parsed svg data */
+  GError *error = NULL;
+  RsvgHandle *svg = rsvg_handle_new_from_data ((const guint8 *)svgdoc,strlen (svgdoc),&error);
+  
+  /* get the dimension of svg */
+  RsvgDimensionData dimension;
+  rsvg_handle_get_dimensions (svg,&dimension);
+  float sr = dimension.width/dimension.height;
+  float sw=1.0,sh=1.0;
+  if (dimension.width>dimension.height)
+    sh=sw/sr;
+  else
+    sw=sh*sr;
+  
+  /* setup stride for performance */
+  int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,roi_out->width);
+  
+  /* create cairo memory surface */
+  guint8 *image= (guint8 *)g_malloc (stride*roi_out->height);
+  memset(image,0,stride*roi_out->height);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
+  
+  /* create cairo context and setup transformation/scale */
+  cairo_t *cr = cairo_create (surface);
+  
+  /* calculate aligment of watermark */
+  float ty=0,tx=0;
+  if( data->alignment >=0 && data->alignment <3) // Align to verttop
+    ty=0;
+  else if( data->alignment >=3 && data->alignment <6) // Align to vertcenter
+    ty=(roi_out->height/2.0)-(dimension.height/2.0);
+  else if( data->alignment >=6 && data->alignment <9) // Align to vertbottom
+    ty=roi_out->height-dimension.height;
+  
+  if( data->alignment == 0 ||  data->alignment == 3 || data->alignment==6 )
+    tx=0;
+  else if( data->alignment == 1 ||  data->alignment == 4 || data->alignment==7 )
+    tx=(roi_out->width/2.0)-(dimension.width/2.0);
+  else if( data->alignment == 2 ||  data->alignment == 5 || data->alignment==8 )
+    tx=roi_out->width/-dimension.width;
+  
+  /* translate to position */
+  cairo_translate(cr,tx,ty);
+  
+  
+  
+  /* render svg into surface*/
+  rsvg_handle_render_cairo (svg,cr);
+  
+  
+  /* ensure that all operations on surface finishing up */
+  cairo_surface_flush (surface);
+  
+  /* render surface on output */
+  guint8 *sd = image;
+  float opacity=data->opacity/100.0;
+  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  {
+    float alpha = (sd[3]/255.0)*opacity;
+    out[0] = ((1.0-alpha)*in[0]) + (alpha*(sd[2]/255.0));
+    out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
+    out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
+    
+    out+=3; in+=3; sd+=4;
+  }
+  
+  
+  /* clean up */
+  rsvg_handle_free (svg);
+  cairo_surface_destroy (surface);
+  //g_free (data);
+
+}
+#endif
+
+#if 0
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
@@ -269,6 +419,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   rsvg_handle_free(svg);
 }
 
+#endif
 
 
 static void 
@@ -276,10 +427,8 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_global_data_t *gd = (dt_iop_watermark_global_data_t *)self->data;
-  
+
   if(self->dt->gui->reset) return;
-  if( gd->svgdata ) { g_free(gd->svgdata); gd->svgdata=NULL; } // Free global svg data to enshure a new is loaded..
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   snprintf(p->filename,64,"%s",gtk_combo_box_get_active_text(g->combobox1));
   dt_dev_add_history_item(darktable.develop, self);
@@ -295,19 +444,36 @@ void refresh_watermarks( dt_iop_module_t *self ) {
   // check watermarkdir and update combo with entries...
   int count=0;
   const gchar *d_name = NULL;
-  gchar datadir[1024], dirname[1024], filename[2048];
+  gchar configdir[1024],datadir[1024],filename[2048];
   dt_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/watermarks", datadir);
-  GDir *dir = g_dir_open(dirname, 0, NULL);
+  dt_get_user_config_dir(configdir, 1024);
+  strcat(datadir,"/watermarks");
+  strcat(configdir,"/watermarks");
+  
+  /* read watermarks from datadir */
+  GDir *dir = g_dir_open(datadir, 0, NULL);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, 1024, "%s/%s", dirname, d_name);
+      snprintf(filename, 1024, "%s/%s", datadir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
     }
   }
+
+  /* read watermarks from user config dir*/
+  dir = g_dir_open(configdir, 0, NULL);
+  if(dir)
+  {
+    while((d_name = g_dir_read_name(dir)))
+    {
+      snprintf(filename, 2048, "%s/%s", configdir, d_name);
+      gtk_combo_box_append_text( g->combobox1, d_name );
+      count++;
+    }
+  }
+
   
   if( count != 0)
     gtk_combo_box_set_active(g->combobox1,0);
@@ -464,8 +630,6 @@ void init(dt_iop_module_t *module)
   module->priority = 999;
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
-  module->data = malloc( sizeof(dt_iop_watermark_global_data_t));
-  memset(module->data,0,sizeof(dt_iop_watermark_global_data_t));
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,4}; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));

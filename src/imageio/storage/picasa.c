@@ -53,7 +53,7 @@ typedef struct dt_storage_picasa_gui_data_t {
 
 typedef struct dt_storage_picasa_params_t
 {
-  dt_imageio_module_data_t data;
+  int64_t hash;
   struct _picasa_api_context_t *picasa_api;
   gboolean export_tags;
 } dt_storage_picasa_params_t;
@@ -517,23 +517,8 @@ name ()
 void entry_changed(GtkEntry *entry, gpointer data) {
   dt_storage_picasa_gui_data_t *ui=(dt_storage_picasa_gui_data_t *)data;
 
-  GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-
-  gchar* username = g_strdup(gtk_entry_get_text(ui->entry1));
-  gchar* password = g_strdup(gtk_entry_get_text(ui->entry2));
-
-  g_hash_table_insert(table, "username", username);
-  g_hash_table_insert(table, "password", password);
-
-  if( !dt_pwstorage_set("picasa", table) ){
-    dt_print(DT_DEBUG_PWSTORAGE,"[picasa] cannot store username/password\n");
-  }
-
-  g_free(username);
-  g_free(password);
-  g_hash_table_destroy(table);
   if( ui->picasa_api != NULL)
-	ui->picasa_api->needsReauthentication=TRUE;
+  ui->picasa_api->needsReauthentication=TRUE;
 }
 
 
@@ -560,6 +545,23 @@ void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
       
   if( ui->picasa_api ) { 
     set_status(ui,_("authenticated"), "#7fe07f");
+  
+    /* Add creds to pwstorage */
+    GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
+    gchar* username = g_strdup(gtk_entry_get_text(ui->entry1));
+    gchar* password = g_strdup(gtk_entry_get_text(ui->entry2));
+
+    g_hash_table_insert(table, "username", username);
+    g_hash_table_insert(table, "password", password);
+
+    if( !dt_pwstorage_set("picasa", table) ){
+      dt_print(DT_DEBUG_PWSTORAGE,"[picasa] cannot store username/password\n");
+    }
+
+    g_free(username);
+    g_free(password);
+    g_hash_table_destroy(table);
+
     if( _picasa_api_get_feed(ui->picasa_api) == 200) {
 
       // Add standard action
@@ -619,6 +621,20 @@ void button1_clicked(GtkButton *button,gpointer data) {
   refresh_albums(ui);
 }
 
+static gboolean
+focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+{
+  dt_control_tab_shortcut_off(darktable.control);
+  return FALSE;
+}
+
+static gboolean
+focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+{
+  dt_control_tab_shortcut_on(darktable.control);
+  return FALSE;
+}
+
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
@@ -650,19 +666,42 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
   ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
 
+  gtk_widget_add_events(GTK_WIDGET(ui->entry1), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry1), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry1), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  gtk_widget_add_events(GTK_WIDGET(ui->entry2), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry2), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry2), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  gtk_widget_add_events(GTK_WIDGET(ui->entry3), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry3), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry3), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  gtk_widget_add_events(GTK_WIDGET(ui->entry4), GDK_FOCUS_CHANGE_MASK);
+  g_signal_connect (G_OBJECT (ui->entry4), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+  g_signal_connect (G_OBJECT (ui->entry4), "focus-out-event", G_CALLBACK(focus_out), NULL);
+
   GHashTable* table = dt_pwstorage_get("picasa");
-  gchar* _username = g_hash_table_lookup(table, "username");
-  gchar* _password = g_hash_table_lookup(table, "password");
+  gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
+  gchar* _password = g_strdup( g_hash_table_lookup(table, "password"));
   g_hash_table_destroy(table);
   gtk_entry_set_text( ui->entry1,  _username == NULL?"":_username );
   gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
   gtk_entry_set_text( ui->entry3, _("my new album") );
   gtk_entry_set_text( ui->entry4, _("exported from darktable") );
-   
+  
   gtk_entry_set_visibility(ui->entry2, FALSE);
 
   GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
   ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
+
+  GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(ui->comboBox1));
+  GList *it = renderers;
+  while(it)
+  {
+    GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
+    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+    it = g_list_next(it);
+  }
+  g_list_free(renderers);
   
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
   gtk_object_set(GTK_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), NULL);
@@ -717,9 +756,8 @@ gui_init (dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(album_changed), (gpointer)ui);  
 
   // If username and password is stored, let's populate the combo
-  if( gtk_entry_get_text(ui->entry1) && gtk_entry_get_text(ui->entry2) ) {
+  if( _username && _password )
     refresh_albums(ui);
-  }
   
   gtk_combo_box_set_active( ui->comboBox1, 0);
 }
@@ -749,9 +787,15 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   const char *ext = format->extension(fdata);
 
   // Let's upload image...
-  char fname[512]={"darktable.XXXXXX."};
+  
+  /* construct a temporary file name */
+  char fname[4096]={0};
+  dt_get_user_local_dir (fname,4096);
+  strcat (fname,"/tmp");
+  g_mkdir_with_parents(fname,0700);
+  strcat (fname,"/darktable.XXXXXX.");
   strcat(fname,ext);
-  gchar *tempfilename;
+  
   char *caption="a image";  
   char *description="";  
   char *mime="image/jpeg";
@@ -762,19 +806,24 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     dt_tag_get_attached(imgid,&tags);
   
   // Ok, maybe a dt_imageio_export_to_buffer would suit here !?
-  
-  gint fd=g_file_open_tmp(fname,&tempfilename,NULL);
+  gint fd=g_mkstemp(fname);
+  fprintf(stderr,"tempfile: %s\n",fname);
+  if(fd==-1)
+  {
+    dt_control_log("failed to create temporary image for picasa export");
+    return 1; 
+  }
   close(fd);
-  dt_image_t *img = dt_image_cache_use(imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
   caption = g_path_get_basename( img->filename );
   
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
   
-  dt_imageio_export(img, tempfilename, format, fdata);
+  dt_imageio_export(img, fname, format, fdata);
   dt_image_cache_release(img, 'r');
   
   // Open the temp file and read image to memory
-  GMappedFile *imgfile = g_mapped_file_new(tempfilename,FALSE,NULL);
+  GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
   int size = g_mapped_file_get_length( imgfile );
   gchar *data =g_mapped_file_get_contents( imgfile );
   
@@ -786,50 +835,75 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   g_mapped_file_unref( imgfile );
  
   // And remove from filesystem..
-  unlink( tempfilename );
+  unlink( fname );
   g_free( caption );
-  g_free( tempfilename );
   
   dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
   return result;
 }
 
 void*
-get_params(dt_imageio_module_storage_t *self)
+get_params(dt_imageio_module_storage_t *self, int *size)
 {
+  // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
+  // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of the struct!
+  *size = sizeof(int64_t);
   dt_storage_picasa_gui_data_t *ui =(dt_storage_picasa_gui_data_t *)self->gui_data;
   dt_storage_picasa_params_t *d = (dt_storage_picasa_params_t *)malloc(sizeof(dt_storage_picasa_params_t));
   memset(d,0,sizeof(dt_storage_picasa_params_t));
+  d->hash = 1;
   
   // fill d from controls in ui
   if( ui->picasa_api ) {
-	// We are authenticated and off to actually export images..
-	  d->picasa_api = ui->picasa_api;
-	  int index = gtk_combo_box_get_active(ui->comboBox1);
-	  if( index >= 0 ){
-	    if( index == 0 ) { // Create new album
-	      d->picasa_api->current_album = NULL;
-	      d->picasa_api->album_title = g_strdup( gtk_entry_get_text( ui->entry3 ) );
-	      d->picasa_api->album_summary = g_strdup( gtk_entry_get_text( ui->entry4) );
-	      d->picasa_api->album_public = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( ui->checkButton1 ) );
-	    } else {
-	       // use existing album
-	      if( (d->picasa_api->current_album = g_list_nth_data(d->picasa_api->albums,(index-2)))==NULL ) {
-		// Something went wrong...
-		fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-2 );
-		return NULL;
-	      }
-	    }
-	  } else return NULL;
-	  
-	  d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
-	  
-	  // Let UI forget about this api context and recreate a new one for further usage...
-	  ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
+  // We are authenticated and off to actually export images..
+    d->picasa_api = ui->picasa_api;
+    int index = gtk_combo_box_get_active(ui->comboBox1);
+    if( index >= 0 ){
+      if( index == 0 ) { // Create new album
+        d->picasa_api->current_album = NULL;
+        d->picasa_api->album_title = g_strdup( gtk_entry_get_text( ui->entry3 ) );
+        d->picasa_api->album_summary = g_strdup( gtk_entry_get_text( ui->entry4) );
+        d->picasa_api->album_public = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( ui->checkButton1 ) );
+      } else {
+         // use existing album
+        if( (d->picasa_api->current_album = g_list_nth_data(d->picasa_api->albums,(index-2)))==NULL ) {
+          // Something went wrong...
+          fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-2 );
+          return NULL;
+        }
+      }
+    } else return NULL;
+    
+    d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
+    
+    // Let UI forget about this api context and recreate a new one for further usage...
+    ui->picasa_api = _picasa_api_authenticate(gtk_entry_get_text(ui->entry1), gtk_entry_get_text(ui->entry2));
   } else
-	return NULL;
+    return NULL;
   
   return d;
+}
+
+int
+set_params(dt_imageio_module_format_t *self, void *params, int size)
+{
+  if(size != sizeof(int64_t)) return 1;
+  // gui stuff not updated, as sensitive user data is not stored in the preset.
+  // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
+  return 0;
+}
+
+int dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height) {
+  *width=4000;
+  *height=4000;
+  return 1;
+}
+
+int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format) {
+  if( strcmp(format->mime(NULL) ,"image/jpeg") ==  0 ) return 1;
+  else if( strcmp(format->mime(NULL) ,"image/png") ==  0 ) return 1;
+  
+  return 0;
 }
 
 void

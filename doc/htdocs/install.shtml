@@ -20,10 +20,14 @@
         <li>*nix (tested: ubuntu karmic lucid, arch linux, funtoo, gentoo, fedora, macintosh osx with macports)</li>
         <li>required packages: sqlite3, libjpeg, libpng, libraw (supplied), gtk+-2, cairo, libglade2, lcms, gegl (optional), exiv2, gconf, tiff</li>
         <li>optional: gcc&gt;=4.4 (openmp, earlier versions could not handle openmp statements in non-main threads)</li>
+        <li>writable gconf config source. if you don't have that (for local installs without root access), use --disable-gconf or try <br />
+        <em>GCONF_CONFIG_SOURCE="xml:readwrite:${HOME}/.gconf" gconftool-2 --makefile-install-rule darktable.schemas</em><br />
+        after make install and before the first run.
+        </li>
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/windoos.jpg" alt="release" class="img" /><h1>micr0soft(r) windoos(tm)</h1>
+    	<img src="images/windoos.jpg" alt="release" class="img" /><h1>microsoft windows</h1>
       <ul>
         <li>unfortunately the community of this commercial distro didn't natively build dt yet</li>
         <li>but there's a better solution for you to try:</li>
@@ -34,8 +38,8 @@
     	<div class="listtext">
     	<img src="images/firering.jpg" alt="release" class="img" /><h1>ubuntu packages</h1>
       <ul>
-        <li>get an appropriate <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release">darktable*.deb</a>.
-        <li>or a <a href="https://launchpad.net/~pmjdebruijn/+archive/ppa">nightly git package</a>.
+        <li>get an appropriate <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release">darktable*.deb</a>.</li>
+        <li>or a <a href="https://launchpad.net/~pmjdebruijn/+archive/ppa">nightly git package</a>.</li>
         <li># dpkg -i darktable*.deb</li>
         <li>Applications - Graphics - darktable</li>
         <li>you may also be interested in downloading a few icc profiles from there.</li>

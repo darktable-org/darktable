@@ -14,6 +14,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/cachefile</key>
+      <applyto>/apps/darktable/cachefile</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>.darktablecache</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>image cache file</short>
+        <long>filename relative to your home directory, or starting with a slash.</long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/themefile</key>
       <applyto>/apps/darktable/themefile</applyto>
       <owner>darktable</owner>
@@ -53,37 +66,11 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/database_cache_thumbnails</key>
-      <applyto>/apps/darktable/database_cache_thumbnails</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>250</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>thumbnails to keep in database</short>
-        <long>how many most-recently used thumbnail mipmaps should be kept in the database cache when darktable closes.</long>
-      </locale>
-    </schema>
-
-    <schema>
-      <key>/schemas/apps/darktable/database_cache_thumbnails0</key>
-      <applyto>/apps/darktable/database_cache_thumbnails0</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>1000</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>very small thumbnails to keep in database</short>
-        <long>how many smallest-size most-recently used thumbnail mipmaps should be kept in the database cache when darktable closes. these do not need a lot of memory and provide fast visual feedback for lighttable mode.</long>
-      </locale>
-    </schema>
-
-    <schema>
       <key>/schemas/apps/darktable/mipmap_cache_thumbnails</key>
       <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>500</default>
+      <default>1000</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
@@ -102,6 +89,19 @@
       <locale name="C">
         <short>full resolution image buffers to keep in main memory cache</short>
         <long>how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. only read at startup.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/never_use_embedded_thumb</key>
+      <applyto>/apps/darktable/never_use_embedded_thumb</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>false</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>don't use embedded preview jpeg, always use half-size raw</short>
+        <long></long>
       </locale>
     </schema>
 
@@ -171,34 +171,47 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/storage/basedirectory</key>
-      <applyto>/apps/darktable/capture/camera/storage/basedirectory</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/jobcode</key>
+      <applyto>/apps/darktable/plugins/capture/jobcode</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>capture job</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>name of capture job</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/capture/storage/basedirectory</key>
+      <applyto>/apps/darktable/plugins/capture/storage/basedirectory</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>$(PICTURES_FOLDER)/darktable</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>path of storage for captured camera images</short>
+        <short>path of storage for captured images</short>
         <long></long>
       </locale>
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/storage/subpath</key>
-      <applyto>/apps/darktable/capture/camera/storage/subpath</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/storage/subpath</key>
+      <applyto>/apps/darktable/plugins/capture/storage/subpath</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>subpath pattern in storage for captured camera images</short>
+        <short>subpath pattern in storage for captured images</short>
         <long></long>
       </locale>
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/storage/namepattern</key>
-      <applyto>/apps/darktable/capture/camera/storage/namepattern</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/storage/namepattern</key>
+      <applyto>/apps/darktable/plugins/capture/storage/namepattern</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
@@ -210,8 +223,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/delete_originals</key>
-      <applyto>/apps/darktable/capture/camera/import/delete_originals</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/camera/import/delete_originals</key>
+      <applyto>/apps/darktable/plugins/capture/camera/import/delete_originals</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>false</default>
@@ -223,8 +236,8 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/jobcode</key>
-      <applyto>/apps/darktable/capture/camera/import/jobcode</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/camera/import/jobcode</key>
+      <applyto>/apps/darktable/plugins/capture/camera/import/jobcode</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>noname</default>
@@ -236,8 +249,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/backup/enable</key>
-      <applyto>/apps/darktable/capture/camera/import/backup/enable</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/backup/enable</key>
+      <applyto>/apps/darktable/plugins/capture/backup/enable</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>false</default>
@@ -249,8 +262,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/backup/warn</key>
-      <applyto>/apps/darktable/capture/camera/import/backup/warn</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/backup/warn</key>
+      <applyto>/apps/darktable/plugins/capture/backup/warn</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>false</default>
@@ -262,8 +275,8 @@
     </schema>
     
      <schema>
-      <key>/schemas/apps/darktable/capture/camera/import/backup/foldername</key>
-      <applyto>/apps/darktable/capture/camera/import/backup/foldername</applyto>
+      <key>/schemas/apps/darktable/plugins/capture/backup/foldername</key>
+      <applyto>/apps/darktable/plugins/capture/backup/foldername</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default>photos</default>
@@ -500,7 +513,7 @@
       <applyto>/apps/darktable/plugins/lighttable/layout</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>0</default>
+      <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>which layout should lighttable mode show</short>
@@ -760,7 +773,7 @@
       <applyto>/apps/darktable/plugins/lighttable/export/format</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>0</default>
+      <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -777,6 +790,19 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/email/client</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/email/client</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>Default client to use, this overrides detection of default client.</short>
         <long></long>
       </locale>
     </schema>
@@ -816,7 +842,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>storage backend to use</short>
-        <long>the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring (not implemented yet)</long>
+        <long>the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring</long>
       </locale>
     </schema>
     

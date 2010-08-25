@@ -114,6 +114,13 @@ const char *name()
   return _("crop and rotate");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_CORRECT;
+}
+
+
 static void
 backtransform(float *x, float *o, const float *m, const float t, const int k)
 {
@@ -254,72 +261,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
-#if 0
-  float pi[2], p0[2], tmp[2];
-  float dx[2], dy[2];
-  // get whole-buffer point from i,j
-  pi[0] = roi_out->x + roi_out->scale*d->cix;
-  pi[1] = roi_out->y + roi_out->scale*d->ciy;
-  // transform this point using matrix m
-  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
-  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-  // mul_mat_vec_2(d->m, pi, p0);
-  backtransform(pi, p0, d->m, d->k, d->keystone);
-  p0[0] *= roi_in->scale; p0[1] *= roi_in->scale;
-  p0[0] += d->tx*roi_in->scale;  p0[1] += d->ty*roi_in->scale;
-  // transform this point to roi_in
-  p0[0] -= roi_in->x; p0[1] -= roi_in->y;
-
-  pi[0] = roi_out->x + roi_out->scale*d->cix + 1;
-  pi[1] = roi_out->y + roi_out->scale*d->ciy;
-  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
-  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-  // mul_mat_vec_2(d->m, pi, tmp);
-  backtransform(pi, tmp, d->m, d->k, d->keystone);
-  tmp[0] *= roi_in->scale; tmp[1] *= roi_in->scale;
-  tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
-  tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
-  dx[0] = tmp[0] - p0[0]; dx[1] = tmp[1] - p0[1];
-
-  pi[0] = roi_out->x + roi_out->scale*d->cix;
-  pi[1] = roi_out->y + roi_out->scale*d->ciy + 1;
-  pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;
-  pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
-  // mul_mat_vec_2(d->m, pi, tmp);
-  backtransform(pi, tmp, d->m, d->k, d->keystone);
-  tmp[0] *= roi_in->scale; tmp[1] *= roi_in->scale;
-  tmp[0] += d->tx*roi_in->scale; tmp[1] += d->ty*roi_in->scale;
-  tmp[0] -= roi_in->x; tmp[1] -= roi_in->y;
-  dy[0] = tmp[0] - p0[0]; dy[1] = tmp[1] - p0[1];
-
-  pi[0] = p0[0]; pi[1] = p0[1];
-#ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) firstprivate(pi,out) shared(o,p0,dx,dy,in,roi_in,roi_out)
-#endif
-  for(int j=0;j<roi_out->height;j++)
-  {
-    out = ((float *)o)+3*roi_out->width*j;
-    for(int k=0;k<2;k++) pi[k] = p0[k] + j*dy[k];
-    for(int i=0;i<roi_out->width;i++)
-    {
-      const int ii = (int)pi[0], jj = (int)pi[1];
-      if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
-      {
-        const float fi = pi[0] - ii, fj = pi[1] - jj;
-        for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-               (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-               (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-               (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
-      }
-      else for(int c=0;c<3;c++) out[c] = 0.0f;
-      for(int k=0;k<2;k++) pi[k] += dx[k];
-      out += 3;
-    }
-  }
-#else
   // only crop, no rot fast and sharp path:
-  if(d->angle == 0.0 && d->keystone > 1 && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(!d->flags && d->angle == 0.0 && d->keystone > 1 && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) firstprivate(out, in) shared(d,o,i,roi_in,roi_out)
@@ -376,7 +319,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
-#endif
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -394,7 +336,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   intk &= ~0x40000000;
   float floatk = *(float *)&intk;
   if(fabsf(floatk) < .0001) d->keystone = 2;
-  d->ki = floatk;
+  if(floatk >= -1.0 && floatk <= 1.0) d->ki = floatk;
+  else d->ki = 0.0f;
   d->angle = M_PI/180.0 * p->angle;
   d->cx = p->cx;
   d->cy = p->cy;
@@ -704,7 +647,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->label5 = GTK_LABEL(gtk_label_new(_("angle")));
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.5, p->angle, 2));
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.25, p->angle, 2));
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   gtk_object_set (GTK_OBJECT(g->scale5), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), NULL);
@@ -749,6 +692,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
 /*-------------------------------------------*/
+  gtk_table_set_row_spacing(GTK_TABLE(self->widget), 4, 10);
   label = GTK_WIDGET(dtgtk_label_new(_("guides"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 6, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 5);
   g->guide_lines = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -780,6 +724,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set (GTK_OBJECT(g->flipVerGoldenGuide), "tooltip-text", _("flip guides horizontally"), NULL);
 /*-------------------------------------------*/
   g->goldenSectionBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden sections")));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->goldenSectionBox), TRUE);
   gtk_object_set (GTK_OBJECT(g->goldenSectionBox), "tooltip-text", _("enable this option to show golden sections."), NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->goldenSectionBox), 0, 3, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 

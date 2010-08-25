@@ -22,7 +22,7 @@
 #include <math.h>
 #include <string.h>
 #include <inttypes.h>
-#include <lcms.h>
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "gui/histogram.h"
 #include "develop/develop.h"
@@ -91,6 +91,13 @@ const char
 {
   return _("color zones");
 }
+
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
 
 static float
 lookup(const double *lut, const float i)
@@ -753,6 +760,15 @@ colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   }
 }
 
+void 
+_colorzones_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.5;
+  gtk_widget_set_size_request(w,a->width,height);
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorzones_gui_data_t));
@@ -772,7 +788,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 5);
-  gtk_drawing_area_size(c->area, 195, 195);
+ // gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -787,6 +803,9 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (colorzones_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (colorzones_scrolled), self);
+  g_signal_connect (G_OBJECT (c->area), "size-allocate",
+                    G_CALLBACK (_colorzones_size_allocate), self);
+		    
   // init gtk stuff
   c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 5);
@@ -836,8 +855,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(self->widget), tb, FALSE, FALSE, 5);
 
-  c->hsRGB = cmsCreate_sRGBProfile();
-  c->hLab  = cmsCreateLabProfile(NULL);
+  c->hsRGB = dt_colorspaces_create_srgb_profile();
+  c->hLab  = dt_colorspaces_create_lab_profile();
   c->xform = cmsCreateTransform(c->hLab, TYPE_Lab_DBL, c->hsRGB, TYPE_RGB_DBL, 
       INTENT_PERCEPTUAL, 0);
 }
@@ -845,6 +864,9 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  dt_colorspaces_cleanup_profile(c->hsRGB);
+  dt_colorspaces_cleanup_profile(c->hLab);
+  cmsDeleteTransform(c->xform);
   dt_draw_curve_destroy(c->minmax_curve);
   free(self->gui_data);
   self->gui_data = NULL;

@@ -76,6 +76,16 @@ const char *name()
   return _("split toning");
 }
 
+
+int 
+groups () 
+{
+	return IOP_GROUP_EFFECT;
+}
+
+
+
+
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
 {
   float pmax=fmax(r,fmax(g,b));
@@ -137,7 +147,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
-     rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+    rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
     lhigh=fmax(lhigh,l);
     llow=fmin(llow,l);
     out += 3; in += 3;
@@ -200,7 +210,6 @@ static void
 hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
 
@@ -232,20 +241,18 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   c.blue=color[2]*65535.0;
   
   dtgtk_gradient_slider_set_stop(sslider,1.0,c);  // Update saturation end color
+  gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // update color preview
+
+  if(self->dt->gui->reset) return;
   gtk_widget_draw(GTK_WIDGET(sslider),NULL);
   
-  gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // update color preview
-  
-  
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-	dt_dev_add_history_item(darktable.develop, self);
+  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
 saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
 
@@ -278,12 +285,13 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // Update color preview
   
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-	dt_dev_add_history_item(darktable.develop, self);
+  if(self->dt->gui->reset) return;
+  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self);
 }
 
 
-static void colorpick_button_callback(GtkButton *button,gpointer user_data)  
+static void
+colorpick_button_callback(GtkButton *button,gpointer user_data)  
 {
   GtkColorSelectionDialog  *csd=(GtkColorSelectionDialog  *)user_data;
   gtk_dialog_response(GTK_DIALOG(csd),(GTK_WIDGET(button)==csd->ok_button)?GTK_RESPONSE_ACCEPT:0);
@@ -411,7 +419,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 968;
+  module->priority = 998;
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ 0,0.5,0.2,0.5, 0.5,33.0};

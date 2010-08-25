@@ -26,6 +26,7 @@
 #include "common/imageio.h"
 #include "views/view.h"
 #include "gui/gtk.h"
+#include "gui/contrast.h"
 #include "gui/filmview.h"
 #include "gui/draw.h"
 
@@ -51,11 +52,9 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_bool ("write_dt_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
   dt_conf_set_float("preview_subsample", .125f);
-  dt_conf_set_int  ("mipmap_cache_thumbnails", 500);
+  dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
   dt_conf_set_int  ("mipmap_cache_full_images", 2);
   dt_conf_set_int  ("cache_memory", 536870912);
-  dt_conf_set_int  ("database_cache_thumbnails", 2500);
-  dt_conf_set_int  ("database_cache_thumbnails0", 10000);
   dt_conf_set_int  ("database_cache_quality", 89);
 
   dt_conf_set_bool ("ui_last/fullscreen", FALSE);
@@ -82,7 +81,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
 
   // Import settings
-  dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/darktable");
+  dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/Darktable");
   dt_conf_set_string ("capture/camera/storage/subpath", "$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)");
   dt_conf_set_string ("capture/camera/storage/namepattern", "$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)");
   dt_conf_set_string ("capture/camera/import/jobcode", "noname");
@@ -168,6 +167,8 @@ int dt_control_load_config(dt_control_t *c)
 
       // insert new tables, if not there (statement will just fail if so):
       sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table mipmaps", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL);
       pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
 #endif
@@ -182,10 +183,6 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table mipmaps (imgid int, level int, data blob)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table mipmap_timestamps (imgid int, level int)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
@@ -195,7 +192,7 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    sqlite3_exec(darktable.db, "create table color_labels (imgid integer primary key, color integer)", NULL, NULL, NULL);
+    sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
 
     // add dummy film roll for single images
     char datetime[20];
@@ -373,6 +370,8 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
 
+  s->esc_shortcut_on = 1;
+  s->tab_shortcut_on = 1;
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
@@ -388,6 +387,7 @@ void dt_control_init(dt_control_t *s)
   pthread_cond_init(&s->cond, NULL);
   pthread_mutex_init(&s->cond_mutex, NULL);
   pthread_mutex_init(&s->queue_mutex, NULL);
+  pthread_mutex_init(&s->run_mutex, NULL);
 
   int k; for(k=0;k<DT_CONTROL_MAX_JOBS;k++) s->idle[k] = k;
   s->idle_top = DT_CONTROL_MAX_JOBS;
@@ -395,7 +395,9 @@ void dt_control_init(dt_control_t *s)
   // start threads
   s->num_threads = dt_ctl_get_num_procs()+1;
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
+  pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
+  pthread_mutex_unlock(&s->run_mutex);
   for(k=0;k<s->num_threads;k++)
     pthread_create(s->thread + k, NULL, dt_control_work, s);
   for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
@@ -405,7 +407,26 @@ void dt_control_init(dt_control_t *s)
   }
   s->button_down = 0;
   s->button_down_which = 0;
-  s->history_start = 1;
+}
+
+void dt_control_tab_shortcut_off(dt_control_t *s)
+{
+  s->tab_shortcut_on = 0;
+}
+
+void dt_control_tab_shortcut_on(dt_control_t *s)
+{
+  s->tab_shortcut_on = 1;
+}
+
+void dt_control_esc_shortcut_off(dt_control_t *s)
+{
+  s->esc_shortcut_on = 0;
+}
+
+void dt_control_esc_shortcut_on(dt_control_t *s)
+{
+  s->esc_shortcut_on = 1;
 }
 
 void dt_control_change_cursor(dt_cursor_t curs)
@@ -416,10 +437,22 @@ void dt_control_change_cursor(dt_cursor_t curs)
   gdk_cursor_destroy(cursor);
 }
 
+int dt_control_running()
+{
+  // FIXME: when shutdown, run_mutex is not inited anymore!
+  dt_control_t *s = darktable.control;
+  pthread_mutex_lock(&s->run_mutex);
+  int running = s->running;
+  pthread_mutex_unlock(&s->run_mutex);
+  return running;
+}
+
 void dt_control_shutdown(dt_control_t *s)
 {
   pthread_mutex_lock(&s->cond_mutex);
+  pthread_mutex_lock(&s->run_mutex);
   s->running = 0;
+  pthread_mutex_unlock(&s->run_mutex);
   pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   // gdk_threads_leave();
@@ -434,42 +467,13 @@ void dt_control_shutdown(dt_control_t *s)
 
 void dt_control_cleanup(dt_control_t *s)
 {
-#if 0
-  int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
-  int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
-  // delete mipmaps
-  
-  double start = dt_get_wtime();
-
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
-  sqlite3_stmt *stmt;
-
-  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level = 0 order by rowid limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep0);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from mipmap_timestamps where level != 0 order by rowid limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid*8+level not in (select imgid*8+level from mipmap_timestamps)", -1, &stmt, NULL);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
-
-  double end = dt_get_wtime();
-  dt_print(DT_DEBUG_PERF, "[control_cleanup] database cleaning took %.3f secs\n", end - start);
-#endif
-
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   // rc = sqlite3_exec(darktable.db, "vacuum", NULL, NULL, NULL);
   pthread_mutex_destroy(&s->queue_mutex);
   pthread_mutex_destroy(&s->cond_mutex);
   pthread_mutex_destroy(&s->log_mutex);
+  pthread_mutex_destroy(&s->run_mutex);
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
@@ -482,6 +486,16 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
   va_end(ap);
 #endif
 }
+
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...)
+{
+  va_list argp;
+  va_start(argp, msg);
+  dt_control_job_init(j,msg,argp);
+  j->finished_callback = callback;
+  j->user_data = user_data;
+}
+
 
 void dt_control_job_print(dt_job_t *j)
 {
@@ -504,7 +518,13 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
 
-  j->execute(j);
+   /* execute job */
+  int32_t exec_res = j->execute (j);
+  
+  /* pass result to finished callback */
+  if (j->finished_callback)
+    j->finished_callback (exec_res,j);
+  
   return 0;
 }
 
@@ -526,8 +546,14 @@ int32_t dt_control_run_job(dt_control_t *s)
   dt_print(DT_DEBUG_CONTROL, "[run_job %d] ", dt_control_get_threadid());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  j->execute(j);
-
+  
+  /* execute job */
+  int32_t exec_res = j->execute (j);
+  
+  /* pass result to finished callback */
+  if (j->finished_callback)
+    j->finished_callback (exec_res,j);
+   
   pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);
   s->idle[s->idle_top++] = i;
@@ -555,6 +581,16 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
   int32_t i;
   pthread_mutex_lock(&s->queue_mutex);
+  for(i=0;i<s->queued_top;i++)
+  { // find equivalent job and quit if already there
+    const int j = s->queued[i];
+    if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
+    {
+      dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
+      pthread_mutex_unlock(&s->queue_mutex);
+      return -1;
+    }
+  }
   dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", s->idle_top);
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
@@ -625,7 +661,7 @@ void *dt_control_work_res(void *ptr)
 {
   dt_control_t *s = (dt_control_t *)ptr;
   int32_t threadid = dt_control_get_threadid_res();
-  while(s->running)
+  while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
     if(dt_control_run_job_res(s, threadid) < 0)
@@ -646,7 +682,7 @@ void *dt_control_work(void *ptr)
 {
   dt_control_t *s = (dt_control_t *)ptr;
   // int32_t threadid = dt_control_get_threadid();
-  while(s->running)
+  while(dt_control_running())
   {
     // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
     if(dt_control_run_job(s) < 0)
@@ -667,7 +703,7 @@ void *dt_control_work(void *ptr)
 
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  darktable.control->tabborder = fmaxf(10, event->width/100.0);
+  darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
   // re-configure all components:
   dt_view_manager_configure(darktable.view_manager, event->width - 2*tb, event->height - 2*tb);
@@ -676,128 +712,125 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 
 void *dt_control_expose(void *voidptr)
 {
-  // darktable.control->gui_thread = pthread_self();
-  while(1)
+  int width, height, pointerx, pointery;
+  gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_widget_get_pointer(widget, &pointerx, &pointery);
+
+  //create a gtk-independant surface to draw on
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+
+  // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
+  // 
+  float tb = 8;//fmaxf(10, width/100.0);
+  darktable.control->tabborder = tb;
+  darktable.control->width = width;
+  darktable.control->height = height;
+
+  cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
+  cairo_set_line_width(cr, tb);
+  cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
+  cairo_stroke(cr);
+  cairo_set_line_width(cr, 1.5);
+  cairo_set_source_rgb (cr, .1, .1, .1);
+  cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
+  cairo_stroke(cr);
+
+  cairo_save(cr);
+  cairo_translate(cr, tb, tb);
+  cairo_rectangle(cr, 0, 0, width - 2*tb, height - 2*tb);
+  cairo_clip(cr);
+  cairo_new_path(cr);
+  // draw view
+  dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb, pointerx-tb, pointery-tb);
+  cairo_restore(cr);
+
+  // draw status bar, if any
+  if(darktable.control->progress < 100.0)
   {
-    int width, height, pointerx, pointery;
-    // ! gdk_threads_enter();
-    gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-    gtk_widget_get_pointer(widget, &pointerx, &pointery);
-    // ! gdk_threads_leave();
-
-    //create a gtk-independant surface to draw on
-    cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *cr = cairo_create(cst);
-
-    // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
-    // 
-    float tb = 8;//fmaxf(10, width/100.0);
-    darktable.control->tabborder = tb;
-    darktable.control->width = width;
-    darktable.control->height = height;
-
-    cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
-    cairo_set_line_width(cr, tb);
-    cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
+    tb = fmaxf(20, width/40.0);
+    char num[10];
+    cairo_rectangle(cr, width*0.4, height*0.85, width*0.2*darktable.control->progress/100.0f, tb);
+    cairo_fill(cr);
+    cairo_set_source_rgb(cr, 0., 0., 0.);
+    cairo_rectangle(cr, width*0.4, height*0.85, width*0.2, tb);
     cairo_stroke(cr);
-    cairo_set_line_width(cr, 1.5);
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
-    cairo_stroke(cr);
-
-    cairo_save(cr);
-    cairo_translate(cr, tb, tb);
-    cairo_rectangle(cr, 0, 0, width - 2*tb, height - 2*tb);
-    cairo_clip(cr);
-    cairo_new_path(cr);
-    // draw view
-    dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb, pointerx-tb, pointery-tb);
-    cairo_restore(cr);
-
-    // draw status bar, if any
-    if(darktable.control->progress < 100.0)
-    {
-      tb = fmaxf(20, width/40.0);
-      char num[10];
-      cairo_rectangle(cr, width*0.4, height*0.85, width*0.2*darktable.control->progress/100.0f, tb);
-      cairo_fill(cr);
-      cairo_set_source_rgb(cr, 0., 0., 0.);
-      cairo_rectangle(cr, width*0.4, height*0.85, width*0.2, tb);
-      cairo_stroke(cr);
-      cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
-      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, tb/3);
-      cairo_move_to (cr, width/2.0-10, height*0.85+2.*tb/3.);
-      snprintf(num, 10, "%d%%", (int)darktable.control->progress);
-      cairo_show_text (cr, num);
-    }
-    // draw log message, if any
-    pthread_mutex_lock(&darktable.control->log_mutex);
-    if(darktable.control->log_ack != darktable.control->log_pos)
-    {
-      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      const float fontsize = 14;
-      cairo_set_font_size (cr, fontsize);
-      cairo_text_extents_t ext;
-      cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_ack], &ext);
-      const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
-      float rad = 14;
-      cairo_set_line_width(cr, 1.);
-      for(int k=0;k<5;k++)
-      {
-        cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
-        cairo_line_to (cr, xc+wd, yc-rad);
-        cairo_arc (cr, xc+wd, yc, rad, 3.0*M_PI/2.0, M_PI/2.0);
-        cairo_line_to (cr, xc-wd, yc+rad);
-        if(k == 0)
-        {
-          cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-          cairo_fill_preserve (cr);
-        }
-        cairo_set_source_rgba(cr, 0., 0., 0., 1.0/(1+k));
-        cairo_stroke (cr);
-        rad += .5f;
-      }
-      cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-      cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
-      cairo_show_text (cr, darktable.control->log_message[darktable.control->log_ack]);
-    }
-    // draw busy indicator
-    if(darktable.control->log_busy > 0)
-    {
-      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      const float fontsize = 14;
-      cairo_set_font_size (cr, fontsize);
-      cairo_text_extents_t ext;
-      cairo_text_extents (cr, _("working.."), &ext);
-      const float xc = width/2.0, yc = height*0.85-30, wd = ext.width*.5f;
-      cairo_move_to (cr, xc-wd, yc + 1./3.*fontsize);
-      cairo_text_path (cr, _("working.."));
-      cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 0.7);
-      cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-      cairo_stroke(cr);
-    }
-    pthread_mutex_unlock(&darktable.control->log_mutex);
-
-    cairo_destroy(cr);
-
-    // ! gdk_threads_enter();
-    cairo_t *cr_pixmap = gdk_cairo_create(darktable.gui->pixmap);
-    cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-    cairo_paint(cr_pixmap);
-    cairo_destroy(cr_pixmap);
-
-    // GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-    // gtk_widget_queue_draw(widget);
-    // ! gdk_threads_leave();
-
-    cairo_surface_destroy(cst);
-    return NULL;
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size (cr, tb/3);
+    cairo_move_to (cr, width/2.0-10, height*0.85+2.*tb/3.);
+    snprintf(num, 10, "%d%%", (int)darktable.control->progress);
+    cairo_show_text (cr, num);
   }
+  // draw log message, if any
+  pthread_mutex_lock(&darktable.control->log_mutex);
+  if(darktable.control->log_ack != darktable.control->log_pos)
+  {
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    const float fontsize = 14;
+    cairo_set_font_size (cr, fontsize);
+    cairo_text_extents_t ext;
+    cairo_text_extents (cr, darktable.control->log_message[darktable.control->log_ack], &ext);
+    const float pad = 20.0f, xc = width/2.0, yc = height*0.85+10, wd = pad + ext.width*.5f;
+    float rad = 14;
+    cairo_set_line_width(cr, 1.);
+    cairo_move_to( cr, xc-wd,yc+rad);
+    for(int k=0;k<5;k++)
+    {
+      cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
+      cairo_line_to (cr, xc+wd, yc-rad);
+      cairo_arc (cr, xc+wd, yc, rad, 3.0*M_PI/2.0, M_PI/2.0);
+      cairo_line_to (cr, xc-wd, yc+rad);
+      if(k == 0)
+      {
+        cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+        cairo_fill_preserve (cr);
+      }
+      cairo_set_source_rgba(cr, 0., 0., 0., 1.0/(1+k));
+      cairo_stroke (cr);
+      rad += .5f;
+    }
+    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
+    cairo_show_text (cr, darktable.control->log_message[darktable.control->log_ack]);
+  }
+  // draw busy indicator
+  if(darktable.control->log_busy > 0)
+  {
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    const float fontsize = 14;
+    cairo_set_font_size (cr, fontsize);
+    cairo_text_extents_t ext;
+    cairo_text_extents (cr, _("working.."), &ext);
+    const float xc = width/2.0, yc = height*0.85-30, wd = ext.width*.5f;
+    cairo_move_to (cr, xc-wd, yc + 1./3.*fontsize);
+    cairo_text_path (cr, _("working.."));
+    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    cairo_fill_preserve(cr);
+    cairo_set_line_width(cr, 0.7);
+    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+    cairo_stroke(cr);
+  }
+  pthread_mutex_unlock(&darktable.control->log_mutex);
+
+  cairo_destroy(cr);
+
+  cairo_t *cr_pixmap = gdk_cairo_create(darktable.gui->pixmap);
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+
+  cairo_surface_destroy(cst);
   return NULL;
+}
+
+void 
+dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int height = a->width*0.25;
+  gtk_widget_set_size_request(w,a->width,height);
 }
 
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
@@ -948,7 +981,7 @@ void dt_control_log_busy_leave()
 
 void dt_control_gui_queue_draw()
 {
-  if(darktable.control->running)
+  if(dt_control_running())
   {
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_queue_draw(widget);
@@ -957,7 +990,7 @@ void dt_control_gui_queue_draw()
 
 void dt_control_queue_draw_all()
 {
-  if(darktable.control->running)
+  if(dt_control_running())
   {
     int needlock = pthread_self() != darktable.control->gui_thread;
     if(needlock) gdk_threads_enter();
@@ -969,7 +1002,7 @@ void dt_control_queue_draw_all()
 
 void dt_control_queue_draw(GtkWidget *widget)
 {
-  if(darktable.control->running)
+  if(dt_control_running())
   {
     if(pthread_self() != darktable.control->gui_thread) gdk_threads_enter();
     gtk_widget_queue_draw(widget);
@@ -1113,6 +1146,13 @@ int dt_control_key_pressed_override(uint16_t which)
   GtkWidget *widget;
   switch (which)
   {
+    case KEYCODE_F7:
+      dt_gui_contrast_decrease ();
+      break;
+    case KEYCODE_F8:
+      dt_gui_contrast_increase ();
+      break;
+    
     case KEYCODE_F11:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       fullscreen = dt_conf_get_bool("ui_last/fullscreen");
@@ -1123,6 +1163,7 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Escape: case KEYCODE_Caps:
+      if(darktable.control->esc_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
@@ -1130,6 +1171,7 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
+      if(darktable.control->tab_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "left");
       visible = GTK_WIDGET_VISIBLE(widget);
       if(visible) gtk_widget_hide(widget);
@@ -1165,14 +1207,37 @@ int dt_control_key_pressed(uint16_t which)
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
   GtkWidget *widget;
+  int needRedraw=0;
   switch (which)
   {
     case KEYCODE_period:
       dt_ctl_switch_mode();
+      needRedraw=1;
       break;
     default:
       // propagate to view modules.
-      dt_view_manager_key_pressed(darktable.view_manager, which);
+      needRedraw = dt_view_manager_key_pressed(darktable.view_manager, which);
+      break;
+  }
+  if( needRedraw ) {
+    widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    gtk_widget_queue_draw(widget);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+    gtk_widget_queue_draw(widget);
+  }
+  return 1;
+}
+
+int dt_control_key_released(uint16_t which)
+{
+  // this line is here to find the right key code on different platforms (mac).
+  // printf("key code pressed: %d\n", which);
+  GtkWidget *widget;
+  switch (which)
+  {
+    default:
+      // propagate to view modules.
+      dt_view_manager_key_released(darktable.view_manager, which);
       break;
   }
 
@@ -1182,81 +1247,40 @@ int dt_control_key_pressed(uint16_t which)
   gtk_widget_queue_draw(widget);
   return 1;
 }
-
+#include "gui/iop_history.h"
 void dt_control_add_history_item(int32_t num_in, const char *label)
 {
-  char wdname[20], numlabel[256];
-  const gchar *lbl = NULL;
-  int32_t num = num_in + 1; // one after orginal
-  GtkWidget *widget = NULL;
-  g_snprintf(numlabel, 256, "%d - %s", num, label);
-  if(num >= 10) for(int i=1;i<9;i++)
-  {
-    darktable.control->history_start = num - 9;
-    snprintf(wdname, 20, "history_%02d", i+1);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    lbl = gtk_button_get_label(GTK_BUTTON(widget));
-    snprintf(wdname, 20, "history_%02d", i);
-    widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_button_set_label(GTK_BUTTON(widget), lbl);
-    snprintf(wdname, 20, "history_%02d", 9);
-  }
-  else snprintf(wdname, 20, "history_%02d", num);
-  widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-  gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), numlabel);
-  darktable.gui->reset = 1;
-  gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
-  darktable.gui->reset = 0;
+  dt_gui_iop_history_add_item(num_in,label);
 }
 
 void dt_control_clear_history_items(int32_t num)
 {
-  // clear history items down to num (leave num-th on stack)
-  darktable.control->history_start = MAX(0, num - 8);
-  char wdname[20], numlabel[256], numlabel2[256];
-  // hide all but original
-  for(int k=1;k<10;k++)
+  /* reset if empty stack */
+  if( num == -1 ) 
   {
-    snprintf(wdname, 20, "history_%02d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_hide(widget);
+  dt_gui_iop_history_reset();
+  return;
   }
-  // 0 - original
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "history_00");
-  gtk_widget_show(widget);
-  gtk_button_set_label(GTK_BUTTON(widget), _("0 - original"));
-  GList *history = g_list_nth(darktable.develop->history, darktable.control->history_start);
-  for(int k=1;k<9;k++)
-  { // k is button number: history_0k
-    int curr = darktable.control->history_start + k;   // curr: curr-th history item in list in dev
-    if(curr > num+1 || !history) break;                  // curr > num+1: history item stays hidden
-    snprintf(wdname, 20, "history_%02d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_show(widget);
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_dev_get_history_item_label(hist, numlabel2, 256);
-    snprintf(numlabel, 256, "%d - %s", curr, numlabel2);
-    gtk_button_set_label(GTK_BUTTON(widget), numlabel);
-    if(curr == num+1)
-    {
-      darktable.gui->reset = 1;
-      gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
-      darktable.gui->reset = 0;
-    }
-    history = g_list_next(history);
-  }
+  
+  /* pop items from top of history */
+  int size = dt_gui_iop_history_get_top () - MAX(0, num);
+  for(int k=1;k<size;k++)
+    dt_gui_iop_history_pop_top ();
+
+  dt_gui_iop_history_update_labels ();
+  
 }
 
 void dt_control_update_recent_films()
 {
-  char wdname[20];
+  /*char wdname[20];
   for(int k=1;k<5;k++)
   {
     snprintf(wdname, 20, "recent_film_%d", k);
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
     gtk_widget_hide(widget);
   }
+  
   sqlite3_stmt *stmt;
   int rc, num = 1;
   const char *filename, *cnt;
@@ -1291,6 +1315,55 @@ void dt_control_update_recent_films()
     num++;
   }
   sqlite3_finalize(stmt);
+  */
+  
+  /* get the recent film vbox */
+  GtkWidget *sb = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
+  GtkWidget *recent_used_film_vbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sb)),1);
+  
+  /* hide all childs and vbox*/
+  gtk_widget_hide_all (recent_used_film_vbox);
+  GList *childs = gtk_container_get_children (GTK_CONTAINER(recent_used_film_vbox));
+  
+  /* query database for recent films */
+  sqlite3_stmt *stmt;
+  int rc, num = 0;
+  const char *filename, *cnt;
+  const int label_cnt = 256;
+  char label[256];
+  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int id = sqlite3_column_int(stmt, 1);
+    if(id == 1)
+    {
+      snprintf(label, 256, _("single images"));
+      filename = _("single images");
+    }
+    else
+    {
+      filename = (char *)sqlite3_column_text(stmt, 0);
+      cnt = filename + MIN(512,strlen(filename));
+      int i;
+      for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
+      if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
+      else snprintf(label, label_cnt, "%s", cnt);
+    }
+    GtkWidget *widget = g_list_nth_data (childs,num);
+    gtk_button_set_label (GTK_BUTTON (widget), label);
+    
+    GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)));
+    gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
+    gtk_label_set_max_width_chars (label, 30);
+    
+    g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
+    
+    gtk_widget_show(recent_used_film_vbox);
+    gtk_widget_show(widget);
+    
+    num++;
+  }
+  
   GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
   dt_gui_filmview_update(gtk_entry_get_text(entry));
 }

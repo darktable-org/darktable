@@ -19,6 +19,7 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/panel_sizegroup.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 
@@ -140,6 +141,8 @@ gint sort_plugins(gconstpointer a, gconstpointer b)
   return am->priority - bm->priority;
 }
 
+int _default_groups() { return IOP_GROUP_ALL; }
+
 int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *libname, const char *op)
 {
   pthread_mutex_init(&module->params_mutex, NULL);
@@ -174,6 +177,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   }
   if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
+  if(!g_module_symbol(module->module, "groups",                   (gpointer)&(module->groups)))                   module->groups = _default_groups;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
@@ -273,6 +277,7 @@ void dt_iop_unload_module(dt_iop_module_t *module)
 {
   free(module->factory_params);
   module->cleanup(module);
+  free(module->default_params);
   pthread_mutex_destroy(&module->params_mutex);
   if(module->module) g_module_close(module->module);
 }
@@ -446,7 +451,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
-
+  dt_gui_panel_sizegroup_add (evb);
   return evb;
 }
 
@@ -567,74 +572,6 @@ void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, in
       }
       y += scaley; x = ix2;
     }
-  }
-}
-
-void dt_iop_sRGB_to_Lab(const float *in, float *out, int x, int y, float scale, int width, int height)
-{
-  // TODO: use lcms dbl/16-bit + upconversion?
-  const cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  const cmsHPROFILE  hLab = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-
-  const cmsHTRANSFORM xform = cmsCreateTransform(hsRGB, TYPE_RGB_DBL, hLab, TYPE_Lab_DBL, 
-      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
-
-#ifdef _OPENMP // not thread safe?
-// #pragma omp parallel for schedule(static) default(none) shared(out, width, height, in)
-#endif
-  for(int j=0;j<height;j++) for(int i=0;i<width;i++)
-  {
-    double RGB[3];
-    cmsCIELab Lab;
-
-    for(int k=0;k<3;k++) RGB[k] = in[3*(width*j + i) + k];
-    cmsDoTransform(xform, RGB, &Lab, 1);
-    out[3*(width*j+i) + 0] = Lab.L;
-    out[3*(width*j+i) + 1] = Lab.a;
-    out[3*(width*j+i) + 2] = Lab.b;
-  }
-}
-
-void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scale, int width, int height)
-{
-  cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  cmsHPROFILE hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-
-  cmsHTRANSFORM xform = cmsCreateTransform(hLab, TYPE_Lab_16, hsRGB, TYPE_RGB_16, 
-      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
-
-#ifdef _OPENMP
-// #pragma omp parallel for schedule(static) default(none) shared(hsRGB, hLab, xform, out, width, height, in)
-#endif
-  for(int j=0;j<height;j++)
-  {
-    uint16_t *lab = in + 3*width*j;
-    uint16_t *rgb = out + 3*width*j;
-    cmsDoTransform(xform, lab, rgb, width);
-  }
-}
-
-void dt_iop_Lab_to_sRGB(const float *in, float *out, int x, int y, float scale, int width, int height)
-{
-  const cmsHPROFILE hsRGB = cmsCreate_sRGBProfile();
-  const cmsHPROFILE hLab  = cmsCreateLabProfile(NULL);//cmsD50_xyY());
-
-  const cmsHTRANSFORM xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, 
-      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
-
-#ifdef _OPENMP
-// #pragma omp parallel for schedule(static) default(none) shared(out, width, height, in)
-#endif
-  for(int j=0;j<height;j++) for(int i=0;i<width;i++)
-  {
-    double RGB[3];
-    cmsCIELab Lab;
-
-    Lab.L = in[3*(width*j+i) + 0];
-    Lab.a = in[3*(width*j+i) + 1];
-    Lab.b = in[3*(width*j+i) + 2];
-    cmsDoTransform(xform, &Lab, RGB, 1);
-    for(int k=0;k<3;k++) out[3*(width*j + i) + k] = RGB[k];
   }
 }
 

@@ -50,6 +50,11 @@ static const char dark_contrast[] = N_("dark contrast");
 static const char canon_eos[] = N_("canon eos like");
 static const char nikon[] = N_("nikon like");
 static const char sony_alpha[] = N_("sony alpha like");
+static const char pentax[] = N_("pentax like");
+static const char olympus[] = N_("olympus like");
+static const char panasonic[] = N_("panasonic like");
+static const char leica[] = N_("leica like");
+static const char kodak_easyshare[] = N_("kodak easyshare like");
 static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
 static const char fotogenetic_v42[] = N_("fotogenetic (ev3)");
 
@@ -73,6 +78,15 @@ static const basecurve_preset_t basecurve_presets[] = {
   {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals sony alpha curve (needs testing):
   {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}, 0}, 1},
+  // pascals pentax curve (needs testing):
+  {pentax, "PENTAX", "", 0, 51200, {{0.000000, 0.032258, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
+  // pascals olympus curve (needs testing):
+  {olympus, "OLYMPUS", "", 0, 51200, {{0.000000, 0.012097, 0.116935, 0.556452, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
+  // pascals panasonic/leica curves (needs testing):
+  {panasonic, "Panasonic", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
+  {leica, "Leica Camera AG", "", 0, 51200, {{0.000000, 0.0362901, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
+  // pascals kodak curve
+  {kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, 51200, {{0.000000, 0.044355, 0.133065, 0.209677, 0.572581, 1.000000}, {0.000000, 0.020967, 0.154322, 0.300301, 0.753477, 1.000000}, 0}, 1},
   // Fotogenetic - Point and shoot v4.1
   {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
   // Fotogenetic - EV3 v4.2
@@ -105,6 +119,13 @@ const char *name()
 {
   return _("base curve");
 }
+
+int 
+groups () 
+{
+	return IOP_GROUP_BASIC;
+}
+	
 
 void init_presets (dt_iop_module_t *self)
 {
@@ -502,6 +523,15 @@ dt_iop_basecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpoint
   return FALSE;
 }
 
+void 
+_basecurve_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+ // Reset size to match panel width
+  int width = a->width*0.8;
+  int height = width;
+  gtk_widget_set_size_request(w,width,height);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_basecurve_gui_data_t));
@@ -520,7 +550,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 258, 258);
+  //gtk_drawing_area_size(c->area, 258, 258);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -533,6 +563,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_basecurve_leave_notify), self);
+  g_signal_connect (G_OBJECT (asp), "size-allocate",
+                    G_CALLBACK (_basecurve_size_allocate), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

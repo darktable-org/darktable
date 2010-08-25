@@ -41,7 +41,8 @@ typedef enum
   DT_IMAGE_OKAY = 2,
   DT_IMAGE_NICE = 3,
   DT_IMAGE_EXCELLENT = 4,
-  DT_IMAGE_THUMBNAIL = 16
+  DT_IMAGE_THUMBNAIL = 16,
+  DT_IMAGE_LDR = 32
 }
 dt_image_flags_t;
 
@@ -135,7 +136,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
 int dt_image_import(const int32_t film_id, const char *filename);
 /** image is in db, mipmaps aren't? call this: */
-int dt_image_reimport(dt_image_t *img, const char *filename);
+int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t mip);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */
@@ -190,7 +191,7 @@ void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode);
 
 /** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
-dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img);
+dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw);
 /** up-converts mip4 to mipf using guessed gamma values. needs mip4 r locked. */
 dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img);
 #endif

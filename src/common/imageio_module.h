@@ -67,13 +67,17 @@ typedef struct dt_imageio_module_format_t
   void (*gui_reset)   (struct dt_imageio_module_format_t *self);
 
   /* gets the current export parameters from gui/gconf and stores in this struct for later use. */
-  void* (*get_params)   (struct dt_imageio_module_format_t *self);
+  void* (*get_params)   (struct dt_imageio_module_format_t *self, int *size);
   void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
+  /* resets the gui to the paramters as given here. return != 0 on fail. */
+  int   (*set_params)   (struct dt_imageio_module_format_t *self, const void *params, const int size);
 
   /* returns the mime type of the exported image. */
   const char* (*mime)      (dt_imageio_module_data_t *data);
   /* this extension (plus dot) is appended to the exported filename. */
   const char* (*extension) (dt_imageio_module_data_t *data);
+  /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
+  int (*dimension)    (struct dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height);
 
   // optional: functions operating in memory, not on files:
   /* reads the header and fills width/height in data struct. */
@@ -122,12 +126,19 @@ typedef struct dt_imageio_module_storage_t
   void (*gui_reset)   (struct dt_imageio_module_storage_t *self);
   /* try and see if this format is supported? */
   int (*supported)    (struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
+  /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
+  int (*dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
+  /* get storage recommended image dimension, return 0 if no recommendation exists. */
+  int (*recommended_dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
 
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total);
+  /* called once at the end (after exporting all images), if implemented. */
+  int (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
-  void* (*get_params)   (struct dt_imageio_module_storage_t *self);
+  void* (*get_params)   (struct dt_imageio_module_storage_t *self, int *size);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
+  int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
 }
 dt_imageio_module_storage_t;
 
@@ -151,5 +162,9 @@ dt_imageio_module_format_t *dt_imageio_get_format();
 
 /* get selected imageio plugin for export */
 dt_imageio_module_storage_t *dt_imageio_get_storage();
+
+/* get by name. */
+dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name);
+dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name);
 
 #endif

@@ -19,6 +19,7 @@
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "common/film.h"
+#include "common/collection.h"
 #include "views/view.h"
 
 #include <stdio.h>
@@ -52,7 +53,7 @@ void dt_film_import1(dt_film_t *film)
   while(1)
   {
     pthread_mutex_lock(&film->images_mutex);
-    if (film->dir && (d_name = g_dir_read_name(film->dir)) && darktable.control->running)
+    if (film->dir && (d_name = g_dir_read_name(film->dir)) && dt_control_running())
     {
       snprintf(filename, 1024, "%s/%s", film->dirname, d_name);
       image.film_id = film->id;
@@ -93,32 +94,11 @@ void dt_film_cleanup(dt_film_t *film)
 
 void dt_film_set_query(const int32_t id)
 {
-  dt_lib_sort_t   sort   = dt_conf_get_int ("ui_last/combo_sort");
-  dt_lib_filter_t filter = dt_conf_get_int ("ui_last/combo_filter");
-  char *sortstring[5] = {"datetime_taken", "flags & 7 desc", "filename", "id", "color, filename"};
-  int sortindex = 4;
-  if     (sort == DT_LIB_SORT_DATETIME) sortindex = 0;
-  else if(sort == DT_LIB_SORT_RATING)   sortindex = 1;
-  else if(sort == DT_LIB_SORT_FILENAME) sortindex = 2;
-  else if(sort == DT_LIB_SORT_ID)       sortindex = 3;
-
-  char query[512];
-  // order by and where clauses from sort widget.
-  if(sortindex == 4)
-  {
-    if(filter == DT_LIB_FILTER_STAR_NO)
-      snprintf(query, 512, "select distinct * from (select * from images where (film_id = %d) and (flags & 7) < 1) as a join color_labels as b on a.id = b.imgid order by %s limit ?1, ?2", id, sortstring[sortindex]);
-    else
-      snprintf(query, 512, "select distinct * from (select * from images where (film_id = %d) and (flags & 7) >= %d) as a join color_labels as b order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
-  }
-  else
-  {
-    if(filter == DT_LIB_FILTER_STAR_NO)
-      snprintf(query, 512, "select distinct * from images where (film_id = %d) and (flags & 7) < 1 order by %s limit ?1, ?2", id, sortstring[sortindex]);
-    else
-      snprintf(query, 512, "select distinct * from images where (film_id = %d) and (flags & 7) >= %d order by %s limit ?1, ?2", id, filter-1, sortstring[sortindex]);
-  }
-  dt_conf_set_string ("plugins/lighttable/query", query);
+  /* enable film id filter and set film id */
+  dt_collection_set_query_flags (darktable.collection, COLLECTION_QUERY_FULL);
+  dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_FILM_ID) );
+  dt_collection_set_film_id (darktable.collection, id);
+  dt_collection_update (darktable.collection);
   dt_conf_set_int ("ui_last/film_roll", id);
 }
 
@@ -282,6 +262,16 @@ int dt_film_import(const char *dirname)
     dt_control_add_job(darktable.control, &j);
   }
   return ret;
+}
+
+int dt_film_is_empty(const int id) {
+  int rc, empty=0;
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, id);
+  if( sqlite3_step(stmt) == SQLITE_DONE) empty=1;
+  rc = sqlite3_finalize(stmt);
+  return empty;
 }
 
 void dt_film_remove(const int id)

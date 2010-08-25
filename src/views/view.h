@@ -54,6 +54,7 @@ typedef struct dt_view_t
   int  (*button_released) (struct dt_view_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_view_t *self, double x, double y, int which, int type, uint32_t state);
   int  (*key_pressed)     (struct dt_view_t *self, uint16_t which);
+  int  (*key_released)     (struct dt_view_t *self, uint16_t which);
   void (*configure)       (struct dt_view_t *self, int width, int height);
   void (*scrolled)        (struct dt_view_t *self, double x, double y, int up);            // mouse scrolled in view
   void (*border_scrolled) (struct dt_view_t *self, double x, double y, int which, int up); // mouse scrolled on left/right/top/bottom border (which 0123).
@@ -105,12 +106,15 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k);
 void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 /** reset current view. */
 void dt_view_manager_reset(dt_view_manager_t *vm);
+/** get current view of the view manager. */
+const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm);
 
 void dt_view_manager_mouse_leave     (dt_view_manager_t *vm);
 void dt_view_manager_mouse_moved     (dt_view_manager_t *vm, double x, double y, int which);
 int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, int which, uint32_t state);
 int dt_view_manager_button_pressed  (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state);
 int dt_view_manager_key_pressed     (dt_view_manager_t *vm, uint16_t which);
+int dt_view_manager_key_released (dt_view_manager_t *vm, uint16_t which);
 void dt_view_manager_configure       (dt_view_manager_t *vm, int width, int height);
 void dt_view_manager_scrolled        (dt_view_manager_t *vm, double x, double y, int up);
 void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up);

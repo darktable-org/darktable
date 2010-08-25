@@ -17,6 +17,9 @@
 */
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
+#include "common/image.h"
 #include "common/variables.h"
 
 typedef struct dt_variables_data_t 
@@ -38,13 +41,16 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
 guint _string_occurence(const gchar *haystack,const gchar *needle) 
 {
   guint o=0;
-  const gchar *p=haystack;
-  if( (p=g_strstr_len(p,strlen(p),needle)) != NULL) 
+  if( haystack && needle )
   {
-    do
+    const gchar *p=haystack;
+    if( (p=g_strstr_len(p,strlen(p),needle)) != NULL) 
     {
-      o++;
-    } while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
+      do
+      {
+        o++;
+      } while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
+    }
   }
   return o;
 }
@@ -147,7 +153,32 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else 
     pictures_folder=g_strdup( g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) );
   
-  if(params->filename) file_ext=(g_strrstr(params->filename,".")+1);
+  if(params->filename)
+  {
+    file_ext=(g_strrstr(params->filename,".")+1);
+    if(file_ext == (gchar*)1) file_ext = params->filename + strlen(params->filename);
+  }
+  
+  /* image exif time */
+  gboolean have_exif_tm = FALSE;
+  struct tm exif_tm={0};
+  if (params->img)
+  {
+	if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+					&exif_tm.tm_year,
+					&exif_tm.tm_mon,
+					&exif_tm.tm_mday,
+					&exif_tm.tm_hour,
+					&exif_tm.tm_min,
+					&exif_tm.tm_sec
+				) == 6
+		)
+	{
+		exif_tm.tm_year--;
+		exif_tm.tm_mon--;
+		have_exif_tm = TRUE;
+	}
+  }
   
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
@@ -155,15 +186,39 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.2d",tim->tm_hour);
   else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
   else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_sec);
+  
+  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_year:tim->tm_year)+1);
+  else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mon:tim->tm_mon)+1);
+  else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mday:tim->tm_mday));
+  else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_hour:tim->tm_hour));
+  else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_min:tim->tm_min));
+  else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_sec:tim->tm_sec));
+  
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
   else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
-  else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_basename(params->filename));
+  else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )  { sprintf(value,"%s",g_path_get_basename(params->filename)); if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0; }
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
   else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
   else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir);
   else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",pictures_folder);
   else if( g_strcmp0(variable,"$(DESKTOP_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+#if 0
+  else if( g_strcmp0(variable,"$(VC)") == 0 && (got_value=TRUE) )
+  {
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select id from images where filename=?1", &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, params->filename);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      if(sqlite3_column_int(stmt) == )
+      {
+      }
+    }
+    sqlite3_finalize(stmt);
+    sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+  }
+#endif
   
   g_free(pictures_folder);
   
@@ -199,9 +254,13 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   if( iterate ) 
     params->data->sequence++;
   
+  // Let's free previous expanded result if any...
+  if( params->data->result )
+    g_free(  params->data->result );
+  
   // Lets expand string
   gchar *result=NULL;
-  params->data->result=params->data->source=string;
+  params->data->result = params->data->source = string;
   if( (token=_string_get_first_variable(params->data->source,variable)) != NULL)
   {
     do {
@@ -218,5 +277,7 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
       }
     } while( (token=_string_get_next_variable(token,variable)) !=NULL );
   }
+  g_free(variable);
+  g_free(value);
   return TRUE;
 }

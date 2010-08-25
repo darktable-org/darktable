@@ -287,6 +287,11 @@ output region of interest.
   user), and \code{factory\_params} are dt's factory defaults (automatically copied by the core after \code{init} has been
   called).
 
+  Also, don't store pointers to additional memory in this struct. It will be
+  stored in the database as blob and copied byte-wise as you defined it. This
+  means that your pointer will point to garbage memory after leaving/re-entering
+  darkroom mode, or during export.
+
   \item[\code{dt\_iop\_*\_data\_t piece->data}]
   This struct lives in pixel pipeline domain, and thus exists once for the full and once for the preview pipeline.
   It should only be modified by the core thread (which calls \code{commit\_params} and \code{process}).

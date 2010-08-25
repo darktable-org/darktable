@@ -32,7 +32,7 @@ void dt_gui_metadata_update()
   {
     const int ll = 512;
     char lbl[ll];
-    dt_image_t *img = dt_image_cache_use(mouse_over_id, 'r');
+    dt_image_t *img = dt_image_cache_get(mouse_over_id, 'r');
     if(!img || img->film_id == -1)
     {
       dt_image_cache_release(img, 'r');

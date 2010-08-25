@@ -51,6 +51,12 @@ typedef struct dt_imageio_jpeg_t
 }
 dt_imageio_jpeg_t;
 
+typedef struct dt_imageio_jpeg_gui_data_t
+{
+  GtkDarktableSlider *quality;
+}
+dt_imageio_jpeg_gui_data_t;
+
 
 // error functions
 struct dt_imageio_jpeg_error_mgr
@@ -475,7 +481,7 @@ write_image (dt_imageio_jpeg_t *jpg, const char *filename, const uint8_t *in, vo
       _cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
     }
-    cmsCloseProfile(out_profile);
+    dt_colorspaces_cleanup_profile(out_profile);
   }
 
   if(exif && exif_len > 0 && exif_len < 65534)
@@ -553,8 +559,10 @@ int read_image (dt_imageio_jpeg_t *jpg, uint8_t *out)
 }
 
 void*
-get_params(dt_imageio_module_format_t *self)
+get_params(dt_imageio_module_format_t *self, int *size)
 {
+  // adjust this if more params are stored (subsampling etc)
+  *size = sizeof(int)*5;
   dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
   if(d->quality <= 0 || d->quality > 100) d->quality = 100;
@@ -567,7 +575,18 @@ free_params(dt_imageio_module_format_t *self, void *params)
   free(params);
 }
 
-int bpp(dt_imageio_module_data_t *p)
+int
+set_params(dt_imageio_module_format_t *self, void *params, int size)
+{
+  if(size != sizeof(int)*5) return 1;
+  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
+  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
+  dtgtk_slider_set_value(g->quality, d->quality);
+  return 0;
+}
+
+int
+bpp(dt_imageio_module_data_t *p)
 {
   return 8;
 }
@@ -588,12 +607,6 @@ extension(dt_imageio_module_data_t *data)
 // =============================================================================
 //  gui stuff:
 // =============================================================================
-
-typedef struct dt_imageio_jpeg_gui_data_t
-{
-  GtkDarktableSlider *quality;
-}
-dt_imageio_jpeg_gui_data_t;
 
 const char*
 name ()

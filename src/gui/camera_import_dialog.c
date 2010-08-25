@@ -100,7 +100,7 @@ _check_button_callback(GtkWidget *cb, gpointer user_data)
   
   if( cb == cid->settings.general.delete_originals ) 
   {
-    dt_conf_set_bool ("capture/camera/import/delete_originals", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.delete_originals)));
+    dt_conf_set_bool ("plugins/capture/camera/import/delete_originals", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.delete_originals)));
   } 
   else if (cb==cid->settings.general.date_override ) 
   {
@@ -109,14 +109,14 @@ _check_button_callback(GtkWidget *cb, gpointer user_data)
   }
   else if (cb==cid->settings.backup.enable) 
   {
-    dt_conf_set_bool ("capture/camera/import/backup/enable", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
+    dt_conf_set_bool ("plugins/capture/backup/enable", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
     // Enable/disable the date entry widget
     gtk_widget_set_sensitive( cid->settings.backup.warn, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
     gtk_widget_set_sensitive( cid->settings.backup.foldername, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
   }
   else if (cb==cid->settings.backup.warn) 
   {
-    dt_conf_set_bool ("capture/camera/import/backup/warning", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
+    dt_conf_set_bool ("plugins/capture/backup/warning", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
   }
 }
 
@@ -264,7 +264,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_box_pack_start(GTK_BOX(data->import.page),data->import.info,FALSE,FALSE,0);
   
   // jobcode
-  data->import.jobname=_camera_import_gconf_widget(data,_("jobcode"),"capture/camera/import/jobcode");
+  data->import.jobname=_camera_import_gconf_widget(data,_("jobcode"),"plugins/capture/camera/import/jobcode");
   gtk_box_pack_start(GTK_BOX(data->import.page),GTK_WIDGET(data->import.jobname->widget),FALSE,FALSE,0);
   
   
@@ -303,7 +303,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   data->settings.general.delete_originals = gtk_check_button_new_with_label(_("delete originals after import"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
-  if( dt_conf_get_bool("capture/camera/import/delete_originals") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.general.delete_originals ), TRUE);
+  if( dt_conf_get_bool("plugins/capture/camera/import/delete_originals") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.general.delete_originals ), TRUE);
    
   g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),NULL);
   g_signal_connect (G_OBJECT(data->settings.general.delete_originals), "clicked",G_CALLBACK (_check_button_callback),data);
@@ -329,14 +329,14 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
   gtk_box_pack_start(GTK_BOX(data->settings.page),l,FALSE,FALSE,0);
   
-  data->settings.basedirectory=_camera_import_gconf_widget(data,_("storage directory"),"capture/camera/storage/basedirectory");
+  data->settings.basedirectory=_camera_import_gconf_widget(data,_("storage directory"),"plugins/capture/storage/basedirectory");
   gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.basedirectory->widget),FALSE,FALSE,0);
   
-  data->settings.subdirectory=_camera_import_gconf_widget(data,_("directory structure"),"capture/camera/storage/subpath");
+  data->settings.subdirectory=_camera_import_gconf_widget(data,_("directory structure"),"plugins/capture/storage/subpath");
   gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.subdirectory->widget),FALSE,FALSE,0);
   
   
-  data->settings.namepattern=_camera_import_gconf_widget(data,_("filename structure"),"capture/camera/storage/namepattern");
+  data->settings.namepattern=_camera_import_gconf_widget(data,_("filename structure"),"plugins/capture/storage/namepattern");
   gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.namepattern->widget),FALSE,FALSE,0);
   
   // Add example
@@ -366,17 +366,17 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.warn,FALSE,FALSE,0);
   g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),NULL);
    
-  data->settings.backup.foldername=(_camera_import_gconf_widget(data,_("backup foldername"),"capture/camera/backup/foldername"))->widget;
+  data->settings.backup.foldername=(_camera_import_gconf_widget(data,_("backup foldername"),"plugins/capture/camera/backup/foldername"))->widget;
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.foldername,FALSE,FALSE,0);
   g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),NULL);
   
-  if( dt_conf_get_bool("capture/camera/import/backup/enable") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.enable ), TRUE);
+  if( dt_conf_get_bool("plugins/capture/backup/enable") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.enable ), TRUE);
   else
   {
     gtk_widget_set_sensitive( data->settings.backup.warn, FALSE);
     gtk_widget_set_sensitive( data->settings.backup.foldername, FALSE);
   }
-  if( dt_conf_get_bool("capture/camera/import/backup/warn") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.warn ), TRUE);
+  if( dt_conf_get_bool("plugins/capture/backup/warn") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.warn ), TRUE);
 
   g_signal_connect (G_OBJECT (data->settings.backup.enable), "clicked",G_CALLBACK (_check_button_callback),data);
   g_signal_connect (G_OBJECT(data->settings.backup.warn), "clicked",G_CALLBACK (_check_button_callback),data);
@@ -423,11 +423,7 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
       thumb = gdk_pixbuf_scale_simple( pixbuf, sw*scale,75 , GDK_INTERP_BILINEAR );
     }
   }
-  
- 
-  
-  
-  
+
  #if 0 
   // libgphoto only supports fetching exif in jpegs, not raw  
   char buffer[1024]={0};
@@ -460,6 +456,24 @@ void _camera_import_dialog_free(_camera_import_dialog_t *data) {
   g_free( data->vp );
 }
 
+static void _control_status(dt_camctl_status_t status,void *user_data) {
+	 _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
+	switch( status ) {
+		case CAMERA_CONTROL_BUSY:
+		{
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, FALSE);
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, FALSE);
+			
+		} break;
+		case CAMERA_CONTROL_AVAILABLE:
+		{
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, TRUE);
+			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, TRUE);
+			
+		} break;
+	}
+}
+
 void _camera_import_dialog_run(_camera_import_dialog_t *data) 
 {
   gtk_widget_show_all(data->dialog);
@@ -473,6 +487,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   {
     dt_camctl_listener_t listener={0};
     listener.data=data;
+    listener.control_status=_control_status;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
     
     dt_job_t j;
@@ -516,7 +531,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       data->params->filenamepattern = data->settings.namepattern->value;
       
       if( data->params->jobcode == NULL || strlen(data->params->jobcode) <=0 )
-        data->params->jobcode = dt_conf_get_string("capture/camera/import/jobcode");
+        data->params->jobcode = dt_conf_get_string("plugins/capture/camera/import/jobcode");
       
       if( data->params->basedirectory == NULL || strlen( data->params->basedirectory ) <= 0 ) 
       {

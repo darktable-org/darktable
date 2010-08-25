@@ -86,17 +86,13 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_LABEL(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
-  static GtkStyle *style=NULL;
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
   int state = gtk_widget_get_state(widget);
 
   int x = widget->allocation.x;
   int y = widget->allocation.y;
   int width = widget->allocation.width;
   int height = widget->allocation.height;
-
-  if (!style) {
-    style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
-  }
  
   // Formating the display of text and draw it...
   PangoLayout *layout;    
@@ -144,23 +140,38 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
     cairo_rectangle(cr,rx,y,rw+4,height-1);
     cairo_fill(cr);	
     
-    // /|
-    cairo_move_to(cr,x+width-rw-6,y); 
-    cairo_line_to(cr,x+width-rw-6-15,y+height-2);
-    cairo_line_to(cr,x+width-rw-6,y+height-2);
-     cairo_fill(cr);
-    
-    // hline
-    cairo_move_to(cr,x,y+height-2); 
-    cairo_line_to(cr,x+width-rw-6,y+height-2);
-    cairo_stroke(cr);
-    
+    if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) 
+    {
+      // /|
+      cairo_move_to(cr,x+width-rw-6,y); 
+      cairo_line_to(cr,x+width-rw-6-15,y+height-2);
+      cairo_line_to(cr,x+width-rw-6,y+height-2);
+       cairo_fill(cr);
+      
+      // hline
+      cairo_move_to(cr,x,y+height-2); 
+      cairo_line_to(cr,x+width-rw-6,y+height-2);
+      cairo_stroke(cr);
+    }
+    else
+    {
+      // | 
+      cairo_move_to(cr,x+rw+4,y); 
+      cairo_line_to(cr,x+rw+4+15,y+height-2);
+      cairo_line_to(cr,x+rw+4,y+height-2);
+       cairo_fill(cr);
+      
+      // hline
+      cairo_move_to(cr,x+rw+4,y+height-2); 
+      cairo_line_to(cr,x+width,y+height-2);
+      cairo_stroke(cr);
+    }	
   }
   cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
   cairo_destroy(cr);
 
  // Draw text
-  int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
+  int lx=x+4, ly=y+((height/2.0)-(ph/2.0));
   if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) lx=x+width-pw-6;
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_CENTER ) lx=(width/2.0)-(pw/2.0);
   gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"label",lx,ly,layout);

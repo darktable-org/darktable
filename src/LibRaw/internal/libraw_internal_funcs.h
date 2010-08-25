@@ -2,23 +2,19 @@
  * File: libraw_internal_funcs.h
  * Copyright 2008-2009 LibRaw LLC (info@libraw.org)
  * Created: Sat Mar  14, 2008
- *
- * LibRaw internal data structures (not visible outside)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
+
+LibRaw is free software; you can redistribute it and/or modify
+it under the terms of the one of three licenses as you choose:
+
+1. GNU LESSER GENERAL PUBLIC LICENSE version 2.1
+   (See file LICENSE.LGPL provided in LibRaw distribution archive for details).
+
+2. COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
+   (See file LICENSE.CDDL provided in LibRaw distribution archive for details).
+
+3. LibRaw Software License 27032010
+   (See file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
+
  */
 
 #ifndef _LIBRAW_INTERNAL_FUNCS_H
@@ -162,7 +158,8 @@ void        crw_init_tables (unsigned table, ushort *huff[2]);
     void        linear_table (unsigned len);
     void        parse_kodak_ifd (int base);
     int         parse_tiff_ifd (int base);
-    void        parse_tiff (int base);
+    int         parse_tiff (int base);
+    void        apply_tiff(void);
     void        parse_gps (int base);
     void        romm_coeff (float romm_cam[3][3]);
     void        parse_mos (int offset);

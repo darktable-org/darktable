@@ -29,6 +29,13 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_iop_roi_t;
 
+#define	IOP_GROUP_BASIC			        1
+#define	IOP_GROUP_COLOR			      2
+#define	IOP_GROUP_CORRECT			4
+#define	IOP_GROUP_EFFECT		      	8
+
+#define	IOP_GROUP_ALL   (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
+
 typedef struct dt_iop_params_t
 {
   int keep;
@@ -89,6 +96,9 @@ typedef struct dt_iop_module_t
   int (*version)          ();
   /** get name of the module, to be translated. */
   const char* (*name)     ();
+  /** get the groups this module belongs to. */
+  int (*groups) ();
+  
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)      (struct dt_iop_module_t *self);
@@ -155,12 +165,6 @@ void dt_iop_clip_and_zoom_hq_downsample (const float *i, int32_t ix, int32_t iy,
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
                                   uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
-/** for homebrew pixel pipe: convert sRGB to Lab, float buffers. */
-void dt_iop_sRGB_to_Lab(const float *in, float *out, int x, int y, float scale, int width, int height);
-/** for homebrew pixel pipe: convert Lab to sRGB, both uint16_t buffers. */
-void dt_iop_Lab_to_sRGB_16(uint16_t *in, uint16_t *out, int x, int y, float scale, int width, int height);
-/** for homebrew pixel pipe: convert Lab to sRGB, float buffers. */
-void dt_iop_Lab_to_sRGB(const float *in, float *out, int x, int y, float scale, int width, int height);
 
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);

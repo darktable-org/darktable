@@ -49,7 +49,6 @@ typedef struct _GtkDarktableSlider
   GtkHBox *hbox;
   GtkAdjustment *adjustment;
   gboolean is_dragging;
-  gboolean is_ctrl_key_pressed;
   gboolean is_sensibility_key_pressed;
   gboolean is_entry_active;
   gboolean is_changed;
@@ -60,7 +59,6 @@ typedef struct _GtkDarktableSlider
   gfloat default_value;
   darktable_slider_type_t type;
   darktable_slider_format_type_t fmt_type;
-  guint key_snooper_id;
 } GtkDarktableSlider;
 
 typedef void  (* ValueChanged)  (GtkRange *,gpointer user_data);

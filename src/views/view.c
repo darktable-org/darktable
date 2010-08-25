@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "control/conf.h"
@@ -38,22 +39,24 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->film_strip_size = 0.15f;
   vm->film_strip_scroll_to = -1;
   vm->film_strip_active_image = -1;
+  vm->num_views = 0;
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
   
-  int res=0,midx=0;
-  char *modules[]={"darkroom","lighttable","capture",NULL};
-  char *module=modules[midx];
-  do 
+  int res=0, midx=0;
+  char *modules[] = {"darkroom","lighttable","capture",NULL};
+  char *module = modules[midx];
+  while(module != NULL)
   {
     if((res=dt_view_manager_load_module(vm, module))<0) 
       fprintf(stderr,"[view_manager_init] failed to load view module '%s'\n",module);
     else
     { // Module loaded lets handle specific cases
-      if(strcmp(module,"darkroom")==0) 
+      if(strcmp(module,"darkroom") == 0) 
         darktable.develop = (dt_develop_t *)vm->view[res].data;
     }
-  } while((module=(modules[++midx]))!=NULL);
+    module = modules[++midx];
+  }
   vm->current_view=-1;
 }
 
@@ -61,6 +64,12 @@ void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
   for(int k=0;k<vm->num_views;k++) dt_view_unload_module(vm->view + k);
 }
+
+const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm) 
+{
+  return &vm->view[vm->current_view];
+}
+
 
 int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod)
 {
@@ -111,6 +120,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "button_released", (gpointer)&(view->button_released))) view->button_released = NULL;
   if(!g_module_symbol(view->module, "button_pressed",  (gpointer)&(view->button_pressed)))  view->button_pressed = NULL;
   if(!g_module_symbol(view->module, "key_pressed",     (gpointer)&(view->key_pressed)))     view->key_pressed = NULL;
+  if(!g_module_symbol(view->module, "key_released",     (gpointer)&(view->key_released)))     view->key_released = NULL;
   if(!g_module_symbol(view->module, "configure",       (gpointer)&(view->configure)))       view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled",        (gpointer)&(view->scrolled)))        view->scrolled = NULL;
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
@@ -282,6 +292,14 @@ int dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
   return 0;
 }
 
+int dt_view_manager_key_released (dt_view_manager_t *vm, uint16_t which)
+{
+  if(vm->current_view < 0) return 0;
+  dt_view_t *v = vm->view + vm->current_view;
+  if(v->key_released) return v->key_released(v, which);
+  return 0;
+}
+
 void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
 {
   if(vm->film_strip_on) height = height*(1.0-vm->film_strip_size)-darktable.control->tabborder;
@@ -415,20 +433,24 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 
 #if defined(__MACH__) || defined(__APPLE__) // dreggn
 #else
-    char num[10];
-    cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, .25*width);
+    if(img)
+    {
+      const char *ext = img->filename + strlen(img->filename);
+      while(ext > img->filename && *ext != '.') ext--;
+      ext++;
+      cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size (cr, .25*width);
 
-    cairo_move_to (cr, .0*width, .24*height);
-    snprintf(num, 10, "%d", index);
-    cairo_show_text (cr, num);
+      cairo_move_to (cr, .01*width, .24*height);
+      cairo_show_text (cr, ext);
+    }
 #endif
   }
 
 #if 1
   int32_t iwd = width*imgwd, iht = height*imgwd, stride;
-  float fwd, fht;
+  float fwd=0, fht=0;
   float scale = 1.0;
   dt_image_buffer_t mip = DT_IMAGE_NONE;
   if(img)
@@ -708,7 +730,7 @@ void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)
 void dt_view_film_strip_prefetch()
 {
   char query[1024];
-  gchar *qin = dt_conf_get_string("plugins/lighttable/query");
+  const gchar *qin = dt_collection_get_query (darktable.collection);
   int offset = 0;
   if(qin)
   {
@@ -717,6 +739,7 @@ void dt_view_film_strip_prefetch()
     sqlite3_prepare_v2(darktable.db, "select id from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       imgid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
 
     snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
     sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
@@ -738,7 +761,6 @@ void dt_view_film_strip_prefetch()
       dt_image_cache_release(image, 'r');
     }
     sqlite3_finalize(stmt);
-    g_free(qin);
   }
 }
 

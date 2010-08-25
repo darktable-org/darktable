@@ -63,8 +63,15 @@ dt_iop_rlce_data_t;
 
 const char *name()
 {
-  return _("local contrast");
+  return _("local contrast (slow)");
 }
+
+int 
+groups () 
+{
+	return IOP_GROUP_EFFECT;
+}
+
 
 
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 

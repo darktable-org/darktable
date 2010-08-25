@@ -218,6 +218,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
     dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
+    dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
     dev->preview_loading = 0;
   }
   else
@@ -280,7 +281,7 @@ restart:
 void dt_dev_process_to_mip(dt_develop_t *dev)
 {
   // TODO: efficiency: check hash on preview_pipe->backbuf
-  if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+  if(dt_image_get_blocking(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
   {
     fprintf(stderr, "[dev_process_to_mip] no float buffer is available yet!\n");
     return; // not loaded yet.
@@ -321,15 +322,17 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
   dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
   pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
 
-  dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
+  // don't if processing failed and backbuf's not there.
+  if(dev->preview_pipe->backbuf)
+  {
+    dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
       dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
       dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
 
+  }
   dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
   pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
 
-  if(dt_imageio_preview_write(dev->image, DT_IMAGE_MIP4))
-    fprintf(stderr, "[dev_process_to_mip] could not write mip level %d of image %s to database!\n", DT_IMAGE_MIP4, dev->image->filename);
   dt_image_update_mipmaps(dev->image);
 
   dt_image_cache_flush(dev->image); // write new output size to db.
@@ -402,8 +405,6 @@ void dt_dev_raw_reload(dt_develop_t *dev)
   dev->image->output_width = dev->image->output_height = 0;
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
-  dt_dev_pixelpipe_flush_caches(dev->pipe);
-  dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
 }
 
 void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
@@ -442,6 +443,7 @@ restart:
     dt_dev_pixelpipe_set_input(dev->pipe, dev, dev->image->pixels, dev->image->width, dev->image->height, 1.0);
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
+    if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
     dev->image_loading = 0;
     dev->image_dirty = 1;
     dev->image_force_reload = 0;
@@ -583,9 +585,10 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached)
   {
     // if gui_attached pop all operations down to dev->history_end
-    dt_control_clear_history_items(dev->history_end-1);
+    dt_control_clear_history_items (dev->history_end-1);
+	  
     // remove unused history items:
-    GList *history = g_list_nth(dev->history, dev->history_end);
+    GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
     {
       GList *next = g_list_next(history);
@@ -596,40 +599,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
     }
-    // TODO: modules should be add/removable!
-#if 0 // disabled while there is only tonecurve
-    // remove all modules which are not in history anymore:
-    GList *modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      history = dev->history;
-      while(history)
-      {
-        // for all modules in list: go through remaining history. if found, keep it.
-        dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-        if(hist->iop == module->instance)
-        {
-          modules = g_list_next(modules);
-          break;
-        }
-        history = g_list_next(history);
-      }
-      GList *next = g_list_next(modules);
-      module->gui_cleanup(module);
-      module->cleanup(module);
-      dev->iop = g_list_delete_link(dev->iop, modules);
-      modules = *next;
-    }
-#endif
-    /*
-    GList *modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      printf("module instance = %d, op = %s\n", module->instance, module->op);
-      modules = g_list_next(modules);
-    }*/
     history = g_list_nth(dev->history, dev->history_end-1);
     if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance)
     { // new operation, push new item
@@ -773,8 +742,7 @@ void dt_dev_write_history(dt_develop_t *dev)
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  // TODO: on demand loading of modules!
-  if(dev->gui_attached) dt_control_clear_history_items(0);
+  if(dev->gui_attached) dt_control_clear_history_items(-1);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
   int rc;
@@ -916,33 +884,5 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
     g_snprintf(label, cnt, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
   else
     g_snprintf(label, cnt, "%s", hist->module->name());
-}
-
-void dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
-{
-  // commit image ops to db
-  dt_dev_write_history(dev);
-  // write .dt file
-  dt_image_write_dt_files(dev->image);
-
-  // commit updated mipmaps to db
-  // TODO: bg process?
-  dt_dev_process_to_mip(dev);
-  // release full buffer
-  if(dev->image && dev->image->pixels)
-    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
-
-  dt_image_cache_flush(dev->image);
-
-  dev->image = image;
-  while(dev->history)
-  { // clear history of old image
-    free(((dt_dev_history_item_t *)dev->history->data)->params);
-    free( (dt_dev_history_item_t *)dev->history->data);
-    dev->history = g_list_delete_link(dev->history, dev->history);
-  }
-  dt_dev_read_history(dev);
-  dt_dev_pop_history_items(dev, dev->history_end);
-  dt_dev_raw_reload(dev);
 }
 

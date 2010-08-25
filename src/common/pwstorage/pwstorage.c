@@ -20,6 +20,7 @@
 
 #include "pwstorage.h"
 #include "backend_gconf.h"
+#include "backend_gkeyring.h"
 #include "backend_kwallet.h"
 #include "control/conf.h"
 
@@ -64,7 +65,18 @@ const dt_pwstorage_t* dt_pwstorage_new(){
 			dt_print(DT_DEBUG_PWSTORAGE,"  done.\n");
 			break;
 		case PW_STORAGE_BACKEND_GNOME_KEYRING:
-			dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] gnome keyring backend not implemented.\n");
+			dt_print (DT_DEBUG_PWSTORAGE,"[pwstorage_new] using gnome keyring backend for usersname/password storage.\n");
+			pwstorage->backend_context = (void*)dt_pwstorage_gkeyring_new ();
+			if (pwstorage->backend_context == NULL)
+			{
+				dt_print (DT_DEBUG_PWSTORAGE,"[pwstorage_new] error starting gnome keyring. using no storage backend.\n");
+				pwstorage->backend_context = NULL;
+				pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
+			} 
+			else 
+				pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+			
+			break;
 	}
 
 	dt_conf_set_int( "plugins/pwstorage/pwstorage_backend", pwstorage->pw_storage_backend );
@@ -86,7 +98,7 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage){
 			g_free(pwstorage->backend_context);
 			break;
 		case PW_STORAGE_BACKEND_GNOME_KEYRING:
-			g_print("[pwstorage_destroy] gnome keyring not implemented yet. not storing anything.\n");
+			g_free(pwstorage->backend_context);
 			break;
 	}
 }
@@ -104,7 +116,7 @@ gboolean dt_pwstorage_set(const gchar* slot, GHashTable* table){
 			return dt_pwstorage_kwallet_set(slot, table);
 			break;
 		case PW_STORAGE_BACKEND_GNOME_KEYRING:
-			g_print("[pwstorage_set] gnome keyring not implemented yet. not storing anything.\n");
+			return dt_pwstorage_gkeyring_set(slot, table);
 			break;
 	}
 	return FALSE;
@@ -123,7 +135,7 @@ GHashTable* dt_pwstorage_get(const gchar* slot){
 			return dt_pwstorage_kwallet_get(slot);
 			break;
 		case PW_STORAGE_BACKEND_GNOME_KEYRING:
-			g_print("[pwstorage_get] gnome keyring not implemented yet. not reading anything.\n");
+			return dt_pwstorage_gkeyring_get(slot);
 			break;
 	}
 

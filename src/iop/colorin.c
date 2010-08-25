@@ -38,6 +38,12 @@ const char *name()
   return _("input color profile");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -70,6 +76,28 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
+#if 0
+static float
+lab_f(const float t)
+{
+  if(t > powf(6.0f/29.0f, 3.0f)) return powf(t, 1.0f/3.0f);
+  return 1.0/3.0 * (29.0/6.0)*(29.0/6.0)*t + 4.0/29.0;
+}
+// #else
+static double
+lab_f(double t)
+{
+  const double Limit = (24.0/116.0) * (24.0/116.0) * (24.0/116.0);
+
+  if (t <= Limit)
+    return (841.0/108.0) * t + (16.0/116.0);
+  else
+    // return CubeRoot((float) t); 
+    return pow(t, 1.0/3.0); 
+}
+#endif
+
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -79,21 +107,50 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // not thread safe.
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    double XYZ[3] = {0., 0., 0.};
+    double cam[3] = {0., 0., 0.};
     cmsCIELab Lab;
-    if(d->cmatrix[0][0] > -666.0)
+    for(int c=0;c<3;c++) cam[c] = in[3*k + c];
+#if 1
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+    const float YY = cam[0]+cam[1]+cam[2];
+    const float zz = cam[2]/YY;
+    const float bound_z = 0.5f, bound_Y = 0.5f;
+    const float amount = 0.10f;
+    // if(YY > bound_Y && zz > bound_z)
+    if(zz > bound_z)
     {
-      for(int c=0;c<3;c++)
-        for(int j=0;j<3;j++)
-          XYZ[c] += d->cmatrix[c][j] * in[3*k + j];
+      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+      cam[1] += t*amount;
+      cam[2] -= t*amount;
     }
-    else
-    {
-      for(int c=0;c<3;c++) XYZ[c] = in[3*k + c];
-    }
+#endif
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    cmsDoTransform(d->xform, XYZ, &Lab, 1);
-    // Lab.L = XYZ[0]; Lab.a = XYZ[1]; Lab.b = XYZ[2];
+#if 0 // manual xyz transition
+    double xyz[3];
+    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
+    // const float X_n=0.9504, Y_n=1.00, Z_n=1.0888; // D65
+    cmsDoTransform(d->xform, cam, xyz, 1);
+#if 1
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+    const float YY = xyz[0]+xyz[1]+xyz[2];
+    const float zz = xyz[2]/YY;
+    const float bound_z = 0.7f, bound_Y = 0.5f;
+    const float amount = 0.05f;
+    // if(YY > bound_Y && zz > bound_z)
+    if(zz > bound_z)
+    {
+      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+      xyz[1] += t*amount;
+      xyz[2] -= t*amount;
+    }
+#endif
+
+    Lab.L = 116.0 * lab_f(xyz[1]/Y_n) - 16.0;
+    Lab.a = 500.0 * (lab_f(xyz[0]/X_n) - lab_f(xyz[1]/Y_n));
+    Lab.b = 200.0 * (lab_f(xyz[1]/Y_n) - lab_f(xyz[2]/Z_n));
+#else
+    cmsDoTransform(d->xform, cam, &Lab, 1);
+#endif
     out[3*k + 0] = Lab.L;
     if(Lab.L > 0)
     {
@@ -109,58 +166,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
-static LPGAMMATABLE
-build_linear_gamma(void)
-{
-  return cmsBuildGamma(1024, 1.0);
-}
-
-static cmsHPROFILE
-create_cmatrix_profile(float cmatrix[3][4])
-{
-  cmsCIExyY D65;
-  float x[3], y[3];
-  float mat[3][3];
-  // sRGB D65, the linear part:
-  const float rgb_to_xyz[3][3] = {
-    {0.4124564, 0.3575761, 0.1804375},
-    {0.2126729, 0.7151522, 0.0721750},
-    {0.0193339, 0.1191920, 0.9503041}
-  };
-
-  for(int c=0;c<3;c++) for(int j=0;j<3;j++)
-  {
-    mat[c][j] = 0;
-    for(int k=0;k<3;k++) mat[c][j] += rgb_to_xyz[c][k]*cmatrix[k][j];
-  }
-  for(int k=0;k<3;k++)
-  {
-    const float norm = mat[0][k] + mat[1][k] + mat[2][k];
-    x[k] = mat[0][k] / norm;
-    y[k] = mat[1][k] / norm;
-  }
-  cmsCIExyYTRIPLE CameraPrimaries = {
-    {x[0], y[0], 1.0},
-    {x[1], y[1], 1.0},
-    {x[2], y[2], 1.0}
-    };
-  LPGAMMATABLE linear[3];
-  cmsHPROFILE  cmat;
-
-  cmsWhitePointFromTemp(6504, &D65);
-  linear[0] = linear[1] = linear[2] = build_linear_gamma();
-
-  cmat = cmsCreateRGBProfile(&D65, &CameraPrimaries, linear);
-  cmsFreeGamma(linear[0]);
-  if (cmat == NULL) return NULL;
-
-  cmsAddTag(cmat, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(cmat, icSigDeviceModelDescTag,    (LPVOID) "color matrix built-in");
-  cmsAddTag(cmat, icSigProfileDescriptionTag, (LPVOID) "color matrix built-in");
-
-  return cmat;
-}
-
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -173,7 +178,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(d->input) cmsCloseProfile(d->input);
   d->input = NULL;
   if(d->xform) cmsDeleteTransform(d->xform);
-  d->Lab = cmsCreateLabProfile(NULL);
   d->cmatrix[0][0] = -666.0;
   char datadir[1024];
   char filename[1024];
@@ -209,7 +213,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
         cmat[i][k] = raw->color.rgb_cam[i][k];
       }
-      d->input = create_cmatrix_profile(cmat);
+      d->input = dt_colorspaces_create_cmatrix_profile(cmat);
     }
     libraw_close(raw);
   }
@@ -246,10 +250,16 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     { // use linear_rgb as fallback for missing profiles:
       d->input = dt_colorspaces_create_linear_rgb_profile();
     }
-    if(!d->input) // sRGB fallback
-      d->xform = cmsCreateTransform(cmsCreate_sRGBProfile(), TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
-    else
-      d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
+    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+  }
+  // user selected a non-supported output profile, check that:
+  if(!d->xform)
+  {
+    dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
+    if(d->input) dt_colorspaces_cleanup_profile(d->input);
+    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_Lab_DBL, p->intent, 0);
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
@@ -264,6 +274,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
   d->xform = NULL;
+  d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -276,7 +287,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #else
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
-  if(d->input) cmsCloseProfile(d->input);
+  if(d->input) dt_colorspaces_cleanup_profile(d->input);
+  dt_colorspaces_cleanup_profile(d->Lab);
   if(d->xform) cmsDeleteTransform(d->xform);
   free(piece->data);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -301,7 +313,7 @@ void gui_update(struct dt_iop_module_t *self)
     prof = g_list_next(prof);
   }
   gtk_combo_box_set_active(g->cbox2, 0);
-  fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
+  if(strcmp(p->iccprofile, "darktable")) fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
 void init(dt_iop_module_t *module)
@@ -485,7 +497,10 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   while(g->profiles)
+  {
+    free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
+  }
   free(self->gui_data);
   self->gui_data = NULL;
 }

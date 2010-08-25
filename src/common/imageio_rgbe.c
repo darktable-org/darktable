@@ -488,3 +488,32 @@ error_cache_full:
   fclose(f);
   return DT_IMAGEIO_CACHE_FULL;
 }
+
+dt_imageio_retval_t dt_imageio_open_rgbe_preview(dt_image_t *img, const char *filename)
+{
+  const char *ext = filename + strlen(filename);
+  while(*ext != '.' && ext > filename) ext--;
+  if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
+  FILE *f = fopen(filename, "rb");
+  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
+
+  float *buf = (float *)malloc(3*sizeof(float)*img->width*img->height);
+  if(!buf) goto error_corrupt;
+  if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height))
+  {
+    free(buf);
+    goto error_corrupt;
+  }
+  // repair nan/inf etc
+  for(int i=0; i < img->width*img->height*3; i++) buf[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
+  dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
+  free(buf);
+  fclose(f);
+  return retv;
+
+error_corrupt:
+  fclose(f);
+  return DT_IMAGEIO_FILE_CORRUPTED;
+}

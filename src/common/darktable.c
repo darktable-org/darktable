@@ -19,6 +19,7 @@
   #include "../config.h"
 #endif
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/camera_control.h"
@@ -43,7 +44,7 @@
 #endif
 
 darktable_t darktable;
-const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,hdr,ia,iiq,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,sti,tif,x3f";
+const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,hdr,ia,iiq,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,sti,tif,tiff,x3f";
 
 int dt_init(int argc, char *argv[])
 {
@@ -107,6 +108,9 @@ int dt_init(int argc, char *argv[])
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
+
+  // initialize collection query
+  darktable.collection = dt_collection_new(NULL);  
 
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();	
@@ -185,8 +189,9 @@ int dt_init(int argc, char *argv[])
   }
   if(!id)
   {
-    // dummy selection:
-    dt_conf_set_string ("plugins/lighttable/query", "select * from images where (film_id = -1) and (flags & 7) >= 1 order by filename limit ?1, ?2");
+    /* reset the collection and switch to library mode */
+    dt_collection_reset (darktable.collection);
+    
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
@@ -257,13 +262,31 @@ void dt_gettime(char *datetime)
 
 void *dt_alloc_align(size_t alignment, size_t size)
 {
-#if defined(__MACH__) || defined(__APPLE__)
+#if defined(__MACH__) || defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 700013)
   return malloc(size);
 #else
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, size)) return NULL;
   return ptr;
 #endif
+}
+
+void 
+dt_get_user_config_dir (char *data, size_t bufsize)
+{
+  g_snprintf (data,bufsize,"%s/.config/darktable",getenv("HOME"));  
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+    g_mkdir_with_parents (data,0700);
+
+}
+
+void 
+dt_get_user_local_dir (char *data, size_t bufsize)
+{
+  g_snprintf(data,bufsize,"%s/.local",getenv("HOME"));
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+    g_mkdir_with_parents (data,0700);
+
 }
 
 void dt_get_plugindir(char *datadir, size_t bufsize)

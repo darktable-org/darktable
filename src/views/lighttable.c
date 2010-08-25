@@ -24,6 +24,7 @@
 #include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -61,6 +62,8 @@ typedef struct dt_library_t
   int32_t track, offset, first_visible_zoomable, first_visible_filemanager;
   float zoom_x, zoom_y;
   dt_view_image_over_t image_over;
+  int full_preview;
+  int32_t full_preview_id;
 }
 dt_library_t;
 
@@ -81,6 +84,8 @@ void init(dt_view_t *self)
   lib->center = lib->pan = lib->track = 0;
   lib->zoom_x = 0.0f;
   lib->zoom_y = 0.0f;
+  lib->full_preview=0; 
+  lib->full_preview_id=-1; 
 }
 
 
@@ -141,33 +146,27 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   sqlite3_stmt *stmt = NULL;
   int id, last_seli = 1<<30, last_selj = 1<<30;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
+  
+  /* get the count of current collection */
+  int count = dt_collection_get_count (darktable.collection);
 
-  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
-  if(!query) return;
-  if(query[0] == '\0')
-  {
-    g_free(query);
-    return;
-  }
-  char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 17);
-  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, 0);
-  sqlite3_bind_int (stmt, 2, -1);
-  int count = 1;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  /* get the collection query */
+  const gchar *query=dt_collection_get_query (darktable.collection);
+  if(!query)
+	return;
+  
+  
   if(offset < 0)         lib->offset = offset = 0;
   if(offset > count-iir) lib->offset = offset = count-iir;
-  dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_cols*iir);
+  dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_rows*iir);
 
-  const int prefetchrows = 1.5*max_rows+1;
+  int32_t imgids_num = 0;
+  int32_t imgids[count];
+
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   sqlite3_bind_int (stmt, 1, offset);
-  sqlite3_bind_int (stmt, 2, prefetchrows*iir);
-  g_free(query);
-  for(int row = 0; row < prefetchrows; row++)
+  sqlite3_bind_int (stmt, 2, max_rows*iir);
+  for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
@@ -175,54 +174,43 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
       {
         id = sqlite3_column_int(stmt, 0);
         dt_image_t *image = dt_image_cache_get(id, 'r');
-        if(row >= max_rows && image)
+        if (iir == 1 && row)
         {
-          int32_t iwd, iht;
-          float imgwd = iir == 1 ? 0.97 : 0.8;
-          dt_image_buffer_t mip = dt_image_get_matching_mip_size(image, imgwd*wd, imgwd*(iir==1?height:ht), &iwd, &iht);
-          dt_image_prefetch(image, mip);
           dt_image_cache_release(image, 'r');
+          continue;
         }
-        else
+        // set mouse over id
+        if(seli == col && selj == row)
         {
-          if (iir == 1 && row)
-          {
-            dt_image_cache_release(image, 'r');
-            continue;
-          }
-          // set mouse over id
-          if(seli == col && selj == row)
-          {
-            firstsel = lib->offset + selj*iir + seli;
-            mouse_over_id = id;
-            DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
-          }
-          // add clicked image to selected table
-          if(clicked1)
-          {
-            if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
-            { // clear selected if no modifier
-              sqlite3_stmt *stmt2;
-              sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
-              sqlite3_bind_int(stmt2, 1, id);
-              sqlite3_step(stmt2);
-              sqlite3_finalize(stmt2);
-            }
-            if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id) { last_seli = col; last_selj = row; }
-            if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                      col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
-                (seli == col && selj == row))
-            { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
-              dt_view_toggle_selection(id);
-              lib->last_selected_id = id;
-            }
-          }
-          cairo_save(cr);
-          if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-          dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
-          cairo_restore(cr);
-          dt_image_cache_release(image, 'r');
+          firstsel = lib->offset + selj*iir + seli;
+          mouse_over_id = id;
+          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
+        // add clicked image to selected table
+        if(clicked1)
+        {
+          if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
+          { // clear selected if no modifier
+            sqlite3_stmt *stmt2;
+            sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
+            sqlite3_bind_int(stmt2, 1, id);
+            sqlite3_step(stmt2);
+            sqlite3_finalize(stmt2);
+          }
+          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id) { last_seli = col; last_selj = row; }
+          if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
+                    col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
+              (seli == col && selj == row))
+          { // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
+            dt_view_toggle_selection(id);
+            lib->last_selected_id = id;
+          }
+        }
+        cairo_save(cr);
+        if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
+        dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+        cairo_restore(cr);
+        dt_image_cache_release(image, 'r');
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
@@ -230,13 +218,37 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     cairo_translate(cr, -max_cols*wd, ht);
   }
 failure:
+#if 1
+  sqlite3_reset(stmt);
+  sqlite3_clear_bindings(stmt);
+  const int prefetchrows = .5*max_rows+1;
+  sqlite3_bind_int (stmt, 1, offset + max_rows*iir);
+  sqlite3_bind_int (stmt, 2, prefetchrows*iir);
+
+  // prefetch jobs in inverse order: supersede previous jobs: most important last
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  { // prefetch
+    imgids[imgids_num++] = sqlite3_column_int(stmt, 0);
+  }
+  while(imgids_num > 0)
+  {
+    imgids_num --;
+    dt_image_t *image = dt_image_cache_get(imgids[imgids_num], 'r');
+    if(image)
+    {
+      int32_t iwd, iht;
+      float imgwd = iir == 1 ? 0.97 : 0.8;
+      dt_image_buffer_t mip = dt_image_get_matching_mip_size(image, imgwd*wd, imgwd*(iir==1?height:ht), &iwd, &iht);
+      dt_image_prefetch(image, mip);
+      dt_image_cache_release(image, 'r');
+    }
+  }
+#endif
   sqlite3_finalize(stmt);
 
   oldpan = pan;
-#ifdef _DEBUG
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
-#endif
 }
 
 static void
@@ -273,14 +285,9 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/pointery;
   }
 
-  gchar *query = dt_conf_get_string ("plugins/lighttable/query");
-  if(!query) return;
-  if(query[0] == '\0')
-  {
-    g_free(query);
-    return;
-  }
-
+  const gchar *query = dt_collection_get_query (darktable.collection);
+  if(!query && query[0] == '\0') return;
+  
   if     (track == 0);
   else if(track >  1)  zoom_y += ht;
   else if(track >  0)  zoom_x += wd;
@@ -406,7 +413,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-  g_free(query);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
   for(int row = 0; row < max_rows; row++)
@@ -479,23 +485,42 @@ failure:
   lib->zoom_y = zoom_y;
   lib->track  = 0;
   lib->center = center;
-#ifdef _DEBUG
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
-#endif
 }
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   const int i = dt_conf_get_int("plugins/lighttable/layout");
-  switch(i)
+  
+  // Let's show full preview if in that state... 
+  dt_library_t *lib = (dt_library_t *)self->data;
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if( lib->full_preview && lib->full_preview_id!=-1 ) {
+    lib->image_over = DT_VIEW_DESERT;
+    cairo_set_source_rgb (cr, .1, .1, .1);
+    cairo_paint(cr);
+    dt_image_t *image = dt_image_cache_get(lib->full_preview_id, 'r');
+    if( image )
+    {
+      dt_image_prefetch(image, DT_IMAGE_MIPF);
+      const float wd = width/1.0;
+      dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
+      dt_image_cache_release(image, 'r');
+    }
+  } 
+  else // we do pass on expose to manager or zoomable
   {
-    case 1: // file manager
-      expose_filemanager(self, cr, width, height, pointerx, pointery);
-      break;
-    default: // zoomable
-      expose_zoomable(self, cr, width, height, pointerx, pointery);
-      break;
+    switch(i)
+    {
+      case 1: // file manager
+        expose_filemanager(self, cr, width, height, pointerx, pointery);
+        break;
+      default: // zoomable
+        expose_zoomable(self, cr, width, height, pointerx, pointery);
+        break;
+    }
   }
 }
 
@@ -567,6 +592,7 @@ star_key_accel_callback(void *data)
   }
 }
 
+
 void enter(dt_view_t *self)
 {
   // add expanders
@@ -576,6 +602,8 @@ void enter(dt_view_t *self)
   // Adjust gui
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
   gtk_widget_set_visible(widget, TRUE);
+	
+  gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
   
   while(modules)
   {
@@ -592,10 +620,11 @@ void enter(dt_view_t *self)
 
   // end marker widget:
   GtkWidget *endmarker = gtk_drawing_area_new();
-  gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), 0);
+   g_signal_connect (G_OBJECT (endmarker), "size-allocate",
+                    G_CALLBACK (dt_control_size_allocate_endmarker), self);
 
   gtk_widget_show_all(GTK_WIDGET(box));
 
@@ -722,6 +751,28 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   return 1;
 }
 
+int key_released(dt_view_t *self, uint16_t which)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  switch (which)
+  {
+    case KEYCODE_z: 
+    {
+      lib->full_preview=0;
+      lib->full_preview_id=-1;
+      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      gtk_widget_show(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+      gtk_widget_show(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      gtk_widget_show(widget);
+      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      gtk_widget_show(widget);
+      
+    }break;
+  }
+  return 1;
+}
 
 int key_pressed(dt_view_t *self, uint16_t which)
 {
@@ -731,6 +782,27 @@ int key_pressed(dt_view_t *self, uint16_t which)
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   switch (which)
   {
+    case KEYCODE_z:
+    {
+      int32_t mouse_over_id;
+      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      if(  lib->full_preview != 1 && mouse_over_id != -1 ) {
+        lib->full_preview=1;
+        lib->full_preview_id=mouse_over_id;
+        // let's hide some gui components
+        GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+        gtk_widget_hide(widget);
+        widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+        gtk_widget_hide(widget);
+        widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+        gtk_widget_hide(widget);
+        widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+        gtk_widget_hide(widget);
+        //dt_dev_invalidate(darktable.develop);
+      } 
+      return 0;
+      
+    }  break;
     case KEYCODE_Left: case KEYCODE_a:
       if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
       else lib->track = -1;

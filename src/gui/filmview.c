@@ -60,6 +60,7 @@ count_film_rolls(const char *filter)
   rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count += sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
   return count;
 }
 
@@ -106,6 +107,7 @@ dt_gui_filmview_update(const char *filter)
                         DT_GUI_FILM_COL_TOOLTIP, path,
                         -1);
   }
+  sqlite3_finalize(stmt);
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_GUI_FILM_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
@@ -170,8 +172,8 @@ focus_in_callback (GtkWidget *w, GdkEventFocus *event, GtkWidget *view)
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
   int count = 1 + count_film_rolls(gtk_entry_get_text(entry));
-  int ht = 1.5*get_font_height(view, "dreggn");
-  const int size = MAX(4*ht, MIN(win->allocation.height/2, count*ht));
+  int ht = get_font_height(view, "Dreggn");
+  const int size = MAX(2*ht, MIN(win->allocation.height/2, count*ht));
   gtk_widget_set_size_request(view, -1, size);
 }
 
@@ -194,7 +196,7 @@ row_activated_callback (GtkTreeView        *view,
 {
   GtkTreeModel *model;
   GtkTreeIter   iter;
-
+  gtk_widget_set_size_request (GTK_WIDGET (view), -1, -1);
   model = gtk_tree_view_get_model(view);
   if (!gtk_tree_model_get_iter(model, &iter, path)) return;
 
@@ -235,7 +237,7 @@ dt_gui_filmview_init()
 
 
   GtkWidget *entry = glade_xml_get_widget (darktable.gui->main_window, "entry_film");
-  g_signal_connect(entry, "key-release-event", G_CALLBACK(entry_callback), NULL);
+  g_signal_connect(entry, "changed", G_CALLBACK(entry_callback), NULL);
 
   GtkWidget *button = glade_xml_get_widget (darktable.gui->main_window, "button_film_remove");
   g_signal_connect(button, "clicked", G_CALLBACK(button_callback), (gpointer)0);

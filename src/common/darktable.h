@@ -26,11 +26,12 @@
 #include <sqlite3.h>
 #include <pthread.h>
 #include <glib/gi18n.h>
+#include <math.h>
 #ifdef _OPENMP
   #include <omp.h>
 #endif
 
-#define DT_MODULE_VERSION 1   // version of dt's module interface
+#define DT_MODULE_VERSION 2   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
 #define DT_CONFIG_VERSION 34  // dt gconf var version
 
@@ -115,6 +116,7 @@ typedef struct darktable_t
   const struct dt_fswatch_t	*fswatch;
   const struct dt_pwstorage_t *pwstorage;
   const struct dt_camctl_t *camctl;
+  const struct dt_collection_t *collection;
   struct dt_points_t       *points;
   struct dt_imageio_t      *imageio;
   pthread_mutex_t db_insert;
@@ -134,6 +136,10 @@ void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
 void dt_get_datadir(char *datadir, size_t bufsize);
 void dt_get_plugindir(char *datadir, size_t bufsize);
+/** get the user directory of darktable, ~/.config/darktable */
+void dt_get_user_config_dir(char *data, size_t bufsize);
+/** get the user local directory , ~/.local */
+void dt_get_user_local_dir(char *data, size_t bufsize);
 
 static inline double dt_get_wtime()
 {
@@ -162,6 +168,15 @@ static inline int dt_get_thread_num()
   return omp_get_thread_num();
 #else
   return 0;
+#endif
+}
+
+static inline float dt_log2f(const float f)
+{
+#ifdef __GLIBC__
+  return log2f(f);
+#else
+  return logf(f)/logf(2.0f);
 #endif
 }
 

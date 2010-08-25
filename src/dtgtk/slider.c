@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <control/control.h>
+#include <common/darktable.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -45,7 +48,7 @@ static void _slider_size_request(GtkWidget *widget, GtkRequisition *requisition)
 static void _slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static void _slider_realize(GtkWidget *widget);
 static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event);
-static void _slider_destroy(GtkObject *object);
+//static void _slider_destroy(GtkObject *object);
 
 // Slider Events
 static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event);
@@ -53,12 +56,11 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
 static gboolean _slider_scroll_event(GtkWidget *widget, GdkEventScroll *event);
 static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event);
-static gboolean _slider_key_event(GtkWidget *widget, GdkEventKey *event);
 
 // Slider entry events
 static gboolean _slider_entry_key_event(GtkWidget *widget,GdkEventKey *event, gpointer data);
+static gboolean _slider_entry_focus_in(GtkWidget *widget,GdkEventFocus *event,gpointer data);
 static gboolean _slider_entry_focus_out(GtkWidget *widget,GdkEventFocus *event,gpointer data);
-//static void  _slider_entry_size_allocate(GtkWidget *widget,GtkAllocation *allocation,gpointer data);
 
 static guint _signals[LAST_SIGNAL] = { 0 };
 
@@ -91,7 +93,7 @@ gdouble _slider_translate_pos_to_value(GtkAdjustment *adj,GdkRectangle *value_ar
 static void _slider_class_init (GtkDarktableSliderClass *klass)
 {
   GtkWidgetClass *widget_class=(GtkWidgetClass *) klass;
-  GtkObjectClass *object_class=(GtkObjectClass *) klass;
+  //GtkObjectClass *object_class=(GtkObjectClass *) klass;
   _slider_parent_class = gtk_type_class (gtk_event_box_get_type ());
 
   widget_class->realize = _slider_realize;
@@ -104,36 +106,13 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
   widget_class->motion_notify_event = _slider_motion_notify;
   widget_class->enter_notify_event = _slider_enter_notify_event;
   widget_class->leave_notify_event = _slider_enter_notify_event;
-  widget_class->key_press_event = _slider_key_event;
-  widget_class->key_release_event = _slider_key_event;
-  object_class->destroy = _slider_destroy;
+  //object_class->destroy = _slider_destroy;
   _signals[VALUE_CHANGED] = g_signal_new(
     "value-changed",
      G_TYPE_OBJECT, G_SIGNAL_RUN_LAST,
     0,NULL,NULL,
      g_cclosure_marshal_VOID__VOID,
     GTK_TYPE_NONE,0);
-}
-
-static gint _slider_key_snooper(GtkWidget *grab_widget,GdkEventKey *event,gpointer data)
-{
-  if( data && DTGTK_IS_SLIDER(data) )
-  {
-    if(  DTGTK_SLIDER(data)->is_entry_active==TRUE )
-    {
-      if((event->keyval==GDK_Escape || event->keyval==GDK_Tab))
-        _slider_entry_abort(DTGTK_SLIDER(data));
-    }
-    else
-    {
-      if(event->keyval==DTGTK_SLIDER_SENSIBILITY_KEY) 
-      {
-        GtkDarktableSlider *slider = DTGTK_SLIDER(data);
-        slider->is_sensibility_key_pressed = (event->type==GDK_KEY_PRESS)?TRUE:FALSE;
-      }
-    }
-  }
-  return FALSE;
 }
 
 static void _slider_init (GtkDarktableSlider *slider)
@@ -163,11 +142,12 @@ static void _slider_init (GtkDarktableSlider *slider)
   //gtk_container_set_reallocate_redraws(GTK_CONTAINER(slider),TRUE);
 
   gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
+  
   g_signal_connect (G_OBJECT (slider->entry), "key-press-event", G_CALLBACK(_slider_entry_key_event), (gpointer)slider);
+  g_signal_connect (G_OBJECT (slider->entry), "focus-in-event", G_CALLBACK(_slider_entry_focus_in), (gpointer)slider);
   g_signal_connect (G_OBJECT (slider->entry), "focus-out-event", G_CALLBACK(_slider_entry_focus_out), (gpointer)slider);
   //g_signal_connect (G_OBJECT (slider->entry), "size-allocate", G_CALLBACK(_slider_entry_size_allocate), (gpointer)slider);
-  
-  slider->key_snooper_id=gtk_key_snooper_install(_slider_key_snooper,GTK_WIDGET(slider));
+
 }
 
 static gboolean _slider_postponed_value_change(gpointer data) {
@@ -176,7 +156,7 @@ static gboolean _slider_postponed_value_change(gpointer data) {
   {
     g_signal_emit_by_name(G_OBJECT(data),"value-changed");
     if(DTGTK_SLIDER(data)->type==DARKTABLE_SLIDER_VALUE)
-	DTGTK_SLIDER(data)->is_changed=FALSE;
+  DTGTK_SLIDER(data)->is_changed=FALSE;
   }
   gdk_threads_leave();
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
@@ -191,10 +171,10 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
     slider->is_entry_active=TRUE;
     gdouble value = gtk_adjustment_get_value(slider->adjustment);
     sprintf(sv,"%.*f",slider->digits,value);
-    gtk_entry_set_text(GTK_ENTRY(slider->entry),sv);
+    gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
     gtk_widget_show (GTK_WIDGET(slider->entry));
-    gtk_widget_grab_focus(GTK_WIDGET(slider->entry));
-    gtk_widget_queue_draw(widget);
+    gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
+    gtk_widget_queue_draw (widget);
   }
   else if( event->button==1 )
   {
@@ -264,8 +244,10 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
 static gboolean _slider_scroll_event(GtkWidget *widget, GdkEventScroll *event) 
 {
   double inc=gtk_adjustment_get_step_increment(DTGTK_SLIDER(widget)->adjustment);
-  inc*= (DTGTK_SLIDER(widget)->is_ctrl_key_pressed==TRUE) ? 1.0 : DTGTK_VALUE_SENSITIVITY;
-  float value = gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?-inc:inc);
+  DTGTK_SLIDER(widget)->is_sensibility_key_pressed = (event->state&GDK_CONTROL_MASK)?TRUE:FALSE;
+
+  inc*= (DTGTK_SLIDER(widget)->is_sensibility_key_pressed==TRUE) ? 1.0 : DTGTK_VALUE_SENSITIVITY;
+  float value = gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?inc:-inc);
   if(DTGTK_SLIDER(widget)->snapsize) value = DTGTK_SLIDER(widget)->snapsize * (((int)value)/DTGTK_SLIDER(widget)->snapsize);
   gtk_adjustment_set_value(DTGTK_SLIDER(widget)->adjustment, value);
   gtk_widget_draw( widget, NULL);
@@ -287,8 +269,17 @@ static void _slider_entry_abort(GtkDarktableSlider *slider) {
   gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
+static gboolean _slider_entry_focus_in(GtkWidget *widget,GdkEventFocus *event,gpointer data) 
+{
+  dt_control_esc_shortcut_off(darktable.control);
+  dt_control_tab_shortcut_off(darktable.control);
+  return FALSE;
+}
+
 static gboolean _slider_entry_focus_out(GtkWidget *widget,GdkEventFocus *event,gpointer data) {
   _slider_entry_abort(DTGTK_SLIDER(data));
+  dt_control_esc_shortcut_on(darktable.control);
+  dt_control_tab_shortcut_on(darktable.control);
   return FALSE;
 }
 
@@ -296,6 +287,8 @@ static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, g
 {
   if (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
     _slider_entry_commit(DTGTK_SLIDER(data));
+  if (event->keyval==GDK_Escape || event->keyval==GDK_Tab)
+    _slider_entry_abort(DTGTK_SLIDER(data));
   else if( // Masking allowed keys...
               event->keyval == GDK_minus || event->keyval == GDK_KP_Subtract ||
               event->keyval == GDK_plus || event->keyval == GDK_KP_Add ||
@@ -322,20 +315,10 @@ static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, g
   return TRUE;
 }
 
-
-static gboolean _slider_key_event(GtkWidget *widget, GdkEventKey *event) 
-{
-  GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
-  if( event->type == GDK_KEY_PRESS && event->keyval==DTGTK_SLIDER_SENSIBILITY_KEY && !slider->is_ctrl_key_pressed ) 
-    slider->is_ctrl_key_pressed = TRUE;
-  else if( event->type == GDK_KEY_RELEASE && event->keyval==DTGTK_SLIDER_SENSIBILITY_KEY && slider->is_ctrl_key_pressed ) 
-    slider->is_ctrl_key_pressed = FALSE;
-  return TRUE;
-}
-
 static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 {
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
+  slider->is_sensibility_key_pressed = (event->state&GDK_CONTROL_MASK)?TRUE:FALSE;
   if( slider->is_dragging==TRUE ) {
     // First get some dimention info
     GdkRectangle vr;
@@ -454,7 +437,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_SLIDER(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
-  static GtkStyle *style=NULL;
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
   int state = gtk_widget_get_state(widget);
   int width = widget->allocation.width;
@@ -462,10 +445,6 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
 
   if(width<=1) return FALSE;	// VERY STRANGE, expose seemed to be called before a widgetallocation has been made...
   
-  if (!style) {
-    style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
-  }
-
   if(slider->is_entry_active)
     state=GTK_STATE_PRELIGHT;
 
@@ -552,7 +531,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
       break;
       case DARKTABLE_SLIDER_FORMAT_PERCENT:
       {
-	 gdouble min=gtk_adjustment_get_lower(slider->adjustment);
+   gdouble min=gtk_adjustment_get_lower(slider->adjustment);
          gdouble max=gtk_adjustment_get_upper(slider->adjustment);
          gdouble value=gtk_adjustment_get_value(slider->adjustment);
          double f= (value-min)/(max-min);   
@@ -576,6 +555,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   return FALSE;
 }
 
+/*
 static void _slider_destroy(GtkObject *object)
 {
   GtkDarktableSlider *slider;
@@ -585,20 +565,20 @@ static void _slider_destroy(GtkObject *object)
   g_return_if_fail(DTGTK_IS_SLIDER(object));
 
   slider = DTGTK_SLIDER(object);
-  // this is a very annoying workaround for a weird bug in gtk2.0-0 2.19.6 in ubuntu lucid:
-  if(GTK_IS_WIDGET(slider->hbox))
-    gtk_widget_destroy(GTK_WIDGET(slider->hbox));
-  // but at least the hbox seems to destroy the entry as well:
-  g_assert( !GTK_IS_WIDGET(slider->entry));
   if( slider->key_snooper_id > 0 )
-    gtk_key_snooper_remove(slider->key_snooper_id);
+    gtk_key_snooper_remove (slider->key_snooper_id);
+  
+  if (GTK_IS_WIDGET (slider->entry)) gtk_widget_destroy (slider->entry);
+  
+  if (GTK_IS_WIDGET (slider->hbox)) gtk_widget_destroy (GTK_WIDGET(slider->hbox));
+
   
   klass = gtk_type_class(gtk_widget_get_type());
 
   if (GTK_OBJECT_CLASS(klass)->destroy) {
      (* GTK_OBJECT_CLASS(klass)->destroy) (object);
   }
-}
+}*/
 
 // Public functions
 GtkWidget *dtgtk_slider_new(GtkAdjustment *adjustment)

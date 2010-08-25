@@ -107,7 +107,7 @@ int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
   uint8_t *tmp = out;
 	while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
 	{
-		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
+		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) { free(row_pointer[0]); return 1; }
 		for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
 			tmp[4*i+k] = row_pointer[0][3*i+k];
     tmp += 4*jpg->width;
@@ -435,7 +435,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
       _cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
     }
-    cmsCloseProfile(out_profile);
+    dt_colorspaces_cleanup_profile(out_profile);
   }
 
   if(exif && exif_len > 0 && exif_len < 65534)
@@ -501,7 +501,13 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
   uint8_t *tmp = out;
 	while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
 	{
-		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1) return 1;
+		if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
+    {
+      jpeg_destroy_decompress(&(jpg->dinfo));
+      free(row_pointer[0]);
+      fclose(jpg->f);
+      return 1;
+    }
     if(jpg->dinfo.num_components < 3)
 		  for(int i=0; i<jpg->dinfo.image_width;i++) for(int k=0;k<3;k++)
 			  tmp[4*i+k] = row_pointer[0][jpg->dinfo.num_components*i+0];

@@ -25,26 +25,27 @@ typedef struct dt_variables_params_t
   /** only validates string */
   gboolean validate_only;
   
-  /** Used for expanding variables that uses filename $(FILE_DIRECTORY) $(FILE_NAME) and $(FILE_EXTENSION). */
+  /** used for expanding variables that uses filename $(FILE_DIRECTORY) $(FILE_NAME) and $(FILE_EXTENSION). */
   const gchar *filename;
   
-  /** Used for expanding variable $(JOBCODE) */
+  /** used for expanding variable $(JOBCODE) */
   const gchar *jobcode;
 
-  /** Used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGT). */
+  /** used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGT). */
   struct dt_image_t *img;
 
-  /** Internal variables data */	
+  /** internal variables data */	
   struct dt_variables_data_t *data;
   
 } dt_variables_params_t;
 
-/** allocate and init params */
+/** allocate and initializes a dt_variables_params_t. */
 void dt_variables_params_init(dt_variables_params_t **params);
+/** destroys an initialized dt_variables_params_t, pointer is garbage after this call. */
 void dt_variables_params_destroy(dt_variables_params_t *params);
 
-/** expands variables in string */
+/** expands variables in string, this free's previous expanding result */
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
-/** get the expanded string result*/
+/** get the expanded string result, use a copy of this string in your code like g_strdup(). */
 const gchar *dt_variables_get_result(dt_variables_params_t *params);
 #endif

@@ -63,7 +63,7 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Artis Rozentals, Wolf Faust IT8, direct sunlight, well lit
   { "Canon PowerShot S60",          { 879990, 321808,  23041}, { 272324, 1104752, -410950}, { 75500, -184097, 1373230}, {702026, 740524, 622131}},
 
-  // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
+  // Pascal de Bruijn, CMP Digital Target 3, camera strobe, well lit
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
 
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
@@ -76,8 +76,19 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   { "NIKON D200",                   { 878922, 352966,   2914}, { 273575, 1048141, -116302}, { 61661, -171021, 1126297}, {691483, 727142, 615204}},
 
   // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
-  { "SONY DSLR-A200",               { 846786, 366302, -22858}, { 311584, 1046249, -107056}, { 54596, -192993, 1191406}, {708405, 744507, 596771}}
+  { "SONY DSLR-A200",               { 846786, 366302, -22858}, { 311584, 1046249, -107056}, { 54596, -192993, 1191406}, {708405, 744507, 596771}},
 
+  // Stephane Chauveau, Wolf Faust IT8, direct sunlight, well lit
+  { "SONY DSLR-A550",               {1031235, 405899,   1572}, { 185623, 1122162, -272659}, {-25528, -329514, 1249969}, {729797, 753586, 633530}},
+
+  // Mark Haun, Wolf Faust IT8, direct sunlight, well lit
+  { "OLYMPUS E-PL1",                { 824387, 288086,  -7355}, { 299500, 1148865, -308929}, { 91858, -198425, 1346603}, {720139, 750717, 619751}},
+
+  // Henrik Andersson, Homebrew ColorChecker, camera strobe, well lit
+  { "OLYMPUS SP570UZ",              { 780991, 262283,  27969}, { 147522, 1135239, -422974}, {142731, -293610, 1316803}, {769669, 804474, 676895}},
+
+  // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
+  { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}}
 };
 
 static const int dt_profiled_colormatrix_cnt = sizeof(dt_profiled_colormatrices)/sizeof(dt_profiled_colormatrix_t);

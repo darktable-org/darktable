@@ -26,6 +26,7 @@
 
 #include "control/settings.h"
 #include <gtk/gtk.h>
+#include "gui/background_jobs.h"
 // #include "control/job.def"
 
 #define DT_CONTROL_MAX_JOBS 30
@@ -46,6 +47,7 @@
 #define KEYCODE_a            8   // mac keycodes X11 :(
 #define KEYCODE_o            9
 #define KEYCODE_e           10
+#define KEYCODE_z           0xff // TODO: should be z 
 #define KEYCODE_apostrophe  20
 #define KEYCODE_comma       21
 #define KEYCODE_period      22
@@ -55,6 +57,8 @@
 #define KEYCODE_4           29
 #define KEYCODE_Escape      61
 #define KEYCODE_Caps        -1
+#define KEYCODE_F7        107
+#define KEYCODE_F8        108
 #define KEYCODE_F11        111
 #define KEYCODE_Up         134
 #define KEYCODE_Down       133
@@ -67,6 +71,7 @@
 #define KEYCODE_a           0   // mac keycodes carbon :)
 #define KEYCODE_o           1   // s
 #define KEYCODE_e           2   // d
+#define KEYCODE_z           0xff // TODO: should be z 
 #define KEYCODE_apostrophe  12  // q
 #define KEYCODE_comma       13  // w
 #define KEYCODE_period      14  // e .. in qwerty :)
@@ -90,6 +95,7 @@
 #define KEYCODE_a           38
 #define KEYCODE_o           39  
 #define KEYCODE_e           40  
+#define KEYCODE_z           52
 #define KEYCODE_apostrophe  24  
 #define KEYCODE_comma       25  
 #define KEYCODE_period      26  
@@ -99,6 +105,8 @@
 #define KEYCODE_4           13  
 #define KEYCODE_Escape       9  
 #define KEYCODE_Caps        66
+#define KEYCODE_F7        73
+#define KEYCODE_F8        74
 #define KEYCODE_F11         95  
 #define KEYCODE_Up         111  
 #define KEYCODE_Down       116  
@@ -114,11 +122,13 @@ typedef GdkCursorType dt_cursor_t;
 // called from gui
 void *dt_control_expose(void *voidptr);
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+void dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data);
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
 void dt_control_mouse_leave();
 int  dt_control_key_pressed(uint16_t which);
+int  dt_control_key_released(uint16_t which);
 int  dt_control_key_pressed_override(uint16_t which);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_gui_queue_draw();
@@ -143,14 +153,22 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
+struct dt_control_t;
+void dt_control_tab_shortcut_on(struct dt_control_t *s);
+void dt_control_tab_shortcut_off(struct dt_control_t *s);
+void dt_control_esc_shortcut_on(struct dt_control_t *s);
+void dt_control_esc_shortcut_off(struct dt_control_t *s);
 
 /**
  * smalles unit of work.
  */
 struct dt_job_t;
+typedef void (*dt_job_finished_callback_t)(int32_t,struct dt_job_t*);
 typedef struct dt_job_t
 {
-  void (*execute)(struct dt_job_t *job);
+  int32_t (*execute) (struct dt_job_t *job);
+  dt_job_finished_callback_t finished_callback;
+  void *user_data;
   int32_t param[32];
 #ifdef DT_CONTROL_JOB_DEBUG
   char description[DT_CONTROL_DESCRIPTION_LEN];
@@ -158,7 +176,10 @@ typedef struct dt_job_t
 }
 dt_job_t;
 
+/** intializes a job */
 void dt_control_job_init(dt_job_t *j, const char *msg, ...);
+/** initializes a job with callback on finish. */
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...);
 void dt_control_job_print(dt_job_t *j);
 
 
@@ -191,6 +212,8 @@ typedef struct dt_control_t
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
   pthread_mutex_t global_mutex, image_mutex;
+  int tab_shortcut_on;
+  int esc_shortcut_on;
 
   // xatom color profile:
   uint8_t *xprofile_data;
@@ -198,7 +221,7 @@ typedef struct dt_control_t
 
   // job management
   int32_t running;
-  pthread_mutex_t queue_mutex, cond_mutex;
+  pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
   pthread_t *thread;
@@ -226,6 +249,8 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job);
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res);
 int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res);
 
+/** get threadsafe running state. */
+int dt_control_running();
 void *dt_control_work(void *ptr);
 void *dt_control_work_res(void *ptr);
 int32_t dt_control_get_threadid();

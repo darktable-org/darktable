@@ -41,6 +41,7 @@ typedef struct _GtkDarktableToggleButtonClass
 GType dtgtk_togglebutton_get_type (void);
 
 /** Instansiate a new darktable slider control passing adjustment as range */
-GtkWidget* dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget* dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget* dtgtk_togglebutton_new_with_label (const gchar *label,DTGTKCairoPaintIconFunc paint, gint paintflag);
 G_END_DECLS
 #endif 

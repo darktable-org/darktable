@@ -6,6 +6,6 @@ libdarkroom_la_SOURCES=darkroom.c
 liblighttable_la_SOURCES=lighttable.c
 libcapture_la_SOURCES=capture.c
 libfilmstrip_la_SOURCES=filmstrip.c
-noinst_HEADERS=view.h
+noinst_HEADERS=view.h capture.h
 dtviewsdir=$(libdir)/darktable/views
 dtviews_LTLIBRARIES=libdarkroom.la liblighttable.la libcapture.la libfilmstrip.la

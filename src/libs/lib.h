@@ -57,7 +57,7 @@ typedef struct dt_lib_module_t
   /** get name of the module, to be translated. */
   const char* (*name)     ();
   /** get the views which the module should be loaded in. */
-  uint32_t (*views)  ();
+  uint32_t (*views)       ();
 	
   /** callback methods for gui. */
   /** construct widget. */
@@ -78,10 +78,10 @@ typedef struct dt_lib_module_t
   int  (*scrolled)        (struct dt_lib_module_t *self, double x, double y, int up);
   void (*configure)       (struct dt_lib_module_t *self, int width, int height);
   int  (*position)        ();
-  
-  // TODO: gui only?
-  // void (*init) (struct dt_lib_module_t *self);
-  // void (*cleanup) (struct dt_lib_module_t *self);
+  /** implement these three if you want customizable presets to be stored in db. */
+  void* (*get_params)     (struct dt_lib_module_t *self, int *size);
+  int   (*set_params)     (struct dt_lib_module_t *self, const void *params, int size);
+  void  (*init_presets)   (struct dt_lib_module_t *self);
 }
 dt_lib_module_t;
 
@@ -94,5 +94,11 @@ int dt_lib_load_modules();
 void dt_lib_unload_module(dt_lib_module_t *module);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
+
+
+/** preset stuff for lib */
+
+/** add or replace a preset for this operation. */
+void dt_lib_presets_add(const char *name, const char *plugin_name, const void *params, const int32_t params_size);
 
 #endif

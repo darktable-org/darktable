@@ -1,34 +1,31 @@
-webpage updates:
-- freebsd has dt (has had for a while :)
-
 0.6 release:
-- tethered shooting
-- storage/format communication:
-  . file type
-  . size
-  . icc profile
-- storage ready check?
-- named presets for export: comboentry (copy blob)
-  . params_size
-  . gui_update after params change
-  . storage to enforce constraints on format/wd/ht
 
-- lighttable view prefetching
-  . still images lost somewhere?
-  . try more threads an explicit sleep
-  . prefetch: user statistics.
+- default in presets system not working?
+- ldr image import -> no float buffer etc..?
+- BUG: color labels set in darkroom mode disappear
+- sqlite3 thread safe/locking?
+- BUG: full image stays locked?
+- BUG: full image not loaded due to 1st buffer > mem limit
+- BUG: linked list mru/lru in image cache broken sometimes after load?
+- BUG: colorin blue shift in colorin lcms: to lab?
+- BUG: leaving darkroom mode: garbled mipf image?
+- clear mipmap cache when image is removed
+- color labels into dttags files.
+
 - film strip view keyboard bindings
 
+- more sophisticated auto complete in preset creation
+- colorin default: read input color profile from ldr images
+
+- benchmark import/thumbnail creation speed.
+- mirror after crop?
 - ctrl-c/ctrl-v in darkroom mode
-- ctrl-e in darkroom mode: export with current settings
 - ctrl-z ctrl-shift-z up/down in history stack
 
-- prevent tab on/off for some form widgets
-
-- exposure dragging in hist with more active areas: black/gain/exp
 
 
 0.7 release:
+- eos-movrec.sf.net ? :)
 - tagging to include description/title/licence and presets
 - translatable darkroom mode plugin template
 - mac dreggn?
@@ -75,6 +72,8 @@ webpage updates:
 
 - annoying coarse pixels when we have to wait anyways, and no moving took place.
 - mipf not loaded on time in develop for small displays.
+
+- customizable key accels
 
 - read additional tags from exif?
 - mouse wheel zoom in navigation

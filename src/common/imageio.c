@@ -22,11 +22,13 @@
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/imageio_jpeg.h"
+#include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
+#include "common/colorlabels.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
@@ -44,169 +46,6 @@
 #include <strings.h>
 #include <glib/gstdio.h>
 
-
-int dt_imageio_preview_write(dt_image_t *img, dt_image_buffer_t mip)
-{
-  sqlite3_stmt *stmt;
-  int rc, wd, ht;
-  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1; 
-  dt_image_get_mip_size(img, mip, &wd, &ht);
-  // check if resolution is still up-to-date:
-  if(img->mip_buf_size[mip] != (mip == DT_IMAGE_MIPF?3*sizeof(float):4*sizeof(uint8_t))*wd*ht)
-  {
-    printf("[imageio_preview_write] rejecting old resolution\n");
-    return 0;
-  }
-
-  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "insert into mipmap_timestamps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "insert into mipmaps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-
-  // kick out latest mipmap timestamp, if > gconf settings
-  // pthread_mutex_lock(&darktable.db_insert);
-  int keep  = MAX(0, MIN( 100000, dt_conf_get_int("database_cache_thumbnails")));
-  int keep0 = MAX(0, MIN(1000000, dt_conf_get_int("database_cache_thumbnails0")));
-
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
-
-  sqlite3_exec(darktable.db, "create temp table dreggn (imgid integer, level integer, rowid integer)", NULL, NULL, NULL);
-  sqlite3_prepare_v2(darktable.db, "insert into dreggn select imgid, level, rowid from mipmap_timestamps where level = 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep0);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_prepare_v2(darktable.db, "insert into dreggn select imgid, level, rowid from mipmap_timestamps where level != 0 order by rowid desc limit ?1,-1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, keep);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  sqlite3_exec(darktable.db, "delete from mipmap_timestamps where rowid in (select rowid from dreggn)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 0 and imgid in (select imgid from dreggn where level = 0)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 1 and imgid in (select imgid from dreggn where level = 1)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 2 and imgid in (select imgid from dreggn where level = 2)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 3 and imgid in (select imgid from dreggn where level = 3)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 4 and imgid in (select imgid from dreggn where level = 4)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from mipmaps where level = 5 and imgid in (select imgid from dreggn where level = 5)", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from dreggn", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "drop table dreggn", NULL, NULL, NULL);
-
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
-  // pthread_mutex_unlock(&darktable.db_insert);
-
-  if(mip == DT_IMAGE_MIPF)
-  {
-    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
-    uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
-    dt_image_compress(img->mipf, buf, wd, ht);
-    rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
-    rc = sqlite3_bind_blob(stmt, 1, buf, sizeof(uint8_t)*wd*ht, free);
-    rc = sqlite3_bind_int (stmt, 2, img->id);
-    rc = sqlite3_bind_int (stmt, 3, mip);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
-    return 0;
-  }
-
-  dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-  uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
-  int length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
-  rc = sqlite3_prepare_v2(darktable.db, "update mipmaps set data = ?1 where imgid = ?2 and level = ?3", -1, &stmt, NULL);
-  HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_blob(stmt, 1, blob, length, free);
-  HANDLE_SQLITE_ERR(rc);
-  rc = sqlite3_bind_int (stmt, 2, img->id);
-  rc = sqlite3_bind_int (stmt, 3, mip);
-  rc = sqlite3_step(stmt);
-  if(rc != SQLITE_DONE) fprintf(stderr, "[preview_write] update mipmap failed: %s\n", sqlite3_errmsg(darktable.db));
-  rc = sqlite3_finalize(stmt);
-
-  return 0;
-}
-
-int dt_imageio_preview_read(dt_image_t *img, dt_image_buffer_t mip)
-{
-  if(mip == DT_IMAGE_NONE || mip == DT_IMAGE_FULL) return 1;
-  if(img->mip[mip])
-  { // already loaded?
-    dt_image_buffer_t mip2 = dt_image_get(img, mip, 'r');
-    if(mip2 != mip) dt_image_release(img, mip2, 'r');
-    else return 0;
-  }
-  sqlite3_stmt *stmt;
-  int rc, wd, ht;
-  size_t length = 0;
-  const void *blob = NULL;
-  dt_image_get_mip_size(img, mip, &wd, &ht);
-  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "insert into mipmap_timestamps (imgid, level) values (?1, ?2)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "select data from mipmaps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->id);
-  rc = sqlite3_bind_int (stmt, 2, mip);
-  HANDLE_SQLITE_ERR(rc);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    blob = sqlite3_column_blob(stmt, 0);
-    length = sqlite3_column_bytes(stmt, 0);
-  }
-  if(!blob || dt_image_alloc(img, mip))
-  {
-    rc = sqlite3_finalize(stmt);
-    return 1;
-  }
-
-  if(mip == DT_IMAGE_MIPF)
-  {
-    if(length != sizeof(uint8_t)*wd*ht) goto err_wrong_res;
-    dt_image_check_buffer(img, mip, 3*wd*ht*sizeof(float));
-    dt_image_uncompress((uint8_t *)blob, img->mipf, wd, ht);
-  }
-  else
-  {
-    dt_image_check_buffer(img, mip, 4*wd*ht*sizeof(uint8_t));
-    dt_imageio_jpeg_t jpg;
-    if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) || 
-      (jpg.width != wd || jpg.height != ht) ||
-       dt_imageio_jpeg_decompress(&jpg, img->mip[mip])) goto err_wrong_res;
-  }
-  rc = sqlite3_finalize(stmt);
-  dt_image_release(img, mip, 'w');
-  return 0;
-err_wrong_res: // remove obsoleted thumbnail from db
-  sqlite3_finalize(stmt);
-  dt_image_release(img, mip, 'w');
-  dt_image_release(img, mip, 'r');
-  sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1 and level = ?2", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, img->id);
-  sqlite3_bind_int (stmt, 2, mip);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  return 1;
-}
 
 void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8_t *p8)
 {
@@ -251,20 +90,31 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
 
 dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
 {
-  dt_imageio_retval_t ret = dt_imageio_open_hdr(img, filename);
-  if(ret != DT_IMAGEIO_OK) return ret;
-  ret = dt_image_raw_to_preview(img);
-  dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
-  // this updates mipf/mip4..0 from raw pixels.
   int p_wd, p_ht;
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_rgbe_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK) goto all_good;
+  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  ret = dt_imageio_open_pfm_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK) goto all_good;
+  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  // no hdr file:
+  if(ret == DT_IMAGEIO_FILE_CORRUPTED) return ret;
+all_good:
+  // this updates mipf/mip4..0 from raw pixels.
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
-  dt_image_get(img, DT_IMAGE_MIPF, 'r');
+  if(dt_image_get(img, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+  {
+    dt_image_release(img, DT_IMAGE_MIP4, 'w');
+    dt_image_release(img, DT_IMAGE_MIP4, 'r');
+    return DT_IMAGEIO_CACHE_FULL;
+  }
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
   ret = DT_IMAGEIO_OK;
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   ret = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -287,7 +137,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   // init libraw stuff
-  // img = dt_image_cache_use(img->id, 'r');
   dt_imageio_retval_t retval = DT_IMAGEIO_OK;
   int ret;
   libraw_data_t *raw = libraw_init(0);
@@ -312,7 +161,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
   // if we have a history stack, don't load preview buffer!
-  if(!dt_image_altered(img))
+  if(!dt_image_altered(img) && !dt_conf_get_bool("never_use_embedded_thumb"))
   { // no history stack: get thumbnail
     ret = libraw_open_file(raw, filename);
     HANDLE_ERRORS(ret, 0);
@@ -338,7 +187,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
-      // JPEG: decode with magick (directly rescaled to mip4)
+      // JPEG: decode (directly rescaled to mip4)
       const int orientation = img->orientation;// & 4 ? img->orientation : img->orientation ^ 1;
       dt_imageio_jpeg_t jpg;
       if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw_corrupted;
@@ -388,16 +237,12 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       }
       free(tmp);
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      // store in db.
-      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
       retval = dt_image_update_mipmaps(img);
 
       // clean up raw stuff.
       libraw_recycle(raw);
       libraw_close(raw);
       free(image);
-      if(retval == DT_IMAGEIO_OK)
-        retval = dt_image_preview_to_raw(img);
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
       return retval;
@@ -429,10 +274,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
           for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, raw->sizes.flip) + 2-k] = cam[k];
         }
       }
-      retval = dt_image_preview_to_raw(img);
-      // store in db.
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      dt_imageio_preview_write(img, DT_IMAGE_MIP4);
       if(retval == DT_IMAGEIO_OK)
         retval = dt_image_update_mipmaps(img);
       // clean up raw stuff.
@@ -501,8 +343,6 @@ try_full_raw:
         for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
       }
     }
-    // store in db.
-    dt_imageio_preview_write(img, DT_IMAGE_MIPF);
 
     // have first preview of non-processed image
     if(dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
@@ -510,7 +350,6 @@ try_full_raw:
     dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
     dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-    dt_imageio_preview_write(img, DT_IMAGE_MIP4);
     dt_image_release(img, DT_IMAGE_MIP4, 'w');
     retval = dt_image_update_mipmaps(img);
     dt_image_release(img, DT_IMAGE_MIP4, 'r');
@@ -523,45 +362,16 @@ try_full_raw:
     free(image);
     raw = NULL;
     image = NULL;
-    // dt_image_release(img, DT_IMAGE_FULL, 'w');
-    // dt_image_cache_release(img, 'r');
     // not a thumbnail!
     img->flags &= ~DT_IMAGE_THUMBNAIL;
     return DT_IMAGEIO_OK;
   }
-
-#if 0
-  // if no thumbnail: load shrinked raw to tmp buffer (use dt_imageio_load_raw)
-  libraw_recycle(raw);
-  libraw_close(raw);
-  free(image);
-try_full_raw:
-  retval = dt_imageio_open_raw(img, filename);
-  if(retval != DT_IMAGEIO_OK) return retval;
-  retval = dt_image_raw_to_preview(img);
-  dt_image_release(img, DT_IMAGE_FULL, 'r');  // drop open_raw lock on full buffer.
-  // this updates mipf/mip4..0 from raw pixels.
-  int p_wd, p_ht;
-  dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
-  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
-  dt_image_get(img, DT_IMAGE_MIPF, 'r');
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  retval = dt_image_update_mipmaps(img);
-  dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return retval;
-#endif
 
 error_raw_cache_full:
   fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
-  // dt_image_cache_release(img, 'r');
   return DT_IMAGEIO_CACHE_FULL;
 
 error_raw_corrupted:
@@ -569,7 +379,6 @@ error_raw_corrupted:
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
-  // dt_image_cache_release(img, 'r');
   return DT_IMAGEIO_FILE_CORRUPTED;
 }
 
@@ -577,7 +386,6 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-  // img = dt_image_cache_use(img->id, 'r');
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
@@ -602,6 +410,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
   // new demosaicing params
+  raw->params.amaze_ca_refine = -1;
   if ((img->raw_params.fill0 & 0x0F) == 6 ) {
     raw->params.user_qual = 4;
     raw->params.dcb_enhance_fl = img->raw_params.fill0 & 0x010;
@@ -610,7 +419,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   }
   if ((img->raw_params.fill0 & 0x0F) == 7 ) {
     raw->params.user_qual = 5;
-    raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x010;;
+    raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x010;
   }
   if ((img->raw_params.fill0 & 0x0F) == 8 ) {
     raw->params.user_qual = 6;
@@ -651,7 +460,6 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     libraw_recycle(raw);
     libraw_close(raw);
     free(image);
-    // dt_image_cache_release(img, 'r');
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width)*(img->height)*sizeof(float));
@@ -665,100 +473,16 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw = NULL;
   image = NULL;
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-  // dt_image_cache_release(img, 'r');
   return DT_IMAGEIO_OK;
 }
 
-#if 0
-static void MaxMidMin(int64_t p[3], int *maxc, int *midc, int *minc)
-{
-  if (p[0] > p[1] && p[0] > p[2]) {
-    *maxc = 0;
-    if (p[1] > p[2]) { *midc = 1; *minc = 2; }
-    else { *midc = 2; *minc = 1; }
-  } else if (p[1] > p[2]) {
-    *maxc = 1;
-    if (p[0] > p[2]) { *midc = 0; *minc = 2; }
-    else { *midc = 2; *minc = 0; }
-  } else {
-    *maxc = 2;
-    if (p[0] > p[1]) { *midc = 0; *minc = 1; }
-    else { *midc = 1; *minc = 0; }
-  }
-}
-
-// this is stolen from develop_linear (ufraw_developer.c), because it does a great job ;)
-void dt_raw_develop(uint16_t *in, uint16_t *out, dt_image_t *img)
-{
-  int64_t tmppix[4];//, tmp;
-  int64_t exposure = pow(2, img->exposure) * 0x10000;
-  int clipped = 0;
-  for(int c=0;c<img->raw->idata.colors;c++)
-  {
-    tmppix[c] = (uint64_t)in[c] * img->raw->color.cam_mul[c]/0x10000 - img->raw->color.black;
-    if(tmppix[c] > img->raw->color.maximum) clipped = 1;
-    tmppix[c] = tmppix[c] * exposure / img->raw->color.maximum;
-    // tmppix[c] = (tmppix[c] * 0x10000) / img->raw.color.maximum;
-  }
-  if(clipped)
-  {
-    int64_t unclipped[3], clipped[3];
-    for(int cc=0;cc<3;cc++)
-    {
-      // for(int c=0,tmp=0;c<img->raw->idata.colors;c++)
-      //   tmp += tmppix[c] * img->raw->color.cmatrix[cc][c];
-      // unclipped[cc] = MAX(tmp/0x10000, 0);
-      unclipped[cc] = tmppix[cc];
-    }
-    for(int c=0; c<3; c++) tmppix[c] = MIN(tmppix[c], 0xFFFF);
-    // for(int c=0; c<3; c++) tmppix[c] = MIN(tmppix[c], exposure);
-    for(int cc=0; cc<3; cc++)
-    {
-      // for(int c=0, tmp=0; c<img->raw->idata.colors; c++)
-      //   tmp += tmppix[c] * img->raw->color.cmatrix[cc][c];
-      // clipped[cc] = MAX(tmp/0x10000, 0);
-      clipped[cc] = tmppix[cc];
-    }
-    int maxc, midc, minc;
-    MaxMidMin(unclipped, &maxc, &midc, &minc);
-    int64_t unclippedLum = unclipped[maxc];
-    int64_t clippedLum = clipped[maxc];
-    int64_t clippedSat;
-    if(clipped[maxc] < clipped[minc] || clipped[maxc] == 0)
-      clippedSat = 0;
-    else
-      clippedSat = 0x10000 - clipped[minc] * 0x10000 / clipped[maxc];
-    int64_t clippedHue;
-    if(clipped[maxc] == clipped[minc]) clippedHue = 0;
-    else clippedHue =
-      (clipped[midc]-clipped[minc])*0x10000 /
-        (clipped[maxc]-clipped[minc]);
-    int64_t unclippedHue;
-    if(unclipped[maxc] == unclipped[minc])
-      unclippedHue = clippedHue;
-    else
-      unclippedHue =
-        (unclipped[midc]-unclipped[minc])*0x10000 /
-        (unclipped[maxc]-unclipped[minc]);
-    int64_t lum = clippedLum + (unclippedLum - clippedLum) * 1/2;
-    int64_t sat = clippedSat;
-    int64_t hue = unclippedHue;
-
-    tmppix[maxc] = lum;
-    tmppix[minc] = lum * (0x10000-sat) / 0x10000;
-    tmppix[midc] = lum * (0x10000-sat + sat*hue/0x10000) / 0x10000;
-  }
-  for(int c=0; c<3; c++)
-    out[c] = MIN(MAX(tmppix[c], 0), 0xFFFF);
-}
-#endif
-
-// =================================================
-//   begin magickcore wrapper functions:
-// =================================================
-
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_tiff_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
@@ -818,12 +542,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     }
   }
   free(tmp);
-  dt_imageio_retval_t retval = dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  // store in db.
-  dt_imageio_preview_write(img, DT_IMAGE_MIP4);
-  if(retval == DT_IMAGEIO_OK)
-    retval = dt_image_update_mipmaps(img);
+  dt_imageio_retval_t retval = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return retval;
 }
@@ -831,6 +551,11 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
+  dt_imageio_retval_t ret;
+  ret = dt_imageio_open_tiff(img, filename);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
@@ -1153,6 +878,15 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
   rc = sqlite3_finalize(stmt);
   fprintf(f, "stars: %d\n", stars & 0x7);
   fprintf(f, "rawimport: %f %f %d\n", denoise, bright, raw_params);
+  // Store colorlabels in dttags
+  fprintf(f, "colorlabels:");
+  rc = sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    fprintf(f, " %d", sqlite3_column_int(stmt, 0));
+  rc = sqlite3_finalize(stmt);
+  fprintf(f, "\n");
+  
   fprintf(f, "tags:\n");
   // print each tag in one line.
   rc = sqlite3_prepare_v2(darktable.db, "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
@@ -1169,82 +903,109 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
   int stars = 1, rd = -1;
   int rc;
   sqlite3_stmt *stmt;
-  char line[512];
+  char line[512]={0};
   FILE *f = fopen(filename, "rb");
   if(!f) return 1;
-  rd = fscanf(f, "stars: %d\n", &stars);
-  if(rd != 1) return 2;
+  
   // dt_image_t *img = dt_image_cache_get(imgid, 'w');
-  img->flags |= 0x7 & stars;
-  rd = fscanf(f, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
-  rd = fscanf(f, "%[^\n]\n", line);
-
-  // consistency: strip all tags from image (tagged_image, tagxtag)
-  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
-      "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
-      "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, img->id);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-
-  // remove from tagged_images
-  rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, img->id);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-
-  if(!strcmp(line, "tags:"))
-  {
-    // while read line, add tag to db.
-    while(fscanf(f, "%[^\n]\n", line) != EOF)
+  while( fgets( line, 512, f ) ) {
+    if( strncmp( line, "stars:", 6) == 0) 
     {
-      int tagid = -1;
-      pthread_mutex_lock(&darktable.db_insert);
-      // check if tag is available, get its id:
-      for(int k=0;k<2;k++)
-      {
-        rc = sqlite3_prepare_v2(darktable.db, "select id from tags where name = ?1", -1, &stmt, NULL);
-        rc = sqlite3_bind_text (stmt, 1, line, strlen(line), SQLITE_TRANSIENT);
-        if(sqlite3_step(stmt) == SQLITE_ROW)
-          tagid = sqlite3_column_int(stmt, 0);
-        rc = sqlite3_finalize(stmt);
-        if(tagid > 0)
-        {
-          if(k == 1)
-          {
-            rc = sqlite3_prepare_v2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt, NULL);
-            rc = sqlite3_bind_int(stmt, 1, tagid);
-            rc = sqlite3_step(stmt);
-            rc = sqlite3_finalize(stmt);
-            rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
-            rc = sqlite3_bind_int(stmt, 1, tagid);
-            rc = sqlite3_step(stmt);
-            rc = sqlite3_finalize(stmt);
-          }
-          break;
+      if( (rd = sscanf( line, "stars: %d\n", &stars)) == 1 )
+        img->flags |= 0x7 & stars;
+    }
+    else if( strncmp( line, "rawimport:",10) == 0) 
+    {
+       rd = sscanf( line, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
+    } 
+    else if( strncmp( line, "colorlabels:",12) == 0) 
+    {
+      // Remove associated color labels
+      dt_colorlabels_remove_labels( img->id );
+      
+      if( strlen(line+12) > 1 ) {
+        char *colors=line+12;
+        char *p=colors+1;
+        while( *p!=0) { if(*p==' ') *p='\0'; p++; }
+        p=colors;
+        while( *p != '\0' ) {
+          dt_colorlabels_set_label( img->id, atoi(p) );
+          p+=strlen(p)+1;
         }
-        // create this tag (increment id, leave icon empty), retry.
-        rc = sqlite3_prepare_v2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
-        rc = sqlite3_bind_text (stmt, 1, line, strlen(line), SQLITE_TRANSIENT);
+        
+      }
+    } 
+    else if( strncmp( line, "tags:",5) == 0) 
+    { // Special, tags should always be placed at end of dttags file....
+      
+      // consistency: strip all tags from image (tagged_image, tagxtag)
+      rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
+          "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
+          "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+      rc = sqlite3_bind_int(stmt, 1, img->id);
+      rc = sqlite3_step(stmt);
+      rc = sqlite3_finalize(stmt);
+      
+       // remove from tagged_images
+      rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+      rc = sqlite3_bind_int(stmt, 1, img->id);
+      rc = sqlite3_step(stmt);
+      rc = sqlite3_finalize(stmt);
+        
+      // while read line, add tag to db.
+      while(fscanf(f, "%[^\n]\n", line) != EOF)
+      {
+        int tagid = -1;
+        pthread_mutex_lock(&darktable.db_insert);
+        // check if tag is available, get its id:
+        for(int k=0;k<2;k++)
+        {
+          rc = sqlite3_prepare_v2(darktable.db, "select id from tags where name = ?1", -1, &stmt, NULL);
+          rc = sqlite3_bind_text (stmt, 1, line, strlen(line), SQLITE_TRANSIENT);
+          if(sqlite3_step(stmt) == SQLITE_ROW)
+            tagid = sqlite3_column_int(stmt, 0);
+          rc = sqlite3_finalize(stmt);
+          if(tagid > 0)
+          {
+            if(k == 1)
+            {
+              rc = sqlite3_prepare_v2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt, NULL);
+              rc = sqlite3_bind_int(stmt, 1, tagid);
+              rc = sqlite3_step(stmt);
+              rc = sqlite3_finalize(stmt);
+              rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
+              rc = sqlite3_bind_int(stmt, 1, tagid);
+              rc = sqlite3_step(stmt);
+              rc = sqlite3_finalize(stmt);
+            }
+            break;
+          }
+          // create this tag (increment id, leave icon empty), retry.
+          rc = sqlite3_prepare_v2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
+          rc = sqlite3_bind_text (stmt, 1, line, strlen(line), SQLITE_TRANSIENT);
+          rc = sqlite3_step(stmt);
+          rc = sqlite3_finalize(stmt);
+        }
+        pthread_mutex_unlock(&darktable.db_insert);
+        // associate image and tag.
+        rc = sqlite3_prepare_v2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
+        rc = sqlite3_bind_int (stmt, 1, tagid);
+        rc = sqlite3_bind_int (stmt, 2, img->id);
+        rc = sqlite3_step(stmt);
+        rc = sqlite3_finalize(stmt);
+        rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
+            "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+            "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+        rc = sqlite3_bind_int(stmt, 1, tagid);
+        rc = sqlite3_bind_int(stmt, 2, img->id);
         rc = sqlite3_step(stmt);
         rc = sqlite3_finalize(stmt);
       }
-      pthread_mutex_unlock(&darktable.db_insert);
-      // associate image and tag.
-      rc = sqlite3_prepare_v2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
-      rc = sqlite3_bind_int (stmt, 1, tagid);
-      rc = sqlite3_bind_int (stmt, 2, img->id);
-      rc = sqlite3_step(stmt);
-      rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
-          "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
-          "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
-      rc = sqlite3_bind_int(stmt, 1, tagid);
-      rc = sqlite3_bind_int(stmt, 2, img->id);
-      rc = sqlite3_step(stmt);
-      rc = sqlite3_finalize(stmt);
+      
     }
+    memset( line,0,512);
   }
+  
   fclose(f);
   dt_image_cache_flush(img);
   // dt_image_cache_release(img, 'w');

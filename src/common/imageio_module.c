@@ -37,6 +37,8 @@ dt_imageio_sort_modules_format (gconstpointer a, gconstpointer b)
   return strcmp(am->name(), bm->name());
 }
 
+/** Default implementation of dimension module function, used if format modules does not implements dimension() */
+int _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height) { return 0; }
 
 static int
 dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *libname, const char *plugin_name)
@@ -59,8 +61,10 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
 
   if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
   if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
+  if(!g_module_symbol(module->module, "dimension",                   (gpointer)&(module->dimension)))                   module->dimension = _default_format_dimension;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
+  if(!g_module_symbol(module->module, "set_params",                   (gpointer)&(module->set_params)))                   goto error;
   if(!g_module_symbol(module->module, "write_image",                  (gpointer)&(module->write_image)))                  goto error;
   if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
 
@@ -115,6 +119,11 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   return 0;
 }
 
+/** Default implementation of supported function, used if storage modules not implements supported() */
+int _default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format) { return 1; }
+/** Default implementation of dimension module function, used if storage modules does not implements dimension() */
+int _default_storage_dimension(struct dt_imageio_module_storage_t *self,uint32_t *width, uint32_t *height) { return 0; }
+
 static int
 dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char *libname, const char *plugin_name)
 {
@@ -137,9 +146,13 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
+  if(!g_module_symbol(module->module, "finalize_store",         (gpointer)&(module->finalize_store)))         module->finalize_store = NULL;
+  if(!g_module_symbol(module->module, "set_params",             (gpointer)&(module->set_params)))             goto error;
 
-  if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = NULL;
-
+  if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
+  if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
+  if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
+  
   return 0;
 error:
   fprintf(stderr, "[imageio_load_module] failed to open storage `%s': %s\n", plugin_name, g_module_error());
@@ -201,6 +214,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
     if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
+    free(module);
     iio->plugins_format = g_list_delete_link(iio->plugins_format, iio->plugins_format);
   }
   while(iio->plugins_storage)
@@ -208,6 +222,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
     if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
+    free(module);
     iio->plugins_storage = g_list_delete_link(iio->plugins_storage, iio->plugins_storage);
   }
 }
@@ -230,3 +245,28 @@ dt_imageio_module_storage_t *dt_imageio_get_storage()
   return (dt_imageio_module_storage_t *)it->data;
 }
 
+dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = iio->plugins_format;
+  while(it)
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    if(!strcmp(module->plugin_name, name)) return module;
+    it = g_list_next(it);
+  }
+  return NULL;
+}
+
+dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  GList *it = iio->plugins_storage;
+  while(it)
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    if(!strcmp(module->plugin_name, name)) return module;
+    it = g_list_next(it);
+  }
+  return NULL;
+}
