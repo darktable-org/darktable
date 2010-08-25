@@ -53,7 +53,9 @@
 		<title>Crossdevelop</title>
 		<para>Cross developing is an effect archived by using wrong chemicals with wrong film type when developing the film, 
 				the results is and higher contrast image with bluish shadows and a green/yellow tone of the image.
-				So we need an image, let it be in color, then go into tonecurve and apply "medium contrast" from presets.
+				So we need an image, let it be in color, then go into tonecurve and apply "medium contrast" from presets to enhance the contrast
+				int the image.
+				Enable channel mixer and choose preset "boost color artefacts" to boost gritty details in image.
 				Enable splittoning and choose an blue color for shadows and boost saturation up to 80%, choose a geenishyellow 
 				color for highlights and put saturation around 60%.
 				Set compression to 0% to allow toning over all lightnesslevels.
