@@ -527,6 +527,11 @@ void enter(dt_view_t *self)
 
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
+  
+    
+  /* set list of modules to modulegroups */
+  dt_gui_iop_modulegroups_set_list (dev->iop);
+  
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;
   while(modules)
@@ -550,9 +555,7 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
-  
-  /* set list of modules to modulegroups */
-  dt_gui_iop_modulegroups_set_list (dev->iop);
+
 
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
