@@ -386,7 +386,6 @@ void enter(dt_view_t *self)
 	}
 	
 	// Setup key accelerators in capture view...	
-	dt_gui_key_accel_register(0,GDK_c,capture_view_switch_key_accel,(void *)self);
 	dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 
 	// initialize a default session...
@@ -409,7 +408,6 @@ void leave(dt_view_t *self)
 	if( dt_film_is_empty(cv->film->id) != 0)
 		dt_film_remove(cv->film->id );
 	
-	dt_gui_key_accel_unregister(capture_view_switch_key_accel);
 	dt_gui_key_accel_unregister(film_strip_key_accel);
 	
 	// Restore user interface
