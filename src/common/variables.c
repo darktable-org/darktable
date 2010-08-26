@@ -193,6 +193,12 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   return got_value;
 }
 
+void 
+dt_variables_reset_sequence(dt_variables_params_t *params)
+{
+	params->data->sequence = 0;
+}
+
 void dt_variables_params_init(dt_variables_params_t **params)
 {
   *params=g_malloc(sizeof(dt_variables_params_t));

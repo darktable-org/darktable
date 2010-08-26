@@ -48,4 +48,7 @@ void dt_variables_params_destroy(dt_variables_params_t *params);
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
 /** get the expanded string result, use a copy of this string in your code like g_strdup(). */
 const gchar *dt_variables_get_result(dt_variables_params_t *params);
+/** reset sequence number */
+void dt_variables_reset_sequence(dt_variables_params_t *params);
+
 #endif
