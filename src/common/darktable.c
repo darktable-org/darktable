@@ -189,9 +189,6 @@ int dt_init(int argc, char *argv[])
   }
   if(!id)
   {
-    /* reset the collection and switch to library mode */
-    dt_collection_reset (darktable.collection);
-    
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
