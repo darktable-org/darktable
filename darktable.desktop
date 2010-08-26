@@ -6,6 +6,7 @@ GenericName[de]=Virtueller Leuchttisch und Dunkelkammer
 GenericName[sv]=Virtuellt ljusbord och mörkerrum
 GenericName[nl]=Virtuele Lichttafel en Doka
 GenericName[fi]=Virtuaalinen valopöytä ja pimiö
+GenericName[fr]=Table lumineuse et chambre noire virtuelles
 
 Comment=Organize and develop images from digital cameras
 Comment[ru]=Организация, сортировка и проявка цифровых негативов
@@ -13,7 +14,8 @@ Comment[de]=Organisiere und entwickle Bilder von Digitalkameras
 Comment[sv]=Organisera och utveckla bilder ifrån digitalkameror
 Comment[nl]=Organiseer en ontwikkel beelden van digitale camera's
 Comment[fi]=Järjestele ja kehitä kuvia digitaalikameroista
-
+Comment[fr]=Organiser et développer les images d'un boîtier numérique
+ 
 Version=1.0
 
 Type=Application
