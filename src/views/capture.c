@@ -206,6 +206,9 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 	cv->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
 	dt_film_init(cv->film);
 	
+	/* reset session sequence number */
+	cv->vp->data->sequence = 0;
+	
 	// Construct the direectory for filmroll...
 	cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory,NULL);
 	dt_variables_expand( cv->vp, cv->path, FALSE );
