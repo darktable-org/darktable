@@ -21,7 +21,11 @@
 #endif
 
 #include "common/exif.h"
+
+#if 0
 #include <libexif/exif-data.h>
+#endif
+
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
 #include <exiv2/canonmn.hpp>
@@ -267,6 +271,7 @@ const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,
 }
 #endif
 
+#if 0
 #include <stdio.h>
 void *dt_exif_data_new(uint8_t *data,uint32_t size)
 {
@@ -300,6 +305,7 @@ const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,
   }
   return NULL;
 }
+#endif
 
 
 int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
