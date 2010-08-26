@@ -228,9 +228,6 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
   if (collection->query && strcmp (collection->query,query) == 0) 
     return 0;
   
-  
-  fprintf(stderr,"Storing query: '%s'\n",query);
-  
   /* store flags to gconf */
   if (!collection->clone)
   {
