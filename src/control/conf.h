@@ -250,4 +250,28 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
 #endif
 }
 
+/** check if key exists, return 1 if lookup successed, 0 if failed..*/
+static inline int dt_conf_key_exists (const char *key)
+{
+  int res = 0;
+#ifdef HAVE_GCONF
+  GError *error=NULL;
+  GConfValue *value = gconf_client_get (darktable.conf->gconf,key,&error);
+  if( value != NULL && error == NULL ) res = 1;
+#else
+  /* lookup in stringtable for match of key name */
+  pthread_mutex_lock (&darktable.conf->mutex);
+  for (int i=0;i<darktable.conf->num;i++)
+  {
+    if (!strncmp (key, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF)) 
+    {
+      res=1;
+      break;
+    }
+  }
+  pthread_mutex_unlock (&darktable.conf->mutex);
+#endif
+  return res;
+}
+
 #endif
