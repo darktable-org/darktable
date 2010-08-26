@@ -251,14 +251,8 @@ dt_camctl_t *dt_camctl_new()
   gp_context_set_error_func( camctl->gpcontext , (GPContextErrorFunc)_error_func_dispatch, camctl );
   gp_context_set_message_func( camctl->gpcontext , (GPContextMessageFunc)_message_func_dispatch, camctl );
   
-  gp_port_info_list_new( &camctl->gpports );
-  gp_abilities_list_new( &camctl->gpcams );
-
-  // Load drivers
-  gp_port_info_list_load( camctl->gpports );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Loaded %d port drivers.\n", gp_port_info_list_count( camctl->gpports ) );	
-  
   // Load all camera drivers we know...
+  gp_abilities_list_new( &camctl->gpcams );
   gp_abilities_list_load( camctl->gpcams, camctl->gpcontext );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] Loaded %d camera drivers.\n", gp_abilities_list_count( camctl->gpcams ) );	
   
@@ -315,6 +309,17 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
 
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   pthread_mutex_lock(&camctl->lock);
+  
+  /* reload portdrivers */
+  if (camctl->gpports)
+    gp_port_info_list_free (camctl->gpports);
+
+  gp_port_info_list_new( &camctl->gpports );
+  gp_port_info_list_load( camctl->gpports );
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Loaded %d port drivers.\n", gp_port_info_list_count( camctl->gpports ) );	
+  
+  
+  
   CameraList *available_cameras=NULL;
   gp_list_new( &available_cameras );
   gp_abilities_list_detect (c->gpcams,c->gpports, available_cameras, c->gpcontext );
@@ -356,8 +361,8 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         {
           // Remove device property summary:
           char *eos=strstr(camera->summary.text,"Device Property Summary:\n");
-	  if( eos )
-		eos[0]='\0';
+    if( eos )
+    eos[0]='\0';
         }
         
         // Add to camera list
