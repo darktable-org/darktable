@@ -31,8 +31,8 @@
 
 
 #define COLLECTION_FILTER_FILM_ID               1             // use film_id in filter
-#define COLLECTION_FILTER_ATLEAST_STAR          2             // show all stars including and above selected star filter
-#define COLLECTION_FILTER_EQUAL_STAR            4             // show only selected star filter
+#define COLLECTION_FILTER_ATLEAST_RATING         2             // show all stars including and above selected star filter
+#define COLLECTION_FILTER_EQUAL_RATING            4             // show only selected star filter
 #define COLLECTION_FILTER_ALTERED               8             // show only altered images
 #define COLLECTION_FILTER_UNALTERED            16             // show only unaltered images
 
@@ -47,13 +47,14 @@ typedef struct dt_collection_params_t
   /** current film id */
   uint32_t film_id;
 
-  /** current star filter */
-  uint32_t star;
+  /** current  filter */
+  uint32_t rating;
 
 } dt_collection_params_t;
 
 typedef struct dt_collection_t
 {
+	int clone;
   gchar *query;
   gchar *where_ext;
   dt_collection_params_t params;
@@ -75,7 +76,7 @@ int dt_collection_update (const dt_collection_t *collection);
 /** reset collection to default dummy selection */
 void dt_collection_reset (const dt_collection_t *collection);
 /** sets an extended where part */
-void dt_collection_set_extended_where(const dt_collection_t *collection,gchar *extended_where);
+void dt_collection_set_extended_where (const dt_collection_t *collection,gchar *extended_where);
 
 /** get filter flags for collection */
 uint32_t dt_collection_get_filter_flags (const dt_collection_t *collection);
@@ -90,9 +91,9 @@ void dt_collection_set_query_flags (const dt_collection_t *collection, uint32_t 
 /** set the film_id of collection */
 void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id); 
 /** set the star level for filter */
-void dt_collection_set_star (const dt_collection_t *collection, uint32_t star); 
+void dt_collection_set_rating (const dt_collection_t *collection, uint32_t rating); 
 /** get the count of query */
-uint32_t dt_collection_get_count(const dt_collection_t *collection);
+uint32_t dt_collection_get_count (const dt_collection_t *collection);
 
 
 #endif

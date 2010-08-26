@@ -396,12 +396,12 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
 
   
   /* update collection star filter flags */
-  if         (i == 0) dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_STAR|COLLECTION_FILTER_EQUAL_STAR));
-  else if (i == 1) dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_STAR) & ~COLLECTION_FILTER_ATLEAST_STAR);
-  else dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_STAR );
+  if         (i == 0) dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_RATING|COLLECTION_FILTER_EQUAL_RATING));
+  else if (i == 1) dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_RATING) & ~COLLECTION_FILTER_ATLEAST_RATING);
+  else dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_RATING );
   
   /* set the star filter in collection */
-  dt_collection_set_star(darktable.collection, i-1);		
+  dt_collection_set_rating(darktable.collection, i-1);		
   
   update_query();
 }
