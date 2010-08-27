@@ -334,6 +334,44 @@ view_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data
   return FALSE;
 }
 
+gboolean
+darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  GtkWidget *dialog = gtk_about_dialog_new();
+  gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika 2009-2010");
+  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("Organize and develop images from digital cameras"));
+  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://dartable.sf.net/");
+  gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
+  const char *authors[] =
+      {_("* developers *"),
+      "Hendrik Andersson",
+      "Johannes Hanika",
+      "",
+      _("* ubuntu packaging, color management, video tutorials *"),
+      "Pascal de Bruijn",
+      "",
+      _("* contributors *"),
+      "Alexandre Prokoudine",
+      "Alexander Rabtchevich",
+      "Andrey Kaminsky",
+      "Christian Himpel",
+      "Gregor Quade",
+      "Mikko Ruohola",
+      "Pascal de Bruijn",
+      "Richard Hughes",
+      "Tobias Ellinghaus",
+      "Wyatt Olson",
+      "Xavier Besse", NULL};
+  gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
+      
+  gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
+  gtk_dialog_run(GTK_DIALOG (dialog));
+  gtk_widget_destroy(dialog);
+  return TRUE;
+}
+
 static void
 colorpicker_mean_changed (GtkComboBox *widget, gpointer p)
 {
@@ -1047,6 +1085,12 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_panel_sizegroup_add (widget);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
                     G_CALLBACK (view_label_clicked),
+                    (gpointer)0);
+
+  // show about dialog when darktable label is clicked
+  widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label_eventbox");
+  g_signal_connect (G_OBJECT (widget), "button-press-event",
+                    G_CALLBACK (darktable_label_clicked),
                     (gpointer)0);
 
 
