@@ -1,0 +1,2 @@
+<!ENTITY darkroom_modules SYSTEM "darkroom/modules/modules.xml">
+<!ENTITY darkroom_module_splittoning SYSTEM "darkroom/modules/splittoning/splittoning.xml">

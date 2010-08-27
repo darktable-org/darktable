@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "darktable.dtd">
+		%darktable_dtd;
+		<!ENTITY % darkroom_modules_dtd SYSTEM "darkroom_modules.dtd">
+		%darkroom_modules_dtd;
+		]>
+	       
+<book lang="en">
+	<bookinfo>
+		<legalnotice>
+			<para>
+				Legal notice ...
+			</para>
+		</legalnotice>
+		<author>
+			<firstname>Henrik</firstname>
+			<surname>Andersson</surname>
+		</author>
+		<copyright>
+			<year>2010</year>
+			<holder>P.H. Andersson</holder>
+		</copyright>
+	</bookinfo>
+	<title>Darktable</title>
+	<preface id="overview"><title>Preface to darktable</title>
+		<para>
+			<indexterm><primary>Darktable</primary></indexterm>
+			<indexterm><primary>Preface</primary></indexterm>
+			This is the preface. It contains of a paragrapgh, 
+			a list and a link. This paragraph contains useless 
+			words only. Its mere purpose is to have 
+			some text in order to see the paragraphs end.</para>
+	</preface>
+&chapter_lighttable;
+&chapter_darkroom;
+</book>

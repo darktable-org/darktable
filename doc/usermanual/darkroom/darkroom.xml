@@ -1,0 +1,12 @@
+<chapter>
+<chapterinfo>
+<keywordset>
+  <keyword>darkroom</keyword>
+  <keyword>view</keyword>
+</keywordset>
+</chapterinfo>
+<title>Darkroom</title>
+<para>The darkroom view is where you develop your image...</para>
+&darkroom_modules;
+
+</chapter>
