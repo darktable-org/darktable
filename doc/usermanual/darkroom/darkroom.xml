@@ -7,6 +7,36 @@
 </chapterinfo>
 <title>Darkroom</title>
 <para>The darkroom view is where you develop your image...</para>
+<sect1><title>Overview</title>
+	<para>In darkroom you are in develop mode for the specific image, here you have alot of tools to
+		develop you image.
+	</para>
+	<para>On the left side you have the navigation, snapshots, history and history panel each of them are described below, 
+		in the right panel you can see the histogram and then a list of available modules to use when working with your image.
+		And at bottom of right panel you can enable/disable individual modules which will remove them from the right panel.
+	</para>
+	<sect2><title>Navigation</title>
+		<para>This panels shows the whole image and a rectangle is showing the current zoom view that  you see, you can move this rectangle to 
+			pan around in same zoomlevel.
+		</para>
+	</sect2>
+	<sect2><title>Snapshots</title>
+		<para>You can take a snapshot of what is displayed in the center view, this snapshot can then be selected and is overlayed in the current center
+			view to help you with a side by side comparasion when you tuning parameters of a module.
+		</para>
+	</sect2>
+	<sect2><title>Metadata</title>
+		<para>Shows the metadata for an image, same as in lighttable mode.
+		</para>
+	</sect2>
+	<sect2><title>Historystack</title>
+		<para>The historystack is each change of module in history, here you can select a point in stack an hit compress historystack button to get back
+			to the select point of changes...
+		</para>
+	</sect2>
+	
+</sect1>
+
 &darkroom_modules;
 
 </chapter>
