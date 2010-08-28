@@ -11,11 +11,25 @@
 	<sect1><title>Overview</title>
 		<para></para>
 		<sect2><title>Ligthtable</title>
-			<para>In this view your images are shown as thumbs, each thumb has a frame and while mouse is over
-				an image, information such as rating and if image is untouched or altered.
-				Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata pane.
-			</para>
-			<para>While mouse is over and imageframe you have additional actions accessed from keyboard to apply on image.
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='5cm'/>
+					<tbody>
+						<row>						
+							<entry>In this centerview your images are shown as thumbs, each thumb has a frame and while mouse is over
+								an image, information such as rating and if image are altered in darkroom <inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is viewed.
+								Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel.
+							</entry>
+							<entry>
+								<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+							
+			<para>While mouse is over and imageframe you have additional actions accessed from keyboard to apply on image here
+				follows an table of key accelerators and assigned actions.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
@@ -70,11 +84,19 @@
 			</sect3>
 			
 			<sect3><title>Library</title>
-				<para></para>
+				<para>A filmroll is the same as a folder in the filesystem, except for single images filmroll that can contain images spread around on in your filessystem.
+					You can import a singel image or a folder, if a folder is imported Darktable will not recurse down in several folderlevels, just import the images that resides at
+					choosen folder into a filmroll which name become the name of the folder imported.
+				</para>
+				<para>All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest.
+						Double click on a filmroll in the list and it will be opened and viewed.
+					You can also click the recent filmroll items to open the latest ones you have worked with.
+				</para>
 			</sect3>
 			
 			<sect3><title>Metadata</title>
-				<para></para>
+				<para>This panel shows embeded metadata of an image.
+				</para>
 			</sect3>
 		</sect2>
 		<sect2><title>Filtering and sort order</title>
