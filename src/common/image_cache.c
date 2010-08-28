@@ -479,5 +479,7 @@ void dt_image_cache_flush(dt_image_t *img)
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
+  // also synch dttags file:
+  dt_image_write_dt_files(img);
 }
 
