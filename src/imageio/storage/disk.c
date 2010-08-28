@@ -168,8 +168,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   }
 
   c = filename + strlen(filename);
-  for(;c>filename && *c != '.';c--);
-  if(c <= filename) c = filename + strlen(filename);
+  for(;c>filename && *c != '.' && *c != '/' ;c--);
+  if(c <= filename || *c=='/') c = filename + strlen(filename);
 
   const char *ext = format->extension(fdata);
   sprintf(c,".%s",ext);
