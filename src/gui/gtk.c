@@ -731,7 +731,7 @@ key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
-    if(a->state == (a->state & event->state) && a->keyval == event->keyval)
+    if(a->state == event->state && a->keyval == event->keyval)
     {
       a->callback(a->data);
       return TRUE;

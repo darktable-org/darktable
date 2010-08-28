@@ -543,6 +543,33 @@ go_down_key_accel_callback(void *data)
 }
 
 static void
+zoom_key_accel_callback(void *data)
+{
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  switch((long int)data)
+  {
+    case 1:
+      zoom = 1;
+      break;
+    case 2:
+      if(zoom <= 1) zoom = 1;
+      else zoom --;
+      // if(layout == 0) lib->center = 1;
+      break;
+    case 3:
+      if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
+      else zoom ++;
+      // if(layout == 0) lib->center = 1;
+      break;
+    case 4:
+      zoom = DT_LIBRARY_MAX_ZOOM;
+      break;
+  }
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
+}
+
+static void
 star_key_accel_callback(void *data)
 {
   long int num = (long int)data;
@@ -640,10 +667,14 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
+  dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
+  dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
+  dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
+  dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel_callback, (void *)1);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel_callback, (void *)2);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel_callback, (void *)3);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, zoom_key_accel_callback, (void *)4);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_g, go_up_key_accel_callback, (void *)self);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_G, go_down_key_accel_callback, (void *)self);
@@ -657,6 +688,7 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 void leave(dt_view_t *self)
 {
   dt_gui_key_accel_unregister(star_key_accel_callback);
+  dt_gui_key_accel_unregister(zoom_key_accel_callback);
   dt_gui_key_accel_unregister(go_up_key_accel_callback);
   dt_gui_key_accel_unregister(go_down_key_accel_callback);
   GList *it = darktable.lib->plugins;
@@ -812,22 +844,6 @@ int key_pressed(dt_view_t *self, uint16_t which)
       break;
     case KEYCODE_Down: case KEYCODE_o:
       lib->track = DT_LIBRARY_MAX_ZOOM;
-      break;
-    case KEYCODE_1:
-      zoom = 1;
-      break;
-    case KEYCODE_2:
-      if(zoom <= 1) zoom = 1;
-      else zoom --;
-      if(layout == 0) lib->center = 1;
-      break;
-    case KEYCODE_3:
-      if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-      else zoom ++;
-      if(layout == 0) lib->center = 1;
-      break;
-    case KEYCODE_4:
-      zoom = DT_LIBRARY_MAX_ZOOM;
       break;
     case KEYCODE_apostrophe:
       lib->center = 1;

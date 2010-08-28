@@ -178,10 +178,10 @@ star_key_accel_callback(void *data)
 
 void enter(dt_view_t *self)
 {
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
+  dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
+  dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
+  dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
+  dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_colorlabels_register_key_accels();
   // scroll to opened image.

@@ -46,6 +46,12 @@
       </ul>
     	</div>
     	<div class="listtext">
+    	<img src="images/firering.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
+      <ul>
+        <li>get an <a href="http://russellharrison.com/yum/rlh/f13/free/i386/">unofficial fedora weekly git rpm</a>.</li>
+      </ul>
+    	</div>
+    	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
         <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.5/darktable-0.5.tar.bz2/download">0.5 source .bz2</a></li>
@@ -79,8 +85,9 @@
       </ul>
     	</div>
     	<div class="listtext">
-      <img src="images/macosx.jpg" alt="release" class="img" /><h1>current release for mac osx</h1>
+      <img src="images/macosx.jpg" alt="release" class="img" /><h1>outdated release for mac osx</h1>
       <ul>
+        <li><b>the mac bundle is currently unmaintained and terribly outdated!</b></li>
         <li>download the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.dmg/download">0.4 disk image</a></li>
         <li>mount the thing</li>
         <li>pull the darktable icon into your applications folder</li>
