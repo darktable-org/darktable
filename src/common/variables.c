@@ -83,28 +83,32 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
 
 gchar *_string_get_first_variable(gchar *string,gchar *variable)
 {
-   gchar *pend=string+strlen(string);
-   gchar *p,*e;
-   p=e=string;
-  while( p < pend && e < pend) 
+  if (g_strrstr (string,"$("))
   {
-    while( *p!='$' && *(p+1)!='(' && p<pend) p++;
-    if( *p=='$' && *(p+1)=='(' )
+    gchar *pend=string+strlen(string);
+    gchar *p,*e;
+    p=e=string;
+    while( p < pend && e < pend) 
     {
-      e=p;
-      while( *e!=')' && e < pend) e++;
-      if(e < pend && *e==')')
+      while( *p!='$' && *(p+1)!='(' && p<pend) p++;
+      if( *p=='$' && *(p+1)=='(' )
       {
-        strncpy(variable,p,e-p+1);
-        variable[e-p+1]='\0';
-        return p+1;
+        e=p;
+        while( *e!=')' && e < pend) e++;
+        if(e < pend && *e==')')
+        {
+          strncpy(variable,p,e-p+1);
+          variable[e-p+1]='\0';
+          return p+1;
+        }
+        else
+          return NULL;
       }
-      else
-        return NULL;
+      p++;
     }
-    p++;
+    return p+1;
   }
-  return p+1;
+  return NULL;
 }
 
 gchar *_string_get_next_variable(gchar *string,gchar *variable)
@@ -196,7 +200,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
 void 
 dt_variables_reset_sequence(dt_variables_params_t *params)
 {
-	params->data->sequence = 0;
+  params->data->sequence = 0;
 }
 
 void dt_variables_params_init(dt_variables_params_t **params)
@@ -251,6 +255,9 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
       }
     } while( (token=_string_get_next_variable(token,variable)) !=NULL );
   }
+  else
+    params->data->result = g_strdup (string);
+  
   g_free(variable);
   g_free(value);
   return TRUE;

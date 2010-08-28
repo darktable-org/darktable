@@ -59,15 +59,15 @@ Lighttable mode:
 
 =over
 
-=item B<1>
+=item B<alt-1>
 
 Zoom in on image under cursor
 
-=item B<2, 3>
+=item B<alt-2, 3>
 
 Adjust zoom
 
-=item B<4>
+=item B<alt-4>
 
 Zoom out completely
 
@@ -79,7 +79,7 @@ Zoom out to fit all images in one row inside viewport, center on image under cur
 
 Move around (arrows also work)
 
-=item B<alt-1, 2, 3, 4>
+=item B<1, 2, 3, 4>
 
 Star rating
 
@@ -87,7 +87,7 @@ Star rating
 
 Strip all stars (reject image)
 
-=item B<ctrl-1, 2, 3>
+=item B<F1, F2, F3>
 
 Color labels: toggle red, yellow, green
 
@@ -105,7 +105,7 @@ Darkroom mode:
 
 =over
 
-=item B<1, 2, 3>
+=item B<alt-1, 2, 3>
 
 Zoom to 1:1, fill, and fit, respectively
 

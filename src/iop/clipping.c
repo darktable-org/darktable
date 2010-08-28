@@ -30,6 +30,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "dtgtk/label.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/togglebutton.h"
@@ -381,44 +382,59 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     // i.e. target_w/h = w/target_h = aspect
 
 
+    // first fix aspect ratio:
+
     // corners: move two adjacent 
     if     (grab == 1+2)
     { // move x y
-      g->clip_x = fmaxf(0.0f, g->clip_x + g->clip_w - (target_w + g->clip_w)*.5);
-      g->clip_y = fmaxf(0.0f, g->clip_y + g->clip_h - (target_h + g->clip_h)*.5);
-      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5f);
-      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5f);
+      g->clip_x = g->clip_x + g->clip_w - (target_w + g->clip_w)*.5;
+      g->clip_y = g->clip_y + g->clip_h - (target_h + g->clip_h)*.5;
+      g->clip_w = (target_w + g->clip_w)*.5f;
+      g->clip_h = (target_h + g->clip_h)*.5f;
     }
     else if(grab == 2+4) // move y w
     {
-      g->clip_y = fmaxf(0.0f, g->clip_y + g->clip_h - (target_h + g->clip_h)*.5);
-      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5);
-      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5f);
+      g->clip_y = g->clip_y + g->clip_h - (target_h + g->clip_h)*.5;
+      g->clip_w = (target_w + g->clip_w)*.5;
+      g->clip_h = (target_h + g->clip_h)*.5;
     }
     else if(grab == 4+8) // move w h
     {
-      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5);
-      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5);
+      g->clip_w = (target_w + g->clip_w)*.5;
+      g->clip_h = (target_h + g->clip_h)*.5;
     }
     else if(grab == 8+1) // move h x
     {
-      g->clip_h = fminf(1.0f, (target_h + g->clip_h)*.5);
-      g->clip_x = fmaxf(0.0f, g->clip_x + g->clip_w - (target_w + g->clip_w)*.5);
-      g->clip_w = fminf(1.0f, (target_w + g->clip_w)*.5);
+      g->clip_h = (target_h + g->clip_h)*.5;
+      g->clip_x = g->clip_x + g->clip_w - (target_w + g->clip_w)*.5;
+      g->clip_w = (target_w + g->clip_w)*.5;
     }
     else if(grab & 5) // dragged either x or w (1 4)
     { // change h and move y, h equally
       const float off = target_h - g->clip_h;
-      g->clip_h = fminf(1.0, g->clip_h + off);
-      g->clip_y = fmaxf(0.0, g->clip_y - .5f*off);
+      g->clip_h = g->clip_h + off;
+      g->clip_y = g->clip_y - .5f*off;
     }
     else if(grab & 10) // dragged either y or h (2 8)
     { // channge w and move x, w equally
       const float off = target_w - g->clip_w;
-      g->clip_w = fminf(1.0, g->clip_w + off);
-      g->clip_x = fmaxf(0.0, g->clip_x - .5f*off);
+      g->clip_w = g->clip_w + off;
+      g->clip_x = g->clip_x - .5f*off;
     }
 
+    // now fix outside boxes:
+    if(g->clip_x < 0)
+    {
+      g->clip_h *= (g->clip_w + g->clip_x)/g->clip_w;
+      g->clip_w  =  g->clip_w + g->clip_x;
+      g->clip_x  = 0;
+    }
+    if(g->clip_y < 0)
+    {
+      g->clip_w *= (g->clip_h + g->clip_y)/g->clip_h;
+      g->clip_h  =  g->clip_h + g->clip_y;
+      g->clip_y  =  0;
+    }
     if(g->clip_x + g->clip_w > 1.0)
     {
       g->clip_h *= (1.0 - g->clip_x)/g->clip_w;
@@ -452,6 +468,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   int which = gtk_combo_box_get_active(combo);
   if (which >= 0 && which < 8)
   {
+    dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
     if(which > 0 && self->dev->image->height > self->dev->image->width)
       g->current_aspect = 1.0/g->aspect_ratios[which];
     else
@@ -498,8 +515,9 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->keystone, floatk);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
-  g->current_aspect = -1.0;
-  gtk_combo_box_set_active(g->aspect_presets, 0);
+  int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
+  if(act < 0 || act > 7) act = 0;
+  gtk_combo_box_set_active(g->aspect_presets, act);
 }
 
 void init(dt_iop_module_t *module)
@@ -676,8 +694,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
   gtk_combo_box_append_text(g->aspect_presets, _("square"));
   gtk_combo_box_append_text(g->aspect_presets, _("din"));
-  gtk_combo_box_set_active(g->aspect_presets, 0);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
+  int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
+  if(act < 0 || act > 7) act = 0;
+  gtk_combo_box_set_active(g->aspect_presets, act);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   gtk_object_set(GTK_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
@@ -766,6 +786,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_ratios[5] = 4.0/3.0;
   g->aspect_ratios[6] = 1.0;
   g->aspect_ratios[7] = sqrtf(2.0);
+
+  if(act> 0 && self->dev->image->height > self->dev->image->width)
+    g->current_aspect = 1.0/g->aspect_ratios[act];
+  else
+    g->current_aspect = g->aspect_ratios[act];
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -988,7 +1013,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_set_dash (cr, &dashes, 0, 0);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-  cairo_rectangle (cr, 0, 0, wd, ht);
+  cairo_rectangle (cr, -1, -1, wd+2, ht+2);
   cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
   cairo_fill (cr);
 

@@ -844,6 +844,11 @@ void dt_control_mouse_leave()
   dt_view_manager_mouse_leave(darktable.view_manager);
 }
 
+void dt_control_mouse_enter()
+{
+  dt_view_manager_mouse_enter(darktable.view_manager);
+}
+
 void dt_control_mouse_moved(double x, double y, int which)
 {
   float tb = darktable.control->tabborder;

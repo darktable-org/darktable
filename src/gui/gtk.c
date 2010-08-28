@@ -731,7 +731,7 @@ key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
-    if(a->state == (a->state & event->state) && a->keyval == event->keyval)
+    if(a->state == event->state && a->keyval == event->keyval)
     {
       a->callback(a->data);
       return TRUE;
@@ -778,11 +778,20 @@ mouse_moved (GtkWidget *w, GdkEventMotion *event, gpointer user_data)
   return TRUE;
 }
 
-gboolean center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean
+center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_control_mouse_leave();
   return TRUE;
 }
+
+static gboolean
+center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_control_mouse_enter();
+  return TRUE;
+}
+
 
 #include "background_jobs.h"
 int
@@ -882,6 +891,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (mouse_moved), NULL);
   g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (center_leave), NULL);
+  g_signal_connect (G_OBJECT (widget), "enter-notify-event",
+                    G_CALLBACK (center_enter), NULL);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
                     G_CALLBACK (button_pressed), NULL);
   g_signal_connect (G_OBJECT (widget), "button-release-event",
