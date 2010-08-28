@@ -282,12 +282,12 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   sqlite3_stmt *stmt = NULL;
   int rc = 0;
   char query[2048]={0};
-  snprintf(query, 2048, "select id from images where id=(select imgid from selected_images) %s", sq);
+  snprintf(query, 2048, "select distinct id from selected_images as a left outer join images as b on a.imgid=b.id %s", sq);
   rc = sqlite3_prepare_v2 (darktable.db,query, -1, &stmt, NULL);
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
     long int imgid = sqlite3_column_int(stmt, 0);
-    list = g_list_prepend (list, (gpointer)imgid);
+    list = g_list_append (list, (gpointer)imgid);
   }
 
   return list;
