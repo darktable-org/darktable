@@ -1,0 +1,51 @@
+<sect2><title>Crop and rotate</title>
+	<sect3><title>Overview</title>
+		<para>This tool is used for crop, rotate and prespective correction of you image, it does
+				also include many helpful guidelines that assists you using the tool.
+		</para>
+		<para>First off select what aspect ratio you want and size the crop bounds by dragging border and corner handles,
+			use ctrl-x to swap potrait/landscape rotation of the crop rectangle.
+			You can move around the crop rectangle by holding down left mouse button and move around...
+			When you finished and want to execute the crop, hit enter key or double click in crop rectangle.
+		</para>
+	</sect3>
+
+	<sect3><title>Parameters</title>
+		<para>...</para>
+		<sect4><title>Flip image</title>
+			<para>Use these toggle buttons to flip image horizontal and veritcal</para>
+		</sect4>
+		<sect4><title>Angle</title>
+			<para>This is the angle for rotation, used for correctiion for example a non straight horizontal horizon, use 
+				your left mouse button holding it down and drawing a line along the horizon and the image are rotated to match
+				the angle of your line.
+			</para>
+		</sect4>
+		<sect4><title>Perspective</title>
+			<para>This tool is used for correcting any perspective distortions in you image, like example when you shoot 
+				an high building from ground and aiming upwards with camera with short focal length...
+			</para>
+			<para>You can also choose which direction (righ and up) the correction should be applied on.
+			</para>
+		</sect4>
+		<sect4><title>Aspect</title>
+			<para>Here you can change what aspect ratio you want to have on the result, constraining the ability to drag an crop 
+				rectangle out of the aspect ratio of your choice..
+			</para>
+			<para>
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='3cm'/>
+					<tbody>
+						<row>
+							<entry><emphasis>free</emphasis></entry><entry>free forming the rectangle without any ratio restrictions</entry>
+						</row>
+						<row>
+							<entry><emphasis>image</emphasis></entry><entry>this option constrains the ratio to be equal to image ratio</entry>
+						</row>
+					</tbody>
+				</tgroup></informaltable>
+			</para>
+		</sect4>
+
+	</sect3>
+</sect2>

@@ -1,10 +1,23 @@
 <sect2><title>Splittoning</title>
 	<sect3><title>Overview</title>
-		<para>Original splittoning method creates a two color linear toning effect where the 
-				shadows and highlights are represented by two different colors.
-				In the example image below you can see an original black and white image and one where
-				a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
-		</para>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>Original splittoning method creates a two color linear toning effect where the 
+									shadows and highlights are represented by two different colors.
+									In the example image below you can see an original black and white image and one where
+									a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
+							</entry>
+							<entry>
+								<graphic fileref="darkroom/modules/splittoning/images/splittoning.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+			
 		<para>Darktable splittoning plugin has more parameters that impacts on the default above behavior, 
 				we have balance which offsets the 50% gray level in image and compression that does compress
 				toning in the shadows and highlights which  leaves a gap which are untouched by the effect.
@@ -33,35 +46,6 @@
 				set to 33% which not is the default behaviour of a original splittoning which would be 0% compression.
 				The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original 
 				splittoning method...
-			</para>
-		</sect4>
-	</sect3>
-
-	<sect3><title>Examples</title>
-		<para>Here follows some examples</para>
-		<sect4>
-			<title>Sepia</title>
-			<para>Sepia is an darkbrown dye and was early used for contrast color instead of black in old black and white images,
-					we can use the splittoning plugin to simulate this effect.
-					What we need is a black and white image, and thint the shadows in brownscales instead of grayscales,
-					enable the monochrome module to make image black and white, then enable splittoning module.
-					Choose a brown color for shadows with about 50% saturation and enshure that highlights saturation slider is 0%,
-					then change compression to 0% to disable it.
-					Now drag the balance slider to the right for expanding the range of the shadows and the toning that suits your image.
-			</para>
-		</sect4>
-		<sect4>
-			<title>Crossdevelop</title>
-			<para>Cross developing is an effect archived by using wrong chemicals with wrong film type when developing the film, 
-					the results is and higher contrast image with bluish shadows and a green/yellow tone of the image.
-					So we need an image, let it be in color, then go into tonecurve and apply "medium contrast" from presets to enhance the contrast
-					int the image.
-					Enable channel mixer and choose preset "boost color artefacts" to boost gritty details in image.
-					Enable splittoning and choose an blue color for shadows and boost saturation up to 80%, choose a geenishyellow 
-					color for highlights and put saturation around 60%.
-					Set compression to 0% to allow toning over all lightnesslevels.
-					Depending on image, motives, exposure tune with balance, to empahse the effect apply vignetting with a small
-					size and long fall off value to fade out to the borders..
 			</para>
 		</sect4>
 	</sect3>

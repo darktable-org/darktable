@@ -1,0 +1,109 @@
+<chapter>
+	<chapterinfo>
+		<keywordset>
+			<keyword>lighttable</keyword>
+			<keyword>view</keyword>
+		</keywordset>
+	</chapterinfo>
+	<title>Lighttable</title>
+	<para>The lighttable is where you manage all your images, ratings, exporting and much more...</para>
+	
+	<sect1><title>Overview</title>
+		<para></para>
+		<sect2><title>Ligthtable</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='5cm'/>
+					<tbody>
+						<row>						
+							<entry>In this centerview your images are shown as thumbs, each thumb has a frame and while mouse is over
+								an image, information such as rating and if image are altered in darkroom <inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is viewed.
+								Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel.
+							</entry>
+							<entry>
+								<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+							
+			<para>While mouse is over and imageframe you have additional actions accessed from keyboard to apply on image here
+				follows an table of key accelerators and assigned actions.
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='3cm'/>
+					<tbody>
+						<row>
+							<entry><emphasis>1 - 4</emphasis></entry>
+							<entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated
+							</entry>
+						</row>
+						<row>
+							<entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry>
+						</row>
+						<row>
+							<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry>
+						</row>
+						<row>
+							<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry>
+						</row>
+						<row>
+							<entry><emphasis>e</emphasis></entry><entry>opens the image in darkroom view for developing</entry>
+						</row>
+						<row>
+							<entry><emphasis>z</emphasis></entry><entry>shows a fullscreen view of the image</entry>
+						</row>
+					</tbody>
+				</tgroup></informaltable>
+			</para>
+			<para>At the bottom you have an option to choose a zoomable lighttable view or a filemanger view of the thumbnails.
+			</para>
+		</sect2>
+		<sect2><title>Panels</title>
+			<sect3><title>Devices</title>
+				<para>This plugin show's connected devices, for now this is only cameras but in future scanners would show up here.</para>
+				<sect4><title>Cameras</title>
+					<para>When a camera is detected it will show up in the device pane, if you hover your mouse over the camera tablabel a tooltip
+						will show with some information about the camera such as model,firmware version and alot more..,
+					</para>
+					<para>Depending of the support for your camera, buttons with actions will be available such as import images and tethering.
+					</para>
+					<sect5><title>Import images</title>
+						<para>This will bring up an import dialog, showing the images on camera that can be selected for import into a filmroll in
+							Darktable.
+						</para>
+					</sect5>
+					<sect5><title>Tethering</title>
+						<para>Tethering is used to integrate Darktable with your camera, and while you take images on the camera it will
+							automatic be imported into darktable and you can review the result of the shoot, you can also infront of computer
+							setup remote capture jobs for timelapsed captures and change settings such as shuttertime, f-length and more.
+						</para>
+						<para>Tethering will take you into capture view with the specific camera for tethered shoot read more about tethering in chapter 3.</para>
+					</sect5>
+				</sect4>
+			</sect3>
+			
+			<sect3><title>Library</title>
+				<para>A filmroll is the same as a folder in the filesystem, except for single images filmroll that can contain images spread around on in your filessystem.
+					You can import a singel image or a folder, if a folder is imported Darktable will not recurse down in several folderlevels, just import the images that resides at
+					choosen folder into a filmroll which name become the name of the folder imported.
+				</para>
+				<para>All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest.
+						Double click on a filmroll in the list and it will be opened and viewed.
+					You can also click the recent filmroll items to open the latest ones you have worked with.
+				</para>
+			</sect3>
+			
+			<sect3><title>Metadata</title>
+				<para>This panel shows embeded metadata of an image.
+				</para>
+			</sect3>
+		</sect2>
+		<sect2><title>Filtering and sort order</title>
+			<para>The filtering and sortorder of images on lighttable are accessed and changed in the top bar
+				where you can select among a few predefined filters and orderering like date, color labels, rating
+				among others.
+			</para>
+		</sect2>
+	</sect1>
+</chapter>
