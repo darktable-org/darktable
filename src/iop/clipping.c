@@ -1013,7 +1013,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_set_dash (cr, &dashes, 0, 0);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-  cairo_rectangle (cr, 0, 0, wd, ht);
+  cairo_rectangle (cr, -1, -1, wd+2, ht+2);
   cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
   cairo_fill (cr);
 
