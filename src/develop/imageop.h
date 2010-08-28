@@ -29,6 +29,13 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_iop_roi_t;
 
+#define	IOP_GROUP_BASIC			        1
+#define	IOP_GROUP_COLOR			      2
+#define	IOP_GROUP_CORRECT			4
+#define	IOP_GROUP_EFFECT		      	8
+
+#define	IOP_GROUP_ALL   (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
+
 typedef struct dt_iop_params_t
 {
   int keep;
@@ -89,6 +96,9 @@ typedef struct dt_iop_module_t
   int (*version)          ();
   /** get name of the module, to be translated. */
   const char* (*name)     ();
+  /** get the groups this module belongs to. */
+  int (*groups) ();
+  
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)      (struct dt_iop_module_t *self);

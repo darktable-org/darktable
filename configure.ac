@@ -1,4 +1,4 @@
-AC_INIT([darktable], [0.6], [hanatos@gmail.com])
+AC_INIT([darktable], [0.6.1~rc], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_CONFIG_MACRO_DIR([m4])
@@ -204,6 +204,25 @@ fi
 AC_SUBST(CARBON_LIBS)
 
 
+can_build_usermanual=yes
+AC_PATH_PROG([xsltproc],[xsltproc])
+if test -z "$xsltproc"; then
+	AC_MSG_WARN([xsltproc was not found. If you want to change and compile the documentation, \
+please install libxslt (http://xmlsoft.org/XSLT/)])
+	can_build_usermanual=no
+fi
+AC_PATH_PROG([fop],[fop])
+if test -z "$fop"; then
+	AC_MSG_WARN([fop was not found. If you want to change and compile the documentation, \
+please install fop (http://xml.apache.org)])
+	can_build_usermanual=no
+fi
+
+
+AC_MSG_CHECKING([whether darktable usermanual can be changed and compiled])
+AC_MSG_RESULT($can_build_usermanual)
+AC_SUBST(can_build_usermanual)
+
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
@@ -229,6 +248,7 @@ AC_CONFIG_FILES([
     src/imageio/Makefile
     src/imageio/format/Makefile
     src/imageio/storage/Makefile
+    doc/usermanual/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT

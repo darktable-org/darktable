@@ -1,0 +1,30 @@
+<sect1><title>Modules</title>
+	<para>Each correction, enhancement or effect is implemented as modules, and this section includes documentation
+			of each module and it's specific parameters.
+			A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;"/>  where the <inlinegraphic fileref="&icon_module_enable;"/> icon  is used to turn then module
+			on or off, then there are a title of the module press this to expand the module too see the paramters userinterface.
+			<inlinegraphic fileref="&icon_module_presets;"/> icon is the preset icon to access the available presets stored for the modul and <inlinegraphic fileref="&icon_module_reset;"/>  icon is used to reset the module paramaters
+			to theire default values.
+	</para>
+	<sect2><title>Presets</title>
+		<para>
+			Presets are stored configurations for the module parameters both internal and userdefined is available
+				thru clicking the <inlinegraphic fileref="&icon_module_presets;"/> icon and a list of available presets are shown for your choice, the activ preset is in bold text.
+		</para>
+		<para>
+			The preset system does also support automatic preset selection based on image data such as exposure time, 
+				camera model and much more fields.
+		</para>
+		<sect3><title>Creating a new preset</title>
+			<para>
+				Configure the specific module of choice as you like then you click the <inlinegraphic fileref="&icon_module_presets;"/> icon and select
+				store new preset menu choice.
+				Following dialog is shown and you select a name for the new preset that is shown in the menu when stored
+				...
+				
+			</para>
+		</sect3>
+	</sect2>
+	
+	&darkroom_module_splittoning;
+</sect1>

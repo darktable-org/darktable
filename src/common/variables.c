@@ -17,6 +17,9 @@
 */
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
+#include "common/image.h"
 #include "common/variables.h"
 
 typedef struct dt_variables_data_t 
@@ -160,12 +163,41 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     if(file_ext == (gchar*)1) file_ext = params->filename + strlen(params->filename);
   }
   
+  /* image exif time */
+  gboolean have_exif_tm = FALSE;
+  struct tm exif_tm={0};
+  if (params->img)
+  {
+	if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+					&exif_tm.tm_year,
+					&exif_tm.tm_mon,
+					&exif_tm.tm_mday,
+					&exif_tm.tm_hour,
+					&exif_tm.tm_min,
+					&exif_tm.tm_sec
+				) == 6
+		)
+	{
+		exif_tm.tm_year--;
+		exif_tm.tm_mon--;
+		have_exif_tm = TRUE;
+	}
+  }
+  
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
   else if( g_strcmp0(variable,"$(DAY)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_mday);
   else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.2d",tim->tm_hour);
   else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
   else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_sec);
+  
+  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_year:tim->tm_year)+1);
+  else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mon:tim->tm_mon)+1);
+  else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mday:tim->tm_mday));
+  else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_hour:tim->tm_hour));
+  else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_min:tim->tm_min));
+  else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_sec:tim->tm_sec));
+  
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
   else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
   else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )  { sprintf(value,"%s",g_path_get_basename(params->filename)); if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0; }

@@ -76,6 +76,16 @@ const char *name()
   return _("split toning");
 }
 
+
+int 
+groups () 
+{
+	return IOP_GROUP_EFFECT;
+}
+
+
+
+
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
 {
   float pmax=fmax(r,fmax(g,b));
@@ -409,7 +419,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 968;
+  module->priority = 998;
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ 0,0.5,0.2,0.5, 0.5,33.0};

@@ -47,14 +47,17 @@ libdarktable_la_SOURCES= \
 			dtgtk/slider.c \
 			dtgtk/togglebutton.c \
 			gui/camera_import_dialog.c \
+			gui/contrast.c \
 			gui/background_jobs.c \
 			gui/devices.c \
 			gui/filmview.c \
 			gui/gtk.c \
 			gui/histogram.c \
 			gui/iop_history.c \
+			gui/iop_modulegroups.c \
 			gui/metadata.c \
 			gui/navigation.c \
+			gui/panel_sizegroup.c \
 			gui/presets.c \
 			libs/lib.c \
 			views/view.c 
@@ -66,11 +69,14 @@ noinst_HEADERS= \
 			gui/gtk.h \
 			gui/devices.h \
 			gui/camera_import_dialog.h \
+			gui/contrast.h \
 			gui/histogram.h \
 			gui/navigation.h \
 			gui/filmview.h \
 			gui/iop_history.h \
+			gui/iop_modulegroups.h \
 			gui/draw.h \
+			gui/panel_sizegroup.h \
 			gui/presets.h \
 			gui/background_jobs.h \
 			develop/develop.h \

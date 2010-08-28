@@ -42,6 +42,12 @@ const char *name()
   return _("color correction");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -136,6 +142,16 @@ static gboolean dt_iop_colorcorrection_button_release(GtkWidget *widget, GdkEven
 static gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 
+void 
+_colorcorrection_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
+{
+  // Reset size to match panel width
+  int width = a->width*0.8;
+  int height = width;
+  gtk_widget_set_size_request(w,width,height);
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorcorrection_gui_data_t));
@@ -150,7 +166,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  gtk_drawing_area_size(g->area, 258, 258);
+ // gtk_drawing_area_size(g->area, 258, 258);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (g->area), "expose-event",
@@ -165,6 +181,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_colorcorrection_leave_notify), self);
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_colorcorrection_scrolled), self);
+  g_signal_connect (G_OBJECT (asp), "size-allocate",
+                    G_CALLBACK (_colorcorrection_size_allocate), self);
   
   g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);

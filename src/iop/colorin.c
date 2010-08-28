@@ -38,6 +38,12 @@ const char *name()
   return _("input color profile");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -250,7 +256,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // user selected a non-supported output profile, check that:
   if(!d->xform)
   {
-    fprintf(stderr, "[colorin]: unsupported input profile has been replaced by linear rgb!\n");
+    dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
     d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_Lab_DBL, p->intent, 0);

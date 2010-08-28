@@ -37,6 +37,13 @@ const char *name()
   return _("output color profile");
 }
 
+int 
+groups () 
+{
+	return IOP_GROUP_COLOR;
+}
+
+
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -250,7 +257,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // user selected a non-supported output profile, check that:
   if(!d->xform)
   {
-    fprintf(stderr, "[colorout]: unsupported output profile has been replaced by sRGB!\n");
+    dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     if(d->output) dt_colorspaces_cleanup_profile(d->output);
     d->output = dt_colorspaces_create_srgb_profile();
     d->xform = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);

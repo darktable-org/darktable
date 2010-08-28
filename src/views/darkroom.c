@@ -25,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "gui/gtk.h"
+#include "gui/iop_modulegroups.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -46,6 +47,7 @@ init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
+  
 }
 
 
@@ -255,6 +257,7 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
   snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
   if(gtk_toggle_button_get_active(togglebutton))
   {
+    dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show_all(GTK_WIDGET(module->topwidget));
     dt_conf_set_bool (option, TRUE);
     gtk_expander_set_expanded(module->expander, TRUE);
@@ -481,6 +484,7 @@ void enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  
   select_this_image(dev->image->id);
 
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
@@ -494,6 +498,8 @@ void enter(dt_view_t *self)
 
   // adjust gui:
   GtkWidget *widget;
+  gtk_widget_set_visible (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), TRUE);
+
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
@@ -549,13 +555,20 @@ void enter(dt_view_t *self)
   }
   // end marker widget:
   GtkWidget *endmarker = gtk_drawing_area_new();
-  gtk_widget_set_size_request(GTK_WIDGET(endmarker), 250, 50);
+  
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
       G_CALLBACK (dt_control_expose_endmarker), 0);
+  g_signal_connect (G_OBJECT (endmarker), "size-allocate",
+                    G_CALLBACK (dt_control_size_allocate_endmarker), self);
 
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
+  
+    
+  /* set list of modules to modulegroups */
+  dt_gui_iop_modulegroups_set_list (dev->iop);
+  
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;
   while(modules)
@@ -579,6 +592,8 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
+
+
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.

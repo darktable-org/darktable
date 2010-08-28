@@ -787,9 +787,15 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   const char *ext = format->extension(fdata);
 
   // Let's upload image...
-  char fname[512]={"darktable.XXXXXX."};
+  
+  /* construct a temporary file name */
+  char fname[4096]={0};
+  dt_get_user_local_dir (fname,4096);
+  strcat (fname,"/tmp");
+  g_mkdir_with_parents(fname,0700);
+  strcat (fname,"/darktable.XXXXXX.");
   strcat(fname,ext);
-  gchar *tempfilename;
+  
   char *caption="a image";  
   char *description="";  
   char *mime="image/jpeg";
@@ -800,19 +806,24 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     dt_tag_get_attached(imgid,&tags);
   
   // Ok, maybe a dt_imageio_export_to_buffer would suit here !?
-  
-  gint fd=g_file_open_tmp(fname,&tempfilename,NULL);
+  gint fd=g_mkstemp(fname);
+  fprintf(stderr,"tempfile: %s\n",fname);
+  if(fd==-1)
+  {
+    dt_control_log("failed to create temporary image for picasa export");
+    return 1; 
+  }
   close(fd);
   dt_image_t *img = dt_image_cache_get(imgid, 'r');
   caption = g_path_get_basename( img->filename );
   
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
   
-  dt_imageio_export(img, tempfilename, format, fdata);
+  dt_imageio_export(img, fname, format, fdata);
   dt_image_cache_release(img, 'r');
   
   // Open the temp file and read image to memory
-  GMappedFile *imgfile = g_mapped_file_new(tempfilename,FALSE,NULL);
+  GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
   int size = g_mapped_file_get_length( imgfile );
   gchar *data =g_mapped_file_get_contents( imgfile );
   
@@ -824,9 +835,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   g_mapped_file_unref( imgfile );
  
   // And remove from filesystem..
-  unlink( tempfilename );
+  unlink( fname );
   g_free( caption );
-  g_free( tempfilename );
   
   dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
   return result;
