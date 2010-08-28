@@ -842,7 +842,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>storage backend to use</short>
-        <long>the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring (not implemented yet)</long>
+        <long>the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring</long>
       </locale>
     </schema>
     

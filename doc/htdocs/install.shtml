@@ -39,7 +39,7 @@
     	<img src="images/firering.jpg" alt="release" class="img" /><h1>ubuntu packages</h1>
       <ul>
         <li>get an appropriate <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release">darktable*.deb</a>.</li>
-        <li>or a <a href="https://launchpad.net/~pmjdebruijn/+archive/ppa">nightly git package</a>.</li>
+        <li>or a <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-unstable">nightly git package</a>.</li>
         <li># dpkg -i darktable*.deb</li>
         <li>Applications - Graphics - darktable</li>
         <li>you may also be interested in downloading a few icc profiles from there.</li>

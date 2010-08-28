@@ -1,16 +1,9 @@
 0.6 release:
 
+- buffer sizes sometimes doubled/halved when entering dr and preview is shown
 - default in presets system not working?
-- ldr image import -> no float buffer etc..?
-- BUG: color labels set in darkroom mode disappear
-- sqlite3 thread safe/locking?
-- BUG: full image stays locked?
 - BUG: full image not loaded due to 1st buffer > mem limit
-- BUG: linked list mru/lru in image cache broken sometimes after load?
-- BUG: colorin blue shift in colorin lcms: to lab?
-- BUG: leaving darkroom mode: garbled mipf image?
 - clear mipmap cache when image is removed
-- color labels into dttags files.
 
 - film strip view keyboard bindings
 
