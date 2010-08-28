@@ -115,12 +115,13 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "enter",           (gpointer)&(view->enter)))           view->enter = NULL;
   if(!g_module_symbol(view->module, "leave",           (gpointer)&(view->leave)))           view->leave = NULL;
   if(!g_module_symbol(view->module, "reset",           (gpointer)&(view->reset)))           view->reset = NULL;
+  if(!g_module_symbol(view->module, "mouse_enter",     (gpointer)&(view->mouse_enter)))     view->mouse_enter= NULL;
   if(!g_module_symbol(view->module, "mouse_leave",     (gpointer)&(view->mouse_leave)))     view->mouse_leave = NULL;
   if(!g_module_symbol(view->module, "mouse_moved",     (gpointer)&(view->mouse_moved)))     view->mouse_moved = NULL;
   if(!g_module_symbol(view->module, "button_released", (gpointer)&(view->button_released))) view->button_released = NULL;
   if(!g_module_symbol(view->module, "button_pressed",  (gpointer)&(view->button_pressed)))  view->button_pressed = NULL;
   if(!g_module_symbol(view->module, "key_pressed",     (gpointer)&(view->key_pressed)))     view->key_pressed = NULL;
-  if(!g_module_symbol(view->module, "key_released",     (gpointer)&(view->key_released)))     view->key_released = NULL;
+  if(!g_module_symbol(view->module, "key_released",    (gpointer)&(view->key_released)))    view->key_released = NULL;
   if(!g_module_symbol(view->module, "configure",       (gpointer)&(view->configure)))       view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled",        (gpointer)&(view->scrolled)))        view->scrolled = NULL;
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
@@ -231,6 +232,15 @@ void dt_view_manager_mouse_leave (dt_view_manager_t *vm)
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->mouse_leave) v->mouse_leave(v);
+  if(vm->film_strip_on && vm->film_strip.mouse_leave) vm->film_strip.mouse_leave(&vm->film_strip);
+}
+
+void dt_view_manager_mouse_enter (dt_view_manager_t *vm)
+{
+  if(vm->current_view < 0) return;
+  dt_view_t *v = vm->view + vm->current_view;
+  if(vm->film_strip_on && vm->film_strip.mouse_enter) vm->film_strip.mouse_enter(&vm->film_strip);
+  if(v->mouse_enter) v->mouse_enter(v);
 }
 
 void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)

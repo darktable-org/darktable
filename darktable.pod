@@ -105,7 +105,7 @@ Darkroom mode:
 
 =over
 
-=item B<1, 2, 3>
+=item B<alt-1, 2, 3>
 
 Zoom to 1:1, fill, and fit, respectively
 

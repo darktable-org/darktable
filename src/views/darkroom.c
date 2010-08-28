@@ -434,7 +434,44 @@ film_strip_activated(const int imgid, void *data)
   dt_view_film_strip_prefetch();
 }
 
-void film_strip_key_accel(void *data)
+static void
+zoom_key_accel(void *data)
+{
+  dt_develop_t *dev = darktable.develop;
+  int zoom, closeup;
+  float zoom_x, zoom_y;
+  switch ((long int)data)
+  {
+    case 1:
+      DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+      DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+      if(zoom == DT_ZOOM_1) closeup ^= 1;
+      DT_CTL_SET_GLOBAL(dev_closeup, closeup);
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
+      dt_dev_invalidate(dev);
+      break;
+    case 2:
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
+      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_invalidate(dev);
+      break;
+    case 3:
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
+      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_invalidate(dev);
+      break;
+    default:
+      break;
+  }
+}
+
+static void
+film_strip_key_accel(void *data)
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
   dt_control_queue_draw_all();
@@ -555,6 +592,9 @@ void enter(dt_view_t *self)
     dt_view_film_strip_prefetch();
   }
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel, (void *)1);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
 
   // image should be there now.
   float zoom_x, zoom_y;
@@ -564,7 +604,8 @@ void enter(dt_view_t *self)
 }
 
 
-static void dt_dev_remove_child(GtkWidget *widget, gpointer data)
+static void
+dt_dev_remove_child(GtkWidget *widget, gpointer data)
 {
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
@@ -574,6 +615,7 @@ void leave(dt_view_t *self)
   if(dt_conf_get_bool("plugins/filmstrip/on"))
     dt_view_film_strip_close(darktable.view_manager);
   dt_gui_key_accel_unregister(film_strip_key_accel);
+  dt_gui_key_accel_unregister(zoom_key_accel);
 
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
@@ -854,44 +896,7 @@ int key_pressed(dt_view_t *self, uint16_t which)
   int handled = 0;
   if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
   if(handled) return handled;
-  int zoom, closeup;
-  float zoom_x, zoom_y;
-  switch (which)
-  {
-    case KEYCODE_1:
-      DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-      DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-      if(zoom == DT_ZOOM_1) closeup ^= 1;
-      DT_CTL_SET_GLOBAL(dev_closeup, closeup);
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
-      /*if(!closeup)
-      { // doesn't quite work as expected:
-        dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, 0, NULL, NULL);
-        DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-        DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
-      }*/
-      dt_dev_invalidate(dev);
-      break;
-    case KEYCODE_2:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
-      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(dev);
-      break;
-    case KEYCODE_3:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(dev);
-      break;
-    default:
-      return 0;
-      break;
-  }
-  return 1;
+  return 0;
 }
 
 

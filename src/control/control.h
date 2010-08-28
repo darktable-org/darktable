@@ -122,6 +122,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
 void dt_control_mouse_leave();
+void dt_control_mouse_enter();
 int  dt_control_key_pressed(uint16_t which);
 int  dt_control_key_released(uint16_t which);
 int  dt_control_key_pressed_override(uint16_t which);
