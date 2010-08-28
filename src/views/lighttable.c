@@ -680,7 +680,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, zoom_key_accel_callback, (void *)4);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_g, go_up_key_accel_callback, (void *)self);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_G, go_down_key_accel_callback, (void *)self);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_G, go_down_key_accel_callback, (void *)self);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)

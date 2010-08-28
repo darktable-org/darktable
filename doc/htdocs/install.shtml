@@ -48,7 +48,9 @@
     	<div class="listtext">
     	<img src="images/firering.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
       <ul>
-        <li>get an <a href="http://russellharrison.com/yum/rlh/f13/free/i386/">unofficial fedora weekly git rpm</a>.</li>
+        <li>get Russell Harrisons' <a href="http://russellharrison.com/yum/rlh/rlh.repo">unofficial fedora repo</a>.</li>
+        <li>copy it to /etc/yum.repos.d/</li>
+        <li>$ sudo yum install darktable</li>
       </ul>
     	</div>
     	<div class="listtext">

@@ -275,14 +275,19 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
     else if(sort == DT_LIB_SORT_RATING)         g_snprintf (sq, 512, ORDER_BY_QUERY, "flags & 7 desc");
     else if(sort == DT_LIB_SORT_FILENAME)       g_snprintf (sq, 512, ORDER_BY_QUERY, "filename");
     else if(sort == DT_LIB_SORT_ID)             g_snprintf (sq, 512, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          g_snprintf (sq, 512, ORDER_BY_QUERY, "color desc, filename");
+    else if(sort == DT_LIB_SORT_COLOR)          g_snprintf (sq, 512, ORDER_BY_QUERY, "color desc,id");
   }
   
   
   sqlite3_stmt *stmt = NULL;
   int rc = 0;
   char query[2048]={0};
-  snprintf(query, 2048, "select distinct id from selected_images as a left outer join images as b on a.imgid=b.id %s", sq);
+  
+  if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    g_snprintf (query,512,"select distinct a.imgid as id from (select imgid from selected_images) as a left outer join color_labels as b on a.imgid = b.imgid %s",sq);
+  else
+    g_snprintf(query,512, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
+  
   rc = sqlite3_prepare_v2 (darktable.db,query, -1, &stmt, NULL);
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
