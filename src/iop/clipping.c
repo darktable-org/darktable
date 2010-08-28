@@ -515,7 +515,6 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->keystone, floatk);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
-  g->current_aspect = -1.0;
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act > 7) act = 0;
   gtk_combo_box_set_active(g->aspect_presets, act);
@@ -695,10 +694,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
   gtk_combo_box_append_text(g->aspect_presets, _("square"));
   gtk_combo_box_append_text(g->aspect_presets, _("din"));
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act > 7) act = 0;
   gtk_combo_box_set_active(g->aspect_presets, act);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   gtk_object_set(GTK_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
@@ -787,6 +786,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_ratios[5] = 4.0/3.0;
   g->aspect_ratios[6] = 1.0;
   g->aspect_ratios[7] = sqrtf(2.0);
+
+  if(act> 0 && self->dev->image->height > self->dev->image->width)
+    g->current_aspect = 1.0/g->aspect_ratios[act];
+  else
+    g->current_aspect = g->aspect_ratios[act];
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
