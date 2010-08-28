@@ -63,8 +63,6 @@
   </xsl:attribute-set> 
 
   <xsl:attribute-set name="section.title.level4.properties">
-  <xsl:attribute name="padding-top">6pt</xsl:attribute>
-  <xsl:attribute name="padding-bottom">1pt</xsl:attribute>
     <xsl:attribute name="font-size">
       <xsl:value-of select="$body.font.master * 0.9"/>
       <xsl:text>pt</xsl:text>

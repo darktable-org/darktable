@@ -7,6 +7,11 @@
 </chapterinfo>
 <title>Darkroom</title>
 <para>The darkroom view is where you develop your image...</para>
+<screenshot>
+	<screeninfo>The darkroom view</screeninfo>
+	<graphic fileref="images/darkroom_view.png" scalefit="1" width="80%"></graphic>
+</screenshot>
+
 <sect1><title>Overview</title>
 	<para>In darkroom you are in develop mode for the specific image, here you have alot of tools to
 		develop you image.

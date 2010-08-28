@@ -1,0 +1,30 @@
+<chapter>
+	<chapterinfo>
+		<keywordset>
+			<keyword>lighttable</keyword>
+			<keyword>view</keyword>
+		</keywordset>
+	</chapterinfo>
+	<title>Lighttable</title>
+	<para>The lighttable is where you manage all your images, ratings, exporting and much more...</para>
+	
+	<sect1><title>Overview</title>
+		<para></para>
+		<sect2><title>Devices</title>
+			<para></para>
+		</sect2>
+		<sect2><title>Library</title>
+			<para></para>
+		</sect2>
+		<sect2><title>Metadata</title>
+			<para></para>
+		</sect2>
+		
+		<sect2><title>Filtering and sort order</title>
+			<para>The filtering and sortorder of images on lighttable are accessed and changed in the top bar
+				where you can select among a few predefined filters and orderering like date, color labels, rating
+				among others.
+			</para>
+		</sect2>
+	</sect1>
+</chapter>
