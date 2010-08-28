@@ -172,11 +172,19 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(c <= filename) c = filename + strlen(filename);
 
   const char *ext = format->extension(fdata);
+  sprintf(c,".%s",ext);
+  
+  /* prevent overwrite of files */
+  int seq=1;
+  if (g_file_test (filename,G_FILE_TEST_EXISTS))
+  {
+    do {
+      sprintf(c,"_%.2d.%s",seq,ext);
+      seq++;
+    } while (g_file_test (filename,G_FILE_TEST_EXISTS));
+  }
 
-  // avoid name clashes for single images:
-  if(img->film_id == 1 && !strcmp(c+1, ext)) { strncpy(c, "_dt", 3); c += 3; }
-  *c = '.';
-  strncpy(c+1, ext, strlen(ext)+1);
+  /* export image to file */
   dt_imageio_export(img, filename, format, fdata);
   dt_image_cache_release(img, 'r');
 
