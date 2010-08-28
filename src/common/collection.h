@@ -95,5 +95,7 @@ void dt_collection_set_rating (const dt_collection_t *collection, uint32_t ratin
 /** get the count of query */
 uint32_t dt_collection_get_count (const dt_collection_t *collection);
 
+/** get selected image ids order as current selection. */
+GList *dt_collection_get_selected (const dt_collection_t *collection);
 
 #endif
