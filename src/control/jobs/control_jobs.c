@@ -19,6 +19,7 @@
 #include <glib/gstdio.h>
 #include <glade/glade.h>
 
+#include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -163,16 +164,19 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
 void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
 {
+  /* get sorted list of selected images */
+  t->index = dt_collection_get_selected(darktable.collection);
+/*
   t->index = NULL;
   int rc;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images order by rowid desc", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     long int imgid = sqlite3_column_int(stmt, 0);
     t->index = g_list_prepend(t->index, (gpointer)imgid);
   }
-  sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);*/
 }
 
 
