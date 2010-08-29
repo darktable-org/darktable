@@ -248,6 +248,7 @@ AC_CONFIG_FILES([
     src/imageio/Makefile
     src/imageio/format/Makefile
     src/imageio/storage/Makefile
+    doc/Makefile
     doc/usermanual/Makefile
     ])
 dnl    src/gegl-operations/Makefile
