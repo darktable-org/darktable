@@ -41,6 +41,7 @@
       <ul>
         <li>image auto-rating to simplify processing of large sessions</li>
         <li>cleaner libraw interfacing (pull demosaicing into dt)</li>
+        <li>get rid of libglade</li>
         <li>flickr upload</li>
         <li>store dt history stacks in xmp sidecars</li>
         <li>printing interface</li>

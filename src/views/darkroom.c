@@ -334,6 +334,7 @@ select_this_image(const int imgid)
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
+  dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
   g_assert(dev->gui_attached);
   // commit image ops to db
   dt_dev_write_history(dev);
@@ -415,6 +416,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     modules = g_list_next(modules);
   }
+  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
@@ -611,6 +613,9 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
 
+  // switch on groups as they where last time:
+  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
+
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -627,6 +632,9 @@ dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  // store groups for next time:
+  dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+
   if(dt_conf_get_bool("plugins/filmstrip/on"))
     dt_view_film_strip_close(darktable.view_manager);
   dt_gui_key_accel_unregister(film_strip_key_accel);

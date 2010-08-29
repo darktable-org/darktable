@@ -433,6 +433,8 @@ file manager</property>
 										<property name="visible">True</property>
 										<child>
 											<widget class="GtkLabel" id="darktable_label">
+												<property name="has_tooltip">True</property>
+												<property name="tooltip" translatable="yes">about darktable</property>
 												<property name="visible">True</property>
 												<property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
 												<property name="ypad">7</property>
