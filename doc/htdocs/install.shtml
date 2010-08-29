@@ -46,7 +46,7 @@
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/firering.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
+    	<img src="images/foehr.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
       <ul>
         <li>get Russell Harrisons' <a href="http://russellharrison.com/yum/rlh/rlh.repo">unofficial fedora repo</a>.</li>
         <li>copy it to /etc/yum.repos.d/</li>
@@ -56,11 +56,11 @@
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.5/darktable-0.5.tar.bz2/download">0.5 source .bz2</a></li>
-        <li>$ tar xvjf darktable-0.5.tar.bz2 &amp;&amp; cd darktable-0.5</li>
-        <li>$ ./configure [--enable-debug] [--prefix=/usr]</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.6/darktable-0.6.tar.gz/download">0.6 source .gz</a></li>
+        <li>$ tar xvjf darktable-0.6.tar.bz2 &amp;&amp; cd darktable-0.6</li>
+        <li>$ ./configure --prefix=/usr</li>
         <li>$ make</li>
-	<li># make install</li>
+        <li># make install</li>
         <li>$ darktable</li>
       </ul>
     	</div>

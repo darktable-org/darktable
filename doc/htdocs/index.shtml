@@ -12,6 +12,31 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
+    	<img src="images/watt.jpg" class="img" alt="dreggn" /><h1>released 0.6</h1>
+      <em>(2010-08-28)</em> finally a new release.. it has been so long that i hardly remember
+      all the changes. let's try to list the most important ones:
+      <ul>
+        <li>libraw 0.10.0-beta3</li>
+        <li>tethered shooting mode</li>
+        <li>import from camera via gphoto2</li>
+        <li>new, improved plugins: vignetting, velvia, grain, denoise (via bilateral filter), color transfer, channel mixer ..</li>
+        <li>crop/rotate: straighten tool, perspective correction, guide lines (ported from digikam)</li>
+        <li>lots of new input color matrices and base curves</li>
+        <li>openexr export</li>
+        <li>database format changed, which greatly improves speed (and cuts down used disk memory)</li>
+        <li>film strip view in darkroom mode for quick image switching</li>
+        <li>cool alternative demosaicing algorithms (ported from rawtherapee): dcb, amaze, vcd, c/a autocorrection</li>
+        <li>customizable preset system for all darkroom modules with auto application to matching images, selected by exif</li>
+        <li>reworked export system to modularly support export to picasa webalbum, email, or disk in jpg, png, 8/16-tiff, pfm, exr, or 16-ppm.</li>
+        <li>lots of performance enhancements (plugins denoise and local contrast are still slow)</li>
+        <li>translations: de es fi fr gl nl ru sv</li>
+      </ul>
+      as always, the release comes with a warning: it will be outdated horribly in very short time (even now git master
+      has some really cool new features over the release tarball..).
+      thanks to all contributors, translators, and everyone on #darktable!
+      </div>
+
+      <div class="listtext">
     	<img src="images/chart.jpg" class="img" alt="dreggn" /><h1>enhancing color management</h1>
       <em>(2010-06-28)</em> still no release? doh! but there is now a nice, detailed doc about
       how to profile your camera for darktable to get rich and precise color rendition out of your images
