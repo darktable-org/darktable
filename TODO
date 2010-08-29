@@ -1,4 +1,13 @@
-0.6 release:
+0.7 release:
+
+big stuff:
+ * xmp sidecars
+ * libraw process inside dt modules (full 16-bit buf..)
+ * auto rate feature (sharpness/colors/user statistics learning)
+ * print view?
+
+- consistency: border around cairo gui elements in dr modules:
+  color zones vs. base curve etc.
 
 - buffer sizes sometimes doubled/halved when entering dr and preview is shown
 - default in presets system not working?
@@ -16,8 +25,6 @@
 - ctrl-z ctrl-shift-z up/down in history stack
 
 
-
-0.7 release:
 - eos-movrec.sf.net ? :)
 - tagging to include description/title/licence and presets
 - translatable darkroom mode plugin template

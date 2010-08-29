@@ -388,6 +388,8 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   // request color pick
   // needed to trigger expose events:
   self->request_color_pick = 1;
+  self->color_picker_box[0] = self->color_picker_box[1] = 0.0f;
+  self->color_picker_box[2] = self->color_picker_box[3] = 1.0f;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   p->flag = ACQUIRE;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
@@ -410,6 +412,7 @@ apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
 static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 { // this is called whenever the pipeline finishes processing (i.e. after a color pick)
+  dt_control_queue_draw(self->widget);
   if(darktable.gui->reset) return FALSE;
   // if(!self->request_color_pick) return FALSE;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
