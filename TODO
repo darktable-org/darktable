@@ -5,12 +5,43 @@ big stuff:
  * libraw process inside dt modules (full 16-bit buf..)
  * auto rate feature (sharpness/colors/user statistics learning)
  * print view?
+ * docs (sphinx?)
+ * removable media, relocation and image sha1sums
 
+
+- arrows to flip rotate image in lt mode
+
+- check if mipf and full loading trigger the open and open_preview at the same time (=> 2x raw loading).
+
+- preferences dialog with grouping presets?
+
+- crop rotate messed up when first rotating and then cropping
+
+- export using multiple threads when more than 2 buffers are given in gconf? or openmp all process()
+
+- inotify not working? or not re-reading rotation of images in lt mode
+
+- preview to raw doesn't find mipmaps?
+  - ldr preview only writes mip4, raw writes mipf!
+  - image_load has buffer locked on return or not?
+
+- lighttable:
+  - history of views
+  - lower bound not just one row of images in sight, but max 1 row of empty images.
+
+- select lt plugin: one line label with currently selected count
+
+- blue/black rings when thungsten/fluorescent wb is used?
+
+- tiff import broken?
+
+- alt-1 in dr mode only working after a while?
+- lists: library/collection: height to multiple of baselineskip
 - consistency: border around cairo gui elements in dr modules:
   color zones vs. base curve etc.
 
 - buffer sizes sometimes doubled/halved when entering dr and preview is shown
-- default in presets system not working?
+- default button in presets system not working (is this needed over auto-apply?)
 - BUG: full image not loaded due to 1st buffer > mem limit
 - clear mipmap cache when image is removed
 

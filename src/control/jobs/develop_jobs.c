@@ -59,7 +59,7 @@ int32_t dt_dev_process_image_job_run(dt_job_t *job)
 
 void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev)
 {
-  dt_control_job_init(job, "develop image preview");
+  dt_control_job_init(job, "develop process image");
   job->execute = &dt_dev_process_image_job_run;
   dt_dev_process_t *t = (dt_dev_process_t *)job->param;
   t->dev = dev;

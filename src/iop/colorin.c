@@ -115,7 +115,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float YY = cam[0]+cam[1]+cam[2];
     const float zz = cam[2]/YY;
     const float bound_z = 0.5f, bound_Y = 0.5f;
-    const float amount = 0.10f;
+    const float amount = 0.11f;
     // if(YY > bound_Y && zz > bound_z)
     if(zz > bound_z)
     {

@@ -193,30 +193,10 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
 
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   dt_imageio_retval_t retval = dt_image_update_mipmaps(img);
+  retval += dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   img->flags |= DT_IMAGE_LDR;
   return retval;
-
-#if 0
-  // this updates mipf/mip4..0 from raw pixels.
-  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
-  if(dt_image_get(img, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
-  {
-    dt_image_release(img, DT_IMAGE_MIP4, 'w');
-    dt_image_release(img, DT_IMAGE_MIP4, 'r');
-    return DT_IMAGEIO_CACHE_FULL;
-  }
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-  dt_imageio_retval_t ret = DT_IMAGEIO_OK;
-  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  ret = dt_image_update_mipmaps(img);
-  dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  img->flags |= DT_IMAGE_LDR;
-  return ret;
-#endif
 }
 
 

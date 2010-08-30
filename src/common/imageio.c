@@ -131,7 +131,7 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
   return ret;
 }
 
-// only set mip4..0.
+// only set mip4..0 and mipf
 dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
   if(!img->exif_inited)
@@ -544,6 +544,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   free(tmp);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   dt_imageio_retval_t retval = dt_image_update_mipmaps(img);
+  retval += dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   return retval;
 }
