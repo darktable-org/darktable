@@ -68,6 +68,7 @@
         </tr>
         <tr class="even"><td>Nikon D60</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
         <tr class="even"><td>Nikon D90</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
+        <tr class="even"><td>Nikon D5000</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.6</td><td>Jos&eacute; Carlos Garc&iacute;a Sogo</td></tr>
         <tr class="even"><td>Canon EOS 400D</td><td>1.1.1</td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.5+git20100716</td><td>Pascal de Bruijn</td></tr>
         <tr class="even"><td>Panasonix DMC-FZ50</td><td></td><td>ArchLinux x86_64</td><td>2.4.9</td><td>git 2010/07/29</td><td>Aldrik Dunbar</td></tr>
       </table>
