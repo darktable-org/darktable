@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-08-30 20:45+0200\n"
-"PO-Revision-Date: 2010-08-18 10:07+0100\n"
-"Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
+"PO-Revision-Date: 2010-08-30 20:54+0100\n"
+"Last-Translator: Pascal de Bruijn <pmjdebruijn@pcode.nl>\n"
 "Language-Team:  <g.siemerink@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,9 +30,8 @@ msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
 
 #: ../darktable.glade.h:5
-#, fuzzy
 msgid "about darktable"
-msgstr "geëxporteerd van darktable"
+msgstr "over darktable"
 
 #: ../darktable.glade.h:6
 msgid ""
@@ -422,13 +421,12 @@ msgstr ""
 "aangekoppelde media"
 
 #: ../darktable.schemas.in.h:42
-#, fuzzy
 msgid ""
 "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
 "kwallet, 3 - gnome keyring"
 msgstr ""
-"de opslag voor pwstorage: 0 - geen, 1 - gconf(gebruik die niet), 2 - "
-"kwallet, 3 - gnome keyring (nog niet geïmplementeerd) "
+"de opslag voor pwstorage: 0 - geen, 1 - gconf(niet gebruiken), 2 - kwallet, "
+"3 - gnome keyring"
 
 #: ../darktable.schemas.in.h:43
 msgid ""
@@ -847,7 +845,7 @@ msgstr "adobe rgb"
 #: ../src/libs/export.c:462 ../src/iop/colorin.c:468 ../src/iop/colorout.c:461
 #: ../src/iop/colorout.c:462
 msgid "linear rgb"
-msgstr "linear rgb"
+msgstr "lineair rgb"
 
 #: ../src/libs/export.c:493 ../src/iop/colorin.c:444
 msgid "profile"
@@ -1426,7 +1424,7 @@ msgstr "ingaand kleur profiel"
 
 #: ../src/iop/colorin.c:259
 msgid "unsupported input profile has been replaced by linear rgb!"
-msgstr ""
+msgstr "niet ondersteund ingaand profiel vervangen door lineair rgb"
 
 #: ../src/iop/colorin.c:460
 msgid "standard color matrix"
@@ -1463,7 +1461,7 @@ msgstr "uitgaand kleur profiel"
 
 #: ../src/iop/colorout.c:260
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr ""
+msgstr "niet ondersteund uitgaand profiel vervangen door srgb"
 
 #: ../src/iop/colorout.c:426
 msgid "output intent"
@@ -1604,9 +1602,8 @@ msgid "blend hue (0 is same as clipping)"
 msgstr "meng tint (0 is gelijk aan comprimeren)"
 
 #: ../src/iop/lens.c:42
-#, fuzzy
 msgid "lens correction"
-msgstr "kleur correctie"
+msgstr "lens correctie"
 
 #: ../src/iop/lens.c:673
 #, c-format
@@ -2187,7 +2184,7 @@ msgstr "gelijk aan leica"
 
 #: ../src/iop/basecurve.c:57
 msgid "kodak easyshare like"
-msgstr ""
+msgstr "gelijk aan kodak easyshare"
 
 #: ../src/iop/basecurve.c:58
 msgid "fotogenetic (point & shoot)"
@@ -2416,9 +2413,8 @@ msgid "the strength of applied grain"
 msgstr "de kracht van de toegepaste korrel"
 
 #: ../src/iop/bilateral.cc:69
-#, fuzzy
 msgid "denoise (slow)"
-msgstr "ruis reductie (sterk)"
+msgstr "ruis reductie (traag)"
 
 #: ../src/iop/bilateral.cc:299
 msgid "spatial extent of the gaussian"
@@ -2439,12 +2435,11 @@ msgstr "hoeveel vervaging voor blauw"
 
 #: ../src/iop/profile_gamma.c:37
 msgid "unbreak input profile"
-msgstr "verbreek ingaand profiel"
+msgstr "correctie ingaand profiel"
 
 #: ../src/iop/clahe.c:66
-#, fuzzy
 msgid "local contrast (slow)"
-msgstr "lokaal contrast"
+msgstr "lokaal contrast (traag)"
 
 #: ../src/iop/clahe.c:389
 msgid "size of features to preserve"
@@ -2704,7 +2699,7 @@ msgstr "Lab"
 
 #: ../src/gui/gtk.c:344
 msgid "Organize and develop images from digital cameras"
-msgstr ""
+msgstr "Organiseer en ontwikkel afbeeldingen uit digitale camera's"
 
 #: ../src/gui/gtk.c:348
 msgid "* developers *"
@@ -2799,48 +2794,42 @@ msgstr "0 - orgineel"
 #. add button for basic plugins
 #. _iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
 #: ../src/gui/iop_modulegroups.c:173
-#, fuzzy
 msgid "basic"
-msgstr "zwartpunt"
+msgstr "basis"
 
 #: ../src/gui/iop_modulegroups.c:175
 msgid "basic group"
-msgstr ""
+msgstr "basis groep"
 
 #. add button for color plugins
 #. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
 #: ../src/gui/iop_modulegroups.c:180
-#, fuzzy
 msgid "color"
-msgstr "kleur zones"
+msgstr "kleur"
 
 #: ../src/gui/iop_modulegroups.c:182
-#, fuzzy
 msgid "color group"
-msgstr "kleur zones"
+msgstr "kleuren groep"
 
 #. add button for correction plugins
 #. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
 #: ../src/gui/iop_modulegroups.c:187
-#, fuzzy
 msgid "correct"
-msgstr "automatische correctie ca"
+msgstr "corrigeer"
 
 #: ../src/gui/iop_modulegroups.c:189
-#, fuzzy
 msgid "correction group"
-msgstr "kleur correctie"
+msgstr "correctie groep"
 
 #. add buttons for artistic plugins
 #. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
 #: ../src/gui/iop_modulegroups.c:194
-#, fuzzy
 msgid "effect"
-msgstr "selecteer"
+msgstr "effecten"
 
 #: ../src/gui/iop_modulegroups.c:196
 msgid "effect group"
-msgstr ""
+msgstr "effecten groep"
 
 #. Add the rescan button
 #: ../src/gui/devices.c:126
