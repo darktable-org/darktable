@@ -203,22 +203,43 @@ if test $darwin = yes; then
 fi
 AC_SUBST(CARBON_LIBS)
 
-
 can_build_usermanual=yes
-AC_PATH_PROG([xsltproc],[xsltproc])
-if test -z "$xsltproc"; then
-	AC_MSG_WARN([xsltproc was not found. If you want to change and compile the documentation, \
+AC_ARG_ENABLE(docs, AC_HELP_STRING([--enable-docs], [build usermanual]),
+        [
+          if test "$enable_docs" = "yes"; then
+             AC_PATH_PROG([xsltproc],[xsltproc])
+             if test -z "$xsltproc"; then
+                     AC_MSG_ERROR([xsltproc was not found. If you want to change and compile the documentation, \
 please install libxslt (http://xmlsoft.org/XSLT/)])
-	can_build_usermanual=no
-fi
-AC_PATH_PROG([fop],[fop])
-if test -z "$fop"; then
-	AC_MSG_WARN([fop was not found. If you want to change and compile the documentation, \
+                     can_build_usermanual=no
+             fi
+             AC_PATH_PROG([fop],[fop])
+             if test -z "$fop"; then
+                     AC_MSG_ERROR([fop was not found. If you want to change and compile the documentation, \
 please install fop (http://xml.apache.org)])
-	can_build_usermanual=no
-fi
-
-
+                     can_build_usermanual=no
+             fi
+          else
+             can_build_usermanual=no
+          fi
+        ],
+        [
+             AC_PATH_PROG([xsltproc],[xsltproc])
+             if test -z "$xsltproc"; then
+                     AC_MSG_WARN([xsltproc was not found. If you want to change and compile the documentation, \
+             please install libxslt (http://xmlsoft.org/XSLT/)])
+                     can_build_usermanual=no
+             fi
+             AC_PATH_PROG([fop],[fop])
+             if test -z "$fop"; then
+                     AC_MSG_WARN([fop was not found. If you want to change and compile the documentation, \
+             please install fop (http://xml.apache.org)])
+                     can_build_usermanual=no
+             fi
+        ]
+        )
+AC_DEFINE(HAVE_DOCS, 1, [whether darktable usermanual can be changed and compiled])
+AM_CONDITIONAL([HAVE_DOCS], [test "$can_build_usermanual" = "yes"])
 AC_MSG_CHECKING([whether darktable usermanual can be changed and compiled])
 AC_MSG_RESULT($can_build_usermanual)
 AC_SUBST(can_build_usermanual)
