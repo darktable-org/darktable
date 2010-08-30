@@ -810,18 +810,18 @@ int key_released(dt_view_t *self, uint16_t which)
   {
     case KEYCODE_z: 
     {
-      lib->full_preview=0;
-      lib->full_preview_id=-1;
+      lib->full_preview_id = -1;
       GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-      gtk_widget_show(widget);
+      if(lib->full_preview & 1) gtk_widget_show(widget);
       widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-      gtk_widget_show(widget);
+      if(lib->full_preview & 2)gtk_widget_show(widget);
       widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-      gtk_widget_show(widget);
+      if(lib->full_preview & 4)gtk_widget_show(widget);
       widget = glade_xml_get_widget (darktable.gui->main_window, "top");
-      gtk_widget_show(widget);
-      
-    }break;
+      if(lib->full_preview & 8)gtk_widget_show(widget);
+      lib->full_preview = 0;
+    }
+    break;
   }
   return 1;
 }
@@ -838,17 +838,23 @@ int key_pressed(dt_view_t *self, uint16_t which)
     {
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      if(  lib->full_preview != 1 && mouse_over_id != -1 ) {
-        lib->full_preview=1;
-        lib->full_preview_id=mouse_over_id;
+      if(!lib->full_preview && mouse_over_id != -1 )
+      {
+        // encode panel visibility into full_preview
+        lib->full_preview = 0;
+        lib->full_preview_id = mouse_over_id;
         // let's hide some gui components
         GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
         gtk_widget_hide(widget);
         widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 1;
         gtk_widget_hide(widget);
         widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
         gtk_widget_hide(widget);
         widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
         gtk_widget_hide(widget);
         //dt_dev_invalidate(darktable.develop);
       } 
