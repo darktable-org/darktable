@@ -224,18 +224,19 @@ please install fop (http://xml.apache.org)])
           fi
         ],
         [
-             AC_PATH_PROG([xsltproc],[xsltproc])
-             if test -z "$xsltproc"; then
-                     AC_MSG_WARN([xsltproc was not found. If you want to change and compile the documentation, \
-             please install libxslt (http://xmlsoft.org/XSLT/)])
-                     can_build_usermanual=no
-             fi
-             AC_PATH_PROG([fop],[fop])
-             if test -z "$fop"; then
-                     AC_MSG_WARN([fop was not found. If you want to change and compile the documentation, \
-             please install fop (http://xml.apache.org)])
-                     can_build_usermanual=no
-             fi
+             can_build_usermanual=no
+             dnl ** AC_PATH_PROG([xsltproc],[xsltproc])
+             dnl ** if test -z "$xsltproc"; then
+             dnl **         AC_MSG_WARN([xsltproc was not found. If you want to change and compile the documentation, \
+             dnl ** please install libxslt (http://xmlsoft.org/XSLT/)])
+             dnl **         can_build_usermanual=no
+             dnl ** fi
+             dnl ** AC_PATH_PROG([fop],[fop])
+             dnl ** if test -z "$fop"; then
+             dnl **         AC_MSG_WARN([fop was not found. If you want to change and compile the documentation, \
+             dnl ** please install fop (http://xml.apache.org)])
+             dnl **         can_build_usermanual=no
+             dnl ** fi
         ]
         )
 AC_DEFINE(HAVE_DOCS, 1, [whether darktable usermanual can be changed and compiled])
