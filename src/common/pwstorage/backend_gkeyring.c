@@ -20,7 +20,9 @@
 
 #include "backend_gkeyring.h"
 #include "control/conf.h"
+#ifdef HAVE_GNOME_KEYRING
 #include <gnome-keyring.h>
+#endif
 #include <glib.h>
 #define DARKTABLE_KEYRING	PACKAGE_NAME
 #undef DARKTABLE_KEYRING
@@ -29,6 +31,7 @@ const backend_gkeyring_context_t*
 dt_pwstorage_gkeyring_new() 
 {
 		backend_gkeyring_context_t *context = (backend_gkeyring_context_t*)g_malloc(sizeof(backend_gkeyring_context_t));
+#ifdef HAVE_GNOME_KEYRING
 #ifdef DARKTABLE_KEYRING
 		/* Check if darktable keyring exists, if not create it */
 		gboolean keyring_exists = FALSE;
@@ -56,13 +59,14 @@ dt_pwstorage_gkeyring_new()
 		/* unlock darktable keyring */
 		// Keep this locked until accessed..
 		//gnome_keyring_lock_sync(DARKTABLE_KEYRING);
-		
+#endif
 		return context;
 }
 
 gboolean 
 dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
 {
+#ifdef HAVE_GNOME_KEYRING
 	GnomeKeyringResult result=0;
 	GnomeKeyringAttributeList * attributes;
 	gchar name[256]="Darktable account information for ";
@@ -104,6 +108,9 @@ dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
 	gnome_keyring_attribute_list_free(attributes);
 	
 	return (result == GNOME_KEYRING_RESULT_OK);
+#else
+        return FALSE;
+#endif
 }
 
 GHashTable* 
@@ -111,7 +118,7 @@ dt_pwstorage_gkeyring_get(const gchar* slot)
 {
 	
 	GHashTable* table = g_hash_table_new (g_str_hash,g_str_equal);
-
+#ifdef HAVE_GNOME_KEYRING
 	/* find item for slot */
 	GList *items=NULL;
 	GnomeKeyringAttributeList *attributes;
@@ -144,5 +151,6 @@ dt_pwstorage_gkeyring_get(const gchar* slot)
 		gnome_keyring_attribute_list_free(attributes);
 		gnome_keyring_found_free (items->data);
 	}
+#endif
 	return table;
 }
