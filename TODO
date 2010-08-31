@@ -8,6 +8,9 @@ big stuff:
  * docs (sphinx?)
  * removable media, relocation and image sha1sums
 
+- color transfer garbles history stack and crash/freezes?
+
+- histogram still flickers
 
 - arrows to flip rotate image in lt mode
 

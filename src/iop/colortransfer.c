@@ -412,7 +412,6 @@ apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
 static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 { // this is called whenever the pipeline finishes processing (i.e. after a color pick)
-  dt_control_queue_draw(self->widget);
   if(darktable.gui->reset) return FALSE;
   // if(!self->request_color_pick) return FALSE;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
