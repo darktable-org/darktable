@@ -66,6 +66,8 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode);
 void dt_image_cache_release(dt_image_t *img, const char mode);
 /** synches this image and the db entry. */
 void dt_image_cache_flush(dt_image_t *img);
+/** same as above, but doesn't write the redundant sidecar files. */
+void dt_image_cache_flush_no_sidecars(dt_image_t *img);
 /** invalidates resources occupied by this image. */
 void dt_image_cache_clear(int32_t id);
 

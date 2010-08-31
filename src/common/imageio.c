@@ -160,8 +160,10 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
+  const int altered = dt_image_altered(img);
+
   // if we have a history stack, don't load preview buffer!
-  if(!dt_image_altered(img) && !dt_conf_get_bool("never_use_embedded_thumb"))
+  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
   { // no history stack: get thumbnail
     ret = libraw_open_file(raw, filename);
     HANDLE_ERRORS(ret, 0);
@@ -344,15 +346,17 @@ try_full_raw:
       }
     }
 
+    // don't write mip4, it's shitty anyways (altered image has to be processed)
+#if 0
     // have first preview of non-processed image
     if(dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
-    dt_image_get(img, DT_IMAGE_MIPF, 'r');
     dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
     dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
     dt_image_release(img, DT_IMAGE_MIP4, 'w');
     retval = dt_image_update_mipmaps(img);
     dt_image_release(img, DT_IMAGE_MIP4, 'r');
+#endif
 
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -505,11 +509,25 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     free(tmp);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
+#if 0
+  dt_image_buffer_t mip;
+  if(dt_image_altered(img))
+  {
+    // the image has a history stack. we want mipf and process it!
+    mip = DT_IMAGE_MIPF;
+  }
+  else
+  {
+    // the image has no history stack. we want mip4 directly.
+    mip = DT_IMAGE_MIP4;
+  }
+
   if(dt_image_alloc(img, DT_IMAGE_MIP4))
   {
     free(tmp);
     return DT_IMAGEIO_CACHE_FULL;
   }
+#endif
 
   int p_wd, p_ht;
   float f_wd, f_ht;
@@ -746,23 +764,7 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
 
 int dt_imageio_dt_write (const int imgid, const char *filename)
 {
-  // first check if the dt file has more right than the db:
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select flags from images where id = ?1", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int flags = sqlite3_column_int(stmt, 0);
-    printf("flags : %d\n", flags);
-    if((flags & DT_IMAGE_CHECKED_SIDECAR) == 0)
-    { // we did not even read the accompanying dt yet
-      // (which might have come with a raw copied from a pal)
-      sqlite3_finalize (stmt);
-      printf("deferring dt writing!\n");
-      return 0;
-    }
-  }
-  sqlite3_finalize (stmt);
   FILE *f = NULL;
   // read history from db
   size_t rd;
@@ -792,35 +794,9 @@ int dt_imageio_dt_write (const int imgid, const char *filename)
   if(f) fclose(f);
   else
   { // nothing in history, delete the file
-    printf("deleting history file!\n");
     return g_unlink(filename);
   }
   return 0;
-}
-
-static void
-set_read_sidecar(const int imgid)
-{
-  printf("read sidecar, flagging\n");
-  // dt_image_t *img = dt_image_cache_get(imgid, 'r');
-  // img->flags |= DT_IMAGE_CHECKED_SIDECAR;
-  // dt_image_cache_flush(img);
-  // dt_image_cache_release(img, 'r');
-#if 1
-  // great, we read a sidecar file.
-  // synch image struct, if it is in cache:
-  dt_image_t *img = dt_image_cache_get_uninited(imgid, 'r');
-  if(img && img->film_id > 0) img->flags |= DT_IMAGE_CHECKED_SIDECAR;
-  dt_image_cache_release(img, 'r');
-  // update database:
-  sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "update images set flags = flags | ?1 where id = ?2", -1, &stmt, NULL);
-  printf("trying query `update images set flags = flags | %d where id = %d'\n", DT_IMAGE_CHECKED_SIDECAR, imgid);
-  sqlite3_bind_int (stmt, 1, DT_IMAGE_CHECKED_SIDECAR);
-  sqlite3_bind_int (stmt, 2, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize (stmt);
-#endif
 }
 
 int dt_imageio_dt_read (const int imgid, const char *filename)
@@ -840,7 +816,6 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   rd = fread(&magic, sizeof(int32_t), 1, f);
   if(rd != 1 || magic != 0xd731337)
   {
-    printf("1\n");
     goto delete_old_config;
   }
 
@@ -885,12 +860,9 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
     num ++;
   }
   fclose(f);
-  set_read_sidecar(imgid);
   return 0;
 delete_old_config:
   fclose(f);
-  // also set sidecar read flag when a broken one has been deleted.
-  set_read_sidecar(imgid);
   return g_unlink(filename);
 }
 

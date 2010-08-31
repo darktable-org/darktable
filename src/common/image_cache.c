@@ -449,7 +449,7 @@ void dt_image_cache_print(dt_image_cache_t *cache)
   printf("image cache: fill: %d/%d, users: %d, writers: %d\n", entries, cache->num_lines, users, write);
 }
 
-void dt_image_cache_flush(dt_image_t *img)
+void dt_image_cache_flush_no_sidecars(dt_image_t *img)
 {
   if(img->id <= 0) return;
   int rc;
@@ -479,6 +479,12 @@ void dt_image_cache_flush(dt_image_t *img)
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
+}
+
+void dt_image_cache_flush(dt_image_t *img)
+{
+  if(img->id <= 0) return;
+  dt_image_cache_flush_no_sidecars(img);
   // also synch dttags file:
   dt_image_write_dt_files(img);
 }

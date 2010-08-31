@@ -558,7 +558,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   sprintf(c, ".dttags");
   (void)dt_imageio_dttags_read(img, dtfilename);
 
-  dt_image_cache_flush(img);
+  dt_image_cache_flush_no_sidecars(img);
 
   sprintf(c, ".dt");
   (void)dt_imageio_dt_read(img->id, dtfilename);
