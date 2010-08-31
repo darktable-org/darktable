@@ -49,3 +49,5 @@ ltmain.sh
 *.a
 .libs
 .deps
+doc/usermanual/darktable-usermanual.fo
+doc/usermanual/darktable-usermanual.pdf
