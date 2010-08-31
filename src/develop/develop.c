@@ -26,6 +26,7 @@
 
 #include <glib/gprintf.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <math.h>
 #include <string.h>
 #include <strings.h>
@@ -413,18 +414,20 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
   if(dev->image_force_reload || dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r'))
   {
     int err;
-restart:
-    dev->image_loading = 1;
     // not loaded from cache because it is obviously not there yet.
     if(dev->image_force_reload) dt_image_release(img, DT_IMAGE_FULL, 'r');
+restart:
+    dev->image_loading = 1;
     double start = dt_get_wtime();
-    err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
+    err = dt_image_load(img, DT_IMAGE_FULL); // load and lock 'r'
     double end = dt_get_wtime();
     dt_print(DT_DEBUG_PERF, "[dev_raw_load] libraw took %.3f secs to demosaic the image.\n", end - start);
     if(err)
-    {
+    { // couldn't load image (cache slots full?)
       fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
-      return;
+      // spin lock:
+      sleep(1);
+      goto restart;
     }
 
     // obsoleted by another job?
@@ -432,6 +435,7 @@ restart:
     {
       printf("[dev_raw_load] recovering from obsoleted read!\n");
       img = dev->image;
+      dt_image_release(img, DT_IMAGE_FULL, 'r');
       goto restart;
     }
   }

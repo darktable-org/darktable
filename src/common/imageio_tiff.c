@@ -192,11 +192,12 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   TIFFClose(image);
 
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  dt_imageio_retval_t retval = dt_image_update_mipmaps(img);
-  retval += dt_image_preview_to_raw(img);
+  dt_image_update_mipmaps(img);
+  // only try to fill mipf.
+  dt_image_preview_to_raw(img);
   dt_image_release(img, DT_IMAGE_MIP4, 'r');
   img->flags |= DT_IMAGE_LDR;
-  return retval;
+  return DT_IMAGEIO_OK;
 }
 
 

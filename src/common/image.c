@@ -297,7 +297,7 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
   if(mip_wd == p_wd && mip_ht == p_ht)
   { // use 1:1
     if(ldr) for(int j=0;j<mip_ht;j++) for(int i=0;i<mip_wd;i++)
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*(j*mip_wd + i) + k]*(1.0/255.0);
+      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*(j*mip_wd + i) + 2-k]*(1.0/255.0);
     else for(int j=0;j<mip_ht;j++) for(int i=0;i<mip_wd;i++)
       for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*(j*mip_wd + i) + 2-k]];
   }
@@ -307,7 +307,7 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
     const float scale = fmaxf(mip_wd/f_wd, mip_ht/f_ht);
     for(int j=0;j<p_ht && (int)(scale*j)<mip_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < mip_wd;i++)
     {
-      if(ldr) for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + k]*(1.0/255.0);
+      if(ldr) for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]*(1.0/255.0);
       else    for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]];
     }
   }
@@ -582,7 +582,11 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
   {
     int p_wd, p_ht;
     dt_image_get_mip_size(img, l, &p_wd, &p_ht);
-    if(dt_image_alloc(img, l)) return DT_IMAGEIO_CACHE_FULL;
+    if(dt_image_alloc(img, l))
+    {
+      dt_image_release(img, l+1, 'r');
+      return DT_IMAGEIO_CACHE_FULL;
+    }
 
     dt_image_check_buffer(img, l, p_wd*p_ht*4*sizeof(uint8_t));
     // printf("creating mipmap %d for img %s: %d x %d\n", l, img->filename, p_wd, p_ht);
@@ -752,8 +756,9 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   }
   else if(mip == DT_IMAGE_FULL)
   {
+    // after _open, the full buffer will be 'r' locked.
     ret = dt_imageio_open(img, filename);
-    ret = dt_image_raw_to_preview(img, img->pixels);
+    dt_image_raw_to_preview(img, img->pixels);
   }
   else
   {
@@ -870,6 +875,13 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   }
   if(ptr)
   {
+    if(img->lock[mip].write || img->lock[mip].users)
+    {
+      // still locked by others
+      dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d is still locked! (w:%d u:%d)\n", mip, img->lock[mip].write, img->lock[mip].users);
+      pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+      return 1;
+    }
     if(size != img->mip_buf_size[mip])
     {
       // can't happen?
@@ -1007,8 +1019,12 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
   {
     if(mode == 'w')
     {
-      img->lock[mip].write = 1;
-      img->lock[mip].users = 1;
+      if(img->lock[mip].users) ret = 1;
+      else
+      {
+        img->lock[mip].write = 1;
+        img->lock[mip].users = 1;
+      }
     }
     else img->lock[mip].users++;
   }
@@ -1039,10 +1055,14 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
   {
     if(mode == 'w')
     {
-      img->lock[mip].write = 1;
-      img->lock[mip].users = 1;
+      if(img->lock[mip].users) mip = DT_IMAGE_NONE;
+      else
+      {
+        img->lock[mip].write = 1;
+        img->lock[mip].users = 1;
+      }
     }
-    img->lock[mip].users++;
+    else img->lock[mip].users++;
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
     return mip;
   }
@@ -1102,8 +1122,12 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   {
     if(mode == 'w')
     {
-      img->lock[mip].write = 1;
-      img->lock[mip].users = 1;
+      if(img->lock[mip].users) mip = DT_IMAGE_NONE;
+      else
+      {
+        img->lock[mip].write = 1;
+        img->lock[mip].users = 1;
+      }
     }
     else img->lock[mip].users++;
   }
@@ -1113,17 +1137,20 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
 #if 1
   if(mip != mip_in) // && !img->lock[mip_in].write)
   { // start job to load this buf in bg.
-    dt_print(DT_DEBUG_CACHE, "[image_get] reloading mip %d for image %d\n", mip_in, img->id);
+    dt_image_buffer_t mip2 = mip_in;
+    if(mip2 < DT_IMAGE_MIP4) mip2 = DT_IMAGE_MIP4; // this will fill all smaller maps, too.
+    dt_print(DT_DEBUG_CACHE, "[image_get] reloading mip %d for image %d\n", mip2, img->id);
     dt_job_t j;
-    dt_image_load_job_init(&j, img->id, mip_in);
+    dt_image_load_job_init(&j, img->id, mip2);
     // if the job already exists, make it high-priority:
     dt_control_revive_job(darktable.control, &j);
-    if(!img->lock[mip_in].write)
+    if(!img->lock[mip2].write)
     {
-      img->lock[mip_in].write = 1;
+      img->lock[mip2].write = 1;
       if(dt_control_add_job(darktable.control, &j))
-        img->lock[mip_in].write = 0;
+        img->lock[mip2].write = 0;
     }
+#if 0
     if(mip_in == DT_IMAGE_MIP4)
     { // prefetch mipf, don't call prefetch, as we already locked the mutex.
       dt_job_t j;
@@ -1136,6 +1163,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
           img->lock[DT_IMAGE_MIPF].write = 0;
       }
     }
+#endif
   }
 #endif
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));

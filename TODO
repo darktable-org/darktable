@@ -8,6 +8,16 @@ big stuff:
  * docs (sphinx?)
  * removable media, relocation and image sha1sums
 
+ * devel docs about:
+   . module interface, 3-way ROI processing
+   . locking and buffers, open() and open_preview(), dt is a huge spinlock
+
+- open_preview/open semantics, also for ldr images:
+  . if edited, load mipf, else load mip4..0
+  . raw loading should be done only once for full, not for mipf too.
+
+- multi file picasa export broken?
+
 - color transfer garbles history stack and crash/freezes?
 
 - histogram still flickers
@@ -23,10 +33,6 @@ big stuff:
 - export using multiple threads when more than 2 buffers are given in gconf? or openmp all process()
 
 - inotify not working? or not re-reading rotation of images in lt mode
-
-- preview to raw doesn't find mipmaps?
-  - ldr preview only writes mip4, raw writes mipf!
-  - image_load has buffer locked on return or not?
 
 - lighttable:
   - history of views
