@@ -913,7 +913,7 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
     if( strncmp( line, "stars:", 6) == 0) 
     {
       if( (rd = sscanf( line, "stars: %d\n", &stars)) == 1 )
-        img->flags |= 0x7 & stars;
+        img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
     else if( strncmp( line, "rawimport:",10) == 0) 
     {
