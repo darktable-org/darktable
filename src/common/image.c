@@ -875,9 +875,9 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   }
   if(ptr)
   {
-    if(img->lock[mip].write || img->lock[mip].users)
+    if(img->lock[mip].users)
     {
-      // still locked by others
+      // still locked by others (only write lock allone doesn't suffice, that's just a singleton thread indicator!)
       dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d is still locked! (w:%d u:%d)\n", mip, img->lock[mip].write, img->lock[mip].users);
       pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
       return 1;
@@ -1143,7 +1143,8 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
     dt_job_t j;
     dt_image_load_job_init(&j, img->id, mip2);
     // if the job already exists, make it high-priority:
-    dt_control_revive_job(darktable.control, &j);
+    if(dt_control_revive_job(darktable.control, &j) < 0)
+    // if not, add it:
     if(!img->lock[mip2].write)
     {
       img->lock[mip2].write = 1;

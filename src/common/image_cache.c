@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib/gstdio.h>
+#include <assert.h>
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
 {
@@ -294,7 +295,6 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
   for(int k=0;k<cache->num_lines;k++)
   {
     dt_image_cache_flush(&(cache->line[k].image));
-    dt_image_write_dt_files(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
   }
   free(cache->line);
@@ -380,7 +380,6 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
       return NULL;
     }
     dt_image_cache_flush(&(cache->line[k].image));
-    dt_image_write_dt_files(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
     dt_image_init(&(cache->line[k].image));
     cache->line[k].image.id = id;
@@ -483,6 +482,7 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
 
 void dt_image_cache_flush(dt_image_t *img)
 {
+  // assert(0);
   if(img->id <= 0) return;
   dt_image_cache_flush_no_sidecars(img);
   // also synch dttags file:

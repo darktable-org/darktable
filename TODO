@@ -16,6 +16,9 @@ big stuff:
   . if edited, load mipf, else load mip4..0
   . raw loading should be done only once for full, not for mipf too.
 
+  . open_tiff_*! rgbe, etc
+  . searching for 1 mip4 write and 2 mipf read locks not released for ldr images.
+
 - multi file picasa export broken?
 
 - color transfer garbles history stack and crash/freezes?

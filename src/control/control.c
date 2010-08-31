@@ -625,12 +625,12 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 
 int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 {
-  int32_t i;
+  int32_t j = -1;
   pthread_mutex_lock(&s->queue_mutex);
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  for(i=0;i<s->queued_top;i++)
+  for(int i=0;i<s->queued_top;i++)
   { // find equivalent job and push it up on top of the stack.
     const int j = s->queued[i];
     if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
@@ -646,7 +646,7 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   pthread_mutex_unlock(&s->cond_mutex);
-  return 0;
+  return j;
 }
 
 int32_t dt_control_get_threadid()

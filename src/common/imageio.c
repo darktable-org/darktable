@@ -509,7 +509,6 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     free(tmp);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
-#if 0
   dt_image_buffer_t mip;
   if(dt_image_altered(img))
   {
@@ -522,22 +521,21 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     mip = DT_IMAGE_MIP4;
   }
 
-  if(dt_image_alloc(img, DT_IMAGE_MIP4))
+  if(dt_image_alloc(img, mip))
   {
     free(tmp);
     return DT_IMAGEIO_CACHE_FULL;
   }
-#endif
 
   int p_wd, p_ht;
   float f_wd, f_ht;
-  dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
-  dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
+  dt_image_get_mip_size(img, mip, &p_wd, &p_ht);
+  dt_image_get_exact_mip_size(img, mip, &f_wd, &f_ht);
 
   // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
   // FIXME: there is a black border on the left side of a portrait image!
 
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):3*p_wd*p_ht*sizeof(float));
   const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
   const int p_wd2 = orientation & 4 ? p_ht : p_wd;
   const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
@@ -545,26 +543,40 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
 
   if(img->width == p_wd && img->height == p_ht)
   { // use 1:1
-    for (int j=0; j < jpg.height; j++)
-      for (int i=0; i < jpg.width; i++)
-        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+    if(mip == DT_IMAGE_MIP4)
+      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
+        img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+    else
+      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
+        img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
   }
   else
   { // scale to fit
-    bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+    if(mip == DT_IMAGE_MIP4) bzero(img->mip[mip], 4*p_wd*p_ht*sizeof(uint8_t));
+    else                     bzero(img->mipf,     3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
+    if(mip == DT_IMAGE_MIP4)
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
     {
       uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
       for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
     }
+    else
+    for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
+    {
+      uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+      for(int k=0;k<3;k++) img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
+    }
   }
   free(tmp);
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  dt_image_update_mipmaps(img);
-  // try to get mipf
-  dt_image_preview_to_raw(img);
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
+  dt_image_release(img, mip, 'w');
+  if(mip == DT_IMAGE_MIP4)
+  {
+    dt_image_update_mipmaps(img);
+    // try to get mipf
+    dt_image_preview_to_raw(img);
+  }
+  dt_image_release(img, mip, 'r');
   return DT_IMAGEIO_OK;
 }
 
@@ -614,6 +626,8 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
+  // try to fill mipf
+  dt_image_raw_to_preview(img, img->pixels);
   return DT_IMAGEIO_OK;
 }
 
@@ -741,7 +755,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
     ret = dt_imageio_open_raw(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr(img, filename);
-  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush(img);
+  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   return ret;
 }
@@ -754,7 +768,7 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
     ret = dt_imageio_open_raw_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush(img);
+  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush_no_sidecars(img);
   return ret;
 }
 
@@ -794,6 +808,7 @@ int dt_imageio_dt_write (const int imgid, const char *filename)
   if(f) fclose(f);
   else
   { // nothing in history, delete the file
+    // printf("deleting history `%s'\n", filename);
     return g_unlink(filename);
   }
   return 0;
@@ -814,10 +829,7 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
 
   uint32_t magic = 0;
   rd = fread(&magic, sizeof(int32_t), 1, f);
-  if(rd != 1 || magic != 0xd731337)
-  {
-    goto delete_old_config;
-  }
+  if(rd != 1 || magic != 0xd731337) goto delete_old_config;
 
   while(!feof(f))
   {
@@ -1025,7 +1037,7 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
   }
   
   fclose(f);
-  dt_image_cache_flush(img);
+  dt_image_cache_flush_no_sidecars(img);
   // dt_image_cache_release(img, 'w');
   return 0;
 }
