@@ -117,7 +117,7 @@ int dt_control_load_config(dt_control_t *c)
   int rc;
   sqlite3_stmt *stmt;
   // unsafe, fast write:
-  sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
+  // sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
   // free memory on disk if we call the line below:
   // rc = sqlite3_exec(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
