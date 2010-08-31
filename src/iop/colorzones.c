@@ -737,6 +737,8 @@ static void
 request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   self->dev->gui_module = self;
 }
 
@@ -760,7 +762,7 @@ colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   }
 }
 
-void 
+static void 
 _colorzones_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
 {
   // Reset size to match panel width
@@ -788,7 +790,6 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 5);
- // gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
