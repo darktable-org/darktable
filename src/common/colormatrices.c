@@ -30,6 +30,9 @@ dt_profiled_colormatrix_t;
   // image submitter, chart type, illuminant, comments
 static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
 
+  // Sven Lindahl, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon EOS-1Ds Mark II",        {1078033, 378601, -31113}, { -15396, 1112045, -245743}, {166794, -252411, 1284531}, {681213, 705048, 590790}},
+
   // Xavier Besse, CMP Digital Target 3, direct sunlight, well lit
   { "Canon EOS 5D Mark II",         { 967590, 399139,  36026}, { -52094,  819046, -232071}, {144455, -143158, 1069305}, {864227, 899139, 741547}},
 
