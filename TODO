@@ -14,13 +14,14 @@ big stuff:
 
 - open_preview/open semantics, also for ldr images:
   . if edited, load mipf, else load mip4..0
+  . open_tiff_*! rgbe, etc
+
   . raw loading should be done only once for full, not for mipf too.
 
-  . open_tiff_*! rgbe, etc
-  . searching for 1 mipf read locks not released for ldr images.
-  . one mip4 write and n mip3 read locks not released!
-
   . possible to quickly get a mipf before the raw is loaded? at least for ldr?
+
+  . reimport should check mipf (in the case of not force_reimport) if altered and devel mip4-0.
+  . mipf should be collected from dt_image_load -> dt_imageio_open_preview (without devel etc in reimport)
 
 - multi file picasa export broken?
 
