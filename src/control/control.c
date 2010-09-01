@@ -660,7 +660,8 @@ int32_t dt_control_get_threadid()
 int32_t dt_control_get_threadid_res()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread_res[threadid] != pthread_self() && threadid < DT_CTL_WORKER_RESERVED) threadid++;
+  while(darktable.control->thread_res[threadid] != pthread_self() && threadid < DT_CTL_WORKER_RESERVED-1)
+    threadid++;
   assert(darktable.control->thread_res[threadid] == pthread_self());
   return threadid;
 }
