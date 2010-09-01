@@ -202,8 +202,7 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       "</entry>",
       caption,description);
   
-  
-  
+
   // Hack for nonform multipart post...
   gchar mpart1[4096]={0};
   gchar *mpart_format="Media multipart posting\n--END_OF_PART\nContent-Type: application/atom+xml\n\n%s\n--END_OF_PART\nContent-Type: %s\n\n";
@@ -227,11 +226,13 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, uri);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,0);   // A post request !
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POST,1);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDS, postdata);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDSIZE, postdata_length);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
+
   curl_easy_perform( ctx->curl_handle );
 
   curl_slist_free_all(headers);
@@ -252,7 +253,7 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       if( i < g_list_length( tags )-1)
         g_strlcat(keywords,", ",4096);
     }
-    
+
     xmlDocPtr doc;
     xmlNodePtr entryNode;
     // Parse xml document
@@ -298,7 +299,6 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       }
       
       // Let's update the photo 
-      
       struct curl_slist *headers = NULL;
       headers = curl_slist_append(headers,ctx->authHeader);
       headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
@@ -311,12 +311,13 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
   
       // Setup data to send..
       _buffer_t writebuffer;
-      
-      xmlDocDumpMemory(doc,(xmlChar **)&writebuffer.data,(int *)&writebuffer.size);
+      int datasize;
+      xmlDocDumpMemory(doc,(xmlChar **)&writebuffer.data, &datasize);
+      writebuffer.size = datasize;
       writebuffer.offset=0;
       
       curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, updateUri);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,1);   // A put request
       curl_easy_setopt(ctx->curl_handle, CURLOPT_READDATA,&writebuffer);
@@ -324,10 +325,13 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       curl_easy_setopt(ctx->curl_handle, CURLOPT_READFUNCTION,_picasa_api_buffer_read_func);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &response);
-      curl_easy_perform( ctx->curl_handle ); 
-      
+      curl_easy_perform( ctx->curl_handle );   
+
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
+      if (response.data != NULL)
+	g_free(response.data);
+
       curl_slist_free_all( headers );
     }
     
