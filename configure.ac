@@ -62,10 +62,8 @@ if test "$try_openmp" = "yes"; then
     AC_OPENMP
     if test "$CC" = "icc"; then
       AC_CHECK_LIB([guide], [omp_get_num_procs])
-      dnl **OPENMP_LDFLAGS="-lguide"
     else
       AC_CHECK_LIB([gomp], [omp_get_num_procs])
-      dnl ** OPENMP_LDFLAGS="-lgomp"
     fi
     AC_SUBST([OPENMP_LDFLAGS])
 fi
