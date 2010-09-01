@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+
 static int64_t dt_image_debug_malloc_size = 0;
 
 static void *
@@ -738,8 +739,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     (img->force_reimport || img->width == 0 || img->height == 0))
   {
     ret = dt_image_reimport(img, filename, mip);
-    if(dt_image_get(img, mip, 'r') == mip) ret = 0;
-    else ret = 1;
+    if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
+    else ret = 0;
   }
   // img not in database. => mip == FULL or kicked out or corrupt or first time load..
   if(mip == DT_IMAGE_MIPF)
@@ -748,15 +749,15 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     { // get mipf from half-size raw
       dt_image_reimport(img, filename, mip);
-      if(dt_image_get(img, mip, 'r') == mip) ret = 0;
-      else ret = 1;
+      if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
+      else ret = 0;
     }
     else
     { // downscale full buffer
       ret = dt_image_raw_to_preview(img, img->pixels);
       dt_image_release(img, DT_IMAGE_FULL, 'r');
-      if(dt_image_get(img, mip, 'r') == mip) ret = 0;
-      else ret = 1;
+      if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
+      else ret = 0;
     }
   }
   else if(mip == DT_IMAGE_FULL)
@@ -772,8 +773,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     else
     {
       ret = dt_image_reimport(img, filename, mip);
-      if(dt_image_get(img, mip, 'r') == mip) ret = 0;
-      else ret = 1;
+      if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
+      else ret = 0;
     }
   }
   // TODO: insert abstract hook here?
@@ -848,7 +849,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
         bytes += cache->mip_lru[k][i]->mip_buf_size[k];
         if(cache->mip_lru[k][i]->mip_buf_size[k]) buffers ++;
 #ifdef _DEBUG
-        if(cache->mip_lru[k][i]->lock[k].users)
+        if(cache->mip_lru[k][i]->lock[k].users || cache->mip_lru[k][i]->lock[k].write)
           dt_print(DT_DEBUG_CACHE, "[mipmap_cache] img %d mip %d used by %d %s\n", i, k, cache->mip_lru[k][i]->lock[k].users, cache->mip_lru[k][i]->lock_last[k]);
 #endif
       }
@@ -1097,6 +1098,8 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
         img->lock[mip].users = 1;
       }
     }
+    // if -d cache was given, allow only one reader at the time, to trace stale locks.
+    else if((darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users) mip = DT_IMAGE_NONE;
     else
     {
       dt_image_set_lock_last(img, mip, file, line, function, 'r');
@@ -1175,6 +1178,8 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
         img->lock[mip].users = 1;
       }
     }
+    // if -d cache was given, allow only one reader at the time, to trace stale locks.
+    else if((darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users) mip = DT_IMAGE_NONE;
     else
     {
       dt_image_set_lock_last(img, mip, file, line, function, 'r');
