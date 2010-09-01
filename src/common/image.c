@@ -61,6 +61,14 @@ dt_image_debug_free(void *p, size_t size)
   free(p);
 }
 
+static int
+dt_image_single_user()
+{
+  return 0;
+  // if -d cache was given, allow only one reader at the time, to trace stale locks.
+  // return (darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users;
+}
+
 void dt_image_write_dt_files(dt_image_t *img)
 {
   // write .dt file
@@ -728,15 +736,6 @@ void dt_image_cleanup(dt_image_t *img)
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
 }
 
-static int
-dt_image_locked_for_single_thread(dt_image_t *img, dt_image_buffer_t mip)
-{
-  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
-  int ret = !img->lock[mip].users && img->lock[mip].write;
-  pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-  return ret;
-}
-
 // this should load and return with 'r' lock on mip buffer.
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
@@ -744,6 +743,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   int ret = 0;
   char filename[1024];
   dt_image_full_path(img, filename, 1024);
+  // reimport forced?
   if(mip != DT_IMAGE_FULL &&
     (img->force_reimport || img->width == 0 || img->height == 0))
   {
@@ -751,8 +751,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
     else ret = 0;
   }
-  // img not in database. => mip == FULL or kicked out or corrupt or first time load..
-  if(mip == DT_IMAGE_MIPF)
+  // else we might be able to fetch it from the caches.
+  else if(mip == DT_IMAGE_MIPF)
   {
     // TODO: can get this more efficiently via open_preview instead of reimport?
     // TODO: also restructure reimport?
@@ -788,24 +788,22 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
       else ret = 0;
     }
   }
-  if(ret && dt_image_locked_for_single_thread(img, mip))
-  { // we failed? and lock indicates our thread reserved the buffer?
-    dt_image_release(img, mip, 'w'); // release it.
-  }
   // TODO: insert abstract hook here?
   dt_control_queue_draw_all();
   return ret;
 }
 
-#define dt_image_set_lock_last_auto(A, B, C) dt_image_set_lock_last(A, B, __FILE__, __LINE__, __FUNCTION__, C)
+#ifdef _DEBUG
+#define dt_image_set_lock_last_auto(A, B, C) dt_image_set_lock_last(A, B, file, line, function, C)
 static void
 dt_image_set_lock_last(dt_image_t *image, dt_image_buffer_t mip,
     const char *file, int line, const char *function, const char mode)
 {
-#ifdef _DEBUG
   snprintf(image->lock_last[mip], 100, "%c by %s:%d %s", mode, file, line, function);
-#endif
 }
+#else
+#define dt_image_set_lock_last_auto(A, B, C)
+#endif
 
 #ifdef _DEBUG
 void dt_image_prefetch_with_caller(dt_image_t *img, dt_image_buffer_t mip,
@@ -823,15 +821,17 @@ void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip)
   }
   dt_job_t j;
   dt_image_load_job_init(&j, img->id, mip);
-  // if the job already exists, make it high-priority:
+  // if the job already exists, make it high-priority, if not, add it:
   if(dt_control_revive_job(darktable.control, &j) < 0)
-  // if not, add it:
+    dt_control_add_job(darktable.control, &j);
+#if 0
   if(!img->lock[mip].write)
   { // start job to load this buf in bg.
     img->lock[mip].write = 1;
     if(dt_control_add_job(darktable.control, &j)) img->lock[mip].write = 0;
     else dt_image_set_lock_last(img, mip, file, line, function, 'w');
   }
+#endif
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
 }
 
@@ -882,7 +882,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
         if(cache->mip_lru[k][i]->mip_buf_size[k]) buffers ++;
 #ifdef _DEBUG
         if(cache->mip_lru[k][i]->lock[k].users || cache->mip_lru[k][i]->lock[k].write)
-          dt_print(DT_DEBUG_CACHE, "[mipmap_cache] img %d mip %d used by %d %s\n", i, k, cache->mip_lru[k][i]->lock[k].users, cache->mip_lru[k][i]->lock_last[k]);
+          dt_print(DT_DEBUG_CACHE, "[mipmap_cache] img %d mip %d used by %d %s\n", cache->mip_lru[k][i]->id, k, cache->mip_lru[k][i]->lock[k].users, cache->mip_lru[k][i]->lock_last[k]);
 #endif
       }
     }
@@ -939,7 +939,7 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
     }
     else
     {
-      dt_image_set_lock_last(img, mip, file, line, function, 'w');
+      dt_image_set_lock_last_auto(img, mip, 'w');
       // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
       img->lock[mip].write = 1; // write lock
       img->lock[mip].users = 1; // read lock
@@ -1069,14 +1069,15 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
       if(img->lock[mip].users) ret = 1;
       else
       {
-        dt_image_set_lock_last(img, mip, file, line, function, 'w');
+        dt_image_set_lock_last_auto(img, mip, 'w');
         img->lock[mip].write = 1;
         img->lock[mip].users = 1;
       }
     }
+    else if(dt_image_single_user() && img->lock[mip].users) ret = 1;
     else
     {
-      dt_image_set_lock_last(img, mip, file, line, function, 'r');
+      dt_image_set_lock_last_auto(img, mip, 'r');
       img->lock[mip].users++;
     }
   }
@@ -1115,16 +1116,16 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
       if(img->lock[mip].users) mip = DT_IMAGE_NONE;
       else
       {
-        dt_image_set_lock_last(img, mip, file, line, function, 'w');
+        dt_image_set_lock_last_auto(img, mip, 'w');
         img->lock[mip].write = 1;
         img->lock[mip].users = 1;
       }
     }
     // if -d cache was given, allow only one reader at the time, to trace stale locks.
-    else if((darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users) mip = DT_IMAGE_NONE;
+    else if(dt_image_single_user() && img->lock[mip].users) mip = DT_IMAGE_NONE;
     else
     {
-      dt_image_set_lock_last(img, mip, file, line, function, 'r');
+      dt_image_set_lock_last_auto(img, mip, 'r');
       img->lock[mip].users++;
     }
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
@@ -1150,7 +1151,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
   {
     if(mode == 'w')
     {
-      dt_image_set_lock_last(img, mip, file, line, function, 'w');
+      dt_image_set_lock_last_auto(img, mip, 'w');
       img->lock[mip].write = 1;
       img->lock[mip].users = 1;
     }
@@ -1195,16 +1196,16 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
       if(img->lock[mip].users) mip = DT_IMAGE_NONE;
       else
       {
-        dt_image_set_lock_last(img, mip, file, line, function, 'w');
+        dt_image_set_lock_last_auto(img, mip, 'w');
         img->lock[mip].write = 1;
         img->lock[mip].users = 1;
       }
     }
     // if -d cache was given, allow only one reader at the time, to trace stale locks.
-    else if((darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users) mip = DT_IMAGE_NONE;
+    else if(dt_image_single_user() && img->lock[mip].users) mip = DT_IMAGE_NONE;
     else
     {
-      dt_image_set_lock_last(img, mip, file, line, function, 'r');
+      dt_image_set_lock_last_auto(img, mip, 'r');
       img->lock[mip].users++;
     }
   }
@@ -1219,8 +1220,10 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
     dt_print(DT_DEBUG_CACHE, "[image_get] reloading mip %d for image %d\n", mip2, img->id);
     dt_job_t j;
     dt_image_load_job_init(&j, img->id, mip2);
-    // if the job already exists, make it high-priority:
+    // if the job already exists, make it high-priority, if not, add it:
     if(dt_control_revive_job(darktable.control, &j) < 0)
+      dt_control_add_job(darktable.control, &j);
+#if 0
     // if not, add it:
     if(!img->lock[mip2].write)
     {
@@ -1228,6 +1231,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
       if(dt_control_add_job(darktable.control, &j)) img->lock[mip2].write = 0;
       else dt_image_set_lock_last(img, mip2, file, line, function, 'w');
     }
+#endif
 #if 0
     if(mip_in == DT_IMAGE_MIP4)
     { // prefetch mipf, don't call prefetch, as we already locked the mutex.
