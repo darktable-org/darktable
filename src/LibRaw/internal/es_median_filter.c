@@ -55,6 +55,7 @@ void CLASS es_median_filter()
 /* 	pc[0][1] = p[4]; */
 /*       } */
     /* Apply 5x5 median fileter */
+#pragma parallel for private(row,col,pc)
     for (row=2; row < height-2; row++)
       for (col=2; col < width-2; col++) {
 	pc = mf + row*width+col;

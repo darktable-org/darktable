@@ -73,16 +73,21 @@ groups ()
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+	  dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+  const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
+  	if(rad == 0)
+  {
+    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    return;
+  }
+
+#pragma omp parallel
+{
+
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
-  if(rad == 0)
-  {
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
-    return;
-  }
+
   float mat[2*(MAXR+1)*2*(MAXR+1)];
   const int wd = 2*rad+1;
   float *m = mat + rad*wd + rad;
@@ -95,6 +100,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     m[l*wd + k] /= weight;
 
   // gauss blur the image
+  #pragma omp for
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
@@ -115,6 +121,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad;j<roi_out->height;j++)
     memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+#pragma omp for
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     for(int i=0;i<rad;i++)
@@ -122,22 +129,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=roi_out->width-rad;i<roi_out->width;i++)
       for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
   }
-
+#pragma omp for
   // subtract blurred image, if diff > thrs, add *amount to orginal image
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-  {
-    for(int c=0;c<3;c++)
-    {
-      const float diff = in[c] - out[c];
-      if(fabsf(diff) > data->threshold)
-      {
-        const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
-        out[c] = fmaxf(0.0, in[c] + detail*data->amount);
-      }
-      else out[c] = in[c];
-    }
-    out += 3; in += 3;
-  }
+  for(int j=0;j<roi_out->height;j++)
+  { 
+  float *in  = (float *)ivoid + j*3*roi_out->width;
+  float *out = (float *)ovoid + j*3*roi_out->width;
+	  
+	  for(int i=0;i<roi_out->width;i++)
+	{
+		for(int c=0;c<3;c++)
+		{
+		const float diff = in[c] - out[c];
+		if(fabsf(diff) > data->threshold)
+		{
+			const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
+			out[c] = fmaxf(0.0, in[c] + detail*data->amount);
+		}
+		else out[c] = in[c];
+		}
+		out += 3; in += 3;
+	}
+	}
+ } // end parallel
 }
 
 static void
