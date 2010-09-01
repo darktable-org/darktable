@@ -652,7 +652,8 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 int32_t dt_control_get_threadid()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread[threadid] != pthread_self() && threadid < darktable.control->num_threads) threadid++;
+  while(darktable.control->thread[threadid] != pthread_self() && threadid < darktable.control->num_threads-1)
+    threadid++;
   assert(darktable.control->thread[threadid] == pthread_self());
   return threadid;
 }
