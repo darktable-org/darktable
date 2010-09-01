@@ -81,7 +81,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     return;
   }
 
+#ifdef _OPENMP
 #pragma omp parallel
+#endif
 {
 
   float *in  = (float *)ivoid;
@@ -100,7 +102,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     m[l*wd + k] /= weight;
 
   // gauss blur the image
+#ifdef _OPENMP
   #pragma omp for
+#endif
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
@@ -121,7 +125,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad;j<roi_out->height;j++)
     memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+#ifdef _OPENMP
 #pragma omp for
+#endif
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     for(int i=0;i<rad;i++)
@@ -129,7 +135,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=roi_out->width-rad;i<roi_out->width;i++)
       for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
   }
+#ifdef _OPENMP
 #pragma omp for
+#endif
   // subtract blurred image, if diff > thrs, add *amount to orginal image
   for(int j=0;j<roi_out->height;j++)
   { 
