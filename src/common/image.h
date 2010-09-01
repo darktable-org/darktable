@@ -17,6 +17,9 @@
 */
 #ifndef DT_IMAGE_H
 #define DT_IMAGE_H
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
 
 #include <inttypes.h>
 #include <pthread.h>
@@ -110,6 +113,7 @@ typedef struct dt_image_t
   uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
   float *mipf;
   dt_image_lock_t lock[DT_IMAGE_NONE];
+  char lock_last[DT_IMAGE_NONE][100];
   int32_t import_lock;
   int32_t force_reimport;
 
@@ -184,18 +188,40 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 
 /** if in debug mode, asserts image buffer size for mip is alloc'ed this large. */
 void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t size);
-/** alloc new buffer for this mip map and image. also lock for writing. */
-int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip);
 /** destroy buffer. */
 void dt_image_free(dt_image_t *img, dt_image_buffer_t mip);
+
+// locking-related functions:
+#ifdef _DEBUG
+// macros wrapping the stack trace information:
+#define dt_image_get(A, B, C)    dt_image_get_with_caller  (A, B, C,  __FILE__, __LINE__, __FUNCTION__)
+#define dt_image_alloc(img, mip) dt_image_alloc_with_caller(img, mip, __FILE__, __LINE__, __FUNCTION__)
+#define dt_image_get_blocking(img, mip, mode)  dt_image_get_blocking_with_caller(img, mip, mode, __FILE__, __LINE__, __FUNCTION__)
+#define dt_image_lock_if_available(img, mip_in, mode) dt_image_lock_if_available_with_caller(img, mip_in, mode, __FILE__, __LINE__, __FUNCTION__)
+
+// same as the non-debug versions, but with stack trace information:
+dt_image_buffer_t dt_image_get_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
+    const char *file, const int line, const char *function);
+int dt_image_alloc_with_caller(dt_image_t *img, dt_image_buffer_t mip,
+    const char *file, const int line, const char *function);
+dt_image_buffer_t dt_image_get_blocking_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
+    const char *file, const int line, const char *function);
+int dt_image_lock_if_available_with_caller(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode,
+    const char *file, const int line, const char *function);
+#else
+
 /** gets the requested image buffer or a smaller preview if it is not available (w lock || =NULL), marking this with the read lock. returns found mip level. */
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
+/** alloc new buffer for this mip map and image. also lock for writing. */
+int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip);
 /** returns the requested image buffer. loads while blocking, if necessary. */
 dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
-/** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
-void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 /** locks the given mode if the buffer is available. returns non-zero and does nothing else on failure (no async loading is scheduled). */
 int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode);
+
+#endif
+/** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
+void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 
 /** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
 dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw);

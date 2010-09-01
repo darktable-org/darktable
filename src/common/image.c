@@ -577,9 +577,11 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
   if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r')) return DT_IMAGEIO_CACHE_FULL;
   int oldwd, oldht;
   dt_image_get_mip_size(img, DT_IMAGE_MIP4, &oldwd, &oldht);
+  // here we got mip4 'r' locked
   // create 8-bit mip maps:
   for(dt_image_buffer_t l=DT_IMAGE_MIP3;(int)l>=(int)DT_IMAGE_MIP0;l--)
   {
+    // here we got mip l+1 'r' locked
     int p_wd, p_ht;
     dt_image_get_mip_size(img, l, &p_wd, &p_ht);
     if(dt_image_alloc(img, l))
@@ -587,6 +589,8 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
       dt_image_release(img, l+1, 'r');
       return DT_IMAGEIO_CACHE_FULL;
     }
+
+    // here, we got mip l+1 'r' locked, and  mip l 'rw'
 
     dt_image_check_buffer(img, l, p_wd*p_ht*4*sizeof(uint8_t));
     // printf("creating mipmap %d for img %s: %d x %d\n", l, img->filename, p_wd, p_ht);
@@ -599,6 +603,7 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 
     dt_image_release(img, l, 'w');
     dt_image_release(img, l+1, 'r');
+    // here we got mip l 'r' locked
   }
   dt_image_release(img, DT_IMAGE_MIP0, 'r');
   return DT_IMAGEIO_OK;
@@ -842,6 +847,10 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
         write += cache->mip_lru[k][i]->lock[k].write;
         bytes += cache->mip_lru[k][i]->mip_buf_size[k];
         if(cache->mip_lru[k][i]->mip_buf_size[k]) buffers ++;
+#ifdef _DEBUG
+        if(cache->mip_lru[k][i]->lock[k].users)
+          dt_print(DT_DEBUG_CACHE, "[mipmap_cache] img %d mip %d used by %d %s\n", i, k, cache->mip_lru[k][i]->lock[k].users, cache->mip_lru[k][i]->lock_last[k]);
+#endif
       }
     }
     printf("[mipmap_cache] mip %d: fill: %d/%d, users: %d, writers: %d\n", k, entries, cache->num_entries[k], users, write);
@@ -858,7 +867,22 @@ void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t siz
 #endif
 }
 
+#define dt_image_set_lock_last_auto(A, B, C) dt_image_set_lock_last(A, B, __FILE__, __LINE__, __FUNCTION__, C)
+static void
+dt_image_set_lock_last(dt_image_t *image, dt_image_buffer_t mip,
+    const char *file, int line, const char *function, const char mode)
+{
+#ifdef _DEBUG
+  snprintf(image->lock_last[mip], 100, "%c by %s:%d %s", mode, file, line, function);
+#endif
+}
+
+#ifdef _DEBUG
+int dt_image_alloc_with_caller(dt_image_t *img, dt_image_buffer_t mip,
+    const char *file, const int line, const char *function)
+#else
 int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
+#endif
 {
   int wd, ht;
   dt_image_get_mip_size(img, mip, &wd, &ht);
@@ -879,25 +903,20 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
     {
       // still locked by others (only write lock allone doesn't suffice, that's just a singleton thread indicator!)
       dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d is still locked! (w:%d u:%d)\n", mip, img->lock[mip].write, img->lock[mip].users);
+#ifdef _DEBUG
+      dt_print(DT_DEBUG_CACHE, "[image_alloc] last lock acquired %s\n", img->lock_last);
+#endif
       pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
       return 1;
     }
     if(size != img->mip_buf_size[mip])
     {
-      // can't happen?
-      if(0)//img->lock[mip].write || img->lock[mip].users)
-      { // in use, can't free this buffer now.
-        dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d of wrong dimensions is still locked! (w:%d u:%d)\n", mip, img->lock[mip].write, img->lock[mip].users);
-        pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-        return 1;
-      }
-      else
-      { // free buffer, alter cache size stats, and continue below.
-        dt_image_free(img, mip);
-      }
+      // free buffer, alter cache size stats, and continue below.
+      dt_image_free(img, mip);
     }
     else
     {
+      dt_image_set_lock_last(img, mip, file, line, function, 'w');
       // dt_print(DT_DEBUG_CACHE, "[image_alloc] locking already allocated image %s\n", img->filename);
       img->lock[mip].write = 1; // write lock
       img->lock[mip].users = 1; // read lock
@@ -997,7 +1016,12 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip)
   img->mip_buf_size[mip] = 0;
 }
 
+#ifdef _DEBUG
+int dt_image_lock_if_available_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
+    const char *file, const int line, const char *function)
+#else
 int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, const char mode)
+#endif
 {
   if(mip == DT_IMAGE_NONE) return 1;
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
@@ -1022,17 +1046,27 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
       if(img->lock[mip].users) ret = 1;
       else
       {
+        dt_image_set_lock_last(img, mip, file, line, function, 'w');
         img->lock[mip].write = 1;
         img->lock[mip].users = 1;
       }
     }
-    else img->lock[mip].users++;
+    else
+    {
+      dt_image_set_lock_last(img, mip, file, line, function, 'r');
+      img->lock[mip].users++;
+    }
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   return ret;
 }
 
+#ifdef _DEBUG
+dt_image_buffer_t dt_image_get_blocking_with_caller(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode,
+    const char *file, const int line, const char *function)
+#else
 dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
+#endif
 {
   dt_image_buffer_t mip = mip_in;
   if(!img || mip == DT_IMAGE_NONE) return DT_IMAGE_NONE;
@@ -1058,11 +1092,16 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
       if(img->lock[mip].users) mip = DT_IMAGE_NONE;
       else
       {
+        dt_image_set_lock_last(img, mip, file, line, function, 'w');
         img->lock[mip].write = 1;
         img->lock[mip].users = 1;
       }
     }
-    else img->lock[mip].users++;
+    else
+    {
+      dt_image_set_lock_last(img, mip, file, line, function, 'r');
+      img->lock[mip].users++;
+    }
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
     return mip;
   }
@@ -1078,7 +1117,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
 
   // start job to load this buf in bg.
   dt_print(DT_DEBUG_CACHE, "[image_get_blocking] reloading mip %d for image %d\n", mip_in, img->id);
-  dt_image_load(img, mip_in); // this returns with 'r' locked
+  if(dt_image_load(img, mip_in)) mip = DT_IMAGE_NONE; // this returns with 'r' locked
   mip = mip_in;
 
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
@@ -1086,6 +1125,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
   {
     if(mode == 'w')
     {
+      dt_image_set_lock_last(img, mip, file, line, function, 'w');
       img->lock[mip].write = 1;
       img->lock[mip].users = 1;
     }
@@ -1095,7 +1135,12 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
   return mip;
 }
 
+#ifdef _DEBUG
+dt_image_buffer_t dt_image_get_with_caller(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode,
+    const char *file, const int line, const char *function)
+#else
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode)
+#endif
 {
   dt_image_buffer_t mip = mip_in;
   if(!img || mip == DT_IMAGE_NONE) return DT_IMAGE_NONE;
@@ -1125,11 +1170,16 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
       if(img->lock[mip].users) mip = DT_IMAGE_NONE;
       else
       {
+        dt_image_set_lock_last(img, mip, file, line, function, 'w');
         img->lock[mip].write = 1;
         img->lock[mip].users = 1;
       }
     }
-    else img->lock[mip].users++;
+    else
+    {
+      dt_image_set_lock_last(img, mip, file, line, function, 'r');
+      img->lock[mip].users++;
+    }
   }
 
   // dt_print(DT_DEBUG_CACHE, "[image_get] requested buffer %d, found %d for image %s locks: %d r %d w\n", mip_in, mip, img->filename, img->lock[mip_in].users, img->lock[mip_in].write);
@@ -1150,6 +1200,7 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
       img->lock[mip2].write = 1;
       if(dt_control_add_job(darktable.control, &j))
         img->lock[mip2].write = 0;
+      if(img->lock[mip2].write) dt_image_set_lock_last(img, mip2, file, line, function, 'w');
     }
 #if 0
     if(mip_in == DT_IMAGE_MIP4)
@@ -1170,9 +1221,11 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   return mip;
 }
+#undef dt_image_set_lock_last_auto
 
 void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode)
 {
+  if(mip == DT_IMAGE_NONE) return;
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   if (mode == 'r' && img->lock[mip].users > 0) img->lock[mip].users --;
   else if (mode == 'w') img->lock[mip].write = 0;  // can only be one writing thread at a time.

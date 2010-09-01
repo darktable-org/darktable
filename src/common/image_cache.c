@@ -165,7 +165,7 @@ write_error:
   pthread_mutex_unlock(&(cache->mutex));
 }
 
-void dt_image_cache_read(dt_image_cache_t *cache)
+int dt_image_cache_read(dt_image_cache_t *cache)
 {
   pthread_mutex_lock(&(cache->mutex));
   char *homedir = getenv("HOME");
@@ -214,7 +214,7 @@ void dt_image_cache_read(dt_image_cache_t *cache)
       uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
       int32_t length = 0;
       rd = fread(&length, sizeof(int32_t), 1, f);
-      if(rd != 1) { free(blob); goto read_error; }
+      if(rd != 1 || length > 4*sizeof(uint8_t)*wd*ht) { free(blob); goto read_error; }
       rd = fread(blob, sizeof(uint8_t), length, f);
       if(rd != length) { free(blob); goto read_error; }
       if(!dt_image_alloc(image, mip))
@@ -239,8 +239,7 @@ void dt_image_cache_read(dt_image_cache_t *cache)
       uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
       int32_t length = wd*ht;
       rd = fread(&length, sizeof(int32_t), 1, f);
-      g_assert(length == wd*ht);
-      if(rd != 1) { free(buf); goto read_error; }
+      if(rd != 1 || length != wd*ht) { free(buf); goto read_error; }
       rd = fread(buf, sizeof(uint8_t), length, f);
       if(rd != length) { free(buf); goto read_error; }
       if(!dt_image_alloc(image, DT_IMAGE_MIPF))
@@ -258,12 +257,14 @@ void dt_image_cache_read(dt_image_cache_t *cache)
   if(rd != 1 || readmarker != endmarker) goto read_error;
   fclose(f);
   pthread_mutex_unlock(&(cache->mutex));
-  return;
+  return 0;
 
 read_error:
   if(f) fclose(f);
+  g_unlink(dbfilename);
   fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
   pthread_mutex_unlock(&(cache->mutex));
+  return 1;
 }
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
@@ -285,7 +286,14 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   }
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
-  dt_image_cache_read(cache);
+  if(dt_image_cache_read(cache))
+  {
+    // the cache failed to load, the file has been
+    // deleted.
+    // reset to useful values:
+    dt_image_cache_cleanup(cache);
+    dt_image_cache_init(cache, entries);
+  }
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)

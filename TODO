@@ -17,7 +17,10 @@ big stuff:
   . raw loading should be done only once for full, not for mipf too.
 
   . open_tiff_*! rgbe, etc
-  . searching for 1 mip4 write and 2 mipf read locks not released for ldr images.
+  . searching for 1 mipf read locks not released for ldr images.
+  . one mip4 write and n mip3 read locks not released!
+
+  . possible to quickly get a mipf before the raw is loaded? at least for ldr?
 
 - multi file picasa export broken?
 
