@@ -330,7 +330,7 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
   {
     gtk_widget_show(module->widget);
     // register to receive draw events
-    module->dev->gui_module = module;
+    dt_iop_request_focus(module);
     // hide all other module widgets
 #if 0 // TODO: make this an option. it is quite annoying when using expose/tonecurve together.
     GList *iop = module->dev->iop;
@@ -350,7 +350,7 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
   {
     if(module->dev->gui_module == module)
     {
-      module->dev->gui_module = NULL;
+      dt_iop_request_focus(NULL);
       dt_control_gui_queue_draw();
     }
     gtk_widget_hide(module->widget);
@@ -398,6 +398,13 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,gtk_get_current_event_time());
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
+}
+
+void dt_iop_request_focus(dt_iop_module_t *module)
+{
+  if(darktable.develop->gui_module) gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+  darktable.develop->gui_module = module;
+  if(module) gtk_widget_set_state(module->topwidget, GTK_STATE_SELECTED);
 }
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)

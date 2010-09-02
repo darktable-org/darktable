@@ -389,12 +389,12 @@ colorpicker_toggled (GtkToggleButton *button, gpointer p)
   dt_iop_module_t *module = get_colorout_module();
   if(module)
   {
-    darktable.develop->gui_module = module;
+    dt_iop_request_focus(module);
     module->request_color_pick = gtk_toggle_button_get_active(button);
   }
   else
   {
-    darktable.develop->gui_module = NULL;
+    dt_iop_request_focus(NULL);
   }
   dt_control_gui_queue_draw();
 }

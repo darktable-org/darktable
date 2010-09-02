@@ -532,7 +532,7 @@ apply_preset(dt_iop_module_t *self)
       break;
     case 1: // spot wb, exposure callback will set p->coeffs.
       for(int k=0;k<3;k++) p->coeffs[k] = fp->coeffs[k];
-      self->dev->gui_module = self;
+      dt_iop_request_focus(self);
       self->request_color_pick = 1;
       break;
     case 2: // passthrough mode, raw data

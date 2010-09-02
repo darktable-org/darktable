@@ -162,3 +162,4 @@ dt_gui_contrast_decrease ()
     _gui_contrast_apply ();
   }
 }
+

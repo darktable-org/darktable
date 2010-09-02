@@ -152,6 +152,8 @@ void dt_iop_gui_update(dt_iop_module_t *module);
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+/** requests the focus for this plugin (to draw overlays over the center image) */
+void dt_iop_request_focus(dt_iop_module_t *module);
 /** loads default settings from database. */
 void dt_iop_load_default_params(dt_iop_module_t *module);
 

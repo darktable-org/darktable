@@ -433,7 +433,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(!strcmp(module->op, active_plugin)) dev->gui_module = module;
+    if(!strcmp(module->op, active_plugin))
+      dt_iop_request_focus(module);
     modules = g_list_next(modules);
   }
   g_free(active_plugin);
@@ -639,7 +640,8 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(!strcmp(module->op, active_plugin)) dev->gui_module = module;
+    if(!strcmp(module->op, active_plugin))
+      dt_iop_request_focus(module);
     modules = g_list_next(modules);
   }
   g_free(active_plugin);

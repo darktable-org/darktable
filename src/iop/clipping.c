@@ -482,7 +482,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
       g->current_aspect = g->aspect_ratios[which];
     apply_box_aspect(self, 5);
     dt_control_queue_draw_all();
-    self->dev->gui_module = self;
+    dt_iop_request_focus(self);
   }
 }
 
@@ -624,8 +624,7 @@ guides_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->goldenTriangleBox), FALSE);
   }
 
-
-  darktable.develop->gui_module = self;
+  dt_iop_request_focus(self);
   dt_control_queue_draw_all();
 }
 

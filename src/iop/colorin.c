@@ -76,28 +76,6 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
-#if 0
-static float
-lab_f(const float t)
-{
-  if(t > powf(6.0f/29.0f, 3.0f)) return powf(t, 1.0f/3.0f);
-  return 1.0/3.0 * (29.0/6.0)*(29.0/6.0)*t + 4.0/29.0;
-}
-// #else
-static double
-lab_f(double t)
-{
-  const double Limit = (24.0/116.0) * (24.0/116.0) * (24.0/116.0);
-
-  if (t <= Limit)
-    return (841.0/108.0) * t + (16.0/116.0);
-  else
-    // return CubeRoot((float) t); 
-    return pow(t, 1.0/3.0); 
-}
-#endif
-
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -114,6 +92,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
     const float YY = cam[0]+cam[1]+cam[2];
     const float zz = cam[2]/YY;
+    // lower amount and higher bound_z make the effect smaller.
+    // the effect is weakened the darker input values are, saturating at bound_Y
     const float bound_z = 0.5f, bound_Y = 0.5f;
     const float amount = 0.11f;
     // if(YY > bound_Y && zz > bound_z)
