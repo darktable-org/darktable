@@ -429,15 +429,18 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
-  modules = dev->iop;
-  while(modules)
+  if(active_plugin)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(!strcmp(module->op, active_plugin))
-      dt_iop_request_focus(module);
-    modules = g_list_next(modules);
+    modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      if(!strcmp(module->op, active_plugin))
+        dt_iop_request_focus(module);
+      modules = g_list_next(modules);
+    }
+    g_free(active_plugin);
   }
-  g_free(active_plugin);
 }
 
 static void
@@ -636,15 +639,18 @@ void enter(dt_view_t *self)
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
-  modules = dev->iop;
-  while(modules)
+  if(active_plugin)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(!strcmp(module->op, active_plugin))
-      dt_iop_request_focus(module);
-    modules = g_list_next(modules);
+    modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      if(!strcmp(module->op, active_plugin))
+        dt_iop_request_focus(module);
+      modules = g_list_next(modules);
+    }
+    g_free(active_plugin);
   }
-  g_free(active_plugin);
 
   // image should be there now.
   float zoom_x, zoom_y;
