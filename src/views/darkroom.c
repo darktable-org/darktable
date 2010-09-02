@@ -334,7 +334,13 @@ select_this_image(const int imgid)
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
+  // stare last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+  // store last active plugin:
+  if(darktable.develop->gui_module)
+    dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
+  else
+    dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
   // commit image ops to db
   dt_dev_write_history(dev);
@@ -420,6 +426,17 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
+
+  // get last active plugin:
+  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
+  modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    if(!strcmp(module->op, active_plugin)) dev->gui_module = module;
+    modules = g_list_next(modules);
+  }
+  g_free(active_plugin);
 }
 
 static void
@@ -616,6 +633,17 @@ void enter(dt_view_t *self)
   // switch on groups as they where last time:
   dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
 
+  // get last active plugin:
+  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
+  modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    if(!strcmp(module->op, active_plugin)) dev->gui_module = module;
+    modules = g_list_next(modules);
+  }
+  g_free(active_plugin);
+
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -634,6 +662,12 @@ void leave(dt_view_t *self)
 {
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+
+  // store last active plugin:
+  if(darktable.develop->gui_module)
+    dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
+  else
+    dt_conf_set_string("plugins/darkroom/active", "");
 
   if(dt_conf_get_bool("plugins/filmstrip/on"))
     dt_view_film_strip_close(darktable.view_manager);

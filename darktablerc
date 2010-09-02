@@ -68,6 +68,7 @@ plugins/lighttable/export/iccintent=-1
 gamma_linear=.4045f
 gamma_gamma=.41f
 plugins/darkroom/groups=1
+plugins/darkroom/active=
 plugins/darkroom/clipping/visible=TRUE
 plugins/darkroom/colorcorrection/visible=FALSE
 plugins/darkroom/colorin/visible=TRUE
