@@ -514,14 +514,14 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   pthread_mutex_unlock(&s->queue_mutex);
   if(!j) return -1;
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job_res] %d ", res);
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f ", res, dt_get_wtime());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
 
    /* execute job */
   int32_t exec_res = j->execute (j);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job_res] %d finished ", res);
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", res, dt_get_wtime());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
   
@@ -547,14 +547,14 @@ int32_t dt_control_run_job(dt_control_t *s)
   j = s->job + i;
   pthread_mutex_unlock(&s->queue_mutex);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job] %d ", dt_control_get_threadid());
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
   
   /* execute job */
   int32_t exec_res = j->execute (j);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job] %d finished ", dt_control_get_threadid());
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
   

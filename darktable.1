@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "DARKTABLE 1"
-.TH DARKTABLE 1 "3584d" "darktable-0.6" "darktable"
+.TH DARKTABLE 1 "7680d" "darktable-0.6.1~rc" "darktable"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -159,6 +159,22 @@ The application relies on a modern plug-in architecture thus making it easy for
 3rd party developers to extend the existing capabilities of the application. 
 All light-table and darkroom features are implemented as plug-ins, so you can 
 create your plug-ins reusing existing code.
+.SH "COMMAND LINE ARGUMENTS"
+.IX Header "COMMAND LINE ARGUMENTS"
+.IP "\fB\-d control\fR" 4
+.IX Item "-d control"
+Enable job queue debugging. If you redirect darktables output to \fBcontrol.log\fR and
+call \fB./tools/create_control_svg.sh control.log\fR, you will get a nice \fBcontrol.svg\fR
+with a visualization of the threads' work.
+.IP "\fB\-d cache\fR" 4
+.IX Item "-d cache"
+This will give you a lot of debugging info about the mipmap cache for light table mode. If
+compiled in debug mode, this will also tell you where in the code a certain buffer has
+last been locked.
+.IP "\fB\-d perf\fR" 4
+.IX Item "-d perf"
+Use this for performance tweaking your darkroom modules. It will rdtsc-measure the
+runtimes of all plugins and print them to stdout.
 .SH "OTHER INFO"
 .IX Header "OTHER INFO"
 Please visit \fBdarktable\fR's website for news, bug tracker and forum: <http://darktable.sourceforge.net>
@@ -255,3 +271,12 @@ The project was started by Johannes Hanika in early 2009 to fill the gap
 .PP
 \&\fBdarktable\fR is free software; you can redistribute it and/or modify it
 under the terms of the \s-1GPL\s0 v3 or (at your option) any later version.
+.SH "POD ERRORS"
+.IX Header "POD ERRORS"
+Hey! \fBThe above document had some coding errors, which are explained below:\fR
+.IP "Around line 36:" 4
+.IX Item "Around line 36:"
+\&'=item' outside of any '=over'
+.IP "Around line 53:" 4
+.IX Item "Around line 53:"
+You forgot a '=back' before '=head1'

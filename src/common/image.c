@@ -1094,6 +1094,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
 {
   dt_image_buffer_t mip = mip_in;
   if(!img || mip == DT_IMAGE_NONE) return DT_IMAGE_NONE;
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   // get image with no write lock set!
   if((int)mip < (int)DT_IMAGE_MIPF)
@@ -1129,12 +1130,14 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
       img->lock[mip].users++;
     }
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
     return mip;
   }
   // already loading? 
   if(img->lock[mip_in].write)
   {
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
     return DT_IMAGE_NONE;
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
@@ -1158,6 +1161,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
     // else img->lock[mip].users++; // already incremented by image_load
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
   return mip;
 }
 
