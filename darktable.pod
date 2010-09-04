@@ -33,6 +33,8 @@ create your plug-ins reusing existing code.
 
 =head1 COMMAND LINE ARGUMENTS
 
+=over
+
 =item B<-d control>
 
 Enable job queue debugging. If you redirect darktables output to B<control.log> and
@@ -49,6 +51,8 @@ last been locked.
 
 Use this for performance tweaking your darkroom modules. It will rdtsc-measure the
 runtimes of all plugins and print them to stdout.
+
+=back
 
 =head1 OTHER INFO
 
@@ -71,6 +75,14 @@ Show/hide sidebars
 =item B<e>
 
 Switch between light-table and darkroom modes
+
+=item B<F7>
+
+Decrease contrast
+
+=item B<F8>
+
+Increase contrast
 
 =back
 

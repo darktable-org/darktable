@@ -625,7 +625,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 
 int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 {
-  int32_t j = -1;
+  int32_t found_j = -1;
   pthread_mutex_lock(&s->queue_mutex);
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
@@ -635,6 +635,7 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
     const int j = s->queued[i];
     if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
     {
+      found_j = j;
       dt_print(DT_DEBUG_CONTROL, "[revive_job] found job in queue at position %d, moving to %d\n", i, s->queued_top);
       memmove(s->queued + i, s->queued + i + 1, sizeof(int32_t) * (s->queued_top - i - 1));
       s->queued[s->queued_top-1] = j;
@@ -646,7 +647,7 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   pthread_mutex_unlock(&s->cond_mutex);
-  return j;
+  return found_j;
 }
 
 int32_t dt_control_get_threadid()

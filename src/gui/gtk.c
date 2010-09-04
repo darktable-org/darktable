@@ -775,9 +775,8 @@ key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
-    // if(a->keyval == event->keyval) printf("state: %d event state %d\n", a->state, event->state);
-    if(((!a->state && !event->state) || (a->state == (a->state & event->state))) && a->keyval == event->keyval)
-    // if((a->state == event->state) && (a->keyval == event->keyval))
+    // if a->state == 0, i.e. no modifiers are selected, no modifiers are allowed, in fact.
+    if(((!a->state && !event->state) || (a->state && (a->state == (a->state & event->state)))) && a->keyval == event->keyval)
     {
       a->callback(a->data);
       return TRUE;

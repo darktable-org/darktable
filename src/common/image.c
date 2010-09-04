@@ -468,6 +468,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
     // dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
     // dt_image_cache_release(img, 'w');
+    dt_image_import_unlock(img);
     dt_image_remove(img->id);
     return 1;
   }
@@ -824,14 +825,6 @@ void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip)
   // if the job already exists, make it high-priority, if not, add it:
   if(dt_control_revive_job(darktable.control, &j) < 0)
     dt_control_add_job(darktable.control, &j);
-#if 0
-  if(!img->lock[mip].write)
-  { // start job to load this buf in bg.
-    img->lock[mip].write = 1;
-    if(dt_control_add_job(darktable.control, &j)) img->lock[mip].write = 0;
-    else dt_image_set_lock_last(img, mip, file, line, function, 'w');
-  }
-#endif
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
 }
 
@@ -1094,7 +1087,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
 {
   dt_image_buffer_t mip = mip_in;
   if(!img || mip == DT_IMAGE_NONE) return DT_IMAGE_NONE;
-  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f get blocking image %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   // get image with no write lock set!
   if((int)mip < (int)DT_IMAGE_MIPF)
@@ -1130,14 +1123,14 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
       img->lock[mip].users++;
     }
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking image %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
     return mip;
   }
   // already loading? 
   if(img->lock[mip_in].write)
   {
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking image %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
     return DT_IMAGE_NONE;
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
@@ -1161,7 +1154,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
     // else img->lock[mip].users++; // already incremented by image_load
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-  dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking img %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f get blocking image %d mip %d\n", (int)pthread_self(), dt_get_wtime(), img->id, mip_in);
   return mip;
 }
 
@@ -1221,35 +1214,16 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   { // start job to load this buf in bg.
     dt_image_buffer_t mip2 = mip_in;
     if(mip2 < DT_IMAGE_MIP4) mip2 = DT_IMAGE_MIP4; // this will fill all smaller maps, too.
+#ifdef _DEBUG
+    dt_print(DT_DEBUG_CACHE, "[image_get] reloading mip %d for image %d request %s:%d %s\n", mip2, img->id, file, line, function);
+#else
     dt_print(DT_DEBUG_CACHE, "[image_get] reloading mip %d for image %d\n", mip2, img->id);
+#endif
     dt_job_t j;
     dt_image_load_job_init(&j, img->id, mip2);
     // if the job already exists, make it high-priority, if not, add it:
     if(dt_control_revive_job(darktable.control, &j) < 0)
       dt_control_add_job(darktable.control, &j);
-#if 0
-    // if not, add it:
-    if(!img->lock[mip2].write)
-    {
-      img->lock[mip2].write = 1;
-      if(dt_control_add_job(darktable.control, &j)) img->lock[mip2].write = 0;
-      else dt_image_set_lock_last(img, mip2, file, line, function, 'w');
-    }
-#endif
-#if 0
-    if(mip_in == DT_IMAGE_MIP4)
-    { // prefetch mipf, don't call prefetch, as we already locked the mutex.
-      dt_job_t j;
-      dt_image_load_job_init(&j, img->id, DT_IMAGE_MIPF);
-      dt_control_revive_job(darktable.control, &j);
-      if(!img->lock[DT_IMAGE_MIPF].write)
-      { // start job to load this buf in bg.
-        img->lock[DT_IMAGE_MIPF].write = 1;
-        if(dt_control_add_job(darktable.control, &j))
-          img->lock[DT_IMAGE_MIPF].write = 0;
-      }
-    }
-#endif
   }
 #endif
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));

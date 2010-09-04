@@ -12,6 +12,10 @@ big stuff:
    . module interface, 3-way ROI processing
    . locking and buffers, open() and open_preview(), dt is a huge spinlock
 
+- lt mode can't alloc unaltered mip4 during zoomed view and
+  spinlocks with alloc/refresh..
+  alloc mip buf with some kind of priority (so expose will yield..)
+
 - open_preview/open semantics, also for ldr images:
   . if edited, load mipf, else load mip4..0
   . open_tiff_*! rgbe, etc

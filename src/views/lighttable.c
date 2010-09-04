@@ -208,7 +208,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           }
         }
         cairo_save(cr);
-        if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
+        // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
         cairo_restore(cr);
         dt_image_cache_release(image, 'r');
@@ -465,7 +465,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
           }
         }
         cairo_save(cr);
-        if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
+        // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(image, &(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
         cairo_restore(cr);
         dt_image_cache_release(image, 'r');
@@ -505,7 +505,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     dt_image_t *image = dt_image_cache_get(lib->full_preview_id, 'r');
     if( image )
     {
-      dt_image_prefetch(image, DT_IMAGE_MIPF);
+      // dt_image_prefetch(image, DT_IMAGE_MIPF);
       const float wd = width/1.0;
       dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
       dt_image_cache_release(image, 'r');

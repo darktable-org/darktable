@@ -42,7 +42,7 @@ rect=$(cat << EOF
        x="REP_X"
        y="REP_Y"
        id="rectREP_ID"
-       style="fill:#cacac6;fill-opacity:1;fill-rule:evenodd;stroke:#aca1ef;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+       style="fill:#REP_COLOR;fill-opacity:1;fill-rule:evenodd;stroke:#aca1ef;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
 EOF
 )
 
@@ -82,6 +82,29 @@ ids=$(grep -E "^\[run_job" $log | cut -f 2 -d ' ' | sort | uniq)
 # start time:
 start_time=$(grep -E "^\[run_job" $log | cut -f 3 -d ' ' | head -1)
 
+# calculate the radical inverse in posix bc:
+def_ri=$(cat << EOF
+define ri(i)
+{
+auto val,digit,bit
+val=0
+digit=0.5
+while(i)
+{
+  scale=0
+  bit = i%2
+  scale=20
+  val += digit * bit
+  digit /= 2
+  scale=0
+  i /= 2
+  scale=20
+}
+return val
+}
+EOF
+)
+
 # make a new bar for every thread
 offset=0
 for id in $ids
@@ -108,8 +131,12 @@ do
     ht=20
     yt=$[$y+10]
 
+    # choose color by radical inverse of the image id
+    imgid=$(awk -v a="$line1" -v b="image" 'BEGIN{print substr(a,index(a,b)+6,4)}')
+    color=$(echo "$def_ri"'; inv=ri('$imgid'); scale=0; obase=16; inv*16777215' | bc -l | cut -f1 -d'.')
+
     # run rect and text through sed
-    echo "$rect" | sed -e "s/REP_ID/$offset/g" -e "s/REP_X/$x_on/g" -e "s/REP_WIDTH/$x_wd/g" -e "s/REP_Y/$y/g" -e "s/REP_HEIGHT/$ht/g" >> $output
+    echo "$rect" | sed -e "s/REP_ID/$offset/g" -e "s/REP_X/$x_on/g" -e "s/REP_WIDTH/$x_wd/g" -e "s/REP_Y/$y/g" -e "s/REP_HEIGHT/$ht/g" -e "s/REP_COLOR/$color/g" >> $output
     echo "$text" | sed -e "s/REP_ID/$offset/g" -e "s/REP_X/$x_on/g" -e "s/REP_Y/$yt/g" -e "s/REP_TEXT/$descr/g" >> $output
 
   done

@@ -201,6 +201,7 @@ int dt_image_cache_read(dt_image_cache_t *cache)
     dt_image_t *image = &(cache->line[k].image);
     rd = fread(cache->line+k, sizeof(dt_image_cache_line_t), 1, f);
     if(rd != 1) goto read_error;
+    cache->line[k].image.import_lock = cache->line[k].image.force_reimport = 0;
 
     // printf("read image `%s' from disk cache\n", image->filename);
 

@@ -212,7 +212,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       if(dt_image_alloc(img, DT_IMAGE_MIP4))
       {
         free(tmp);
-        fprintf(stderr, "[raw_preview] could not alloc mip4!\n");
+        fprintf(stderr, "[raw_preview] could not alloc mip4 for img `%s'!\n", img->filename);
         goto error_raw_cache_full;
       }
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
