@@ -131,9 +131,14 @@ do
     ht=20
     yt=$[$y+10]
 
-    # choose color by radical inverse of the image id
-    imgid=$(awk -v a="$line1" -v b="image" 'BEGIN{print substr(a,index(a,b)+6,4)}')
-    color=$(echo "$def_ri"'; inv=ri('$imgid'); scale=0; obase=16; inv*16777215' | bc -l | cut -f1 -d'.')
+    # choose color by radical inverse of the image id, if 'image XXXX' is given
+    imgid=$(awk -v a="$line1" -v b="image" 'BEGIN{print substr(a,index(a,b)+6,4)}' | grep -v -E '[^0-9]')
+    if [ "$img" != "" ]
+    then
+      color=$(echo "$def_ri"'; inv=ri('$imgid'); scale=0; obase=16; inv*16777215' | bc -l | cut -f1 -d'.')
+    else
+      color="f7f7f7"
+    fi
 
     # run rect and text through sed
     echo "$rect" | sed -e "s/REP_ID/$offset/g" -e "s/REP_X/$x_on/g" -e "s/REP_WIDTH/$x_wd/g" -e "s/REP_Y/$y/g" -e "s/REP_HEIGHT/$ht/g" -e "s/REP_COLOR/$color/g" >> $output

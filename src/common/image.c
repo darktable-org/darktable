@@ -760,8 +760,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     ret = 0;
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     { // get mipf from half-size raw
-      dt_image_reimport(img, filename, mip);
-      if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
+      ret = dt_imageio_open_preview(img, filename);
+      if(!ret && dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
     }
     else

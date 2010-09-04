@@ -200,6 +200,13 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
+  if(dev->image_loading && dt_image_lock_if_available(dev->image, DT_IMAGE_MIPF, 'r'))
+  {
+    // raw is already loading, and we don't have a mipf yet. no use starting another file access, we wait.
+    return;
+  }
+  else dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+
   dt_control_log_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_dirty = 1;

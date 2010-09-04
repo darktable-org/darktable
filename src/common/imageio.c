@@ -160,7 +160,8 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
-  const int altered = dt_image_altered(img);
+  // are we going to need the image as input for a pixel pipe?
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
 
   // if we have a history stack, don't load preview buffer!
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
@@ -510,7 +511,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   dt_image_buffer_t mip;
-  if(dt_image_altered(img))
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+  if(altered)
   {
     // the image has a history stack. we want mipf and process it!
     mip = DT_IMAGE_MIPF;
