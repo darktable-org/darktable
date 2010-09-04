@@ -252,7 +252,7 @@ void init(dt_iop_module_t *module)
   module->priority = 150;
   module->params_size = sizeof(dt_iop_bilateral_params_t);
   module->gui_data = NULL;
-  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{5.0, 5.0, 0.005, 0.005, 0.005}};
+  dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{15.0, 15.0, 0.005, 0.005, 0.005}};
   memcpy(module->params, &tmp, sizeof(dt_iop_bilateral_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilateral_params_t));
 }
@@ -291,7 +291,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.1, 30.0, 1.0, p->sigma[0], 1));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 5, 30.0, 1.0, p->sigma[0], 1));
   // g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 30.0, 1.0, p->sigma[1], 0));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[2], 4));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[3], 4));
