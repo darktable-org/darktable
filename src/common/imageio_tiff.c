@@ -69,6 +69,11 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
 
 	TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
 	TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
+  if (config != PLANARCONFIG_CONTIG)
+  {
+    fprintf(stderr, "[tiff_open] warning: config other than contig found, trying anyways\n");
+    config = PLANARCONFIG_CONTIG;
+  }
   if (config == PLANARCONFIG_CONTIG)
   {
     for (row = 0; row < imagelength; row++)
@@ -136,6 +141,11 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   const int orientation = 0;
 	TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
 	TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
+  if (config != PLANARCONFIG_CONTIG)
+  {
+    fprintf(stderr, "[tiff_open_preview] warning: config other than contig found, trying anyways\n");
+    config = PLANARCONFIG_CONTIG;
+  }
   if (config == PLANARCONFIG_CONTIG)
   {
     for (row = 0; row < imagelength; row++)
