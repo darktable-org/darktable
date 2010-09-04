@@ -443,7 +443,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 {
   if(dt_image_import_testlock(img))
   {
-    fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
+    // fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
     return 1;
   }
   if(!img->force_reimport)
