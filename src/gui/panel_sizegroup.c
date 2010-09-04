@@ -27,6 +27,8 @@ GSList *_panel_sizegroup_widgets = NULL;
 int _panel_sizegroup_width=0;
 int _panel_need_resize=0;
 
+static const int scrollbarwidth = 14;
+
 void 
 dt_gui_panel_sizegroup_init()
 {
@@ -39,22 +41,26 @@ dt_gui_panel_sizegroup_init()
     strcat (key,"panel_width.");
     strcat (key,lang);
     _panel_need_resize=1;
-    _panel_sizegroup_width = dt_conf_get_int(key);
+    _panel_sizegroup_width = MAX(280, dt_conf_get_int(key));
   } 
 }
 
 static void 
 _panel_sizegroup_allocate(GtkWidget *w,GtkAllocation *a,gpointer data) 
 {
-  
-  if (_panel_sizegroup_width < a->width) 
+  const int wdreq = a->width;
+  if (_panel_sizegroup_width < wdreq)
   {
     fprintf(stderr,"Widget %s claims width %d.\n",gtk_widget_get_name(w),a->width);
-    _panel_sizegroup_width = a->width;
+    _panel_sizegroup_width = wdreq;
     gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "left"),_panel_sizegroup_width,-1);
     gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "right"),_panel_sizegroup_width,-1);
+    gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"),_panel_sizegroup_width-scrollbarwidth,-1);
+    gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "left_scrolled"),_panel_sizegroup_width-scrollbarwidth,-1);
     gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "left"));
     gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "right"));
+    // gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    // gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "left_scrolled"));
     
     /* store panel width value */
     char *lang = getenv ("LANGUAGE");
@@ -67,7 +73,6 @@ _panel_sizegroup_allocate(GtkWidget *w,GtkAllocation *a,gpointer data)
       
       dt_conf_set_int(key,_panel_sizegroup_width);
     } 
-    
   } 
 }
 
@@ -86,8 +91,13 @@ dt_gui_panel_sizegroup_add (GtkWidget *w)
     _panel_need_resize=0;
     gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "left"),_panel_sizegroup_width,-1);
     gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "right"),_panel_sizegroup_width,-1);
+    // gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "viewport1"),_panel_sizegroup_width-scrollbarwidth,-1);
+    gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"),_panel_sizegroup_width-scrollbarwidth,-1);
+    gtk_widget_set_size_request (glade_xml_get_widget (darktable.gui->main_window, "left_scrolled"),_panel_sizegroup_width-scrollbarwidth,-1);
     gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "left"));
     gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "right"));
+    // gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    // gtk_widget_queue_resize (glade_xml_get_widget (darktable.gui->main_window, "left_scrolled"));
   }
   
 }
