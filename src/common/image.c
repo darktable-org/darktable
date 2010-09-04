@@ -443,7 +443,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 {
   if(dt_image_import_testlock(img))
   {
-    // fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
+    fprintf(stderr, "[image_reimport] someone is already loading `%s'!\n", filename);
     return 1;
   }
   if(!img->force_reimport)
@@ -479,6 +479,21 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   int altered = img->force_reimport;
   img->force_reimport = 0;
   if(dt_image_altered(img)) altered = 1;
+
+  // open_preview actually only gave us a mipf and no mip4?
+  if(!altered)
+  {
+    if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r'))
+    {
+      if(!dt_image_lock_if_available(img, DT_IMAGE_MIPF, 'r'))
+      {
+        // we have mipf but not mip4.
+        altered = 1;
+        dt_image_release(img, DT_IMAGE_MIPF, 'r');
+      }
+    }
+    else dt_image_release(img, DT_IMAGE_MIP4, 'r');
+  }
 
   // try loading a .dt[tags] file
   char dtfilename[1031];
@@ -1183,7 +1198,6 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
     if(img->pixels == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
   }
   if((mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport) ||
-     // (img == darktable.develop->image && darktable.develop->image_force_reload))
      (mip != DT_IMAGE_MIPF && img == darktable.develop->image && darktable.develop->image_force_reload))
         mip = DT_IMAGE_NONE;
   if(mip != DT_IMAGE_NONE)

@@ -114,7 +114,11 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       line.image.mip_buf_size[i] = 0;
     }
     for(int mip=0;mip<DT_IMAGE_MIPF;mip++) line.image.mip[mip] = line.image.mip[mip]?(uint8_t*)1:NULL;
+#ifdef DT_IMAGE_CACHE_WRITE_MIPF
     line.image.mipf = line.image.mipf?(float *)1:NULL;
+#else
+    line.image.mipf = NULL;
+#endif
     line.image.import_lock = line.image.force_reimport = 0;
     written = fwrite(&line, sizeof(dt_image_cache_line_t), 1, f);
     if(written != 1) goto write_error;
@@ -136,7 +140,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       free(blob);
     }
     // dump mipf in dct
-    if(img->mipf)
+    if(line.image.mipf)
     {
       dt_image_get_mip_size(img, DT_IMAGE_MIPF, &wd, &ht);
       dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
