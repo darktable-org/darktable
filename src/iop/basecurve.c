@@ -158,12 +158,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
     dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
+#endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      out[0] = d->table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
-      out[1] = d->table[CLAMP((int)(in[1]*0x10000ul), 0, 0xffff)];
-      out[2] = d->table[CLAMP((int)(in[2]*0x10000ul), 0, 0xffff)];
-      in += 3; out += 3;
+      out[3*k+0] = d->table[CLAMP((int)(in[3*k+0]*0x10000ul), 0, 0xffff)];
+      out[3*k+1] = d->table[CLAMP((int)(in[3*k+1]*0x10000ul), 0, 0xffff)];
+      out[3*k+2] = d->table[CLAMP((int)(in[3*k+2]*0x10000ul), 0, 0xffff)];
     }
   }
 }

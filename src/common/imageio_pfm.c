@@ -124,3 +124,4 @@ error_corrupt:
   fclose(f);
   return DT_IMAGEIO_FILE_CORRUPTED;
 }
+

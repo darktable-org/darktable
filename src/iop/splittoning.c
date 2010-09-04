@@ -140,29 +140,32 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   in  = (float *)ivoid;
   out = (float *)ovoid;
 
-  float h,s,l;
   // Get lowest/highest l in image
   float lhigh=0.0;
   float llow=1.0;
   
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  // TODO: openmp reduction
+  // FIXME: this will depend on current view!
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+    float h,s,l;
+    rgb2hsl(in[3*k+0],in[3*k+1],in[3*k+2],&h,&s,&l);
     lhigh=fmax(lhigh,l);
     llow=fmin(llow,l);
-    out += 3; in += 3;
   }
-  
-  //float lscale=1.0+(1.0-(lhigh-llow));
   
   in  = (float *)ivoid;
   out = (float *)ovoid;
-  float mixrgb[3];
-  float compress=(data->compress/110.0)/2.0;  // Dont allow 100% compression..
-  double ra,la;
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  const float compress=(data->compress/110.0)/2.0;  // Dont allow 100% compression..
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(in,out,roi_out,data) schedule(static)
+#endif
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+    double ra,la;
+    float mixrgb[3];
+    float h,s,l;
+    rgb2hsl(in[3*k+0],in[3*k+1],in[3*k+2],&h,&s,&l);
     if(l < data->balance-compress || l > data->balance+compress)
     {      
       h=l<data->balance?data->shadow_hue:data->highlight_hue;
@@ -172,17 +175,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
      
       hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
       
-      out[0]=in[0]*la + mixrgb[0]*ra;
-      out[1]=in[1]*la + mixrgb[1]*ra;
-      out[2]=in[2]*la + mixrgb[2]*ra;
+      out[3*k+0]=in[3*k+0]*la + mixrgb[0]*ra;
+      out[3*k+1]=in[3*k+1]*la + mixrgb[1]*ra;
+      out[3*k+2]=in[3*k+2]*la + mixrgb[2]*ra;
     } 
     else 
     {
-      out[0]=in[0];
-      out[1]=in[1];
-      out[2]=in[2];
+      out[3*k+0]=in[3*k+0];
+      out[3*k+1]=in[3*k+1];
+      out[3*k+2]=in[3*k+2];
     }
-    out += 3; in += 3;
   }
 }
 

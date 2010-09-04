@@ -99,24 +99,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   
-  int iw=piece->buf_in.width*roi_out->scale;
-  int ih=piece->buf_in.height*roi_out->scale;
-  int ix= (roi_in->x)*roi_out->scale;
-  int iy= (roi_in->y)*roi_out->scale;
+  const float iw=piece->buf_in.width*roi_out->scale;
+  const float ih=piece->buf_in.height*roi_out->scale;
+  const int ix= (roi_in->x);
+  const int iy= (roi_in->y);
     
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
+    const int k = 3*(roi_out->width*j + i);
     dt_iop_vector_2d_t pv, vv;
     
     // Lets translate current pixel coord to local coord
-    
-    
     pv.x=-1.0+(((double) (ix+i)/iw)*2.0);
     pv.y=-1.0+(((double) (iy+j)/ih)*2.0);
   
-    /*pv.x=-1.0+(((double) roi_in->x+i / piece->buf_out.width)*2.0);
-    pv.y=-1.0+(((double) roi_in->y+j / piece->buf_out.height )*2.0);*/
-     
     // Calculate the pixel weight in vinjett
     double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
     if(pv.x==0)
@@ -147,8 +146,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     // Let's apply weighted effect on brightness and desaturation
     float col[3];
-    for(int c=0;c<3;c++) col[c]=in[c];
-    if( weight > 0 ) {
+    for(int c=0;c<3;c++) col[c]=in[k+c];
+    if( weight > 0 )
+    {
       double bs=1.0;
       double ss=1.0;
       
@@ -160,9 +160,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       
       // Then apply falloff vignette
       double falloff=(data->invert_falloff==FALSE)?(1.0-(weight*bs*strength)):(weight*bs*strength);
-      col[0]=CLIP( ((data->invert_falloff==FALSE)? in[0]*falloff: in[0]+falloff) );
-      col[1]=CLIP( ((data->invert_falloff==FALSE)? in[1]*falloff: in[1]+falloff) );
-      col[2]=CLIP( ((data->invert_falloff==FALSE)? in[2]*falloff: in[2]+falloff) );
+      col[0]=CLIP( ((data->invert_falloff==FALSE)? in[k+0]*falloff: in[k+0]+falloff) );
+      col[1]=CLIP( ((data->invert_falloff==FALSE)? in[k+1]*falloff: in[k+1]+falloff) );
+      col[2]=CLIP( ((data->invert_falloff==FALSE)? in[k+2]*falloff: in[k+2]+falloff) );
       
       // apply saturation
       double mv=(col[0]+col[1]+col[2])/3.0;
@@ -182,8 +182,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       
     } 
-    for(int c=0;c<3;c++) out[c]=col[c];
-    out += 3; in += 3;
+    for(int c=0;c<3;c++) out[k+c]=col[c];
   }
 }
 

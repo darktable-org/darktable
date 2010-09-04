@@ -59,10 +59,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float scale = 1.0/(white - black); 
   float coeff[3];
   for(int k=0;k<3;k++) coeff[k] = d->coeffs[k] * scale;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in, black, coeff) schedule(static)
+#endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int i=0;i<3;i++) out[i] = fmaxf(0.0, (in[i]-black)*coeff[i]);
-    out += 3; in += 3;
+    for(int i=0;i<3;i++) out[3*k+i] = fmaxf(0.0, (in[3*k+i]-black)*coeff[i]);
   }
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = scale;

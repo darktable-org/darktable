@@ -82,7 +82,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-  // not thread safe.
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+#endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     double cam[3] = {0., 0., 0.};
@@ -105,32 +107,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 #endif
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-#if 0 // manual xyz transition
-    double xyz[3];
-    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
-    // const float X_n=0.9504, Y_n=1.00, Z_n=1.0888; // D65
-    cmsDoTransform(d->xform, cam, xyz, 1);
-#if 1
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float YY = xyz[0]+xyz[1]+xyz[2];
-    const float zz = xyz[2]/YY;
-    const float bound_z = 0.7f, bound_Y = 0.5f;
-    const float amount = 0.05f;
-    // if(YY > bound_Y && zz > bound_z)
-    if(zz > bound_z)
+    // lcms is not thread safe.
+#pragma omp critical
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-      xyz[1] += t*amount;
-      xyz[2] -= t*amount;
-    }
-#endif
-
-    Lab.L = 116.0 * lab_f(xyz[1]/Y_n) - 16.0;
-    Lab.a = 500.0 * (lab_f(xyz[0]/X_n) - lab_f(xyz[1]/Y_n));
-    Lab.b = 200.0 * (lab_f(xyz[1]/Y_n) - lab_f(xyz[2]/Z_n));
-#else
     cmsDoTransform(d->xform, cam, &Lab, 1);
-#endif
+    }
     out[3*k + 0] = Lab.L;
     if(Lab.L > 0)
     {

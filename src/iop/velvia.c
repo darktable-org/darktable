@@ -85,13 +85,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // Apply velvia saturation
   in  = (float *)ivoid;
   out = (float *)ovoid;
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  if(data->saturation > 0.0)
   {
-    if(data->saturation > 0.0)
+    memcpy(in, out, sizeof(float)*3*roi_out->width*roi_out->height);
+  }
+  else
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
       // calculate vibrance, and apply boost velvia saturation at least saturated pixles
-      double pmax=fmax(in[0],fmax(in[1],in[2]));			// max value in RGB set
-      double pmin=fmin(in[0],fmin(in[1],in[2]));			// min value in RGB set
+      double pmax=fmax(in[3*k],fmax(in[3*k+1],in[3*k+2]));			// max value in RGB set
+      double pmin=fmin(in[3*k],fmin(in[3*k+1],in[3*k+2]));			// min value in RGB set
       double plum = (pmax+pmin)/2.0;					        // pixel luminocity
       double psat =(plum<=0.5) ? (pmax-pmin)/(1e-5 + pmax+pmin): (pmax-pmin)/(1e-5 + MAX(0.0, 2.0-pmax-pmin));
 
@@ -101,13 +108,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // Apply velvia saturation values
       double sba=1.0+saturation;
       double sda=(sba/2.0)-0.5;
-      out[0]=(in[0]*(sba))-(in[1]*(sda))-(in[2]*(sda));
-      out[1]=(in[1]*(sba))-(in[0]*(sda))-(in[2]*(sda));
-      out[2]=(in[2]*(sba))-(in[0]*(sda))-(in[1]*(sda));  
+      out[3*k+0]=(in[3*k+0]*(sba))-(in[3*k+1]*(sda))-(in[3*k+2]*(sda));
+      out[3*k+1]=(in[3*k+1]*(sba))-(in[3*k+0]*(sda))-(in[3*k+2]*(sda));
+      out[3*k+2]=(in[3*k+2]*(sba))-(in[3*k+0]*(sda))-(in[3*k+1]*(sda));  
     }
-    else
-      for(int c=0;c<3;c++) out[c]=in[c];
-    out += 3; in += 3;
   }
 }
 
