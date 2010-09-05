@@ -85,7 +85,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // Apply velvia saturation
   in  = (float *)ivoid;
   out = (float *)ovoid;
-  if(data->saturation > 0.0)
+  if(data->saturation <= 0.0)
   {
     memcpy(in, out, sizeof(float)*3*roi_out->width*roi_out->height);
   }
