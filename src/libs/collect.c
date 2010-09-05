@@ -280,6 +280,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
   w = gtk_combo_box_entry_new_text();
   d->text = GTK_COMBO_BOX_ENTRY(w);
+  /* xgettext:no-c-format */
   gtk_object_set(GTK_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), NULL);
   gchar *text = dt_conf_get_string("plugins/lighttable/collect/string");
   if(text)
