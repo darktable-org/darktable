@@ -13,6 +13,10 @@ big stuff:
    . locking and buffers, open()->'r' and open_preview()->'', dt is a huge spinlock
    . debuging with -d cache and -d control and tools/create_control_svg.sh
 
+- uncropped preview bug when reloading mip4
+
+- color label sorting during export is broken.
+
 - performance: rescaling slow?
 
 - color transfer garbles history stack and crash/freezes?

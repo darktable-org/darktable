@@ -82,7 +82,6 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  
   dt_image_t *img = dt_image_cache_get(imgid, 'r');
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
@@ -109,6 +108,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(trunc < attachment->file) trunc = attachment->file;
   dt_control_log(_("%d/%d exported to `%s%s'"), num, total, trunc != filename ? ".." : "", trunc);
  
+#ifdef _OPENMP // store can be called in parallel, so synch access to shared memory
+  #pragma omp critical
+#endif
   d->images = g_list_append( d->images, attachment );
  
   return 0;

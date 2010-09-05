@@ -88,7 +88,9 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>full resolution image buffers to keep in main memory cache</short>
-        <long>how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. only read at startup.</long>
+        <long>how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum.
+              set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode).
+              be warned: every thread will need about 1GB of memory.</long>
       </locale>
     </schema>
 

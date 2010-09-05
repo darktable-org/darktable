@@ -82,7 +82,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-#ifdef _OPENMP
+  // with the critical section around lcms, this is slower than monothread, even on dual cores.
+#if 0//def _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
@@ -108,7 +109,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     // lcms is not thread safe.
-#pragma omp critical
+// #pragma omp critical
     {
     cmsDoTransform(d->xform, cam, &Lab, 1);
     }

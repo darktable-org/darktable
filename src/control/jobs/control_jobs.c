@@ -252,9 +252,6 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   int size = 0;
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format();
   g_assert(mformat);
-  dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
-  fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
-  fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   g_assert(mstorage);
   
@@ -270,19 +267,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   if( sh==0 || fh==0) h=sh>fh?sh:fh;
   else h=sh<fh?sh:fh;
 
-  // fprintf(stderr,"fmw=%d fmh=%d w=%d h=%d\n",fdata->max_width,fdata->max_height,w,h);
-  fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
-  fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
-  
+  // get shared storage param struct (global sequence counter, one picasa connection etc)
   dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage, &size);
-  if( sdata == NULL || fdata == NULL ) {
-    if( sdata ) {
-      mstorage->free_params(mstorage, sdata);
-      dt_control_log(_("failed to get parameters from format module, aborting export.."));
-    } else {
-      mformat->free_params (mformat, fdata);
-      dt_control_log(_("failed to get parameters from storage module, aborting export.."));
-    }
+  if(sdata == NULL)
+  {
+    dt_control_log(_("failed to get parameters from storage module, aborting export.."));
     return 1;
   }
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
@@ -290,10 +279,29 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
   double fraction=0;
+#ifdef _OPENMP
+  // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
+  // use min of user request and mipmap cache entries
+  const int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
+  const int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
+  #pragma omp parallel shared(j, fraction) num_threads(num_threads)
+  {
+  // get a thread-safe fdata struct (one jpeg struct per thread etc):
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
+  fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+  fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+  fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
+  fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+#endif
   while(t)
   {
-    imgid = (long int)t->data;
-    t = g_list_delete_link(t, t);
+#ifdef _OPENMP
+  #pragma omp critical
+#endif
+    {
+      imgid = (long int)t->data;
+      t = g_list_delete_link(t, t);
+    }
     // check if image still exists:
     char imgfilename[1024];
     dt_image_t *image = dt_image_cache_get(imgid, 'r');
@@ -311,13 +319,26 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         mstorage->store(sdata, imgid, mformat, fdata, total-g_list_length(t), total);
       }
     }
-    fraction+=1.0/total;
-    dt_gui_background_jobs_set_progress( j, fraction );
+#ifdef _OPENMP
+  #pragma omp critical
+#endif
+    {
+      fraction+=1.0/total;
+      dt_gui_background_jobs_set_progress( j, fraction );
+    }
   }
-  dt_gui_background_jobs_destroy (j);
-  if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
-  mformat->free_params (mformat,  fdata);
-  mstorage->free_params(mstorage, sdata);
+#ifdef _OPENMP
+  #pragma omp barrier
+  #pragma omp master
+#endif
+  {
+    dt_gui_background_jobs_destroy (j);
+    if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
+    mstorage->free_params(mstorage, sdata);
+  }
+  // all threads free their fdata
+  mformat->free_params (mformat, fdata);
+  }
   return 0;
 }
 

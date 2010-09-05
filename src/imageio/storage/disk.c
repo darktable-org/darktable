@@ -149,6 +149,12 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   char filename[1024]={0};
   char dirname[1024]={0};
   dt_image_full_path(img, dirname, 1024);
+  int fail = 0;
+  // we're potentially called in parallel. have sequence number synchronized:
+#ifdef _OPENMP
+  #pragma omp critical
+#endif
+  {
   d->vp->filename = dirname;
   d->vp->jobcode = "export";
   d->vp->img = img;
@@ -164,7 +170,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     fprintf(stderr, "[imageio_storage_disk] could not create directory %s!\n", dirname);
     dt_control_log(_("could not create directory %s!"), dirname);
     dt_image_cache_release(img, 'r');
-    return 1;
+    fail = 1;
+    goto failed;
   }
 
   c = filename + strlen(filename);
@@ -176,13 +183,17 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   
   /* prevent overwrite of files */
   int seq=1;
-  if (g_file_test (filename,G_FILE_TEST_EXISTS))
+failed:
+  if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
   {
     do {
       sprintf(c,"_%.2d.%s",seq,ext);
       seq++;
     } while (g_file_test (filename,G_FILE_TEST_EXISTS));
   }
+
+  } // end of critical block
+  if(fail) return 1;
 
   /* export image to file */
   dt_imageio_export(img, filename, format, fdata);

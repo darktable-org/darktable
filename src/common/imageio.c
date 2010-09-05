@@ -651,6 +651,7 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
 {
+  double start, end;
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, img);
@@ -658,12 +659,15 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   const int ht = dev.image->height;
   dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
 
+  start = dt_get_wtime();
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_init_export(&pipe, wd, ht);
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+  end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[export] creating pixelpipe took %.3f secs\n", end - start);
 
   // find output color profile for this image:
   int sRGB = 1;
@@ -706,9 +710,11 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   { // ldr output: char
     dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     uint8_t *buf8 = pipe.backbuf;
-    for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(buf8) schedule(static)
+#endif
+    for(int k=0;k<processed_width*processed_height;k++)
     { // convert in place
-      const int k = x + processed_width*y;
       uint8_t tmp = buf8[4*k+0];
       buf8[4*k+0] = buf8[4*k+2];
       buf8[4*k+2] = tmp;

@@ -782,11 +782,17 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   int result=1;
   dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
   
+  int fail = 0;
+#ifdef _OPENMP // synch parallel store
+  #pragma omp critical
+#endif
   if( p->picasa_api->current_album == NULL ) 
     if( _picasa_api_create_album( p->picasa_api ) != 201 ) {
       dt_control_log("failed to create picasa album");
-      return 1; 
+      fail = 1;
     }
+
+  if(fail) return 1;
   
   const char *ext = format->extension(fdata);
 
@@ -831,6 +837,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   int size = g_mapped_file_get_length( imgfile );
   gchar *data =g_mapped_file_get_contents( imgfile );
   
+#ifdef _OPENMP
+  #pragma omp critical
+#endif
   // Upload image to picasa
   if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 ) 
     result=0;

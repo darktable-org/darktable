@@ -854,9 +854,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache, int32_t entries)
   for(int k=0;k<(int)DT_IMAGE_NONE;k++)
   {
     cache->total_size[k] = 0;
-    int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
-    full_entries = MIN(10, MAX(1, full_entries));
-    if(k == DT_IMAGE_FULL) entries = full_entries;
+    // support up to 24 threads working on full images at the time:
+    if(k == DT_IMAGE_FULL) entries = 24;
     dt_print(DT_DEBUG_CACHE, "[mipmap_cache_init] cache has %d entries for mip %d.\n", entries, k);
     cache->num_entries[k] = entries;
     cache->mip_lru[k] = (dt_image_t **)malloc(sizeof(dt_image_t*)*entries);

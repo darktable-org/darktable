@@ -499,28 +499,32 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
   }
 }
 
-void dt_iop_clip_and_zoom_hq_downsample(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
-                                              float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
+void dt_iop_clip_and_zoom_hq_downsample(const float *i, const int32_t ix, const int32_t iy, const int32_t iw, const int32_t ih, const int32_t ibw, const int32_t ibh,
+                                              float *o, const int32_t ox, const int32_t oy, const int32_t ow, const int32_t oh, const int32_t obw, const int32_t obh)
 {
   // general case
   const float fib2 = 34.0f, fib1 = 21.0f;
   const float scalex = iw/(float)ow;
   const float scaley = ih/(float)oh;
-  int32_t ix2 = MAX(ix, 0);
-  int32_t iy2 = MAX(iy, 0);
-  int32_t ox2 = MAX(ox, 0);
-  int32_t oy2 = MAX(oy, 0);
-  int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
-  int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
+  const int32_t ix2 = MAX(ix, 0);
+  const int32_t iy2 = MAX(iy, 0);
+  const int32_t ox2 = MAX(ox, 0);
+  const int32_t oy2 = MAX(oy, 0);
+  const int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
+  const int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
   g_assert((int)(ix2 + ow2*scalex) <= ibw);
   g_assert((int)(iy2 + oh2*scaley) <= ibh);
   g_assert(ox2 + ow2 <= obw);
   g_assert(oy2 + oh2 <= obh);
   g_assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
-  float x = ix2, y = iy2;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(i, o) schedule(static)
+#endif
   for(int s=0;s<oh2;s++)
   {
     int idx = ox2 + obw*(oy2+s);
+    float y = iy2 + s*scaley;
+    float x = ix2;
     for(int t=0;t<ow2;t++)
     {
       // rank-1 resampling with fibonacci lattice for 21 points
@@ -532,7 +536,6 @@ void dt_iop_clip_and_zoom_hq_downsample(const float *i, int32_t ix, int32_t iy, 
       }
       x += scalex; idx++;
     }
-    y += scaley; x = ix2;
   }
 }
 
