@@ -16,38 +16,92 @@
 	<para>In darkroom you are in develop mode for the specific image, here you have alot of tools to
 		develop you image.
 	</para>
-	<para>On the left side you have the navigation, snapshots, history and history panel each of them are described below, 
+	<para>On the left side you have the navigation, snapshots, history and histogram panel each of them are described below, 
 		in the right panel you can see the histogram and then a list of available modules to use when working with your image.
 		And at bottom of right panel you can enable/disable individual modules which will remove them from the right panel.
 	</para>
-	<sect2><title>Panels</title>
-		<sect3><title>Navigation</title>
-			<para>This panels shows the whole image and a rectangle is showing the current zoom view that  you see, you can move this rectangle to 
-				pan around in same zoomlevel.
-			</para>
-		</sect3>
-		<sect3><title>Snapshots</title>
-			<para>You can take a snapshot of what is displayed in the center view, this snapshot can then be selected and is overlayed in the current center
-				view to help you with a side by side comparasion when you tuning parameters of a module.
-			</para>
-		</sect3>
-		<sect3><title>Metadata</title>
-			<para>Shows the metadata for an image, same as in lighttable mode.
-			</para>
-		</sect3>
-		<sect3><title>Historystack</title>
-			<para>The historystack is each change of module in history, here you can select a point in stack an hit compress historystack button to get back
-				to the select point of changes...
-			</para>
-		</sect3>
-		<sect3><title>Histogram</title>
-			<para>Shows an histogram for the result of developed image, you can change exposure by left mouse click in right side of histogram and drag 
-			right for increase or left to decrease the exposure, same goes for the blacklevel but you left click in the left part of historgram.
-			</para>
-		</sect3>
-	</sect2>
-		
 </sect1>
+<sect1><title>Filmstrip</title>
+	<para>The filmstrip is used for fast switching between image to develop in darkroom view, the images viewed are the same
+		as the ones in the lighttable view. 
+	</para>
+	<para>The filmstrip can be switch on and off using ctrl-f shortcut.</para>
+</sect1>
+<sect1><title>Panels</title>
+	<sect2><title>Navigation</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This panels shows the whole image and a rectangle is showing the current zoom view that  you see, you can move this rectangle to 
+								pan around in same zoomlevel.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_navigation.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+	<sect2><title>Snapshots</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>You can take a snapshot of what is displayed in the center view, this snapshot can then be selected and is overlayed in the current center
+								view to help you with a side by side comparasion when you tuning parameters of a module.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_snapshots.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+	<sect2><title>Metadata</title>
+		<para>Shows the metadata for an image, same as in lighttable mode.
+		</para>
+	</sect2>
+	<sect2><title>History</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>The historystack is each change of module in history, here you can select a point in stack an hit compress historystack button to get back
+									to the select point of changes...
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+	<sect2><title>Histogram</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Shows an histogram for the result of developed image, you can change exposure by left mouse click in right side of histogram and drag 
+								right for increase or left to decrease the exposure, same goes for the blacklevel but you left click in the left part of historgram.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_histogram.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+</sect1>
+		
 
 &darkroom_modules;
 
