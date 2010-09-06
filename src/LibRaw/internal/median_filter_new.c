@@ -22,7 +22,7 @@ void CLASS median_filter_new()
       for (indx=0; indx < height*width; indx++)
 	mf[indx][c] = image[indx][c] - image[indx][1];
       /* Apply 3x3 median fileter */
-#pragma parallel for private(row,col,pc)
+#pragma omp parallel for private(row,col,pc)
 
       for (row=1; row < height-1; row++)
 	for (col=1; col < width-1; col++) {
