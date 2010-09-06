@@ -11,7 +11,7 @@
 									a splittoning effect are applied with blue in shadows and yellow-ish color in highlights.
 							</entry>
 							<entry>
-								<graphic fileref="darkroom/modules/splittoning/images/splittoning.png" scalefit="1" width="80%" align="center" />
+								<graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />
 							</entry>
 						</row>
 					</tbody>
@@ -29,7 +29,7 @@
 		</para>
 	</sect3>
 
-	<sect3><title>Parameters</title>
+	<sect3><title>Usage</title>
 		<para>...</para>
 		<sect4><title>Shadows and Hilights color</title>
 			<para>These controls are used to set the color of the splittoning effect, you select the desire color and 

@@ -1,8 +1,21 @@
 <sect2><title>Crop and rotate</title>
 	<sect3><title>Overview</title>
-		<para>This tool is used for crop, rotate and prespective correction of you image, it does
-				also include many helpful guidelines that assists you using the tool.
-		</para>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This tool is used for crop, rotate and prespective correction of you image, it does
+							also include many helpful guidelines that assists you using the tool.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/croprotate.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	
 		<para>First off select what aspect ratio you want and size the crop bounds by dragging border and corner handles,
 			use ctrl-x to swap potrait/landscape rotation of the crop rectangle.
 			You can move around the crop rectangle by holding down left mouse button and move around...
@@ -10,7 +23,7 @@
 		</para>
 	</sect3>
 
-	<sect3><title>Parameters</title>
+	<sect3><title>Usage</title>
 		<para>...</para>
 		<sect4><title>Flip image</title>
 			<para>Use these toggle buttons to flip image horizontal and veritcal</para>
