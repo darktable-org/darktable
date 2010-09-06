@@ -402,12 +402,19 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
 
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
-  if(darktable.develop->gui_module) gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+  if(darktable.develop->gui_module)
+  {
+    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+    GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
+    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+  }
   darktable.develop->gui_module = module;
   if(module)
   {
     gtk_widget_set_state(module->topwidget, GTK_STATE_SELECTED);
     gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+    GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
+    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
   }
 }
 
