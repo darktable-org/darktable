@@ -5,6 +5,8 @@
 		%darktable_dtd;
 		<!ENTITY % darkroom_modules_dtd SYSTEM "darkroom_modules.dtd">
 		%darkroom_modules_dtd;
+		<!ENTITY % darkroom_examples_dtd SYSTEM "darkroom_examples.dtd">
+		%darkroom_examples_dtd;
 		]>
 	       
 <book lang="en">
