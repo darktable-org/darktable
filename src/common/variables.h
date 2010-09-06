@@ -34,6 +34,9 @@ typedef struct dt_variables_params_t
   /** used for expanding variables such as $(IMAGE_WIDTH) $(IMAGE_HEIGT). */
   struct dt_image_t *img;
 
+  /** used as thread-safe sequence number. only used if >= 0. */
+  int sequence;
+
   /** internal variables data */	
   struct dt_variables_data_t *data;
   
