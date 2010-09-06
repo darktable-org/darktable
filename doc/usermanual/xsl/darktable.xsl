@@ -67,6 +67,13 @@
       <xsl:value-of select="$body.font.master * 0.9"/>
       <xsl:text>pt</xsl:text>
     </xsl:attribute>  
+    
+  </xsl:attribute-set> 
+    <xsl:attribute-set name="section.title.level5.properties">
+    <xsl:attribute name="font-size">
+      <xsl:value-of select="$body.font.master * 0.8"/>
+      <xsl:text>pt</xsl:text>
+    </xsl:attribute>  
   </xsl:attribute-set> 
 
 
