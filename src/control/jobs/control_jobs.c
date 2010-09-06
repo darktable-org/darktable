@@ -340,7 +340,9 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   }
   // all threads free their fdata
   mformat->free_params (mformat, fdata);
+#ifdef _OPENMP
   }
+#endif
   return 0;
 }
 
