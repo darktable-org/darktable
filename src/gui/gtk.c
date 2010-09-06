@@ -342,7 +342,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika 2009-2010");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("Organize and develop images from digital cameras"));
-  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://dartable.sf.net/");
+  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
   const char *authors[] =
       {_("* developers *"),
