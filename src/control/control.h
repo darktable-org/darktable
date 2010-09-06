@@ -81,6 +81,8 @@
 #define KEYCODE_4           21
 #define KEYCODE_Escape      53
 #define KEYCODE_Caps        57
+#define KEYCODE_F7        98
+#define KEYCODE_F8        99
 #define KEYCODE_F11        103
 #define KEYCODE_Up         126
 #define KEYCODE_Down       125
