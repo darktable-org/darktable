@@ -7,6 +7,10 @@
 	</chapterinfo>
 	<title>Lighttable</title>
 	<para>The lighttable is where you manage all your images, ratings, exporting and much more...</para>
+	<screenshot>
+		<screeninfo>The lighttable view</screeninfo>
+		<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
+	</screenshot>
 	
 	<sect1><title>Overview</title>
 		<para></para>
