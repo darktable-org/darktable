@@ -158,6 +158,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   d->vp->filename = dirname;
   d->vp->jobcode = "export";
   d->vp->img = img;
+  d->vp->sequence = num;
   dt_variables_expand(d->vp, d->filename, TRUE);
   strncpy(filename, dt_variables_get_result(d->vp), 1024);
   strncpy(dirname, filename, 1024);

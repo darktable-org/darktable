@@ -149,7 +149,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   const gchar *homedir=g_getenv("HOME");
   if( !homedir ) 
     homedir=g_get_home_dir();
-  
+
   gchar *pictures_folder=NULL;
   
   if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) == NULL)
@@ -202,7 +202,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
   else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )  { sprintf(value,"%s",g_path_get_basename(params->filename)); if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0; }
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
-  else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->data->sequence);
+  else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->sequence>=0?params->sequence:params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
   else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir);
   else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",pictures_folder);
@@ -229,12 +229,6 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   return got_value;
 }
 
-void 
-dt_variables_reset_sequence(dt_variables_params_t *params)
-{
-  params->data->sequence = 0;
-}
-
 void dt_variables_params_init(dt_variables_params_t **params)
 {
   *params=g_malloc(sizeof(dt_variables_params_t));
@@ -242,6 +236,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
   (*params)->data = g_malloc(sizeof(dt_variables_data_t));
   memset((*params)->data ,0,sizeof(dt_variables_data_t));
   (*params)->data->time=time(NULL);
+  (*params)->sequence = -1;
 }
 
 void dt_variables_params_destroy(dt_variables_params_t *params)
@@ -260,13 +255,12 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   gchar *value=g_malloc(1024);
   gchar *token=NULL;
 
-  // Increase data..
-  if( iterate ) 
-    params->data->sequence++;
-  
   // Let's free previous expanded result if any...
   if( params->data->result )
     g_free(  params->data->result );
+  
+  if(iterate)
+    params->data->sequence++;
   
   // Lets expand string
   gchar *result=NULL;

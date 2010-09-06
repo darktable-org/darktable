@@ -293,6 +293,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
   fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+  int num = 0;
   while(t)
   {
 #ifdef _OPENMP
@@ -301,6 +302,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     {
       imgid = (long int)t->data;
       t = g_list_delete_link(t, t);
+      num = total - g_list_length(t);
     }
     // check if image still exists:
     char imgfilename[1024];
@@ -316,7 +318,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       }
       else
       {
-        mstorage->store(sdata, imgid, mformat, fdata, total-g_list_length(t), total);
+        mstorage->store(sdata, imgid, mformat, fdata, num, total);
       }
     }
 #ifdef _OPENMP
