@@ -286,13 +286,13 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   const int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
   #pragma omp parallel shared(j, fraction) num_threads(num_threads)
   {
+#endif
   // get a thread-safe fdata struct (one jpeg struct per thread etc):
   dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
   fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
   fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
   fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
   fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
-#endif
   while(t)
   {
 #ifdef _OPENMP
