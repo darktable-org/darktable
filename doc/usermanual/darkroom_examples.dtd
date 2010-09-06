@@ -1,3 +1,4 @@
 <!ENTITY img_example_crossprocessing "images/darkroom_example_crossprocessing.png">
 
-<!ENTITY darkroom_examples SYSTEM "darkroom/examples/crossprocessing.xml">
+<!ENTITY darkroom_example_crossprocessing SYSTEM "darkroom/examples/crossprocessing.xml">
+<!ENTITY darkroom_example_cyantone SYSTEM "darkroom/examples/cyantone.xml">
