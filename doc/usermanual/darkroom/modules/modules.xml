@@ -26,6 +26,7 @@
 		</sect3>
 	</sect2>
 	
+	&darkroom_module_highlightreconstruction;
 	&darkroom_module_basecurve;
 	&darkroom_module_clipping;
 	&darkroom_module_lenscorrection;
