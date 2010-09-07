@@ -168,20 +168,20 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   struct tm exif_tm={0};
   if (params->img)
   {
-	if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-					&exif_tm.tm_year,
-					&exif_tm.tm_mon,
-					&exif_tm.tm_mday,
-					&exif_tm.tm_hour,
-					&exif_tm.tm_min,
-					&exif_tm.tm_sec
-				) == 6
-		)
-	{
-		exif_tm.tm_year--;
-		exif_tm.tm_mon--;
-		have_exif_tm = TRUE;
-	}
+  if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+          &exif_tm.tm_year,
+          &exif_tm.tm_mon,
+          &exif_tm.tm_mday,
+          &exif_tm.tm_hour,
+          &exif_tm.tm_min,
+          &exif_tm.tm_sec
+        ) == 6
+    )
+  {
+    exif_tm.tm_year--;
+    exif_tm.tm_mon--;
+    have_exif_tm = TRUE;
+  }
   }
   
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
@@ -287,4 +287,9 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   g_free(variable);
   g_free(value);
   return TRUE;
+}
+
+void dt_variables_reset_sequence(dt_variables_params_t *params)
+{
+  params->data->sequence = 0;
 }
