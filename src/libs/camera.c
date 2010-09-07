@@ -363,10 +363,7 @@ gui_init (dt_lib_module_t *self)
   lib->data.listener->camera_property_accessibility_changed=_camera_property_accessibility_changed;
   lib->data.listener->request_image_path=_camera_tethered_request_image_path;
   lib->data.listener->request_image_filename=_camera_tethered_request_image_filename;
-  
-  /* build the propertymenu */
-  dt_camctl_camera_build_property_menu (darktable.camctl,NULL,&lib->gui.properties_menu,G_CALLBACK(_property_choice_callback),lib);
-  
+
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
   GtkBox *hbox, *vbox1, *vbox2;
@@ -543,7 +540,7 @@ gui_init (dt_lib_module_t *self)
           gtk_box_pack_start (lib->gui.pvbox2, GTK_WIDGET (hbox), TRUE, TRUE, 0);
           g_signal_connect (G_OBJECT (prop->osd), "clicked", G_CALLBACK (_osd_button_clicked), prop);
         }
-      } while ( (item = g_slist_next (options)) != NULL );
+      } while ( (item = g_slist_next (item)) != NULL );
     }
   }
   
@@ -552,7 +549,10 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(lib->gui.pvbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(lib->gui.pvbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
- 
+
+  /* build the propertymenu */
+  dt_camctl_camera_build_property_menu (darktable.camctl,NULL,&lib->gui.properties_menu,G_CALLBACK(_property_choice_callback),lib);
+  
   // user specified properties
   gtk_box_pack_start (GTK_BOX (self->widget), dtgtk_label_new (_("additional properties"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 5);
   vbox1 = GTK_BOX (gtk_vbox_new (TRUE, 0));
@@ -579,6 +579,8 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_show(widget);
   gtk_box_pack_start (GTK_BOX (self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
   gtk_box_pack_start (GTK_BOX (self->widget), GTK_WIDGET (widget), TRUE, TRUE, 5);
+ 
+ 
  
   // Get camera model name
   lib->data.camera_model=dt_camctl_camera_get_model(darktable.camctl,NULL);
