@@ -213,6 +213,12 @@ AC_ARG_ENABLE(docs, AC_HELP_STRING([--enable-docs], [build usermanual]),
 please install libxslt (http://xmlsoft.org/XSLT/)])
                      can_build_usermanual=no
              fi
+		AC_PATH_PROG([xml2po],[xml2po])
+             if test -z "$xml2po"; then
+                     AC_MSG_ERROR([xml2po was not found. If you want to change and compile the documentation, \
+please install xml2po])
+                     can_build_usermanual=no
+             fi
              AC_PATH_PROG([fop],[fop])
              if test -z "$fop"; then
                      AC_MSG_ERROR([fop was not found. If you want to change and compile the documentation, \

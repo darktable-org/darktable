@@ -1,0 +1,560 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2010-09-07 19:39+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../darktable.xml:15(para)
+msgid "Legal notice ..."
+msgstr ""
+
+#: ../darktable.xml:20(firstname)
+msgid "Henrik"
+msgstr ""
+
+#: ../darktable.xml:21(surname)
+msgid "Andersson"
+msgstr ""
+
+#: ../darktable.xml:24(year)
+msgid "2010"
+msgstr ""
+
+#: ../darktable.xml:25(holder)
+msgid "P.H. Andersson"
+msgstr ""
+
+#: ../darktable.xml:28(title)
+msgid "Darktable"
+msgstr ""
+
+#: ../darktable.xml:29(title)
+msgid "Preface to darktable"
+msgstr ""
+
+#: ../darktable.xml:30(para)
+msgid "<indexterm><primary>Darktable</primary></indexterm><indexterm><primary>Preface</primary></indexterm> This is the preface. It contains of a paragrapgh, a list and a link. This paragraph contains useless words only. Its mere purpose is to have some text in order to see the paragraphs end."
+msgstr ""
+
+#: ../darktable.xml:4(keyword)
+msgid "lighttable"
+msgstr ""
+
+#: ../darktable.xml:5(keyword) ../darktable.xml:5(keyword)
+msgid "view"
+msgstr ""
+
+#: ../darktable.xml:8(title)
+msgid "Lighttable"
+msgstr ""
+
+#: ../darktable.xml:9(para)
+msgid "The lighttable is where you manage all your images, ratings, exporting and much more..."
+msgstr ""
+
+#: ../darktable.xml:11(screeninfo)
+msgid "The lighttable view"
+msgstr ""
+
+#: ../darktable.xml:15(title) ../darktable.xml:15(title) ../darktable.xml:2(title) ../darktable.xml:2(title) ../darktable.xml:2(title) ../darktable.xml:2(title) ../darktable.xml:2(title) ../darktable.xml:2(title) ../darktable.xml:2(title) ../darktable.xml:2(title)
+msgid "Overview"
+msgstr ""
+
+#: ../darktable.xml:17(title)
+msgid "Ligthtable"
+msgstr ""
+
+#: ../darktable.xml:23(entry)
+msgid "In this centerview your images are shown as thumbs, each thumb has a frame and while mouse is over an image, information such as rating and if image are altered in darkroom <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> is viewed. Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel."
+msgstr ""
+
+#: ../darktable.xml:35(para)
+msgid "While mouse is over and imageframe you have additional actions accessed from keyboard to apply on image here follows an table of key accelerators and assigned actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>opens the image in darkroom view for developing</entry></row><row><entry><emphasis>z</emphasis></entry><entry>shows a fullscreen view of the image</entry></row></tbody></tgroup></informaltable>"
+msgstr ""
+
+#: ../darktable.xml:63(para)
+msgid "At the bottom you have an option to choose a zoomable lighttable view or a filemanger view of the thumbnails."
+msgstr ""
+
+#: ../darktable.xml:66(title)
+msgid "Filtering and sort order"
+msgstr ""
+
+#: ../darktable.xml:67(para)
+msgid "The filtering and sortorder of images on lighttable are accessed and changed in the top bar where you can select among a few predefined filters and orderering like date, color labels, rating among others."
+msgstr ""
+
+#: ../darktable.xml:74(title) ../darktable.xml:30(title)
+msgid "Panels"
+msgstr ""
+
+#: ../darktable.xml:75(title)
+msgid "Devices"
+msgstr ""
+
+#: ../darktable.xml:76(para)
+msgid "This plugin show's connected devices, for now this is only cameras but in future scanners would show up here."
+msgstr ""
+
+#: ../darktable.xml:77(title)
+msgid "Cameras"
+msgstr ""
+
+#: ../darktable.xml:78(para)
+msgid "When a camera is detected it will show up in the device pane, if you hover your mouse over the camera tablabel a tooltip will show with some information about the camera such as model,firmware version and alot more..,"
+msgstr ""
+
+#: ../darktable.xml:81(para)
+msgid "Depending of the support for your camera, buttons with actions will be available such as import images and tethering."
+msgstr ""
+
+#: ../darktable.xml:83(title)
+msgid "Import images"
+msgstr ""
+
+#: ../darktable.xml:84(para)
+msgid "This will bring up an import dialog, showing the images on camera that can be selected for import into a filmroll in Darktable."
+msgstr ""
+
+#: ../darktable.xml:88(title)
+msgid "Tethering"
+msgstr ""
+
+#: ../darktable.xml:89(para)
+msgid "Tethering is used to integrate Darktable with your camera, and while you take images on the camera it will automatic be imported into darktable and you can review the result of the shoot, you can also infront of computer setup remote capture jobs for timelapsed captures and change settings such as shuttertime, f-length and more."
+msgstr ""
+
+#: ../darktable.xml:93(para)
+msgid "Tethering will take you into capture view with the specific camera for tethered shoot read more about tethering in chapter 3."
+msgstr ""
+
+#: ../darktable.xml:98(title)
+msgid "Library"
+msgstr ""
+
+#: ../darktable.xml:99(para)
+msgid "A filmroll is the same as a folder in the filesystem, except for single images filmroll that can contain images spread around on in your filessystem. You can import a singel image or a folder, if a folder is imported Darktable will not recurse down in several folderlevels, just import the images that resides at choosen folder into a filmroll which name become the name of the folder imported."
+msgstr ""
+
+#: ../darktable.xml:103(para)
+msgid "All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest. Double click on a filmroll in the list and it will be opened and viewed. You can also click the recent filmroll items to open the latest ones you have worked with."
+msgstr ""
+
+#: ../darktable.xml:109(title) ../darktable.xml:65(title)
+msgid "Metadata"
+msgstr ""
+
+#: ../darktable.xml:115(entry)
+msgid "This panel shows embeded metadata of an image."
+msgstr ""
+
+#: ../darktable.xml:4(keyword)
+msgid "darkroom"
+msgstr ""
+
+#: ../darktable.xml:8(title)
+msgid "Darkroom"
+msgstr ""
+
+#: ../darktable.xml:9(para)
+msgid "The darkroom view is where you develop your image..."
+msgstr ""
+
+#: ../darktable.xml:11(screeninfo)
+msgid "The darkroom view"
+msgstr ""
+
+#: ../darktable.xml:16(para)
+msgid "In darkroom you are in develop mode for the specific image, here you have alot of tools to develop you image."
+msgstr ""
+
+#: ../darktable.xml:19(para)
+msgid "On the left side you have the navigation, snapshots, history and histogram panel each of them are described below, in the right panel you can see the histogram and then a list of available modules to use when working with your image. And at bottom of right panel you can enable/disable individual modules which will remove them from the right panel."
+msgstr ""
+
+#: ../darktable.xml:24(title)
+msgid "Filmstrip"
+msgstr ""
+
+#: ../darktable.xml:25(para)
+msgid "The filmstrip is used for fast switching between image to develop in darkroom view, the images viewed are the same as the ones in the lighttable view."
+msgstr ""
+
+#: ../darktable.xml:28(para)
+msgid "The filmstrip can be switch on and off using ctrl-f shortcut."
+msgstr ""
+
+#: ../darktable.xml:31(title)
+msgid "Navigation"
+msgstr ""
+
+#: ../darktable.xml:37(entry)
+msgid "This panels shows the whole image and a rectangle is showing the current zoom view that you see, you can move this rectangle to pan around in same zoomlevel."
+msgstr ""
+
+#: ../darktable.xml:48(title)
+msgid "Snapshots"
+msgstr ""
+
+#: ../darktable.xml:54(entry)
+msgid "You can take a snapshot of what is displayed in the center view, this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion when you tuning parameters of a module."
+msgstr ""
+
+#: ../darktable.xml:66(para)
+msgid "Shows the metadata for an image, same as in lighttable mode."
+msgstr ""
+
+#: ../darktable.xml:69(title)
+msgid "History"
+msgstr ""
+
+#: ../darktable.xml:75(entry)
+msgid "The historystack is each change of module in history, here you can select a point in stack an hit compress historystack button to get back to the select point of changes..."
+msgstr ""
+
+#: ../darktable.xml:86(title)
+msgid "Histogram"
+msgstr ""
+
+#: ../darktable.xml:92(entry)
+msgid "Shows an histogram for the result of developed image, you can change exposure by left mouse click in right side of histogram and drag right for increase or left to decrease the exposure, same goes for the blacklevel but you left click in the left part of historgram."
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Modules"
+msgstr ""
+
+#: ../darktable.xml:2(para)
+msgid "Each correction, enhancement or effect is implemented as modules, and this section includes documentation of each module and it's specific parameters. A module consists of an expander bar <inlinegraphic fileref=\"images/darkroom_module_expander.png\"/> where the <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\"/> icon is used to turn then module on or off, then there are a title of the module press this to expand the module too see the paramters userinterface. <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon is the preset icon to access the available presets stored for the modul and <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\"/> icon is used to reset the module paramaters to theire default values."
+msgstr ""
+
+#: ../darktable.xml:9(title)
+msgid "Presets"
+msgstr ""
+
+#: ../darktable.xml:10(para)
+msgid "Presets are stored configurations for the module parameters both internal and userdefined is available thru clicking the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon and a list of available presets are shown for your choice, the activ preset is in bold text."
+msgstr ""
+
+#: ../darktable.xml:14(para)
+msgid "The preset system does also support automatic preset selection based on image data such as exposure time, camera model and much more fields."
+msgstr ""
+
+#: ../darktable.xml:18(title)
+msgid "Creating a new preset"
+msgstr ""
+
+#: ../darktable.xml:19(para)
+msgid "Configure the specific module of choice as you like then you click the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon and select store new preset menu choice. Following dialog is shown and you select a name for the new preset that is shown in the menu when stored ..."
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Highlight reconstruction"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "This module tries to reconstruct color information that's usally is clipped because of the information is not complete in all channels."
+msgstr ""
+
+#: ../darktable.xml:19(title) ../darktable.xml:20(title) ../darktable.xml:26(title) ../darktable.xml:19(title) ../darktable.xml:19(title) ../darktable.xml:32(title)
+msgid "Usage"
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Basecurve"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "Darktable comes with general enhanced basecurve presets for several models that is per automatic applied to raw images for better colors and contrast."
+msgstr ""
+
+#: ../darktable.xml:21(para)
+msgid "As you see this curve forming tool confirms to Darktable standard for modifying curves, just a point in curve and drag to adjust, you can also use the 4 controlpoints at bottom to adjust the curve."
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Crop and rotate"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "This tool is used for crop, rotate and prespective correction of you image, it does also include many helpful guidelines that assists you using the tool."
+msgstr ""
+
+#: ../darktable.xml:19(para)
+msgid "First off select what aspect ratio you want and size the crop bounds by dragging border and corner handles, use ctrl-x to swap potrait/landscape rotation of the crop rectangle. You can move around the crop rectangle by holding down left mouse button and move around... When you finished and want to execute the crop, hit enter key or double click in crop rectangle."
+msgstr ""
+
+#: ../darktable.xml:27(para) ../darktable.xml:20(para) ../darktable.xml:33(para)
+msgid "..."
+msgstr ""
+
+#: ../darktable.xml:28(title)
+msgid "Flip image"
+msgstr ""
+
+#: ../darktable.xml:29(para)
+msgid "Use these toggle buttons to flip image horizontal and veritcal"
+msgstr ""
+
+#: ../darktable.xml:31(title)
+msgid "Angle"
+msgstr ""
+
+#: ../darktable.xml:32(para)
+msgid "This is the angle for rotation, used for correctiion for example a non straight horizontal horizon, use your left mouse button holding it down and drawing a line along the horizon and the image are rotated to match the angle of your line."
+msgstr ""
+
+#: ../darktable.xml:37(title)
+msgid "Perspective"
+msgstr ""
+
+#: ../darktable.xml:38(para)
+msgid "This tool is used for correcting any perspective distortions in you image, like example when you shoot an high building from ground and aiming upwards with camera with short focal length..."
+msgstr ""
+
+#: ../darktable.xml:41(para)
+msgid "You can also choose which direction (righ and up) the correction should be applied on."
+msgstr ""
+
+#: ../darktable.xml:44(title)
+msgid "Aspect"
+msgstr ""
+
+#: ../darktable.xml:45(para)
+msgid "Here you can change what aspect ratio you want to have on the result, constraining the ability to drag an crop rectangle out of the aspect ratio of your choice.."
+msgstr ""
+
+#: ../darktable.xml:53(emphasis)
+msgid "free"
+msgstr ""
+
+#: ../darktable.xml:53(entry)
+msgid "free forming the rectangle without any ratio restrictions"
+msgstr ""
+
+#: ../darktable.xml:56(emphasis)
+msgid "image"
+msgstr ""
+
+#: ../darktable.xml:56(entry)
+msgid "this option constrains the ratio to be equal to image ratio"
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Lens correction"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "Lens correction...."
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Sharpen"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "This is an standard UnSharp Mask tool for sharpen the details of an image."
+msgstr ""
+
+#: ../darktable.xml:1(title) ../darktable.xml:53(para) ../darktable.xml:50(para)
+msgid "Splittoning"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "Original splittoning method creates a two color linear toning effect where the shadows and highlights are represented by two different colors. In the example image below you can see an original black and white image and one where a splittoning effect are applied with blue in shadows and yellow-ish color in highlights."
+msgstr ""
+
+#: ../darktable.xml:21(para)
+msgid "Darktable splittoning plugin has more parameters that impacts on the default above behavior, we have balance which offsets the 50% gray level in image and compression that does compress toning in the shadows and highlights which leaves a gap which are untouched by the effect. Read more and see examples of these additional parameters to splittoning module in Parameters section."
+msgstr ""
+
+#: ../darktable.xml:26(para)
+msgid "The splittoning module does not convert image to black and white and works extensible nice on color images, soo if you want to do traditional splittoning, use the monochrome module to make the image black and white before playing around with splittoning effect."
+msgstr ""
+
+#: ../darktable.xml:34(title)
+msgid "Shadows and Hilights color"
+msgstr ""
+
+#: ../darktable.xml:35(para)
+msgid "These controls are used to set the color of the splittoning effect, you select the desire color and saturation for both shadows and highlights, you can also click the color preview box too bring up a common color picker dialog."
+msgstr ""
+
+#: ../darktable.xml:39(title)
+msgid "Balance"
+msgstr ""
+
+#: ../darktable.xml:40(para)
+msgid "The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness range in image are used for shadows toning and the other 50% for highlights toning."
+msgstr ""
+
+#: ../darktable.xml:44(title)
+msgid "Compression"
+msgstr ""
+
+#: ../darktable.xml:45(para)
+msgid "Compression is a percentage of total lightness range that not is affected by color toning, default value is set to 33% which not is the default behaviour of a original splittoning which would be 0% compression. The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original splittoning method..."
+msgstr ""
+
+#: ../darktable.xml:108(title)
+msgid "Examples"
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Cross-processing"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "Cross-processing is a analog processing technique where slide film (E6) is processed in chemicals used for processing print film (C41). The resulting images get skewed colors usually a cyan hue and increased contrast and saturation."
+msgstr ""
+
+#: ../darktable.xml:20(para)
+msgid "The standard way for doing digital cross-processing is to use a channel curve tool but Darktable lacks this tool for the moment and another way to accomodiate the effect is used."
+msgstr ""
+
+#: ../darktable.xml:24(title) ../darktable.xml:20(title)
+msgid "Procedure"
+msgstr ""
+
+#: ../darktable.xml:25(para) ../darktable.xml:21(para)
+msgid "This procedure uses tonecurve, channelmixer and splittoning modules."
+msgstr ""
+
+#: ../darktable.xml:29(para) ../darktable.xml:25(para)
+msgid "Image preparation"
+msgstr ""
+
+#: ../darktable.xml:30(para)
+msgid "Prepare the image for the cross process steps by adjusting the base settings such as exposure,whitebalance etc. for a correctly looking image."
+msgstr ""
+
+#: ../darktable.xml:34(para)
+msgid "Boost contrast"
+msgstr ""
+
+#: ../darktable.xml:35(para)
+msgid "Select the medium contrast curve preset for tonecurve module to boost the overall contrast in the image. You later might get back here to tune the curve for better result."
+msgstr ""
+
+#: ../darktable.xml:41(para)
+msgid "Color cast"
+msgstr ""
+
+#: ../darktable.xml:42(para)
+msgid "This step does change the colorcast as the base for the effect using the channel mixer. You might later get back to this and finetune the colorcast of the final result."
+msgstr ""
+
+#: ../darktable.xml:46(para) ../darktable.xml:40(para)
+msgid "Enable the channel mixer module"
+msgstr ""
+
+#: ../darktable.xml:47(para)
+msgid "Select blue channel and set blue color value to 0.8"
+msgstr ""
+
+#: ../darktable.xml:48(para)
+msgid "Select red channel and change blue color value to 0.1"
+msgstr ""
+
+#: ../darktable.xml:49(para)
+msgid "Select green channel and change green color value to 0.1"
+msgstr ""
+
+#: ../darktable.xml:54(para)
+msgid "We use splittoning for add some more coloring to the result for cyan/blue shadows and yellow highlight."
+msgstr ""
+
+#: ../darktable.xml:58(para) ../darktable.xml:56(para)
+msgid "Enable the splittoning module"
+msgstr ""
+
+#: ../darktable.xml:59(para)
+msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
+msgstr ""
+
+#: ../darktable.xml:60(para)
+msgid "Select a yellow/orange tone for highlights and set saturation around 70%"
+msgstr ""
+
+#: ../darktable.xml:61(para)
+msgid "Set compression to 10%"
+msgstr ""
+
+#: ../darktable.xml:62(para)
+msgid "Use the balance slider to tune the splittoning effect due this differs on every image due to it's exposure, motive etc."
+msgstr ""
+
+#: ../darktable.xml:1(title)
+msgid "Cyan toned image"
+msgstr ""
+
+#: ../darktable.xml:8(entry)
+msgid "Cyan is a nice color touchup for black and white images, this example guides you thru how to make this with Darktable and how to control the tone. You can choose any tone of your like for this tutorial..."
+msgstr ""
+
+#: ../darktable.xml:26(para)
+msgid "Prepare the image for the cross process steps by adjusting the base settings such as exposure,black level, contrast etc. for a correctly looking image."
+msgstr ""
+
+#: ../darktable.xml:30(para)
+msgid "Black and white"
+msgstr ""
+
+#: ../darktable.xml:31(para)
+msgid "Enable the monochrome module to make the image black and white."
+msgstr ""
+
+#: ../darktable.xml:35(para)
+msgid "Add color tone"
+msgstr ""
+
+#: ../darktable.xml:36(para)
+msgid "This step selects the basetone of the image using channel mixer, we are going for cyan tone but you can choose the tone of your like here."
+msgstr ""
+
+#: ../darktable.xml:41(para)
+msgid "Select red channel and set red color value to 0.7"
+msgstr ""
+
+#: ../darktable.xml:42(para)
+msgid "Select green channel and red color value to 0.150"
+msgstr ""
+
+#: ../darktable.xml:43(para)
+msgid "Select blue channel and red color value to 0.150"
+msgstr ""
+
+#: ../darktable.xml:45(para)
+msgid "As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from red channel and add them to blue and green."
+msgstr ""
+
+#: ../darktable.xml:51(para)
+msgid "The result of previous step does also add a colorcast on highlight that we actually want to have white for a nicer result. We also wants to add some blue color to the shadows."
+msgstr ""
+
+#: ../darktable.xml:57(para)
+msgid "Select a blue/cyan tone for shadows and set saturation around 50%"
+msgstr ""
+
+#: ../darktable.xml:58(para)
+msgid "Set highlights saturation to zero, to remove saturation on highlights."
+msgstr ""
+
+#: ../darktable.xml:59(para)
+msgid "Set compression to zero"
+msgstr ""
+
+#: ../darktable.xml:60(para)
+msgid "Use the balance slider to tune the effect, out example uses a balance of 70/30"
+msgstr ""
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
+#: ../darktable.xml:0(None)
+msgid "translator-credits"
+msgstr ""
+
