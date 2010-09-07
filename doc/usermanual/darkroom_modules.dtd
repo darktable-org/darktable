@@ -5,6 +5,7 @@
 
 
 <!ENTITY darkroom_modules SYSTEM "darkroom/modules/modules.xml">
+<!ENTITY darkroom_module_highlightreconstruction SYSTEM "darkroom/modules/highlightreconstruction.xml">
 <!ENTITY darkroom_module_basecurve SYSTEM "darkroom/modules/basecurve.xml">
 <!ENTITY darkroom_module_clipping SYSTEM "darkroom/modules/clipping.xml">
 <!ENTITY darkroom_module_lenscorrection SYSTEM "darkroom/modules/lenscorrection.xml">

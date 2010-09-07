@@ -162,29 +162,29 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
     
     case _JOB_TYPE_EXECUTE_CAPTURE: 
     {
-      dt_print(DT_DEBUG_CAMCTL,"[camera_control] Executing remote camera capture job\n");
+      dt_print (DT_DEBUG_CAMCTL,"[camera_control] Executing remote camera capture job\n");
       CameraFilePath fp;
       int res=GP_OK;
-      if( (res = gp_camera_capture( camera->gpcam, GP_CAPTURE_IMAGE,&fp, c->gpcontext)) == GP_OK ) {
-      
+      if( (res = gp_camera_capture (camera->gpcam, GP_CAPTURE_IMAGE,&fp, c->gpcontext)) == GP_OK ) 
+      {
         CameraFile *destination;
         const char *output_path = _dispatch_request_image_path(c,camera);
         if( !output_path ) output_path="/tmp";
         const char *fname = _dispatch_request_image_filename(c,fp.name,cam);
         if( !fname ) fname=fp.name;
   
-        char *output = g_build_filename(output_path,fname,NULL);
+        char *output = g_build_filename (output_path,fname,NULL);
   
-        int handle = open( output, O_CREAT | O_WRONLY,0666);
-        gp_file_new_from_fd( &destination , handle );
-        gp_camera_file_get( camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-        close( handle );
+        int handle = open (output, O_CREAT | O_WRONLY,0666);
+        gp_file_new_from_fd (&destination , handle);
+        gp_camera_file_get (camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
+        close (handle);
         
         // Notify listerners of captured image
-        _dispatch_camera_image_downloaded(c,camera,output);
-        g_free( output );
+        _dispatch_camera_image_downloaded (c,camera,output);
+        g_free (output);
       } else
-        dt_print(DT_DEBUG_CAMCTL,"[camera_control] Capture job failed to capture image %d\n",res);
+        dt_print (DT_DEBUG_CAMCTL,"[camera_control] Capture job failed to capture image: %s\n",gp_result_as_string(res));
         
       
     } break;
@@ -637,6 +637,76 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *c
   }
   return cam->model;
 }
+
+
+void _camera_build_property_menu (CameraWidget *widget,GtkMenu *menu, GCallback item_activate,gpointer user_data)
+{
+  int childs = 0; 
+  const char *sk;
+  CameraWidgetType type;
+  
+  /* if widget has children lets add menutitem and recurse into container */
+  if( ( childs = gp_widget_count_children ( widget ) ) > 0 ) {
+    CameraWidget *child = NULL;
+    for (int i = 0 ; i < childs ; i++) 
+    {
+      gp_widget_get_child (widget, i, &child);
+      gp_widget_get_name (child, &sk);
+      
+      /* Check if widget is submenu */
+      if ( gp_widget_count_children (child) > 0 )
+      {
+        /* create submenu item */
+        GtkMenuItem *item = GTK_MENU_ITEM (gtk_menu_item_new_with_label (sk));
+        gtk_menu_item_set_submenu (item, gtk_menu_new ());
+      
+        /* recurse into submenu */
+        _camera_build_property_menu (child, GTK_MENU (gtk_menu_item_get_submenu (item)), item_activate, user_data);
+        
+        /* add submenu item to menu if not empty*/
+        if (gtk_container_get_children(GTK_CONTAINER(gtk_menu_item_get_submenu (item))) != NULL)
+          gtk_menu_shell_append(GTK_MENU_SHELL (menu),GTK_WIDGET (item));
+      } 
+      else
+      {
+        /* check widget type */
+        gp_widget_get_type( child, &type );        
+        if( 
+          type == GP_WIDGET_MENU || type == GP_WIDGET_TEXT || type == GP_WIDGET_RADIO 
+        ) 
+        {
+          /* construct menu item for property */
+          gp_widget_get_name (child, &sk);
+          GtkMenuItem *item =  GTK_MENU_ITEM (gtk_menu_item_new_with_label (sk));
+          g_signal_connect (G_OBJECT (item), "activate", item_activate, user_data);
+          /* add submenu item to menu */
+          gtk_menu_shell_append(GTK_MENU_SHELL (menu),GTK_WIDGET (item));
+        }
+      }
+    }
+  }
+}
+
+void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_t *cam,GtkMenu **menu, GCallback item_activate, gpointer user_data )
+{
+  /* get active camera */
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  if( !cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL )
+  {
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to build property menu from camera, camera==NULL\n"); 
+    return;
+  }
+  
+  /* lock camera config mutex while recursive building property menu */
+  dt_camera_t *camera=(dt_camera_t *)cam;
+  pthread_mutex_lock( &camera->config_lock );
+  *menu = GTK_MENU (gtk_menu_new ());
+  _camera_build_property_menu (camera->configuration,*menu,item_activate,user_data);
+  gtk_widget_show_all (GTK_WIDGET (*menu));
+  pthread_mutex_unlock( &camera->config_lock );
+}
+
+
 
 void dt_camctl_camera_set_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value) {
   dt_camctl_t *camctl=(dt_camctl_t *)c;

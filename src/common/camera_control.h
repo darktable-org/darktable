@@ -53,7 +53,7 @@ typedef struct dt_camera_t {
   pthread_mutex_t jobqueue_lock;
   /** The jobqueue */
   GList *jobqueue;
-  
+    
   struct {
     CameraWidget *widget;
     uint32_t index;
@@ -197,5 +197,7 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,cons
 /** Get next choice availble for named property. */
 const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 
+/** build a popupmenu with all properties available */
+void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_t *cam,GtkMenu **menu, GCallback item_activate, gpointer user_data);
 
 #endif
