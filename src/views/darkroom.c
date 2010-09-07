@@ -748,8 +748,11 @@ void leave(dt_view_t *self)
   dt_image_cache_release(dev->image, 'r');
 }
 
-
-// void mouse_leave(dt_view_t *self) {}
+void mouse_leave(dt_view_t *self)
+{
+  // reset any changes the selected plugin might have made.
+  dt_control_change_cursor(GDK_LEFT_PTR);
+}
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {

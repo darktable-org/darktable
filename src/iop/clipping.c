@@ -60,7 +60,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkDarktableSlider *scale5, *keystone;
   GtkRadioButton *keystone_x, *keystone_y;
   GtkDarktableToggleButton *hflip,*vflip;
-  GtkComboBox *aspect_presets;
+  GtkComboBoxEntry *aspect_presets;
   GtkComboBox *guide_lines;
   GtkLabel *label7;
   GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
@@ -473,7 +473,28 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   int which = gtk_combo_box_get_active(combo);
-  if (which >= 0 && which < 8)
+  if (which < 0)
+  {
+    // reset to free aspect ratio:
+    g->current_aspect = -1.0;
+    dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", -1);
+    gchar *text = gtk_combo_box_get_active_text(combo);
+    if(text)
+    {
+      gchar *c = text;
+      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
+      if(c < text + strlen(text))
+      {
+        *c = '\0'; c++;
+        g->current_aspect = atof(text) / atof(c);
+        apply_box_aspect(self, 5);
+        dt_control_queue_draw_all();
+        dt_iop_request_focus(self);
+      }
+      g_free(text);
+    }
+  }
+  else if (which < 8)
   {
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
     if(which > 0 && self->dev->image->height > self->dev->image->width)
@@ -524,7 +545,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act > 7) act = 0;
-  gtk_combo_box_set_active(g->aspect_presets, act);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
 }
 
 void init(dt_iop_module_t *module)
@@ -691,19 +712,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  g->aspect_presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->aspect_presets, _("free"));
-  gtk_combo_box_append_text(g->aspect_presets, _("image"));
-  gtk_combo_box_append_text(g->aspect_presets, _("golden cut"));
-  gtk_combo_box_append_text(g->aspect_presets, _("1:2"));
-  gtk_combo_box_append_text(g->aspect_presets, _("3:2"));
-  gtk_combo_box_append_text(g->aspect_presets, _("4:3"));
-  gtk_combo_box_append_text(g->aspect_presets, _("square"));
-  gtk_combo_box_append_text(g->aspect_presets, _("din"));
+  g->aspect_presets = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("free"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("image"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("golden cut"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("1:2"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("3:2"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("4:3"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("din"));
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act > 7) act = 0;
-  gtk_combo_box_set_active(g->aspect_presets, act);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   gtk_object_set(GTK_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
