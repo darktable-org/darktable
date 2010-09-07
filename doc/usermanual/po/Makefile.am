@@ -1,14 +1,16 @@
+@AMDEP_TRUE@@am__include@
+
 TEMPLATE=darktable-usermanual.pot
 TRANSLATIONS=\
 	sv \
 	ru
 
-all: $(LINGUAS)
+all: $(TRANSLATIONS)
 
 update-template:
 	@xml2po -e -o $(TEMPLATE) ../darktable.xml
 
-$(LINGUAS): update-template
+$(TRANSLATIONS): update-template
 	@if test ! -f $@.po; then \
 		cp $(TEMPLATE) $@.po; \
 	fi
