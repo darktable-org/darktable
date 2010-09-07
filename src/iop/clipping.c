@@ -810,10 +810,10 @@ static int
 get_grab (float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float border, const float wd, const float ht)
 {
   int grab = 0;
-  if(pzx >= g->clip_x && pzx*wd < g->clip_x*wd + border) grab |= 1;
-  if(pzy >= g->clip_y && pzy*ht < g->clip_y*ht + border) grab |= 2;
-  if(pzx <= g->clip_x+g->clip_w && pzx*wd > (g->clip_w+g->clip_x)*wd - border) grab |= 4;
-  if(pzy <= g->clip_y+g->clip_h && pzy*ht > (g->clip_h+g->clip_y)*ht - border) grab |= 8;
+  if(pzx >= g->clip_x && pzx*wd < g->clip_x*wd + border) grab |= 1; // left border
+  if(pzy >= g->clip_y && pzy*ht < g->clip_y*ht + border) grab |= 2; // top border
+  if(pzx <= g->clip_x+g->clip_w && pzx*wd > (g->clip_w+g->clip_x)*wd - border) grab |= 4; // right border
+  if(pzy <= g->clip_y+g->clip_h && pzy*ht > (g->clip_h+g->clip_y)*ht - border) grab |= 8; // bottom border
   return grab;
 }
 
@@ -989,7 +989,7 @@ draw_simple_grid(cairo_t *cr, float wd, float ht, float zoom_scale)
   dt_draw_grid(cr, 9, wd, ht);
 }
 
-// draw 3x3 grid over the image
+// draw guides and handles over the image
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_develop_t *dev = self->dev;
@@ -1166,15 +1166,17 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f; pzy += 0.5f;
+  static int old_grab = -1;
   int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 3)
-  {
+  { // second mouse button, straighten activated:
     g->straightening = 1;
+    dt_control_change_cursor(GDK_CROSSHAIR);
     dt_control_gui_queue_draw();
   }
   else if(darktable.control->button_down && darktable.control->button_down_which == 1)
-  {
+  { // first mouse button, adjust cropping frame, but what do we do?
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
     if(!g->cropping && !g->straightening)
     {
@@ -1226,14 +1228,27 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     return 1;
   }
   else if (grab)
-  { // hover over active borders
+  { // hover over active borders, no button pressed
+    if(old_grab != grab)
+    { // change mouse pointer
+      if     (grab == 1)  dt_control_change_cursor(GDK_LEFT_SIDE);
+      else if(grab == 2)  dt_control_change_cursor(GDK_TOP_SIDE);
+      else if(grab == 4)  dt_control_change_cursor(GDK_RIGHT_SIDE);
+      else if(grab == 8)  dt_control_change_cursor(GDK_BOTTOM_SIDE);
+      else if(grab == 3)  dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
+      else if(grab == 6)  dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
+      else if(grab == 12) dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
+      else if(grab == 9)  dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+    }
     dt_control_gui_queue_draw();
   }
   else
   { // somewhere besides borders. maybe rotate?
+    if(old_grab != grab) dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
     dt_control_gui_queue_draw();
   }
+  old_grab = grab;
   return 0;
 }
 
@@ -1283,6 +1298,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a >  180.0) a -= 360.0;
     if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
     dtgtk_slider_set_value(g->scale5, a);
+    dt_control_change_cursor(GDK_LEFT_PTR);
   }
   g->straightening = g->cropping = 0;
   return 1;
