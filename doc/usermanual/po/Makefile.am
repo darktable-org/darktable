@@ -1,7 +1,7 @@
 @AMDEP_TRUE@@am__include@
 
 TEMPLATE=darktable-usermanual.pot
-STYLESHEET = xsl/$(PACKAGE).xsl
+PROFILE_STYLESHEET = ../xsl/$(PACKAGE)_profile.xsl
 TRANSLATIONS=\
 	sv \
 	ru
@@ -9,7 +9,7 @@ TRANSLATIONS=\
 all: $(TRANSLATIONS)
 
 update-template:
-	$(xsltproc) --output ../build/$(PACKAGE)-usermanual_profiled_final.xml --stringparam profile.status "final" ../$(STYLESHEET) ../$(PACKAGE).xml 
+	$(xsltproc) --output ../build/$(PACKAGE)-usermanual_profiled_final.xml $(PROFILE_STYLESHEET) ../$(PACKAGE).xml 
 	$(xml2po) -a -e -o $(TEMPLATE) ../build/$(PACKAGE)-usermanual_profiled_final.xml
 	
 $(TRANSLATIONS): update-template

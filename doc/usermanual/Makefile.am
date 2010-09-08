@@ -6,7 +6,8 @@ translations = \
 		sv \
 		ru
 
-STYLESHEET = xsl/$(PACKAGE).xsl
+FO_STYLESHEET = xsl/$(PACKAGE)_fo.xsl
+PROFILE_STYLESHEET = xsl/$(PACKAGE)_profile.xsl
 
 pdfusermanual = $(PACKAGE)-usermanual.pdf 
 pdfusermanual_final = $(PACKAGE)-usermanual-final.pdf 
@@ -36,20 +37,25 @@ force-update-doc: doc-clean $(pdfusermanual)
 $(pdfusermanual): 
 	@ $(MAKE) check_can_build_usermanual
 	$(MAKE) doc-clean
-	$(xsltproc) --output build/$(PACKAGE)-usermanual.fo  $(STYLESHEET) $(PACKAGE).xml 
+	$(xsltproc) --output build/$(PACKAGE)-usermanual.fo  $(FO_STYLESHEET) $(PACKAGE).xml 
 	$(fop) build/$(PACKAGE)-usermanual.fo -pdf $(PACKAGE)-usermanual.pdf
 	
 $(pdfusermanual_final): 
 	@ $(MAKE) check_can_build_usermanual
 	$(MAKE) doc-clean
-	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final-profiled.fo --stringparam profile.status "final" $(STYLESHEET) $(PACKAGE).xml 
-	$(fop) build/$(PACKAGE)-usermanual_profiled_final-profiled.fo -pdf $(PACKAGE)-usermanual-final.pdf
+	@echo "Profiling final xml document"
+	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final.xml $(PROFILE_STYLESHEET) $(PACKAGE).xml 
+	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final.fo $(FO_STYLESHEET)  build/$(PACKAGE)-usermanual_profiled_final.xml
+	$(fop) build/$(PACKAGE)-usermanual_profiled_final.fo -pdf $(PACKAGE)-usermanual-final.pdf
 	
 $(translations): 
 	@ $(MAKE) check_can_build_usermanual
 	$(MAKE) doc-clean
-	$(xml2po) -a -e -p po/$@.po -l $@ $(PACKAGE).xml > build/$(PACKAGE)-usermanual-$@.xml
-	$(xsltproc) --output build/$(PACKAGE)-usermanual-$@.fo $(STYLESHEET) build/$(PACKAGE)-usermanual-$@.xml
+	@echo "Profiling final xml document"
+	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final.xml $(PROFILE_STYLESHEET) $(PACKAGE).xml 
+	@echo "Translating final xml document"
+	$(xml2po) -e -p po/$@.po -l $@ build/$(PACKAGE)-usermanual_profiled_final.xml > build/$(PACKAGE)-usermanual_profiled_final-$@.xml
+	$(xsltproc) --output build/$(PACKAGE)-usermanual-$@.fo $(FO_STYLESHEET) build/$(PACKAGE)-usermanual_profiled_final-$@.xml
 	$(fop) build/$(PACKAGE)-usermanual-$@.fo -pdf $(PACKAGE)-usermanual-$@.pdf
 	
 maintainer-clean-local: doc-clean maintainer-clean-recursive

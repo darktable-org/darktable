@@ -76,6 +76,4 @@
     </xsl:attribute>  
   </xsl:attribute-set> 
 
-
-
 </xsl:stylesheet>
