@@ -487,23 +487,26 @@ static void _control_status(dt_camctl_status_t status,void *user_data) {
 static void _preview_job_state_changed(dt_job_t *job,int state) {
  _camera_import_dialog_t *data=(_camera_import_dialog_t*)job->user_data;
   /* store job reference if needed for cancelation */
-  fprintf(stderr,"JOB CHANGE STATE TO %d\n",state);
   if(  state == DT_JOB_STATE_RUNNING )
     data->preview_job = job;
+  else if (state == DT_JOB_STATE_FINISHED)
+    data->preview_job = NULL;
+    
 
 }
 
 static gboolean _dialog_close(GtkWidget *window, GdkEvent  *event,gpointer   user_data )
 {
-  fprintf(stderr,"DIALOG CLOSE!!!\n");
   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
   
-  /* cancel preview fetching job */
-  dt_control_job_cancel (data->preview_job);
-    
-  /* wait for job execution to signal finished */
-  dt_control_job_wait (data->preview_job);
-  
+  if (data->preview_job)
+  {
+    /* cancel preview fetching job */
+    dt_control_job_cancel (data->preview_job);
+      
+    /* wait for job execution to signal finished */
+    dt_control_job_wait (data->preview_job);
+  }    
   return FALSE;
 }
 
