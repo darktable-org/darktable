@@ -1,3 +1,25 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2010 Andrey Kaminsky.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+
+   This file is generated from Jacek Gozdz's (cuniek@kft.umcs.lublin.pl) dcb_demosaicing.c
+   Look into original file (or probably http://www.linuxphoto.org/html/algorithms.html)
+   for copyright information.
+
+*/
 
 #ifndef _LIBRAW_INTERNAL_FUNCS_DCB_H
 #define _LIBRAW_INTERNAL_FUNCS_DCB_H
