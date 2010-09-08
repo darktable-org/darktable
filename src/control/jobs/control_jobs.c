@@ -278,6 +278,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   char message[512]={0};
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
+  dt_gui_background_jobs_can_cancel (j,job);
+  
   double fraction=0;
 #ifdef _OPENMP
   // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
@@ -294,7 +296,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
   fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
   int num = 0;
-  while(t)
+  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
 #ifdef _OPENMP
   #pragma omp critical
@@ -343,6 +345,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #ifdef _OPENMP
   }
 #endif
+  dt_gui_background_jobs_set_progress( j, 100 );
   return 0;
 }
 

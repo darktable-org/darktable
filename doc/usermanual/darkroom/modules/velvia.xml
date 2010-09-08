@@ -1,0 +1,33 @@
+<sect2 status="final"><title>Velvia</title>
+	<sect3><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>The velvia module does enhance the saturation in the image, i does increase saturation
+							on lower saturated pixeks more than high satured pixels.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/velvia.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect3>
+
+	<sect3><title>Usage</title>
+		<sect4><title>Saturation</title>
+			<para>This slider controls the strength of saturation for the effect.</para>
+		</sect4>
+		<sect4><title>Vibrance</title>
+			<para>Vibrance controls how much of the saturation is applied to weighted pixels.
+			</para>
+		</sect4>
+		<sect4><title>Mid-tones bias</title>
+			<para>This slider controls preservation of saturation in mid-tones.
+			</para>
+		</sect4>
+	</sect3>
+</sect2>
