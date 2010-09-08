@@ -485,14 +485,16 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
   vsnprintf(j->description, DT_CONTROL_DESCRIPTION_LEN, msg, ap);
   va_end(ap);
 #endif
+  pthread_mutex_init(&j->mutex,NULL);
+  j->state = DT_JOB_STATE_INITIALIZED;
 }
 
-void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...)
+void dt_control_job_init_with_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data, const char *msg, ...)
 {
   va_list argp;
   va_start(argp, msg);
   dt_control_job_init(j,msg,argp);
-  j->finished_callback = callback;
+  j->state_changed_cb = cb;
   j->user_data = user_data;
 }
 
@@ -502,6 +504,31 @@ void dt_control_job_print(dt_job_t *j)
 #ifdef DT_CONTROL_JOB_DEBUG
   dt_print(DT_DEBUG_CONTROL, "%s", j->description);
 #endif
+}
+
+void _control_job_set_state(dt_job_t *j,int state)
+{
+  pthread_mutex_lock (&j->mutex);
+  j->state = state;
+  
+  pthread_mutex_unlock (&j->mutex);
+  
+  /* pass state change to callback */
+  if (j->state_changed_cb)
+      j->state_changed_cb (j);
+}
+
+int dt_control_job_get_state(dt_job_t *j)
+{
+  pthread_mutex_lock (&j->mutex);
+  int state = j->state;
+  pthread_mutex_unlock (&j->mutex);
+  return state;
+}
+
+void dt_control_job_cancel(dt_job_t *j)
+{
+  _control_job_set_state (j,DT_JOB_STATE_CANCELLED);
 }
 
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
@@ -518,17 +545,20 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
 
-   /* execute job */
-  int32_t exec_res = j->execute (j);
+  /* change state to running */
+  if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
+  {
+    _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
+    
+    /* execute job */
+    j->result = j->execute (j);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", res, dt_get_wtime());
-  dt_control_job_print(j);
-  dt_print(DT_DEBUG_CONTROL, "\n");
+    _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", res, dt_get_wtime());
+    dt_control_job_print(j);
+    dt_print(DT_DEBUG_CONTROL, "\n");
   
-  /* pass result to finished callback */
-  if (j->finished_callback)
-    j->finished_callback (exec_res,j);
-  
+  }
   return 0;
 }
 
@@ -551,17 +581,22 @@ int32_t dt_control_run_job(dt_control_t *s)
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
   
-  /* execute job */
-  int32_t exec_res = j->execute (j);
+  /* change state to running */
+  if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
+  {
+    _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
+    
+    /* execute job */
+    j->result = j->execute (j);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
-  dt_control_job_print(j);
-  dt_print(DT_DEBUG_CONTROL, "\n");
+    _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
+    
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
+    dt_control_job_print(j);
+    dt_print(DT_DEBUG_CONTROL, "\n");
+    
+  }
   
-  /* pass result to finished callback */
-  if (j->finished_callback)
-    j->finished_callback (exec_res,j);
-   
   pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);
   s->idle[s->idle_top++] = i;
@@ -576,6 +611,7 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d ", res);
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
+  _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
   s->job_res[res] = *job;
   s->new_res[res] = 1;
   pthread_mutex_unlock(&s->queue_mutex);
@@ -605,6 +641,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   if(s->idle_top != 0)
   {
     i = --s->idle_top;
+    _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
     s->job[s->idle[i]] = *job;
     s->queued[s->queued_top++] = s->idle[i];
     pthread_mutex_unlock(&s->queue_mutex);
@@ -612,6 +649,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   else
   {
     dt_print(DT_DEBUG_CONTROL, "[add_job] too many jobs in queue!\n");
+    _control_job_set_state (job,DT_JOB_STATE_DISCARDED); 
     pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
