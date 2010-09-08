@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual 0.1\n"
 "POT-Creation-Date: 2010-09-08 12:37+0200\n"
-"PO-Revision-Date: 2010-09-08 13:22+0100\n"
+"PO-Revision-Date: 2010-09-08 14:14+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: SWEDISH <hean01@users.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -79,15 +79,15 @@ msgstr "Ljusbord"
 
 #: ../build/darktable-usermanual_profiled_final.xml:50(entry)
 msgid "In this centerview your images are shown as thumbs, each thumb has a frame and while mouse is over an image, information such as rating and if image are altered in darkroom <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> is viewed. Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel."
-msgstr ""
+msgstr "I den centrala arbetsytan förhandsvisas dina bilder som miniatyrer, vardera miniatyr har en ram och när muspekaren flyttas över miniatyren så visas information så som betygoch om bilden är bearbetat i mörkerrummet visas ikonen <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/>. När muspekaren är över miniatyren så visas också bildens metadata i panelen metadata."
 
 #: ../build/darktable-usermanual_profiled_final.xml:62(para)
 msgid "While mouse is over and imageframe you have additional actions accessed from keyboard to apply on image here follows an table of key accelerators and assigned actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>opens the image in darkroom view for developing</entry></row><row><entry><emphasis>z</emphasis></entry><entry>shows a fullscreen view of the image</entry></row></tbody></tgroup></informaltable>"
-msgstr ""
+msgstr "När muspekaren är över en miniatyr bild så aktiveras miniatyren och då har du tillgång till ett antal funktioner tillgängliga genom snabbtangenter.<informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>välj betyg på bilden, om bilden har 1 stjärna och du trycker tangenten 1 så kommer bilden inte ha något betyg allts.</entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>sätter färgmarkering på bilden</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>kopierar historiken av bilden</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>applicerar den kopierade historiken på bilden</entry></row><row><entry><emphasis>e</emphasis></entry><entry>öppnar bilden i mörkerrumsvyn för bearbetning</entry></row><row><entry><emphasis>z</emphasis></entry><entry>visar bilden i fullskärmsläge</entry></row></tbody></tgroup></informaltable>"
 
 #: ../build/darktable-usermanual_profiled_final.xml:90(para)
 msgid "At the bottom you have an option to choose a zoomable lighttable view or a filemanger view of the thumbnails."
-msgstr ""
+msgstr "I den nedre horisontala panelen kan du välja inzoomningsbart ljusbord eller filhanterar vy av dina miniatyrer. "
 
 #: ../build/darktable-usermanual_profiled_final.xml:102(keyword)
 msgid "darkroom"
@@ -119,15 +119,15 @@ msgstr "Paneler"
 
 #: ../build/darktable-usermanual_profiled_final.xml:125(title)
 msgid "Snapshots"
-msgstr ""
+msgstr "Ögonblicksbild"
 
 #: ../build/darktable-usermanual_profiled_final.xml:131(entry)
 msgid "You can take a snapshot of what is displayed in the center view, this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion when you tuning parameters of a module."
-msgstr ""
+msgstr "Du kan ta en ögonblicksbild av det som visas på skärmen, denna bild kan sedan väljas och placeras då över orginalet i delat format för att kunna göra en sida vid sida jämförelse vid justeringar av reglage på en modul."
 
 #: ../build/darktable-usermanual_profiled_final.xml:148(title)
 msgid "Modules"
-msgstr ""
+msgstr "Moduler"
 
 #: ../build/darktable-usermanual_profiled_final.xml:149(para)
 msgid "Each correction, enhancement or effect is implemented as modules, and this section includes documentation of each module and it's specific parameters. A module consists of an expander bar <inlinegraphic fileref=\"../images/darkroom_module_expander.png\"/> where the <inlinegraphic fileref=\"../images/darkroom_module_icon_enable.png\"/> icon is used to turn then module on or off, then there are a title of the module press this to expand the module too see the paramters userinterface. <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> icon is the preset icon to access the available presets stored for the modul and <inlinegraphic fileref=\"../images/darkroom_module_icon_reset.png\"/> icon is used to reset the module paramaters to theire default values."
@@ -149,19 +149,19 @@ msgstr ""
 #: ../build/darktable-usermanual_profiled_final.xml:296(para)
 #: ../build/darktable-usermanual_profiled_final.xml:360(para)
 msgid "Splittoning"
-msgstr ""
+msgstr "Färgdelning"
 
 #: ../build/darktable-usermanual_profiled_final.xml:196(entry)
 msgid "Original splittoning method creates a two color linear toning effect where the shadows and highlights are represented by two different colors. In the example image below you can see an original black and white image and one where a splittoning effect are applied with blue in shadows and yellow-ish color in highlights."
-msgstr ""
+msgstr "Standard färgdelningsmetod skapa en 2 färgers linjär färgtoningseffekt där skuggor och högdagrar representeras av två olika färger. I bildexemplet till höger ser du ett orginal svartvit bild och ett med färgdelning där färgen blå används för skuggor och gulliknande frö högdagrar.   "
 
 #: ../build/darktable-usermanual_profiled_final.xml:209(para)
 msgid "Darktable splittoning plugin has more parameters that impacts on the default above behavior, we have balance which offsets the 50% gray level in image and compression that does compress toning in the shadows and highlights which leaves a gap which are untouched by the effect. Read more and see examples of these additional parameters to splittoning module in Parameters section."
-msgstr ""
+msgstr "Darktable färgdelningsmodul har mer reglage som påverkar standard beteende, vi har balans reglaget som påverkar delnings positionen och komprimeringsreglaget som komprimerar färgtoningen i skuggor och högdagrar vilket lämnar ett gap som inte påverkas av effekten. Läs mer om och se exempel av dessa parameterar i sektionen användning.  "
 
 #: ../build/darktable-usermanual_profiled_final.xml:214(para)
 msgid "The splittoning module does not convert image to black and white and works extensible nice on color images, soo if you want to do traditional splittoning, use the monochrome module to make the image black and white before playing around with splittoning effect."
-msgstr ""
+msgstr "Modulen färgdelning konverterar inte din bild till svartvit och fungerar utmärkt på färgbilder, så om du vill göra traditionell färgdelning använd modulen monokrom för att göra bilden svartvit innan du testar färgdelnings effekten."
 
 #: ../build/darktable-usermanual_profiled_final.xml:220(title)
 msgid "Usage"
@@ -189,11 +189,11 @@ msgstr "Balans är presenterad som ett förhållande värde där standardvärdet
 
 #: ../build/darktable-usermanual_profiled_final.xml:232(title)
 msgid "Compression"
-msgstr "Kompremering"
+msgstr "Komprimering"
 
 #: ../build/darktable-usermanual_profiled_final.xml:233(para)
 msgid "Compression is a percentage of total lightness range that not is affected by color toning, default value is set to 33% which not is the default behaviour of a original splittoning which would be 0% compression. The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original splittoning method..."
-msgstr "Kompremering är ett procental av total ljushetsomfånget som inte påverkas av färgtoning, standardvärde är satt till 33% vilket inte är ett standard beteende av ett orginal färgdelningsfilter vilket skulle vara 0% kompremering. Valet av 33% som standard finns för att bjuda in till exprement."
+msgstr "Komprimering är ett procental av total ljushetsomfånget som inte påverkas av färgtoning, standardvärde är satt till 33% vilket inte är ett standard beteende av ett orginal färgdelningsfilter vilket skulle vara 0% kompremering. Valet av 33% som standard finns för att bjuda in till exprement."
 
 #: ../build/darktable-usermanual_profiled_final.xml:243(title)
 msgid "Examples"
@@ -282,7 +282,7 @@ msgstr "Välj en gul/orange färgton för högdagrar och ställ in ungefär 70% 
 
 #: ../build/darktable-usermanual_profiled_final.xml:304(para)
 msgid "Set compression to 10%"
-msgstr "Ställ 10% kompremering"
+msgstr "Ställ 10% komprimering"
 
 #: ../build/darktable-usermanual_profiled_final.xml:305(para)
 msgid "Use the balance slider to tune the splittoning effect due this differs on every image due to it's exposure, motive etc."
