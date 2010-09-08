@@ -934,7 +934,7 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
       // still locked by others (only write lock allone doesn't suffice, that's just a singleton thread indicator!)
       dt_print(DT_DEBUG_CACHE, "[image_alloc] buffer mip %d is still locked! (w:%d u:%d)\n", mip, img->lock[mip].write, img->lock[mip].users);
 #ifdef _DEBUG
-      dt_print(DT_DEBUG_CACHE, "[image_alloc] last lock acquired %s\n", img->lock_last);
+      dt_print(DT_DEBUG_CACHE, "[image_alloc] last for img %d mip %d lock acquired %s\n", img->id, mip, img->lock_last[mip]);
 #endif
       pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
       return 1;
