@@ -82,7 +82,7 @@ void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_control_status(const dt_camctl_t *c,dt_camctl_status_t status);
 void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_camera_error_t error);
-void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif);
+int _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif);
 void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value);
 void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
 
@@ -525,7 +525,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
 }
 
 
-void _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags,char *path)
+int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags,char *path)
 {
   CameraList *files;
   CameraList *folders;
@@ -581,8 +581,9 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags
           }
         }
         
-        // let's dispatch to host app..
-        _dispatch_camera_storage_image_filename(c,c->active_camera,file,preview,exif);
+        // let's dispatch to host app.. return if we should stop...
+        if (!_dispatch_camera_storage_image_filename(c,c->active_camera,file,preview,exif))
+          return 0;
       }
       else
          dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to get file information of %s in folder %s on device\n",filename,path);
@@ -599,11 +600,13 @@ void _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags
       if(path[1]!='\0') strcat(buffer,"/");
       gp_list_get_name (folders, i, &foldername);
       strcat(buffer,foldername);
-      _camctl_recursive_get_previews(c,flags,buffer);
+      if( !_camctl_recursive_get_previews(c,flags,buffer))
+        return 0;
     }
   }
-   gp_list_free (files);
-   gp_list_free (folders);
+  gp_list_free (files);
+  gp_list_free (folders);
+  return 1;
 }
 
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam)
@@ -1081,16 +1084,18 @@ void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *c
   } while((listener=g_list_next(listener))!=NULL);
 }
 
-void _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif)
+int _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif)
 {
+  int res=0;
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   GList *listener;
   if((listener=g_list_first(camctl->listeners))!=NULL)
   do
   {
     if( ((dt_camctl_listener_t*)listener->data)->camera_storage_image_filename != NULL )
-      ((dt_camctl_listener_t*)listener->data)->camera_storage_image_filename(camera,filename,preview,exif,((dt_camctl_listener_t*)listener->data)->data);
+      res=((dt_camctl_listener_t*)listener->data)->camera_storage_image_filename(camera,filename,preview,exif,((dt_camctl_listener_t*)listener->data)->data);
   } while((listener=g_list_next(listener))!=NULL);
+  return res;
 }
 
 void _dispatch_control_status(const dt_camctl_t *c,dt_camctl_status_t status)
