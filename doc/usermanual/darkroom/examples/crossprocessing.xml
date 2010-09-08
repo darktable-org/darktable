@@ -46,7 +46,7 @@
 					<listitem><para>Enable the channel mixer module</para></listitem>
 					<listitem><para>Select blue channel and set blue color value to 0.8</para></listitem>
 					<listitem><para>Select red channel and change blue color value to 0.1</para></listitem>
-					<listitem><para>Select green channel and change green color value to 0.1</para></listitem>
+					<listitem><para>Select green channel and change blue color value to 0.1</para></listitem>
 				</orderedlist>
 			</listitem>
 			
