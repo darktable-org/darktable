@@ -35,6 +35,14 @@
 
 static dt_camctl_listener_t _gui_camctl_listener;
 
+static void _camctl_camera_disconnected_callback (const dt_camera_t *camera,void *data)
+{
+  dt_camctl_detect_cameras(darktable.camctl);
+  gdk_threads_enter();
+  dt_gui_devices_update();
+  gdk_threads_leave();
+}
+
 static void _camctl_camera_control_status_callback(dt_camctl_status_t status,void *data)
 {
   switch(status)
@@ -105,7 +113,8 @@ static void tethered_callback(GtkToggleButton *button,gpointer data)
 void dt_gui_devices_init() 
 {
   memset(&_gui_camctl_listener,0,sizeof(dt_camctl_listener_t));
-  _gui_camctl_listener.control_status= _camctl_camera_control_status_callback;
+  _gui_camctl_listener.control_status = _camctl_camera_control_status_callback;
+  _gui_camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
   dt_camctl_register_listener( darktable.camctl, &_gui_camctl_listener );
   dt_gui_devices_update();
 }

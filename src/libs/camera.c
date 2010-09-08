@@ -171,6 +171,26 @@ static void _camera_property_accessibility_changed(const dt_camera_t *camera,con
 {  
 }
 
+gboolean _bailout_of_tethering(gpointer user_data)
+{
+  /* consider all error types as failure and bailout of tethering mode */
+  dt_lib_camera_t *lib= (dt_lib_camera_t *)user_data;
+  dt_camctl_tether_mode (darktable.camctl,NULL,FALSE);
+  dt_camctl_unregister_listener (darktable.camctl,lib->data.listener);
+  
+  /* switch back to library mode */
+  dt_ctl_switch_mode_to (DT_LIBRARY);
+  
+  return FALSE;
+}
+
+/** Invoked when camera error appear */
+static void _camera_error_callback(const dt_camera_t *camera,dt_camera_error_t error,void *user_data)
+{
+  dt_control_log(_("Connection with camera lost, exiting tethering mode"));
+  g_idle_add(_bailout_of_tethering,user_data);
+}
+
 /** listener callback from callback control to get target directory for captured image... */
 const char *_camera_tethered_request_image_path(const dt_camera_t *camera,void *data)
 {
@@ -358,6 +378,7 @@ gui_init (dt_lib_module_t *self)
   lib->data.listener = malloc(sizeof(dt_camctl_listener_t));
   memset(lib->data.listener,0,sizeof(dt_camctl_listener_t));
   lib->data.listener->data=lib;
+  lib->data.listener->camera_error=_camera_error_callback;
   lib->data.listener->image_downloaded=_camera_tethered_downloaded_callback;
   lib->data.listener->camera_property_value_changed=_camera_property_value_changed;
   lib->data.listener->camera_property_accessibility_changed=_camera_property_accessibility_changed;

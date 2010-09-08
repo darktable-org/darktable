@@ -116,11 +116,24 @@ static void _idle_func_dispatch(GPContext *context, void *data) {
 static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
   dt_camctl_t *camctl=(dt_camctl_t *)data;
   char buffer[4096];
-  vsprintf( buffer, format, args );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 error: %s\n",buffer);
+  vsprintf (buffer, format, args );
+  dt_print (DT_DEBUG_CAMCTL,"[camera_control] gphoto2 error: %s\n",buffer);
   
-  if(strstr(buffer,"PTP"))
-    _dispatch_camera_error(camctl,camctl->active_camera,CAMERA_CONNECTION_BROKEN);
+  if (strstr (buffer,"PTP"))
+  {
+    
+    /* remove camera for camctl camera list */
+    GList *ci=g_list_find (camctl->cameras, camctl->active_camera);
+    if (ci) 
+      camctl->cameras = g_list_remove (camctl->cameras, ci);
+    
+    /* notify client of camera connection broken */
+    _dispatch_camera_error (camctl,camctl->active_camera,CAMERA_CONNECTION_BROKEN);
+
+    /* notify client of camera disconnection */
+    _dispatch_camera_disconnected (camctl,camctl->active_camera);
+    
+  }
 }
 
 static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data) {
@@ -325,7 +338,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   gp_abilities_list_detect (c->gpcams,c->gpports, available_cameras, c->gpcontext );
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] %d cameras connected\n",gp_list_count( available_cameras )>0?gp_list_count( available_cameras ):0);
 
-  
+
   for(int i=0;i<gp_list_count( available_cameras );i++)
   {
     dt_camera_t *camera=g_malloc(sizeof(dt_camera_t));
@@ -334,8 +347,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
     gp_list_get_value (available_cameras, i, &camera->port);
     pthread_mutex_init(&camera->config_lock, NULL);
   
-   // if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
-    
+    // if(strcmp(camera->port,"usb:")==0) { g_free(camera); continue; }
     GList *citem;
     if( (citem=g_list_find_custom(c->cameras,camera,_compare_camera_by_port)) == NULL || strcmp(((dt_camera_t *)citem->data)->model,camera->model)!=0 ) 
     {
@@ -361,8 +373,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         {
           // Remove device property summary:
           char *eos=strstr(camera->summary.text,"Device Property Summary:\n");
-    if( eos )
-    eos[0]='\0';
+          if (eos) eos[0]='\0';
         }
         
         // Add to camera list
@@ -370,16 +381,30 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
         
         // Notify listeners of connected camera
         _dispatch_camera_connected(camctl,camera);
-        
       } 
-      else
-      { 
-        /*((dt_camera_t*)citem->data)->port=camera->port;
-        g_free(camera);*/
+    } 
+    else 
+      g_free(camera);   
+  }      
+
+  /* check c->cameras in available_cameras */
+  if( c->cameras && g_list_length(c->cameras)>0)
+  {
+    GList *citem = c->cameras;
+    do {
+      int index=0;
+      dt_camera_t *cam=(dt_camera_t *)citem->data;
+      if (gp_list_find_by_name(available_cameras,&index,cam->model)!= GP_OK)
+      {
+        /* remove camera from cached list.. */        
+        dt_camctl_t *camctl=(dt_camctl_t *)c;
+        dt_camera_t *oldcam = (dt_camera_t *)citem->data;
+        camctl->cameras=citem= g_list_delete_link (c->cameras,citem);
+        g_free(oldcam);
       }
-      
-    } else g_free(camera);    
+    } while ( citem && (citem=g_list_next(citem))!=NULL);
   }
+  
   pthread_mutex_unlock(&camctl->lock);
 }
 
@@ -697,6 +722,8 @@ void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_
     return;
   }
   
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] building property menu from camera configuration\n"); 
+  
   /* lock camera config mutex while recursive building property menu */
   dt_camera_t *camera=(dt_camera_t *)cam;
   pthread_mutex_lock( &camera->config_lock );
@@ -777,14 +804,15 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,cons
     return NULL;
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
-  
+  pthread_mutex_lock( &camera->config_lock );
   if(  gp_widget_get_child_by_name ( camera->configuration, property_name, &camera->current_choice.widget) == GP_OK ) 
   {
     camera->current_choice.index=0;
     gp_widget_get_choice ( camera->current_choice.widget, camera->current_choice.index , &value);
   } else
    dt_print(DT_DEBUG_CAMCTL,"[camera_control] Property name '%s' not found in camera configuration.\n",property_name); 
-   
+  
+  pthread_mutex_unlock( &camera->config_lock);
 
   return value;
 }
@@ -799,7 +827,7 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const
     return NULL;
   }
   dt_camera_t *camera=(dt_camera_t *)cam;
-  
+  pthread_mutex_lock( &camera->config_lock);
   if( camera->current_choice.widget != NULL )
   {
     
@@ -814,6 +842,8 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const
     }
     
   }
+  
+  pthread_mutex_unlock( &camera->config_lock);
   return value;
 }
 
