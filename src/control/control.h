@@ -163,10 +163,10 @@ void dt_control_esc_shortcut_on(struct dt_control_t *s);
 void dt_control_esc_shortcut_off(struct dt_control_t *s);
 
 /**
- * smalles unit of work.
+ * smallest unit of work.
  */
 struct dt_job_t;
-typedef void (*dt_job_state_change_callback)(struct dt_job_t*);
+typedef void (*dt_job_state_change_callback)(struct dt_job_t*,int state);
 #define DT_JOB_STATE_INITIALIZED		0
 #define DT_JOB_STATE_QUEUED		1
 #define DT_JOB_STATE_RUNNING		2
@@ -177,7 +177,10 @@ typedef struct dt_job_t
 {
   int32_t (*execute) (struct dt_job_t *job);
   int32_t result;
-  pthread_mutex_t mutex;
+  
+  pthread_mutex_t state_mutex;  
+  pthread_mutex_t wait_mutex;
+  
   int32_t state;
   dt_job_state_change_callback state_changed_cb;
   void *user_data;
@@ -191,12 +194,14 @@ dt_job_t;
 
 /** intializes a job */
 void dt_control_job_init(dt_job_t *j, const char *msg, ...);
-/** initializes a job with callback on finish. */
-void dt_control_job_init_with_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data, const char *msg, ...);
+/** setup a state callback for job. */
+void dt_control_job_set_state_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data);
 void dt_control_job_print(dt_job_t *j);
 /** cancel a job, running or in queue. */
 void dt_control_job_cancel(dt_job_t *j);
 int dt_control_job_get_state(dt_job_t *j);
+/** wait for a job to finish execution. */
+void dt_control_job_wait(dt_job_t *j);
 
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
