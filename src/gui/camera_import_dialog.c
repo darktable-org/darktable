@@ -17,6 +17,7 @@
 */
 
 #include "develop/develop.h"
+#include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
 #include "common/exif.h"
@@ -85,7 +86,7 @@ typedef struct _camera_import_dialog_t {
   } settings;
   
   GtkListStore *store;
-
+  dt_job_t *preview_job;
   dt_camera_import_dialog_param_t *params;
   dt_variables_params_t *vp;
 }
@@ -393,7 +394,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   _update_example(data);
 }
 
-void _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data) 
+int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data) 
 {
   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
   GtkTreeIter iter;
@@ -402,6 +403,12 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   GdkPixbuf *pixbuf=NULL;
   GdkPixbuf *thumb=NULL;
   
+  /* stop fetching previews if job is cancelled */
+  if (data->preview_job && dt_control_job_get_state(data->preview_job) == DT_JOB_STATE_CANCELLED )
+    return 0;
+    
+  
+  gdk_threads_enter();
   char exif_info[1024]={0};  
   char file_info[4096]={0};
   
@@ -448,6 +455,9 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   gtk_list_store_set(data->store,&iter,0,thumb,1,file_info,-1);
   if(pixbuf) g_object_unref(pixbuf);
   if(thumb) g_object_ref(thumb);
+  
+  gdk_threads_leave();
+  return 1;
 }
 
 void _camera_import_dialog_free(_camera_import_dialog_t *data) {
@@ -457,27 +467,49 @@ void _camera_import_dialog_free(_camera_import_dialog_t *data) {
 }
 
 static void _control_status(dt_camctl_status_t status,void *user_data) {
-	 _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
-	switch( status ) {
-		case CAMERA_CONTROL_BUSY:
-		{
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, FALSE);
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, FALSE);
-			
-		} break;
-		case CAMERA_CONTROL_AVAILABLE:
-		{
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, TRUE);
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, TRUE);
-			
-		} break;
-	}
+   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
+  switch( status ) {
+    case CAMERA_CONTROL_BUSY:
+    {
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, FALSE);
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, FALSE);
+      
+    } break;
+    case CAMERA_CONTROL_AVAILABLE:
+    {
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, TRUE);
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, TRUE);
+      
+    } break;
+  }
+}
+
+static void _preview_job_state_changed(dt_job_t *job,int state) {
+ _camera_import_dialog_t *data=(_camera_import_dialog_t*)job->user_data;
+  /* store job reference if needed for cancelation */
+  fprintf(stderr,"JOB CHANGE STATE TO %d\n",state);
+  if(  state == DT_JOB_STATE_RUNNING )
+    data->preview_job = job;
+
+}
+
+static gboolean _dialog_close(GtkWidget *window, GdkEvent  *event,gpointer   user_data )
+{
+  fprintf(stderr,"DIALOG CLOSE!!!\n");
+  _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
+  
+  /* cancel preview fetching job */
+  dt_control_job_cancel (data->preview_job);
+    
+  /* wait for job execution to signal finished */
+  dt_control_job_wait (data->preview_job);
+  
+  return FALSE;
 }
 
 void _camera_import_dialog_run(_camera_import_dialog_t *data) 
 {
   gtk_widget_show_all(data->dialog);
-  
   
   // Populate store
  
@@ -485,19 +517,23 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   // then initiate fetch of all previews from camera
   if(data->params->camera!=NULL)
   {
+    /* setup a camctl listener */
     dt_camctl_listener_t listener={0};
     listener.data=data;
     listener.control_status=_control_status;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
     
-    dt_job_t j;
-    dt_camera_get_previews_job_init(&j,data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA);
-    dt_control_add_job(darktable.control, &j);
-  }
+    dt_job_t job;
+    dt_camera_get_previews_job_init(&job,data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA);
+    dt_control_job_set_state_callback(&job,_preview_job_state_changed,data);
+    dt_control_add_job(darktable.control, &job);
+  } else
+    return;
   
   // Lets run dialog
   gtk_label_set_text(GTK_LABEL(data->import.info),_("select the images from the list below that you want to import into a new filmroll"));
   gboolean all_good=FALSE;
+  g_signal_connect(G_OBJECT(data->dialog),"delete-event",G_CALLBACK(_dialog_close),data);
   while(!all_good) 
   {
     gint result = gtk_dialog_run (GTK_DIALOG (data->dialog));
