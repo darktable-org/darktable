@@ -15,9 +15,9 @@ big stuff:
 
 - uncropped preview bug when reloading mip4
 
-- color label sorting during export is broken.
+- crop aspect undecided when w=h?
 
-- performance: rescaling slow?
+- color label sorting during export is broken.
 
 - color transfer garbles history stack and crash/freezes?
 

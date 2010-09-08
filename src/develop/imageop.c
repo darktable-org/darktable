@@ -416,6 +416,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
   }
+  dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
