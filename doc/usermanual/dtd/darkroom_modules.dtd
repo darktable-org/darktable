@@ -9,6 +9,7 @@
 <!ENTITY darkroom_module_basecurve SYSTEM "../darkroom/modules/basecurve.xml">
 <!ENTITY darkroom_module_clipping SYSTEM "../darkroom/modules/clipping.xml">
 <!ENTITY darkroom_module_lenscorrection SYSTEM "../darkroom/modules/lenscorrection.xml">
+<!ENTITY darkroom_module_velvia SYSTEM "../darkroom/modules/velvia.xml">
 <!ENTITY darkroom_module_sharpen SYSTEM "../darkroom/modules/sharpen.xml">
 <!ENTITY darkroom_module_splittoning SYSTEM "../darkroom/modules/splittoning.xml">
 
