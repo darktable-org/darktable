@@ -1,5 +1,5 @@
-<sect2><title>Crop and rotate</title>
-	<sect3><title>Overview</title>
+<sect2 status="final"><title>Crop and rotate</title>
+	<sect3 status="final"><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='100%'/>
 				<colspec colwidth='30%'/>
@@ -23,7 +23,7 @@
 		</para>
 	</sect3>
 
-	<sect3><title>Usage</title>
+	<sect3 status="draft"><title>Usage</title>
 		<para>...</para>
 		<sect4><title>Flip image</title>
 			<para>Use these toggle buttons to flip image horizontal and veritcal</para>

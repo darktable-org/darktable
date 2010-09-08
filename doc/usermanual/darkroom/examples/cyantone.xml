@@ -1,4 +1,4 @@
-<sect2><title>Cyan toned image</title>
+<sect2 status="final"><title>Cyan toned image</title>
 	<sect3><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='100%'/>
@@ -49,8 +49,8 @@
 			
 			<listitem><para>Splittoning</para>
 				<para>The result of previous step does also add a colorcast on highlight that we actually want to have 
-					white for a nicer result.
-					We also wants to add some blue color to the shadows.
+					white for a prettier result.
+					We also wants to add some blue color cast to the shadows to emphasis them.
 				</para>
 				<orderedlist>
 					<listitem><para>Enable the splittoning module</para></listitem>

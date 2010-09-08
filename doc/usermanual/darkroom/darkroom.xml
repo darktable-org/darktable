@@ -21,14 +21,14 @@
 		And at bottom of right panel you can enable/disable individual modules which will remove them from the right panel.
 	</para>
 </sect1>
-<sect1><title>Filmstrip</title>
+<sect1 status="draft"><title>Filmstrip</title>
 	<para>The filmstrip is used for fast switching between image to develop in darkroom view, the images viewed are the same
 		as the ones in the lighttable view. 
 	</para>
 	<para>The filmstrip can be switch on and off using ctrl-f shortcut.</para>
 </sect1>
 <sect1><title>Panels</title>
-	<sect2><title>Navigation</title>
+	<sect2 status="draft"><title>Navigation</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='100%'/>
 				<colspec colwidth='30%'/>
@@ -45,7 +45,7 @@
 			</tgroup>
 		</informaltable>
 	</sect2>
-	<sect2><title>Snapshots</title>
+	<sect2 status="final"><title>Snapshots</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='100%'/>
 				<colspec colwidth='30%'/>
@@ -62,11 +62,11 @@
 			</tgroup>
 		</informaltable>
 	</sect2>
-	<sect2><title>Metadata</title>
+	<sect2 status="draft"><title>Metadata</title>
 		<para>Shows the metadata for an image, same as in lighttable mode.
 		</para>
 	</sect2>
-	<sect2><title>History</title>
+	<sect2 status="draft"><title>History</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='100%'/>
 				<colspec colwidth='30%'/>
@@ -83,7 +83,7 @@
 			</tgroup>
 		</informaltable>
 	</sect2>
-	<sect2><title>Histogram</title>
+	<sect2 status="draft"><title>Histogram</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='100%'/>
 				<colspec colwidth='30%'/>
