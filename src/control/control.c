@@ -1289,50 +1289,8 @@ void dt_control_clear_history_items(int32_t num)
 
 void dt_control_update_recent_films()
 {
-  /*char wdname[20];
-  for(int k=1;k<5;k++)
-  {
-    snprintf(wdname, 20, "recent_film_%d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_hide(widget);
-  }
-  
-  sqlite3_stmt *stmt;
-  int rc, num = 1;
-  const char *filename, *cnt;
-  const int label_cnt = 256;
-  char label[256];
-  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const int id = sqlite3_column_int(stmt, 1);
-    if(id == 1)
-    {
-      snprintf(label, 256, _("single images"));
-      filename = _("single images");
-    }
-    else
-    {
-      filename = (char *)sqlite3_column_text(stmt, 0);
-      cnt = filename + MIN(512,strlen(filename));
-      int i;
-      for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
-      if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
-      else snprintf(label, label_cnt, "%s", cnt);
-    }
-    snprintf(wdname, 20, "recent_film_%d", num);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_button_set_label(GTK_BUTTON(widget), label);
-    GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)));
-    gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
-    gtk_label_set_max_width_chars (label, 30);
-    g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
-    gtk_widget_show(widget);
-    num++;
-  }
-  sqlite3_finalize(stmt);
-  */
-  
+  int needlock = pthread_self() != darktable.control->gui_thread;
+  if(needlock) gdk_threads_enter();
   /* get the recent film vbox */
   GtkWidget *sb = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
   GtkWidget *recent_used_film_vbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sb)),1);
@@ -1382,5 +1340,6 @@ void dt_control_update_recent_films()
   
   GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
   dt_gui_filmview_update(gtk_entry_get_text(entry));
+  if(needlock) gdk_threads_leave();
 }
 
