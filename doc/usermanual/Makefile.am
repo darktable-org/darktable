@@ -1,4 +1,4 @@
-SUBDIRS = po
+SUBDIRS = 
 
 @AMDEP_TRUE@@am__include@
 
@@ -6,7 +6,10 @@ translations = \
 		sv \
 		ru
 
+STYLESHEET = xsl/$(PACKAGE).xsl
+
 pdfusermanual = $(PACKAGE)-usermanual.pdf 
+pdfusermanual_final = $(PACKAGE)-usermanual-final.pdf 
 pdfusermanualdir = $(datadir)/doc
 pdfusermanual_DATA = $(pdfusermanual)
 
@@ -33,19 +36,26 @@ force-update-doc: doc-clean $(pdfusermanual)
 $(pdfusermanual): 
 	@ $(MAKE) check_can_build_usermanual
 	$(MAKE) doc-clean
-	$(xsltproc) --output $(PACKAGE)-usermanual.fo xsl/$(PACKAGE).xsl $(PACKAGE).xml 
-	$(fop) $(PACKAGE)-usermanual.fo -pdf $(PACKAGE)-usermanual.pdf
+	$(xsltproc) --output build/$(PACKAGE)-usermanual.fo  $(STYLESHEET) $(PACKAGE).xml 
+	$(fop) build/$(PACKAGE)-usermanual.fo -pdf $(PACKAGE)-usermanual.pdf
+	
+$(pdfusermanual_final): 
+	@ $(MAKE) check_can_build_usermanual
+	$(MAKE) doc-clean
+	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final-profiled.fo --stringparam profile.status "final" $(STYLESHEET) $(PACKAGE).xml 
+	$(fop) build/$(PACKAGE)-usermanual_profiled_final-profiled.fo -pdf $(PACKAGE)-usermanual-final.pdf
 	
 $(translations): 
 	@ $(MAKE) check_can_build_usermanual
 	$(MAKE) doc-clean
-	$(xml2po) -e -p po/$@.po -l $@ $(PACKAGE).xml > $(PACKAGE)-$@.xml
-	$(xsltproc) --output $(PACKAGE)-usermanual-$@.fo xsl/$(PACKAGE).xsl $(PACKAGE)-$@.xml 
-	$(fop) $(PACKAGE)-usermanual-$@.fo -pdf $(PACKAGE)-usermanual-$@.pdf
+	$(xml2po) -a -e -p po/$@.po -l $@ $(PACKAGE).xml > build/$(PACKAGE)-usermanual-$@.xml
+	$(xsltproc) --output build/$(PACKAGE)-usermanual-$@.fo $(STYLESHEET) build/$(PACKAGE)-usermanual-$@.xml
+	$(fop) build/$(PACKAGE)-usermanual-$@.fo -pdf $(PACKAGE)-usermanual-$@.pdf
 	
 maintainer-clean-local: doc-clean maintainer-clean-recursive
 
 doc-clean:
+	-rm -f build/*
 	-rm -f *.pdf
 	-rm -f *.fo
 

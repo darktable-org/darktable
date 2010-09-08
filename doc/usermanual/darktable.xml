@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-		<!ENTITY % darktable_dtd SYSTEM "darktable.dtd">
+		<!ENTITY % darktable_dtd SYSTEM "dtd/darktable.dtd">
 		%darktable_dtd;
-		<!ENTITY % darkroom_modules_dtd SYSTEM "darkroom_modules.dtd">
+		<!ENTITY % darkroom_modules_dtd SYSTEM "dtd/darkroom_modules.dtd">
 		%darkroom_modules_dtd;
-		<!ENTITY % darkroom_examples_dtd SYSTEM "darkroom_examples.dtd">
+		<!ENTITY % darkroom_examples_dtd SYSTEM "dtd/darkroom_examples.dtd">
 		%darkroom_examples_dtd;
 		]>
 	       

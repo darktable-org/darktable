@@ -1,0 +1,55 @@
+
+Writing guidelines
+---------------------------------------------------------
+There are some format rulings and you easily can following it by copy an already existing
+docbook file such if you are going to write a new example use darkroom/examples/crossdeveloping.xml
+as a template for your own example.
+
+Do NOT change table layouts etc. we want the document consistent!
+
+Each section should be tagged with status "draft" <sect2 status="draft">...</sect2>
+when someone have reviewed your section you should change status to "final" to get
+the section into final usermanual document and also the translators will get this text for
+translations.
+
+
+
+Building the usermanual
+---------------------------------------------------------
+To generate the usermanual you need the tools xsltproc,xml2po and fop this document will include
+draft sections and is used fo reviewing...
+
+make
+
+
+
+Building the final usermanual
+---------------------------------------------------------
+Generating a final usermanual which would not include the sections with status "draft" this
+is for producing a manual for ditribution...
+
+make darktable-usermanual-final.pdf
+
+
+
+Building final translated manual
+--------------------------------------------------------
+when building a translated manual the content would only include sections with status "final" 
+and where status is not set. so with other words, no section with status "draft" will occur.
+
+make sv
+
+
+
+Translators
+--------------------------------------------------------
+To add you language just simple edit Makefile.am and po/Makefile.am for adding your language 
+code to TRANSLATIONS variable.
+
+To initialize the po file run 'po/make <language code>' to initialize a new <language code>.po file.
+
+Update the translation by just running the command 'make po/<language code>'
+
+
+
+

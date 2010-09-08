@@ -63,7 +63,7 @@
 			<para>At the bottom you have an option to choose a zoomable lighttable view or a filemanger view of the thumbnails.
 			</para>
 		</sect2>
-		<sect2><title>Filtering and sort order</title>
+		<sect2 status="draft"><title>Filtering and sort order</title>
 			<para>The filtering and sortorder of images on lighttable are accessed and changed in the top bar
 				where you can select among a few predefined filters and orderering like date, color labels, rating
 				among others.
@@ -71,7 +71,7 @@
 		</sect2>
 	</sect1>
 	
-	<sect1><title>Panels</title>
+	<sect1 status="draft"><title>Panels</title>
 		<sect2><title>Devices</title>
 			<para>This plugin show's connected devices, for now this is only cameras but in future scanners would show up here.</para>
 			<sect3><title>Cameras</title>

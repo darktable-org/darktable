@@ -1,6 +1,7 @@
 @AMDEP_TRUE@@am__include@
 
 TEMPLATE=darktable-usermanual.pot
+STYLESHEET = xsl/$(PACKAGE).xsl
 TRANSLATIONS=\
 	sv \
 	ru
@@ -8,10 +9,11 @@ TRANSLATIONS=\
 all: $(TRANSLATIONS)
 
 update-template:
-	@xml2po -e -o $(TEMPLATE) ../darktable.xml
-
+	$(xsltproc) --output ../build/$(PACKAGE)-usermanual_profiled_final.xml --stringparam profile.status "final" ../$(STYLESHEET) ../$(PACKAGE).xml 
+	$(xml2po) -a -e -o $(TEMPLATE) ../build/$(PACKAGE)-usermanual_profiled_final.xml
+	
 $(TRANSLATIONS): update-template
 	@if test ! -f $@.po; then \
 		cp $(TEMPLATE) $@.po; \
 	fi
-	@xml2po -a -e -u $@.po ../darktable.xml
+	$(xml2po) -a -e -u $@.po ../build/$(PACKAGE)-usermanual_profiled_final.xml
