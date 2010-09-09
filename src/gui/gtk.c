@@ -714,7 +714,7 @@ void quit()
 
 static void _gui_switch_view_key_accel_callback(void *p)
 {
-  int view=(int)p;
+  int view=(long int)p;
   dt_ctl_gui_mode_t mode=DT_MODE_NONE;
   /* do some setup before switch view*/
   switch (view)
