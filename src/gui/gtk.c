@@ -804,7 +804,7 @@ static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
   GList *i = darktable.gui->key_accels;
-  fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
+  // fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
