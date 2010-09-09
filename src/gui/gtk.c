@@ -804,11 +804,16 @@ static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
   GList *i = darktable.gui->key_accels;
+  fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
     // if a->state == 0, i.e. no modifiers are selected, no modifiers are allowed, in fact.
-    if(((!a->state && !event->state) || (a->state && (a->state == (a->state & event->state)))) && a->keyval == event->keyval)
+    if( 
+        (
+          (!a->state && (!event->state || (!(event->state&GDK_MOD1_MASK) && !(event->state&GDK_CONTROL_MASK)) ) ) || 
+          (a->state && (a->state == (a->state & event->state)))
+        ) && a->keyval == event->keyval)
     {
       a->callback(a->data);
       return TRUE;
@@ -1157,9 +1162,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->key_accels = NULL;
   
   // register keys for view switching
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_t, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_TETHERING);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_l, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_LIBRARY);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_d, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_DARKROOM);
+  dt_gui_key_accel_register(0, GDK_t, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_TETHERING);
+  dt_gui_key_accel_register(0, GDK_l, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_LIBRARY);
+  dt_gui_key_accel_register(0, GDK_d, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_DARKROOM);
 
   // register ctrl-q to quit:
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
