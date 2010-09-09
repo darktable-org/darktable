@@ -36,7 +36,6 @@ ui_last/expander_library=2
 plugins/capture/mode=0
 plugins/filmstrip/size=0.15
 plugins/filmstrip/on=TRUE
-plugins/lighttable/query=
 plugins/lighttable/layout=1
 plugins/lighttable/images_in_row=7
 plugins/lighttable/export/expanded=FALSE
