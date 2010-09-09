@@ -498,19 +498,6 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/plugins/lighttable/query</key>
-      <applyto>/apps/darktable/plugins/lighttable/query</applyto>
-      <owner>darktable</owner>
-      <type>string</type>
-      <default></default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>sql query to select images for current view</short>
-        <long>order by and limit clauses go last</long>
-      </locale>
-    </schema>
-
-    <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/layout</key>
       <applyto>/apps/darktable/plugins/lighttable/layout</applyto>
       <owner>darktable</owner>

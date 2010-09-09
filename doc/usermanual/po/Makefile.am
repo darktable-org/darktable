@@ -1,3 +1,6 @@
+SUBDIRS=
+
+if HAVE_DOCS
 @AMDEP_TRUE@@am__include@
 
 TEMPLATE=darktable-usermanual.pot
@@ -17,3 +20,5 @@ $(TRANSLATIONS): update-template
 		cp $(TEMPLATE) $@.po; \
 	fi
 	$(xml2po) -a -e -u $@.po ../build/$(PACKAGE)-usermanual_profiled_final.xml
+
+endif
