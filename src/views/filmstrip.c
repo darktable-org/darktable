@@ -26,6 +26,7 @@
 #include "common/darktable.h"
 #include "common/colorlabels.h"
 #include "common/collection.h"
+#include "common/history.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -57,6 +58,7 @@ typedef struct dt_film_strip_t
   int32_t offset;
   dt_view_image_over_t image_over;
   int32_t stars_registered;
+  int32_t history_copy_imgid;
 }
 dt_film_strip_t;
 
@@ -71,6 +73,7 @@ void init(dt_view_t *self)
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   strip->last_selected_id = -1;
   strip->offset = 0;
+  strip->history_copy_imgid=-1;
 }
 
 void cleanup(dt_view_t *self)
@@ -108,7 +111,7 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   /* get the collection query */
   const gchar *query=dt_collection_get_query (darktable.collection);
   if(!query)
-	return;
+  return;
   
   if(offset < 0)                strip->offset = offset = 0;
   if(offset > count-max_cols+1) strip->offset = offset = count-max_cols+1;
@@ -147,6 +150,33 @@ failure:
 #endif
 }
 
+static void
+copy_history_key_accel_callback(void *data)
+{
+  fprintf(stderr,"COPY!!\n");
+  dt_film_strip_t *strip = (dt_film_strip_t *)data;
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id <= 0) return;
+  strip->history_copy_imgid = mouse_over_id;
+}
+
+static void
+past_history_key_accel_callback(void *data)
+{
+  fprintf(stderr,"PAST!!\n");
+  dt_film_strip_t *strip = (dt_film_strip_t *)data;
+  if (strip->history_copy_imgid==-1) return;
+  
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id <= 0) return;
+  
+  int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
+  
+  dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE);
+  dt_control_queue_draw_all();
+}
 
 static void
 star_key_accel_callback(void *data)
@@ -188,6 +218,8 @@ void mouse_enter(dt_view_t *self)
     dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
     strip->stars_registered = 1;
   }
+  
+ 
 }
 
 void mouse_leave(dt_view_t *self)
@@ -195,6 +227,7 @@ void mouse_leave(dt_view_t *self)
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   dt_gui_key_accel_unregister(star_key_accel_callback);
   strip->stars_registered = 0;
+  
 }
 
 void enter(dt_view_t *self)
@@ -205,6 +238,10 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
   dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
   strip->stars_registered = 1;
+  
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, copy_history_key_accel_callback, (void *)strip);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, past_history_key_accel_callback, (void *)strip);
+  
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_colorlabels_register_key_accels();
   // scroll to opened image.
@@ -225,14 +262,20 @@ void enter(dt_view_t *self)
     }
     sqlite3_finalize(stmt);
   }
+
 }
 
 void leave(dt_view_t *self)
 {
+  
   dt_colorlabels_unregister_key_accels();
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   strip->stars_registered = 0;
+  strip->history_copy_imgid=-1;
   dt_gui_key_accel_unregister(star_key_accel_callback);
+  dt_gui_key_accel_unregister(copy_history_key_accel_callback);
+  dt_gui_key_accel_unregister(past_history_key_accel_callback);
+  
 }
 
 // TODO: go to currently selected image in sister view (lt/tethered/darkroom)
