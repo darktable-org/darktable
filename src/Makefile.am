@@ -16,6 +16,7 @@ libdarktable_la_SOURCES= \
 			common/exif.cc \
 			common/film.c \
 			common/fswatch.c \
+			common/history.c \
 			common/image.c \
 			common/image_cache.c \
 			common/image_compression.c \
@@ -88,6 +89,7 @@ noinst_HEADERS= \
 			common/camera_control.h \
 			common/darktable.h \
 			common/imageio.h \
+			common/history.h \
 			common/film.h \
 			control/settings.h \
 			control/control.h \
