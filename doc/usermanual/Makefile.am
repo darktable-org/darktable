@@ -1,5 +1,6 @@
-SUBDIRS = 
+SUBDIRS = po
 
+if HAVE_DOCS
 @AMDEP_TRUE@@am__include@
 
 translations = \
@@ -66,3 +67,5 @@ doc-clean:
 	-rm -f *.fo
 
 .PHONY: check_can_build_usermanual force-update-doc doc-clean
+
+endif
