@@ -133,8 +133,8 @@ typedef struct dt_camctl_listener_t
   /** Invoked when a image is downloaded while in tethered mode or  by import */
   void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
   
-  /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews() */
-  void (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *data);
+  /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews(), if 0 is returned the recurse is stopped.. */
+  int (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *data);
   
   /** Invoked when a value of a property is changed. */
   void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);

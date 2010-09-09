@@ -485,15 +485,13 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
   vsnprintf(j->description, DT_CONTROL_DESCRIPTION_LEN, msg, ap);
   va_end(ap);
 #endif
-  pthread_mutex_init(&j->mutex,NULL);
   j->state = DT_JOB_STATE_INITIALIZED;
+  pthread_mutex_init (&j->state_mutex,NULL);
+  pthread_mutex_init (&j->wait_mutex,NULL);
 }
 
-void dt_control_job_init_with_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data, const char *msg, ...)
+void dt_control_job_set_state_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data)
 {
-  va_list argp;
-  va_start(argp, msg);
-  dt_control_job_init(j,msg,argp);
   j->state_changed_cb = cb;
   j->user_data = user_data;
 }
@@ -508,27 +506,39 @@ void dt_control_job_print(dt_job_t *j)
 
 void _control_job_set_state(dt_job_t *j,int state)
 {
-  pthread_mutex_lock (&j->mutex);
+  pthread_mutex_lock (&j->state_mutex);
   j->state = state;
-  
-  pthread_mutex_unlock (&j->mutex);
-  
   /* pass state change to callback */
   if (j->state_changed_cb)
-      j->state_changed_cb (j);
+      j->state_changed_cb (j,state);
+  pthread_mutex_unlock (&j->state_mutex);
+
 }
 
 int dt_control_job_get_state(dt_job_t *j)
 {
-  pthread_mutex_lock (&j->mutex);
+  pthread_mutex_lock (&j->state_mutex);
   int state = j->state;
-  pthread_mutex_unlock (&j->mutex);
+  pthread_mutex_unlock (&j->state_mutex);
   return state;
 }
 
 void dt_control_job_cancel(dt_job_t *j)
 {
   _control_job_set_state (j,DT_JOB_STATE_CANCELLED);
+}
+
+void dt_control_job_wait(dt_job_t *j)
+{
+  int state = dt_control_job_get_state (j);
+ 
+  /* if job execution not is finished let's wait for signal */
+  if (state==DT_JOB_STATE_RUNNING || state==DT_JOB_STATE_CANCELLED)
+  {
+    pthread_mutex_lock (&j->wait_mutex);
+    pthread_mutex_unlock (&j->wait_mutex);
+  }
+ 
 }
 
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
@@ -551,8 +561,10 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
     _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
     
     /* execute job */
+    pthread_mutex_lock (&j->wait_mutex);
     j->result = j->execute (j);
-
+    pthread_mutex_unlock (&j->wait_mutex);
+   
     _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
     dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", res, dt_get_wtime());
     dt_control_job_print(j);
@@ -587,7 +599,9 @@ int32_t dt_control_run_job(dt_control_t *s)
     _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
     
     /* execute job */
+    pthread_mutex_lock (&j->wait_mutex);
     j->result = j->execute (j);
+    pthread_mutex_unlock (&j->wait_mutex);
 
     _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
     
