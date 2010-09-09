@@ -202,7 +202,7 @@ const char *_camera_tethered_request_image_path(const dt_camera_t *camera,void *
 /** listener callback from callback control to get target filename for captured image... */
 const char *_camera_tethered_request_image_filename(const dt_camera_t *camera,const char *filename, void *data)
 {
-  // Fetch the directory for current filmroll in  capture view..
+  // Fetch the directory for current filmroll in capture view..
   return dt_capture_view_get_session_filename( dt_view_manager_get_current_view(darktable.view_manager),filename );
 }
 

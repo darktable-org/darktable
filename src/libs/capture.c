@@ -74,6 +74,8 @@ create_callback(GtkButton *button, gpointer user_data)
   dt_lib_capture_t *lib=self->data;
 
   dt_conf_set_string("plugins/capture/jobcode", gtk_entry_get_text(lib->gui.entry1) );
+  dt_conf_set_int("plugins/capture/current_filmroll", -1);
+
   dt_capture_view_set_jobcode(dt_view_manager_get_current_view( darktable.view_manager ), gtk_entry_get_text( lib->gui.entry1 ) );
 }
 

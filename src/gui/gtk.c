@@ -48,6 +48,7 @@
 #include "control/jobs.h"
 #include "control/conf.h"
 #include "views/view.h"
+#include "views/capture.h"
 
 
 static gboolean
@@ -711,6 +712,37 @@ void quit()
   gtk_widget_queue_draw(widget);
 }
 
+static void _gui_switch_view_key_accel_callback(void *p)
+{
+  int view=(int)p;
+  dt_ctl_gui_mode_t mode=DT_MODE_NONE;
+  /* do some setup before switch view*/
+  switch (view)
+  {
+    case DT_GUI_VIEW_SWITCH_TO_TETHERING:
+      // switching to capture view using "plugins/capture/current_filmroll" as session...
+      // and last used camera
+      if (dt_camctl_have_cameras(darktable.camctl))
+      {
+        dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
+        mode = DT_CAPTURE;
+      }
+    break;
+    
+    case DT_GUI_VIEW_SWITCH_TO_DARKROOM:
+      mode = DT_DEVELOP;
+    break;
+
+    case DT_GUI_VIEW_SWITCH_TO_LIBRARY:
+      mode = DT_LIBRARY;
+    break;
+    
+  }
+  
+  /* try switch to mode */
+  dt_ctl_switch_mode_to (mode);
+}
+
 static void quit_callback(void *p)
 {
   quit();
@@ -1124,6 +1156,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->redraw_widgets = NULL;
   darktable.gui->key_accels = NULL;
   
+  // register keys for view switching
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_t, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_TETHERING);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_l, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_LIBRARY);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_d, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_DARKROOM);
+
   // register ctrl-q to quit:
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
   darktable.gui->reset = 0;

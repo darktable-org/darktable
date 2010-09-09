@@ -948,6 +948,27 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 {
   dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode == mode) return;
+  
+  /* check sanitiy of mode switch etc*/
+  switch (mode)
+  {
+    
+    case DT_DEVELOP:
+    {
+      int32_t mouse_over_id=0;
+      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      if(mouse_over_id <= 0) return;
+    }break;
+    
+    case DT_LIBRARY:
+    case DT_CAPTURE:
+    default:
+    break;
+    
+  }
+
+  
+  /* everythings are ok, let's switch mode */
   dt_control_save_gui_settings(oldmode);
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;

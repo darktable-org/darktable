@@ -633,7 +633,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel, (void *)1);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
-
+  
   // switch on groups as they where last time:
   dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
 

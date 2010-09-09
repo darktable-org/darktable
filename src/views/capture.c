@@ -187,14 +187,7 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 	g_assert( view != NULL );
 	dt_capture_t *cv=(dt_capture_t *)view->data;
 	
-	if(cv->jobcode) 
-		g_free(cv->jobcode);
-	cv->jobcode=g_strdup(name);
-	
-	// Setup variables jobcode...
-	cv->vp->jobcode = cv->jobcode;
-	
-	// Take care of previous capture filmroll
+	/* take care of previous capture filmroll */
 	if( cv->film ) {
 		if( dt_film_is_empty(cv->film->id) )
 			dt_film_remove(cv->film->id );
@@ -202,34 +195,53 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 			dt_film_cleanup( cv->film );
 	}
 	
-	// Lets setup a new filmroll for the capture...
+	/* lets initialize a new filmroll for the capture... */
 	cv->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
 	dt_film_init(cv->film);
 	
-	/* reset session sequence number */
-	dt_variables_reset_sequence (cv->vp);
-	
-	// Construct the direectory for filmroll...
-	cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory,NULL);
-	dt_variables_expand( cv->vp, cv->path, FALSE );
-	sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
-		
-	// Create recursive directories, abort if no access
-	if( g_mkdir_with_parents(cv->film->dirname,0755) == -1 )
+	int current_filmroll = dt_conf_get_int("plugins/capture/current_filmroll");
+	if(current_filmroll >= 0) 
 	{
-		dt_control_log(_("failed to create session path %s."), cv->film->dirname);
-		g_free( cv->film );
-		return;
+		/* open existing filmroll and import captured images into this roll */
+		dt_film_open(current_filmroll);
 	}
 	
-	if(dt_film_new(cv->film,cv->film->dirname) > 0)
+	if (dt_conf_get_int ("plugins/capture/current_filmroll")==-1)
 	{
-		// Switch to new filmroll
-		dt_film_open(cv->film->id);
+		if(cv->jobcode) 
+			g_free(cv->jobcode);
+		cv->jobcode = g_strdup(name);
 		
-	}
+		// Setup variables jobcode...
+		cv->vp->jobcode = cv->jobcode;
+		
+		/* reset session sequence number */
+		dt_variables_reset_sequence (cv->vp);
+		
+		// Construct the directory for filmroll...
+		cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory,NULL);
+		dt_variables_expand( cv->vp, cv->path, FALSE );
+		sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
+			
+		// Create recursive directories, abort if no access
+		if( g_mkdir_with_parents(cv->film->dirname,0755) == -1 )
+		{
+			dt_control_log(_("failed to create session path %s."), cv->film->dirname);
+			g_free( cv->film );
+			return;
+		}
+		
+		if(dt_film_new(cv->film,cv->film->dirname) > 0)
+		{
+			// Switch to new filmroll
+			dt_film_open(cv->film->id);
+			
+			/* store current filmroll */
+			dt_conf_set_int("plugins/capture/current_filmroll",cv->film->id);
+		}
 
-	dt_control_log(_("new session initiated '%s'"),cv->jobcode,cv->film->id);
+		dt_control_log(_("new session initiated '%s'"),cv->jobcode,cv->film->id);
+	} 
 	
 	
 }

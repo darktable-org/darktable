@@ -102,9 +102,10 @@ static void import_callback(GtkButton *button,gpointer data)
 
 static void tethered_callback(GtkToggleButton *button,gpointer data)  
 {
-  // Set tether mode...
-  dt_conf_set_int("plugins/capture/mode",DT_CAPTURE_MODE_TETHERED);
+  /* select camera to work with before switching mode */
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
+  dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
+  dt_conf_set_int("plugins/capture/current_filmroll",-1);
   dt_ctl_switch_mode_to(DT_CAPTURE);
 }
 
