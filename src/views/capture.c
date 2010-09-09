@@ -203,10 +203,18 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 	if(current_filmroll >= 0) 
 	{
 		/* open existing filmroll and import captured images into this roll */
-		dt_film_open(current_filmroll);
+		cv->film->id = current_filmroll;
+		if (dt_film_open2 (cv->film) !=0)
+		{
+			/* failed to open the current filmroll, let's reset and create a new one */
+			dt_conf_set_int ("plugins/capture/current_filmroll",-1);
+		}
+		else
+			cv->path = g_strdup(cv->film->dirname);
+		
 	}
 	
-	if (dt_conf_get_int ("plugins/capture/current_filmroll")==-1)
+	if (dt_conf_get_int ("plugins/capture/current_filmroll") == -1)
 	{
 		if(cv->jobcode) 
 			g_free(cv->jobcode);
