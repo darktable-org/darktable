@@ -24,10 +24,46 @@
 				</tgroup>
 			</informaltable>
 		
+		<sect2 status="final"><title>Views</title>
+			<para>Darktable consist of several views also mentions as modes, for time beeing there is three available views as described 
+				in this section, the current view is identified by the label at top of left panel.
+				There are key accelerators to access the different views as descibed in the table below.
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+						<colspec colwidth='3cm'/>
+						<tbody>
+							<row>
+								<entry><emphasis>l</emphasis></entry>
+								<entry>switches to lighttable view</entry>
+							</row>
+							<row>
+								<entry><emphasis>d</emphasis></entry><entry>switches to darkroom view</entry>
+							</row>
+							<row>
+								<entry><emphasis>t</emphasis></entry><entry>switches to camera tethering view</entry>
+							</row>
+						</tbody>
+					</tgroup></informaltable>
+			</para>
+			<sect3 status="final"><title>Lighttable</title>
+				<para>The lighttable view is where you manage you images and filmrolls, it's in this view you rate, add tags, add colorlabels, export images among other
+					actions.
+				</para>
+			</sect3>
+			<sect3 status="final"><title>Darkroom</title>
+				<para>In the darkroom view you develop a specific image using the plugins available.
+				</para>
+			</sect3>
+			<sect3 status="final"><title>Tehtering</title>
+				<para>This view is where you do camera tethering.
+				</para>
+			</sect3>
+		</sect2>		
+		
 		<sect2 status="final"><title>Filmstrip</title>
 			<para>The filmstrip views the same images as is viewed in lighttable with respect to filter and sort orders and are turned on/off with key accel ctrl-f.
 				Filmstrip provides some actions to apply on images when you are not in lighttable mode, you can for an example when in darkroom mode and developing an image, 
 				switch to another image to develop by doubleclicking the thumb in the filmstrip...
+				
 			</para>
 			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
 			<para>The filmstrip does also provide some actions to be performed on image under the mousepointer and here follows a table of available key accelerators
