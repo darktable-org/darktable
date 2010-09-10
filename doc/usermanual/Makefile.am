@@ -3,10 +3,7 @@ SUBDIRS = po
 if HAVE_DOCS
 @AMDEP_TRUE@@am__include@
 
-translations = \
-		sv \
-		po \
-		ru
+PO_LINGUAS=$(shell if test -r $(srcdir)/po/LINGUAS; then grep -v "^\#" $(srcdir)/po/LINGUAS; fi)
 
 FO_STYLESHEET = xsl/$(PACKAGE)_fo.xsl
 PROFILE_STYLESHEET = xsl/$(PACKAGE)_profile.xsl
@@ -50,7 +47,7 @@ $(pdfusermanual_final):
 	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final.fo $(FO_STYLESHEET)  build/$(PACKAGE)-usermanual_profiled_final.xml
 	$(fop) build/$(PACKAGE)-usermanual_profiled_final.fo -pdf $(PACKAGE)-usermanual-final.pdf
 	
-$(translations): 
+$(PO_LINGUAS): 
 	@ $(MAKE) check_can_build_usermanual
 	$(MAKE) doc-clean
 	@echo "Profiling final xml document"

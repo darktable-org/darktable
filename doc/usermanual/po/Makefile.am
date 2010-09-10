@@ -5,16 +5,13 @@ if HAVE_DOCS
 
 TEMPLATE=darktable-usermanual.pot
 PROFILE_STYLESHEET = ../xsl/$(PACKAGE)_profile.xsl
-TRANSLATIONS=\
-	sv \
-	po \
-	ru
+PO_LINGUAS=$(shell if test -r $(srcdir)/LINGUAS; then grep -v "^\#" $(srcdir)/LINGUAS; fi)
 
 update-template:
 	$(xsltproc) --output ../build/$(PACKAGE)-usermanual_profiled_final.xml $(PROFILE_STYLESHEET) ../$(PACKAGE).xml 
 	$(xml2po) -a -e -o $(TEMPLATE) ../build/$(PACKAGE)-usermanual_profiled_final.xml
 	
-$(TRANSLATIONS): update-template
+$(PO_LINGUAS): update-template
 	@if test ! -f $@.po; then \
 		cp $(TEMPLATE) $@.po; \
 	fi
