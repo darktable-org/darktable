@@ -271,15 +271,18 @@ static void _slider_entry_abort(GtkDarktableSlider *slider) {
 
 static gboolean _slider_entry_focus_in(GtkWidget *widget,GdkEventFocus *event,gpointer data) 
 {
-  dt_control_esc_shortcut_off(darktable.control);
-  dt_control_tab_shortcut_off(darktable.control);
+  /* turn of key accelerators */
+  dt_control_key_accelerators_off (darktable.control);
+  /*dt_control_esc_shortcut_off(darktable.control);
+  dt_control_tab_shortcut_off(darktable.control);*/
   return FALSE;
 }
 
 static gboolean _slider_entry_focus_out(GtkWidget *widget,GdkEventFocus *event,gpointer data) {
   _slider_entry_abort(DTGTK_SLIDER(data));
-  dt_control_esc_shortcut_on(darktable.control);
-  dt_control_tab_shortcut_on(darktable.control);
+  dt_control_key_accelerators_on (darktable.control);
+ /* dt_control_esc_shortcut_on(darktable.control);
+  dt_control_tab_shortcut_on(darktable.control);*/
   return FALSE;
 }
 

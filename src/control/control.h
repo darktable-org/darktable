@@ -157,10 +157,18 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
 struct dt_control_t;
+/* deprecated
 void dt_control_tab_shortcut_on(struct dt_control_t *s);
 void dt_control_tab_shortcut_off(struct dt_control_t *s);
 void dt_control_esc_shortcut_on(struct dt_control_t *s);
 void dt_control_esc_shortcut_off(struct dt_control_t *s);
+*/
+/** turn the use of key accelerators on */
+void dt_control_key_accelerators_on(struct dt_control_t *s);
+/** turn the use of key accelerators on */
+void dt_control_key_accelerators_off(struct dt_control_t *s);
+
+int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 
 /**
  * smallest unit of work.
@@ -232,8 +240,11 @@ typedef struct dt_control_t
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
   pthread_mutex_t global_mutex, image_mutex;
-  int tab_shortcut_on;
-  int esc_shortcut_on;
+  /* deprecated
+	int tab_shortcut_on;
+	int esc_shortcut_on;
+  */
+  int key_accelerators_on;
 
   // xatom color profile:
   uint8_t *xprofile_data;

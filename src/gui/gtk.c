@@ -108,6 +108,31 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   return TRUE;
 }
 
+static gboolean 
+_widget_focus_in_block_key_accelerators (GtkWidget *widget,GdkEventFocus *event,gpointer data) 
+{
+  dt_control_key_accelerators_off (darktable.control);
+  return FALSE;
+}
+
+static gboolean 
+_widget_focus_out_unblock_key_accelerators (GtkWidget *widget,GdkEventFocus *event,gpointer data) 
+{
+  dt_control_key_accelerators_on (darktable.control);
+  return FALSE;
+}
+
+void 
+dt_gui_key_accel_block_on_focus (GtkWidget *w)
+{
+  /* first off add focus change event mask */
+  gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
+  
+  /* conenct the signals */
+  g_signal_connect (G_OBJECT (w), "focus-in-event", G_CALLBACK(_widget_focus_in_block_key_accelerators), (gpointer)w);
+  g_signal_connect (G_OBJECT (w), "focus-out-event", G_CALLBACK(_widget_focus_out_unblock_key_accelerators), (gpointer)w);
+}
+
 static gboolean
 expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 { // draw arrows on borders
@@ -805,6 +830,11 @@ key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
   GList *i = darktable.gui->key_accels;
   // fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
+  
+  /* check if we should handle key press */
+  if (dt_control_is_key_accelerators_on (darktable.control) !=1) 
+    return FALSE;
+  
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;

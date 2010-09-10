@@ -18,6 +18,7 @@
 
 #include "dtgtk/button.h"
 #include "dtgtk/label.h"
+#include "gui/gtk.h"
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -330,7 +331,7 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
       if (response.data != NULL)
-	g_free(response.data);
+  g_free(response.data);
 
       curl_slist_free_all( headers );
     }
@@ -625,6 +626,7 @@ void button1_clicked(GtkButton *button,gpointer data) {
   refresh_albums(ui);
 }
 
+/*
 static gboolean
 focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
 {
@@ -638,6 +640,7 @@ focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
   dt_control_tab_shortcut_on(darktable.control);
   return FALSE;
 }
+*/
 
 void
 gui_init (dt_imageio_module_storage_t *self)
@@ -670,9 +673,16 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
   ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
 
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry1));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry2));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry3));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry4));
+  
+/*
   gtk_widget_add_events(GTK_WIDGET(ui->entry1), GDK_FOCUS_CHANGE_MASK);
   g_signal_connect (G_OBJECT (ui->entry1), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
   g_signal_connect (G_OBJECT (ui->entry1), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  
   gtk_widget_add_events(GTK_WIDGET(ui->entry2), GDK_FOCUS_CHANGE_MASK);
   g_signal_connect (G_OBJECT (ui->entry2), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
   g_signal_connect (G_OBJECT (ui->entry2), "focus-out-event", G_CALLBACK(focus_out), NULL);
@@ -682,7 +692,7 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_widget_add_events(GTK_WIDGET(ui->entry4), GDK_FOCUS_CHANGE_MASK);
   g_signal_connect (G_OBJECT (ui->entry4), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
   g_signal_connect (G_OBJECT (ui->entry4), "focus-out-event", G_CALLBACK(focus_out), NULL);
-
+*/
   GHashTable* table = dt_pwstorage_get("picasa");
   gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
   gchar* _password = g_strdup( g_hash_table_lookup(table, "password"));

@@ -370,8 +370,10 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
 
+  s->key_accelerators_on = 1;
+  /* DEPRECATED
   s->esc_shortcut_on = 1;
-  s->tab_shortcut_on = 1;
+  s->tab_shortcut_on = 1;*/
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
@@ -409,6 +411,23 @@ void dt_control_init(dt_control_t *s)
   s->button_down_which = 0;
 }
 
+void dt_control_key_accelerators_on(struct dt_control_t *s)
+{
+    s->key_accelerators_on = 1;
+}
+
+void dt_control_key_accelerators_off(struct dt_control_t *s)
+{
+  s->key_accelerators_on = 0;
+}
+
+
+int dt_control_is_key_accelerators_on(struct dt_control_t *s)
+{
+  return  s->key_accelerators_on == 1?1:0;
+}
+
+/* deprecated 
 void dt_control_tab_shortcut_off(dt_control_t *s)
 {
   s->tab_shortcut_on = 0;
@@ -428,6 +447,7 @@ void dt_control_esc_shortcut_on(dt_control_t *s)
 {
   s->esc_shortcut_on = 1;
 }
+*/
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
@@ -952,7 +972,6 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   /* check sanitiy of mode switch etc*/
   switch (mode)
   {
-    
     case DT_DEVELOP:
     {
       int32_t mouse_over_id=0;
@@ -1233,6 +1252,9 @@ int dt_control_key_pressed_override(uint16_t which)
 {
   int fullscreen, visible;
   GtkWidget *widget;
+  /* check if key accelerators are enabled*/
+  if (darktable.control->key_accelerators_on != 1) return 0;
+  
   switch (which)
   {
     case KEYCODE_F7:
@@ -1252,7 +1274,6 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Escape: case KEYCODE_Caps:
-      if(darktable.control->esc_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
@@ -1260,7 +1281,6 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
-      if(darktable.control->tab_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "left");
       visible = GTK_WIDGET_VISIBLE(widget);
       if(visible) gtk_widget_hide(widget);
