@@ -157,12 +157,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
 struct dt_control_t;
-/* deprecated
-void dt_control_tab_shortcut_on(struct dt_control_t *s);
-void dt_control_tab_shortcut_off(struct dt_control_t *s);
-void dt_control_esc_shortcut_on(struct dt_control_t *s);
-void dt_control_esc_shortcut_off(struct dt_control_t *s);
-*/
+
 /** turn the use of key accelerators on */
 void dt_control_key_accelerators_on(struct dt_control_t *s);
 /** turn the use of key accelerators on */

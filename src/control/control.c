@@ -371,9 +371,6 @@ void dt_control_init(dt_control_t *s)
   dt_ctl_settings_init(s);
 
   s->key_accelerators_on = 1;
-  /* DEPRECATED
-  s->esc_shortcut_on = 1;
-  s->tab_shortcut_on = 1;*/
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
@@ -426,28 +423,6 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 {
   return  s->key_accelerators_on == 1?1:0;
 }
-
-/* deprecated 
-void dt_control_tab_shortcut_off(dt_control_t *s)
-{
-  s->tab_shortcut_on = 0;
-}
-
-void dt_control_tab_shortcut_on(dt_control_t *s)
-{
-  s->tab_shortcut_on = 1;
-}
-
-void dt_control_esc_shortcut_off(dt_control_t *s)
-{
-  s->esc_shortcut_on = 0;
-}
-
-void dt_control_esc_shortcut_on(dt_control_t *s)
-{
-  s->esc_shortcut_on = 1;
-}
-*/
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
