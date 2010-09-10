@@ -85,7 +85,16 @@ update_query(dt_lib_collect_t *d)
         snprintf(query, 1024, "(film_id in (select id from film_rolls where id in "
                               "(select film_id from images as a join selected_images as b on a.id = b.imgid)))");
       break;
-      
+
+    case 5: // colorlabel
+    {
+      int color = 0;
+      if(strcmp(text,_("red"))==0) color=0;
+      else if(strcmp(text,_("yellow"))==0) color=1;
+      else if(strcmp(text,_("green"))==0) color=2;
+      snprintf(query, 1024, "(id in (select imgid from color_labels where color=%d))", color);
+    } break;
+    
     case 4: // history
       snprintf(query, 1024, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(text,_("altered"))==0)?"":"not");
     break;
@@ -177,6 +186,26 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
         -1);
       goto entry_key_press_exit;
     break;
+    
+    case 5: // colorlabels
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+        DT_LIB_COLLECT_COL_TEXT,_("red"),
+        DT_LIB_COLLECT_COL_ID, 0,
+        -1);
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+        DT_LIB_COLLECT_COL_TEXT,_("yellow"),
+        DT_LIB_COLLECT_COL_ID, 1,
+        -1);
+     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
+        DT_LIB_COLLECT_COL_TEXT,_("green"),
+        DT_LIB_COLLECT_COL_ID, 2,
+        -1);
+      goto entry_key_press_exit;
+    break;
+    
     default: // case 3: // day
       snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", text);
       break;
@@ -276,6 +305,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("tag"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("date"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("history"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("colorlabel"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), dt_conf_get_int("plugins/lighttable/collect/item"));
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d);
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
