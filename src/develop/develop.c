@@ -56,8 +56,8 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
   {
     // int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
     int32_t tmp;
-	  if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
-	  else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
+    if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
+    else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
     arr[k] = tmp>>8;
   }
 }
@@ -599,7 +599,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   {
     // if gui_attached pop all operations down to dev->history_end
     dt_control_clear_history_items (dev->history_end-1);
-	  
+    
     // remove unused history items:
     GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
@@ -899,3 +899,8 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
     g_snprintf(label, cnt, "%s", hist->module->name());
 }
 
+int 
+dt_dev_is_current_image (dt_develop_t *dev, int imgid)
+{
+  return (dev->image->id==imgid)?1:0;
+}

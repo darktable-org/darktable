@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "develop/develop.h"
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
@@ -49,6 +50,11 @@ dt_history_delete_on_selection()
     img->output_height = img->height;
     dt_image_cache_flush(img);
     dt_image_write_dt_files(img);
+    
+    /* if current image in develop reload history */
+    if (dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items (darktable.develop);
+    
     dt_image_cache_release(img, 'r');
   }
   sqlite3_finalize(stmt);
@@ -72,6 +78,11 @@ dt_history_load_and_apply_on_selection (gchar *filename)
     img->force_reimport = 1;
     dt_image_cache_flush(img);
     dt_image_write_dt_files(img);
+    
+    /* if current image in develop reload history */
+    if (dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items (darktable.develop);
+    
     dt_image_cache_release(img, 'r');
   }
   sqlite3_finalize(stmt);
@@ -125,6 +136,11 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;
   dt_image_cache_flush(img);
   dt_image_write_dt_files(img);
+  
+  /* if current image in develop reload history */
+  if (dt_dev_is_current_image(darktable.develop, dest_imgid))
+    dt_dev_reload_history_items (darktable.develop);
+  
   dt_image_cache_release(img, 'r');
   
   dt_image_cache_release(oimg, 'r');
