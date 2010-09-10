@@ -24,7 +24,7 @@
 				</tgroup>
 			</informaltable>
 		
-		<sect2 status="draft"><title>Filmstrip</title>
+		<sect2 status="final"><title>Filmstrip</title>
 			<para>The filmstrip views the same images as is viewed in lighttable with respect to filter and sort orders and are turned on/off with key accel ctrl-f.
 				Filmstrip provides some actions to apply on images when you are not in lighttable mode, you can for an example when in darkroom mode and developing an image, 
 				switch to another image to develop by doubleclicking the thumb in the filmstrip...
