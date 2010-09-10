@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "gui/gtk.h"
 #include "libs/lib.h"
 
 DT_MODULE(1)
@@ -279,8 +280,10 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d);
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
   w = gtk_combo_box_entry_new_text();
+  dt_gui_key_accel_block_on_focus (w);
   d->text = GTK_COMBO_BOX_ENTRY(w);
-  /* xgettext:no-c-format */
+
+/* xgettext:no-c-format */
   gtk_object_set(GTK_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), NULL);
   gchar *text = dt_conf_get_string("plugins/lighttable/collect/string");
   if(text)

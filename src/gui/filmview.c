@@ -237,6 +237,8 @@ dt_gui_filmview_init()
 
 
   GtkWidget *entry = glade_xml_get_widget (darktable.gui->main_window, "entry_film");
+  dt_gui_key_accel_block_on_focus (entry);
+
   g_signal_connect(entry, "changed", G_CALLBACK(entry_callback), NULL);
 
   GtkWidget *button = glade_xml_get_widget (darktable.gui->main_window, "button_film_remove");

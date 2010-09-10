@@ -342,6 +342,7 @@ gui_init (dt_lib_module_t *self)
   
   // text entry and new button
   w = gtk_entry_new();
+  dt_gui_key_accel_block_on_focus (w);
   gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter tag name"), NULL);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
