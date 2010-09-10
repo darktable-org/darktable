@@ -1,0 +1,72 @@
+<chapter>
+	<chapterinfo>
+		<keywordset>
+			<keyword>darktable</keyword>
+			<keyword>overview</keyword>
+			<keyword>application</keyword>
+		</keywordset>
+	</chapterinfo>
+	<title>Overview</title>
+	<para>Darktable is an application to manage and develop your digital images...</para>
+	<sect1 status="final"><title>Userinterface</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='5cm'/>
+					<tbody>
+						<row>						
+							<entry>This section describes the layout of the userinterface.
+							</entry>
+							<entry>
+								<!--<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />-->
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		
+		<sect2 status="draft"><title>Filmstrip</title>
+			<para>The filmstrip views the same images as is viewed in lighttable with respect to filter and sort orders and are turned on/off with key accel ctrl-f.
+				Filmstrip provides some actions to apply on images when you are not in lighttable mode, you can for an example when in darkroom mode and developing an image, 
+				switch to another image to develop by doubleclicking the thumb in the filmstrip...
+			</para>
+			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+			<para>The filmstrip does also provide some actions to be performed on image under the mousepointer and here follows a table of available key accelerators
+				for specific actions.
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+						<colspec colwidth='3cm'/>
+						<tbody>
+							<row>
+								<entry><emphasis>1 - 4</emphasis></entry>
+								<entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated
+								</entry>
+							</row>
+							<row>
+								<entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry>
+							</row>
+							<row>
+								<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry>
+							</row>
+							<row>
+								<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack onto the image</entry>
+							</row>
+						</tbody>
+					</tgroup></informaltable>
+			</para>
+		</sect2>
+	</sect1>
+	
+	<sect1 status="final"><title>Darktable workflow</title>
+		<sect2 status="draft"><title>Importing images</title>
+			<para></para>
+		</sect2>
+		
+		<sect2 status="draft"><title>Importing from camera</title>
+			<para></para>
+		</sect2>
+		
+		<sect2 status="draft"><title>Exporting images</title>
+			<para></para>
+		</sect2>
+	</sect1>
+		
+</chapter>
