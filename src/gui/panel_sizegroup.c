@@ -34,7 +34,7 @@ dt_gui_panel_sizegroup_init()
 {
   /* restore old panel width value */
   char *lang = getenv ("LANGUAGE");
-  if (!lang) lang = getenv("LANG");
+  if (!lang || strlen(lang) == 0) lang = getenv("LANG");
   if (lang) 
   {
     char key[128]={0};
@@ -62,7 +62,7 @@ _panel_sizegroup_allocate(GtkWidget *w,GtkAllocation *a,gpointer data)
     
     /* store panel width value */
     char *lang = getenv ("LANGUAGE");
-    if (!lang) lang=getenv("LANG");
+    if (!lang || strlen(lang) == 0) lang=getenv("LANG");
     if (lang) 
     {
       char key[128]={0};
