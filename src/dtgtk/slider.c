@@ -27,6 +27,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "paint.h"
 #include "slider.h"
+#include "gui/gtk.h"
 
 #define DTGTK_SLIDER_ADJUST_BUTTON_WIDTH 12
 #define DTGTK_SLIDER_BORDER_WIDTH 2
