@@ -5,6 +5,7 @@ if HAVE_DOCS
 
 translations = \
 		sv \
+		po \
 		ru
 
 FO_STYLESHEET = xsl/$(PACKAGE)_fo.xsl

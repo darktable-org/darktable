@@ -7,6 +7,7 @@ TEMPLATE=darktable-usermanual.pot
 PROFILE_STYLESHEET = ../xsl/$(PACKAGE)_profile.xsl
 TRANSLATIONS=\
 	sv \
+	po \
 	ru
 
 update-template:
