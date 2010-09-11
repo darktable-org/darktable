@@ -630,6 +630,26 @@ void dt_camctl_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags
   _camctl_unlock(c);
 }
 
+int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam)
+{
+  /* first check if camera is provided else use wanted cam */
+  if (cam==NULL)
+    cam=c->wanted_camera;
+  
+  /* check if wanted cam is available else use active camera */
+  if (cam==NULL)
+    cam=c->active_camera;
+  
+  /* check if active cam is available else use first detected one */
+  if (cam==NULL && c->cameras)
+    cam = g_list_nth_data(c->cameras,0);
+  
+  if( cam && cam->can_tether ) 
+	return 1;
+  
+  return 0;	
+}
+
 void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean enable)
 {
   /* first check if camera is provided else use wanted cam */
