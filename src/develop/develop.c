@@ -902,5 +902,5 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
 int 
 dt_dev_is_current_image (dt_develop_t *dev, int imgid)
 {
-  return (dev->image->id==imgid)?1:0;
+  return (dev->image && dev->image->id==imgid)?1:0;
 }
