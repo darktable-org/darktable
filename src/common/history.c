@@ -49,7 +49,6 @@ dt_history_delete_on_selection()
     img->output_width = img->width;
     img->output_height = img->height;
     dt_image_cache_flush(img);
-    dt_image_write_dt_files(img);
     
     /* if current image in develop reload history */
     if (dt_dev_is_current_image(darktable.develop, imgid))
@@ -77,7 +76,6 @@ dt_history_load_and_apply_on_selection (gchar *filename)
     dt_image_t *img = dt_image_cache_get(imgid, 'r');
     img->force_reimport = 1;
     dt_image_cache_flush(img);
-    dt_image_write_dt_files(img);
     
     /* if current image in develop reload history */
     if (dt_dev_is_current_image(darktable.develop, imgid))
@@ -135,7 +133,6 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   img->raw_denoise_threshold = oimg->raw_denoise_threshold;
   img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;
   dt_image_cache_flush(img);
-  dt_image_write_dt_files(img);
   
   /* if current image in develop reload history */
   if (dt_dev_is_current_image(darktable.develop, dest_imgid))

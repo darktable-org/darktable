@@ -89,6 +89,29 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   return 0;
 }
 
+int32_t dt_control_flip_images_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  const int cw = t1->flag;
+  GList *t = t1->index;
+  int total = g_list_length(t);
+  char message[512]={0};
+  double fraction=0;
+  snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
+  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+  while(t)
+  {
+    imgid = (long int)t->data;
+    dt_image_flip(imgid, cw);
+    t = g_list_delete_link(t, t);
+    fraction=1.0/total;
+    dt_gui_background_jobs_set_progress(j, fraction);
+  }
+  dt_gui_background_jobs_destroy (j);
+  return 0;
+}
+
 int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -178,6 +201,15 @@ void dt_control_duplicate_images_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_init(t);
 }
 
+void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw)
+{
+  dt_control_job_init(job, "flip images");
+  job->execute = &dt_control_flip_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+  t->flag = cw;
+}
+
 void dt_control_remove_images_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "remove images");
@@ -198,6 +230,13 @@ void dt_control_duplicate_images()
 {
   dt_job_t j;
   dt_control_duplicate_images_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_flip_images(const int32_t cw)
+{
+  dt_job_t j;
+  dt_control_flip_images_job_init(&j, cw);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -363,3 +402,4 @@ void dt_control_export()
   dt_control_export_job_init(&j);
   dt_control_add_job(darktable.control, &j);
 }
+

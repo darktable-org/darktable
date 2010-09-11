@@ -24,6 +24,7 @@
 typedef struct dt_control_image_enumerator_t
 {
   GList *index;
+  int flag;
 }
 dt_control_image_enumerator_t;
 
@@ -33,6 +34,9 @@ void dt_control_write_dt_files_job_init(dt_job_t *job);
 
 void dt_control_duplicate_images_job_init(dt_job_t *job);
 int32_t dt_control_duplicate_images_job_run(dt_job_t *job);
+
+void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw);
+int32_t dt_control_flip_images_job_run(dt_job_t *job);
 
 void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t);
 
@@ -49,6 +53,7 @@ int32_t dt_control_export_job_run(dt_job_t *job);
 void dt_control_write_dt_files();
 void dt_control_delete_images();
 void dt_control_duplicate_images();
+void dt_control_flip_images(const int32_t cw);
 void dt_control_remove_images();
 void dt_control_export();
 

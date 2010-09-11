@@ -191,7 +191,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
       // JPEG: decode (directly rescaled to mip4)
-      const int orientation = img->orientation;// & 4 ? img->orientation : img->orientation ^ 1;
+      const int orientation = dt_image_orientation(img);
       dt_imageio_jpeg_t jpg;
       if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw_corrupted;
       if(orientation & 4)
@@ -490,7 +490,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-  const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
+  const int orientation = dt_image_orientation(img);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -592,7 +592,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-  const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
+  const int orientation = dt_image_orientation(img);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;

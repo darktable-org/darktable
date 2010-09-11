@@ -362,6 +362,30 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   return DT_IMAGEIO_OK;
 }
 
+void dt_image_flip(const int32_t imgid, const int32_t cw)
+{
+  dt_image_t *img = dt_image_cache_get (imgid, 'r');
+  int8_t orientation = dt_image_orientation(img);
+
+  if(cw == 1)
+  {
+    if(orientation & 4) orientation ^= 1;
+    else                orientation ^= 2; // flip x
+  }
+  else
+  {
+    if(orientation & 4) orientation ^= 2;
+    else                orientation ^= 1; // flip y
+  }
+  orientation ^= 4;             // flip axes
+
+  if(cw == 2) orientation = -1; // reset
+  img->raw_params.user_flip = orientation;
+  img->force_reimport = 1;
+  dt_image_cache_flush(img);
+  dt_image_cache_release(img, 'r');
+}
+
 void dt_image_duplicate(const int32_t imgid)
 {
   int rc;
@@ -456,6 +480,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
       return 0;
     }
   }
+  // TODO: this line is responsible for uncropped output of still correct thumbs during re-processing :(
   img->output_width = img->output_height = 0;
   dt_imageio_retval_t ret = dt_imageio_open_preview(img, filename);
   if(ret == DT_IMAGEIO_CACHE_FULL)
@@ -476,7 +501,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   // fprintf(stderr, "[image_reimport] loading `%s' to fill mip %d!\n", filename, mip);
 
   // already some db entry there?
-  int altered = img->force_reimport;
+  int altered = 0;//img->force_reimport;
   img->force_reimport = 0;
   if(dt_image_altered(img)) altered = 1;
 
@@ -646,7 +671,7 @@ void dt_image_init(dt_image_t *img)
   img->output_width = img->output_height = img->width = img->height = 0;
   img->mipf = NULL;
   img->pixels = NULL;
-  img->orientation = -1; // not inited.
+  img->orientation = 0;
 
   img->black = 0.0f;
   img->maximum = 1.0f;

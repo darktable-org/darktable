@@ -55,6 +55,9 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 1) dt_control_delete_images();
   else if(i == 2) dt_control_write_dt_files();
   else if(i == 3) dt_control_duplicate_images();
+  else if(i == 4) dt_control_flip_images(0);
+  else if(i == 5) dt_control_flip_images(1);
+  else if(i == 6) dt_control_flip_images(2);
   dt_control_queue_draw_all();
 }
 
@@ -96,6 +99,24 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
+  button = gtk_button_new_with_label(_("rotate left"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
+
+  button = gtk_button_new_with_label(_("rotate right"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
+
+  button = gtk_button_new_with_label(_("reset rotation"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }

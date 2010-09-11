@@ -152,8 +152,15 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */
 void dt_image_duplicate(const int32_t imgid);
+/** flips the image, clock wise, if given flag. */
+void dt_image_flip(const int32_t imgid, const int32_t cw);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const dt_image_t *img);
+/** returns the orientation bits of the image, exif or user override, if set. */
+static inline int dt_image_orientation(const dt_image_t *img)
+{
+  return img->raw_params.user_flip > 0 ? img->raw_params.user_flip : (img->orientation > 0 ?img->orientation : 0);
+}
 /** cleanup. */
 void dt_image_cleanup(dt_image_t *img);
 /** loads the requested buffer to cache, with read lock set. */

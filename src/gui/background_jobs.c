@@ -28,7 +28,8 @@
 GStaticMutex _gui_background_mutex = G_STATIC_MUTEX_INIT;
 
 
-void dt_gui_background_jobs_init() {
+void dt_gui_background_jobs_init()
+{
   GtkWidget *w = glade_xml_get_widget( darktable.gui->main_window, "jobs_content_box" );
   GtkWidget *label =  dtgtk_label_new (_("background jobs"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -46,7 +47,8 @@ _cancel_job_clicked (GtkDarktableButton *button, gpointer user_data)
     dt_control_job_cancel(j->job);
 }
 
-void _gui_background_jobs_add_cancel( const dt_gui_job_t *j ) {
+void _gui_background_jobs_add_cancel( const dt_gui_job_t *j )
+{
   GtkWidget *w=j->widget;
   GtkBox *hbox = GTK_BOX (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER ( gtk_bin_get_child (GTK_BIN (w) ) ) ), 0));
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel,0);
@@ -56,12 +58,14 @@ void _gui_background_jobs_add_cancel( const dt_gui_job_t *j ) {
   gtk_widget_show_all(button);
 }
 
-GtkLabel *_gui_background_jobs_get_label( GtkWidget *w ) {
+GtkLabel *_gui_background_jobs_get_label( GtkWidget *w )
+{
   // eventbox->vbox[0]->hbox[0] = label
   return g_list_nth_data(gtk_container_get_children( GTK_CONTAINER (g_list_nth_data( gtk_container_get_children( GTK_CONTAINER( gtk_bin_get_child ( GTK_BIN( w ) ) ) ), 0) ) ), 0);
 }
 
-GtkProgressBar *_gui_background_jobs_get_progressbar( GtkWidget *w ) {
+GtkProgressBar *_gui_background_jobs_get_progressbar( GtkWidget *w )
+{
   // eventbox->vbox[1] = progress
   return g_list_nth_data( gtk_container_get_children( GTK_CONTAINER( gtk_bin_get_child ( GTK_BIN( w ) ) ) ), 1);
 }
@@ -75,7 +79,9 @@ void dt_gui_background_jobs_can_cancel(const dt_gui_job_t *j, dt_job_t *job)
 
 const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gchar *message)
 {
-  gdk_threads_enter();
+  // we call gtk stuff, possibly from a worker thread:
+  int needlock = pthread_self() != darktable.control->gui_thread;
+  if(needlock) gdk_threads_enter();
   /* initialize a dt_gui_job */
   dt_gui_job_t *j=g_malloc(sizeof(dt_gui_job_t));
   memset(j,0,sizeof( dt_gui_job_t ) );
@@ -108,12 +114,14 @@ const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gch
   gtk_widget_show (jobbox);
   gtk_widget_show (w);
 
-  gdk_threads_leave();
+  if(needlock) gdk_threads_leave();
   return j;
 }
 
 void dt_gui_background_jobs_destroy(const dt_gui_job_t *j) 
 {
+  int needlock = pthread_self() != darktable.control->gui_thread;
+  if(needlock) gdk_threads_enter();
   // remove widget if not already removed from jobcontainer...
   GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "jobs_content_box");
   GtkWidget *jobbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (w)),1);
@@ -121,24 +129,27 @@ void dt_gui_background_jobs_destroy(const dt_gui_job_t *j)
   if (GTK_IS_WIDGET(j->widget)) 
     gtk_container_remove (GTK_CONTAINER (jobbox), j->widget);
   g_free ((dt_gui_job_t*)j);
+  if(needlock) gdk_threads_leave();
 }
 
 
 void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *message)
 {
   if(!darktable.control->running) return;
-  gdk_threads_enter();
+  int needlock = pthread_self() != darktable.control->gui_thread;
+  if(needlock) gdk_threads_enter();
  
  // g_static_mutex_lock ( &_gui_background_mutex );
   gtk_label_set_text( _gui_background_jobs_get_label( j->widget ), j->message );
   //g_static_mutex_unlock( &_gui_background_mutex );
-  gdk_threads_leave();
+  if(needlock) gdk_threads_leave();
 }
 
 void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
 {
   if(!darktable.control->running) return;
-  gdk_threads_enter();
+  int needlock = pthread_self() != darktable.control->gui_thread;
+  if(needlock) gdk_threads_enter();
   
   // g_static_mutex_lock ( &_gui_background_mutex );
  
@@ -157,6 +168,6 @@ void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
       gtk_progress_bar_set_fraction( _gui_background_jobs_get_progressbar( j->widget ), progress );
   }
   //g_static_mutex_unlock ( &_gui_background_mutex );
-  gdk_threads_leave();
+  if(needlock) gdk_threads_leave();
 }
 

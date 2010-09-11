@@ -152,16 +152,16 @@ int dt_exif_read(dt_image_t *img, const char* path)
       switch(orient)
       {
         case 1:
-          img->orientation = 0 | 0 | 1;
+          img->orientation = 0 | 0 | 0;
           break;
         case 2:
-          img->orientation = 0 | 2 | 1;
-          break;
-        case 3:
           img->orientation = 0 | 2 | 0;
           break;
+        case 3:
+          img->orientation = 0 | 2 | 1;
+          break;
         case 4:
-          img->orientation = 0 | 0 | 0;
+          img->orientation = 0 | 0 | 1;
           break;
         case 5:
           img->orientation = 4 | 0 | 0;

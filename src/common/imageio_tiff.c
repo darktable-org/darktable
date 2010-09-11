@@ -67,6 +67,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
   uint8_t *buf8 = (uint8_t *)buf;
 	uint32_t row;
 
+  const int orientation = dt_image_orientation(img);
+  const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
+  const int wd2 = orientation & 4 ? img->height : img->width;
 	TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
 	TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
   if (config != PLANARCONFIG_CONTIG)
@@ -80,9 +83,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
     {
       TIFFReadScanline(image, buf, row, 0);
       if(bpp < 12) for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = buf8[mul*i + k]*(1.0/255.0);
+        for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[mul*i + k]*(1.0/255.0);
       else for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = buf16[mul/2*i + k]*(1.0/65535.0);
+        for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[mul/2*i + k]*(1.0/65535.0);
         // for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = ((buf16[mul*i + k]>>8)|((buf16[mul*i + k]<<8)&0xff00))*(1.0/65535.0);
     }
   }
@@ -138,7 +141,7 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   uint16_t *buf16 = (uint16_t *)buf, *tmp16 = (uint16_t *)tmp;
   uint8_t  *buf8  = (uint8_t *)buf,  *tmp8  = (uint8_t *)tmp;
 
-  const int orientation = 0;
+  const int orientation = dt_image_orientation(img);
 	TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
 	TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
   if (config != PLANARCONFIG_CONTIG)
