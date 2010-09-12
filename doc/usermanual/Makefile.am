@@ -3,7 +3,7 @@ SUBDIRS = po
 if HAVE_DOCS
 @AMDEP_TRUE@@am__include@
 
-PO_LINGUAS=$(shell if test -r $(srcdir)/po/LINGUAS; then grep -v "^\#" $(srcdir)/po/LINGUAS; fi)
+PO_LINGUAS=$(shell if test -r ./po/LINGUAS; then grep -v "^\#" ./po/LINGUAS; fi)
 
 FO_STYLESHEET = xsl/$(PACKAGE)_fo.xsl
 PROFILE_STYLESHEET = xsl/$(PACKAGE)_profile.xsl
