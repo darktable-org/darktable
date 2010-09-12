@@ -104,6 +104,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
   
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
  
   lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label( _("create") ));
