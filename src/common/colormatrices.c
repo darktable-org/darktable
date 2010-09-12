@@ -30,6 +30,9 @@ dt_profiled_colormatrix_t;
   // image submitter, chart type, illuminant, comments
 static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "PENTAX K-x",                   { 821548, 337357,  42923}, { 247818, 1042969, -218735}, {247818, 1042969, -218735}, {792206, 821823, 668640}},
+
   // Sven Lindahl, Wolf Faust IT8, direct sunlight, well lit
   { "Canon EOS-1Ds Mark II",        {1078033, 378601, -31113}, { -15396, 1112045, -245743}, {166794, -252411, 1284531}, {681213, 705048, 590790}},
 
