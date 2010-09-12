@@ -26,7 +26,7 @@
 		
 		<sect2 status="final"><title>Views</title>
 			<para>Darktable consist of several views also mentions as modes, for time beeing there is three available views as described 
-				in this section, the current view is identified by the label at top of left panel.
+				in this section, the current view is identified by the label at top of right panel.
 				There are key accelerators to access the different views as descibed in the table below.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 						<colspec colwidth='3cm'/>
@@ -50,7 +50,7 @@
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Darkroom</title>
-				<para>In the darkroom view you develop a specific image using the plugins available.
+				<para>In the darkroom view you develop a specific image using the modules available.
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Tehtering</title>

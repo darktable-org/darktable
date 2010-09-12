@@ -13,12 +13,12 @@
 </screenshot>
 
 <sect1><title>Overview</title>
-	<para>In darkroom you are in develop mode for the specific image, here you have alot of tools to
+	<para>In darkroom you are in develop mode for the specific image; here you have a lot of tools (named module) to
 		develop you image.
 	</para>
-	<para>On the left side you have the navigation, snapshots, history and histogram panel each of them are described below, 
-		in the right panel you can see the histogram and then a list of available modules to use when working with your image.
-		And at bottom of right panel you can enable/disable individual modules which will remove them from the right panel.
+	<para>On the left side you have the navigation, snapshots and history panels, each of them being described below; 
+	in the right panel you can see the histogram and then a list of available modules to use when working with your image. 
+	At the bottom of the right panel you can enable/disable view of individual modules.
 	</para>
 </sect1>
 <sect1 status="draft"><title>Filmstrip</title>
@@ -51,8 +51,10 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>You can take a snapshot of what is displayed in the center view, this snapshot can then be selected and is overlayed in the current center
-								view to help you with a side by side comparasion when you tuning parameters of a module.
+						<entry>You can take a snapshot of what is displayed in the center view; 
+							this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion 
+							(left: snapshot, right: active) when you are tuning parameters of a module. 
+							In the active view, history remains usable in order to compare with the snapshot.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_snapshots.png" scalefit="1" width="80%" align="center" />

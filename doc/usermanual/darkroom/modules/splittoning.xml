@@ -18,10 +18,10 @@
 				</tgroup>
 			</informaltable>
 			
-		<para>Darktable splittoning plugin has more parameters that impacts on the default above behavior, 
+		<para>Darktable splittoning module has more parameters that impacts on the default above behavior, 
 				we have balance which offsets the 50% gray level in image and compression that does compress
 				toning in the shadows and highlights which  leaves a gap which are untouched by the effect.
-				Read more and see examples of these additional parameters to splittoning module in Parameters section.
+				Read more and see examples of these additional parameters to splittoning module in "usage" section.
 		</para>
 		<para>The splittoning module does not convert image to black and white and works extensible nice on color images,
 				soo if you want to do traditional splittoning, use the monochrome module to make the image black and white
@@ -31,7 +31,7 @@
 
 	<sect3><title>Usage</title>
 		<para>...</para>
-		<sect4><title>Shadows and Hilights color</title>
+		<sect4><title>Shadows and Highlights color</title>
 			<para>These controls are used to set the color of the splittoning effect, you select the desire color and 
 					saturation for both shadows and highlights, you can also click the color preview box too bring up a
 					common color picker dialog.</para>

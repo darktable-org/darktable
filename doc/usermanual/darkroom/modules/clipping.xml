@@ -5,8 +5,8 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This tool is used for crop, rotate and prespective correction of you image, it does
-							also include many helpful guidelines that assists you using the tool.
+						<entry>This module is used for crop, rotate and correct perspective of your image, 
+							it does also include many helpful guidelines that assist you using the tools.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/croprotate.png" scalefit="1" width="80%" align="center" />

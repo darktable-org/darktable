@@ -5,7 +5,7 @@
 					<colspec colwidth='30%'/>
 					<tbody>
 						<row>						
-							<entry>Cyan is a nice color touchup for black and white images, this example guides you thru
+							<entry>Cyan is a nice color touchup for black and white images, this example guides you through
 								how to make this with Darktable and how to control the tone.
 								You can choose any tone of your like for this tutorial...
 							</entry>
@@ -23,7 +23,7 @@
 		<orderedlist>
 			<listitem>
 				<para>Image preparation</para>
-				<para>Prepare the image for the cross process steps by adjusting the base settings such as
+				<para>Prepare the image for the cyan toned steps by adjusting the base settings such as
 					exposure,black level, contrast etc. for a correctly looking image.
 				</para>
 			</listitem>
@@ -57,7 +57,7 @@
 					<listitem><para>Select a blue/cyan tone for shadows and set saturation around 50%</para></listitem>
 					<listitem><para>Set highlights saturation to zero, to remove saturation on highlights.</para></listitem>
 					<listitem><para>Set compression to zero</para></listitem>
-					<listitem><para>Use the balance slider to tune the effect, out example uses a balance of 70/30</para></listitem>
+					<listitem><para>Use the balance slider to tune the effect, our example uses a balance of 70/30</para></listitem>
 				</orderedlist>
 			</listitem>
 		</orderedlist>

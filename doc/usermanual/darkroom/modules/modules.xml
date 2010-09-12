@@ -1,15 +1,14 @@
 <sect1 status="final"><title>Modules</title>
 	<para>Each correction, enhancement or effect is implemented as modules, and this section includes documentation
-			of each module and it's specific parameters.
+			of each module and its specific parameters.
 			A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;"/>  where the <inlinegraphic fileref="&icon_module_enable;"/> icon  is used to turn then module
-			on or off, then there are a title of the module press this to expand the module too see the paramters userinterface.
-			<inlinegraphic fileref="&icon_module_presets;"/> icon is the preset icon to access the available presets stored for the modul and <inlinegraphic fileref="&icon_module_reset;"/>  icon is used to reset the module paramaters
-			to theire default values.
+			on or off, then there are a title of the module press this to expand the module to see the parameters userinterface.
+			<inlinegraphic fileref="&icon_module_presets;"/> icon is the preset icon to access the available presets stored for the module or to create new ones. The <inlinegraphic fileref="&icon_module_reset;"/>  icon is 				used to reset the module parameters to their default values.
 	</para>
 	<sect2 status="final"><title>Presets</title>
 		<para>
 			Presets are stored configurations for the module parameters both internal and userdefined is available
-				thru clicking the <inlinegraphic fileref="&icon_module_presets;"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text.
+				through clicking the <inlinegraphic fileref="&icon_module_presets;"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text.
 		</para>
 		<para>
 			The preset system does also support automatic preset selection based on image data such as focal length, iso,  
@@ -23,7 +22,7 @@
 			</para>
 			<graphic fileref="darkroom/modules/images/new_preset.png" scalefit="1" width="60%" align="center" />
 			<para>
-				The first to fields are used for setting a name and a description of the preset.
+				The first two fields are used for setting a name and a description of the preset.
 			</para>
 			<para>
 				In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter

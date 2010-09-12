@@ -20,8 +20,9 @@
 					<colspec colwidth='5cm'/>
 					<tbody>
 						<row>						
-							<entry>In this centerview your images are shown as thumbs, each thumb has a frame and while mouse is over
-								an image, information such as rating and if image are altered in darkroom <inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is viewed.
+							<entry>In this centerview, your images are shown as thumbs; each thumb has a frame and while mouse is over
+								an image, the information of rating, colorlabels and if image is altered in darkroom 
+								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is viewed.
 								Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel.
 							</entry>
 							<entry>
@@ -32,7 +33,7 @@
 				</tgroup>
 			</informaltable>
 							
-			<para>While mouse is over and imageframe you have additional actions accessed from keyboard to apply on image here
+			<para>While mouse is over an imageframe, you have additional actions accessed from keyboard to apply on image; here
 				follows an table of key accelerators and assigned actions.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
