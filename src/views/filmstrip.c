@@ -153,7 +153,6 @@ failure:
 static void
 copy_history_key_accel_callback(void *data)
 {
-  fprintf(stderr,"COPY!!\n");
   dt_film_strip_t *strip = (dt_film_strip_t *)data;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -164,7 +163,6 @@ copy_history_key_accel_callback(void *data)
 static void
 past_history_key_accel_callback(void *data)
 {
-  fprintf(stderr,"PAST!!\n");
   dt_film_strip_t *strip = (dt_film_strip_t *)data;
   if (strip->history_copy_imgid==-1) return;
   
@@ -175,6 +173,20 @@ past_history_key_accel_callback(void *data)
   int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   
   dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE);
+  dt_control_queue_draw_all();
+}
+
+static void
+discard_history_key_accel_callback(void *data)
+{
+  dt_film_strip_t *strip = (dt_film_strip_t *)data;
+  if (strip->history_copy_imgid==-1) return;
+  
+  int32_t mouse_over_id;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id <= 0) return;
+
+  dt_history_delete_on_image(mouse_over_id);
   dt_control_queue_draw_all();
 }
 
@@ -241,6 +253,7 @@ void enter(dt_view_t *self)
   
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, copy_history_key_accel_callback, (void *)strip);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, past_history_key_accel_callback, (void *)strip);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_d, discard_history_key_accel_callback, (void *)strip);
   
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_colorlabels_register_key_accels();
@@ -275,6 +288,7 @@ void leave(dt_view_t *self)
   dt_gui_key_accel_unregister(star_key_accel_callback);
   dt_gui_key_accel_unregister(copy_history_key_accel_callback);
   dt_gui_key_accel_unregister(past_history_key_accel_callback);
+  dt_gui_key_accel_unregister(discard_history_key_accel_callback);
   
 }
 
