@@ -58,7 +58,6 @@ libdarktable_la_SOURCES= \
 			gui/iop_modulegroups.c \
 			gui/metadata.c \
 			gui/navigation.c \
-			gui/panel_sizegroup.c \
 			gui/presets.c \
 			libs/lib.c \
 			views/view.c 
@@ -77,7 +76,6 @@ noinst_HEADERS= \
 			gui/iop_history.h \
 			gui/iop_modulegroups.h \
 			gui/draw.h \
-			gui/panel_sizegroup.h \
 			gui/presets.h \
 			gui/background_jobs.h \
 			develop/develop.h \

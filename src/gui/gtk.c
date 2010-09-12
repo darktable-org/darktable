@@ -43,7 +43,6 @@
 #include "gui/iop_modulegroups.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
-#include "gui/panel_sizegroup.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -904,6 +903,13 @@ center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
   return TRUE;
 }
 
+static void 
+dt_gui_panel_allocate(GtkWidget *widget, GtkAllocation *a, gpointer data) 
+{
+  GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "left");
+  gtk_widget_set_size_request (w, a->width, -1);
+  gtk_widget_queue_resize (w);
+}
 
 #include "background_jobs.h"
 int
@@ -956,18 +962,14 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
 
   
-  
-  /* initialize the panelsize group used for dynamic left/right panel size*/
-  dt_gui_panel_sizegroup_init ();
-  
+  /* add signal for size-allocate of right panel */
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  g_signal_connect (G_OBJECT (widget), "size-allocate", G_CALLBACK (dt_gui_panel_allocate), 0);
+
   // Update the devices module with available devices
   dt_gui_devices_init();
   
   dt_gui_background_jobs_init();
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-  dt_gui_panel_sizegroup_add (widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-  dt_gui_panel_sizegroup_add (widget);
   
   /* connect the signals in the interface */
 
@@ -1000,7 +1002,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
   gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME"-"PACKAGE_VERSION"</b></big></span>");
-  // dt_gui_panel_sizegroup_add (widget);
   
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
 
@@ -1168,7 +1169,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // switch modes in gui by double-clicking label
   widget = glade_xml_get_widget (darktable.gui->main_window, "view_label_eventbox");
-  // dt_gui_panel_sizegroup_add (widget);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
                     G_CALLBACK (view_label_clicked),
                     (gpointer)0);
