@@ -626,7 +626,12 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 {
   if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r')) return DT_IMAGEIO_CACHE_FULL;
   int oldwd, oldht;
+  float fwd, fht;
   dt_image_get_mip_size(img, DT_IMAGE_MIP4, &oldwd, &oldht);
+  dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &fwd, &fht);
+  img->mip_width  [DT_IMAGE_MIP4] = oldwd; img->mip_height  [DT_IMAGE_MIP4] = oldht;
+  img->mip_width_f[DT_IMAGE_MIP4] = fwd;   img->mip_height_f[DT_IMAGE_MIP4] = fht;
+
   // here we got mip4 'r' locked
   // create 8-bit mip maps:
   for(dt_image_buffer_t l=DT_IMAGE_MIP3;(int)l>=(int)DT_IMAGE_MIP0;l--)
@@ -634,11 +639,14 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
     // here we got mip l+1 'r' locked
     int p_wd, p_ht;
     dt_image_get_mip_size(img, l, &p_wd, &p_ht);
+    dt_image_get_exact_mip_size(img, l, &fwd, &fht);
     if(dt_image_alloc(img, l))
     {
       dt_image_release(img, l+1, 'r');
       return DT_IMAGEIO_CACHE_FULL;
     }
+    img->mip_width  [l] = p_wd; img->mip_height  [l] = p_ht;
+    img->mip_width_f[l] = fwd;  img->mip_height_f[l] = fht;
 
     // here, we got mip l+1 'r' locked, and  mip l 'rw'
 
@@ -716,6 +724,7 @@ void dt_image_init(dt_image_t *img)
   img->exif_crop = 1.0;
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
   for(int k=0;(int)k<(int)DT_IMAGE_NONE;k++) img->mip_buf_size[k] = 0;
+  for(int k=0;(int)k<(int)DT_IMAGE_FULL;k++) img->mip_width[k] = img->mip_height[k] = 0;
 }
 
 int dt_image_open(const int32_t id)

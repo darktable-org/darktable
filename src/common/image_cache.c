@@ -30,6 +30,8 @@
 #include <glib/gstdio.h>
 #include <assert.h>
 
+#define DT_IMAGE_CACHE_FILE_VERSION 1
+
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
 {
 #if 1//def _DEBUG
@@ -89,6 +91,11 @@ void dt_image_cache_write(dt_image_cache_t *cache)
   int written = 0;
   FILE *f = fopen(dbfilename, "wb");
   if(!f) goto write_error;
+
+  // write version info:
+  const int32_t magic = 0xD71337 + DT_IMAGE_CACHE_FILE_VERSION;
+  written = fwrite(&magic, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
 
   // dump all cache metadata:
   written = fwrite(&(cache->num_lines), sizeof(int32_t), 1, f);
@@ -183,8 +190,15 @@ int dt_image_cache_read(dt_image_cache_t *cache)
   FILE *f = fopen(dbfilename, "rb");
   if(!f) goto read_error;
 
-  // read metadata:
   int32_t num = 0, rd = 0;
+
+  // read version info:
+  const int32_t magic = 0xD71337 + DT_IMAGE_CACHE_FILE_VERSION;
+  int32_t magic_file = 0;
+  rd = fread(&magic_file, sizeof(int32_t), 1, f);
+  if(rd != 1 || magic_file != magic) goto read_error;
+
+  // read metadata:
   rd = fread(&num, sizeof(int32_t), 1, f);
   if(rd != 1) goto read_error;
   if(cache->num_lines != num) goto read_error;

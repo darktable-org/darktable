@@ -112,6 +112,10 @@ typedef struct dt_image_t
   int32_t cacheline; // for image_cache
   uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
   float *mipf;
+  int32_t mip_width [DT_IMAGE_FULL]; // mipmap buffer extents of the buffers in mip[.] and mipf
+  int32_t mip_height[DT_IMAGE_FULL];
+  float mip_width_f [DT_IMAGE_FULL]; // precise mipmap widths inside the buffers in mip[.] and mipf
+  float mip_height_f[DT_IMAGE_FULL];
   dt_image_lock_t lock[DT_IMAGE_NONE];
   char lock_last[DT_IMAGE_NONE][100];
   int32_t import_lock;
