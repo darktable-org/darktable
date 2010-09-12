@@ -964,6 +964,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_devices_init();
   
   dt_gui_background_jobs_init();
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  dt_gui_panel_sizegroup_add (widget);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  dt_gui_panel_sizegroup_add (widget);
   
   /* connect the signals in the interface */
 

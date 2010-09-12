@@ -19,7 +19,6 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
-#include "gui/panel_sizegroup.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 
@@ -470,7 +469,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
-  dt_gui_panel_sizegroup_add (evb);
   return evb;
 }
 

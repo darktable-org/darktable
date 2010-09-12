@@ -194,7 +194,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     v->height = height*(1.0-vm->film_strip_size) - tb;
     vm->film_strip.height = height * vm->film_strip_size;
     vm->film_strip.width  = width;
-    cairo_rectangle(cr, 0, v->height, width, tb);
+    cairo_rectangle(cr, -10, v->height, width+20, tb);
     cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 1.5);

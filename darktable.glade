@@ -26,6 +26,7 @@
 						<property name="n_columns">5</property>
 						<child>
 							<widget class="GtkVBox" id="right">
+                <property name="width_request">0</property>
 								<property name="visible">True</property>
 								<property name="spacing">10</property>
 								<child>
@@ -99,15 +100,17 @@
 										<property name="visible">True</property>
 										<property name="can_focus">True</property>
 										<property name="hscrollbar_policy">never</property>
-										<property name="vscrollbar_policy">automatic</property>
+										<property name="vscrollbar_policy">always</property>
+										<property name="shadow_type">none</property>
 										<child>
 											<widget class="GtkViewport" id="viewport1">
 												<!--<property name="width_request">280</property>-->
+                        <property name="shadow_type">none</property>
 												<property name="visible">True</property>
 												<property name="resize_mode">queue</property>
 												<child>
 													<widget class="GtkVBox" id="plugins_vbox">
-														<!--<property name="width_request">210</property>-->
+                            <property name="width_request">0</property>
 														<property name="visible">True</property>
 														<property name="spacing">10</property>
 														<child>
@@ -426,6 +429,7 @@ file manager</property>
 						</child>
 						<child>
 							<widget class="GtkVBox" id="left">
+                <property name="width_request">0</property>
 								<property name="visible">True</property>
 								<property name="spacing">10</property>
 								<child>
@@ -487,15 +491,18 @@ file manager</property>
 										<property name="visible">True</property>
 										<property name="can_focus">True</property>
 										<property name="hscrollbar_policy">never</property>
-										<property name="vscrollbar_policy">automatic</property>
+										<property name="vscrollbar_policy">always</property>
 										<property name="window_placement">top-right</property>
 										<property name="window_placement_set">True</property>
+                    <property name="shadow_type">none</property>
 										<child>
 											<widget class="GtkViewport" id="viewport2">
 												<property name="visible">True</property>
 												<property name="resize_mode">queue</property>
+                        <property name="shadow_type">none</property>
 												<child>
 													<widget class="GtkVBox" id="left_scrolled">
+														<property name="width_request">0</property>
 														<property name="visible">True</property>
 														<property name="spacing">10</property>
 														<child>

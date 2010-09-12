@@ -1,9 +1,17 @@
 # from art.gnome.org: marble-look, adjusted
 style "clearlooks-default"
 {
+  GtkScrolledWindow::scrollbar-spacing = 0
+  GtkScrolledWindow::scrollbar-within-bevel = TRUE
+  GtkScrolledWindow::shadow-type = GTK_SHADOW_NONE
+  GtkScrolledWindow::draw_border = { 0, 0, 0, 0 }
+  GtkScrollbar::draw_border = { 0, 0, 0, 0 }
+  GtkScrollbar::shadow-type = GTK_SHADOW_NONE
   GtkMenuItem::selected_shadow_type = out
   GtkWidget::interior_focus = 1
   GtkWidget::focus-line-width = 0
+  GtkScrollbar::focus_padding = 0
+  GtkScrolledWindow::focus_padding = 0
   GtkButton::default_border = { 0, 0, 0, 0 }
   GtkButton::default_outside_border = { 0, 0, 0, 0 }
   GtkRange::trough_border = 0
@@ -175,8 +183,20 @@ style "scale-fixed-font" = "clearlooks-default"
 
 style "clearlooks-scrollbar" = "clearlooks-defaults"
 {
+  xthickness = 0
+  ythickness = 0
   GtkRange::stepper-size = 0
+  GtkRange::stepper-spacing = 0
+  GtkRange::trough-border = 0
   GtkRange::slider-width = 10
+  GtkScale::trough-side-details = 0
+  GtkScrollbar::activate-slider = 0
+	GtkScrollbar::shadow-type	         = GTK_SHADOW_NONE
+	GtkScrollbar::internal-padding     = 0
+	GtkScrollbar::horizontal-padding   = 0
+	GtkScrollbar::vertical-padding     = 0
+	GtkScrollbar::padding     = 0
+	GtkScrollbar::focus-padding     = 0
 }
 
 style "metacity-frame"
