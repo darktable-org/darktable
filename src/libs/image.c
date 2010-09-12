@@ -18,6 +18,8 @@
 #include "common/darktable.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
 #include "libs/lib.h"
 #include "control/jobs.h"
 #include <stdlib.h>
@@ -103,15 +105,17 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("rotate left"));
+  GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
 
-  button = gtk_button_new_with_label(_("rotate right"));
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
+  gtk_box_pack_start(hbox, GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("reset rotation"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), NULL);

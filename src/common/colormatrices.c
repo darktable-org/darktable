@@ -30,6 +30,12 @@ dt_profiled_colormatrix_t;
   // image submitter, chart type, illuminant, comments
 static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "PENTAX K-x",                   { 821548, 337357,  42923}, { 247818, 1042969, -218735}, {247818, 1042969, -218735}, {792206, 821823, 668640}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "PENTAX K-7",                   { 738541, 294037,  28061}, { 316025,  984482, -189682}, { 12543, -185852, 1075027}, {812683, 843994, 682587}},
+
   // Sven Lindahl, Wolf Faust IT8, direct sunlight, well lit
   { "Canon EOS-1Ds Mark II",        {1078033, 378601, -31113}, { -15396, 1112045, -245743}, {166794, -252411, 1284531}, {681213, 705048, 590790}},
 
@@ -62,6 +68,16 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   { "Canon EOS 450D",               { 960098, 404968,  22842}, { -85114,  855072, -310928}, {159851, -194611, 1164276}, {851379, 871506, 711823}},
   { "Canon EOS DIGITAL REBEL XSi",  { 960098, 404968,  22842}, { -85114,  855072, -310928}, {159851, -194611, 1164276}, {851379, 871506, 711823}},
   { "Canon EOS Kiss Digital X2",    { 960098, 404968,  22842}, { -85114,  855072, -310928}, {159851, -194611, 1164276}, {851379, 871506, 711823}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Canon EOS REBEL T1i",          { 956711, 314590,   1236}, {  27405, 1158569, -346283}, { 95444, -376572, 1260895}, {870087, 898087, 734146}},
+  { "Canon EOS 500D",               { 956711, 314590,   1236}, {  27405, 1158569, -346283}, { 95444, -376572, 1260895}, {870087, 898087, 734146}},
+  { "Canon EOS Kiss Digital X3",    { 956711, 314590,   1236}, {  27405, 1158569, -346283}, { 95444, -376572, 1260895}, {870087, 898087, 734146}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Canon EOS REBEL T2i",          { 864960, 319305,  36880}, { 160904, 1113586, -251587}, { 68832, -334290, 1143463}, {848404, 883118, 718628}},
+  { "Canon EOS 550D",               { 864960, 319305,  36880}, { 160904, 1113586, -251587}, { 68832, -334290, 1143463}, {848404, 883118, 718628}},
+  { "Canon EOS Kiss Digital X4",    { 864960, 319305,  36880}, { 160904, 1113586, -251587}, { 68832, -334290, 1143463}, {848404, 883118, 718628}},
 
   // Artis Rozentals, Wolf Faust IT8, direct sunlight, well lit
   { "Canon PowerShot S60",          { 879990, 321808,  23041}, { 272324, 1104752, -410950}, { 75500, -184097, 1373230}, {702026, 740524, 622131}},

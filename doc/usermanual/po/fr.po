@@ -1,0 +1,485 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2010-09-11 10:14+0200\n"
+"PO-Revision-Date: 2010-09-12 11:18+0100\n"
+"Last-Translator: Olivier TRIBOUT <olivier.tribout@noos.fr>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../build/darktable-usermanual_profiled_final.xml:5(para)
+msgid "Legal notice ..."
+msgstr "Notice légale ..."
+
+#: ../build/darktable-usermanual_profiled_final.xml:10(firstname)
+msgid "Henrik"
+msgstr "Henrik"
+
+#: ../build/darktable-usermanual_profiled_final.xml:11(surname)
+msgid "Andersson"
+msgstr "Andersson"
+
+#: ../build/darktable-usermanual_profiled_final.xml:14(year)
+msgid "2010"
+msgstr "2010"
+
+#: ../build/darktable-usermanual_profiled_final.xml:15(holder)
+msgid "P.H. Andersson"
+msgstr "P.H. Andersson"
+
+#: ../build/darktable-usermanual_profiled_final.xml:18(title)
+msgid "Darktable"
+msgstr "Darktable"
+
+#: ../build/darktable-usermanual_profiled_final.xml:19(title)
+msgid "Preface to darktable"
+msgstr "Préface"
+
+#: ../build/darktable-usermanual_profiled_final.xml:20(para)
+msgid "<indexterm significance=\"normal\"><primary>Darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> This is the preface. It contains of a paragrapgh, a list and a link. This paragraph contains useless words only. Its mere purpose is to have some text in order to see the paragraphs end."
+msgstr "<indexterm significance=\"normal\"><primary>Darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> Il s'agit de la préface. Elle contient un paragraphe, une liste et un lien. Ce paragraphe ne contient que des mots inutiles. Son seul intérêt est d'avoir du texte pour voir comment le paragraphe se termine. "
+
+#: ../build/darktable-usermanual_profiled_final.xml:31(keyword)
+msgid "darktable"
+msgstr "darktable"
+
+#: ../build/darktable-usermanual_profiled_final.xml:32(keyword)
+msgid "overview"
+msgstr "résumé"
+
+#: ../build/darktable-usermanual_profiled_final.xml:33(keyword)
+msgid "application"
+msgstr "application"
+
+#: ../build/darktable-usermanual_profiled_final.xml:36(title)
+#: ../build/darktable-usermanual_profiled_final.xml:144(title)
+#: ../build/darktable-usermanual_profiled_final.xml:215(title)
+#: ../build/darktable-usermanual_profiled_final.xml:294(title)
+#: ../build/darktable-usermanual_profiled_final.xml:322(title)
+#: ../build/darktable-usermanual_profiled_final.xml:356(title)
+#: ../build/darktable-usermanual_profiled_final.xml:411(title)
+#: ../build/darktable-usermanual_profiled_final.xml:478(title)
+msgid "Overview"
+msgstr "Vue d'ensemble"
+
+#: ../build/darktable-usermanual_profiled_final.xml:37(para)
+msgid "Darktable is an application to manage and develop your digital images..."
+msgstr "Darktable est une application pour organiser et développer vos images numériques..."
+
+#: ../build/darktable-usermanual_profiled_final.xml:38(title)
+msgid "Userinterface"
+msgstr "Interface utilisateur"
+
+#: ../build/darktable-usermanual_profiled_final.xml:44(entry)
+msgid "This section describes the layout of the userinterface."
+msgstr "Cette section décrit l'organisation de l'interface utilisateur."
+
+#: ../build/darktable-usermanual_profiled_final.xml:54(title)
+msgid "Views"
+msgstr "Vues"
+
+#: ../build/darktable-usermanual_profiled_final.xml:55(para)
+msgid "Darktable consist of several views also mentions as modes, for time beeing there is three available views as described in this section, the current view is identified by the label at top of left panel. There are key accelerators to access the different views as descibed in the table below. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>switches to lighttable view</entry></row><row><entry><emphasis>d</emphasis></entry><entry>switches to darkroom view</entry></row><row><entry><emphasis>t</emphasis></entry><entry>switches to camera tethering view</entry></row></tbody></tgroup></informaltable>"
+msgstr "Darktable est constitué de plusieurs vues, aussi appelées modes ; pour l'instant 3 modes sont disponibles et décrits dans cette section. La vue courante est identifiée par un texte en haut du panneau droit. Des raccourcis clavier permettent d'accéder aux différents vues :  <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>passe en mode \"table lumineuse\"</entry></row><row><entry><emphasis>d</emphasis></entry><entry>passe en mode \"chambre noire\"</entry></row><row><entry><emphasis>t</emphasis></entry><entry>passe en mode \"capture\"</entry></row></tbody></tgroup></informaltable>"
+
+#: ../build/darktable-usermanual_profiled_final.xml:74(title)
+#: ../build/darktable-usermanual_profiled_final.xml:137(title)
+msgid "Lighttable"
+msgstr "Table lumineuse"
+
+#: ../build/darktable-usermanual_profiled_final.xml:75(para)
+msgid "The lighttable view is where you manage you images and filmrolls, it's in this view you rate, add tags, add colorlabels, export images among other actions."
+msgstr "La vue \"table lumineuse\" est l'endroit où vous organisez les images et les dossiers. C'est dans cette vue que vous notez, ajoutez des labels, exporter les images, et bien d'autres."
+
+#: ../build/darktable-usermanual_profiled_final.xml:79(title)
+#: ../build/darktable-usermanual_profiled_final.xml:208(title)
+msgid "Darkroom"
+msgstr "Chambre noire"
+
+#: ../build/darktable-usermanual_profiled_final.xml:80(para)
+msgid "In the darkroom view you develop a specific image using the plugins available."
+msgstr "La vue \"chambre noire\" vous permet de développer une image spécifique en utilisant les modules disponibles."
+
+#: ../build/darktable-usermanual_profiled_final.xml:83(title)
+msgid "Tehtering"
+msgstr "Capture"
+
+#: ../build/darktable-usermanual_profiled_final.xml:84(para)
+msgid "This view is where you do camera tethering."
+msgstr "Cette vue vous permet de contrôler le boîtier."
+
+#: ../build/darktable-usermanual_profiled_final.xml:89(title)
+msgid "Filmstrip"
+msgstr "Bandeau"
+
+#: ../build/darktable-usermanual_profiled_final.xml:90(para)
+msgid "The filmstrip views the same images as is viewed in lighttable with respect to filter and sort orders and are turned on/off with key accel ctrl-f. Filmstrip provides some actions to apply on images when you are not in lighttable mode, you can for an example when in darkroom mode and developing an image, switch to another image to develop by doubleclicking the thumb in the filmstrip..."
+msgstr "Le bandeau affiche les mêmes images que celles visibles dans la table lumineuse (les filtres et l'ordre du tri sont conservés). Il est activé/désactivé par le raccourci clavier ctrl-f. Le bandeau permet d'appliquer certaines actions à des images même lorsque vous n'êtes pas dans le mode table lumineuse. Par exemple, lorsque vous êtes dans la chambre noire et que vous développez une image, vous pouvez changer d'image à développer en double-cliquant sur l'aperçu de l'image dans le bandeau."
+
+#: ../build/darktable-usermanual_profiled_final.xml:96(para)
+msgid "The filmstrip does also provide some actions to be performed on image under the mousepointer and here follows a table of available key accelerators for specific actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack onto the image</entry></row></tbody></tgroup></informaltable>"
+msgstr "Le bandeau permet également d'agir sur les images sous le pointeur de souris. Le tableau suivant résumé les raccourcis clavier disponibles :  <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>note l'image ; si une image a 1 étoile et que vous tapez 1, l'image est notée 0 </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>affecte un label de couleur</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copie le développement d'une  image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>applique le développement copié à une image</entry></row></tbody></tgroup></informaltable>"
+
+#: ../build/darktable-usermanual_profiled_final.xml:121(title)
+msgid "Darktable workflow"
+msgstr "Flux de travail dans darktable"
+
+#: ../build/darktable-usermanual_profiled_final.xml:133(keyword)
+msgid "lighttable"
+msgstr "table lumineuse"
+
+#: ../build/darktable-usermanual_profiled_final.xml:134(keyword)
+#: ../build/darktable-usermanual_profiled_final.xml:205(keyword)
+msgid "view"
+msgstr "vue"
+
+#: ../build/darktable-usermanual_profiled_final.xml:138(para)
+msgid "The lighttable is where you manage all your images, ratings, exporting and much more..."
+msgstr "La table lumineuse est l'endroit où vous organisez, notez, exportez vos images et bien plus encore..."
+
+#: ../build/darktable-usermanual_profiled_final.xml:140(screeninfo)
+msgid "The lighttable view"
+msgstr "La vue \"table lumineuse\""
+
+#: ../build/darktable-usermanual_profiled_final.xml:146(title)
+msgid "Ligthtable"
+msgstr "Table lumineuse"
+
+#: ../build/darktable-usermanual_profiled_final.xml:152(entry)
+msgid "In this centerview your images are shown as thumbs, each thumb has a frame and while mouse is over an image, information such as rating and if image are altered in darkroom <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> is viewed. Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel."
+msgstr "Dans la vue centrale, vos images sont représentées par des aperçus, chacun ayant un cadre ; lorsque la souris est au-dessus de l'un d'eux, les informations de notation, de label et si l'image a été développée dans la chambre noire <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> sont affichées. De plus, quand la souris est au-dessus d'un cadre, les métadonnées sont affichées dans le panneau de métadonnées."
+
+#: ../build/darktable-usermanual_profiled_final.xml:164(para)
+msgid "While mouse is over and imageframe you have additional actions accessed from keyboard to apply on image here follows an table of key accelerators and assigned actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>opens the image in darkroom view for developing</entry></row><row><entry><emphasis>z</emphasis></entry><entry>shows a fullscreen view of the image</entry></row></tbody></tgroup></informaltable>"
+msgstr "Quand la souris est au-dessus d'un cadre, d'autres actions sont accessibles par le clavier ; le tableau suivant résume les raccourcis clavier et leur action correspondante : <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>note l'image ; si une image a 1 étoile et que vous tapez 1, l'image est notée 0</entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>affecte un label de couleur</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copie le développement d'une  image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>applique le développement copié à une image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>ouvre l'image dans la chambre noire pour la développer</entry></row><row><entry><emphasis>z</emphasis></entry><entry>affiche une vue en plein écran de l'image</entry></row></tbody></tgroup></informaltable>"
+
+#: ../build/darktable-usermanual_profiled_final.xml:192(para)
+msgid "At the bottom you have an option to choose a zoomable lighttable view or a filemanger view of the thumbnails."
+msgstr "En bas, vous pouvez choisir le type de vue : table lumineuse zoomable ou gestionnaire de fichiers."
+
+#: ../build/darktable-usermanual_profiled_final.xml:204(keyword)
+msgid "darkroom"
+msgstr "chambre noire"
+
+#: ../build/darktable-usermanual_profiled_final.xml:209(para)
+msgid "The darkroom view is where you develop your image..."
+msgstr "La vue \"chambre noire\" est l'endroit où vous développez votre image..."
+
+#: ../build/darktable-usermanual_profiled_final.xml:211(screeninfo)
+msgid "The darkroom view"
+msgstr "La vue \"chambre noire\""
+
+#: ../build/darktable-usermanual_profiled_final.xml:216(para)
+msgid "In darkroom you are in develop mode for the specific image, here you have alot of tools to develop you image."
+msgstr "Dans la chambre noire, vous développez une image donnée ; vous avez différents outils pour développer."
+
+#: ../build/darktable-usermanual_profiled_final.xml:219(para)
+msgid "On the left side you have the navigation, snapshots, history and histogram panel each of them are described below, in the right panel you can see the histogram and then a list of available modules to use when working with your image. And at bottom of right panel you can enable/disable individual modules which will remove them from the right panel."
+msgstr "Sur la gauche, vous avez les panneaux de navigation, instantanés et historique, chacun étant décrit plus bas. Sur la droite, vous pouvez voir l'histogramme ainsi qu'une liste des modules disponibles pour travailler votre image. En bas du panneau de droite, vous pouvez activer/désactiver l'affichage des modules dans le panneau. "
+
+#: ../build/darktable-usermanual_profiled_final.xml:225(title)
+msgid "Panels"
+msgstr "Panneaux"
+
+#: ../build/darktable-usermanual_profiled_final.xml:227(title)
+msgid "Snapshots"
+msgstr "Instantanés"
+
+#: ../build/darktable-usermanual_profiled_final.xml:233(entry)
+msgid "You can take a snapshot of what is displayed in the center view, this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion when you tuning parameters of a module."
+msgstr "Vous pouvez prendre un instantané de ce qui est affiché dans la vue centrale ; cet instantané peut être sélectionné et est alors affiché dans la vue centrale (à gauche) en comparaison avec la vue active (à droite). Cela permet d'affiner vos réglages."
+
+#: ../build/darktable-usermanual_profiled_final.xml:250(title)
+msgid "Modules"
+msgstr "Modules"
+
+#: ../build/darktable-usermanual_profiled_final.xml:251(para)
+msgid "Each correction, enhancement or effect is implemented as modules, and this section includes documentation of each module and it's specific parameters. A module consists of an expander bar <inlinegraphic fileref=\"../images/darkroom_module_expander.png\"/> where the <inlinegraphic fileref=\"../images/darkroom_module_icon_enable.png\"/> icon is used to turn then module on or off, then there are a title of the module press this to expand the module too see the paramters userinterface. <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> icon is the preset icon to access the available presets stored for the modul and <inlinegraphic fileref=\"../images/darkroom_module_icon_reset.png\"/> icon is used to reset the module paramaters to theire default values."
+msgstr "Chaque correction, amélioration ou effet est implémenté dans un module et cette section décrit chacun d'eux. Un module est constitué d'un ligne développable <inlinegraphic fileref=\"../images/darkroom_module_expander.png\"/> dans laquelle l'icône <inlinegraphic fileref=\"../images/darkroom_module_icon_enable.png\"/> est utilisé pour activer/désactiver le module ; puis suit le titre du module. Un appui sur le titre développe le module et permet d'afficher ses paramètres. Le bouton <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> correspond aux pré-réglages et permet d'accéder aux pré-réglages enregistrés ou d'en créer un nouveau. Le bouton <inlinegraphic fileref=\"../images/darkroom_module_icon_reset.png\"/> est utilisé pour ré-initialiser les valeurs du module aux valeurs par défaut."
+
+#: ../build/darktable-usermanual_profiled_final.xml:258(title)
+msgid "Presets"
+msgstr "Pré-réglages"
+
+#: ../build/darktable-usermanual_profiled_final.xml:259(para)
+msgid "Presets are stored configurations for the module parameters both internal and userdefined is available thru clicking the <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text."
+msgstr "Les pré-réglages sont des configurations sauvegardées des paramètres de module ; ils peuvent être internes au programme ou créés par l'utilisateur. Ils sont accessibles grâce au bouton <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> qui affiche une liste des pré-réglages disponibles ; le pré-réglage actif est en gras."
+
+#: ../build/darktable-usermanual_profiled_final.xml:263(para)
+msgid "The preset system does also support automatic preset selection based on image data such as focal length, iso, camera model and much more fields."
+msgstr "Le système de pré-réglage permet également d'appliquer automatiquement un réglage en se basant sur les métadonnées de l'image telles que la focale, la sensibilité, le modèle de boîtier  et plus encore."
+
+#: ../build/darktable-usermanual_profiled_final.xml:267(title)
+msgid "Creating a new preset"
+msgstr "Créer un nouveau pré-réglage"
+
+#: ../build/darktable-usermanual_profiled_final.xml:268(para)
+msgid "Configure the specific module of choice as you like then you click the <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> icon and select store new preset menu choice. Following dialog will be shown to configure the preset:"
+msgstr "Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante s'affiche alors pour configurer le pré-réglage :"
+
+#: ../build/darktable-usermanual_profiled_final.xml:274(para)
+msgid "The first to fields are used for setting a name and a description of the preset."
+msgstr "Les deux premiers champs sont utilisés pour donner un nom et une description au pré-réglage."
+
+#: ../build/darktable-usermanual_profiled_final.xml:277(para)
+msgid "In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter that is used to decide if the preset should be applied the image or not. The example dialog above does set up following rules, if lens name matches and aperture is &gt;= 8 and focal length is in range 24 - 35mm the preset will be automatically applied, it will also only show in the preset list if the image does match this rule."
+msgstr "Dans l'exemple, j'ai également coché l'option \"appliquer automatiquement aux images correspondantes\" ce qui affiche les champs permettant de définir le filtre. L'exemple ci-dessus introduit les règles suivantes : si le nom de la lentille correspond, que l'ouverture est de &gt;= 8, et que la focale est entre 24 et 35 mm, le pré-réglage s'appliquera automatiquement ; de même le pré-réglage n'apparaitra dans la liste que si l'image correspond aux critères du filtre."
+
+#: ../build/darktable-usermanual_profiled_final.xml:283(para)
+msgid "The data used is the exif information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values and lookup model string in metadata panel and enter it into the model field."
+msgstr "Les données utilisées sont extraites des données EXIF ; si vous souhaitez qu'un pré-réglage s'applique à toutes les images d'un boîtier spécifique, laissez tous les champs à leur valeur par défaut, observer le nom du modèle dans le panneau de métadonnées puis entrer ce nom dans le champ \"modèle\"."
+
+#: ../build/darktable-usermanual_profiled_final.xml:293(title)
+msgid "Crop and rotate"
+msgstr "Recadrer et pivoter"
+
+#: ../build/darktable-usermanual_profiled_final.xml:300(entry)
+msgid "This tool is used for crop, rotate and prespective correction of you image, it does also include many helpful guidelines that assists you using the tool."
+msgstr "Ce module est utilisé pour recadrer, pivoter et corriger les perspectives de votre image ; il inclut également des guides visuels pour vous assister."
+
+#: ../build/darktable-usermanual_profiled_final.xml:311(para)
+msgid "First off select what aspect ratio you want and size the crop bounds by dragging border and corner handles, use ctrl-x to swap potrait/landscape rotation of the crop rectangle. You can move around the crop rectangle by holding down left mouse button and move around... When you finished and want to execute the crop, hit enter key or double click in crop rectangle."
+msgstr "Commencez par sélectionner le ratio d'aspect désiré puis déplacez les bordures et coin de recadrage ; ctrl-x permet de retourner le rectangle de recadrage (portrait/paysage). Vous pouvez déplacer l'ensemble du rectangle de recadrage maintenant le bouton gauche de la souris appuyé. Lorsque le recadrage vous satisfait, appuyez sur entrée ou double-cliquez dans le rectangle pour valider."
+
+#: ../build/darktable-usermanual_profiled_final.xml:321(title)
+msgid "Velvia"
+msgstr "Velvia"
+
+#: ../build/darktable-usermanual_profiled_final.xml:328(entry)
+msgid "The velvia module does enhance the saturation in the image, i does increase saturation on lower saturated pixeks more than high satured pixels."
+msgstr "Le module Velvia améliore la saturation de l'image. Il augmente plus fortement la saturation des pixels faiblement saturés que celles de ceux déjà saturés."
+
+#: ../build/darktable-usermanual_profiled_final.xml:340(title)
+#: ../build/darktable-usermanual_profiled_final.xml:386(title)
+msgid "Usage"
+msgstr "Utilisation"
+
+#: ../build/darktable-usermanual_profiled_final.xml:341(title)
+msgid "Saturation"
+msgstr "Saturation"
+
+#: ../build/darktable-usermanual_profiled_final.xml:342(para)
+msgid "This slider controls the strength of saturation for the effect."
+msgstr "Ce variateur contrôle l'intensité de la saturation."
+
+#: ../build/darktable-usermanual_profiled_final.xml:344(title)
+msgid "Vibrance"
+msgstr "Vibrance"
+
+#: ../build/darktable-usermanual_profiled_final.xml:345(para)
+msgid "Vibrance controls how much of the saturation is applied to weighted pixels."
+msgstr "La vibrance contrôle la quantité de saturation à appliquer aux pixels pondérés."
+
+#: ../build/darktable-usermanual_profiled_final.xml:348(title)
+msgid "Mid-tones bias"
+msgstr "Répartition"
+
+#: ../build/darktable-usermanual_profiled_final.xml:349(para)
+msgid "This slider controls preservation of saturation in mid-tones."
+msgstr "Ce variateur contrôle la préservation de la saturation des tons moyens."
+
+#: ../build/darktable-usermanual_profiled_final.xml:355(title)
+#: ../build/darktable-usermanual_profiled_final.xml:462(para)
+#: ../build/darktable-usermanual_profiled_final.xml:526(para)
+msgid "Splittoning"
+msgstr "Virage partiel"
+
+#: ../build/darktable-usermanual_profiled_final.xml:362(entry)
+msgid "Original splittoning method creates a two color linear toning effect where the shadows and highlights are represented by two different colors. In the example image below you can see an original black and white image and one where a splittoning effect are applied with blue in shadows and yellow-ish color in highlights."
+msgstr "Le virage partiel traditionnel crée un effet de bi-coloration (virage) linéaire où les ombres et les hautes lumières sont représentées par deux couleurs différentes. Dans l'exemple qui suit, vous pouvez voir une image originale en noir et blanc, puis une image à laquelle un effet de de virage partiel a été appliqué avec du bleu dans les ombres et du jaune dans les hautes lumières. "
+
+#: ../build/darktable-usermanual_profiled_final.xml:375(para)
+msgid "Darktable splittoning plugin has more parameters that impacts on the default above behavior, we have balance which offsets the 50% gray level in image and compression that does compress toning in the shadows and highlights which leaves a gap which are untouched by the effect. Read more and see examples of these additional parameters to splittoning module in Parameters section."
+msgstr "Le module de virage partiel de darktable possède plus de paramètres qui impactent le comportement par défaut décrit précédemment ; la répartition décale le gris à 50% et le seuil limite le virage aux ombres et hautes lumières et laisse un espace de tons non touchés par l'effet. Plus d'informations et d'exemples sur ces paramètres additionnels dans la section \"utilisation\"."
+
+#: ../build/darktable-usermanual_profiled_final.xml:380(para)
+msgid "The splittoning module does not convert image to black and white and works extensible nice on color images, soo if you want to do traditional splittoning, use the monochrome module to make the image black and white before playing around with splittoning effect."
+msgstr "Le module de virage partiel ne convertit pas l'image en noir et blanc et fonctionne magnifiquement sur des images en couleurs. Si vous souhaitez réaliser un virage partiel traditionnel, vous devez utiliser le module \"monochrome\" afin de transformer l'image en noir et blanc, avant d'activer le module de virage partiel."
+
+#: ../build/darktable-usermanual_profiled_final.xml:387(para)
+msgid "..."
+msgstr "..."
+
+#: ../build/darktable-usermanual_profiled_final.xml:388(title)
+msgid "Shadows and Hilights color"
+msgstr "Couleur pour les ombres et les hautes lumières"
+
+#: ../build/darktable-usermanual_profiled_final.xml:389(para)
+msgid "These controls are used to set the color of the splittoning effect, you select the desire color and saturation for both shadows and highlights, you can also click the color preview box too bring up a common color picker dialog."
+msgstr "Ces paramètres permettent de régler les couleurs du virage partiel. Sélectionnez le ton et la saturation à la fois pour les ombres et les hautes lumières ; vous pouvez aussi cliquer sur l'aperçu de la couleur, ce qui lancera une boîte de dialogue de sélection."
+
+#: ../build/darktable-usermanual_profiled_final.xml:393(title)
+msgid "Balance"
+msgstr "Répartition"
+
+#: ../build/darktable-usermanual_profiled_final.xml:394(para)
+msgid "The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness range in image are used for shadows toning and the other 50% for highlights toning."
+msgstr "La répartition est présentée par une barre dont la valeur par défaut est 50/50, ce qui signifie que 50% de la luminosité de l'image est utilisée pour le virage des ombres et les 50% restants pour le virage des hautes lumières."
+
+#: ../build/darktable-usermanual_profiled_final.xml:398(title)
+msgid "Compression"
+msgstr "Seuil"
+
+#: ../build/darktable-usermanual_profiled_final.xml:399(para)
+msgid "Compression is a percentage of total lightness range that not is affected by color toning, default value is set to 33% which not is the default behaviour of a original splittoning which would be 0% compression. The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original splittoning method..."
+msgstr "Le seuil est un pourcentage de la luminosité totale qui n'est pas affectée par le virage ; la valeur par défaut est 33% ce qui ne correspond pas au comportement d'un virage partiel standard pour lequel nous aurions 0%. Le choix de 33% pour la valeur par défaut est une invitation à l'expérimentation et permet de s'apercevoir de l'apport d'un tel paramètre comparé à un virage partiel standard."
+
+#: ../build/darktable-usermanual_profiled_final.xml:409(title)
+msgid "Examples"
+msgstr "Exemples"
+
+#: ../build/darktable-usermanual_profiled_final.xml:410(title)
+msgid "Cross-processing"
+msgstr "Traitement croisé"
+
+#: ../build/darktable-usermanual_profiled_final.xml:417(entry)
+msgid "Cross-processing is a analog processing technique where slide film (E6) is processed in chemicals used for processing print film (C41). The resulting images get skewed colors usually a cyan hue and increased contrast and saturation."
+msgstr "Le traitement croisé est une technique issue du monde de la photo argentique où un film positif (normalement développé grâce à une solution E6) est développé dans une solution chimique destinée aux négatifs (C41). Les images résultantes possèdent des couleurs faussées, généralement une teinte cyan ainsi qu'un contraste et une saturation augmentés."
+
+#: ../build/darktable-usermanual_profiled_final.xml:429(para)
+msgid "The standard way for doing digital cross-processing is to use a channel curve tool but Darktable lacks this tool for the moment and another way to accomodiate the effect is used."
+msgstr "La manière standard de procéder à un virage partiel en numérique est d'utiliser une courbe de canaux mais darktable n'a pas encore cet outil et un autre moyen est utilisé."
+
+#: ../build/darktable-usermanual_profiled_final.xml:433(title)
+#: ../build/darktable-usermanual_profiled_final.xml:496(title)
+msgid "Procedure"
+msgstr "Procédure"
+
+#: ../build/darktable-usermanual_profiled_final.xml:434(para)
+#: ../build/darktable-usermanual_profiled_final.xml:497(para)
+msgid "This procedure uses tonecurve, channelmixer and splittoning modules."
+msgstr "Cette procédure utilise les modules de courbe des tonalités, le mixeur de canaux et le virage partiel."
+
+#: ../build/darktable-usermanual_profiled_final.xml:438(para)
+#: ../build/darktable-usermanual_profiled_final.xml:501(para)
+msgid "Image preparation"
+msgstr "Préparation de l'image"
+
+#: ../build/darktable-usermanual_profiled_final.xml:439(para)
+msgid "Prepare the image for the cross process steps by adjusting the base settings such as exposure,whitebalance etc. for a correctly looking image."
+msgstr "Préparez l'image pour le traitement croisé en ajustant les réglages de base tels que l'exposition, la balance des blancs, etc, afin d'avoir une image correcte."
+
+#: ../build/darktable-usermanual_profiled_final.xml:443(para)
+msgid "Boost contrast"
+msgstr "Augmenter le contraste"
+
+#: ../build/darktable-usermanual_profiled_final.xml:444(para)
+msgid "Select the medium contrast curve preset for tonecurve module to boost the overall contrast in the image. You later might get back here to tune the curve for better result."
+msgstr "Sélectionnez le pré-réglage de \"contraste moyen\" dans le module \"courbe des tonalités\" afin d'augmenter le contraste global de l'image. Vous pourrez revenir sur ces réglages plus tard afin d'affiner le rendu."
+
+#: ../build/darktable-usermanual_profiled_final.xml:450(para)
+msgid "Color cast"
+msgstr "Coloration globale"
+
+#: ../build/darktable-usermanual_profiled_final.xml:451(para)
+msgid "This step does change the colorcast as the base for the effect using the channel mixer. You might later get back to this and finetune the colorcast of the final result."
+msgstr "Cette étape change la coloration globale en utilisant le module \"mixeur de canaux\". Vous pourrez revenir sur ces réglages plus tard et affiner la coloration du résultat final."
+
+#: ../build/darktable-usermanual_profiled_final.xml:455(para)
+#: ../build/darktable-usermanual_profiled_final.xml:516(para)
+msgid "Enable the channel mixer module"
+msgstr "Activez le module de mixeur de canaux."
+
+#: ../build/darktable-usermanual_profiled_final.xml:456(para)
+msgid "Select blue channel and set blue color value to 0.8"
+msgstr "Sélectionnez le canal bleu et mettre la couleur bleue à la valeur 0.8"
+
+#: ../build/darktable-usermanual_profiled_final.xml:457(para)
+msgid "Select red channel and change blue color value to 0.1"
+msgstr "Sélectionnez le canal rouge et mettre la couleur bleue à la valeur 0.1"
+
+#: ../build/darktable-usermanual_profiled_final.xml:458(para)
+msgid "Select green channel and change blue color value to 0.1"
+msgstr "Sélectionnez le canal vert et mettre la couleur bleue à la valeur 0.1"
+
+#: ../build/darktable-usermanual_profiled_final.xml:463(para)
+msgid "We use splittoning for add some more coloring to the result for cyan/blue shadows and yellow highlight."
+msgstr "Nous utilisons le virage partiel pour ajouter une coloration supplémentaire ; les ombres tendent vers le bleu et les hautes lumières vers le jaune."
+
+#: ../build/darktable-usermanual_profiled_final.xml:467(para)
+#: ../build/darktable-usermanual_profiled_final.xml:532(para)
+msgid "Enable the splittoning module"
+msgstr "Activez le module de virage partiel"
+
+#: ../build/darktable-usermanual_profiled_final.xml:468(para)
+msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
+msgstr "Sélectionnez une teinte cyan/bleu pour les ombres et une saturation de 50%."
+
+#: ../build/darktable-usermanual_profiled_final.xml:469(para)
+msgid "Select a yellow/orange tone for highlights and set saturation around 70%"
+msgstr "Sélectionnez une teinte jaune/orange pour les hautes lumières et une saturation de 70%."
+
+#: ../build/darktable-usermanual_profiled_final.xml:470(para)
+msgid "Set compression to 10%"
+msgstr "Mettez le seuil à 10%"
+
+#: ../build/darktable-usermanual_profiled_final.xml:471(para)
+msgid "Use the balance slider to tune the splittoning effect due this differs on every image due to it's exposure, motive etc."
+msgstr "Utilisez la répartition pour modifier l'effet du virage partiel ; l'effet de ce paramètre diffère entre les images, selon leur exposition, contraste, etc."
+
+#: ../build/darktable-usermanual_profiled_final.xml:477(title)
+msgid "Cyan toned image"
+msgstr "Virage cyan"
+
+#: ../build/darktable-usermanual_profiled_final.xml:484(entry)
+msgid "Cyan is a nice color touchup for black and white images, this example guides you thru how to make this with Darktable and how to control the tone. You can choose any tone of your like for this tutorial..."
+msgstr "La couleur cyan est une coloration agréable pour les images noir et blanc. Cet exemple vous guide pendant les étapes nécessaires pour réaliser cette retouche avec darktable. Vous pouvez bien sûr choisir le virage de votre choix."
+
+#: ../build/darktable-usermanual_profiled_final.xml:502(para)
+msgid "Prepare the image for the cross process steps by adjusting the base settings such as exposure,black level, contrast etc. for a correctly looking image."
+msgstr "Préparez l'image pour le virage en ajustant les réglages de base tels que l'exposition, la balance des blancs, etc, afin d'avoir une image correcte."
+
+#: ../build/darktable-usermanual_profiled_final.xml:506(para)
+msgid "Black and white"
+msgstr "Noir et blanc"
+
+#: ../build/darktable-usermanual_profiled_final.xml:507(para)
+msgid "Enable the monochrome module to make the image black and white."
+msgstr "Activez le module \"monochrome\" pour rendre l'image noir et blanc."
+
+#: ../build/darktable-usermanual_profiled_final.xml:511(para)
+msgid "Add color tone"
+msgstr "Ajouter un virage global"
+
+#: ../build/darktable-usermanual_profiled_final.xml:512(para)
+msgid "This step selects the basetone of the image using channel mixer, we are going for cyan tone but you can choose the tone of your like here."
+msgstr "Cette étape effectue un virage global de l'image en utilisant le module \"mixeur de canaux\". Nous utilisons une teinte cyan mais vous pouvez choisir la couleur de votre choix."
+
+#: ../build/darktable-usermanual_profiled_final.xml:517(para)
+msgid "Select red channel and set red color value to 0.7"
+msgstr "Sélectionnez le canal rouge et mettre la couleur rouge à la valeur 0.7"
+
+#: ../build/darktable-usermanual_profiled_final.xml:518(para)
+msgid "Select green channel and red color value to 0.150"
+msgstr "Sélectionnez le canal vert et mettre la couleur rouge à la valeur 0.150"
+
+#: ../build/darktable-usermanual_profiled_final.xml:519(para)
+msgid "Select blue channel and red color value to 0.150"
+msgstr "Sélectionnez le canal bleu et mettre la couleur rouge à la valeur 0.150"
+
+#: ../build/darktable-usermanual_profiled_final.xml:521(para)
+msgid "As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from red channel and add them to blue and green."
+msgstr "Ainsi que vous pouvez le constater, nous mélangeons les couleurs bleue et verte pour avoir une teinte cyan ; nous soustrayons 0.3 du canal rouge et nous l'ajoutons aux canaux bleu et vert."
+
+#: ../build/darktable-usermanual_profiled_final.xml:527(para)
+msgid "The result of previous step does also add a colorcast on highlight that we actually want to have white for a prettier result. We also wants to add some blue color cast to the shadows to emphasis them."
+msgstr "Cependant, le résultat de l'étape précédente ajoute également un virage dans les hautes lumières que nous souhaitons blanches pour un résultat plus harmonieux. Nous souhaitons également ajouter un virage vers le bleu dans les ombres afin de les mettre en valeur."
+
+#: ../build/darktable-usermanual_profiled_final.xml:533(para)
+msgid "Select a blue/cyan tone for shadows and set saturation around 50%"
+msgstr "Sélectionnez une teinte bleue/cyan pour les ombres avec une saturation à 50%."
+
+#: ../build/darktable-usermanual_profiled_final.xml:534(para)
+msgid "Set highlights saturation to zero, to remove saturation on highlights."
+msgstr "Mettez la saturation des hautes lumières à 0, pour les désaturer."
+
+#: ../build/darktable-usermanual_profiled_final.xml:535(para)
+msgid "Set compression to zero"
+msgstr "Mettez le seuil à 0."
+
+#: ../build/darktable-usermanual_profiled_final.xml:536(para)
+msgid "Use the balance slider to tune the effect, out example uses a balance of 70/30"
+msgstr "Utilisez la répartition pour adapter l'effet ; notre exemple utilise une répartition à 70/30."
+
