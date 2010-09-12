@@ -23,38 +23,44 @@
 #include "common/history.h"
 
 
+void dt_history_delete_on_image(int32_t imgid)
+{
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2 (darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, imgid);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
+
+  dt_image_t tmp;
+  dt_image_init (&tmp);
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  img->force_reimport = 1;
+  img->raw_params = tmp.raw_params;
+  img->raw_denoise_threshold = tmp.raw_denoise_threshold;
+  img->raw_auto_bright_threshold = tmp.raw_auto_bright_threshold;
+  img->black = tmp.black;
+  img->maximum = tmp.maximum;
+  img->output_width = img->width;
+  img->output_height = img->height;
+  dt_image_cache_flush (img);
+  
+  /* if current image in develop reload history */
+  if (dt_dev_is_current_image (darktable.develop, imgid))
+    dt_dev_reload_history_items (darktable.develop);
+  
+  dt_image_cache_release (img, 'r');
+  
+}
+
 void 
 dt_history_delete_on_selection()
 {
-  int imgid = -1;
-  sqlite3_stmt *stmt, *stmt2;
+  sqlite3_stmt *stmt;
   sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    imgid = sqlite3_column_int(stmt, 0);
-    sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt2, NULL);
-    sqlite3_bind_int(stmt2, 1, imgid);
-    sqlite3_step(stmt2);
-    sqlite3_finalize(stmt2);
-
-    dt_image_t tmp;
-    dt_image_init(&tmp);
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    img->force_reimport = 1;
-    img->raw_params = tmp.raw_params;
-    img->raw_denoise_threshold = tmp.raw_denoise_threshold;
-    img->raw_auto_bright_threshold = tmp.raw_auto_bright_threshold;
-    img->black = tmp.black;
-    img->maximum = tmp.maximum;
-    img->output_width = img->width;
-    img->output_height = img->height;
-    dt_image_cache_flush(img);
-    
-    /* if current image in develop reload history */
-    if (dt_dev_is_current_image(darktable.develop, imgid))
-      dt_dev_reload_history_items (darktable.develop);
-    
-    dt_image_cache_release(img, 'r');
+     int imgid = sqlite3_column_int (stmt, 0);
+    dt_history_delete_on_image (imgid);
   }
   sqlite3_finalize(stmt);
 }

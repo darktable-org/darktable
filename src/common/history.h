@@ -25,6 +25,8 @@
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
 int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge);
 
+void dt_history_delete_on_image(int32_t imgid);
+
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
 int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge);
 
