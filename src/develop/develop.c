@@ -491,7 +491,6 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   const float w = preview ? dev->preview_pipe->backbuf_width  : procw;
   const float h = preview ? dev->preview_pipe->backbuf_height : proch;
   if(preview) dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &prevw, &prevh);
-  prevw *= dev->preview_downsampling;
   switch(zoom)
   {
     case DT_ZOOM_FIT:
@@ -502,11 +501,11 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;
-      if(preview) zoom_scale *= dev->image->width/prevw;
+      if(preview) zoom_scale *= dev->preview_pipe->iscale / dev->preview_downsampling;
       break;
     default: // DT_ZOOM_FREE
       DT_CTL_GET_GLOBAL(zoom_scale, dev_zoom_scale);
-      if(preview) zoom_scale *= dev->image->width/prevw;
+      if(preview) zoom_scale *= dev->preview_pipe->iscale / dev->preview_downsampling;
       break;
   }
   return zoom_scale;

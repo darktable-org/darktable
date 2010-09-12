@@ -13,14 +13,6 @@ big stuff:
    . locking and buffers, open()->'r' and open_preview()->'', dt is a huge spinlock
    . debuging with -d cache and -d control and tools/create_control_svg.sh
 
-- resizing stuff: flag whether widget already size-alloc'ed: only then set
-  size request.
-
-- uncropped preview bug when reloading mip4
-  - solution: store width/height with each preview image instead of
-    generating it from image_get_mip size (only call that when a 
-    buffer is newly created by generate_mipmaps)
-
 - crop aspect undecided when w=h?
 
 - color label sorting during export is broken.
@@ -32,6 +24,7 @@ big stuff:
 - preferences dialog with presets?
 
 - crop rotate messed up when first rotating and then cropping
+  mipf scaled wrong in dr mode when cropped?
 
 - export: openmp all process()
 
