@@ -344,7 +344,7 @@ void enter(dt_view_t *self)
 	gtk_widget_set_visible(widget, FALSE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
 	gtk_widget_set_visible(widget, FALSE);
-	widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
+	widget = glade_xml_get_widget (darktable.gui->main_window, "top");
 	gtk_widget_set_visible(widget, TRUE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
 	gtk_widget_set_visible(widget, FALSE);
