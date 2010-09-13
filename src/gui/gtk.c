@@ -31,6 +31,7 @@
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "common/collection.h"
+// #include "common/colorlabels.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/label.h"
@@ -48,7 +49,7 @@
 #include "control/conf.h"
 #include "views/view.h"
 #include "views/capture.h"
-
+#include "tool_colorlabels.h"
 
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
@@ -1140,12 +1141,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   label = dtgtk_label_new (_("all film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
   gtk_widget_show(label);
   gtk_container_add (GTK_CONTAINER(widget),label);
-  
+
   /* add content to toolbar */
+  /* top left: color labels */
+  dt_create_color_label_buttons();
   /*
-  GtkBox *toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox"));
-  gtk_box_pack_start(toolbox,gtk_label_new("left top toolbox"),FALSE,FALSE,0);
-  gtk_widget_show_all (GTK_WIDGET (toolbox));
   toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_right_toolbox"));
   gtk_box_pack_end(toolbox,gtk_label_new("right top toolbox"),FALSE,FALSE,0);
   gtk_widget_show_all (GTK_WIDGET (toolbox));

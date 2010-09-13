@@ -614,17 +614,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     {
       cairo_save(cr);
       int col = sqlite3_column_int(stmt, 0);
-      if     (col == 0) cairo_set_source_rgb(cr, 0.8, 0.2, 0.2);
-      else if(col == 1) cairo_set_source_rgb(cr, 0.8, 0.8, 0.2);
-      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 0.8, 0.2);
-      cairo_translate(cr, 4*r*col, 0.0);
-      cairo_translate(cr, x, y);
-      // cairo_scale(cr, .6, 1.);
-      cairo_arc(cr, 0.0, 0.0, r, 0.0, 2.0*M_PI);
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 2.0);
-      cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-      cairo_stroke(cr);
+	  // see src/dtgtk/paint.c
+	  dtgtk_cairo_paint_label(cr, x+(4*r*col)-r, y-r, r*2, r*2, col);
       cairo_restore(cr);
     }
     sqlite3_finalize(stmt);
