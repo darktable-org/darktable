@@ -207,12 +207,21 @@
 							<widget class="GtkVBox" id="center_vbox">
 								<property name="visible">True</property>
 								<child>
-									<widget class="GtkAspectFrame" id="top">
+									<widget class="GtkHBox" id="top">
 										<property name="visible">True</property>
-										<property name="label_xalign">0</property>
-										<property name="shadow_type">none</property>
 										<child>
-											<widget class="GtkHBox" id="tophbox">
+											<widget class="GtkHBox" id="top_left_toolbox">
+												<property name="visible">True</property>
+												<child><placeholder/></child>
+											</widget>
+											<packing>
+												<property name="expand">True</property>
+												<property name="fill">True</property>
+												<property name="position">0</property>
+											</packing>
+										</child>
+										<child>
+											<widget class="GtkHBox" id="topfilterhbox">
 												<property name="visible">True</property>
 												<child>
 													<widget class="GtkLabel" id="label17">
@@ -270,14 +279,33 @@ color label</property>
 													</packing>
 												</child>
 											</widget>
+											<packing>
+												<property name="expand">True</property>
+												<property name="fill">True</property>
+												<property name="position">1</property>
+											</packing>
+										</child>
+										
+										<child>
+											<widget class="GtkHBox" id="top_right_toolbox">
+												<property name="visible">True</property>
+												<child><placeholder/></child>
+											</widget>
+											<packing>
+												<property name="expand">True</property>
+												<property name="fill">True</property>
+												<property name="position">3</property>
+											</packing>
 										</child>
 									</widget>
+									
 									<packing>
 										<property name="expand">False</property>
-										<property name="fill">False</property>
+										<property name="fill">True</property>
 										<property name="position">0</property>
 									</packing>
 								</child>
+								
 								<child>
 									<widget class="GtkDrawingArea" id="center">
 										<property name="height_request">500</property>
@@ -290,11 +318,22 @@ color label</property>
 										<property name="position">1</property>
 									</packing>
 								</child>
+								
 								<child>
-									<widget class="GtkAspectFrame" id="bottom">
+									<widget class="GtkHBox" id="bottom">
 										<property name="visible">True</property>
-										<property name="label_xalign">0</property>
-										<property name="shadow_type">none</property>
+										<child>
+											<widget class="GtkHBox" id="bottom_left_toolbox">
+												<property name="visible">True</property>
+												<child><placeholder/></child>
+											</widget>
+											<packing>
+												<property name="expand">True</property>
+												<property name="fill">True</property>
+												<property name="position">0</property>
+											</packing>
+										</child>
+										
 										<child>
 											<widget class="GtkVBox" id="vbox2">
 												<property name="visible">True</property>
@@ -321,8 +360,8 @@ color label</property>
 																	<widget class="GtkComboBox" id="colorpicker_mean_combobox">
 																		<property name="visible">True</property>
 																		<property name="items" translatable="yes">mean
-min
-max</property>
+	min
+	max</property>
 																	</widget>
 																	<packing>
 																		<property name="position">1</property>
@@ -376,7 +415,7 @@ max</property>
 														</child>
 													</widget>
 													<packing>
-														<property name="position">0</property>
+														<property name="position">1</property>
 													</packing>
 												</child>
 												<child>
@@ -388,7 +427,7 @@ max</property>
 																<property name="visible">True</property>
 																<property name="active">0</property>
 																<property name="items" translatable="yes">zoomable light table
-file manager</property>
+	file manager</property>
 															</widget>
 															<packing>
 																<property name="position">0</property>
@@ -409,15 +448,31 @@ file manager</property>
 														</child>
 													</widget>
 													<packing>
-														<property name="position">1</property>
+														<property name="position">2</property>
 													</packing>
 												</child>
 											</widget>
+											<packing>
+												<property name="expand">False</property>
+												<property name="fill">True</property>
+												<property name="position">1</property>
+											</packing>
+										</child>
+										<child>
+											<widget class="GtkHBox" id="bottom_right_toolbox">
+												<property name="visible">True</property>
+												<child><placeholder/></child>
+											</widget>
+											<packing>
+												<property name="expand">True</property>
+												<property name="fill">True</property>
+												<property name="position">2</property>
+											</packing>
 										</child>
 									</widget>
 									<packing>
 										<property name="expand">False</property>
-										<property name="fill">False</property>
+										<property name="fill">True</property>
 										<property name="position">2</property>
 									</packing>
 								</child>

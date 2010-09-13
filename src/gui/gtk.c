@@ -1112,7 +1112,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)2);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_4_togglebutton");
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)3);*/
-
+  
   /* add recent filmrolls section label */
   widget = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
   GtkWidget *label = dtgtk_label_new (_("recently used film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
@@ -1141,6 +1141,21 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_show(label);
   gtk_container_add (GTK_CONTAINER(widget),label);
   
+  /* add content to toolbar */
+  /*
+  GtkBox *toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox"));
+  gtk_box_pack_start(toolbox,gtk_label_new("left top toolbox"),FALSE,FALSE,0);
+  gtk_widget_show_all (GTK_WIDGET (toolbox));
+  toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_right_toolbox"));
+  gtk_box_pack_end(toolbox,gtk_label_new("right top toolbox"),FALSE,FALSE,0);
+  gtk_widget_show_all (GTK_WIDGET (toolbox));
+  toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox"));
+  gtk_box_pack_start(toolbox,gtk_label_new("left bottom toolbox"),FALSE,FALSE,0);
+  gtk_widget_show_all (GTK_WIDGET (toolbox));
+   toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_right_toolbox"));
+  gtk_box_pack_end(toolbox,gtk_label_new("right bottom toolbox"),FALSE,FALSE,0);
+  gtk_widget_show_all (GTK_WIDGET (toolbox));
+  */
 
   // color picker
   widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");
