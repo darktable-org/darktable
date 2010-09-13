@@ -34,6 +34,7 @@
 #include "dtgtk/label.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/togglebutton.h"
+#include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -183,10 +184,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       // rotate and clip to max extent
       if(flip)
       {
-        roi_out->y      = d->tx - (.5f - d->cx)*cropscale*roi_in->width;
-        roi_out->x      = d->ty - (.5f - d->cy)*cropscale*roi_in->height;
-        roi_out->height = acw*cropscale*roi_in->width;
-        roi_out->width  = ach*cropscale*roi_in->height;
+        roi_out->y      = d->tx - (.5f - d->cy)*cropscale*roi_in->width;
+        roi_out->x      = d->ty - (.5f - d->cx)*cropscale*roi_in->height;
+        roi_out->height = ach*cropscale*roi_in->width;
+        roi_out->width  = acw*cropscale*roi_in->height;
       }
       else
       {
@@ -600,6 +601,12 @@ key_accel_callback(void *d)
   dt_control_queue_draw_all();
 }
 
+static void
+aspect_flip(GtkWidget *button, dt_iop_module_t *self)
+{
+  key_accel_callback(self);
+}
+
 // Golden number (1+sqrt(5))/2
 #define PHI      1.61803398874989479F
 // 1/PHI
@@ -727,8 +734,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
-  gtk_object_set(GTK_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w/h)\npress ctrl-x to swap sides"), NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect_presets), 2, 6, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_object_set(GTK_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), NULL);
+
+  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, 0);
+  g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("swap the aspect ratio (ctrl-x)"), NULL);
+  gtk_box_pack_start(hbox, button, TRUE, FALSE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 2, 6, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
 /*-------------------------------------------*/
