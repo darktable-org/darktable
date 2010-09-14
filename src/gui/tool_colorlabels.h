@@ -20,6 +20,6 @@
 #define __TOOL_COLORLABELS_H__
 
 /** create the color label buttons in the top left panel */
-void dt_create_color_label_buttons(void);
+void dt_create_color_label_buttons(GtkBox *toolbox);
 
 #endif

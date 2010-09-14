@@ -31,7 +31,6 @@
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "common/collection.h"
-// #include "common/colorlabels.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/label.h"
@@ -1144,7 +1143,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   /* add content to toolbar */
   /* top left: color labels */
-  dt_create_color_label_buttons();
+  dt_create_color_label_buttons(GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox")));
   /*
   toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_right_toolbox"));
   gtk_box_pack_end(toolbox,gtk_label_new("right top toolbox"),FALSE,FALSE,0);

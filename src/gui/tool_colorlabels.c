@@ -32,11 +32,7 @@ color_label_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_draw_all();
 }
 
-void dt_create_color_label_buttons(void){
-	glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox");
-
-	GtkBox *toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox"));
-
+void dt_create_color_label_buttons(GtkBox *toolbox){
 	GtkBox *hbox;
 	GtkWidget *button;
 	hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
