@@ -698,7 +698,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP);
+  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP, event->state);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }

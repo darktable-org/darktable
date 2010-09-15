@@ -888,7 +888,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 }
 
 
-void scrolled(dt_view_t *self, double x, double y, int up)
+void scrolled(dt_view_t *self, double x, double y, int up, int state)
 { // free zoom
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_zoom_t zoom;

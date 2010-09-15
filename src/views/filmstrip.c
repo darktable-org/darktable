@@ -360,7 +360,7 @@ int key_pressed(dt_view_t *self, uint16_t which)
   return 1;
 }
 
-void scrolled(dt_view_t *view, double x, double y, int up)
+void scrolled(dt_view_t *view, double x, double y, int up, int state)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)view->data;
   if(up) strip->offset --;

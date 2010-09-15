@@ -57,7 +57,7 @@ typedef struct dt_view_t
   int  (*key_pressed)     (struct dt_view_t *self, uint16_t which);
   int  (*key_released)     (struct dt_view_t *self, uint16_t which);
   void (*configure)       (struct dt_view_t *self, int width, int height);
-  void (*scrolled)        (struct dt_view_t *self, double x, double y, int up);            // mouse scrolled in view
+  void (*scrolled)        (struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
   void (*border_scrolled) (struct dt_view_t *self, double x, double y, int which, int up); // mouse scrolled on left/right/top/bottom border (which 0123).
 }
 dt_view_t;
@@ -118,7 +118,7 @@ int dt_view_manager_button_pressed   (dt_view_manager_t *vm, double x, double y,
 int dt_view_manager_key_pressed      (dt_view_manager_t *vm, uint16_t which);
 int dt_view_manager_key_released     (dt_view_manager_t *vm, uint16_t which);
 void dt_view_manager_configure       (dt_view_manager_t *vm, int width, int height);
-void dt_view_manager_scrolled        (dt_view_manager_t *vm, double x, double y, int up);
+void dt_view_manager_scrolled        (dt_view_manager_t *vm, double x, double y, int up, int state);
 void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up);
 
 /** load module to view managers list, if still space. return slot number on success. */
