@@ -126,8 +126,11 @@ void dt_gui_background_jobs_destroy(const dt_gui_job_t *j)
   GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "jobs_content_box");
   GtkWidget *jobbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (w)),1);
   
-  if (GTK_IS_WIDGET(j->widget)) 
+  if (j->widget && GTK_IS_WIDGET(j->widget))
+  {
     gtk_container_remove (GTK_CONTAINER (jobbox), j->widget);
+    ((dt_gui_job_t *)j)->widget = NULL;
+  }
   g_free ((dt_gui_job_t*)j);
   if(needlock) gdk_threads_leave();
 }
@@ -153,17 +156,23 @@ void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
   
   // g_static_mutex_lock ( &_gui_background_mutex );
  
-  if( progress >= 1.0 ) {	// job is finished free and destroy the widget..
-    
+  if( progress >= 1.0 )
+  {	// job is finished free and destroy the widget..
     GtkWidget *w = glade_xml_get_widget( darktable.gui->main_window, "jobs_content_box" );
     GtkWidget *jobbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (w)),1);
-    gtk_container_remove( GTK_CONTAINER( jobbox ), j->widget );
+    if (j->widget && GTK_IS_WIDGET(j->widget))
+    {
+      gtk_container_remove( GTK_CONTAINER( jobbox ), j->widget );
+      // const cast.
+      ((dt_gui_job_t *)j)->widget = NULL;
+    }
     
     // hide box if we are last active job..
     if( g_list_length( gtk_container_get_children( GTK_CONTAINER (jobbox) ) ) == 0 )
       gtk_widget_hide( w );
-    
-  } else {
+  }
+  else
+  {
     if( j->type == DT_JOB_PROGRESS )
       gtk_progress_bar_set_fraction( _gui_background_jobs_get_progressbar( j->widget ), progress );
   }

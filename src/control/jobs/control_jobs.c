@@ -384,7 +384,6 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #ifdef _OPENMP
   }
 #endif
-  dt_gui_background_jobs_set_progress( j, 100 );
   return 0;
 }
 
