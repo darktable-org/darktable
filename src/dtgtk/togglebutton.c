@@ -122,6 +122,14 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   GtkStyle *style=gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
+  /* update paint flags depending of states */
+  int flags=DTGTK_TOGGLEBUTTON (widget)->icon_flags;
+  gboolean active = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON (widget));
+  if (active)
+    flags |= CPF_ACTIVE;
+  else
+    flags &=~(CPF_ACTIVE);
+  
   /* create pango text settings if label exists */
   PangoLayout *layout=NULL;    
   int pw=0,ph=0;
@@ -153,10 +161,11 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
               0.5);
   cairo_fill (cr);
 
+  
   /* draw icon */
   if (DTGTK_TOGGLEBUTTON (widget)->icon)
   {
-    if (DTGTK_TOGGLEBUTTON (widget)->icon_flags & CPF_IGNORE_FG_STATE) 
+    if (flags & CPF_IGNORE_FG_STATE) 
     state = GTK_STATE_NORMAL;
     cr = gdk_cairo_create (widget->window);
     cairo_set_source_rgb (cr,
@@ -165,9 +174,9 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
         style->fg[state].blue/65535.0);
     
     if (text)
-      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,height-8,height-8,DTGTK_TOGGLEBUTTON (widget)->icon_flags);
+      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,height-8,height-8,flags);
     else
-      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,width-8,height-8,DTGTK_TOGGLEBUTTON (widget)->icon_flags);
+      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,width-8,height-8,flags);
   }
   cairo_destroy (cr);
   

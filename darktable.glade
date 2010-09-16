@@ -360,8 +360,8 @@ color label</property>
 																	<widget class="GtkComboBox" id="colorpicker_mean_combobox">
 																		<property name="visible">True</property>
 																		<property name="items" translatable="yes">mean
-	min
-	max</property>
+min
+max</property>
 																	</widget>
 																	<packing>
 																		<property name="position">1</property>
@@ -427,7 +427,7 @@ color label</property>
 																<property name="visible">True</property>
 																<property name="active">0</property>
 																<property name="items" translatable="yes">zoomable light table
-	file manager</property>
+file manager</property>
 															</widget>
 															<packing>
 																<property name="position">0</property>
