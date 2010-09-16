@@ -900,6 +900,8 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
   while(*c != '.' && c > xmpfilename) c--;
   sprintf(c, ".xmp");
   dt_exif_xmp_write (imgid, xmpfilename);
+  // DEBUG: read again.
+  // dt_exif_xmp_read (imgid, xmpfilename);
 
   // refuse to write dttags for non-existent image:
   char imgfname[1024];

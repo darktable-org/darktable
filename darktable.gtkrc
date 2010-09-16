@@ -1,6 +1,27 @@
 # from art.gnome.org: marble-look, adjusted
 style "clearlooks-default"
 {
+# engine "hcengine" {
+#     edge_thickness = 0
+#   }
+
+# engine "industrial"
+#  {
+#    rounded_buttons = TRUE
+#  }
+# engine "murrine"
+# {
+#      roundness = 2
+# }
+
+ engine "clearlooks"
+  {
+    contrast = 1.0
+      reliefstyle = 0
+      colorize_scrollbar = FALSE
+ # sunkenmenubar = 1
+  }
+
   GtkScrolledWindow::scrollbar-spacing = 0
   GtkScrolledWindow::scrollbar-within-bevel = TRUE
   GtkScrolledWindow::shadow-type = GTK_SHADOW_NONE
@@ -56,11 +77,6 @@ style "clearlooks-default"
   text[SELECTED]    = "#E0E0E0"
   text[INSENSITIVE] = "#777777"
 
-  engine "clearlooks"
-  {
-    contrast = 1.0
-# sunkenmenubar = 1
-  }
 }
 
 style "clearlooks-wide" = "clearlooks-default"
@@ -183,6 +199,11 @@ style "scale-fixed-font" = "clearlooks-default"
 
 style "clearlooks-scrollbar" = "clearlooks-defaults"
 {
+  bg[ACTIVE]        = "#212121"
+  bg[NORMAL]        = "#212121"
+  bg[INSENSITIVE]   = "#212121"
+  bg[PRELIGHT]      = "#494949"
+  bg[SELECTED]      = "#212121"
   xthickness = 0
   ythickness = 0
   GtkRange::stepper-size = 0

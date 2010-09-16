@@ -1,5 +1,9 @@
 0.7 release:
 
+xmp read
+active/selected scrollbar 
+flat gtkrc
+
 big stuff:
  * xmp sidecars
  * libraw process inside dt modules (full 16-bit buf..)

@@ -22,6 +22,8 @@
 
 #include "common/exif.h"
 #include "common/darktable.h"
+#include "common/colorlabels.h"
+#include "common/image_cache.h"
 #include <libexif/exif-data.h>
 #include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
@@ -60,9 +62,6 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 
 int dt_exif_read(dt_image_t *img, const char* path)
 {
-  // mute exiv2:
-  // Exiv2::LogMsg::setLevel(Exiv2::LogMsg::error);
-
   try
   {
     Exiv2::Image::AutoPtr image;
@@ -507,6 +506,183 @@ void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len
 #undef TO_BINARY
 }
 
+int dt_exif_xmp_read (dt_image_t *img, const char* filename)
+{
+  try
+  {
+    // read xmp sidecar
+    Exiv2::Image::AutoPtr image;
+    image = Exiv2::ImageFactory::open(filename);
+    assert(image.get() != 0);
+    image->readMetadata();
+    Exiv2::XmpData &xmpData = image->xmpData();
+
+    sqlite3_stmt *stmt;
+
+    Exiv2::XmpData::iterator pos;
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
+    {
+      // license
+      const char *license = pos->toString().c_str();
+      sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 2, img->id);
+      sqlite3_bind_text(stmt, 1, license, strlen(license), SQLITE_TRANSIENT);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
+    {
+      // description
+      const char *descr = pos->toString().c_str();
+      sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 2, img->id);
+      sqlite3_bind_text(stmt, 1, descr, strlen(descr), SQLITE_TRANSIENT);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
+    {
+      // caption
+      const char *cap = pos->toString().c_str();
+      sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 2, img->id);
+      sqlite3_bind_text(stmt, 1, cap, strlen(cap), SQLITE_TRANSIENT);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    int stars = 1;
+    int raw_params = -16711632;
+    int set = 0;
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end() )
+    {
+      stars = pos->toLong() + 1;
+      set = 1;
+    }
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.raw_params"))) != xmpData.end() )
+    {
+      raw_params = pos->toLong();
+      set = 1;
+    }
+    if (set)
+    {
+      // set in cache and write through.
+      *((int32_t *)&img->raw_params) = raw_params;
+      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+      dt_image_cache_flush_no_sidecars(img);
+    }
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
+    {
+      // consistency: strip all tags from image (tagged_image, tagxtag)
+      sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
+          "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
+          "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 1, img->id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+     
+      // remove from tagged_images
+      sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 1, img->id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      // tags in array
+      const int cnt = pos->count();
+      for(int i=0;i<cnt;i++)
+      {
+        int tagid = -1;
+        pthread_mutex_lock(&darktable.db_insert);
+        // check if tag is available, get its id:
+        for(int k=0;k<2;k++)
+        {
+          sqlite3_prepare_v2(darktable.db, "select id from tags where name = ?1", -1, &stmt, NULL);
+          const char *tag = pos->toString(i).c_str();
+          sqlite3_bind_text (stmt, 1, tag, strlen(tag), SQLITE_TRANSIENT);
+          if(sqlite3_step(stmt) == SQLITE_ROW)
+            tagid = sqlite3_column_int(stmt, 0);
+          sqlite3_finalize(stmt);
+          if(tagid > 0)
+          {
+            if(k == 1)
+            {
+              sqlite3_prepare_v2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt, NULL);
+              sqlite3_bind_int(stmt, 1, tagid);
+              sqlite3_step(stmt);
+              sqlite3_finalize(stmt);
+              sqlite3_prepare_v2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
+              sqlite3_bind_int(stmt, 1, tagid);
+              sqlite3_step(stmt);
+              sqlite3_finalize(stmt);
+            }
+            break;
+          }
+          // create this tag (increment id, leave icon empty), retry.
+          sqlite3_prepare_v2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
+          sqlite3_bind_text (stmt, 1, tag, strlen(tag), SQLITE_TRANSIENT);
+          sqlite3_step(stmt);
+          sqlite3_finalize(stmt);
+        }
+        pthread_mutex_unlock(&darktable.db_insert);
+        // associate image and tag.
+        sqlite3_prepare_v2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
+        sqlite3_bind_int (stmt, 1, tagid);
+        sqlite3_bind_int (stmt, 2, img->id);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+        sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count + 1 where "
+            "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+            "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+        sqlite3_bind_int(stmt, 1, tagid);
+        sqlite3_bind_int(stmt, 2, img->id);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+    }
+    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.color_labels"))) != xmpData.end() )
+    {
+      // color labels
+      const int cnt = pos->count();
+      for(int i=0;i<cnt;i++)
+      {
+        dt_colorlabels_remove_labels(img->id);
+        dt_colorlabels_set_label(img->id, pos->toLong(i));
+      }
+    }
+
+    // history
+    Exiv2::XmpData::iterator ver;
+    Exiv2::XmpData::iterator en;
+    Exiv2::XmpData::iterator op;
+    Exiv2::XmpData::iterator param;
+
+    if ( (ver=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_modversion"))) != xmpData.end() &&
+         (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
+         (op=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_operation")))   != xmpData.end() &&
+         (param=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_params")))   != xmpData.end() )
+    {
+      const int cnt = ver->count();
+      if(cnt == en->count() && cnt == op->count() && cnt == param->count())
+      {
+        for(int i=0;i<cnt;i++)
+        {
+          // TODO:
+          printf("got modversion `%ld'\n", ver->toLong(i));
+          printf("got enabled `%ld'\n", en->toLong(i));
+          printf("got operation `%s'\n", op->toString(i).c_str());
+          printf("got params `%s'\n", param->toString(i).c_str());
+        }
+      }
+    }
+  }
+  catch (Exiv2::AnyError& e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << s << std::endl;
+    return 0;
+  }
+  return 0;
+}
+
 // write xmp sidecar file:
 int dt_exif_xmp_write (const int imgid, const char* filename)
 {
@@ -536,9 +712,6 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     sqlite3_finalize(stmt);
     xmpData["Xmp.xmp.Rating"] = (stars & 0x7) - 1; // normally stars go from -1 .. 5 or so.
 
-    // FIXME: this call is not thread safe
-    // FIXME: as is XmpParser::initialize
-    Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
     xmpData["Xmp.darktable.raw_params"] = raw_params;
 
     // get tags from db, store in dublin core
@@ -635,3 +808,16 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
   }
 }
 
+void dt_exif_init()
+{
+  // mute exiv2:
+  // Exiv2::LogMsg::setLevel(Exiv2::LogMsg::error);
+
+  Exiv2::XmpParser::initialize();
+  Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
+}
+
+void dt_exif_cleanup()
+{
+  Exiv2::XmpParser::terminate();
+}

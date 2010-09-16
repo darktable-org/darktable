@@ -39,6 +39,13 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path);
 /** write xmp sidecar file. */
 int dt_exif_xmp_write (const int imgid, const char* filename);
 
+/** read xmp sidecar file. */
+int dt_exif_xmp_read (const int imgid, const char* filename);
+
+/** thread safe init and cleanup. */
+void dt_exif_init();
+void dt_exif_cleanup();
+
 #ifdef __cplusplus
 }
 #endif
