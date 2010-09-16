@@ -901,12 +901,12 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   dt_control_queue_draw_all();
 }
 
-void scrolled(dt_view_t *view, double x, double y, int up)
+void scrolled(dt_view_t *view, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)view->data;
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1)
+  if(layout == 1 && state == 0)
   {
     if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
     else   lib->track =  DT_LIBRARY_MAX_ZOOM;

@@ -322,13 +322,13 @@ void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
   }
 }
 
-void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up)
+void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up, int state)
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.scrolled)
-    return vm->film_strip.scrolled(&vm->film_strip, x, y - v->height - darktable.control->tabborder, up);
-  if(v->scrolled) v->scrolled(v, x, y, up);
+    return vm->film_strip.scrolled(&vm->film_strip, x, y - v->height - darktable.control->tabborder, up, state);
+  if(v->scrolled) v->scrolled(v, x, y, up, state);
 }
 
 void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up)
