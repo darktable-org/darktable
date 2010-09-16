@@ -535,24 +535,20 @@ gui_init (dt_lib_module_t *self)
   }
   
   /* add user widgets */
-  GSList *options = dt_conf_all_entries ("plugins/capture/tethering/properties");
+  GSList *options = dt_conf_all_string_entries ("plugins/capture/tethering/properties");
   if (options) 
   {
     GSList *item = options;
     if (item)
     {
       do {
-        GConfEntry *entry = (GConfEntry *)item->data;
+        dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
         
         /* get the label from key */
-        gchar *p=entry->key+strlen (entry->key);
-        while (*--p!='/');
-        gchar *label = g_strdup (++p);
-        p=label;
-        while (p++<label+strlen(label)) if(*p=='_') *p=' ';
+	char *p=entry->key;
+        while (p++<entry->key+strlen(entry->key)) if (*p=='_') *p=' ';
         
-        
-        if ((prop = _lib_property_add_new (lib, label,gconf_value_get_string (entry->value) )) != NULL)
+        if ((prop = _lib_property_add_new (lib, entry->key,entry->value )) != NULL)
         {
           hbox = GTK_BOX (gtk_hbox_new(FALSE, 0));
           gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (prop->values), TRUE, TRUE, 0);
