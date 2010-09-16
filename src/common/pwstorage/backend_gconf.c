@@ -23,9 +23,8 @@
 
 #include <glib.h>
 
-#ifdef HAVE_GCONF
+
 static const gchar* gconf_path = "plugins/pwstorage/";
-#endif
 
 /** Store (key,value) pairs. */
 gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table){
@@ -100,7 +99,6 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
 
 		g_hash_table_insert(table, g_strdup(key), g_strdup(value));
 
-		gconf_entry_free(next->data);
 		next = next->next;
 	}
 

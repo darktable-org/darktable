@@ -232,7 +232,7 @@ static inline GSList *dt_conf_all_string_entries (const char *dir)
       /* get the key name from path/key */
       gchar *p = key+strlen (key);
       while (*--p!='/');
-      nv->name = g_strdup (++p);
+      nv->key = g_strdup (++p);
       
       /* get the value */
       nv->value = g_strdup(darktable.conf->varval[i]);
