@@ -698,7 +698,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP, event->state & 0x7);
+  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP, event->state & 0xf);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -835,7 +835,7 @@ key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
     return FALSE;
 
   // we're only interested in ctrl, shift, mod1 (alt)
-  int estate = event->state & 0x7;
+  int estate = event->state & 0xf;
   
   while(i)
   {
@@ -869,7 +869,7 @@ key_released (GtkWidget *w, GdkEventKey *event, gpointer user_data) {
 static gboolean
 button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state & 0x7);
+  dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state & 0xf);
   gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
   return TRUE;
@@ -878,7 +878,7 @@ button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 button_released (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  dt_control_button_released(event->x, event->y, event->button, event->state & 0x7);
+  dt_control_button_released(event->x, event->y, event->button, event->state & 0xf);
   gtk_widget_queue_draw(w);
   return TRUE;
 }
@@ -886,7 +886,7 @@ button_released (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 mouse_moved (GtkWidget *w, GdkEventMotion *event, gpointer user_data)
 {
-  dt_control_mouse_moved(event->x, event->y, event->state & 0x7);
+  dt_control_mouse_moved(event->x, event->y, event->state & 0xf);
   gint x, y;
   gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
