@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-16 14:46+0200\n"
+"POT-Creation-Date: 2010-09-16 18:37+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -147,12 +147,12 @@ msgstr "Hersteller"
 #: ../darktable.glade.h:36
 msgid ""
 "mean\n"
-"\tmin\n"
-"\tmax"
+"min\n"
+"max"
 msgstr ""
 "Mittel\n"
-"\tMinimum\n"
-"\tMaximum"
+"Minimum\n"
+"Maximum"
 
 #: ../darktable.glade.h:39
 msgid "metadata"
@@ -217,10 +217,10 @@ msgstr "Breite"
 #: ../darktable.glade.h:53
 msgid ""
 "zoomable light table\n"
-"\tfile manager"
+"file manager"
 msgstr ""
 "zoombarer Leuchttisch\n"
-"\tDateiverwaltung"
+"Dateiverwaltung"
 
 #: ../darktable.schemas.in.h:1
 msgid "0 -- append on top of stack, 1 -- replace it."
@@ -1235,19 +1235,19 @@ msgid "size"
 msgstr "Größe"
 
 #. user specified properties
-#: ../src/libs/camera.c:578
+#: ../src/libs/camera.c:574
 msgid "additional properties"
 msgstr ""
 
-#: ../src/libs/camera.c:582
+#: ../src/libs/camera.c:578
 msgid "label"
 msgstr ""
 
-#: ../src/libs/camera.c:588
+#: ../src/libs/camera.c:584
 msgid "property"
 msgstr ""
 
-#: ../src/libs/camera.c:600
+#: ../src/libs/camera.c:596
 msgid "add user property"
 msgstr ""
 
