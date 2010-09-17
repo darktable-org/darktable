@@ -65,7 +65,7 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
               GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -117,10 +117,10 @@ gui_init (dt_imageio_module_storage_t *self)
                                                        "$(PICTURES_FOLDER) - pictures folder\n"
                                                        "$(HOME_FOLDER) - home folder\n"
                                                        "$(DESKTOP_FOLDER) - desktop folder"
-                                                       ), NULL);
+                                                       ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), NULL);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 }

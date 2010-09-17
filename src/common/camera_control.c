@@ -186,7 +186,7 @@ void _camera_process_jobb(const dt_camctl_t *c,const dt_camera_t *camera, gpoint
         const char *fname = _dispatch_request_image_filename(c,fp.name,cam);
         if( !fname ) fname=fp.name;
   
-        char *output = g_build_filename (output_path,fname,NULL);
+        char *output = g_build_filename (output_path,fname,(char *)NULL);
   
         int handle = open (output, O_CREAT | O_WRONLY,0666);
         gp_file_new_from_fd (&destination , handle);
@@ -505,7 +505,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
       if(!fname) fname=filename;
       
-      char *output = g_build_filename(output_path,fname,NULL);
+      char *output = g_build_filename(output_path,fname,(char *)NULL);
       
       // Now we have filenames lets download file and notify listener of image download
       CameraFile *destination;
@@ -930,7 +930,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
             const char *fname = _dispatch_request_image_filename(c,fp->name,cam);
             if( !fname ) fname=fp->name;
             
-            char *output = g_build_filename(output_path,fname,NULL);
+            char *output = g_build_filename(output_path,fname,(char *)NULL);
            
             int handle = open( output, O_CREAT | O_WRONLY,0666);
             gp_file_new_from_fd( &destination , handle );

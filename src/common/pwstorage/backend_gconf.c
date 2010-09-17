@@ -23,13 +23,12 @@
 
 #include <glib.h>
 
-#ifdef HAVE_GCONF
+
 static const gchar* gconf_path = "plugins/pwstorage/";
-#endif
 
 /** Store (key,value) pairs. */
 gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table){
-#ifdef HAVE_GCONF
+
 	GHashTableIter iter;
 	g_hash_table_iter_init (&iter, table);
 	gpointer key, value;
@@ -56,16 +55,12 @@ gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table){
 	}
 
 	return TRUE;
-#else
-	return FALSE;
-#endif
 }
 
 /** Load (key,value) pairs. */
 GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
 	GHashTable* table = g_hash_table_new(g_str_hash, g_str_equal);
 
-#ifdef HAVE_GCONF
 	gsize size = strlen(gconf_path) + strlen(slot);
 	gchar* _path = g_malloc(size+1);
 	gchar* _tmp = _path;
@@ -75,14 +70,13 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
 	_tmp = g_stpcpy(_tmp, slot);
 
 	GSList* list;
-	list = dt_conf_all_entries(_path);
+	list = dt_conf_all_string_entries(_path);
 
 	g_free(_path);
 
 	GSList* next = list;
 	while(next){
-		gchar* key = g_strrstr((gchar*)(((GConfEntry*)next->data)->key), "/");
-		key++;
+		gchar* key = ((dt_conf_string_entry_t*)next->data)->key;
 
 		gsize size = strlen(gconf_path) + strlen(slot) + 1 + strlen(key);
 		gchar* _path = g_malloc(size+1);
@@ -95,7 +89,7 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
 		_tmp++;
 		_tmp = g_stpcpy(_tmp, key);
 
-		gchar* value = dt_conf_get_string(_path);
+		gchar* value = ((dt_conf_string_entry_t*)next->data)->value;
 		g_free(_path);
 
 		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_gconf_get] reading (%s, %s)\n",(gchar*)key, (gchar*)value);
@@ -103,14 +97,12 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
 		// This would be the place for manual decryption.
 		// See above.
 
-		g_hash_table_insert(table, g_strdup(key), value);
+		g_hash_table_insert(table, g_strdup(key), g_strdup(value));
 
-		gconf_entry_free(next->data);
 		next = next->next;
 	}
 
 	g_slist_free(list);
-#endif
 
 	return table;
 }

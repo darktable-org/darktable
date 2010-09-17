@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-13 13:03+0200\n"
+"POT-Creation-Date: 2010-09-16 18:37+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -1128,44 +1128,6 @@ msgstr "passt auf ausgewählte Bilder"
 msgid "doubleclick to select"
 msgstr "Doppelklick zum Auswählen"
 
-#: ../src/libs/colorlabels.c:31
-msgid "color labels"
-msgstr "Farbmarkierungen"
-
-#: ../src/libs/colorlabels.c:111
-msgid ""
-"toggle red label\n"
-"of selected images (ctrl-1)"
-msgstr ""
-"schalte rote Markierung des\n"
-"ausgewählten Bildes um (Strg-1)"
-
-#: ../src/libs/colorlabels.c:120
-msgid ""
-"toggle yellow label\n"
-"of selected images (ctrl-2)"
-msgstr ""
-"schalte gelbe Markierung des\n"
-"ausgewählten Bildes um (Strg-2)"
-
-#: ../src/libs/colorlabels.c:129
-msgid ""
-"toggle green label\n"
-"of selected images (ctrl-3)"
-msgstr ""
-"schalte grüne Markierung des\n"
-"ausgewählten Bildes um (Strg-3)"
-
-#: ../src/libs/colorlabels.c:133
-msgid "clear"
-msgstr "löschen"
-
-#: ../src/libs/colorlabels.c:134
-msgid "clear all labels of selected images"
-msgstr ""
-"alle Markierungen des\n"
-"ausgewählten Bildes löschen"
-
 #: ../src/libs/capture.c:50
 msgid "session"
 msgstr "Sitzung"
@@ -1273,195 +1235,199 @@ msgid "size"
 msgstr "Größe"
 
 #. user specified properties
-#: ../src/libs/camera.c:578
+#: ../src/libs/camera.c:574
 msgid "additional properties"
 msgstr ""
 
-#: ../src/libs/camera.c:582
+#: ../src/libs/camera.c:578
 msgid "label"
 msgstr ""
 
-#: ../src/libs/camera.c:588
+#: ../src/libs/camera.c:584
 msgid "property"
 msgstr ""
 
-#: ../src/libs/camera.c:600
+#: ../src/libs/camera.c:596
 msgid "add user property"
 msgstr ""
 
-#: ../src/iop/clipping.c:115
+#: ../src/iop/clipping.c:116
 msgid "crop and rotate"
 msgstr "zuschneiden und drehen"
 
-#: ../src/iop/clipping.c:463
+#: ../src/iop/clipping.c:464
 msgid "rotate by  90"
 msgstr "Um 90° drehen"
 
-#: ../src/iop/clipping.c:465
+#: ../src/iop/clipping.c:466
 msgid "rotate by -90"
 msgstr "Um -90° drehen"
 
-#: ../src/iop/clipping.c:467
+#: ../src/iop/clipping.c:468
 msgid "rotate by 180"
 msgstr "Um 180° drehen"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:676 ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:683 ../src/iop/clipping.c:770
 msgid "flip"
 msgstr "spiegeln"
 
-#: ../src/iop/clipping.c:683
+#: ../src/iop/clipping.c:690
 msgid "flip image vertically"
 msgstr "Bild vertikal spiegeln"
 
-#: ../src/iop/clipping.c:684
+#: ../src/iop/clipping.c:691
 msgid "flip image horizontally"
 msgstr "Bild horizontal spiegeln"
 
-#: ../src/iop/clipping.c:686
+#: ../src/iop/clipping.c:693
 msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
-#: ../src/iop/clipping.c:691
+#: ../src/iop/clipping.c:698
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "mit Rechts ins Bild klicken und eine Linie ziehen, um eine gerade Kante zu "
 "markieren"
 
-#: ../src/iop/clipping.c:696
+#: ../src/iop/clipping.c:703
 msgid "perspective"
 msgstr "Perspektive"
 
-#: ../src/iop/clipping.c:704
+#: ../src/iop/clipping.c:711
 msgid "right"
 msgstr "nach rechts"
 
-#: ../src/iop/clipping.c:705
+#: ../src/iop/clipping.c:712
 msgid "up"
 msgstr "nach oben"
 
-#: ../src/iop/clipping.c:711
+#: ../src/iop/clipping.c:718
 msgid "aspect"
 msgstr "Seitenverhältnis"
 
-#: ../src/iop/clipping.c:716
+#: ../src/iop/clipping.c:723
 msgid "free"
 msgstr "frei"
 
-#: ../src/iop/clipping.c:717
+#: ../src/iop/clipping.c:724
 msgid "image"
 msgstr "Bild"
 
-#: ../src/iop/clipping.c:718
+#: ../src/iop/clipping.c:725
 msgid "golden cut"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:719
+#: ../src/iop/clipping.c:726
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:720
+#: ../src/iop/clipping.c:727
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/clipping.c:721
+#: ../src/iop/clipping.c:728
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/clipping.c:722
+#: ../src/iop/clipping.c:729
 msgid "square"
 msgstr "quadratisch"
 
-#: ../src/iop/clipping.c:723
+#: ../src/iop/clipping.c:730
 msgid "din"
 msgstr "DIN"
 
-#: ../src/iop/clipping.c:730
+#: ../src/iop/clipping.c:737
 msgid ""
-"set the aspect ratio (w/h)\n"
+"set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
 msgstr ""
-"Seitenverhältnis setzen (b/h)\n"
+"Seitenverhältnis setzen (b:h)\n"
 "drücke Strg-x um die Seiten zu tauschen"
 
-#: ../src/iop/clipping.c:736
+#: ../src/iop/clipping.c:743
+msgid "swap the aspect ratio (ctrl-x)"
+msgstr "Seitenverhältnis tauschen (Strg-x)"
+
+#: ../src/iop/clipping.c:750
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/clipping.c:739
+#: ../src/iop/clipping.c:753
 msgid "none"
 msgstr "keine"
 
-#: ../src/iop/clipping.c:740
+#: ../src/iop/clipping.c:754
 msgid "grid"
 msgstr "Gitter"
 
-#: ../src/iop/clipping.c:741
+#: ../src/iop/clipping.c:755
 msgid "rules of thirds"
 msgstr "Drittelregel"
 
-#: ../src/iop/clipping.c:742
+#: ../src/iop/clipping.c:756
 msgid "diagonal method"
 msgstr "Diagonalen"
 
-#: ../src/iop/clipping.c:743
+#: ../src/iop/clipping.c:757
 msgid "harmonious triangles"
 msgstr "harmonische Dreiecke"
 
-#: ../src/iop/clipping.c:744
+#: ../src/iop/clipping.c:758
 msgid "golden mean"
 msgstr "goldener Schnitt"
 
-#: ../src/iop/clipping.c:746
+#: ../src/iop/clipping.c:760
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
 msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
 
-#: ../src/iop/clipping.c:750
+#: ../src/iop/clipping.c:764
 msgid "type"
 msgstr "Typ"
 
-#: ../src/iop/clipping.c:763
+#: ../src/iop/clipping.c:777
 msgid "flip guides vertically"
 msgstr "Hilfslinien vertikal spiegeln"
 
-#: ../src/iop/clipping.c:764
+#: ../src/iop/clipping.c:778
 msgid "flip guides horizontally"
 msgstr "Hilfslinien horizontal spiegeln"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:766
+#: ../src/iop/clipping.c:780
 msgid "golden sections"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:768
+#: ../src/iop/clipping.c:782
 msgid "enable this option to show golden sections."
 msgstr "diese Option auswählen, um den Goldenen Schnitt anzuzeigen"
 
-#: ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:785
 msgid "spiral sections"
 msgstr "Rechtecke d. Spirale"
 
-#: ../src/iop/clipping.c:772
+#: ../src/iop/clipping.c:786
 msgid "enable this option to show golden spiral sections."
 msgstr ""
 "diese Option auswählen, um die Bereiche der goldenen Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:775
+#: ../src/iop/clipping.c:789
 msgid "golden spiral"
 msgstr "Goldene Spirale"
 
-#: ../src/iop/clipping.c:776
+#: ../src/iop/clipping.c:790
 msgid "enable this option to show a golden spiral guide."
 msgstr "diese Option auswählen, um eine Goldene Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:779
+#: ../src/iop/clipping.c:793
 msgid "golden triangles"
 msgstr "Goldene Dreiecke"
 
-#: ../src/iop/clipping.c:780
+#: ../src/iop/clipping.c:794
 msgid "enable this option to show golden triangles."
 msgstr "diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 
@@ -2785,15 +2751,15 @@ msgstr "Bild importieren"
 msgid "supported images"
 msgstr "unterstütze Bilder"
 
-#: ../src/gui/gtk.c:1089
+#: ../src/gui/gtk.c:1092
 msgid "take snapshot"
 msgstr "Snapshot erstellen"
 
-#: ../src/gui/gtk.c:1118
+#: ../src/gui/gtk.c:1121
 msgid "recently used film rolls"
 msgstr "kürzlich benutzte Filmrollen"
 
-#: ../src/gui/gtk.c:1140
+#: ../src/gui/gtk.c:1143
 msgid "all film rolls"
 msgstr "alle Filmrollen"
 
@@ -3179,6 +3145,36 @@ msgstr "Standard entfernen"
 msgid "background jobs"
 msgstr "Hintergrundjobs"
 
+#: ../src/gui/tool_colorlabels.c:41
+msgid ""
+"toggle red label\n"
+"of selected images (f1)"
+msgstr ""
+"schalte rote Markierung der\n"
+"ausgewählten Bilder um (F1)"
+
+#: ../src/gui/tool_colorlabels.c:46
+msgid ""
+"toggle yellow label\n"
+"of selected images (f2)"
+msgstr ""
+"schalte gelbe Markierung der\n"
+"ausgewählten Bilder um (F2)"
+
+#: ../src/gui/tool_colorlabels.c:51
+msgid ""
+"toggle green label\n"
+"of selected images (f3)"
+msgstr ""
+"schalte grüne Markierung der\n"
+"ausgewählten Bilder um (F3)"
+
+#: ../src/gui/tool_colorlabels.c:56
+msgid "clear all labels of selected images"
+msgstr ""
+"alle Markierungen der\n"
+"ausgewählten Bilder löschen"
+
 #: ../src/views/darkroom.c:41
 msgid "darkroom"
 msgstr "Dunkelkammer"
@@ -3219,6 +3215,12 @@ msgstr "Fehler beim Erstellen des Sitzungs-Pfades %s."
 #, c-format
 msgid "new session initiated '%s'"
 msgstr ""
+
+#~ msgid "color labels"
+#~ msgstr "Farbmarkierungen"
+
+#~ msgid "clear"
+#~ msgstr "löschen"
 
 #~ msgctxt "color label"
 #~ msgid "red"

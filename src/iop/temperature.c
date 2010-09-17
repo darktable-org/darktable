@@ -411,7 +411,7 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_spin_button_set_value (g->finetune, 0);
   gtk_spin_button_set_digits(g->finetune, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), NULL);
+  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), (char *)NULL);
 
   self->gui_update(self);
 

@@ -606,7 +606,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
               GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -644,7 +644,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
               GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
@@ -698,7 +698,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP, event->state & 0x7);
+  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP, event->state & 0xf);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -835,7 +835,7 @@ key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
     return FALSE;
 
   // we're only interested in ctrl, shift, mod1 (alt)
-  int estate = event->state & 0x7;
+  int estate = event->state & 0xf;
   
   while(i)
   {
@@ -869,7 +869,7 @@ key_released (GtkWidget *w, GdkEventKey *event, gpointer user_data) {
 static gboolean
 button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state & 0x7);
+  dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state & 0xf);
   gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
   return TRUE;
@@ -878,7 +878,7 @@ button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 button_released (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  dt_control_button_released(event->x, event->y, event->button, event->state & 0x7);
+  dt_control_button_released(event->x, event->y, event->button, event->state & 0xf);
   gtk_widget_queue_draw(w);
   return TRUE;
 }
@@ -886,7 +886,7 @@ button_released (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 mouse_moved (GtkWidget *w, GdkEventMotion *event, gpointer user_data)
 {
-  dt_control_mouse_moved(event->x, event->y, event->state & 0x7);
+  dt_control_mouse_moved(event->x, event->y, event->state & 0xf);
   gint x, y;
   gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
@@ -906,6 +906,7 @@ center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
   return TRUE;
 }
 
+#if 0
 static void 
 dt_gui_panel_allocate(GtkWidget *widget, GtkAllocation *a, gpointer data) 
 {
@@ -913,6 +914,7 @@ dt_gui_panel_allocate(GtkWidget *widget, GtkAllocation *a, gpointer data)
   gtk_widget_set_size_request (w, a->width, -1);
   gtk_widget_queue_resize (w);
 }
+#endif
 
 #include "background_jobs.h"
 int
@@ -964,10 +966,27 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
+  // set constant width from gconf key
+  const int panel_width = MAX(0, MIN(500, dt_conf_get_int("panel_width")));
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  gtk_widget_set_size_request (widget, panel_width, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  gtk_widget_set_size_request (widget, panel_width, -1);
+  // leave some space for scrollbars to appear:
+  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
+  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
+  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  // and make the scrollbars disappear when not needed:
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow");
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   
   /* add signal for size-allocate of right panel */
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-  g_signal_connect (G_OBJECT (widget), "size-allocate", G_CALLBACK (dt_gui_panel_allocate), 0);
+  // currently disabled because it never worked right.
+  // widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  // g_signal_connect (G_OBJECT (widget), "size-allocate", G_CALLBACK (dt_gui_panel_allocate), 0);
 
   // Update the devices module with available devices
   dt_gui_devices_init();

@@ -433,7 +433,7 @@ void gui_init(struct dt_iop_module_t *self)
   label = gtk_label_new(_("median passes"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   g->med_passes = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1));
-  gtk_object_set(GTK_OBJECT(g->med_passes), "tooltip-text", _("number of 3x3 median filter passes\non R-G and B-G after demosaicing"), NULL);
+  gtk_object_set(GTK_OBJECT(g->med_passes), "tooltip-text", _("number of 3x3 median filter passes\non R-G and B-G after demosaicing"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 3, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->med_passes), 4, 7, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
@@ -453,23 +453,23 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->demosaic_method), 4, 7, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->pre_median = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("hot pixels")));
-  gtk_object_set(GTK_OBJECT(g->pre_median), "tooltip-text", _("median filter before demosaicing"), NULL);
+  gtk_object_set(GTK_OBJECT(g->pre_median), "tooltip-text", _("median filter before demosaicing"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->pre_median), 4, 7, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->greeneq = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("green equilibration")));
-  gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("work around unequal green channels in some mid-range\ncameras, e.g. canon eos 400d"), NULL);
+  gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("work around unequal green channels in some mid-range\ncameras, e.g. canon eos 400d"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->greeneq), 4, 7, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // GtkCheckButton *dcb_enhance;
   g->dcb_enhance = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("dcb enhance")));
-  gtk_object_set(GTK_OBJECT(g->dcb_enhance), "tooltip-text", _("turns off the default image refinement if edges are jagged or you prefer softer demosaicing."), NULL);
+  gtk_object_set(GTK_OBJECT(g->dcb_enhance), "tooltip-text", _("turns off the default image refinement if edges are jagged or you prefer softer demosaicing."), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->dcb_enhance), 4, 7, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // GtkSpinButton *iterations_dcb;
   g->dcb_iterat = gtk_label_new(_("dcb iterations"));
   gtk_misc_set_alignment(GTK_MISC(g->dcb_iterat), 0.0, 0.5);
   g->iterations_dcb = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1)); // not enough room for number more then 4
-  gtk_object_set(GTK_OBJECT(g->iterations_dcb), "tooltip-text", _("number of DCB correction routines passes(the default is zero)\nthis helps if you see lots of wrong interpolation directions, just remember that it may produce new artifacts\nusually 0 or 1 should work fine, in some situations even 10 is not enough."), NULL);
+  gtk_object_set(GTK_OBJECT(g->iterations_dcb), "tooltip-text", _("number of DCB correction routines passes(the default is zero)\nthis helps if you see lots of wrong interpolation directions, just remember that it may produce new artifacts\nusually 0 or 1 should work fine, in some situations even 10 is not enough."), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->dcb_iterat), 0, 3, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->iterations_dcb), 4, 7, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
@@ -480,32 +480,32 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->noiserd_fbdd, C_("fbdd noise", "none"));
   gtk_combo_box_append_text(g->noiserd_fbdd, _("luma"));
   gtk_combo_box_append_text(g->noiserd_fbdd, _("luma+chroma"));
-  gtk_object_set(GTK_OBJECT(g->noiserd_fbdd), "tooltip-text", _("fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"), NULL);
+  gtk_object_set(GTK_OBJECT(g->noiserd_fbdd), "tooltip-text", _("fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->fbdd_noise), 0, 3, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->noiserd_fbdd), 4, 7, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // GtkCheckButton *vcd_eeci_refine;
   g->vcd_eeci_refine = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("vcd enhance")));
-  gtk_object_set(GTK_OBJECT(g->vcd_eeci_refine), "tooltip-text", _("refine interpolated pixels"), NULL);
+  gtk_object_set(GTK_OBJECT(g->vcd_eeci_refine), "tooltip-text", _("refine interpolated pixels"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->vcd_eeci_refine), 4, 7, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // GtkSpinButton *vcd_es_med_passes;
   g->vcd_enhance_lab = gtk_label_new(_("edge median passes"));
   gtk_misc_set_alignment(GTK_MISC(g->vcd_enhance_lab), 0.0, 0.5);
   g->vcd_es_med_passes = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 31, 1)); // not enough room for more then 4
-  gtk_object_set(GTK_OBJECT(g->vcd_es_med_passes), "tooltip-text", _("number of passes an edge-sensitive median filter to differential color planes"), NULL);
+  gtk_object_set(GTK_OBJECT(g->vcd_es_med_passes), "tooltip-text", _("number of passes an edge-sensitive median filter to differential color planes"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->vcd_enhance_lab), 0, 3, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->vcd_es_med_passes), 4, 7, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   //GtkCheckButton *amaze_ca_correct;
   g->amaze_ca_correct = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("ca autocorrect")));
-  gtk_object_set(GTK_OBJECT(g->amaze_ca_correct), "tooltip-text", _("artificial ca autocorrection from AMaZE"), NULL);
+  gtk_object_set(GTK_OBJECT(g->amaze_ca_correct), "tooltip-text", _("artificial ca autocorrection from AMaZE"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->amaze_ca_correct), 4, 7, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   GtkWidget *reset = gtk_button_new_with_label(_("reset"));
-  gtk_object_set(GTK_OBJECT(reset), "tooltip-text", _("reset raw loading parameters\nto darktable's defaults"), NULL);
+  gtk_object_set(GTK_OBJECT(reset), "tooltip-text", _("reset raw loading parameters\nto darktable's defaults"), (char *)NULL);
   GtkWidget *reload = gtk_button_new_with_label(_("re-import"));
-  gtk_object_set(GTK_OBJECT(reload), "tooltip-text", _("trigger re-import of the raw image"), NULL);
+  gtk_object_set(GTK_OBJECT(reload), "tooltip-text", _("trigger re-import of the raw image"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(reset), 0, 3, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(reload), 4, 7, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   

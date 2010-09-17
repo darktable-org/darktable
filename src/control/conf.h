@@ -182,17 +182,68 @@ static inline gchar *dt_conf_get_string(const char *name)
 #endif
 }
 
-static inline GSList *dt_conf_all_entries(const char *dir)
+typedef struct dt_conf_string_entry_t
 {
+  char *key;
+  char *value;
+} dt_conf_string_entry_t;
+
+/** get all strings in */
+static inline GSList *dt_conf_all_string_entries (const char *dir)
+{
+  GSList *result = NULL;
+ 
 #ifdef HAVE_GCONF
   char var[1024];
-  snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, dir);
-  return gconf_client_all_entries(darktable.conf->gconf, var, NULL);
+  snprintf (var, 1024, "%s/%s", DT_GCONF_DIR, dir);
+  GSList *slist = gconf_client_all_entries (darktable.conf->gconf, var, NULL);
+  GSList *item=slist;
+  if(slist) 
+    do
+    {
+      GConfEntry *entry = (GConfEntry *)item->data;
+      dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
+      
+      /* get the key name from path/key */
+      gchar *p=entry->key+strlen (entry->key);
+      while (*--p!='/');
+      nv->key = g_strdup (++p);
+      
+      /* get the value from gconf entry */
+      nv->value = g_strdup (gconf_value_get_string (entry->value));
+      if (nv->key && nv->value)
+        result = g_slist_append (result,nv);
+      else
+      {
+        g_free (nv->key);
+        g_free (nv);
+      }
+      
+    } while ((item=g_slist_next (item))!=NULL);
+    
 #else
-  // FIXME
-  // Uh, no idea how to handle this.
-  return NULL;
-#endif
+  pthread_mutex_lock(&darktable.conf->mutex);
+  for (int i=0;i<DT_CONF_MAX_VARS;i++)
+  {
+    if (strcmp(darktable.conf->varname[i],dir)==0) {
+      dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
+      gchar *key = g_strdup (darktable.conf->varname[i]);
+      
+      /* get the key name from path/key */
+      gchar *p = key+strlen (key);
+      while (*--p!='/');
+      nv->key = g_strdup (++p);
+      
+      /* get the value */
+      nv->value = g_strdup(darktable.conf->varval[i]);
+      
+      result = g_slist_append (result,nv);
+    }
+  }
+  pthread_mutex_unlock(&darktable.conf->mutex);
+  
+#endif	
+  return result;
 }
 
 static inline void dt_conf_init(dt_conf_t *cf, const char *filename)

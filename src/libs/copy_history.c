@@ -57,7 +57,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
               GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -192,11 +192,11 @@ gui_init (dt_lib_module_t *self)
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, key_accel_copy_callback, (void *)self);
-  gtk_object_set(GTK_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), NULL);
+  gtk_object_set(GTK_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), (char *)NULL);
   gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
-  gtk_object_set(GTK_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"), NULL);
+  gtk_object_set(GTK_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, delete, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -205,13 +205,13 @@ gui_init (dt_lib_module_t *self)
   d->pastemode = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(d->pastemode, _("append"));
   gtk_combo_box_append_text(d->pastemode, _("overwrite"));
-  gtk_object_set(GTK_OBJECT(d->pastemode), "tooltip-text", _("how to handle existing history"), NULL);
+  gtk_object_set(GTK_OBJECT(d->pastemode), "tooltip-text", _("how to handle existing history"), (char *)NULL);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->pastemode), TRUE, TRUE, 0);
   gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, key_accel_paste_callback, (void *)self);
-  gtk_object_set(GTK_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), NULL);
+  gtk_object_set(GTK_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), (char *)NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->paste), TRUE, TRUE, 0);
@@ -220,7 +220,7 @@ gui_init (dt_lib_module_t *self)
 
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load dt file"));
-  gtk_object_set(GTK_OBJECT(loadbutton), "tooltip-text", _("open a dt sidecar file\nand apply it to selected images"), NULL);
+  gtk_object_set(GTK_OBJECT(loadbutton), "tooltip-text", _("open a dt sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);

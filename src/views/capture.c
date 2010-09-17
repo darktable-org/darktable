@@ -168,7 +168,7 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
 	const gchar *file = dt_variables_get_result(cv->vp);
 	
 	// Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
-	gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+	gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
 	if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
 	{
 		do
@@ -176,7 +176,7 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
 			g_free(fullfile);
 			dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
 			file = dt_variables_get_result(cv->vp);
-			fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+			fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
 		} while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
 	}
 	
@@ -227,7 +227,7 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 		dt_variables_reset_sequence (cv->vp);
 		
 		// Construct the directory for filmroll...
-		cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory,NULL);
+		cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory, (char *)NULL);
 		dt_variables_expand( cv->vp, cv->path, FALSE );
 		sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
 			

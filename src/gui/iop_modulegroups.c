@@ -172,28 +172,28 @@ void dt_gui_iop_modulegroups_init ()
   //_iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
   _iop_modulegroups_basic_widget = gtk_toggle_button_new_with_label(_("basic"));
   g_signal_connect (_iop_modulegroups_basic_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_GROUP_BASIC);
-  g_object_set (_iop_modulegroups_basic_widget,"tooltip-text",_("basic group"),NULL);
+  g_object_set (_iop_modulegroups_basic_widget,"tooltip-text",_("basic group"),(char *)NULL);
   gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
 
   /* add button for color plugins */
   //_iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
   _iop_modulegroups_color_widget =gtk_toggle_button_new_with_label(_("color"));
   g_signal_connect (_iop_modulegroups_color_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_GROUP_COLOR);
-  g_object_set (_iop_modulegroups_color_widget,"tooltip-text",_("color group"),NULL);
+  g_object_set (_iop_modulegroups_color_widget,"tooltip-text",_("color group"),(char *)NULL);
   gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_color_widget,TRUE,TRUE,0);
   
   /* add button for correction plugins */
   //_iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
   _iop_modulegroups_correct_widget = gtk_toggle_button_new_with_label(_("correct"));
   g_signal_connect (_iop_modulegroups_correct_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_GROUP_CORRECT);
-  g_object_set (_iop_modulegroups_correct_widget,"tooltip-text",_("correction group"),NULL);
+  g_object_set (_iop_modulegroups_correct_widget,"tooltip-text",_("correction group"),(char *)NULL);
   gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_correct_widget,TRUE,TRUE,0);
   
   /* add buttons for artistic plugins */
  // _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
   _iop_modulegroups_effect_widget = gtk_toggle_button_new_with_label(_("effect"));
   g_signal_connect (_iop_modulegroups_effect_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_GROUP_EFFECT);
-  g_object_set (_iop_modulegroups_effect_widget,"tooltip-text",_("effect group"),NULL);
+  g_object_set (_iop_modulegroups_effect_widget,"tooltip-text",_("effect group"),(char *)NULL);
   gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_effect_widget,TRUE,TRUE,0);
   
   gtk_container_add (GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox")),bbox);

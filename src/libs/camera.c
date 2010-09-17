@@ -116,7 +116,7 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       prop->values=GTK_COMBO_BOX(gtk_combo_box_new_text());
       
       prop->osd=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye,0));
-      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), NULL);
+      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), (char *)NULL);
       do
       {    
         gtk_combo_box_append_text(prop->values, value);
@@ -426,10 +426,10 @@ gui_init (dt_lib_module_t *self)
   lib->gui.button1=gtk_button_new_with_label(_("capture image(s)"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), FALSE, FALSE, 5);
 
-  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), NULL);
+  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
@@ -535,24 +535,20 @@ gui_init (dt_lib_module_t *self)
   }
   
   /* add user widgets */
-  GSList *options = dt_conf_all_entries ("plugins/capture/tethering/properties");
+  GSList *options = dt_conf_all_string_entries ("plugins/capture/tethering/properties");
   if (options) 
   {
     GSList *item = options;
     if (item)
     {
       do {
-        GConfEntry *entry = (GConfEntry *)item->data;
+        dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
         
         /* get the label from key */
-        gchar *p=entry->key+strlen (entry->key);
-        while (*--p!='/');
-        gchar *label = g_strdup (++p);
-        p=label;
-        while (p++<label+strlen(label)) if(*p=='_') *p=' ';
+	char *p=entry->key;
+        while (p++<entry->key+strlen(entry->key)) if (*p=='_') *p=' ';
         
-        
-        if ((prop = _lib_property_add_new (lib, label,gconf_value_get_string (entry->value) )) != NULL)
+        if ((prop = _lib_property_add_new (lib, entry->key,entry->value )) != NULL)
         {
           hbox = GTK_BOX (gtk_hbox_new(FALSE, 0));
           gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (prop->values), TRUE, TRUE, 0);

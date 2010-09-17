@@ -40,6 +40,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/panel_width</key>
+      <applyto>/apps/darktable/panel_width</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>300</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>size of the side panels in pixels</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/cache_memory</key>
       <applyto>/apps/darktable/cache_memory</applyto>
       <owner>darktable</owner>

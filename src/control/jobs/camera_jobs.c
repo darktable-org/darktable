@@ -147,12 +147,12 @@ int32_t dt_camera_import_backup_job_run(dt_job_t *job)
       { // Got the mount point lets check for backup folder
         gchar *backuppath=NULL;
         gchar *rootpath=g_file_get_path(root);
-        backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("plugins/capture/backup/foldername"),NULL);
+        backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("plugins/capture/backup/foldername"),(char *)NULL);
         g_free(rootpath);
         
         if( g_file_test(backuppath,G_FILE_TEST_EXISTS)==TRUE)
         { // Found a backup storage, lets copy file here..
-          gchar *destinationfile=g_build_filename(G_DIR_SEPARATOR_S,backuppath,t->destinationfile,NULL);
+          gchar *destinationfile=g_build_filename(G_DIR_SEPARATOR_S,backuppath,t->destinationfile,(char *)NULL);
           if( g_mkdir_with_parents(g_path_get_dirname(destinationfile),0755) >= 0 )
           {            
             gchar *content;
@@ -234,7 +234,7 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
   const gchar *file = dt_variables_get_result(t->vp);
   
   // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
-  gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+  gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
   {
     do
@@ -242,7 +242,7 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
       g_free(fullfile);
       dt_variables_expand( t->vp, t->filename, TRUE );
       file = dt_variables_get_result(t->vp);
-      fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+      fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
     } while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
   }
   

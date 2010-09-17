@@ -99,7 +99,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   const gchar * filename = g_basename( dirname );
   strcpy( g_strrstr( filename,".")+1, format->extension(fdata));
   
-  attachment->file = g_build_filename( tmpdir, filename,NULL );
+  attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
   
   dt_imageio_export(img, attachment->file, format, fdata);
   dt_image_cache_release(img, 'r');

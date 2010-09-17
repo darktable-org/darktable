@@ -314,7 +314,7 @@ gui_init (dt_lib_module_t *self)
   d->text = GTK_COMBO_BOX_ENTRY(w);
 
 /* xgettext:no-c-format */
-  gtk_object_set(GTK_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), NULL);
+  gtk_object_set(GTK_OBJECT(d->text), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
   gchar *text = dt_conf_get_string("plugins/lighttable/collect/string");
   if(text)
   {
@@ -341,7 +341,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
-  gtk_object_set(GTK_OBJECT(view), "tooltip-text", _("doubleclick to select"), NULL);
+  gtk_object_set(GTK_OBJECT(view), "tooltip-text", _("doubleclick to select"), (char *)NULL);
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
   entry_key_press (NULL, NULL, d);
 }
