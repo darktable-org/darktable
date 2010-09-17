@@ -103,6 +103,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D300s",                  { 813202, 327667,  31067}, { 248810, 1047043, -203049}, { -1160, -284607, 1075790}, {774872, 800415, 648727}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D700",                   { 789261, 332016,  34149}, { 270386,  985748, -129135}, {  4074, -230209,  999008}, {798172, 826721, 673126}},
+
   // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A200",               { 846786, 366302, -22858}, { 311584, 1046249, -107056}, { 54596, -192993, 1191406}, {708405, 744507, 596771}},
 
