@@ -69,19 +69,17 @@ dt_image_single_user()
   // return (darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users;
 }
 
-void dt_image_write_dt_files(dt_image_t *img)
+void dt_image_write_sidecar_file(dt_image_t *img)
 {
   // write .dt file
-  if(img->id > 0 && dt_conf_get_bool("write_dt_files"))
+  if(img->id > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     char filename[520];
     dt_image_full_path(img, filename, 512);
     dt_image_path_append_version(img, filename, 512);
     char *c = filename + strlen(filename);
-    sprintf(c, ".dt");
-    dt_imageio_dt_write(img->id, filename);
-    sprintf(c, ".dttags");
-    dt_imageio_dttags_write(img->id, filename);
+    sprintf(c, ".xmp");
+    dt_exif_xmp_write(img->id, filename);
   }
 }
 
@@ -521,14 +519,14 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   }
 
   // try loading a .dt[tags] file
-  char dtfilename[1031];
-  strncpy(dtfilename, filename, 1024);
-  dt_image_path_append_version(img, dtfilename, 1024);
-  char *c = dtfilename + strlen(dtfilename);
-  sprintf(c, ".dttags");
-  (void)dt_imageio_dttags_read(img, dtfilename);
-  sprintf(c, ".dt");
-  if(altered || !dt_imageio_dt_read(img->id, dtfilename))
+  // char dtfilename[1031];
+  // strncpy(dtfilename, filename, 1024);
+  // dt_image_path_append_version(img, dtfilename, 1024);
+  // char *c = dtfilename + strlen(dtfilename);
+  // sprintf(c, ".dttags");
+  // (void)dt_imageio_dttags_read(img, dtfilename);
+  // sprintf(c, ".dt");
+  if(altered)// || !dt_imageio_dt_read(img->id, dtfilename))
   {
     dt_develop_t dev;
     dt_dev_init(&dev, 0);
@@ -605,13 +603,13 @@ int dt_image_import(const int32_t film_id, const char *filename)
   strncpy(dtfilename, filename, 1024);
   dt_image_path_append_version(img, dtfilename, 1024);
   char *c = dtfilename + strlen(dtfilename);
-  sprintf(c, ".dttags");
-  (void)dt_imageio_dttags_read(img, dtfilename);
+  sprintf(c, ".xmp");
+  (void)dt_exif_xmp_read(img, dtfilename, 0);
 
   dt_image_cache_flush_no_sidecars(img);
 
-  sprintf(c, ".dt");
-  (void)dt_imageio_dt_read(img->id, dtfilename);
+  // sprintf(c, ".dt");
+  // (void)dt_imageio_dt_read(img->id, dtfilename);
 
   g_free(imgfname);
 

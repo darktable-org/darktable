@@ -24,7 +24,8 @@
 #include "common/darktable.h"
 #include "common/colorlabels.h"
 #include "common/image_cache.h"
-#include <libexif/exif-data.h>
+#include "common/imageio.h"
+// #include <libexif/exif-data.h>
 #include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
@@ -506,7 +507,7 @@ void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len
 #undef TO_BINARY
 }
 
-int dt_exif_xmp_read (dt_image_t *img, const char* filename)
+int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_only)
 {
   try
   {
@@ -520,7 +521,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
     sqlite3_stmt *stmt;
 
     Exiv2::XmpData::iterator pos;
-    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
     {
       // license
       const char *license = pos->toString().c_str();
@@ -530,7 +531,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
     }
-    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
     {
       // description
       const char *descr = pos->toString().c_str();
@@ -540,7 +541,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
     }
-    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
     {
       // caption
       const char *cap = pos->toString().c_str();
@@ -553,7 +554,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
     int stars = 1;
     int raw_params = -16711632;
     int set = 0;
-    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end() )
     {
       stars = pos->toLong() + 1;
       set = 1;
@@ -570,7 +571,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
       dt_image_cache_flush_no_sidecars(img);
     }
-    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
     {
       // consistency: strip all tags from image (tagged_image, tagxtag)
       sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
@@ -638,7 +639,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
         sqlite3_finalize(stmt);
       }
     }
-    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.color_labels"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.color_labels"))) != xmpData.end() )
     {
       // color labels
       const int cnt = pos->count();
@@ -709,6 +710,15 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
   {
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;
+
+    // legacy fallback:
+    char dtfilename[1024];
+    strncpy(dtfilename, filename, 1024);
+    char *c = dtfilename + strlen(dtfilename);
+    sprintf(c, ".dttags");
+    if(!history_only) dt_imageio_dttags_read(img, dtfilename);
+    sprintf(c, ".dt");
+    dt_imageio_dt_read(img->id, dtfilename);
     return 0;
   }
   return 0;
@@ -742,6 +752,12 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     }
     sqlite3_finalize(stmt);
     xmpData["Xmp.xmp.Rating"] = (stars & 0x7) - 1; // normally stars go from -1 .. 5 or so.
+
+
+    // exiv2 is not really thread safe:
+    pthread_mutex_lock(&darktable.plugin_threadsafe);
+    Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
+    pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
     xmpData["Xmp.darktable.raw_params"] = raw_params;
 

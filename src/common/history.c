@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
+#include "common/exif.h"
 #include "common/history.h"
 
 
@@ -74,20 +75,23 @@ dt_history_load_and_apply_on_selection (gchar *filename)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
-    if (dt_imageio_dt_read(imgid, filename))
-    {
-      res=1;
-      break;
-    }
     dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    img->force_reimport = 1;
-    dt_image_cache_flush(img);
-    
-    /* if current image in develop reload history */
-    if (dt_dev_is_current_image(darktable.develop, imgid))
-      dt_dev_reload_history_items (darktable.develop);
-    
-    dt_image_cache_release(img, 'r');
+    if(img)
+    {
+      if (dt_exif_xmp_read(img, filename, 1))
+      {
+        res=1;
+        break;
+      }
+      img->force_reimport = 1;
+      dt_image_cache_flush(img);
+      
+      /* if current image in develop reload history */
+      if (dt_dev_is_current_image(darktable.develop, imgid))
+        dt_dev_reload_history_items (darktable.develop);
+      
+      dt_image_cache_release(img, 'r');
+    }
   }
   sqlite3_finalize(stmt);
   return res;

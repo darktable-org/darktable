@@ -139,7 +139,7 @@ void dt_control_log(const char* msg, ...);
 void dt_control_log_busy_enter();
 void dt_control_log_busy_leave();
 void dt_control_change_cursor(dt_cursor_t cursor);
-void dt_control_write_dt_files();
+void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 

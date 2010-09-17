@@ -40,7 +40,7 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path);
 int dt_exif_xmp_write (const int imgid, const char* filename);
 
 /** read xmp sidecar file. */
-int dt_exif_xmp_read (const int imgid, const char* filename);
+int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_only);
 
 /** thread safe init and cleanup. */
 void dt_exif_init();

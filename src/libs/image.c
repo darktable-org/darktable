@@ -55,7 +55,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   long int i = (long int)user_data;
   if     (i == 0) dt_control_remove_images();
   else if(i == 1) dt_control_delete_images();
-  else if(i == 2) dt_control_write_dt_files();
+  else if(i == 2) dt_control_write_sidecar_files();
   else if(i == 3) dt_control_duplicate_images();
   else if(i == 4) dt_control_flip_images(0);
   else if(i == 5) dt_control_flip_images(1);
