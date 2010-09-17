@@ -83,6 +83,7 @@ style "clearlooks-wide" = "clearlooks-default"
 {
   xthickness = 2
   ythickness = 2
+  fg[PRELIGHT]      = "#E2E2E2"
 }
 
 style "clearlooks-notebook" = "clearlooks-wide"

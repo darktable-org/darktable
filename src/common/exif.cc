@@ -663,13 +663,44 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename)
       const int cnt = ver->count();
       if(cnt == en->count() && cnt == op->count() && cnt == param->count())
       {
+        // clear history
+        sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+        sqlite3_bind_int (stmt, 1, img->id);
+        sqlite3_step(stmt);
+        sqlite3_finalize (stmt);
         for(int i=0;i<cnt;i++)
         {
-          // TODO:
-          printf("got modversion `%ld'\n", ver->toLong(i));
-          printf("got enabled `%ld'\n", en->toLong(i));
-          printf("got operation `%s'\n", op->toString(i).c_str());
-          printf("got params `%s'\n", param->toString(i).c_str());
+          const int modversion = ver->toLong(i);
+          const int enabled = en->toLong(i);
+          const char *operation = op->toString(i).c_str();
+          const char *param_c = param->toString(i).c_str();
+          const int param_c_len = strlen(param_c);
+          const int params_len = param_c_len/2;
+          unsigned char *params = (unsigned char *)malloc(params_len);
+          dt_exif_xmp_decode(param_c, params, param_c_len);
+          // TODO: why this update set?
+          sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
+          sqlite3_bind_int (stmt, 1, img->id);
+          sqlite3_bind_int (stmt, 2, i);
+          if(sqlite3_step(stmt) != SQLITE_ROW)
+          {
+            sqlite3_finalize(stmt);
+            sqlite3_prepare_v2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
+            sqlite3_bind_int (stmt, 1, img->id);
+            sqlite3_bind_int (stmt, 2, i);
+            sqlite3_step (stmt);
+          }
+          sqlite3_finalize (stmt);
+          sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+          sqlite3_bind_text(stmt, 1, operation, strlen(operation), SQLITE_TRANSIENT);
+          sqlite3_bind_blob(stmt, 2, params, params_len, SQLITE_TRANSIENT);
+          sqlite3_bind_int (stmt, 3, modversion);
+          sqlite3_bind_int (stmt, 4, enabled);
+          sqlite3_bind_int (stmt, 5, img->id);
+          sqlite3_bind_int (stmt, 6, i);
+          sqlite3_step (stmt);
+          sqlite3_finalize (stmt);
+          free(params);
         }
       }
     }
