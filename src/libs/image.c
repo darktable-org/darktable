@@ -92,8 +92,8 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("write dt files"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write history stack and tags to sidecar files"), (char *)NULL);
+  button = gtk_button_new_with_label(_("write sidecar files"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)2);
 

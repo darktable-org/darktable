@@ -20,11 +20,14 @@
   #include "config.h"
 #endif
 
+extern "C"
+{
 #include "common/exif.h"
 #include "common/darktable.h"
 #include "common/colorlabels.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+}
 // #include <libexif/exif-data.h>
 #include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
@@ -45,11 +48,6 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
   Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
-  // std::stringstream ss;
-  // (void)Exiv2::ExifTags::printTag(ss, 0x0016, Exiv2::canonIfdId, pos->value(), &exifData);
-  // (void)Exiv2::CanonMakerNote::printCsLensType(ss, pos->value(), &exifData);
-  // std::ostream &os, uint16_t tag, IfdId ifdId, const Value &value, const ExifData *pExifData=0)
-  // str = ss.str();
 
   char *s = g_locale_to_utf8(str.c_str(), str.length(),
       NULL, NULL, NULL);
@@ -489,6 +487,7 @@ void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len
     output[2*i]   = hex[hi];
     output[2*i+1] = hex[lo];
   }
+  output[2*len] = '\0';
 }
 
 // and back to binary
@@ -708,13 +707,15 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
   }
   catch (Exiv2::AnyError& e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2] " << s << std::endl;
+    // actually nobody's interested in that if the file doesn't exist:
+    // std::string s(e.what());
+    // std::cerr << "[exiv2] " << s << std::endl;
 
     // legacy fallback:
     char dtfilename[1024];
     strncpy(dtfilename, filename, 1024);
     char *c = dtfilename + strlen(dtfilename);
+    while(c > dtfilename && *c != '.') c--;
     sprintf(c, ".dttags");
     if(!history_only) dt_imageio_dttags_read(img, dtfilename);
     sprintf(c, ".dt");
@@ -820,7 +821,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
       xmpData.add(Exiv2::XmpKey(key), &tv);
 
       const int32_t len = sqlite3_column_bytes(stmt, 4);
-      assert(2*len < 2048);
+      assert(2*len + 1 < 2048);
       dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 4), val, len);
       tv.read(val);
       snprintf(key, 1024, "Xmp.darktable.history_params[%d]", num);

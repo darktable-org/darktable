@@ -786,6 +786,7 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
 
 int dt_imageio_dt_write (const int imgid, const char *filename)
 {
+  assert(0);
   sqlite3_stmt *stmt;
   FILE *f = NULL;
   // read history from db
@@ -893,16 +894,7 @@ delete_old_config:
 
 int dt_imageio_dttags_write (const int imgid, const char *filename)
 { // write out human-readable file containing images stars and tags.
-
-  char xmpfilename[1024];
-  strncpy(xmpfilename, filename, 1024);
-  char *c = xmpfilename + strlen(xmpfilename);
-  while(*c != '.' && c > xmpfilename) c--;
-  sprintf(c, ".xmp");
-  dt_exif_xmp_write (imgid, xmpfilename);
-  // DEBUG: read again.
-  // dt_exif_xmp_read (imgid, xmpfilename);
-
+  assert(0);
   // refuse to write dttags for non-existent image:
   char imgfname[1024];
   snprintf(imgfname, 1024, "%s", filename);

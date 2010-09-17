@@ -52,7 +52,7 @@ static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open dt sidecar file"),
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open sidecar file"),
               GTK_WINDOW (win),
               GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -61,8 +61,8 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  gtk_file_filter_add_pattern(filter, "*.dt");
-  gtk_file_filter_set_name(filter, _("dt sidecar files"));
+  gtk_file_filter_add_pattern(filter, "*.xmp");
+  gtk_file_filter_set_name(filter, _("xmp sidecar files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -219,8 +219,8 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
-  GtkWidget *loadbutton = gtk_button_new_with_label(_("load dt file"));
-  gtk_object_set(GTK_OBJECT(loadbutton), "tooltip-text", _("open a dt sidecar file\nand apply it to selected images"), (char *)NULL);
+  GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
+  gtk_object_set(GTK_OBJECT(loadbutton), "tooltip-text", _("open an xmp sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, gtk_label_new(""), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
