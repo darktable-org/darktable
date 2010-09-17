@@ -415,9 +415,9 @@ gui_init (dt_lib_module_t *self)
   gtk_table_set_row_spacing(GTK_TABLE(self->widget), 5, 20);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->width  = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
-  gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), NULL);
+  gtk_object_set(GTK_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"), (char *)NULL);
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
-  gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), NULL);
+  gtk_object_set(GTK_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"), (char *)NULL);
 
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->width));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->height));
@@ -525,7 +525,7 @@ gui_init (dt_lib_module_t *self)
   while(it)
   {
     GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
-    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
     it = g_list_next(it);
   }
   g_list_free(renderers);
@@ -533,7 +533,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->profile, 0);
   char tooltip[1024];
   snprintf(tooltip, 1024, _("output icc profiles in %s/color/out"), datadir);
-  gtk_object_set(GTK_OBJECT(d->profile), "tooltip-text", tooltip, NULL);
+  gtk_object_set(GTK_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
   g_signal_connect (G_OBJECT (d->intent), "changed",
                     G_CALLBACK (intent_changed),
                     (gpointer)d);
@@ -545,11 +545,11 @@ gui_init (dt_lib_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   d->threads = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 24, 1));
-  gtk_object_set(GTK_OBJECT(d->threads), "tooltip-text", _("export using this number of threads.\nbeware! each thread will use ~1GB of ram."), NULL);
+  gtk_object_set(GTK_OBJECT(d->threads), "tooltip-text", _("export using this number of threads.\nbeware! each thread will use ~1GB of ram."), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->threads), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 11, 12, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g_signal_connect (G_OBJECT (d->threads), "value-changed",

@@ -606,7 +606,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
               GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -644,7 +644,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
               GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;

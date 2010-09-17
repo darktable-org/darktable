@@ -152,7 +152,7 @@ static void
 _update_example(_camera_import_dialog_t *dialog) 
 {
   // create path/filename and execute a expand..
-  gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",NULL);
+  gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",(char *)NULL);
   dt_variables_expand( dialog->vp, path, FALSE);
   gchar *ep=g_strdup(dt_variables_get_result(dialog->vp));
   dt_variables_expand( dialog->vp, dialog->settings.namepattern->value, TRUE);
@@ -213,14 +213,14 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
   
   GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,0);
-  g_object_set(button,"tooltip-text",_("store value as default"),NULL);
+  g_object_set(button,"tooltip-text",_("store value as default"),(char *)NULL);
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
         G_CALLBACK (_gcw_store_callback), gcw);
   
   button=dtgtk_button_new(dtgtk_cairo_paint_reset,0);
-  g_object_set(button,"tooltip-text",_("reset value to default"),NULL);
+  g_object_set(button,"tooltip-text",_("reset value to default"),(char *)NULL);
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -277,11 +277,11 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   GtkTreeView *treeview=GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview)));  
   
   GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new( );
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer,"pixbuf",0, NULL);
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer,"pixbuf",0, (char *)NULL);
   gtk_tree_view_append_column( treeview , column);
   
   renderer = gtk_cell_renderer_text_new( );
-  column = gtk_tree_view_column_new_with_attributes( _("storage file"), renderer, "text", 1, NULL);
+  column = gtk_tree_view_column_new_with_attributes( _("storage file"), renderer, "text", 1, (char *)NULL);
   gtk_tree_view_append_column( treeview , column);
   gtk_tree_view_column_set_expand( column, TRUE);
   
@@ -306,13 +306,13 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
   if( dt_conf_get_bool("plugins/capture/camera/import/delete_originals") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.general.delete_originals ), TRUE);
    
-  g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),NULL);
+  g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),(char *)NULL);
   g_signal_connect (G_OBJECT(data->settings.general.delete_originals), "clicked",G_CALLBACK (_check_button_callback),data);
  
   GtkWidget *hbox=gtk_hbox_new(FALSE,5);
   data->settings.general.date_override=gtk_check_button_new_with_label(_("override today's date"));
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_override,FALSE,FALSE,0);
-  g_object_set(data->settings.general.date_override,"tooltip-text",_("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),NULL);
+  g_object_set(data->settings.general.date_override,"tooltip-text",_("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),(char *)NULL);
   
   data->settings.general.date_entry=gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_entry,TRUE,TRUE,0);
@@ -361,15 +361,15 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   data->settings.backup.enable=gtk_check_button_new_with_label(_("enable backup"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.enable,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.enable,"tooltip-text",_("check this option to enable automatic backup of imported images"),NULL);
+  g_object_set(data->settings.backup.enable,"tooltip-text",_("check this option to enable automatic backup of imported images"),(char *)NULL);
   
   data->settings.backup.warn=gtk_check_button_new_with_label(_("warn if no backup destinations are present"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.warn,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),NULL);
+  g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),(char *)NULL);
    
   data->settings.backup.foldername=(_camera_import_gconf_widget(data,_("backup foldername"),"plugins/capture/camera/backup/foldername"))->widget;
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.foldername,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),NULL);
+  g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),(char *)NULL);
   
   if( dt_conf_get_bool("plugins/capture/backup/enable") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.enable ), TRUE);
   else

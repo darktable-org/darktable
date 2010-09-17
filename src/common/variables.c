@@ -153,7 +153,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   gchar *pictures_folder=NULL;
   
   if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) == NULL)
-    pictures_folder=g_build_path(G_DIR_SEPARATOR_S,homedir,"Pictures",NULL);
+    pictures_folder=g_build_path(G_DIR_SEPARATOR_S,homedir,"Pictures",(char *)NULL);
   else 
     pictures_folder=g_strdup( g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) );
   

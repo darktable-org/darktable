@@ -90,7 +90,7 @@ static void import_callback(GtkButton *button,gpointer data)
   if( params->result )
   {
     // Let's initialize a import job and put it on queue....
-    gchar *path = g_build_path(G_DIR_SEPARATOR_S,params->basedirectory,params->subdirectory,NULL);
+    gchar *path = g_build_path(G_DIR_SEPARATOR_S,params->basedirectory,params->subdirectory,(char *)NULL);
     dt_job_t j;
     dt_camera_import_job_init(&j,params->jobcode,path,params->filenamepattern,params->result,params->camera);
     dt_control_add_job(darktable.control, &j);
@@ -134,7 +134,7 @@ void dt_gui_devices_update()
 
   // Add the rescan button
   GtkButton *scan=GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
-  gtk_object_set(GTK_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), NULL);
+  gtk_object_set(GTK_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
   g_signal_connect (G_OBJECT(scan), "clicked",G_CALLBACK (scan_callback), NULL);
   gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(scan),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(gtk_label_new("")),TRUE,TRUE,0);
@@ -157,12 +157,12 @@ void dt_gui_devices_update()
       // Set summary if exists for tooltip
       if( camera->summary.text !=NULL && strlen(camera->summary.text) >0 ) 
       {
-        gtk_object_set(GTK_OBJECT(label), "tooltip-text", camera->summary.text, NULL);
+        gtk_object_set(GTK_OBJECT(label), "tooltip-text", camera->summary.text, (char *)NULL);
       }
       else
       {
         sprintf(buffer,_("device \"%s\" connected on port \"%s\"."),camera->model,camera->port);
-        gtk_object_set(GTK_OBJECT(label), "tooltip-text", buffer, NULL);
+        gtk_object_set(GTK_OBJECT(label), "tooltip-text", buffer, (char *)NULL);
       }
       
       // Add camera action buttons
@@ -188,9 +188,9 @@ void dt_gui_devices_update()
     //gtk_widget_set_sensitive(expander,FALSE);
     gtk_box_pack_start(GTK_BOX(widget),gtk_label_new(_("no supported devices found")),TRUE,TRUE,0);
      
-    gtk_object_set(GTK_OBJECT(expander), "tooltip-text", _("no supported devices found"), NULL);
+    gtk_object_set(GTK_OBJECT(expander), "tooltip-text", _("no supported devices found"), (char *)NULL);
   } else
-    gtk_object_set(GTK_OBJECT(expander), "tooltip-text", "", NULL);
+    gtk_object_set(GTK_OBJECT(expander), "tooltip-text", "", (char *)NULL);
   gtk_widget_show_all(widget);
 }
 

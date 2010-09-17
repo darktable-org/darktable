@@ -65,7 +65,7 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   {
     GtkToggleButton *b = GTK_TOGGLE_BUTTON( g_list_nth_data (children,i));
     if(b != GTK_TOGGLE_BUTTON(widget)) 
-      gtk_object_set(GTK_OBJECT(b), "active", FALSE, NULL);
+      gtk_object_set(GTK_OBJECT(b), "active", FALSE, (char *)NULL);
   }
   
   reset = 0;
@@ -83,7 +83,7 @@ dt_gui_iop_history_init ()
   GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
   GtkWidget *hvbox = gtk_vbox_new (FALSE,0);
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));  
-  g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"),NULL);
+  g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"), (char *)NULL);
   gtk_box_pack_start (GTK_BOX (hbody),hvbox,FALSE,FALSE,0);
   gtk_box_pack_start (GTK_BOX (hbody),hbutton,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (history_compress_clicked),(gpointer)0);
@@ -139,7 +139,7 @@ dt_gui_iop_history_add_item (long int num, const gchar *label)
   
   /* */
   darktable.gui->reset = 1;
-  gtk_object_set(GTK_OBJECT(widget), "active", TRUE, NULL);
+  gtk_object_set(GTK_OBJECT(widget), "active", TRUE, (char *)NULL);
   darktable.gui->reset = 0;
   return widget;
 }
@@ -164,7 +164,7 @@ dt_gui_iop_history_pop_top()
   gtk_widget_destroy (GTK_WIDGET (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0)) );
   
   /* activate new top */
-  gtk_object_set(GTK_OBJECT (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0)) , "active", TRUE, NULL);
+  gtk_object_set(GTK_OBJECT (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0)) , "active", TRUE, (char *)NULL);
 }
   
 void 

@@ -321,7 +321,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
   //gtk_drawing_area_size(g->area, 258, 258);
-  gtk_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag and scroll\nto adjust the virtual\ncolor filter"), NULL);
+  gtk_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag and scroll\nto adjust the virtual\ncolor filter"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (g->area), "expose-event",

@@ -974,7 +974,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 
   dt_control_restore_gui_settings(mode);
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, NULL);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
   snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"), dt_view_manager_name(darktable.view_manager));
   gtk_label_set_label(GTK_LABEL(widget), buf);
   dt_conf_set_int ("ui_last/view", mode);
@@ -1398,7 +1398,7 @@ void dt_control_update_recent_films()
     gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
     gtk_label_set_max_width_chars (label, 30);
     
-    g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
+    g_object_set(G_OBJECT(widget), "tooltip-text", filename, (char *)NULL);
     
     gtk_widget_show(recent_used_film_vbox);
     gtk_widget_show(widget);

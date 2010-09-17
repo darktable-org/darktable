@@ -116,13 +116,13 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select all"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_a, key_accel_callback, (void *)0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
   button = gtk_button_new_with_label(_("select none"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_A, key_accel_callback, (void *)1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
@@ -131,13 +131,13 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("invert selection"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select unselected images\nin current collection (ctrl-!)"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_exclam, key_accel_callback, (void *)2);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)2);
 
   button = gtk_button_new_with_label(_("select film roll"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select all images which are in the same\nfilm roll as the selected images"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select all images which are in the same\nfilm roll as the selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
 
@@ -145,7 +145,7 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select untouched"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
   // Just a filler, remove if a new button is added

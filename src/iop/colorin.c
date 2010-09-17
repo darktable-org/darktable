@@ -442,9 +442,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
 
   char tooltip[1024];
-  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), NULL);
+  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
   snprintf(tooltip, 1024, _("icc profiles in %s/color/in"), datadir);
-  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, NULL);
+  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "changed",
                     G_CALLBACK (intent_changed),

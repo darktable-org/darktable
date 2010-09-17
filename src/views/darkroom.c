@@ -270,7 +270,7 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
     gtk_expander_set_expanded(module->expander, FALSE);
     snprintf(option, 512, _("show %s"), module->name());
   }
-  gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, NULL);
+  gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
 }
 
 
@@ -377,7 +377,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       GtkWidget *exp = GTK_WIDGET(module->expander);
       GtkWidget *shh = GTK_WIDGET(module->showhide);
       GtkWidget *parent = NULL;
-      g_object_get(G_OBJECT(module->widget), "parent", &parent, NULL);
+      g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
       // re-init and re-gui_init
       module->gui_cleanup(module);
       module->cleanup(module);
