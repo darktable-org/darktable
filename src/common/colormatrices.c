@@ -100,6 +100,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Rolf Steinort, Wolf Faust IT8, direct sunlight, well lit
   { "NIKON D200",                   { 878922, 352966,   2914}, { 273575, 1048141, -116302}, { 61661, -171021, 1126297}, {691483, 727142, 615204}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D300s",                  { 813202, 327667,  31067}, { 248810, 1047043, -203049}, { -1160, -284607, 1075790}, {774872, 800415, 648727}},
+
   // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A200",               { 846786, 366302, -22858}, { 311584, 1046249, -107056}, { 54596, -192993, 1191406}, {708405, 744507, 596771}},
 
