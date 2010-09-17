@@ -5,8 +5,8 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>The velvia module does enhance the saturation in the image, it increases saturation
-							on lower saturated pixeks more than high satured pixels.
+						<entry>The velvia module enhances the saturation in the image; it increases saturation
+							on lower saturated pixels more than on high saturated pixels.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/velvia.png" scalefit="1" width="80%" align="center" />
@@ -26,7 +26,9 @@
 			</para>
 		</sect4>
 		<sect4><title>Mid-tones bias</title>
-			<para>This slider controls preservation of saturation in mid-tones.
+			<para>This slider controls saturation preservation in mid-tones. It is expressed
+			as the lightness repartition between mid-tones and shadows/highlights. The greater the first
+			number, the stronger the effect.
 			</para>
 		</sect4>
 	</sect3>

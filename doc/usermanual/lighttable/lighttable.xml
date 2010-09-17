@@ -14,7 +14,7 @@
 	
 	<sect1><title>Overview</title>
 		<para></para>
-		<sect2 status="final"><title>Ligthtable</title>
+		<sect2 status="final"><title>Lighttable</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='100%'/>
 					<colspec colwidth='5cm'/>
@@ -22,8 +22,8 @@
 						<row>						
 							<entry>In this centerview, your images are shown as thumbs; each thumb has a frame and while mouse is over
 								an image, the information of rating, colorlabels and if image is altered in darkroom 
-								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is viewed.
-								Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel.
+								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is shown.
+								Also when mouse hovers over an image frame the specific image metadata is shown in the metadata panel.
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
@@ -33,18 +33,18 @@
 				</tgroup>
 			</informaltable>
 							
-			<para>While mouse is over an imageframe, you have additional actions accessed from keyboard to apply on image; here
-				follows an table of key accelerators and assigned actions.
+			<para>While mouse is over an image frame, you have additional actions accessed from keyboard to apply on image; here
+				follows a table of key accelerators and assigned actions.
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
 						<row>
 							<entry><emphasis>1 - 4</emphasis></entry>
-							<entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated
+							<entry>set the rating of the image; if an image has 1 star and you hit the 1 key, the image will be unrated
 							</entry>
 						</row>
 						<row>
-							<entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry>
+							<entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry>
 						</row>
 						<row>
 							<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry>
@@ -53,20 +53,27 @@
 							<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry>
 						</row>
 						<row>
-							<entry><emphasis>e</emphasis></entry><entry>opens the image in darkroom view for developing</entry>
+							<entry><emphasis>e</emphasis></entry><entry>open the image in darkroom view for developing</entry>
 						</row>
 						<row>
-							<entry><emphasis>z</emphasis></entry><entry>shows a fullscreen view of the image</entry>
+							<entry><emphasis>z</emphasis></entry><entry>show a fullscreen view of the image</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable>
 			</para>
-			<para>At the bottom you have an option to choose a zoomable lighttable view or a filemanger view of the thumbnails.
+			<para>At the bottom you have an option to choose between zoomable lighttable view or filemanger view of the thumbnails.
+			</para>
+			<para>Using the zoomable lighttable view, scroll with your mouse wheel to zoom in and out.
+			The <emphasis>hold left-click</emphasis> allows you to navigate through your collection.
+			</para>
+			<para>While in filemanager you can use <emphasis>ctrl-(mouse wheel)</emphasis> to change the number of thumbs displayed
+			in a row. That action is a key accelerator of the counter that can be found beside the filemanager option.
+			Use your mouse wheel to navigate through your collection.
 			</para>
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>
-			<para>The filtering and sortorder of images on lighttable are accessed and changed in the top bar
-				where you can select among a few predefined filters and orderering like date, color labels, rating
+			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar
+				where you can select among a few predefined filters and ordering like date, color labels, rating
 				among others.
 			</para>
 		</sect2>
@@ -74,12 +81,12 @@
 	
 	<sect1 status="draft"><title>Panels</title>
 		<sect2><title>Devices</title>
-			<para>This plugin show's connected devices, for now this is only cameras but in future scanners would show up here.</para>
+			<para>This module shows connected devices; for now only cameras are shown up there, but in future scanners too will.</para>
 			<sect3><title>Cameras</title>
-				<para>When a camera is detected it will show up in the device pane, if you hover your mouse over the camera tablabel a tooltip
-					will show with some information about the camera such as model,firmware version and alot more..,
+				<para>When a camera is detected, it will show up in the device panel; if you hover your mouse over the camera tab label a tooltip
+					will pop up with some information about the camera such as model, firmware version and a lot more...
 				</para>
-				<para>Depending of the support for your camera, buttons with actions will be available such as import images and tethering.
+				<para>Depending of the support of your camera, buttons with actions will be available such as import images and tethering.
 				</para>
 				<sect4><title>Import images</title>
 					<para>This will bring up an import dialog, showing the images on camera that can be selected for import into a filmroll in
@@ -87,22 +94,32 @@
 					</para>
 				</sect4>
 				<sect4><title>Tethering</title>
-					<para>Tethering is used to integrate Darktable with your camera, and while you take images on the camera it will
-						automatic be imported into darktable and you can review the result of the shoot, you can also infront of computer
-						setup remote capture jobs for timelapsed captures and change settings such as shuttertime, f-length and more.
+					<para>Tethering is used to integrate Darktable with your camera. While you take images with your camera, they will
+						automatically be imported into Darktable so you can review the result of the shoot. You can also
+						setup remote capture jobs, controlling number of images and time between captures along with camera settings such as exposition time, f-length and more.
 					</para>
-					<para>Tethering will take you into capture view with the specific camera for tethered shoot read more about tethering in chapter 3.</para>
+					<para>If supported by your camera, tethering will take you into capture view for tethered shoot. Read more about tethering in chapter 3.</para>
 				</sect4>
 			</sect3>
 		</sect2>
 		
 		<sect2><title>Library</title>
-			<para>A filmroll is the same as a folder in the filesystem, except for single images filmroll that can contain images spread around on in your filessystem.
-				You can import a singel image or a folder, if a folder is imported Darktable will not recurse down in several folderlevels, just import the images that resides at
-				choosen folder into a filmroll which name become the name of the folder imported.
+		 	 <para>In library, you import and remove your filmrolls. You can either import a complete folder
+      				by pressing 'import filmroll' or a single image 'import single image'. 
+		  	</para>
+			<para>A filmroll is the same as a folder in the filesystem, except for 'single images' filmroll that contains images spread among your filesystem.
+				You can import a single image or a folder; if a folder is imported, Darktable will not recurse down in several folder levels but it will just import the images that resides inside
+				the chosen folder into a filmroll whose name becomes the name of the imported folder.
+			</para>
+			<para status="draft">Importing a folder does not mean that Darktable copies your images in another folder.
+			It just means that the images are visible in lighttable and thus can be developed. It means that
+     			if you delete an image/a folder after having imported them, Darktable will not be able to access them anymore.
+      			Importing an image/folder in Darktable is not a backup of your filesystem!
+      			Moreover Darktable does not currently watch changes in filesystem. Thus if on your filesystem you add an image
+			after having imported that folder in Darktable, the new image will not be shown until you explicitely import it.
 			</para>
 			<para>All your filmrolls are available in a list which can be filtered using the editbox to fast find the filmroll of interest.
-					Double click on a filmroll in the list and it will be opened and viewed.
+					Double click on a filmroll in the list and it will open.
 				You can also click the recent filmroll items to open the latest ones you have worked with.
 			</para>
 		</sect2>
@@ -113,10 +130,205 @@
 					<colspec colwidth='30%'/>
 					<tbody>
 						<row>						
-							<entry>This panel shows embeded metadata of an image.
+							<entry>This panel shows embedded metadata of an image, read from EXIF data stored in your pictures files.
 							</entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_metadata.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</sect2>
+		
+		<sect2 status="draft"><title>Select</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>This panel allows to quickly select images, according to various criterion.
+							</entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+				<sect4><title>select all</title>
+					<para>Select all images in the current view (collection), with respect to filters.
+					</para>
+				</sect4>
+				<sect4><title>select none</title>
+					<para>Select no image.
+					</para>
+				</sect4>
+				<sect4><title>invert selection</title>
+					<para>Select all images that are not currently selected.
+					</para>
+				</sect4>
+				<sect4><title>select film roll</title>
+					<para>Select all images that are in the same filmroll as the currently selected images.
+					</para>
+				</sect4>
+				<sect4><title>select untouched</title>
+					<para>Select all images that has not been developed yet.
+					</para>
+				</sect4>
+		</sect2>
+
+		<sect2 status="draft"><title>Selected image(s)</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>This panel allows to perform some actions on selected images.
+							</entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+				<sect4><title>remove</title>
+					<para>Remove the selected images from the Darktable database. Those images will not be shown
+					in lighttable anymore, but remain on filesystem.
+					</para>
+				</sect4>
+				<sect4><title>delete</title>
+					<para>Physically delete selected images from filesystem.
+					</para>
+				</sect4>
+				<sect4><title>write dt files</title>
+					<para>Write sidecar files: .dt (development files) and .dttags (colorlabels, tags, ratings)
+					</para>
+				</sect4>
+				<sect4><title>duplicate</title>
+					<para>Create a virtual copy of selected images within darktable but not physically on
+					your filesystem. It allows to test and try different developments for the same image for example.
+					</para>
+				</sect4>
+				<sect4><title>rotation</title>
+					<para>Perform a counter-clock wise/clockwise rotation on selected images. The third button
+					allows to reset rotation to EXIF value.
+					</para>
+				</sect4>
+		</sect2>
+
+		<sect2 status="draft"><title>History stack</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>This panel allows to manipulate development.
+							For each image, development is written in a sidecar file (currently .dt and soon .xmp) and is fully 
+              non-destructive.
+							</entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_historystack.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+				<sect4><title>copy</title>
+					<para>Copy the history stack (development) of the first selected image.
+					</para>
+				</sect4>
+				<sect4><title>discard</title>
+					<para>Physically delete the history stack (development) of the selected images.
+					Beware, this action can not be undone!
+					</para>
+				</sect4>
+				<sect4><title>overwrite/append</title>
+					<para>Describes how a new history stack must behave if pasted on an image having already an
+					history stack. 'Overwrite' will delete previous history stack whereas 'append' will add the
+					two history stacks.
+					</para>
+				</sect4>
+				<sect4><title>paste</title>
+					<para>Paste a previously copied history stack on another image.
+					</para>
+				</sect4>
+				<sect4><title>load dt file</title>
+					<para>Prompt a dialog box to allow you to select a .dt file, thus loading 
+					an history stack that you will past (thanks to 'past' button) on images.
+					</para>
+				</sect4>
+		</sect2>
+    
+		<sect2 status="draft"><title>Tagging</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>This panel allows to manage tags for your images.
+							Those tags are currently stored in sidecar files (currently .dttags and soon .xmp) and within the 
+							darktable database for a faster access.
+							The panel is divided into two parts: the upper part contains
+							</entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+				<sect4><title>attach</title>
+					<para>Attach selected tag to an image.
+					</para>
+				</sect4>
+				<sect4><title>detach</title>
+					<para>Detach selected tag from an image.
+					</para>
+				</sect4>
+				<sect4><title>new</title>
+					<para>Create a new tag for the list.
+					</para>
+				</sect4>
+				<sect4><title>delete</title>
+					<para>Delete a tag from the list.
+					</para>
+				</sect4>
+		</sect2>	
+    
+		<sect2 status="draft"><title>Collect images</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>Thanks to this panel, you can manage your collection (current view)
+							by filtering image thanks to various criterion.
+							The left combo box lets you choose from different filters, such a 'filmroll', 'historystack',
+							'date', 'camera' and much more. The table belows lists all available data for the selected filter.
+							You can then select the data of your choice by double-clicking.						
+							</entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</sect2>	
+    	
+		<sect2 status="draft"><title>Export selected</title>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='100%'/>
+					<colspec colwidth='30%'/>
+					<tbody>
+						<row>						
+							<entry>Each workflow has to end by this panel: the exportation of your developed images.
+							Currently, you can export either to a file on your disk, or to various on-line storages.
+              </entry>
+							<entry>
+								<graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
 							</entry>
 						</row>
 					</tbody>

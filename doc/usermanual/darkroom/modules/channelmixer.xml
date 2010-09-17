@@ -1,0 +1,23 @@
+<sect2 status="draft"><title>Channel mixer</title>
+	<sect3><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module is a powerful tool to manage channels. As entry, it manipulates red, green and blue channels.
+							As output, it uses red, green, blue or gray or hue, saturation, lightness. 				
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/channelmixer.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect3>
+
+	<sect3><title>Usage</title>
+		<para>Select your output channel and then set the amount of each channel to feed the output channel.</para>			
+	</sect3>
+</sect2>

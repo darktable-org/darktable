@@ -1,0 +1,31 @@
+<sect2 status="draft"><title>Grain</title>
+	<sect3><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>This module is an artistic feature which simulates the grain of a film.				
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/grain.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect3>
+
+	<sect3><title>Usage</title>
+		<para>The grain can be obtained on different channels and with different rendering.</para>
+		<sect4><title>channel</title>
+			<para>Set the channel you want to work on. Hue, saturation or lightness are available.</para>
+		</sect4>
+		<sect4><title>coarseness</title>
+			<para>Set the grain size, which has been scaled to simulate an ISO number.</para>
+		</sect4>
+		<sect4><title>strength</title>
+			<para>Set the strength of the effect.</para>
+		</sect4>			
+	</sect3>
+</sect2>

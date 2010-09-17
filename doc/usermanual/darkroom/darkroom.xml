@@ -20,12 +20,21 @@
 	in the right panel you can see the histogram and then a list of available modules to use when working with your image. 
 	At the bottom of the right panel you can enable/disable view of individual modules.
 	</para>
+	<para>Since darktable 0.6.1, modules are grouped into four groups: basic, color, correct, effect.
+	However, you can view all modules by selecting no group.
+	</para>
+	<para>For those interested in how it works, modules are applied on images following a bottom-to-top order.
+	That means, that if you activated the view of all modules (by selecting no groups), the first module to be applied
+	will be "import a RAW" at the bottom of the right panel, whereas the last one will be "splittoning" at the 
+	top of the right panel.
+	That order can not be changed by user, so modules are always applied following the same order.
+	</para>
 </sect1>
 <sect1 status="draft"><title>Filmstrip</title>
-	<para>The filmstrip is used for fast switching between image to develop in darkroom view, the images viewed are the same
+	<para>The filmstrip is used to quickly switch between image to develop in darkroom view, the images viewed are the same
 		as the ones in the lighttable view. 
 	</para>
-	<para>The filmstrip can be switch on and off using ctrl-f shortcut.</para>
+	<para>The filmstrip can be switch on and off using <emphasis>ctrl-f</emphasis> shortcut.</para>
 </sect1>
 <sect1><title>Panels</title>
 	<sect2 status="draft"><title>Navigation</title>
@@ -74,8 +83,11 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>The historystack is each change of module in history, here you can select a point in stack an hit compress historystack button to get back
-									to the select point of changes...
+						<entry>The historystack lists every change of state (activate/de-activated) for all modules.
+            Here you can select a point in stack to return to that point of development history.
+            If you then activate a new module, all modules above the current point will be discarded.
+            Hitting 'compress historystack' generates the shortest historystack that produces the
+            current image, i.e. suppressing all de-activated modules.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />
@@ -91,8 +103,8 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>Shows an histogram for the result of developed image, you can change exposure by left mouse click in right side of histogram and drag 
-								right for increase or left to decrease the exposure, same goes for the blacklevel but you left click in the left part of historgram.
+						<entry>Show a logarithmic histogram of the developed image; you can change exposure by left mouse click in the right side of histogram and drag 
+								right for increase or left to decrease the exposure. The same goes for the black level but you left click in the left part of histogram.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_histogram.png" scalefit="1" width="80%" align="center" />
@@ -110,6 +122,7 @@
 <sect1><title>Examples</title>
 &darkroom_example_crossprocessing;
 &darkroom_example_cyantone;
+&darkroom_example_blackandwhite;
 </sect1>
 
 </chapter>
