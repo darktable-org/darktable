@@ -1305,7 +1305,7 @@ msgstr "nach oben"
 
 #: ../src/iop/clipping.c:718
 msgid "aspect"
-msgstr "Seitenverhältnis"
+msgstr "Format"
 
 #: ../src/iop/clipping.c:723
 msgid "free"
