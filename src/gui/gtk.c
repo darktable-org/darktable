@@ -906,6 +906,7 @@ center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
   return TRUE;
 }
 
+#if 0
 static void 
 dt_gui_panel_allocate(GtkWidget *widget, GtkAllocation *a, gpointer data) 
 {
@@ -913,6 +914,7 @@ dt_gui_panel_allocate(GtkWidget *widget, GtkAllocation *a, gpointer data)
   gtk_widget_set_size_request (w, a->width, -1);
   gtk_widget_queue_resize (w);
 }
+#endif
 
 #include "background_jobs.h"
 int
@@ -964,10 +966,27 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
+  // set constant width from gconf key
+  const int panel_width = MAX(0, MIN(500, dt_conf_get_int("panel_width")));
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  gtk_widget_set_size_request (widget, panel_width, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  gtk_widget_set_size_request (widget, panel_width, -1);
+  // leave some space for scrollbars to appear:
+  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
+  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
+  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  // and make the scrollbars disappear when not needed:
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow");
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   
   /* add signal for size-allocate of right panel */
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-  g_signal_connect (G_OBJECT (widget), "size-allocate", G_CALLBACK (dt_gui_panel_allocate), 0);
+  // currently disabled because it never worked right.
+  // widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  // g_signal_connect (G_OBJECT (widget), "size-allocate", G_CALLBACK (dt_gui_panel_allocate), 0);
 
   // Update the devices module with available devices
   dt_gui_devices_init();
