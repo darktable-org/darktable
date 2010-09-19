@@ -91,9 +91,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float hw=(iw/2.0);
   const float hh=(ih/2.0);
   const float radie = sqrt((hw*hw)+(hh*hh)); 
-      
+ 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out,data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for(int y=0;y<roi_out->height;y++)
     for(int x=0;x<roi_out->width;x++)
@@ -105,10 +105,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       
       float density = ( 1.0 / exp2f (data->density*amount) );
       
+      for( int l=0;l<3;l++)
+       out[k+l] = fmaxf(0.0, (in[k+l]*density));
       
-      out[k+0]=in[k+0]*density;
-      out[k+1]=in[k+1]*density;
-      out[k+2]=in[k+2]*density;
     }
 }
 
@@ -223,7 +222,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 151;
+  module->priority = 251;
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t){4.0,50,0,0,0};
