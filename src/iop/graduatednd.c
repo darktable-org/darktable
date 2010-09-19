@@ -225,7 +225,7 @@ void init(dt_iop_module_t *module)
   module->priority = 251;
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
-  dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t){4.0,50,0,0,0};
+  dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t){2.0,0,0,50,0};
   memcpy(module->params, &tmp, sizeof(dt_iop_graduatednd_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_graduatednd_params_t));
   
@@ -282,21 +282,23 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
   self->widget = gtk_table_new (5,2,FALSE);
-  
+  gtk_table_set_col_spacing(GTK_TABLE(self->widget), 0, 10);
+	
   /* adding the labels */
   g->label1 = GTK_LABEL(gtk_label_new(_("density")));
   g->label2 = GTK_LABEL(gtk_label_new(_("compression")));
   g->label3 = GTK_LABEL(gtk_label_new(_("rotation")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("offset")));
+  g->label4 = GTK_LABEL(gtk_label_new(_("split")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label1), 0,1,0,1,0,GTK_FILL,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label2), 0,1,1,2,0,GTK_FILL,0,0);
- // gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label3), 0,1,2,3,0,GTK_FILL,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label4), 0,1,3,4,0,GTK_FILL,0,0);
+	
+  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label1), 0,1,0,1,GTK_FILL,0,0,0);
+  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label2), 0,1,1,2,GTK_FILL,0,0,0);
+ // gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label3), 0,1,2,3,GTK_FILL,0,0,0);
+  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label4), 0,1,3,4,GTK_FILL,0,0,0);
   
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, 0.01, p->density, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compression, 0));
