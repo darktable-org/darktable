@@ -163,6 +163,9 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   // are we going to need the image as input for a pixel pipe?
   const int altered = dt_image_altered(img) || (img == darktable.develop->image);
 
+  // this image is raw, if we manage to load it.
+  img->flags &= ~DT_IMAGE_LDR;
+
   // if we have a history stack, don't load preview buffer!
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
   { // no history stack: get thumbnail
@@ -443,6 +446,9 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     raw->params.user_qual = 0;
     raw->params.half_size = 0;
   }
+
+  // this image is raw, if we manage to load it.
+  img->flags &= ~DT_IMAGE_LDR;
 
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;

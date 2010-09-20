@@ -48,11 +48,7 @@ typedef enum
   // this refers to the state of the mipf buffer and its source.
   DT_IMAGE_THUMBNAIL = 16,
   // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping etc.
-  DT_IMAGE_LDR = 32,
-  // when a new image is created (empty in cache), it has to check if there is a sidecar file coming with
-  // the image we just imported. if the db has already checked such a file, the sidecar is only used as
-  // backup, i.e. always synched to the db (which holds the ground truth then).
-  DT_IMAGE_CHECKED_SIDECAR = 64
+  DT_IMAGE_LDR = 32
 }
 dt_image_flags_t;
 
