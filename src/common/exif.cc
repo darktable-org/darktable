@@ -821,11 +821,12 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
       xmpData.add(Exiv2::XmpKey(key), &tv);
 
       const int32_t len = sqlite3_column_bytes(stmt, 4);
-      assert(2*len + 1 < 2048);
-      dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 4), val, len);
-      tv.read(val);
+      char *vparams = (char *)malloc(2*len + 1);
+      dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 4), vparams, len);
+      tv.read(vparams);
       snprintf(key, 1024, "Xmp.darktable.history_params[%d]", num);
       xmpData.add(Exiv2::XmpKey(key), &tv);
+      free(vparams);
 
       num ++;
     }
