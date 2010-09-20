@@ -23,6 +23,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/exif.h"
 #include "common/imageio_module.h"
 #include "common/darktable.h"
 #include "control/conf.h"
@@ -30,22 +31,22 @@
 
 #include "gui/gtk.h"
 
-void dt_control_write_dt_files()
+void dt_control_write_sidecar_files()
 {
   dt_job_t j;
-  dt_control_write_dt_files_job_init(&j);
+  dt_control_write_sidecar_files_job_init(&j);
   dt_control_add_job(darktable.control, &j);
 }
 
-void dt_control_write_dt_files_job_init(dt_job_t *job)
+void dt_control_write_sidecar_files_job_init(dt_job_t *job)
 {
-  dt_control_job_init(job, "write dt files");
-  job->execute = &dt_control_write_dt_files_job_run;
+  dt_control_job_init(job, "write sidecar files");
+  job->execute = &dt_control_write_sidecar_files_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   dt_control_image_enumerator_job_init(t);
 }
 
-int32_t dt_control_write_dt_files_job_run(dt_job_t *job)
+int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -57,10 +58,8 @@ int32_t dt_control_write_dt_files_job_run(dt_job_t *job)
     char dtfilename[520];
     dt_image_full_path(img, dtfilename, 512);
     char *c = dtfilename + strlen(dtfilename);
-    sprintf(c, ".dt");
-    dt_imageio_dt_write(imgid, dtfilename);
-    sprintf(c, ".dttags");
-    dt_imageio_dttags_write(imgid, dtfilename);
+    sprintf(c, ".xmp");
+    dt_exif_xmp_write(imgid, dtfilename);
     dt_image_cache_release(img, 'r');
     t = g_list_delete_link(t, t);
   }

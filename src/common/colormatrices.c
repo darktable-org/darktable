@@ -88,11 +88,23 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D60",                    { 746475, 318924,   9277}, { 254776,  946991, -130447}, { 63171, -166458, 1029190}, {753220, 787949, 652695}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D3000",                  { 778854, 333221,  21927}, { 292007, 1031448,  -88516}, { 27664, -245956,  997391}, {714828, 740387, 601334}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D5000",                  { 852386, 356232,  42389}, { 205353, 1026688, -220184}, {  6348, -292526, 1083313}, {822647, 849106, 688538}},
+
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D90",                    { 855072, 361176,  22751}, { 177414,  963577, -241501}, { 28931, -229019, 1123062}, {751816, 781677, 650024}},
 
   // Rolf Steinort, Wolf Faust IT8, direct sunlight, well lit
   { "NIKON D200",                   { 878922, 352966,   2914}, { 273575, 1048141, -116302}, { 61661, -171021, 1126297}, {691483, 727142, 615204}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D300s",                  { 813202, 327667,  31067}, { 248810, 1047043, -203049}, { -1160, -284607, 1075790}, {774872, 800415, 648727}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D700",                   { 789261, 332016,  34149}, { 270386,  985748, -129135}, {  4074, -230209,  999008}, {798172, 826721, 673126}},
 
   // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A200",               { 846786, 366302, -22858}, { 311584, 1046249, -107056}, { 54596, -192993, 1191406}, {708405, 744507, 596771}},

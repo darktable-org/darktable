@@ -163,6 +163,9 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   // are we going to need the image as input for a pixel pipe?
   const int altered = dt_image_altered(img) || (img == darktable.develop->image);
 
+  // this image is raw, if we manage to load it.
+  img->flags &= ~DT_IMAGE_LDR;
+
   // if we have a history stack, don't load preview buffer!
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
   { // no history stack: get thumbnail
@@ -179,8 +182,10 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
     img->exif_focal_length = raw->other.focal_len;
-    strncpy(img->exif_maker, raw->idata.make, 20);
-    strncpy(img->exif_model, raw->idata.model, 20);
+    strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+    img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
+    strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+    img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
     image = libraw_dcraw_make_mem_thumb(raw, &ret);
     if(!image) goto try_full_raw;
@@ -312,8 +317,10 @@ try_full_raw:
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
     img->exif_focal_length = raw->other.focal_len;
-    strncpy(img->exif_maker, raw->idata.make, 20);
-    strncpy(img->exif_model, raw->idata.model, 20);
+    strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+    img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
+    strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+    img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
     const float m = 1./0xffff;
@@ -440,6 +447,9 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     raw->params.half_size = 0;
   }
 
+  // this image is raw, if we manage to load it.
+  img->flags &= ~DT_IMAGE_LDR;
+
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
@@ -456,8 +466,10 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
   img->exif_focal_length = raw->other.focal_len;
-  strncpy(img->exif_maker, raw->idata.make, 20);
-  strncpy(img->exif_model, raw->idata.model, 20);
+  strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+  img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
+  strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+  img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
   if(dt_image_alloc(img, DT_IMAGE_FULL))
@@ -786,6 +798,7 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
 
 int dt_imageio_dt_write (const int imgid, const char *filename)
 {
+  assert(0);
   sqlite3_stmt *stmt;
   FILE *f = NULL;
   // read history from db
@@ -893,6 +906,7 @@ delete_old_config:
 
 int dt_imageio_dttags_write (const int imgid, const char *filename)
 { // write out human-readable file containing images stars and tags.
+  assert(0);
   // refuse to write dttags for non-existent image:
   char imgfname[1024];
   snprintf(imgfname, 1024, "%s", filename);

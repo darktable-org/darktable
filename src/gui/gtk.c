@@ -906,16 +906,6 @@ center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
   return TRUE;
 }
 
-#if 0
-static void 
-dt_gui_panel_allocate(GtkWidget *widget, GtkAllocation *a, gpointer data) 
-{
-  GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "left");
-  gtk_widget_set_size_request (w, a->width, -1);
-  gtk_widget_queue_resize (w);
-}
-#endif
-
 #include "background_jobs.h"
 int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
@@ -983,11 +973,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow");
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   
-  /* add signal for size-allocate of right panel */
-  // currently disabled because it never worked right.
-  // widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-  // g_signal_connect (G_OBJECT (widget), "size-allocate", G_CALLBACK (dt_gui_panel_allocate), 0);
-
   // Update the devices module with available devices
   dt_gui_devices_init();
   
@@ -1200,8 +1185,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "endmarker_left");
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
-  g_signal_connect (G_OBJECT (widget), "size-allocate",
-                    G_CALLBACK (dt_control_size_allocate_endmarker), (gpointer)1);
 
   // switch modes in gui by double-clicking label
   widget = glade_xml_get_widget (darktable.gui->main_window, "view_label_eventbox");

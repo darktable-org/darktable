@@ -49,7 +49,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_string ("database", ".darktabledb");
 
   dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
-  dt_conf_set_bool ("write_dt_files", TRUE);
+  dt_conf_set_bool ("write_sidecar_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
   dt_conf_set_float("preview_subsample", .125f);
   dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
@@ -881,14 +881,6 @@ void *dt_control_expose(void *voidptr)
 
   cairo_surface_destroy(cst);
   return NULL;
-}
-
-void 
-dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
-  // Reset size to match panel width
-  int height = a->width*0.25;
-  gtk_widget_set_size_request(w,a->width,height);
 }
 
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)

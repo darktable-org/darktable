@@ -783,7 +783,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     }
     if(!hist->module)
     {
-      fprintf(stderr, "[read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
+      fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
       free(hist);
       continue;
     }

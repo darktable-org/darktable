@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/collection.h"
+#include "common/exif.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/camera_control.h"
@@ -94,6 +95,8 @@ int dt_init(int argc, char *argv[])
   (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
+  // thread-safe init:
+  dt_exif_init();
   (void)cmsErrorAction(LCMS_ERROR_IGNORE);
   char *homedir = getenv("HOME");
   char filename[512];
@@ -229,6 +232,7 @@ void dt_cleanup()
   pthread_mutex_destroy(&(darktable.db_insert));
   pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 
+  dt_exif_cleanup();
 #ifdef HAVE_GEGL
   gegl_exit();
 #endif

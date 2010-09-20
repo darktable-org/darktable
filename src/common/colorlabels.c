@@ -117,10 +117,10 @@ synch_dttags(const int selected)
   if(selected > 0)
   {
     dt_image_t *img = dt_image_cache_get(selected, 'r');
-    dt_image_write_dt_files(img);
+    dt_image_write_sidecar_file(img);
     dt_image_cache_release(img, 'r');
   }
-  else if(dt_conf_get_bool("write_dt_files"))
+  else if(dt_conf_get_bool("write_sidecar_files"))
   {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
@@ -128,7 +128,7 @@ synch_dttags(const int selected)
     {
       const int imgid = sqlite3_column_int(stmt, 0);
       dt_image_t *img = dt_image_cache_get(imgid, 'r');
-      dt_image_write_dt_files(img);
+      dt_image_write_sidecar_file(img);
       dt_image_cache_release(img, 'r');
     }
     sqlite3_finalize(stmt);

@@ -1,11 +1,9 @@
 0.7 release:
 
 big stuff:
- * xmp sidecars
  * libraw process inside dt modules (full 16-bit buf..)
  * auto rate feature (sharpness/colors/user statistics learning)
  * print view?
- * docs (sphinx?)
  * removable media, relocation and image sha1sums
 
  * devel docs about:
@@ -13,9 +11,10 @@ big stuff:
    . locking and buffers, open()->'r' and open_preview()->'', dt is a huge spinlock
    . debuging with -d cache and -d control and tools/create_control_svg.sh
 
-- crop aspect undecided when w=h?
 
-- color label sorting during export is broken.
+- image_cache sometimes not initing images (wrong old thumbs etc)
+
+- xmp embedded in exported files with possibility to read them again
 
 - color transfer garbles history stack and crash/freezes?
 

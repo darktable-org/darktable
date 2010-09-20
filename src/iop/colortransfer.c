@@ -591,14 +591,6 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   return TRUE;
 }
 
-void 
-_colortransfer_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
-  // Reset size to match panel width
-  int height = a->width*0.333;
-  gtk_widget_set_size_request(w,a->width,height);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
@@ -615,9 +607,9 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK(expose), self);
 
   g->area = gtk_drawing_area_new();
+  gtk_widget_set_size_request(g->area, 300, 100);
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
-  g_signal_connect (G_OBJECT (g->area), "size-allocate", G_CALLBACK (_colortransfer_size_allocate), self);
 
   GtkBox *box = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);

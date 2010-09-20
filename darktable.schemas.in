@@ -121,14 +121,14 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/write_dt_files</key>
-      <applyto>/apps/darktable/write_dt_files</applyto>
+      <key>/schemas/apps/darktable/write_sidecar_files</key>
+      <applyto>/apps/darktable/write_sidecar_files</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>true</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>write a redundant file for each image</short>
+        <short>write a redundant sidecar file for each image</short>
         <long>these files can later be re-imported into a different database, preserving your changes to the image.</long>
       </locale>
     </schema>

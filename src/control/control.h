@@ -124,7 +124,6 @@ typedef GdkCursorType dt_cursor_t;
 // called from gui
 void *dt_control_expose(void *voidptr);
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-void dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data);
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
@@ -139,7 +138,7 @@ void dt_control_log(const char* msg, ...);
 void dt_control_log_busy_enter();
 void dt_control_log_busy_leave();
 void dt_control_change_cursor(dt_cursor_t cursor);
-void dt_control_write_dt_files();
+void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 
