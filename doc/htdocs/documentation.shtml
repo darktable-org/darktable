@@ -46,11 +46,16 @@
         <tr class="odd"> <td>Sony Alpha 200</td><td>x</td><td>experimental</td></tr>
         <tr class="even"><td>Sony Alpha 550</td><td>x</td><td>experimental</td></tr>
         <tr class="odd"> <td>Olympus E-PL1</td><td>x</td><td></td></tr>
-	<tr class="even"><td>Olympus SP570UZ</td><td>x</td><td></td></tr>        
+        <tr class="even"><td>Olympus SP570UZ</td><td>x</td><td></td></tr>        
       </table>
-      for better color rendition, darktable comes with custom profiled color matrices.
+      in general, darktable supports whatever <a href="http://www.libraw.org/">libraw</a>
+      supports.
+      additionally, for better color rendition, darktable comes with custom profiled
+      color matrices.
       plus, to reproduce the behavior of the camera's chip, we have reverse-engineered some
-      base curves for you.
+      base curves for you. these lists with enhanced support are what you see on the\
+      left, so don't worry if you can't find
+      your camera, it might still be supported.
       </div>
 
       <div class="listtext">
@@ -137,14 +142,14 @@
       </ul>
       <em>lighttable mode</em>
       <ul>
-        <li>1 -- zoom in on image under cursor</li>
-        <li>2, 3, 4 -- zoom out</li>
-        <li>alt-1,2,3,4 -- star rating</li>
+        <li>alt-1 -- zoom in on image under cursor</li>
+        <li>alt-2, 3, 4 -- zoom out (ctrl-mousewheel also works in filemanager view)</li>
+        <li>1,2,3,4 -- star rating</li>
         <li>a, s, d, w -- move around</li>
       </ul>
       <em>darkroom mode</em>
       <ul>
-        <li>1, 2, 3 -- zoom to 1:1, fill, and fit, respectively</li>
+        <li>alt-1, 2, 3 -- zoom to 1:1, fill, and fit, respectively</li>
       </ul>
       <em>hint for dvorak etc users</em>
       <p>the keys are chosen by location on the qwerty layout, not by keysym.</p>
@@ -165,11 +170,8 @@
       <div class="text">
     	<h1>size hack</h1>
       <ul>
-        <li> $ sqlite3 ~/.darktabledb</li>
-        <li> &gt; delete from mipmaps;</li>
-        <li> &gt; delete from mipmap_timestamps;</li>
-        <li> &gt; vacuum;</li>
-        <li> darktable will re-generate cached mipmaps in db on demand.</li>
+        <li> $ rm ~/.darktablecache</li>
+        <li> darktable will re-generate cached mipmaps on demand.</li>
       </ul>
     	</div>
 

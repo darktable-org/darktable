@@ -614,8 +614,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     {
       cairo_save(cr);
       int col = sqlite3_column_int(stmt, 0);
-	  // see src/dtgtk/paint.c
-	  dtgtk_cairo_paint_label(cr, x+(4*r*col)-r, y-r, r*2, r*2, col);
+      // see src/dtgtk/paint.c
+      dtgtk_cairo_paint_label(cr, x+(4*r*col)-r, y-r, r*2, r*2, col);
       cairo_restore(cr);
     }
     sqlite3_finalize(stmt);
