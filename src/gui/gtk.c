@@ -1054,8 +1054,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   dt_gui_navigation_init(&gui->navigation, widget);
+  gtk_widget_set_size_request(widget, -1, panel_width*.5);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
+  gtk_widget_set_size_request(widget, -1, panel_width*.5);
   dt_gui_histogram_init(&gui->histogram, widget);
 
   dt_gui_filmview_init();
