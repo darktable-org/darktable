@@ -67,7 +67,7 @@ dt_iop_graduatednd_data_t;
 
 const char *name()
 {
-  return _("graduated nd");
+  return _("graduated neutral density");
 }
 
 
@@ -317,7 +317,8 @@ void gui_init(struct dt_iop_module_t *self)
   
   
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0%% = soft, 100%% = hard"), (char *)NULL);
+  /* xgettext:no-c-format */
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0% = soft, 100% = hard"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("offset of filter in angle of rotation"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->tbutton1), "tooltip-text", _("if selected density below split is clear"), (char *)NULL);
