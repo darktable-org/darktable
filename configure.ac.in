@@ -16,8 +16,6 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
 AM_GCONF_SOURCE_2
 
-AC_CONFIG_COMMANDS([create version.h], [./tools/create_version_h.sh])
-
 dnl *** Check for inotify ***
 AC_CHECK_HEADER([sys/inotify.h],
 	[AC_CHECK_FUNC([inotify_init],[have_inotify="yes"],[have_inotify="no"])],
@@ -281,6 +279,7 @@ AC_CONFIG_FILES([
     doc/Makefile
     doc/usermanual/Makefile
     doc/usermanual/po/Makefile
+    tools/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT

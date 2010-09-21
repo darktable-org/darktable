@@ -134,4 +134,6 @@ noinst_HEADERS= \
 .PHONY: common/version.h
 common/version.h:
 	@echo "  >>     version.h"
-	@$(srcdir)/../tools/create_version_h.sh
+	@test -x $(srcdir)/../tools/create_version_h.sh && $(srcdir)/../tools/create_version_h.sh || true
+
+EXTRA_DIST=common/version.h
