@@ -129,3 +129,9 @@ noinst_HEADERS= \
 			common/pwstorage/backend_gconf.h \
 			common/pwstorage/backend_gkeyring.h \
 			common/pwstorage/backend_kwallet.h
+
+# create version.h
+.PHONY: common/version.h
+common/version.h:
+	@echo "  >>     version.h"
+	@$(srcdir)/../tools/create_version_h.sh

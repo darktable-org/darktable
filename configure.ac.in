@@ -1,4 +1,4 @@
-AC_INIT([darktable], [0.6.1~rc], [hanatos@gmail.com])
+AC_INIT([darktable], [REPLACE_WITH_DT_VERSION], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_CONFIG_MACRO_DIR([m4])
@@ -15,6 +15,8 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [translation domain])
 
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
 AM_GCONF_SOURCE_2
+
+AC_CONFIG_COMMANDS([create version.h], [./tools/create_version_h.sh])
 
 dnl *** Check for inotify ***
 AC_CHECK_HEADER([sys/inotify.h],
