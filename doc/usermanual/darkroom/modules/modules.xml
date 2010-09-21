@@ -67,6 +67,7 @@
 	&darkroom_module_exposure;
 	&darkroom_module_whitebalance;
 	&darkroom_module_highlightreconstruction;
+	&darkroom_module_graduatedneutraldensity;
 	&darkroom_module_basecurve;
 	&darkroom_module_unbreakinputprofile;
 	&darkroom_module_inputcolorprofile;

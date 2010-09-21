@@ -18,7 +18,7 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>The horizontal axis represent the different value you can modify. The vertical axis shows the changes you can achieve.</para>
+		<para>The horizontal axis represent the different values you can modify. The vertical axis shows the changes you can achieve.</para>
 		<para>For both horizontal and vertical axises you can work on Luminance (L), Colorness (C) or hue (teinte). As a reminder, colorness is a notion close to saturation but changing colorness
 			does not change the perceived lightness as saturation can do.</para>			
 	</sect3>

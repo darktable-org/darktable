@@ -13,7 +13,30 @@
 	<bookinfo>
 		<legalnotice>
 			<para>
-				Legal notice ...
+			The owner of the Darktable project is Johannes Hanika.
+			Main developers are Johannes Hanika and Henrik Andersson.
+
+  			Darktable is a free software: you can redistribute it and/or modify
+   			it under the terms of the GNU General Public License as published by
+   			the Free Software Foundation, either version 3 of the License, or
+   			(at your option) any later version.
+			</para>
+			<para>
+   			Darktable is distributed in the hope that it will be useful,
+   			but WITHOUT ANY WARRANTY; without even the implied warranty of
+   			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   			GNU General Public License for more details.
+			</para>
+			<para>
+   			You should have received a copy of the GNU General Public License
+   			along with Darktable.  If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>.
+			</para>
+			<para>
+			</para>
+			<para>
+			The present user manual is under license <emphasis>cc by-nc-sa </emphasis>,
+			meaning <emphasis>Attribution Non-Commercial Share Alike </emphasis>. 
+			You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information.
 			</para>
 		</legalnotice>
 		<author>
@@ -27,13 +50,30 @@
 	</bookinfo>
 	<title>Darktable</title>
 	<preface id="overview"><title>Preface to darktable</title>
-		<para>
-			<indexterm><primary>Darktable</primary></indexterm>
+		<para><indexterm><primary>Darktable</primary></indexterm>
 			<indexterm><primary>Preface</primary></indexterm>
-			This is the preface. It contains of a paragrapgh, 
-			a list and a link. This paragraph contains useless 
-			words only. Its mere purpose is to have 
-			some text in order to see the paragraphs end.</para>
+		The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable Darktable version are listed below:
+				<informaltable frame="none"><tgroup cols="3" colsep="0" rowsep="0">
+					<colspec colwidth='3cm'/>
+					<tbody>
+						<row>
+							<entry></entry>
+							<entry>version</entry>
+							<entry>date</entry>
+						</row>
+						<row>
+							<entry>user manual</entry>
+							<entry>git-210910-1800</entry>
+							<entry>21/09/10</entry>
+						</row>
+						<row>
+							<entry>Darktable</entry>
+							<entry>> git-210910-1800</entry>
+							<entry>21/09/10</entry>
+						</row>
+					</tbody>
+				</tgroup></informaltable> 
+		</para>
 	</preface>
 &chapter_overview;
 &chapter_lighttable;
