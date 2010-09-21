@@ -130,11 +130,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       length/=1.0-(0.5+(compression/2.0));
       float density = ( 1.0 / exp2f (data->density * CLIP( ((1.0+length)/2.0)) ) );
 #else
-      const float darkest = powf(2.0, -data->density);
       const float compression = data->compression/100.0f;
       const float t = 1.0f - .8f/(.8f + compression);
-      const float c = 1.0f + 400.0f*compression;
-      const float density = 1.0f - (1.0-darkest)*f(t, c, length);
+      const float c = 1.0f + 1000.0f*powf(4.0, compression);
+      const float density = 1.0f/exp2f(data->density*f(t, c, length));
 #endif
       
       for( int l=0;l<3;l++)
