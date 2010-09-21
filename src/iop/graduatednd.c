@@ -77,7 +77,11 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-#define f(t,c,x) (t/(1.0f + powf(c, -x*6)) + (1-t)*(x/2.f+.5f))
+static inline float
+f (const float t, const float c, const float x)
+{
+  return (t/(1.0f + powf(c, -x*6.0f)) + (1.0f-t)*(x*.5f+.5f));
+}
 
 typedef struct dt_iop_vector_2d_t
 {
@@ -121,15 +125,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       pv.y=sinv*sx-cosv*sy;
       
       float length=pv.y/filter_radie;
-     // float amount = (1.0+(length))/2.0;
-     // amount = CLIP (amount);
-     // float density = ( 1.0 / exp2f (data->density*amount));
+#if 0
       float compression = data->compression/100.0;
       length/=1.0-(0.5+(compression/2.0));
       float density = ( 1.0 / exp2f (data->density * CLIP( ((1.0+length)/2.0)) ) );
+#else
+      const float darkest = powf(2.0, -data->density);
+      const float compression = data->compression/100.0f;
+      const float t = 1.0f - .8f/(.8f + compression);
+      const float c = 1.0f + 400.0f*compression;
+      const float density = 1.0f - (1.0-darkest)*f(t, c, length);
+#endif
       
       for( int l=0;l<3;l++)
-       out[k+l] = fmaxf(0.0, (in[k+l]*density));
+        out[k+l] = fmaxf(0.0, (in[k+l]*density));
       
     }
   }
