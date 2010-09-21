@@ -77,6 +77,14 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+#define f(t,c,x) (t/(1.0f + powf(c, -x*6)) + (1-t)*(x/2.f+.5f))
+
+typedef struct dt_iop_vector_2d_t
+{
+  double x;
+  double y;
+} dt_iop_vector_2d_t;
+
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -84,31 +92,47 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   
-//  const int ix= (roi_in->x);
+  const int ix= (roi_in->x);
   const int iy= (roi_in->y);
   const float iw=piece->buf_in.width*roi_out->scale;
   const float ih=piece->buf_in.height*roi_out->scale;
-  const float hw=(iw/2.0);
-  const float hh=(ih/2.0);
-  const float radie = sqrt((hw*hw)+(hh*hh)); 
- 
+  const float hw=iw/2.0;
+  const float hh=ih/2.0;
+  float v=(-data->rotation/180)*M_PI;
+  const float sinv=sin(v);
+  const float cosv=cos(v);
+  const float filter_radie=sqrt((hh*hh)+(hw*hw))/hh; 
+  //fprintf(stderr,"filter_radie: %f\n",filter_radie);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data,stderr) schedule(static)
 #endif
   for(int y=0;y<roi_out->height;y++)
+  {
     for(int x=0;x<roi_out->width;x++)
     {
       int k=(roi_out->width*y+x)*3;
-      float length = radie*(1.0-(data->compression/100.0));
-      float amount = (data->offset/100.0)+((hh-(y+iy))/length);
-      amount=CLIP(amount);
       
-      float density = ( 1.0 / exp2f (data->density*amount) );
+      /* rotate pixel around center of offset*/
+      dt_iop_vector_2d_t pv={-1,-1};
+      float sx=-1.0+((ix+x)/iw)*2.0;
+      float sy=-1.0+((iy+y)/ih)*2.0;
+      sy+=-1.0+((data->offset/100.0)*2);
+      pv.x=cosv*sx-sinv*sy;
+      pv.y=sinv*sx-cosv*sy;
+      
+      float length=pv.y/filter_radie;
+     // float amount = (1.0+(length))/2.0;
+     // amount = CLIP (amount);
+     // float density = ( 1.0 / exp2f (data->density*amount));
+      float compression = data->compression/100.0;
+      length/=1.0-(0.5+(compression/2.0));
+      float density = ( 1.0 / exp2f (data->density * CLIP( ((1.0+length)/2.0)) ) );
       
       for( int l=0;l<3;l++)
        out[k+l] = fmaxf(0.0, (in[k+l]*density));
       
     }
+  }
 }
 
 static void
@@ -212,7 +236,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
   dtgtk_slider_set_value (g->scale1, p->density);
   dtgtk_slider_set_value (g->scale2, p->compression);
-  //dtgtk_slider_set_value (g->scale3, p->rotation);
+  dtgtk_slider_set_value (g->scale3, p->rotation);
   dtgtk_slider_set_value (g->scale4, p->offset);
   //gtk_toggle_button_set_active (g->tbutton1, p->type);
 }
@@ -283,7 +307,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_table_new (5,2,FALSE);
   gtk_table_set_col_spacing(GTK_TABLE(self->widget), 0, 10);
-	
+  
   /* adding the labels */
   g->label1 = GTK_LABEL(gtk_label_new(_("density")));
   g->label2 = GTK_LABEL(gtk_label_new(_("compression")));
@@ -294,10 +318,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
   
-	
+  
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label1), 0,1,0,1,GTK_FILL,0,0,0);
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label2), 0,1,1,2,GTK_FILL,0,0,0);
- // gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label3), 0,1,2,3,GTK_FILL,0,0,0);
+  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label3), 0,1,2,3,GTK_FILL,0,0,0);
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label4), 0,1,3,4,GTK_FILL,0,0,0);
   
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, 0.01, p->density, 2));
@@ -311,7 +335,7 @@ void gui_init(struct dt_iop_module_t *self)
   
   gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale1), 1,2,0,1);
   gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale2), 1,2,1,2);
- // gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale3), 1,2,2,3);
+  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale3), 1,2,2,3);
   gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale4), 1,2,3,4);
  // gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->tbutton1), 1,2,4,5);
   
