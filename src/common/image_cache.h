@@ -50,7 +50,7 @@ typedef struct dt_image_cache_t
 }
 dt_image_cache_t;
 
-void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries);
+void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t load_cached);
 void dt_image_cache_cleanup(dt_image_cache_t *cache);
 /** print some debug info. */
 void dt_image_cache_print(dt_image_cache_t *cache);

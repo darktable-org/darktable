@@ -108,16 +108,9 @@ static int
 get_demosaic_method(dt_iop_rawimport_params_t *p)
 {
   int dm = 0;
-  if(p->fill1 & 0x0F)
-  {
-    dm = p->fill1 & 0x0F;
-  }
-  else
-  {
-    dm = p->raw_demosaic_method;
-    if(dm == 0 && p->raw_four_color_rgb) dm = 4;
-    if(dm == 1 && p->raw_four_color_rgb) dm = 5;
-  }
+  dm = p->fill1 & 0x0F;
+  if(dm == 0 && p->raw_four_color_rgb) dm = 4;
+  if(dm == 1 && p->raw_four_color_rgb) dm = 5;
   return dm;
 }
 

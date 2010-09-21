@@ -286,7 +286,7 @@ read_error:
   return 1;
 }
 
-void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
+void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t load_cached)
 {
   pthread_mutex_init(&(cache->mutex), NULL);
   cache->num_lines = entries;
@@ -305,13 +305,13 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   }
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
-  if(dt_image_cache_read(cache))
+  if(load_cached && dt_image_cache_read(cache))
   {
     // the cache failed to load, the file has been
     // deleted.
     // reset to useful values:
     dt_image_cache_cleanup(cache);
-    dt_image_cache_init(cache, entries);
+    dt_image_cache_init(cache, entries, 0);
   }
 }
 

@@ -231,6 +231,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   }
   else
   {
+    // FIXME: when dr mode is left before demosaic completes, this will never return the lock!
     if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
     {
       dev->mipf = NULL;

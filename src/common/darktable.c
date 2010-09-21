@@ -124,6 +124,9 @@ int dt_init(int argc, char *argv[])
   else if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
   else                      snprintf(dbfilename, 512, "%s", dbname);
 
+  int load_cached = 1;
+  // if db file does not exist, also don't load the cache.
+  if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR)) load_cached = 0;
   if(sqlite3_open(dbfilename, &(darktable.db)))
   {
     fprintf(stderr, "[init] could not open database ");
@@ -157,7 +160,7 @@ int dt_init(int argc, char *argv[])
   dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
 
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)));
+  dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
 
   darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
   dt_lib_init(darktable.lib);

@@ -640,6 +640,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     }
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.color_labels"))) != xmpData.end() )
     {
+      // TODO: store these in dc:subject or xmp:Label?
       // color labels
       const int cnt = pos->count();
       for(int i=0;i<cnt;i++)
