@@ -113,8 +113,8 @@ libdbus-glib-1-dev, libgnome-keyring-dev, fop</li>
         <li>git clone git://darktable.git.sf.net/gitroot/darktable/darktable or<br/>
             git pull</li>
         <li>$ ./autogen.sh</li>
-        <li>$ ./configure [--enable-debug] [--disable-gegl] [--prefix=/usr]</li>
-	<li>$ make</li>
+        <li>$ ./configure --prefix=/usr</li>
+        <li>$ make</li>
         <li># make install</li>
         <li>$ darktable</li>
         <li>let's rock!</li>
