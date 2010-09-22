@@ -133,6 +133,7 @@ noinst_HEADERS= \
 
 # create version.h
 BUILT_SOURCES=common/version.h
+.PHONY:common/version.h
 common/version.h:
 	@echo "  >>     version.h"
 	@test -x $(srcdir)/../tools/create_version_h.sh && $(srcdir)/../tools/create_version_h.sh || true
