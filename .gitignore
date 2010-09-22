@@ -6,6 +6,7 @@ intltool-update.in
 intltool-extract
 intltool-merge
 intltool-update
+configure.ac
 po/*.gmo
 po/*.mo
 po/*.pot
