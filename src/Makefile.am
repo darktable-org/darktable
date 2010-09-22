@@ -91,6 +91,7 @@ noinst_HEADERS= \
 			common/imageio.h \
 			common/history.h \
 			common/film.h \
+      common/version.h \
 			control/settings.h \
 			control/control.h \
 			control/jobs.h \
@@ -131,9 +132,8 @@ noinst_HEADERS= \
 			common/pwstorage/backend_kwallet.h
 
 # create version.h
-.PHONY: common/version.h
+BUILT_SOURCES=common/version.h
 common/version.h:
 	@echo "  >>     version.h"
 	@test -x $(srcdir)/../tools/create_version_h.sh && $(srcdir)/../tools/create_version_h.sh || true
 
-EXTRA_DIST=common/version.h
