@@ -31,6 +31,7 @@
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "LibRaw/libraw/libraw.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
@@ -46,6 +47,27 @@ typedef struct dt_iop_graduatednd_params_t
   float saturation;
 }
 dt_iop_graduatednd_params_t;
+
+void init_presets (dt_iop_module_t *self)
+{
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+
+  dt_gui_presets_add_generic(_("Neutral Grey ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Neutral Grey ND4 (soft)"), self->op, &(dt_iop_graduatednd_params_t){2,0,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Neutral Grey ND8 (soft)"), self->op, &(dt_iop_graduatednd_params_t){3,0,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Neutral Grey ND2 (hard)"), self->op, &(dt_iop_graduatednd_params_t){1,75,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Neutral Grey ND4 (hard)"), self->op, &(dt_iop_graduatednd_params_t){2,75,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Neutral Grey ND8 (hard)"), self->op, &(dt_iop_graduatednd_params_t){3,75,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Orange ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0.102439,0.8} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Yellow ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0.151220,0.5} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Purple ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0.824390,0.5} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Green ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50, 0.302439,0.5} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Red ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0,0.5} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Blue ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0.663415,0.5} , sizeof(dt_iop_graduatednd_params_t), 1);
+  dt_gui_presets_add_generic(_("Brown ND4 (soft)"), self->op, &(dt_iop_graduatednd_params_t){2,0,0,50,0.082927,0.25} , sizeof(dt_iop_graduatednd_params_t), 1);
+  
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+}
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
@@ -299,6 +321,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
 
   double hue=dtgtk_gradient_slider_get_value(g->gslider1);
+  //fprintf(stderr," hue: %f, saturation: %f\n",hue,dtgtk_gradient_slider_get_value(g->gslider2));
   double saturation=1.0;
   float color[3];
   hsl2rgb(&color[0],&color[1],&color[2],hue,saturation,0.5);
@@ -366,7 +389,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label5), 0,1,4,5,GTK_FILL,0,0,0);
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label6), 0,1,5,6,GTK_FILL,0,0,0);
   
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, 0.01, p->density, 2));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, 0.1, p->density, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compression, 0));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-180, 180,0.5, p->rotation, 2));
