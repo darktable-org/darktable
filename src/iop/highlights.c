@@ -156,9 +156,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         in  = (float *)ivoid + 3*roi_out->width*j;
         for(int i=0;i<roi_out->width;i++)
         {
-          if(in[0] <= piece->pipe->processed_maximum[0] &&
-             in[1] <= piece->pipe->processed_maximum[1] &&
-             in[2] <= piece->pipe->processed_maximum[2]) 
+          if(in[0] <= clip && in[1] <= clip && in[2] <= clip)
           { // fast path for well-exposed pixels.
             for(int c=0;c<3;c++) out[c] = in[c];
           }
