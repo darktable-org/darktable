@@ -50,5 +50,6 @@ ltmain.sh
 *.a
 .libs
 .deps
-doc/usermanual/darktable-usermanual.fo
+doc/usermanual/build/darktable-usermanual.fo
 doc/usermanual/darktable-usermanual.pdf
+src/common/version.h
