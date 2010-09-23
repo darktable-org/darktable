@@ -5,44 +5,44 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This module is used for crop, rotate and correct perspective of your image, 
-							it does also include many helpful guidelines that assist you using the tools.
+						<entry>This module is used to crop, rotate and correct perspective of your image. 
+							It also includes many helpful guidelines that assist you using the tools.
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/croprotate.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/modules/images/cropandrotate.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 				</tbody>
 			</tgroup>
 		</informaltable>
-	
-		<para>First off select what aspect ratio you want and size the crop bounds by dragging border and corner handles,
-			use ctrl-x to swap potrait/landscape rotation of the crop rectangle.
-			You can move around the crop rectangle by holding down left mouse button and move around...
-			When you finished and want to execute the crop, hit enter key or double click in crop rectangle.
-		</para>
 	</sect3>
 
 	<sect3 status="draft"><title>Usage</title>
-		<para>...</para>
+
+		<para>First off, select what aspect ratio you want and size the crop bounds by dragging border and corner handles.
+			Use <emphasis>ctrl-x</emphasis> or the button right to the aspect box, to swap between portrait and landscape of the cropping rectangle.
+			You can move around the crop rectangle by holding down left mouse button and move around.
+			When you are done and want to execute the crop, hit enter key or double click in the crop rectangle.
+		</para>
+
 		<sect4><title>Flip image</title>
-			<para>Use these toggle buttons to flip image horizontal and veritcal</para>
+			<para>Use these toggle buttons to flip image horizontally and vertically.</para>
 		</sect4>
 		<sect4><title>Angle</title>
-			<para>This is the angle for rotation, used for correctiion for example a non straight horizontal horizon, use 
-				your left mouse button holding it down and drawing a line along the horizon and the image are rotated to match
-				the angle of your line.
+			<para>This is the rotation angle to correct, for example, a non-horizontal horizon.
+			You can either type a numerical value or use your mouse directly on the image.
+			To use your mouse, right-click, hold it down and draw a line along the horizon ; the image is then rotated so the line you drew matches the horizontal axis.
 			</para>
 		</sect4>
 		<sect4><title>Perspective</title>
-			<para>This tool is used for correcting any perspective distortions in you image, like example when you shoot 
-				an high building from ground and aiming upwards with camera with short focal length...
+			<para>This tool is used to correct any perspective distortions in your image. Useful when you shoot 
+				an high building from ground, aiming upwards with camera with short focal length for example.
 			</para>
-			<para>You can also choose which direction (righ and up) the correction should be applied on.
+			<para>You can also choose which direction (right and up) the correction should be applied on.
 			</para>
 		</sect4>
 		<sect4><title>Aspect</title>
-			<para>Here you can change what aspect ratio you want to have on the result, constraining the ability to drag an crop 
+			<para>Here you can change what aspect ratio you want to have on the result, thus constraining the ability to drag and crop 
 				rectangle out of the aspect ratio of your choice..
 			</para>
 			<para>
@@ -55,10 +55,19 @@
 						<row>
 							<entry><emphasis>image</emphasis></entry><entry>this option constrains the ratio to be equal to image ratio</entry>
 						</row>
+						<row>
+							<entry><emphasis>golden cut</emphasis></entry><entry>this option constrains the ratio to be equal the golden number</entry>
+						</row>
+						<row>
+							<entry><emphasis>square</emphasis></entry><entry>this option constrains the ratio to be 1</entry>
+						</row>
 					</tbody>
 				</tgroup></informaltable>
 			</para>
 		</sect4>
-
+		<sect4><title>Guides</title>
+			<para>Many self-explaining guides are available to help you compose your image.
+			</para>
+		</sect4>
 	</sect3>
 </sect2>
