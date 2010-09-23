@@ -418,7 +418,7 @@ void gui_init(struct dt_iop_module_t *self)
   
   /* saturation slider */
   g->gslider2=DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color((GdkColor){0,lightness,lightness,lightness},(GdkColor){0,lightness,lightness,lightness}));
-  gtk_object_set(GTK_OBJECT(g->gslider1), "tooltip-text", _("select the saturation of filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->gslider2), "tooltip-text", _("select the saturation of filter"), (char *)NULL);
    g_signal_connect (G_OBJECT (g->gslider2), "value-changed",
         G_CALLBACK (saturation_callback), self);
 
