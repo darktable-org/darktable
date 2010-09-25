@@ -1,0 +1,7 @@
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Added directories with tests and common code. Directories added are
+   common, ConvolutionTest, JansenVanCittertTest, MaximumLikelihoodTest,
+   WienerFilterTest.
+
+   * CMakeLists.txt: Initial check-in.

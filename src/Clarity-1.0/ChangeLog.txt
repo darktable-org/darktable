@@ -1,0 +1,118 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * HOWTO-Build-Clarity.txt: Updated build instructions.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added inclusion of the gomp (GNU OpenMP) library
+   if the compiler is GNU. Fixed inclusion of FFTW library for CUDA
+   and non-CUDA builds.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Removed commands for finding FFTW and placed them
+   in a separate module.
+
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added tests subdirectory.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * HOWTO-Build-Clarity.txt: Updated with instructions for linux.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added FOUND_CUFFT to link libraries when compiling
+     with CUDA support. This basically points it to the cufft.lib file
+     in the CUDA installation.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Removed linked library cufft.lib. New version
+   of FindCUDA.cmake takes care of this.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added source files ComputePrimitives.cxx and
+   ComputePrimitivesGPU.cu, removed MaximumLikelihoodDeconvolveGPU.cu.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added include/internal directory to set of
+   include directories.
+   
+   * HOWTO-Build-Clarity.txt: Bumped up recommended CUDA runtime version
+   from 1.0 to 1.1.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+	* CMakeLists.txt: Added source file BlindMaximumLikelihoodDeconvolve.cxx.
+
+2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
+
+	* CMakeLists.txt: Added source files ImageClip.cxx and
+	ImagePadSpatialShift.cxx.
+
+2007-10-23  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.h.in: Fixed Clarity version number derived from
+	CMakeLists.txt. Added BUILD_WITH_CUDA macro derived from
+	CMake configuration.
+	
+	* CMakeLists.txt: Added option to build with CUDA or not.
+	
+	* HOWTO-Build-Clarity.txt: Updated build instructions.
+
+2007-09-30  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added source files and now links to cufft.lib
+   (CUDA FFT library).
+
+2007-09-28  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added CUDA source files and inclusion of
+   FindCUDA.cmake. CUDA is mandatory at the moment, but really
+   should be optional in the future.
+   
+   * HOWTO-Build-Clarity.txt: Added instructions for telling CMake
+   to find CUDA dependencies.
+
+2007-09-27  David Marshburn  <marshbur@cs.unc.edu>
+
+	* HOWTO-Build-Clarity.txt:  added notes related to FFTW3.
+
+2007-09-26 David Feng <dfeng@cs.unc.edu>
+
+   * CMakeLists.txt: Added Stopwatch.cxx to list of source files.
+   
+2007-09-26 Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMake/*: CMake scripts from Abe Stephens at Utah for including
+   CUDA files (relatively) painlessly in a CMake project. Note:
+   it doesn't seem to generate libraries correctly in Visual Studio 2005
+   when generating project files. NMake files, however, work just fine.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added Stopwatch.cxx to list of source files.
+
+2007-09-19 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h.in: Fixed include file name (case was wrong).
+   
+   * CMakeLists.txt: Added CMake directives that cause CMake to ask for
+   FFTW libraries. Added FFT.cxx source file.
+
+2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
+
+   * HOWTO-Build-Clarity.txt: Initial check-in of instructions on how
+   to build the Clarity library.
+
+2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Added Clarity.cxx source file to project.
+
+2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h.in, CMakeLists.txt: Initial check-in.

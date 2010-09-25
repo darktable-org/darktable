@@ -1,0 +1,101 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Added licensing to top of the file.
+
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Major changes and cleanup of nearly all function prototypes.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Created Dim3 type for specifying image dimensions. Chagned
+   function prototypes to use this type for image dimension specifications.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Moved all "private" library headers from this level down to new
+   internal directory. Clarity.h, which contains functions the library
+   exposes to clients, remains here.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.h: Added function Clarity_BlindMaximumLikelihoodDeconvolve.
+	
+	* MaximumLikelihoodDeconvolve.h: Added function prototypes for
+	the update step in max likelihood deconvolution. Two prototypes here,
+	one for CPU and one for GPU.
+
+2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.h: Added documentation for each publicly-accessible function
+	in the library. Also, added a new error enum, CLARITY_INVALID_ARGUMENT.
+
+2007-09-30 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Added some error enumerants, added an externally-accessible
+   convolution function which is generally useful.
+   
+   * Complex.h: Added ComplexMultiplyAndScale function for multiplying the
+   result of a complex multiplication by a real value.
+   
+   * ComplexCUDA.h: CUDA versions of complex math functions. Maybe want to combine
+   with the above file to eliminate redundancy.
+   
+   * FFT.h: Added functions for copying data to and from a "device" (e.g. 
+   NVIDIA 8800 GTX card). Added convenience function that allocates memory on the 
+   device and copies data from a buffer on the host. Added a function for
+   performing pixel-wise multiplication. Added an internal convolution
+   function.
+
+2007-09-29 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.h: Changed some function names to be clearer in meaning.
+
+2007-09-26 David Feng <dfeng@cs.unc.edu>
+
+   * Clarity.h: Fixed an argument type defintion (unsigned instead of int).
+   
+2007-09-25 David Feng <dfeng@cs.unc.edu>
+
+   * Clarity.h: Added maximum likelihood filter function.
+   
+2007-09-25 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Complex.h: Added ComplexConjugate function.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Stopwatch.h: Added this class for taking timings.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Changed functions Init and Destroy to Register and UnRegister.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.h: Added some memory allocation functions specifically for holding
+   the results of Fourier transforms (real-to-complex and complex-to-real).
+
+2007-09-22 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Added a noise standard deviation and epsilon parameters to
+   Clarity_WienerDeconvolve.
+   
+   * Complex.h: Added a couple more useful complex operations.
+
+2007-09-21 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Somewhat inconsequential rearrangement of function parameters.
+   
+   * Complex.h: New complex math inline functions.
+
+2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Added some enumerants to ClarityResult_t enum.
+   Changed most of the function signatures.
+
+   * FFT.h: Header for abstracting away the underlying FFT library.
+
+2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.h: Initial check-in.

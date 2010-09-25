@@ -1,0 +1,8 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * FindFFTW.cmake: Fixed access of the variable that tells
+   whether the build is happening on linux.
+
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * FindFFTW.cmake: Cmake module to find FFTW.

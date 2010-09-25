@@ -1,0 +1,7 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Test_Common.h: Added licensing to top of the file.   
+
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * TestCommon.h: Initial check-in.

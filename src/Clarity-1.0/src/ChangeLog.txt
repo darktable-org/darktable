@@ -1,0 +1,288 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * BlindMaximumLikelihoodDeconvolve.cxx, Clarity.cxx,
+   ComputePrimitives.cxx ComputePrimitivesGPU.cu, Convolve.cxx, FFT.cxx,
+   FFTGPU.cu, IDivergenceDeconvolve.cxx, ImageClip.cxx, 
+   ImagePadSpatialShift.cxx, JansenVanCittertDeconvolve.cxx,
+   JansenVanCittertDeconvolveGPU.cu, MaximumLikelihoodDeconvolve.cxx,
+   Memory.cxx, SmootheJansenVanCittertDeconvolve.cxx, WienerDeconvolve.cxx,
+   WienerDeconvolvGPU.cu: Add licensing to the top of the files.
+
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitives.cxx: Added #ifdef to work around GCC's buggy OpenMP
+   reduction operations.
+
+   * Convolve.cxx, JansenVanCittertDeconvolve.cxx,
+   MaximumLikelihoodDeconvolve.cxx, WienerDeconvolve.cxx: Significant 
+   changes to make using Clarity_Convolve function easier to use.
+
+   * IDivergenceDeconvolve.cxx: Changed prototype to conform to standard
+   argument list in other function prototypes.
+
+   * JansenVanCittertDeconvolve.cxx: Fixed some funkiness with variables 
+   not being initialized in OpenMP parallel regions.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx: Added Clarity_Dim3FromArray helper function.
+   
+   * Convolve.cxx, IDivergenceDeconvolve.cxx, ImageClip.cxx,
+   ImagePadSpatialShift.cxx, JansenVanCittertDeconvolve.cxx,
+   MaximumLikelihoodDeconvolve.cxx, SmoothedJansenVanCittertDeconvolve.cxx,
+   WienerDeconvolve.cxx: Switched to Clarity_Dim3 type.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+  * Clarity.cxx, ImageClip.cxx, Memory.cxx: Added newline at end of these
+    files to make gcc happy.
+
+2008-09-21  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Convolve.cxx: Added ifdefs checking for BUILD_WITH_CUDA. Fixes linker
+   error when building without CUDA.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * BlindMaximumLikelihoodDeconvolve.cxx: Now applies scale factor for
+   conserving image energy after each iteration.
+   
+   * BlindMaximumLikelihoodDeconvolveGPU.cu: Removed because all necessary
+   functions are now defined as data parallel compute primitives.
+   
+   * ComputePrimitives.cxx: Collection of data parallel primitive routines
+   useful in deconvolution routines.
+   
+   * ComputePrimitivesGPU.cu: GPU version of the above.
+   
+   * MaximumLikelihoodDeconvolve.cxx: Consolidated separate routines
+   on CPU and GPU for the iteration update into a single routine making
+   use of parallel primitives. Now applies scale factor for
+   conserving image energy after each iteration.
+   
+   * MaximumLikelihoodDeconvolveGPU.cu: Removed because all necessary
+   functions are now defined as data parallel compute primitives.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * MaximumLikelihoodDeconvolve.cxx, BlindMaximumLikelihoodDeconvolve.cxx:
+   Fixed a bug where I was overwriting the original image data, which is
+   needed throughout the algorithm.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * BlindMaximumLikelihoodDeconvolve.cxx, Clarity.cxx,
+   IDivergenceDeconvolve.cxx, ImageClip.cxx, ImagePadSpatialShift.cxx,
+   JansenVanCittertDeconvolve.cxx, JansenVanCittertDeconvolveGPU.cu,
+   MaximumLikelihoodDeconvolve.cxx, SmoothedJansenVanCittertDeconvolve.cxx,
+   WienerDeconvolve.cxx, WienerDeconvolveGPU.cu: Cleaned up the formatting.
+   
+   * Convolve.cxx: Moved convolution-related routines here from FFT.cxx.
+   
+   * FFT.cxx: Removed convolution-related routines.
+   
+   * FFTGPU.cu: Fixed up names of function calls.
+   
+   * Memory.cxx: New file for memory-related routines.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+	* BlindMaximumLikelihoodDeconvolve.cxx, .h: New files containing function
+	for blind deconvolution.
+	
+	* MaximumLikelihoodDeconvolve.cxx, .h: Factored out the update step
+	that will be shared between this routine and blind deconvolution.
+	Renamed some variables.
+
+2008-09-08  Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.cxx: Reorganized calling of FFTW initialization routines.
+	
+	* Convolve.cxx: Changed parameter name from psfImage to more generic
+	kernel.
+	
+	* ImageClip.cxx: New file that crops an image. Useful for clipping a padded
+	image used in FFT-based convolution.
+	
+	* ImagePadSpatialShift.cxx: New file with a utility function to pad and
+	shift convolution kernel images.
+	
+	* WienerDeconvolve.cxx: Removed noise standard deviation parameter that
+	was getting passed around in related functions, but never used.
+
+2007-10-23 Cory Quammen <cquammen@cs.unc.edu>
+
+	* Clarity.cxx: Modified to use BUILD_WITH_CUDA ifdef that is derived
+	from CMake configuration. This let's people build the library without 
+	requiring CUDA.
+	
+	* FFT.cxx, JansenVanCittertDeconvolve.cxx, MaximumLikelihoodDeconvolve.cxx,
+	WienerDeconvolve.cxx: Added BUILD_WITH_CUDA ifdef for conditional compilation of
+	CUDA.
+	
+	* MaximumLikelihoodDeconvolveGPU.cu: Finally got around to mplementing for 
+	completeness, if not increased performance :-(
+
+2007-10-01 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Convolve.cxx: Added declaration of timers that I had forgotten.
+   
+   * FFT.cxx: Added some timings around CUFFT and FFTW functions that
+   execute the FFT.
+   
+   * JansenVanCittertDeconvolve.cxx: Implemented on GPU.
+   
+   * JansenVanCittertDeconvolve.cu: Added kernel implementation.
+
+2007-09-30 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Convolve.cxx: Contains definition of Clarity_Convolve, an externally-
+   accessible function for performing convolution.
+   
+   * FFT.cu: Added CUDA function for point-wise multiplication of pixels.
+   
+   * FFTGPU.cxx; Added functions for copying data to and from a "device" (e.g. 
+   NVIDIA 8800 GTX card). Added convenience function that allocates memory on the 
+   device and copies data from a buffer on the host. Added a function for
+   performing pixel-wise multiplication. Added an internal convolution
+   function. Incorporated CUDA FFT library.
+   
+   * WienerDeconvolve.cxx: Implemented GPU version of Wiener filter.
+   
+   * WienerDeconvolveGPU.cu: Supporting device function for GPU implementation
+   of Wiener filter.
+
+2007-09-29 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx: If the number of registered clients of drops to zero,
+   sets the global flag indicating whether the device is capable to false.
+   Not really vital, but it is at least consistent with the notion of the
+   library returning to a consistent initialization state.
+   
+   * FFT.cxx: Added flag indicating whether a CUDA-capable device is
+   available on the system. Changed some function names. Uses FFTW
+   real-to-complex transforms to save about half the time and memory
+   in every application of a deconvolution filter.
+   
+   * JansenVanCittertDeconvolve.cxx, MaximumLikelihoodDeconvolveGPU.cxx,
+   WienerDeconvolve.cxx: Changed called function names to match what is now
+   in FFT.cxx.
+
+2007-09-28 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx: Added check for CUDA-capable device.
+   
+   * JansenVanCittertDeconvolve.cxx, MaximumLikelihoodDeconvolve.cxx,
+   WienerDeconvolve.cxx: Added switching between CPU and GPU kernels
+   based on whether a CUDA-capable device is available.
+   
+   * JansenVanCittertDeconvolve.cu, MaximumLikelihoodDeconvolve.cu,
+   WienerDeconvolve.cu: Stub files where CUDA kernels will go.
+
+2007-09-28 David Feng <dfeng@cs.unc.edu>
+   * MaximumLikelihoodDeconvolve.cxx: Fixed some silly errors; 
+   appears to work now.
+   
+2007-09-25 David Feng <dfeng@cs.unc.edu>
+   * MaximumLikelihoodDeconvolve.cxx: Basic CPU implementation of
+   the maximum likelihood deconvolution filter.
+   
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * JansenVanCitterDeconvolve.cxx: Both CPU and GPU versions of
+   this algorithm will rely on the maximum value in the image
+   getting computed on the CPU, so we'll start timing after that
+   is done. If I get around to an efficient GPU reduction, we can
+   find the maximum of the image there and move the timer again.
+   
+   * WienerDeconvolve.cxx: Put the core of the filter in a
+   separate function to ease switching between CPU and GPU. Tried
+   a different formulation of the Wiener filter that seems to work
+   better than the previous formation, at least in terms of smoothing
+   noise during filtering.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * JansenVanCitterDeconvolve.cxx, WienerDeconvolve.cxx: Added
+   timings for execution of the entire algorithm.
+   
+   * Stopwatch.cxx: New timer class from GLVU.
+   
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx: Removed fftwf_cleanup_threads from the UnRegister
+   function because it destroys accumulated FFTW wisdom, which we don't
+   really want to happen. Also, SetNumberOfThreads now tells FFTW to
+   plan FFTs with the specified number of threads.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx: Changed Init and Destroy functions to Register
+   and UnRegister, which more accurately reflects how the library
+   should be initialized and released by callers.
+   
+   * FFT.cxx: OpenMP fixups.
+   
+   * JansenVanCittertDeconvolve.cxx: Changed how omp.h is included.
+   Removed iostream include.
+   
+   * WienerDeconvolve.cxx: Cleaned up include statements, parallelized
+   a loop I had missed before.
+
+2007-09-24 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.cxx: Added memory allocation functions and a convolution
+   function.
+   
+   * JansenVanCittertDeconvolve.cxx: Cleaned up and refactored into
+   more manageable pieces.
+   
+   * WienerDeconvolve.cxx: Cleaned up and changed to use new memory
+   allocation functions.
+
+2007-09-22 Cory Quammen <cquammen@cs.unc.edu>
+
+   * JansenVanCittertDeconvolve.cxx: Added CPU implementation.
+   
+   * WienerDeconvolve.cxx: Finished CPU implementation.
+
+2007-09-21 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.cxx: My understanding of row-major order is not the same as that
+   of FFTW, causing me much consternation. The fix was simple: reverse the
+   order of the image dimensions.
+   
+   * IDivergenceDeconvolve.cxx, JansenVanCittertDeconvolve.cxx,
+   SmoothedJansenVanCittertDeconvolve.cxx, WienerDeconvolve.cxx:
+   Function signature changes.
+
+2007-09-19 Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.cxx: Initial check-in of functions for taking the FFT of
+   real-valued images. Simpler than FFTW's interface. Also, this will
+   let us swap out the underlying FFT library in the future more easily
+   (FFTW is under GPL).
+   
+   * IDivergenceDeconvolve.cxx, JansenVanCittertDeconvolve.cxx,
+   SmoothedJansenVanCittertDeconvolve.cxx: Changed to reflect changes in 
+   signature of functions.
+   
+   * WienerDeconvolve.cxx: Changed to reflect changes in signature of
+   function. Inserted a forward and inverse Fourier transform to test out
+   FFT functions.
+
+2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
+
+   * IDivergenceDeconvolve.cxx, JansenVanCittertDeconvolve.cxx,
+   SmoothedJansenVanCittertDeconvolve.cxx: Set algorithm outputs to
+   all zeros for now.
+
+2007-09-18 Cory Quammen <cquammen@cs.unc.edu>
+
+   * WienerDeconvolve.cxx: Fixed loop index error.
+
+2007-09-17 Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity.cxx, IDivergenceDeconvolve.cxx,
+   JansenVanCittertDeconvolve.cxx, SmoothJansenVanCittertDeconvolve.cxx,
+   WienerDeconvolve.cxx: Initial check-in.

@@ -1,0 +1,5 @@
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Doxyfile: Initial check-in.
+
+   * html: Directory containing documentation on Clarity API.

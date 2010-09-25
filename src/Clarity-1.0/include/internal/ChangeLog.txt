@@ -1,0 +1,77 @@
+2008-12-14  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Complex.h, ComplexCUDA.h, ComputePrimitives.h, ComputePrimitivesGPU.h,
+   Convolve.h, FFT.h, JansenVanCittertDeconvolveGPU.h,
+   MaximumLikelihoodDeconvolve.h, MaximumLikelihoodDeconvolveGPU.h,
+   Memory.h, WienerDeconvolveGPU.h: Added licensing to top of files.
+
+2008-12-12  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitivesGPU.h: Added documentation for a parameter in function
+   Clarity_DivideArraysComponentWiseGPU.
+
+   * Convolve.h: Removed Clarity_Convolve function prototype because it is
+   in Clarity.h.
+
+   * JansenVanCittertDeconvolveGPU.h: Fixed documentation of function.
+
+   * MaximumLikelihoodDeconvolve.h: Added parameter documentation for a
+   function.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * FFT.h: Added C linkage declaration in front of functions in this file.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Memory.h: Added include for cstring so that size_t is defined.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Complex.h, ComputePrimitives.h, Convolve.h, 
+   JansenVanCittertDeconvolve.h, MaximumLikelihoodDeconvolve.h,
+   MaximumLikelihoodDeconvolveGPU.h, WienerDeconvolveGPU.h:
+   Added newlines at the end of these files to keep gcc from complaining.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * ComputePrimitives.h: New file with prototypes for a variety of
+   parallel computing primitives.
+   
+   * ComputePrimitivesGPU.h: CUDA versions of prototypes in
+   ComputePrimitives.h.
+   
+   * MaximumLikelihoodDeconvolve.h: Formatting changes.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * CMakeLists.txt: Removed this file; should have been named
+   ChangeLog.txt (this file replaces it).
+   
+   * Complex.h, ComplexCUDA.h: Added comments for functions.
+
+   * Convolve.h: New file for convolution-related routines.
+   
+   * FFT.h: Removed a lot of non-FFT related function prototypes and put them
+   in more appropriate files (e.g. Convolve.h).
+   
+   * JansenVanCittertDeconvolveGPU.h: New file containing GPU device 
+   function prototype for this deconvolution method.
+   
+   * MaximumLikelihoodDeconvolve.h: Added comments to the prototype 
+   in this file.
+   
+   * MaximumLikelihoodDeconvolveGPU.h: Moved GPU-related function
+   prototypes here.
+   
+   * Memory.h: New file with memory allocation and data transfer-related
+   function prototypes.
+   
+   * WienerDeconvolveGPU.h: New file containing GPU device function
+   prototype for this deconvolution method.
+
+2008-09-11  Cory Quammen <cquammen@cs.unc.edu>
+
+   * All files: Moved from one directory level up. These header files
+   are internal to the library and really shouldn't be exposed to
+   client applications or libraries.

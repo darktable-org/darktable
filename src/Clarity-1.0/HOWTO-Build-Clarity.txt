@@ -1,0 +1,25 @@
+HOWTO for building Clarity library.
+Cory Quammen <cquammen@cs.unc.edu>
+Last update: 2008-12-14
+
+1). If building on Windows, download and install/unzip FFTW3 from http://www.fftw.org/install/windows.html. Follow the instructions on that page to create the .lib files.
+
+2). If building on linux, download the source from http://www.fftw.org/download.html. Untar the file and go to the fftw source library. Run the 'configure' script with the options '--enable-single' and '--enable-threads'.
+
+3). Fire up CMake. Set the Clarity root directory as the source code directory, and pick a build directory.
+
+4). Set BUILD_SHARED_LIBS to "ON" if you so choose.
+
+5). If you want to build with CUDA-acceleration, set BUILD_WITH_CUDA to "ON", and continue with these directions. Otherwise, skip to Step 8.
+
+6). Download and install CUDA Toolkit, Version 2.0 or later from http://developer.nvidia.com/object/cuda.html. Pick the default install directory if you can, otherwise remember where you installed CUDA. If you are on a system with a CUDA-enabled graphics card, you should probably also install the latest NVIDIA display drivers.
+
+7). Configure the CUDA settings, set CUDA_BUILD_TYPE to "Device". If CUDA_INSTALL_PREFIX does not give a valid path name, set the path to your CUDA Toolkit installation directory.
+
+8). In CMake, set FFTW_INCLUDE_DIR to the directory where you installed FFTW3, and set FFTW_LIBRARY to that same directory but with libfftw3f-3.lib appended to the end (libfftw3.a in linux).
+
+9). Click "Configure" (type "c" in linux) and click "OK" (type "g" in linux). CMake will build the project files (makefiles) and exit.
+
+10). Navigate to the Clarity build directory you created in Step 2. Under Windows, open Clarity.sln. Under linux, type "make".
+
+11). Select a build configuration and build the solution.

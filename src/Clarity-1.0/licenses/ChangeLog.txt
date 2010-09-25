@@ -1,0 +1,7 @@
+2008-12-13  Cory Quammen <cquammen@cs.unc.edu>
+
+   * gpl-2.0.txt: Added GPL 2.0 license.
+
+2008-12-10  Cory Quammen <cquammen@cs.unc.edu>
+
+   * Clarity-license.txt, FindCuda-license.txt, FFTW-license.txt: Initial checkin of licenses.
