@@ -118,7 +118,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   else
   { 
     /* replace history stack */
-    rc = sqlite3_prepare_v2 (darktable.db, "delete from history where iimgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2 (darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
     rc = sqlite3_bind_int (stmt, 1, dest_imgid);
     rc = sqlite3_step (stmt);
   }
@@ -152,6 +152,26 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   
   dt_image_cache_release(oimg, 'r');
   return 0;
+}
+
+GList *
+dt_history_get_items(int32_t imgid)
+{
+  GList *result=NULL;
+  sqlite3_stmt *stmt;
+  int rc=0;
+  rc = sqlite3_prepare_v2 (darktable.db, "select num, operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+  char name[512]={0};
+  dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
+  item->num = sqlite3_column_int (stmt, 0);
+  g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+  item->name = g_strdup (name);
+  result = g_list_append (result,item);
+  }
+  return result;
 }
 
 int 
