@@ -1156,6 +1156,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // camera selector
   g->camera_model = GTK_ENTRY(gtk_entry_new());
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
   gtk_editable_set_editable(GTK_EDITABLE(g->camera_model), TRUE);
   gtk_entry_set_text(g->camera_model, self->dev->image->exif_model);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->camera_model), 0, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -1169,6 +1170,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // lens selector
   g->lens_model = GTK_ENTRY(gtk_entry_new());
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
   gtk_editable_set_editable(GTK_EDITABLE(g->lens_model), TRUE);
   gtk_entry_set_text(g->lens_model, self->dev->image->exif_lens);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->lens_model), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
