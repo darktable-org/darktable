@@ -141,14 +141,27 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  cairo_set_source_rgb (cr, .13, .13, .13);
+  GtkWidget *cwidget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkStyle *style = gtk_widget_get_style(cwidget);
+  cairo_set_source_rgb (cr, 
+    .5f*style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    .5f*style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    .5f*style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+  // cairo_set_source_rgb (cr, .13, .13, .13);
   cairo_paint(cr);
 
   // draw scrollbar indicators
   int v = darktable.view_manager->current_view;
   dt_view_t *view = NULL;
   if(v >= 0 && v < darktable.view_manager->num_views) view = darktable.view_manager->view + v;
-  cairo_set_source_rgb (cr, .16, .16, .16);
+  // cairo_set_source_rgb (cr, .16, .16, .16);
+  cairo_set_source_rgb (cr, 
+    style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+  int draw_border = 0;
   if(!view) cairo_paint(cr);
   else
   {
@@ -156,14 +169,23 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     {
       case 0: case 1: // left, right: vertical
         cairo_rectangle(cr, 0.0, view->vscroll_pos/view->vscroll_size * height, width, view->vscroll_viewport_size/view->vscroll_size * height);
+        if(view->vscroll_viewport_size/view->vscroll_size < 1.0f) draw_border = 1;
         break;
       default:        // bottom, top: horizontal
         cairo_rectangle(cr, view->hscroll_pos/view->hscroll_size * width, 0.0, view->hscroll_viewport_size/view->hscroll_size * width, height);
+        if(view->hscroll_viewport_size/view->hscroll_size < 1.0f) draw_border = 1;
         break;
     }
-    cairo_fill_preserve(cr);
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_stroke(cr);
+    if(1)//!draw_border)
+    {
+      cairo_fill(cr);
+    }
+    else
+    {
+      cairo_fill_preserve(cr);
+      cairo_set_source_rgb (cr, .1, .1, .1);
+      cairo_stroke(cr);
+    }
   }
 
   // draw gui arrows.
