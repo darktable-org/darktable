@@ -18,11 +18,14 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
+pthread_mutex_t clarity_mutex; 
 
 int main (int argc, char *argv[])
 {
   if(dt_init(argc, argv)) exit(1);
+  pthread_mutex_init(&clarity_mutex, NULL);
   dt_gui_gtk_run(darktable.gui);
+  pthread_mutex_destroy(&clarity_mutex);
   exit(0);
 }
 
