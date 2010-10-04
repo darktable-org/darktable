@@ -1136,7 +1136,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   {
     char wdname[20];
     snprintf (wdname, 20, "recent_film_%ld", k);
-    button = dtgtk_button_new_with_label (wdname,NULL,0);
+    button = dtgtk_button_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
     gtk_box_pack_start (GTK_BOX (recent_film_vbox),button,FALSE,FALSE,0);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (film_button_clicked),

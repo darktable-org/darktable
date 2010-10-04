@@ -125,7 +125,7 @@ dt_gui_iop_history_add_item (long int num, const gchar *label)
   g_snprintf(numlabel, 256, "%ld - %s", num, label);
   
   /* create toggle button */
-  widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,0);
+  widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,CPF_STYLE_FLAT);
   g_object_set_data (G_OBJECT (widget),"history_number",(gpointer)num);
   g_object_set_data (G_OBJECT (widget),"label",(gpointer) g_strdup(label));
   
