@@ -25,7 +25,7 @@ style "clearlooks-default"
   #GtkOptionMenu::indicator_size = { 11, 6 }
   #GtkOptionMenu::indicator_spacing = { 4, 5, 2, 2 }
   GtkTreeView::expander_size = 14
-  GtkExpander::expander_size = 12
+  GtkExpander::expander_size = 0 #12
   GtkProgressBar::min-horizontal-bar-height = 12
   font_name = "Sans 8"
 
