@@ -161,7 +161,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     style->bg[GTK_STATE_NORMAL].green/65535.0, 
     style->bg[GTK_STATE_NORMAL].blue/65535.0
   );
-  int draw_border = 0;
+  const float border = 0.3;
   if(!view) cairo_paint(cr);
   else
   {
@@ -169,23 +169,28 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     {
       case 0: case 1: // left, right: vertical
         cairo_rectangle(cr, 0.0, view->vscroll_pos/view->vscroll_size * height, width, view->vscroll_viewport_size/view->vscroll_size * height);
-        if(view->vscroll_viewport_size/view->vscroll_size < 1.0f) draw_border = 1;
         break;
       default:        // bottom, top: horizontal
         cairo_rectangle(cr, view->hscroll_pos/view->hscroll_size * width, 0.0, view->hscroll_viewport_size/view->hscroll_size * width, height);
-        if(view->hscroll_viewport_size/view->hscroll_size < 1.0f) draw_border = 1;
         break;
     }
-    if(1)//!draw_border)
+    cairo_fill(cr);
+    switch(which)
     {
-      cairo_fill(cr);
+      case 0:
+        cairo_rectangle(cr, (1.0-border)*width, 0.0, border*width, height);
+        break;
+      case 1:
+        cairo_rectangle(cr, 0.0, 0.0, border*width, height);
+        break;
+      case 2:
+        cairo_rectangle(cr, (1.0-border)*height, (1.0-border)*height, width-2*(1.0-border)*height, border*height);
+        break;
+      default:
+        cairo_rectangle(cr, (1.0-border)*height, 0.0, width-2*(1.0-border)*height, border*height);
+        break;
     }
-    else
-    {
-      cairo_fill_preserve(cr);
-      cairo_set_source_rgb (cr, .1, .1, .1);
-      cairo_stroke(cr);
-    }
+    cairo_fill(cr);
   }
 
   // draw gui arrows.
