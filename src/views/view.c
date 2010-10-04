@@ -195,7 +195,13 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     vm->film_strip.height = height * vm->film_strip_size;
     vm->film_strip.width  = width;
     cairo_rectangle(cr, -10, v->height, width+20, tb);
-    cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkStyle *style = gtk_widget_get_style(widget);
+    cairo_set_source_rgb (cr, 
+      style->bg[GTK_STATE_NORMAL].red/65535.0, 
+      style->bg[GTK_STATE_NORMAL].green/65535.0, 
+      style->bg[GTK_STATE_NORMAL].blue/65535.0
+    );
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 1.5);
     cairo_set_source_rgb (cr, .1, .1, .1);
