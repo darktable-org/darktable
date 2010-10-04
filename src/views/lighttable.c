@@ -25,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/darktable.h"
 #include "common/collection.h"
+#include "common/colorlabels.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -684,6 +685,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_g, go_up_key_accel_callback, (void *)self);
   dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_G, go_down_key_accel_callback, (void *)self);
+  dt_colorlabels_register_key_accels();
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -694,6 +696,7 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 void leave(dt_view_t *self)
 {
   dt_gui_key_accel_unregister(star_key_accel_callback);
+  dt_colorlabels_unregister_key_accels();
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->stars_registered = 0;
   dt_gui_key_accel_unregister(zoom_key_accel_callback);
