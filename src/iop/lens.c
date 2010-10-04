@@ -1152,7 +1152,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_table_new(7, 3, FALSE);
   gtk_table_set_col_spacings(GTK_TABLE(self->widget), 5);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
+  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   // camera selector
   g->camera_model = GTK_ENTRY(gtk_entry_new());

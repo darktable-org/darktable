@@ -492,13 +492,13 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset,0));
+  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   if(module->get_params)
   {
-    GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,0));
+    GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
     gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
     gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);

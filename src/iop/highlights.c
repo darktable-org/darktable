@@ -333,8 +333,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(g->mode), TRUE, TRUE, 0);
 
   hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
-  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);

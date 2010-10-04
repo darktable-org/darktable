@@ -329,8 +329,8 @@ void gui_init (struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->label1 = GTK_LABEL(gtk_label_new(_("tint")));
   g->label2 = GTK_LABEL(gtk_label_new(_("temperature out")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
@@ -362,8 +362,8 @@ void gui_init (struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);
   hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);

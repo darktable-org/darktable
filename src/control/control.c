@@ -786,7 +786,13 @@ void *dt_control_expose(void *voidptr)
   darktable.control->width = width;
   darktable.control->height = height;
 
-  cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
+  GtkStyle *style = gtk_widget_get_style(widget);
+  cairo_set_source_rgb (cr, 
+    style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+
   cairo_set_line_width(cr, tb);
   cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
   cairo_stroke(cr);
