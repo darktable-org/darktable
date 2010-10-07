@@ -97,28 +97,30 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_FSWATCH = 8,
   DT_DEBUG_PERF = 16,
   DT_DEBUG_CAMCTL = 32,
-  DT_DEBUG_PWSTORAGE = 64
+  DT_DEBUG_PWSTORAGE = 64,
+  DT_DEBUG_OPENCL = 128
 }
 dt_debug_thread_t;
 
 typedef struct darktable_t
 {
   int32_t unmuted;
-  struct dt_conf_t         *conf;
-  struct dt_develop_t      *develop;
-  struct dt_lib_t          *lib;
-  struct dt_view_manager_t *view_manager;
-  struct dt_control_t      *control;
-  struct dt_gui_gtk_t      *gui;
-  struct dt_mipmap_cache_t *mipmap_cache;
-  struct dt_image_cache_t  *image_cache;
-  sqlite3                  *db;
-  const struct dt_fswatch_t	*fswatch;
-  const struct dt_pwstorage_t *pwstorage;
-  const struct dt_camctl_t *camctl;
-  const struct dt_collection_t *collection;
-  struct dt_points_t       *points;
-  struct dt_imageio_t      *imageio;
+  struct dt_conf_t               *conf;
+  struct dt_develop_t            *develop;
+  struct dt_lib_t                *lib;
+  struct dt_view_manager_t       *view_manager;
+  struct dt_control_t            *control;
+  struct dt_gui_gtk_t            *gui;
+  struct dt_mipmap_cache_t       *mipmap_cache;
+  struct dt_image_cache_t        *image_cache;
+  sqlite3                        *db;
+  const struct dt_fswatch_t	     *fswatch;
+  const struct dt_pwstorage_t    *pwstorage;
+  const struct dt_camctl_t       *camctl;
+  const struct dt_collection_t   *collection;
+  struct dt_points_t             *points;
+  struct dt_imageio_t            *imageio;
+  struct dt_opencl_t             *opencl;
   pthread_mutex_t db_insert;
   pthread_mutex_t plugin_threadsafe;
   char *progname;

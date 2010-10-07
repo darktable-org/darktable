@@ -29,6 +29,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/points.h"
+#include "common/opencl.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
@@ -147,6 +148,9 @@ int dt_init(int argc, char *argv[])
   pthread_mutex_init(&(darktable.db_insert), NULL);
   pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
+  darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
+  dt_opencl_init(darktable.opencl);
+
   darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
@@ -226,6 +230,8 @@ void dt_cleanup()
   free(darktable.conf);
   dt_points_cleanup(darktable.points);
   free(darktable.points);
+  dt_opencl_cleanup(darktable.opencl);
+  free(darktable.opencl);
 
   dt_camctl_destroy(darktable.camctl);
   dt_pwstorage_destroy(darktable.pwstorage);
