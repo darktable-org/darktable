@@ -26,6 +26,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
 #include <string.h>
 #include <glib/gstdio.h>
 #include <assert.h>
@@ -286,6 +288,58 @@ read_error:
   return 1;
 }
 
+/* copy file from src to dest, overwrites destination */
+static void _image_cache_copy_file (gchar *src,gchar *dest)
+{
+  int bs = 4*1024*1024;
+  gchar *block = g_malloc (bs);
+  int sh,dh,b;
+  if ((sh = open (src,O_RDONLY)) != -1)
+  {
+    if ((dh = open (dest,O_CREAT|O_TRUNC|O_WRONLY,S_IRUSR|S_IWUSR)) != -1)
+    {
+      while ((b=read(sh,block,bs))>0)
+        write (dh,block,b);
+      close (dh);
+    }
+    close (sh);
+  }
+  g_free (block);
+}
+
+static void _image_cache_backup()
+{
+  char *homedir = getenv("HOME");
+  char dbfilename[1024];
+  gchar *filename = dt_conf_get_string("cachefile");
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
+  else                                 snprintf(dbfilename, 512, "%s", filename);
+  g_free(filename);
+  
+  char *src = g_strdup (dbfilename);
+  strcat(dbfilename,".backup");
+  _image_cache_copy_file (src,dbfilename);
+  g_free (src);
+}
+
+static void _image_cache_restore()
+{
+  char *homedir = getenv("HOME");
+  char dbfilename[1024];
+  gchar *filename = dt_conf_get_string("cachefile");
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
+  else                                 snprintf(dbfilename, 512, "%s", filename);
+  g_free(filename);
+  
+  char *dest = g_strdup (dbfilename);
+  strcat(dbfilename,".backup");
+  _image_cache_copy_file (dbfilename,dest);
+  g_free (dest);
+}
+
+
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t load_cached)
 {
   pthread_mutex_init(&(cache->mutex), NULL);
@@ -305,13 +359,32 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t
   }
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
-  if(load_cached && dt_image_cache_read(cache))
+  if(load_cached!=0)
   {
-    // the cache failed to load, the file has been
-    // deleted.
-    // reset to useful values:
-    dt_image_cache_cleanup(cache);
-    dt_image_cache_init(cache, entries, 0);
+    gboolean cb = dt_conf_get_bool ("cachefile_backup");
+      
+    if (dt_image_cache_read(cache))
+    {
+      // the cache failed to load, the file has been
+      // deleted.
+      // reset to useful values:
+      
+      dt_image_cache_cleanup(cache);
+      
+      /* restore cachefile backup if first failure */
+      if (cb && load_cached==1)
+        _image_cache_restore();
+
+      /* lets try to reinit */
+      dt_image_cache_init(cache, entries, (cb && load_cached==1)?2:0 );
+    } 
+    else
+    {
+      /* backup cachefile */
+      if (cb && load_cached==1)
+        _image_cache_backup();
+    
+    }
   }
 }
 
