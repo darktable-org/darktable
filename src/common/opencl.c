@@ -74,6 +74,33 @@ void dt_opencl_init(dt_opencl_t *cl)
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue: %d\n", err);
     return;
   }
+
+
+  char dtpath[1024], filename[1024], programname;
+  dt_get_datadir(dtpath, 1024);
+  snprintf(filename, 1024, "%s/programs.conf", dtpath);
+  // now load all darktable cl kernels.
+  // TODO: compile as a job?
+  FILE *f = fopen(filename, "rb")
+  if(f)
+  {
+    while(!feof(f))
+    {
+      int rd = fscanf(f, "%[^#]%*[^\n]\n", programname);
+      if(programname[0] == '#') continue;
+      snprintf(filename, 1024, "%s/%s", dtpath, programname);
+      const int prog = dt_opencl_load_program(cl, filename);
+      if(dt_opencl_build_program(cl, prog))
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
+    }
+    fclose(f);
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
+    return;
+  }
+
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
   cl->inited = 1;
   return;

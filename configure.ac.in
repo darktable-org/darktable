@@ -280,6 +280,7 @@ AC_CONFIG_FILES([
     doc/usermanual/Makefile
     doc/usermanual/po/Makefile
     tools/Makefile
+    kernels/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT
