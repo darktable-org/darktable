@@ -55,6 +55,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkDarktableSlider *blendC;
   GtkDarktableSlider *blendh;
   GtkComboBox        *mode;
+  GtkBox             *slider_box;
 }
 dt_iop_highlights_gui_data_t;
 
@@ -215,15 +216,14 @@ mode_changed (GtkComboBox *combo, dt_iop_module_t *self)
   {
     case DT_IOP_HIGHLIGHTS_CLIP:
       p->mode = DT_IOP_HIGHLIGHTS_CLIP;
-      gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), FALSE);
-      gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), FALSE);
-      gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), FALSE);
+      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
       break;
     default: case DT_IOP_HIGHLIGHTS_LCH:
       p->mode = DT_IOP_HIGHLIGHTS_LCH;
-      gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), TRUE);
-      gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), TRUE);
-      gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), TRUE);
+      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
+      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
+      gtk_widget_show_all(GTK_WIDGET(g->slider_box));
+      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
       break;
   }
   dt_dev_add_history_item(darktable.develop, self);
@@ -276,15 +276,14 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->blendh, p->blendh);
   if(p->mode == DT_IOP_HIGHLIGHTS_CLIP)
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), FALSE);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), FALSE);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
   }
   else
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(g->blendL), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->blendC), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(g->blendh), TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(g->slider_box));
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
   }
   gtk_combo_box_set_active(g->mode, p->mode);
 }
@@ -332,12 +331,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->mode), TRUE, TRUE, 0);
 
-  hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  g->slider_box = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
   GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  gtk_box_pack_start(g->slider_box, GTK_WIDGET(vbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(g->slider_box, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->slider_box), FALSE, FALSE, 0);
   label = gtk_label_new(_("blend L"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
