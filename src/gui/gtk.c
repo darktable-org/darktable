@@ -289,9 +289,9 @@ update_colorpicker_panel()
   {
     char colstring[512];
     GtkWidget *w;
-    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
-    snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
-    gtk_label_set_label(GTK_LABEL(w), colstring);
+    // w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
+    // snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
+    // gtk_label_set_label(GTK_LABEL(w), colstring);
     w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), module->request_color_pick);
@@ -990,11 +990,15 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
   gtk_widget_set_size_request (widget, panel_width, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right_vbox");
+  gtk_widget_set_size_request (widget, panel_width-5, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
+  gtk_widget_set_size_request (widget, panel_width-5, -1);
   // leave some space for scrollbars to appear:
   widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
-  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
-  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   // and make the scrollbars disappear when not needed:
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
