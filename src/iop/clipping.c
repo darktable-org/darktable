@@ -678,6 +678,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->straightening = 0;
 
   self->widget = gtk_table_new(10, 6, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   g->hflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_DIRECTION_UP));
   g->vflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
   GtkWidget *label = gtk_label_new(_("flip"));

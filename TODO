@@ -11,6 +11,9 @@ big stuff:
    . locking and buffers, open()->'r' and open_preview()->'', dt is a huge spinlock
    . debuging with -d cache and -d control and tools/create_control_svg.sh
 
+- reimport doesn't remove stale db handles anymore?
+
+- gtk size groups for some modules (alignment in dr mode?)
 
 - image_cache sometimes not initing images (wrong old thumbs etc)
 
