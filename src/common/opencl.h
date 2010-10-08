@@ -22,12 +22,12 @@
   #include "config.h"
 #endif
 
+#define DT_OPENCL_MAX_PROGRAMS 256
+#define DT_OPENCL_MAX_KERNELS 512 
+
 #ifdef HAVE_OPENCL
 
 #include <CL/opencl.h>
-
-#define DT_OPENCL_MAX_PROGRAMS 256
-#define DT_OPENCL_MAX_KERNELS 512 
 
 typedef struct dt_opencl_t
 {
@@ -66,9 +66,17 @@ int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int kernel, const size_t siz
 /** launch kernel! */
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int kernel, const size_t *sizes);
 
-
 #else
-typedef struct dt_opencl_t void*;
+typedef struct dt_opencl_t {int x;} dt_opencl_t;
+void dt_opencl_init(dt_opencl_t *cl) {}
+void dt_opencl_cleanup(dt_opencl_t *cl) {}
+int dt_opencl_load_program(dt_opencl_t *cl, const char *filename) {return -1;}
+int dt_opencl_build_program(dt_opencl_t *cl, const int program) {return -1;}
+int dt_opencl_create_kernel(dt_opencl_t *cl, const int program, const char *name) {return -1;}
+void dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, size_t *sizes) {}
+int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int kernel, const size_t size, const void *arg) {return -1;}
+int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int kernel, const size_t *sizes) {return -1;}
 #endif
+
 
 #endif
