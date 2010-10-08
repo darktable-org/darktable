@@ -299,7 +299,7 @@ static void _image_cache_copy_file (gchar *src,gchar *dest)
     if ((dh = open (dest,O_CREAT|O_TRUNC|O_WRONLY,S_IRUSR|S_IWUSR)) != -1)
     {
       while ((b=read(sh,block,bs))>0)
-        write (dh,block,b);
+        b=write (dh,block,b);
       close (dh);
     }
     close (sh);
