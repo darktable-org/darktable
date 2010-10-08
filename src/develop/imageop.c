@@ -440,6 +440,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
                       G_CALLBACK (dt_iop_gui_off_callback), module);
     module->off = button;
   }
+  else
+  {
+     GtkWidget *w = gtk_expander_get_label_widget (module->expander);
+     gtk_misc_set_padding(GTK_MISC(w), 13, 0);
+  }
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
