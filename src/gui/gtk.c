@@ -987,18 +987,18 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // set constant width from gconf key
   const int panel_width = MAX(-1, MIN(500, dt_conf_get_int("panel_width")));
   widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-  gtk_widget_set_size_request (widget, panel_width-5, -1);
+  gtk_widget_set_size_request (widget, panel_width, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-  gtk_widget_set_size_request (widget, panel_width-5, -1);
+  gtk_widget_set_size_request (widget, panel_width, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "right_vbox");
   gtk_widget_set_size_request (widget, panel_width-5, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
   gtk_widget_set_size_request (widget, panel_width-5, -1);
   // leave some space for scrollbars to appear:
   widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
-  gtk_widget_set_size_request (widget, panel_width-5-15, -1);
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
-  gtk_widget_set_size_request (widget, panel_width-5-15, -1);
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   // and make the scrollbars disappear when not needed:
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
