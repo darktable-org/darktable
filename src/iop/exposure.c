@@ -70,19 +70,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     piece->pipe->processed_maximum[k] = scale;
 }
 
-#if 0
-void reload_defaults (struct dt_iop_module_t *self)
-{
-  dt_iop_exposure_params_t *p  = (dt_iop_exposure_params_t *)self->default_params;
-  dt_iop_exposure_params_t *fp = (dt_iop_exposure_params_t *)self->factory_params;
-  int cp = memcmp(self->default_params, self->params, self->params_size);
-  fp->black = p->black = 0.0f;//self->dev->image->black;
-  // FIXME: this function is called from render threads, but these values
-  // should be written by gui threads. but it is only a matter of gui synching..
-  if(!cp) memcpy(self->params, self->default_params, self->params_size);
-}
-#endif
-
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {

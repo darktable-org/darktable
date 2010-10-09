@@ -17,14 +17,14 @@
 */
 
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
-//const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
 
 int
-FC(const int row, const int col)
+FC(const int row, const int col, const unsigned int filters)
 {
   // const int filters = 0x16161616;
-  const int filters = 0x61616161; // EOS 400D
+  // const int filters = 0x61616161; // EOS 400D
   // const int filters = 0x49494949;
   // const int filters = 0x94949494;
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
@@ -36,16 +36,132 @@ ui4_to_float4(uint4 in)
   return (float4)(in.x/65535.0f, in.y/65535.0f, in.z/65535.0f, in.w/65535.0f);
 }
 
+int2
+backtransformi (int2 p, const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
+{
+  return (int2)((p.x - r_x)/r_scale, (p.y - r_y)/r_scale);
+}
+
+float2
+backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
+{
+  return (float2)((p.x - r_x)/r_scale, (p.y - r_y)/r_scale);
+}
+
+
+/**
+ * convert gpu float4 format to cpu float*3 representation
+ */
 __kernel void
-ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height)
+convert_float4_to_float3(__read_only image2d_t in, float *out)
+{
+  // TODO: so we really need 3 texture accesses per pixel??
+  // TODO: read into shared mem and coalesce out?
+  // TODO: fuck it, fast enough?
+}
+
+/**
+ * downscale and clip a buffer (in) to the given roi (r_*) and write it to out.
+ * output will be linear in memory.
+ * operates on float4 -> float4 textures.
+ */
+__kernel void
+clip_and_zoom(__read_only_image2d_t in, __write_only image2d_t out,
+              const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
+{
+  // global id is pixel in output image (float4)
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  const float fib2 = 34.0f, fib1 = 21.0f;
+  for(int l=0;l<fib2;l++)
+  {
+    // get point on input image, sampled in a backtransformed pixel footprint with fibonacci rank-1 lattice
+    float r1x = l/fib2, r1y = l*(fib1/fib2); py -= (int)py;
+    float2 p = backtransformf((float2)(x-.5f+r1x, y-.5f+r1y)), r_x, r_y, r_wd, r_ht, r_scale);
+    const float4 px = read_imagef(in, samplerf, p);
+    color += px;
+  }
+  color *= (1.0f/fib2);
+  write_imagef (out, (int2)(x, y), color);
+}
+
+/**
+ * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
+ * and writes it to out in float4 format.
+ * filters is the dcraw supplied int encoding the bayer pattern.
+ * resamping is done via rank-1 lattices and demosaicing using half-size interpolation.
+ */
+__kernel void
+clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_t out,
+    const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale, const unsigned int filters)
+{
+  // global id is pixel in output image (float4)
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  const float fib2 = 34.0f, fib1 = 21.0f;
+  for(int l=0;l<fib2;l++)
+  {
+    float r1x = l/fib2, r1y = l*(fib1/fib2); py -= (int)py;
+
+    // get point on input image, sampled in a backtransformed pixel footprint with fibonacci rank-1 lattice
+    int2 p = backtransformi((int2)(x-.5f+r1x, y-.5f+r1y)), r_x, r_y, r_wd, r_ht, r_scale);
+
+    // from the dcraw source documentation, about filters:
+    //
+    //    0x16161616:   0x61616161:   0x49494949:   0x94949494:
+    //    0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5
+    //  0 B G B G B G 0 G R G R G R 0 G B G B G B 0 R G R G R G
+    //  1 G R G R G R 1 B G B G B G 1 R G R G R G 1 G B G B G B
+    //  2 B G B G B G 2 G R G R G R 2 G B G B G B 2 R G R G R G
+    //  3 G R G R G R 3 B G B G B G 3 R G R G R G 3 G B G B G B
+
+    // round down to next even number:
+    p.x &= ~0x1; p.y &= ~0x1;
+
+    // now move p to point to a rggb block:
+    switch(filters)
+    {
+      case 0x16161616:
+        p.x ++; p.y++;
+        break;
+      case 0x61616161:
+        p.x ++;
+        break;
+      case 0x49494949:
+        p.y ++;
+        break;
+      default:
+        break;
+    }
+
+    // get four mosaic pattern uint16:
+    uint4 p1 = read_imageui(in, sampleri, p);
+    uint4 p2 = read_imageui(in, sampleri, (int2)(p.x+1, p.y  ));
+    uint4 p3 = read_imageui(in, sampleri, (int2)(p.x,   p.y+1));
+    uint4 p4 = read_imageui(in, sampleri, (int2)(p.x+1, p.y+1));
+    color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x);
+  }
+  color *= (1.0f/fib2);
+  write_imagef (out, (int2)(x, y), color);
+}
+
+
+/**
+ * fill greens pass of pattern pixel grouping.
+ * in (uint16_t) -> out (float4)
+ */
+__kernel void
+ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   // process all non-green pixels
   const int row = y;
-  const int col = x; // 2*x + (FC(row,2*x) & 1);
-  const int c = FC(row, col);
+  const int col = x;
+  const int c = FC(row, col, filters);
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f); // output color
 
   const float4 pc   = ui4_to_float4(read_imageui(in, sampleri, (int2)(col, row)));
@@ -98,8 +214,12 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
   write_imagef (out, (int2)(x, y), color);
 }
 
+/**
+ * fills the reds and blues in the gaps (done after ppg_demosaic_green).
+ * in (float4) -> out (float4)
+ */
 __kernel void
-ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height)
+ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
 {
   // image in contains full green and sparse r b
   const int x = get_global_id(0);
@@ -107,7 +227,7 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
 
   const int row = y;
   const int col = x;
-  const int c = FC(row, col);
+  const int c = FC(row, col, filters);
   float4 color = read_imagef(in, sampleri, (int2)(col, row));
 
   if(c == 1 || c == 3)
@@ -117,7 +237,7 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
     float4 nb = read_imagef(in, sampleri, (int2)(col, row+1));
     float4 nl = read_imagef(in, sampleri, (int2)(col-1, row));
     float4 nr = read_imagef(in, sampleri, (int2)(col+1, row));
-    if(FC(row, col+1) == 0) // red nb in same row
+    if(FC(row, col+1, filters) == 0) // red nb in same row
     {
       color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*.5f;
       color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*.5f;

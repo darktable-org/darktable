@@ -459,6 +459,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
+  img->filters = raw->idata.filters;
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;

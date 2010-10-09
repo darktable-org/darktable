@@ -694,6 +694,7 @@ void dt_image_init(dt_image_t *img)
   img->raw_params.fill0 = 0;
   img->raw_denoise_threshold = 0.f;
   img->raw_auto_bright_threshold = 0.01f;
+  img->filters = 0;
 
   // try to get default raw parameters from db:
   sqlite3_stmt *stmt;

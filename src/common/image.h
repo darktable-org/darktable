@@ -121,6 +121,7 @@ typedef struct dt_image_t
   float black, maximum;
   float raw_denoise_threshold, raw_auto_bright_threshold;
   dt_image_raw_parameters_t raw_params;
+  uint32_t filters;  // demosaic pattern
   float *pixels;
   int32_t mip_buf_size[DT_IMAGE_NONE];
 }

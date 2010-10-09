@@ -942,7 +942,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   char path[1024], datadir[1024];
   dt_get_datadir(datadir, 1024);
   gchar *themefile = dt_conf_get_string("themefile");
-  snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
+  if(themefile && themefile[0] == '/') snprintf(path, 1023, "%s", themefile);
+  else snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
     snprintf(path, 1023, "%s/%s", DATADIR, themefile ? themefile : "darktable.gtkrc");
   (void)setenv("GTK2_RC_FILES", path, 1);
