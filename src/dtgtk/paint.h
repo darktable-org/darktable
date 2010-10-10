@@ -73,5 +73,7 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color label icon */
 void dtgtk_cairo_paint_label(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint a color picker icon */
+void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 
 #endif

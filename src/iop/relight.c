@@ -28,7 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/button.h"
+#include "dtgtk/togglebutton.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/gtk.h"
@@ -42,46 +42,35 @@ typedef struct dt_iop_relight_params_t
 {
   float ev;
   float center;
-  float compression;
+  float width;
 }
 dt_iop_relight_params_t;
 
 void init_presets (dt_iop_module_t *self)
 {
- /* sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("Neutral Grey ND2 (soft)"), self->op, &(dt_iop_relight_params_t){1,0,0,50,0,0} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Neutral Grey ND4 (soft)"), self->op, &(dt_iop_relight_params_t){2,0,0,50,0,0} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Neutral Grey ND8 (soft)"), self->op, &(dt_iop_relight_params_t){3,0,0,50,0,0} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Neutral Grey ND2 (hard)"), self->op, &(dt_iop_relight_params_t){1,75,0,50,0,0} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Neutral Grey ND4 (hard)"), self->op, &(dt_iop_relight_params_t){2,75,0,50,0,0} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Neutral Grey ND8 (hard)"), self->op, &(dt_iop_relight_params_t){3,75,0,50,0,0} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Orange ND2 (soft)"), self->op, &(dt_iop_relight_params_t){1,0,0,50,0.102439,0.8} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Yellow ND2 (soft)"), self->op, &(dt_iop_relight_params_t){1,0,0,50,0.151220,0.5} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Purple ND2 (soft)"), self->op, &(dt_iop_relight_params_t){1,0,0,50,0.824390,0.5} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Green ND2 (soft)"), self->op, &(dt_iop_relight_params_t){1,0,0,50, 0.302439,0.5} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Red ND2 (soft)"), self->op, &(dt_iop_relight_params_t){1,0,0,50,0,0.5} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Blue ND2 (soft)"), self->op, &(dt_iop_relight_params_t){1,0,0,50,0.663415,0.5} , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Brown ND4 (soft)"), self->op, &(dt_iop_relight_params_t){2,0,0,50,0.082927,0.25} , sizeof(dt_iop_relight_params_t), 1);
-  
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);*/
+  dt_gui_presets_add_generic(_("Fill-light 0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t){0.25,0.25,4.0} , sizeof(dt_iop_relight_params_t), 1);
+  dt_gui_presets_add_generic(_("Fill-shadow -0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t){-0.25,0.25,4.0} , sizeof(dt_iop_relight_params_t), 1);
+
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 typedef struct dt_iop_relight_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;                                            // left and right controlboxes
-  GtkLabel  *label1,*label2,*label3;            		       	// ev, center, compression
-  GtkDarktableSlider *scale1,*scale2;        			// ev,compression
+  GtkLabel  *label1,*label2,*label3;            		       	// ev, center, width
+  GtkDarktableSlider *scale1,*scale2;        			// ev,width
   GtkDarktableGradientSlider *gslider1;				// center
-  GtkDarktableButton *button1;                     // Pick median lightess
+  GtkDarktableToggleButton *tbutton1;                     // Pick median lightess
 }
 dt_iop_relight_gui_data_t;
 
 typedef struct dt_iop_relight_data_t
 {
-  float ev;			          	// The ev of relight 0-8 EV
-  float center;		          	// the center light value for relight
-  float compression;			        
+  float ev;			          	// The ev of relight -4 - +4 EV
+  float center;		          		// the center light value for relight
+  float width;			        	// the width expressed in zones
 }
 dt_iop_relight_data_t;
 
@@ -156,23 +145,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
-  float hsl[3]={0};
  
-  const float a = 1.0;                                                                  // Height of top
-  const float b = -1.0+(data->center*2);                                  // Center of top
-  const float c = 0.00001+(0.4*(data->compression/100.0));      // Width
+  // Precalculate parameters for gauss function
+  const float a = 1.0;                                                                // Height of top
+  const float b = -1.0+(data->center*2);                                 // Center of top
+  const float c = (data->width/10.0)/2.0;      				                    // Width
   
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out,data,hsl,stderr) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out,data) schedule(static)
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
+    float hsl[3]={0};
     rgb2hsl (in[3*k+0],in[3*k+1],in[3*k+2],&hsl[0],&hsl[1],&hsl[2]);
+
     const float x = -1.0+(hsl[2]*2.0);
     float gauss = GAUSS(a,b,c,x);
-    if(isnan(gauss) || isinf(gauss)) gauss=1.0;
-    float relight = 1.0 / exp2f ( -data->ev * gauss);
-    if(isnan(relight) || isinf(relight)) relight=1.0;
+
+    if(isnan(gauss) || isinf(gauss)) 
+      gauss = 0.0;
+    
+    float relight = 1.0 / exp2f ( -data->ev * CLIP(gauss));
+    
+    if(isnan(relight) || isinf(relight)) 
+      relight = 1.0;
     
     for(int l=0;l<3;l++)
       out[3*k+l] = CLIP (in[3*k+l]*relight);
@@ -180,11 +176,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-picker_callback (GtkDarktableButton *button, gpointer user_data)
+picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_request_focus(self);
-  self->request_color_pick = 1;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
+  {
+    dt_iop_request_focus (self);
+    self->request_color_pick = 1;
+  }
+  else
+    self->request_color_pick = 0;
 }
 
 static void
@@ -198,12 +199,12 @@ ev_callback (GtkDarktableSlider *slider, gpointer user_data)
 }
 
 static void
-compression_callback (GtkDarktableSlider *slider, gpointer user_data)
+width_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->compression = dtgtk_slider_get_value(slider);
+  p->width = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -230,7 +231,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_relight_data_t *d = (dt_iop_relight_data_t *)piece->data;
   d->ev = p->ev;
-  d->compression = p->compression;
+  d->width = p->width;
   d->center = p->center;
 #endif
 }
@@ -269,7 +270,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
   dtgtk_slider_set_value (g->scale1, p->ev);
-  dtgtk_slider_set_value (g->scale2, p->compression);
+  dtgtk_slider_set_value (g->scale2, p->width);
   dtgtk_gradient_slider_set_value(g->gslider1,p->center);
 }
 
@@ -281,7 +282,7 @@ void init(dt_iop_module_t *module)
   module->priority = 252;
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
-  dt_iop_relight_params_t tmp = (dt_iop_relight_params_t){0.33,0,50};
+  dt_iop_relight_params_t tmp = (dt_iop_relight_params_t){0.33,0,4};
   memcpy(module->params, &tmp, sizeof(dt_iop_relight_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_relight_params_t));
   
@@ -328,26 +329,25 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
   self->widget = gtk_table_new (3,2,FALSE);
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect (G_OBJECT (self->widget), "expose-event", G_CALLBACK (expose), self);
   
-  gtk_table_set_col_spacing(GTK_TABLE(self->widget), 0, 10);
-  gtk_table_set_row_spacing(GTK_TABLE(self->widget), 0, 5);
+  gtk_table_set_col_spacing (GTK_TABLE (self->widget), 0, 10);
+  g_object_set (GTK_TABLE (self->widget),"row-spacing",2,NULL);
   
   /* adding the labels */
-  g->label1 = GTK_LABEL(gtk_label_new(_("light")));     // EV
-  g->label2 = GTK_LABEL(gtk_label_new(_("center")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("compression")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
+  g->label1 = GTK_LABEL (gtk_label_new (_("exposure")));     // EV
+  g->label2 = GTK_LABEL (gtk_label_new (_("center")));
+  g->label3 = GTK_LABEL (gtk_label_new (_("width")));
+  gtk_misc_set_alignment (GTK_MISC (g->label1), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (g->label2), 0.0, 0.5);
+  gtk_misc_set_alignment (GTK_MISC (g->label3), 0.0, 0.5);
   
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label1), 0,1,0,1,GTK_FILL,0,0,0);
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label2), 0,1,1,2,GTK_FILL,0,0,0);
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label3), 0,1,2,3,GTK_FILL,0,0,0);
   
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-4.0, 4.0, 0.1, p->ev, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compression, 0));
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  g->scale1 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,-2.0, 2.0,0.05, p->ev, 2));
+  g->scale2 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,2, 10, 0.5, p->width, 1));
   
   gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale1), 1,2,0,1);
   gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale2), 1,2,2,3);
@@ -357,27 +357,28 @@ void gui_init(struct dt_iop_module_t *self)
   /* lightnessslider */
   GtkBox *hbox=GTK_BOX (gtk_hbox_new (FALSE,2));
   int lightness=32768;
-  g->gslider1=DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color((GdkColor){0,0,0,0},(GdkColor){0,lightness,lightness,lightness}));
-  gtk_object_set(GTK_OBJECT(g->gslider1), "tooltip-text", _("select the center of filllight"), (char *)NULL);
+  g->gslider1=DTGTK_GRADIENT_SLIDER (dtgtk_gradient_slider_new_with_color ((GdkColor){0,0,0,0},(GdkColor){0,lightness,lightness,lightness}));
+  gtk_object_set (GTK_OBJECT (g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
         G_CALLBACK (center_callback), self);
-  g->button1 = DTGTK_BUTTON (dtgtk_button_new (dtgtk_cairo_paint_aspectflip, 0));
-  g_signal_connect (G_OBJECT (g->button1), "clicked",
+  g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, 0));
+  g_signal_connect (G_OBJECT (g->tbutton1), "toggled",
         G_CALLBACK (picker_callback), self);
-  
-  gtk_box_pack_start(hbox,GTK_WIDGET (g->gslider1),TRUE,TRUE,0);
-  gtk_box_pack_start(hbox,GTK_WIDGET (g->button1),FALSE,FALSE,0);
+ 
+  gtk_box_pack_start (hbox,GTK_WIDGET (g->gslider1),TRUE,TRUE,0);
+  gtk_box_pack_start (hbox,GTK_WIDGET (g->tbutton1),FALSE,FALSE,0);
   gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (hbox), 1,2,1,2);
 
   
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the filllight in EV"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
   /* xgettext:no-c-format */
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("compression of filllight:\n0% = soft, 100% = hard"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
   
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
         G_CALLBACK (ev_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-        G_CALLBACK (compression_callback), self);
+        G_CALLBACK (width_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
