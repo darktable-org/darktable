@@ -1,8 +1,18 @@
 #!/bin/bash
-if [ ! -f version.sh ]; then
+# this is called from autogen.sh and from src/Makefile.am
+if [ -x ./tools/create_version_sh.sh ]; then
+  if [ ! -f version.sh ]; then
     ./tools/create_version_sh.sh
+  fi
+  . version.sh
+else
+  if [ ! -f ../version.sh ]; then
+    cd ..
+    ./tools/create_version_sh.sh
+    cd -
+  fi
+  . ../version.sh
 fi
-. version.sh
 
 cat > common/version.h << EOF
 #ifndef DT_VERSION_H
