@@ -75,6 +75,12 @@
 		</sect4>
 		<sect4><title>saturation</title>
 			<para>Set the saturation to add a colorcast to the gradient.</para>
-		</sect4>		
+		</sect4>
+		<para> TIP: If you know you intend to use the GND filter before actually making a shot with your camera you might want to underexpose by one or two
+			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the GND filter cannot produce
+			a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose,
+			please consult your camera's manual, look for 'exposure compensation'.
+
+		</para>		
 	</sect3>
 </sect2>
