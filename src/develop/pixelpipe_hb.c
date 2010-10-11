@@ -270,6 +270,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     // printf("[process] loading source image buffer\n");
     start = dt_get_wtime();
+#if 1
+    *output = pipe->input;
+#else
     // optimized branch (for mipf-preview):
     if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
@@ -293,6 +296,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         }
       }
     }
+#endif
     end = dt_get_wtime();
     dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer\n", end - start);
     pthread_mutex_unlock(&pipe->busy_mutex);

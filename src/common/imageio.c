@@ -409,6 +409,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.no_auto_bright = 1;
   // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
   // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
+  raw->params.document_mode = 1; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
@@ -481,9 +482,10 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width)*(img->height)*sizeof(float));
-  const float m = 1./0xffff;
+  // const float m = 1./0xffff;
 // #pragma omp parallel for schedule(static) shared(img, image)
-  for(int k=0;k<3*(img->width)*(img->height);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
+  // for(int k=0;k<3*(img->width)*(img->height);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
+  memcpy(img->pixels, image->data, img->width*img->height*sizeof(uint16_t));
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);

@@ -79,7 +79,7 @@ void dt_opencl_init(dt_opencl_t *cl)
 
   char dtpath[1024], filename[1024], programname[1024];
   dt_get_datadir(dtpath, 1024);
-  snprintf(filename, 1024, "%s/programs.conf", dtpath);
+  snprintf(filename, 1024, "%s/kernels/programs.conf", dtpath);
   // now load all darktable cl kernels.
   // TODO: compile as a job?
   FILE *f = fopen(filename, "rb");
@@ -87,10 +87,18 @@ void dt_opencl_init(dt_opencl_t *cl)
   {
     while(!feof(f))
     {
-      int rd = fscanf(f, "%[^#]%*[^\n]\n", programname);
+      int rd = fscanf(f, "%[^\n]\n", programname);
       if(rd != 1) continue;
-      if(programname[0] == '#') continue;
-      snprintf(filename, 1024, "%s/%s", dtpath, programname);
+      // remove comments:
+      for(int k=0;k<strlen(programname);k++) if(programname[k] == '#')
+      {
+        programname[k] = '\0';
+        while(programname[--k] == ' ') programname[k] = '\0';
+        break;
+      }
+      if(programname[0] == '\0') continue;
+      snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
       const int prog = dt_opencl_load_program(cl, filename);
       if(dt_opencl_build_program(cl, prog))
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
@@ -167,6 +175,7 @@ int dt_opencl_load_program(dt_opencl_t *cl, const char *filename)
       cl->program_used[k] = 0;
       return -1;
     }
+    else break;
   }
   if(k < DT_OPENCL_MAX_PROGRAMS)
   {
@@ -208,6 +217,7 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int prog)
       free(build_log);
     }
   }
+  dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
   return err;
 }
 
@@ -226,6 +236,7 @@ int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
       cl->kernel_used[k] = 0;
       return -1;
     }
+    else break;
   }
   if(k < DT_OPENCL_MAX_KERNELS)
   {
@@ -237,6 +248,13 @@ int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
     dt_print(DT_DEBUG_OPENCL, "[opencl_create_kernel] too many kernels! can't create kernel `%s'\n", name);
     return -1;
   }
+}
+
+void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel)
+{
+  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return;
+  cl->kernel_used [kernel] = 0;
+  clReleaseKernel (cl->kernel [kernel]);
 }
 
 void dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, size_t *sizes)
@@ -254,7 +272,9 @@ int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int kernel, const int num, c
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int kernel, const size_t *sizes)
 {
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
-  const size_t local[2] = {16, 16};
+  // const size_t local[2] = {16, 16};
+  // let the driver choose:
+  const size_t *local = NULL;
   return clEnqueueNDRangeKernel(cl->cmd_queue, cl->kernel[kernel], 2, NULL, sizes, local, 0, NULL, NULL);
 }
 

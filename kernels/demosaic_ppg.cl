@@ -39,26 +39,36 @@ ui4_to_float4(uint4 in)
 int2
 backtransformi (int2 p, const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
 {
-  return (int2)((p.x - r_x)/r_scale, (p.y - r_y)/r_scale);
+  return (int2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
 }
 
 float2
 backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
 {
-  return (float2)((p.x - r_x)/r_scale, (p.y - r_y)/r_scale);
+  return (float2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
 }
 
 
+#if 0
 /**
  * convert gpu float4 format to cpu float*3 representation
  */
 __kernel void
-convert_float4_to_float3(__read_only image2d_t in, float *out)
+convert_float4_to_float3(__read_only image2d_t in, __global float *out, const int width, const int height)
 {
   // TODO: so we really need 3 texture accesses per pixel??
   // TODO: read into shared mem and coalesce out?
   // TODO: fuck it, fast enough?
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int z = get_global_id(2);
+  if(y < width && z < height)
+  {
+    float4 color = read_imagef(in, sampleri, (int2)(y, z));
+    out[3*(width*z + y) + x] = color.x
+  }
 }
+#endif
 
 /**
  * downscale and clip a buffer (in) to the given roi (r_*) and write it to out.
@@ -66,7 +76,7 @@ convert_float4_to_float3(__read_only image2d_t in, float *out)
  * operates on float4 -> float4 textures.
  */
 __kernel void
-clip_and_zoom(__read_only_image2d_t in, __write_only image2d_t out,
+clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out,
               const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
 {
   // global id is pixel in output image (float4)
@@ -77,8 +87,8 @@ clip_and_zoom(__read_only_image2d_t in, __write_only image2d_t out,
   for(int l=0;l<fib2;l++)
   {
     // get point on input image, sampled in a backtransformed pixel footprint with fibonacci rank-1 lattice
-    float r1x = l/fib2, r1y = l*(fib1/fib2); py -= (int)py;
-    float2 p = backtransformf((float2)(x-.5f+r1x, y-.5f+r1y)), r_x, r_y, r_wd, r_ht, r_scale);
+    float r1x = l/fib2, r1y = l*(fib1/fib2); r1y -= (int)r1y;
+    float2 p = backtransformf((float2)(x-.5f+r1x, y-.5f+r1y), r_x, r_y, r_wd, r_ht, r_scale);
     const float4 px = read_imagef(in, samplerf, p);
     color += px;
   }
@@ -99,14 +109,16 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+#if 1
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-  const float fib2 = 34.0f, fib1 = 21.0f;
+  // const float fib2 = 34.0f, fib1 = 21.0f;
+  const float fib2 = 1.0f, fib1 = 1.0f;
   for(int l=0;l<fib2;l++)
   {
-    float r1x = l/fib2, r1y = l*(fib1/fib2); py -= (int)py;
+    float r1x = l/fib2, r1y = l*(fib1/fib2); r1y -= (int)r1y;
 
     // get point on input image, sampled in a backtransformed pixel footprint with fibonacci rank-1 lattice
-    int2 p = backtransformi((int2)(x-.5f+r1x, y-.5f+r1y)), r_x, r_y, r_wd, r_ht, r_scale);
+    int2 p = backtransformi((int2)(x-.5f+r1x, y-.5f+r1y), r_x, r_y, r_wd, r_ht, r_scale);
 
     // from the dcraw source documentation, about filters:
     //
@@ -123,16 +135,16 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
     // now move p to point to a rggb block:
     switch(filters)
     {
-      case 0x16161616:
+      case 0x49494949:
         p.x ++; p.y++;
         break;
-      case 0x61616161:
+      case 0x94949494:
         p.x ++;
         break;
-      case 0x49494949:
+      case 0x16161616:
         p.y ++;
         break;
-      default:
+      default: // 0x61616161:
         break;
     }
 
@@ -141,9 +153,10 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
     uint4 p2 = read_imageui(in, sampleri, (int2)(p.x+1, p.y  ));
     uint4 p3 = read_imageui(in, sampleri, (int2)(p.x,   p.y+1));
     uint4 p4 = read_imageui(in, sampleri, (int2)(p.x+1, p.y+1));
-    color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x);
+    color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
   }
   color *= (1.0f/fib2);
+#endif
   write_imagef (out, (int2)(x, y), color);
 }
 

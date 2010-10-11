@@ -61,6 +61,9 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int program);
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(dt_opencl_t *cl, const int program, const char *name);
 
+/** releases kernel resources again. */
+void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel);
+
 /** return max size in sizes[3]. */
 void dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, size_t *sizes);
 

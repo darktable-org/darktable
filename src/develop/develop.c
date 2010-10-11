@@ -430,7 +430,7 @@ restart:
     double start = dt_get_wtime();
     err = dt_image_load(img, DT_IMAGE_FULL); // load and lock 'r'
     double end = dt_get_wtime();
-    dt_print(DT_DEBUG_PERF, "[dev_raw_load] libraw took %.3f secs to demosaic the image.\n", end - start);
+    dt_print(DT_DEBUG_PERF, "[dev_raw_load] libraw took %.3f secs to load the image.\n", end - start);
     dt_print(DT_DEBUG_CONTROL, "[run_job-] 99 %f libraw loading image %d\n", dt_get_wtime(), img->id);
     if(err)
     { // couldn't load image (cache slots full?)

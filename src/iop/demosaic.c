@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "develop/imageop.h"
+#include "common/opencl.h"
 #include <memory.h>
 #include <stdlib.h>
 
@@ -32,6 +33,15 @@ typedef struct dt_iop_demosaic_gui_data_t
 {
 }
 dt_iop_demosaic_gui_data_t;
+
+typedef struct dt_iop_demosaic_global_data_t
+{
+  // demosaic pattern
+  int kernel_ppg_green;
+  int kernel_ppg_redblue;
+  int kernel_zoom_half_size;
+}
+dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
 {
@@ -52,33 +62,115 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem *i, cl_mem *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  // TODO:
+}
+#endif
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+#if 0
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    memcpy(o, i, sizeof(float)*3*roi_in->width*roi_in->height);
+    return;
+  }
+#endif
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
   // global scale is roi scale and pipe input prescale
-  // const float global_scale = roi_in->scale / piece->iscale;
+  const float global_scale = roi_in->scale / piece->iscale;
   // const uint16_t *in = (const uint16_t *)i;
-  // float *out = (float *)o;
+  float *out = (float *)o;
+
+  size_t sizes[2] = {roi_out->width, roi_out->height};
+  size_t origin[] = {0, 0, 0};
+  // TODO: input image region!
+  size_t region[] = {self->dev->image->width, self->dev->image->height, 1};
+  size_t region_out[] = {roi_out->width, roi_out->height, 1};
+  cl_int err;
+  // TODO: short-circuit cl in here for debugging :)
+  cl_mem dev_in, dev_out;
+  // as images (texture memory)
+  cl_image_format fmt1 = {CL_LUMINANCE, CL_UNSIGNED_INT16};
+  cl_image_format fmt4 = {CL_RGBA, CL_FLOAT};
+  dev_in = clCreateImage2D (darktable.opencl->context,
+      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+      &fmt1,
+      region[0], region[1], 0,
+      self->dev->image->pixels, &err);
+  if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
+  dev_out = clCreateImage2D (darktable.opencl->context,
+      CL_MEM_READ_WRITE,
+      &fmt4,
+      sizes[0], sizes[1], 0,
+      NULL, &err);
+  if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy out buffer on device: %d\n", err);
+  
+  // clEnqueueWriteImage(darktable.opencl->cmd_queue, dev_in, CL_TRUE, origin, region, region[0]*sizeof(uint16_t), 0, (uint16_t *)self->dev->image->pixels, 0, NULL, NULL);
+
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_in);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 2, sizeof(int), (void*)&roi_out->x);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 3, sizeof(int), (void*)&roi_out->y);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 4 setting failed: %d\n", err);
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 4, sizeof(int), (void*)&roi_out->width);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 5 setting failed: %d\n", err);
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 5, sizeof(int), (void*)&roi_out->height);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 6 setting failed: %d\n", err);
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 6, sizeof(float), (void*)&global_scale);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 7 setting failed: %d\n", err);
+  err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_zoom_half_size, 7, sizeof(uint32_t), (void*)&data->filters);
+  if(err != CL_SUCCESS) fprintf(stderr, "param 8 setting failed: %d\n", err);
+
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, gd->kernel_zoom_half_size, sizes);
+
+  double start = dt_get_wtime();
+  // clEnqueueReadImage(cmd_queue, dev_out, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
+  clEnqueueReadImage(darktable.opencl->cmd_queue, dev_out, CL_TRUE, origin, region_out, 4*region_out[0]*sizeof(float), 0, out, 0, NULL, NULL);
+  double end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[demosaic] took %.3f secs\n", end - start);
+
+  for(int k=0;k<roi_out->width*roi_out->height;k++) for(int c=0;c<3;c++) out[3*k+c] = out[4*k+c];
 
   // TODO: decide on scale, whether to demosaic image or use half_size downsample
   // TODO: if demosaic, decide if we need scaling or whether 1:1 is good
   // TODO: convert float4 to float3 buf :( (can this be done in opencl actually?
-  memcpy(o, i, sizeof(float)*3*roi_in->width*roi_in->height);
+  // memcpy(o, i, sizeof(float)*3*roi_in->width*roi_in->height);
+  clReleaseMemObject(dev_in);
+  clReleaseMemObject(dev_out);
 }
 
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
-  if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
-  else                                    module->default_enabled = 1;
-  module->priority = 0;
+  // if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
+  // else                                    module->default_enabled = 1;
+  // FIXME: only enable it for raw images? or handle zoom for non raws, too?
+  module->default_enabled = 1;
+  module->priority = 1;
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
   dt_iop_demosaic_params_t tmp = (dt_iop_demosaic_params_t){0};
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_demosaic_params_t));
+
+  const int program = 0; // from programs.conf
+  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)malloc(sizeof(dt_iop_demosaic_global_data_t));
+  module->data = gd;
+  gd->kernel_zoom_half_size = dt_opencl_create_kernel(darktable.opencl, program, "clip_and_zoom_demosaic_half_size");
+  gd->kernel_ppg_green      = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_green");
+  gd->kernel_ppg_redblue    = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_redblue");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -87,6 +179,10 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_zoom_half_size);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_green);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_redblue);
   free(module->data);
   module->data = NULL;
 }
