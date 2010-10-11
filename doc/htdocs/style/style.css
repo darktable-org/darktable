@@ -101,6 +101,17 @@ body.navbody{
   height:200px;
 }
 
+.fullwdimg{
+  float:left;
+  margin-right:10pt;
+  margin-bottom:10pt;
+  margin-top:4px;
+  border-style:solid;
+  border-width:1px;
+  border-color:#6a6868;
+  width:692px;
+}
+
 .listtext .img{
   float:left;
 	margin-right:10pt;

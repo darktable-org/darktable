@@ -75,6 +75,7 @@
 
     	<div class="listtext">
     	<img src="images/sails.jpg" alt="people" class="img" /><h1><a name="people">people</a></h1>
+      here are some people you might meet on the mailing list or in irc:
       <table>
       <tr class="odd"><td><em>photo</em></td><td><em>irc nick</em></td><td><em>real name</em></td>
                       <td><em>project role</em></td><td><em>homepage</em></td><td><em>gallery</em></td></tr>
