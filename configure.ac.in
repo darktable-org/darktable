@@ -170,6 +170,22 @@ AC_CHECK_LIB(lcms, cmsOpenProfileFromFile,
     LCMS_LIBS="-llcms"], AC_MSG_FAILURE([lcms is required!]))
 AC_SUBST(LCMS_LIBS)
 
+dnl *** check for opencl ***
+AC_CHECK_HEADER([CL/opencl.h],
+  [AC_CHECK_LIB([OpenCL], [clGetPlatformIDs],
+    have_opencl="yes",
+    have_opencl="no")],
+	have_opencl="no")
+if test "$have_opencl" = "yes"; then
+  OPENCL_LIBS="-lOpenCL"
+  AM_CONDITIONAL([HAVE_OPENCL], [true])
+  AC_DEFINE(HAVE_OPENCL, 1, [whether to use opencl for gpu acceleration])
+else
+  AM_CONDITIONAL([HAVE_OPENCL], [false])
+  AC_DEFINE(HAVE_OPENCL, 0, [whether to use opencl for gpu acceleration])
+fi
+AC_SUBST(OPENCL_LIBS)
+
 dnl *** mac os troubles ***
 case $host_os in
   *mingw* )

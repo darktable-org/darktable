@@ -1,11 +1,11 @@
 SUBDIRS=LibRaw iop views libs imageio # gegl-operations
 include shared.am
-AM_CFLAGS+=-Werror -rdynamic -Wno-deprecated-declarations
+AM_CFLAGS+=-Werror -Wno-comment -rdynamic -Wno-deprecated-declarations
 AM_CPPFLAGS=$(OPENEXR_CFLAGS)
 libdarktable_LTLIBRARIES=libdarktable.la
 libdarktabledir=$(libdir)/darktable
 libdarktable_la_LDFLAGS=-avoid-version -fPIC
-libdarktable_la_LIBADD=LibRaw/libraw_r.la $(CARBON_LIBS) $(GNOME_KEYRING_LIBS) $(OPENMP_LDFLAGS) $(CURL_LIBS) $(GEGL_LIBS) $(GPHOTO2_LIBS) $(OPENEXR_LIBS) $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS) $(LCMS_LIBS) $(EXIV2_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) $(GCONF_LIBS) $(DBUSGLIB_LIBS)
+libdarktable_la_LIBADD=LibRaw/libraw_r.la $(CARBON_LIBS) $(GNOME_KEYRING_LIBS) $(OPENMP_LDFLAGS) $(CURL_LIBS) $(GEGL_LIBS) $(GPHOTO2_LIBS) $(OPENEXR_LIBS) $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS) $(LCMS_LIBS) $(EXIV2_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) $(GCONF_LIBS) $(DBUSGLIB_LIBS) $(OPENCL_LIBS)
 libdarktable_la_SOURCES= \
 			common/camera_control.c \
 			common/collection.c \
@@ -62,6 +62,10 @@ libdarktable_la_SOURCES= \
 			gui/tool_colorlabels.c \
 			libs/lib.c \
 			views/view.c 
+
+if HAVE_OPENCL
+libdarktable_la_SOURCES+=common/opencl.c
+endif
 			
 bin_PROGRAMS=darktable
 darktable_SOURCES=main.c

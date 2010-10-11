@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <strings.h>
+#include <stdio.h>
 
 #include "common/darktable.h"
 #include "common/opencl.h"
@@ -28,7 +29,7 @@ void dt_opencl_init(dt_opencl_t *cl)
   cl_int err;
   cl_platform_id all_platforms[5];
   cl_platform_id platform = NULL;
-  cl_int num_platforms = 5;
+  cl_uint num_platforms = 5;
   err = clGetPlatformIDs (5, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
   {
@@ -39,7 +40,7 @@ void dt_opencl_init(dt_opencl_t *cl)
 
   // get the number of GPU devices available to the platform
   // the other common option is CL_DEVICE_TYPE_CPU (but doesn't work with the nvidia drivers)
-  cl_int num_devices = 0;
+  cl_uint num_devices = 0;
   err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
   // err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
   if(err != CL_SUCCESS)
@@ -60,7 +61,7 @@ void dt_opencl_init(dt_opencl_t *cl)
 
   cl_int device_used = 0;
   cl->devid = devices[device_used];
-  cl->context = clCreateContext(0, 1, devid, NULL, NULL, &err);
+  cl->context = clCreateContext(0, 1, &cl->devid, NULL, NULL, &err);
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context: %d\n", err);
@@ -68,7 +69,7 @@ void dt_opencl_init(dt_opencl_t *cl)
   }
 
   // create a command queue for first device the context reported
-  cl->cmd_queue = clCreateCommandQueue(*context, *devid, 0, &err);
+  cl->cmd_queue = clCreateCommandQueue(cl->context, cl->devid, 0, &err);
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue: %d\n", err);
@@ -76,17 +77,18 @@ void dt_opencl_init(dt_opencl_t *cl)
   }
 
 
-  char dtpath[1024], filename[1024], programname;
+  char dtpath[1024], filename[1024], programname[1024];
   dt_get_datadir(dtpath, 1024);
   snprintf(filename, 1024, "%s/programs.conf", dtpath);
   // now load all darktable cl kernels.
   // TODO: compile as a job?
-  FILE *f = fopen(filename, "rb")
+  FILE *f = fopen(filename, "rb");
   if(f)
   {
     while(!feof(f))
     {
       int rd = fscanf(f, "%[^#]%*[^\n]\n", programname);
+      if(rd != 1) continue;
       if(programname[0] == '#') continue;
       snprintf(filename, 1024, "%s/%s", dtpath, programname);
       const int prog = dt_opencl_load_program(cl, filename);
@@ -189,14 +191,14 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int prog)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %d\n", err);
     cl_build_status build_status;
-    clGetProgramBuildInfo(program, devid, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
+    clGetProgramBuildInfo(program, cl->devid, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
     if (build_status != CL_SUCCESS)
     {
       char *build_log;
       size_t ret_val_size;
-      clGetProgramBuildInfo(program, devid, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
+      clGetProgramBuildInfo(program, cl->devid, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
       build_log = (char *)malloc(sizeof(char)*(ret_val_size+1));
-      clGetProgramBuildInfo(program, devid, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
+      clGetProgramBuildInfo(program, cl->devid, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
 
       build_log[ret_val_size] = '\0';
 
@@ -212,6 +214,7 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int prog)
 int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
+  cl_int err;
   int k = 0;
   for(;k<DT_OPENCL_MAX_KERNELS;k++) if(!cl->kernel_used[k])
   {
@@ -244,12 +247,13 @@ void dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, size_t *sizes)
 
 int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int kernel, const int num, const size_t size, const void *arg)
 {
-  if(k < 0 || k >= DT_OPENCL_MAX_KERNELS) return -1;
+  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   return clSetKernelArg(cl->kernel[kernel], num, size, arg);
 }
 
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int kernel, const size_t *sizes)
 {
+  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   const size_t local[2] = {16, 16};
   return clEnqueueNDRangeKernel(cl->cmd_queue, cl->kernel[kernel], 2, NULL, sizes, local, 0, NULL, NULL);
 }
