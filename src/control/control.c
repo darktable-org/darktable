@@ -1337,20 +1337,20 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
 
 void dt_control_clear_history_items(int32_t num)
 {
-  /* reset if empty stack */
+  darktable.gui->reset = 1;
   if( num == -1 ) 
-  {
-  dt_gui_iop_history_reset();
-  return;
+  { /* reset if empty stack */
+    dt_gui_iop_history_reset();
   }
-  
-  /* pop items from top of history */
-  int size = dt_gui_iop_history_get_top () - MAX(0, num);
-  for(int k=1;k<size;k++)
-    dt_gui_iop_history_pop_top ();
+  else
+  { /* pop items from top of history */
+    int size = dt_gui_iop_history_get_top () - MAX(0, num);
+    for(int k=1;k<size;k++)
+      dt_gui_iop_history_pop_top ();
 
-  dt_gui_iop_history_update_labels ();
-  
+    dt_gui_iop_history_update_labels ();
+  }
+  darktable.gui->reset = 0;
 }
 
 void dt_control_update_recent_films()
