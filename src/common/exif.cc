@@ -356,8 +356,6 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
       throw Exiv2::Error(1, error);
     }*/
     exifData["Exif.Image.Orientation"] = uint16_t(1);
-    exifData["Exif.Photo.UserComment"]
-        = "Developed using Darktable "PACKAGE_VERSION;
 
     // ufraw-style exif stripping:
     Exiv2::ExifData::iterator pos;
