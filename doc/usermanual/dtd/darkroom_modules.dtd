@@ -10,6 +10,7 @@
 <!ENTITY darkroom_module_whitebalance SYSTEM "../darkroom/modules/whitebalance.xml">
 <!ENTITY darkroom_module_highlightreconstruction SYSTEM "../darkroom/modules/highlightreconstruction.xml">
 <!ENTITY darkroom_module_graduatedneutraldensity SYSTEM "../darkroom/modules/graduatedneutraldensity.xml">
+<!ENTITY darkroom_module_relight SYSTEM "../darkroom/modules/relight.xml">
 <!ENTITY darkroom_module_basecurve SYSTEM "../darkroom/modules/basecurve.xml">
 <!ENTITY darkroom_module_unbreakinputprofile SYSTEM "../darkroom/modules/unbreakinputprofile.xml">
 <!ENTITY darkroom_module_inputcolorprofile SYSTEM "../darkroom/modules/inputcolorprofile.xml">

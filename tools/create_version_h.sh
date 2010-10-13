@@ -1,7 +1,18 @@
 #!/bin/bash
-dt_decoration=$(git log master^..master --decorate | head -1 | cut -d' ' -f4 | cut -f1 -d')' | sed -e 's/,//' -e 's/origin\///'
- )
-dt_sha1sum=$(git log master^..master | head -1 | cut -f2 -d ' ' | cut -c -8)
+# this is called from autogen.sh and from src/Makefile.am
+if [ -x ./tools/create_version_sh.sh ]; then
+  if [ ! -f version.sh ]; then
+    ./tools/create_version_sh.sh
+  fi
+  . version.sh
+else
+  if [ ! -f ../version.sh ]; then
+    cd ..
+    ./tools/create_version_sh.sh
+    cd -
+  fi
+  . ../version.sh
+fi
 
 cat > common/version.h << EOF
 #ifndef DT_VERSION_H

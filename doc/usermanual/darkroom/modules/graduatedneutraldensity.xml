@@ -5,7 +5,7 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This module aims at simulating a neutral density filter, in order to correct the exposure in a progressive manner.				
+						<entry>This module aims at simulating a neutral density filter, in order to correct exposure and color in a progressive manner.				
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/graduatedneutraldensity.png" scalefit="1" width="80%" align="center" />
@@ -17,7 +17,7 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>The module uses a gradient to modify the exposure of the image in a non-homogeneously manner.</para>
+		<para>The module uses a gradient to modify the exposure and the color cast of the image in a non-homogeneously manner.</para>
 		<sect4><title>density</title>
 			<para>Set the density of the filter in [ev]. A low value underexposes slightly whereas a high value creates a strong filter.</para>
 			<para>It is expressed as [ev] that is equivalent to <emphasis>f-stops</emphasis>. Lens filters are often referred as ND2, ND4, ND8 and so on.
@@ -69,6 +69,18 @@
 		</sect4>
 		<sect4><title>rotation</title>
 			<para>Set the rotation so the gradient acts along an axis different from the vertical one. Expressed in degrees, negative values turn clockwise.</para>
-		</sect4>		
+		</sect4>
+		<sect4><title>hue</title>
+			<para>Set the hue to add a colorcast to the gradient.</para>
+		</sect4>
+		<sect4><title>saturation</title>
+			<para>Set the saturation to add a colorcast to the gradient.</para>
+		</sect4>
+		<para> TIP: If you know you intend to use the GND filter before actually making a shot with your camera you might want to underexpose by one or two
+			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the GND filter cannot produce
+			a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose,
+			please consult your camera's manual, look for 'exposure compensation'.
+
+		</para>		
 	</sect3>
 </sect2>

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-27 17:06+0200\n"
+"POT-Creation-Date: 2010-10-08 17:53+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -56,32 +56,28 @@ msgid "aperture"
 msgstr "Blende"
 
 #: ../darktable.glade.h:13
-msgid "before module"
-msgstr "vor Modul"
-
-#: ../darktable.glade.h:14
 msgid "date/time"
 msgstr "Datum/Uhrzeit"
 
-#: ../darktable.glade.h:15
+#: ../darktable.glade.h:14
 msgid "devices"
 msgstr "Geräte"
 
 #. exposure
-#: ../darktable.glade.h:16 ../src/iop/exposure.c:38 ../src/iop/exposure.c:312
+#: ../darktable.glade.h:15 ../src/iop/exposure.c:38 ../src/iop/exposure.c:312
 #: ../src/gui/presets.c:263
 msgid "exposure"
 msgstr "Belichtung"
 
-#: ../darktable.glade.h:17
+#: ../darktable.glade.h:16
 msgid "f-length"
 msgstr "Brennweite"
 
-#: ../darktable.glade.h:18
+#: ../darktable.glade.h:17
 msgid "filename"
 msgstr "Dateiname"
 
-#: ../darktable.glade.h:19
+#: ../darktable.glade.h:18
 msgid ""
 "filename\n"
 "time\n"
@@ -95,56 +91,56 @@ msgstr ""
 "ID\n"
 "Farbmarkierung"
 
-#: ../darktable.glade.h:24 ../src/libs/collect.c:303
+#: ../darktable.glade.h:23 ../src/libs/collect.c:303
 msgid "film roll"
 msgstr "Filmrolle"
 
-#: ../darktable.glade.h:25
+#: ../darktable.glade.h:24
 msgid "height"
 msgstr "Höhe"
 
-#: ../darktable.glade.h:26
+#: ../darktable.glade.h:25
 msgid "histogram"
 msgstr "Histogramm"
 
-#: ../darktable.glade.h:27 ../src/libs/collect.c:307
+#: ../darktable.glade.h:26 ../src/libs/collect.c:307
 msgid "history"
 msgstr "Verlauf"
 
-#: ../darktable.glade.h:28
+#: ../darktable.glade.h:27
 msgid "images sorted by"
 msgstr "Sortiere Bilder nach"
 
-#: ../darktable.glade.h:29
+#: ../darktable.glade.h:28
 msgid "import film roll"
 msgstr "Filmrolle importieren"
 
-#: ../darktable.glade.h:30
+#: ../darktable.glade.h:29
 msgid "import single image"
 msgstr "einzelnes Bild importieren"
 
 #. iso
-#: ../darktable.glade.h:31 ../src/libs/camera.c:497 ../src/gui/presets.c:250
+#: ../darktable.glade.h:30 ../src/libs/camera.c:497 ../src/gui/presets.c:250
 msgid "iso"
 msgstr "ISO"
 
-#: ../darktable.glade.h:32 ../src/iop/lens.c:1176 ../src/gui/presets.c:243
+#: ../darktable.glade.h:31 ../src/iop/lens.c:1178 ../src/gui/presets.c:243
 msgid "lens"
 msgstr "Objektiv"
 
-#: ../darktable.glade.h:33
+#: ../darktable.glade.h:32
 msgid "library"
 msgstr "Sammlung"
 
-#: ../darktable.glade.h:34
+#: ../darktable.glade.h:33
 msgid "list"
 msgstr "zeige"
 
-#: ../darktable.glade.h:35 ../src/gui/presets.c:236
+#: ../darktable.glade.h:34 ../src/gui/presets.c:236
 msgid "maker"
 msgstr "Hersteller"
 
-#: ../darktable.glade.h:36
+#: ../darktable.glade.h:35
 msgid ""
 "mean\n"
 "min\n"
@@ -154,67 +150,63 @@ msgstr ""
 "Minimum\n"
 "Maximum"
 
-#: ../darktable.glade.h:39
+#: ../darktable.glade.h:38
 msgid "metadata"
 msgstr "Metadaten"
 
-#: ../darktable.glade.h:40 ../src/gui/presets.c:229
+#: ../darktable.glade.h:39 ../src/gui/presets.c:229
 msgid "model"
 msgstr "Modell"
 
-#: ../darktable.glade.h:41
+#: ../darktable.glade.h:40
 msgid "more plugins"
 msgstr "weitere Module"
 
-#: ../darktable.glade.h:42
+#: ../darktable.glade.h:41
 msgid "navigation"
 msgstr "Navigation"
 
-#: ../darktable.glade.h:43
-msgid "no module selected"
-msgstr "kein Modul ausgewählt"
-
-#: ../darktable.glade.h:44
+#: ../darktable.glade.h:42
 msgid "open"
 msgstr "öffnen"
 
-#: ../darktable.glade.h:45
+#: ../darktable.glade.h:43
 msgid "open selected film roll in light table"
 msgstr ""
 "ausgewählte Filmrolle\n"
 "im Leuchttisch öffnen"
 
-#: ../darktable.glade.h:46
+#: ../darktable.glade.h:44
 msgid "pick"
 msgstr "wähle"
 
-#: ../darktable.glade.h:47 ../src/libs/image.c:82
+#: ../darktable.glade.h:45 ../src/libs/image.c:82
 msgid "remove"
 msgstr "entfernen"
 
-#: ../darktable.glade.h:48
+#: ../darktable.glade.h:46
 msgid "remove selected film roll from collection"
 msgstr ""
 "ausgewählte Filmrolle aus\n"
 "der Kollektion entfernen"
 
-#: ../darktable.glade.h:49
+#: ../darktable.glade.h:47
 msgid "search film rolls by folder"
 msgstr "Filmrollen nach Ordner durchsuchen"
 
-#: ../darktable.glade.h:50
+#: ../darktable.glade.h:48
 msgid "snapshots"
 msgstr "Snapshots"
 
-#: ../darktable.glade.h:51
+#: ../darktable.glade.h:49
 msgid "switch to darkroom mode"
 msgstr "zum Dunkelkammer-Modus wechseln"
 
-#: ../darktable.glade.h:52
+#: ../darktable.glade.h:50
 msgid "width"
 msgstr "Breite"
 
-#: ../darktable.glade.h:53
+#: ../darktable.glade.h:51
 msgid ""
 "zoomable light table\n"
 "file manager"
@@ -230,9 +222,10 @@ msgstr "0 -- oben auf den Stapel hinzufügen, 1 -- ersetze ihn."
 msgid "0: mean, 1: min, 2: max"
 msgstr "0: Mittel, 1: Minimum, 2: Maximum"
 
+# wtf?
 #: ../darktable.schemas.in.h:3
 msgid "Capture view mode"
-msgstr ""
+msgstr "Aufnahmeansichtsmodus"
 
 #: ../darktable.schemas.in.h:4
 msgid "Default client to use, this overrides detection of default client."
@@ -261,38 +254,46 @@ msgid "ask before removing images"
 msgstr "frage vor dem Entfernen von Bildern"
 
 #: ../darktable.schemas.in.h:10
+msgid ""
+"creates backup of cachefile to prevent loss of thumbnails generated at "
+"crashes etc."
+msgstr ""
+"lege Sicherung der Cache-Datei an, um einen Verlust der Vorschaubilder bei "
+"Abstürzen usw. zu verhindern"
+
+#: ../darktable.schemas.in.h:11
 msgid "database file"
 msgstr "Datenbankdatei"
 
-#: ../darktable.schemas.in.h:11
+#: ../darktable.schemas.in.h:12
 msgid "don't use embedded preview jpeg, always use half-size raw"
 msgstr ""
 "eingebettetes JPEG nicht benutzen, statt dessen immer RAW halber Größe "
 "benutzen"
 
 # Hä?
-#: ../darktable.schemas.in.h:12
+#: ../darktable.schemas.in.h:13
 msgid "downsample the preview pixels"
 msgstr "Vorschaupixel runterrechnen"
 
-#: ../darktable.schemas.in.h:13
+#: ../darktable.schemas.in.h:14
 msgid "filename of your custom theme in share/darktable/"
 msgstr "Dateiname des eigenen Themes in share/darktable/"
 
-#: ../darktable.schemas.in.h:14
+#: ../darktable.schemas.in.h:15
 msgid "filename relative to your home directory, or starting with a slash."
 msgstr ""
 "Dateiname relativ zum home-Verzeichnis, sonst mit Schrägstrich beginnen."
 
-#: ../darktable.schemas.in.h:15
+#: ../darktable.schemas.in.h:16
 msgid "flag if backup of imported images should be performed"
 msgstr "setzen, um ein Backup von importierten Bildern zu machen"
 
-#: ../darktable.schemas.in.h:16
+#: ../darktable.schemas.in.h:17
 msgid "flag if originals on camera should be deleted"
 msgstr "setzen, um Originale von der Kamera zu löschen"
 
-#: ../darktable.schemas.in.h:17
+#: ../darktable.schemas.in.h:18
 msgid ""
 "flag if user should be interactivly warned about non present backup "
 "destinations"
@@ -300,21 +301,21 @@ msgstr ""
 "setzen, um den Benutzer interaktiv vor nicht verfügbaren Backup-Zielen zu "
 "warnen"
 
-#: ../darktable.schemas.in.h:18
+#: ../darktable.schemas.in.h:19
 msgid "full resolution image buffers to keep in main memory cache"
 msgstr ""
 "Bild-Puffer mit voller Auflösung, die im Hauptspeicher gehalten werden sollen"
 
-#: ../darktable.schemas.in.h:19
+#: ../darktable.schemas.in.h:20
 msgid "height of the exported image"
 msgstr "Höhe des exportierten Bildes"
 
-#: ../darktable.schemas.in.h:20
+#: ../darktable.schemas.in.h:21
 msgid "height of the exported image, or 0 if no scaling should be done."
 msgstr ""
 "Höhe des exportierten Bildes, oder 0 falls keine Skalierung stattfinden soll."
 
-#: ../darktable.schemas.in.h:21
+#: ../darktable.schemas.in.h:22
 msgid ""
 "how many full-resolution floating point buffers of loaded raw images to keep "
 "in main memory at maximum. set this variable to num_threads + 1 if you want "
@@ -326,11 +327,11 @@ msgstr ""
 "Export auf num_threads + 1 setzen (ein Thread für Dunkelkammer-Modus). "
 "Warnung: Jeder Thread benötigt rund 1 GB Speicher."
 
-#: ../darktable.schemas.in.h:22
+#: ../darktable.schemas.in.h:23
 msgid "how many images are in one row"
 msgstr "wie viele Bilder sind in einer Reihe"
 
-#: ../darktable.schemas.in.h:23
+#: ../darktable.schemas.in.h:24
 msgid ""
 "how many smallest-size thumbnails to keep in main memory at maximum. this "
 "also affects larger mipmap counts, these get fewer by size. only read at "
@@ -341,15 +342,15 @@ msgstr ""
 "MIP-Maps, diese werden mit wachsender Größe weniger. Wird nur beim Start "
 "gelesen."
 
-#: ../darktable.schemas.in.h:24
+#: ../darktable.schemas.in.h:25
 msgid "icc profile to use for export"
 msgstr "ICC-Profil, das beim Export benutzt werden soll"
 
-#: ../darktable.schemas.in.h:25
+#: ../darktable.schemas.in.h:26
 msgid "icc rendering intent"
 msgstr "ICC-Wiedergabeabsicht"
 
-#: ../darktable.schemas.in.h:26
+#: ../darktable.schemas.in.h:27
 msgid ""
 "if non-negative, this overrides the per-image output color profile rendering "
 "intent on export."
@@ -357,7 +358,7 @@ msgstr ""
 "wenn der Wert nicht-negativ ist überschreibt er die pro-Bild-"
 "Wiedergabeabsicht des Ausgabe-Farbprofils beim Export."
 
-#: ../darktable.schemas.in.h:27
+#: ../darktable.schemas.in.h:28
 msgid ""
 "if this number is smaller than the darktable internal version number, the "
 "values here will be synched with the new defaults."
@@ -365,65 +366,69 @@ msgstr ""
 "wenn diese Zahl kleiner als die interne Versionsnummer von darktable ist, "
 "dann werden die Werte hier mit den neuen Standardwerten synchronisiert."
 
-#: ../darktable.schemas.in.h:28
+#: ../darktable.schemas.in.h:29
 msgid "image cache file"
 msgstr "Bilder-Cache-Datei"
 
-#: ../darktable.schemas.in.h:29
+#: ../darktable.schemas.in.h:30
+msgid "image cache file backup"
+msgstr "Bilder-Cache-Datei-Backup"
+
+#: ../darktable.schemas.in.h:31
 msgid "jobcode of import job"
 msgstr "Job-Kode des Imports"
 
-#: ../darktable.schemas.in.h:30
+#: ../darktable.schemas.in.h:32
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "JPEG-Qualität der Vorschaubilder auf der Festplatte"
 
-#: ../darktable.schemas.in.h:31
+#: ../darktable.schemas.in.h:33
 msgid "memory in bytes to use for mipmap cache"
 msgstr "Speicher in Bytes, der für den MIP-Map-Cache benutzt wird"
 
-#: ../darktable.schemas.in.h:32
+#: ../darktable.schemas.in.h:34
 msgid "name of capture job"
 msgstr ""
 
-#: ../darktable.schemas.in.h:33
+#: ../darktable.schemas.in.h:35
 msgid "path of storage for captured images"
 msgstr "Speicherverzeichnis für aufgenommene Bilder"
 
-#: ../darktable.schemas.in.h:34
+#: ../darktable.schemas.in.h:36
 msgid "rename pattern for captured images"
 msgstr "Umbenennungsmuster für aufgenommene Bilder"
 
-#: ../darktable.schemas.in.h:35
+#: ../darktable.schemas.in.h:37
 msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
 msgstr ""
 "wähle ein Layout für den Leuchttisch: 0 - zoombar oder 1 - Dateiverwaltung"
 
-#: ../darktable.schemas.in.h:36
+#: ../darktable.schemas.in.h:38
 msgid "size of the side panels in pixels"
 msgstr "Größe der Seitenleiste in Pixeln"
 
-#: ../darktable.schemas.in.h:37
+#: ../darktable.schemas.in.h:39
 msgid "small thumbnails to keep in main memory cache"
 msgstr ""
 "kleine Vorschaubilder, die im Hauptspeicher-Cache gehalten werden sollen"
 
 # etwas zu frei übersetzt?
-#: ../darktable.schemas.in.h:38
+#: ../darktable.schemas.in.h:40
 msgid "storage backend to use"
 msgstr "Speicher-Backend, das benutzt werden soll"
 
 # nicht schön
-#: ../darktable.schemas.in.h:39
+#: ../darktable.schemas.in.h:41
 msgid "subpath pattern in storage for captured images"
 msgstr "Unterverzeichnis-Muster für aufgenommene Bilder"
 
-#: ../darktable.schemas.in.h:40
+#: ../darktable.schemas.in.h:42
 msgid "the name of backup directory to search for on mounted medias"
 msgstr ""
 "Name des Backup-Verzeichnisses, nach dem auf eingebundenen Medien gesucht "
 "werden soll"
 
-#: ../darktable.schemas.in.h:41
+#: ../darktable.schemas.in.h:43
 msgid ""
 "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
 "kwallet, 3 - gnome keyring"
@@ -431,7 +436,7 @@ msgstr ""
 "Speicher-Backend für pwstorage: 0 - keines, 1 - gconf (nicht benutzen), 2 - "
 "kwallet, 3 - gnome keyring"
 
-#: ../darktable.schemas.in.h:42
+#: ../darktable.schemas.in.h:44
 msgid ""
 "these files can later be re-imported into a different database, preserving "
 "your changes to the image."
@@ -439,12 +444,12 @@ msgstr ""
 "diese Dateien können später in eine andere Datenbank neu importiert werden, "
 "wobei die Änderungen am Bild erhalten bleiben."
 
-#: ../darktable.schemas.in.h:43
+#: ../darktable.schemas.in.h:45
 msgid "this overrides the per-image settings, if not set to `image'."
 msgstr ""
 "dies überschreibt die pro-Bild-Einstellungen, andernfalls auf ‚image‘ setzen."
 
-#: ../darktable.schemas.in.h:44
+#: ../darktable.schemas.in.h:46
 msgid ""
 "this value smaller than 1.0 downsamples the preview pixels for faster "
 "feedback."
@@ -452,47 +457,47 @@ msgstr ""
 "wenn dieser Wert kleiner 1.0 ist, dann werden die Vorschau-Pixel für eine "
 "schnellere Rückmeldung runtergerechnet."
 
-#: ../darktable.schemas.in.h:45
+#: ../darktable.schemas.in.h:47
 msgid "version of these dt-gconf entries"
 msgstr "Version dieser dt-gconf-Einträge"
 
-#: ../darktable.schemas.in.h:46
+#: ../darktable.schemas.in.h:48
 msgid "which layout should lighttable mode show"
 msgstr "welches Layout soll der Leuchttisch-Modus zeigen"
 
-#: ../darktable.schemas.in.h:47
+#: ../darktable.schemas.in.h:49
 msgid "width of the exported image"
 msgstr "Breite des exportierten Bildes"
 
-#: ../darktable.schemas.in.h:48
+#: ../darktable.schemas.in.h:50
 msgid "width of the exported image, or 0 if no scaling should be done."
 msgstr ""
 "Breite des exportierten Bildes, oder 0 falls keine Skalierung stattfinden "
 "soll."
 
-#: ../darktable.schemas.in.h:49
+#: ../darktable.schemas.in.h:51
 msgid "write a redundant sidecar file for each image"
 msgstr "schreibe eine redundante Begleitdatei für jedes Bild"
 
 #. single images
-#: ../src/common/image.c:98 ../src/control/control.c:1374
-#: ../src/control/control.c:1375 ../src/libs/collect.c:221
+#: ../src/common/image.c:98 ../src/control/control.c:1380
+#: ../src/control/control.c:1381 ../src/libs/collect.c:221
 #: ../src/gui/filmview.c:56 ../src/gui/filmview.c:82 ../src/gui/filmview.c:86
 #: ../src/gui/filmview.c:88
 #, c-format
 msgid "single images"
 msgstr "Einzelbilder"
 
-#: ../src/control/control.c:863 ../src/control/control.c:866
+#: ../src/control/control.c:869 ../src/control/control.c:872
 msgid "working.."
 msgstr "Arbeite …"
 
-#: ../src/control/control.c:962
+#: ../src/control/control.c:968
 #, c-format
 msgid "switch to %s mode"
 msgstr "in den %s-Modus wechseln"
 
-#: ../src/control/control.c:970
+#: ../src/control/control.c:976
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s-Modus</b></big></span>"
@@ -625,21 +630,21 @@ msgstr "ein"
 msgid "off"
 msgstr "aus"
 
-#: ../src/develop/imageop.c:319 ../src/develop/imageop.c:434
+#: ../src/develop/imageop.c:319 ../src/develop/imageop.c:435
 #, c-format
 msgid "%s is switched on"
 msgstr "%s ist eingeschaltet"
 
-#: ../src/develop/imageop.c:319 ../src/develop/imageop.c:434
+#: ../src/develop/imageop.c:319 ../src/develop/imageop.c:435
 #, c-format
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
-#: ../src/develop/imageop.c:448 ../src/libs/lib.c:497
+#: ../src/develop/imageop.c:454 ../src/libs/lib.c:497
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:449 ../src/libs/lib.c:503
+#: ../src/develop/imageop.c:455 ../src/libs/lib.c:503
 msgid "presets"
 msgstr "Voreinstellungen"
 
@@ -655,11 +660,11 @@ msgstr "Begleitdatei öffnen"
 msgid "xmp sidecar files"
 msgstr "xmp-Begleitdateien"
 
-#: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:667
+#: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:694
 msgid "all files"
 msgstr "alle Dateien"
 
-#: ../src/libs/copy_history.c:84 ../src/gui/gtk.c:687
+#: ../src/libs/copy_history.c:84 ../src/gui/gtk.c:714
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Fehler beim Laden von Datei '%s'"
@@ -1565,7 +1570,7 @@ msgid "adjust the exposure correction [ev]"
 msgstr "Belichtungskorrektur anpassen [ev]"
 
 #. gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-#: ../src/iop/exposure.c:333 ../src/iop/lens.c:1227
+#: ../src/iop/exposure.c:333 ../src/iop/lens.c:1229
 msgid "auto"
 msgstr "auto"
 
@@ -1801,11 +1806,11 @@ msgstr "d"
 msgid "distance to subject"
 msgstr "Entfernung"
 
-#: ../src/iop/lens.c:1163
+#: ../src/iop/lens.c:1164
 msgid "cam"
 msgstr "Kamera"
 
-#: ../src/iop/lens.c:1164
+#: ../src/iop/lens.c:1165
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -1813,7 +1818,7 @@ msgstr ""
 "nach Kamera mittels Muster suchen\n"
 "Format: [Hersteller, ][Modell]"
 
-#: ../src/iop/lens.c:1178
+#: ../src/iop/lens.c:1180
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -1822,54 +1827,54 @@ msgstr ""
 "Format: [Hersteller, ][Modell]"
 
 #. target geometry
-#: ../src/iop/lens.c:1204
+#: ../src/iop/lens.c:1206
 msgid "geometry"
 msgstr "Geometrie"
 
-#: ../src/iop/lens.c:1210
+#: ../src/iop/lens.c:1212
 msgid "target geometry"
 msgstr "Zielgeometrie"
 
-#: ../src/iop/lens.c:1211
+#: ../src/iop/lens.c:1213
 msgid "rectilinear"
 msgstr "geradlinig"
 
-#: ../src/iop/lens.c:1212
+#: ../src/iop/lens.c:1214
 msgid "fish-eye"
 msgstr "Fischauge"
 
-#: ../src/iop/lens.c:1213
+#: ../src/iop/lens.c:1215
 msgid "panoramic"
 msgstr "Panorama"
 
-#: ../src/iop/lens.c:1214
+#: ../src/iop/lens.c:1216
 msgid "equirectangular"
 msgstr "Equirectangular"
 
 #. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-#: ../src/iop/lens.c:1234 ../src/iop/vignette.c:346
+#: ../src/iop/lens.c:1236 ../src/iop/vignette.c:346
 msgid "scale"
 msgstr "Skalierung"
 
 #. reverse direction
-#: ../src/iop/lens.c:1240
+#: ../src/iop/lens.c:1242
 msgid "reverse"
 msgstr "umkehren"
 
-#: ../src/iop/lens.c:1241
+#: ../src/iop/lens.c:1243
 msgid "apply distortions instead of correcting them"
 msgstr "füge Verzerrung hinzu statt sie zu korrigieren"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1248
+#: ../src/iop/lens.c:1250
 msgid "tca r"
 msgstr "TCA R"
 
-#: ../src/iop/lens.c:1251
+#: ../src/iop/lens.c:1253
 msgid "tca b"
 msgstr "TCA B"
 
-#: ../src/iop/lens.c:1260
+#: ../src/iop/lens.c:1262
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -1878,7 +1883,7 @@ msgstr ""
 "Aberrationskorrektur für den Rot-Kanal.\n"
 "für Standardwert bei 1.0 belassen"
 
-#: ../src/iop/lens.c:1261
+#: ../src/iop/lens.c:1263
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -2808,67 +2813,61 @@ msgstr "%d/%d ins Picasa-Webalbum exportiert"
 msgid "send as email"
 msgstr "Email senden"
 
-#: ../src/gui/gtk.c:266
-#, c-format
-msgctxt "color picker module"
-msgid "`%s'"
-msgstr "‚%s‘"
-
 #. switch(input_color)
 #. {
 #. case 0: // linear rgb
 #. snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
 #. break;
 #. case 1: // Lab
-#: ../src/gui/gtk.c:302
+#: ../src/gui/gtk.c:329
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/gui/gtk.c:370
+#: ../src/gui/gtk.c:397
 msgid "organize and develop images from digital cameras"
 msgstr "Organisiere und entwickle Bilder von Digitalkameras"
 
-#: ../src/gui/gtk.c:374
+#: ../src/gui/gtk.c:401
 msgid "* developers *"
 msgstr "* Entwickler *"
 
-#: ../src/gui/gtk.c:378
+#: ../src/gui/gtk.c:405
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "* Ubuntu-Paketierung, Farbmanagement, Video-Anleitungen *"
 
-#: ../src/gui/gtk.c:381
+#: ../src/gui/gtk.c:408
 msgid "* networking, battle testing, translation expert *"
 msgstr "* Netzwerken, Battle-Testen, Übersetzungsexperte *"
 
-#: ../src/gui/gtk.c:384
+#: ../src/gui/gtk.c:411
 msgid "* contributors *"
 msgstr "* Mitwirkende *"
 
-#: ../src/gui/gtk.c:398
+#: ../src/gui/gtk.c:425
 msgid "translator-credits"
 msgstr "Tobias Ellinghaus"
 
-#: ../src/gui/gtk.c:605
+#: ../src/gui/gtk.c:632
 msgid "import film"
 msgstr "Film importieren"
 
-#: ../src/gui/gtk.c:643
+#: ../src/gui/gtk.c:670
 msgid "import image"
 msgstr "Bild importieren"
 
-#: ../src/gui/gtk.c:662
+#: ../src/gui/gtk.c:689
 msgid "supported images"
 msgstr "unterstütze Bilder"
 
-#: ../src/gui/gtk.c:1099
+#: ../src/gui/gtk.c:1130
 msgid "take snapshot"
 msgstr "Snapshot erstellen"
 
-#: ../src/gui/gtk.c:1128
+#: ../src/gui/gtk.c:1159
 msgid "recently used film rolls"
 msgstr "kürzlich benutzte Filmrollen"
 
-#: ../src/gui/gtk.c:1150
+#: ../src/gui/gtk.c:1181
 msgid "all film rolls"
 msgstr "alle Filmrollen"
 
@@ -3304,7 +3303,7 @@ msgstr "%s anzeigen"
 msgid "no image selected!"
 msgstr "Kein Bild ausgewählt!"
 
-#: ../src/views/lighttable.c:73
+#: ../src/views/lighttable.c:74
 msgid "lighttable"
 msgstr "Leuchttisch"
 
@@ -3325,6 +3324,16 @@ msgstr "Fehler beim Erstellen des Sitzungs-Pfades %s."
 #, c-format
 msgid "new session initiated '%s'"
 msgstr ""
+
+#~ msgid "before module"
+#~ msgstr "vor Modul"
+
+#~ msgid "no module selected"
+#~ msgstr "kein Modul ausgewählt"
+
+#~ msgctxt "color picker module"
+#~ msgid "`%s'"
+#~ msgstr "‚%s‘"
 
 #~ msgid "load dt file"
 #~ msgstr "lade dt-Datei"
