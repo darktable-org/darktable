@@ -31,6 +31,9 @@ typedef struct dt_dev_pixelpipe_cache_t
   void    **data;
   uint64_t *hash;
   int32_t  *used;
+#ifdef HAVE_OPENCL
+  void    **gpu_mem;
+#endif
 }
 dt_dev_pixelpipe_cache_t;
 

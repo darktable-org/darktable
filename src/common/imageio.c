@@ -415,13 +415,16 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.user_flip = img->raw_params.user_flip;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
-  raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
-  raw->params.four_color_rgb = img->raw_params.four_color_rgb;
+  // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
+  raw->params.user_qual = 0;
+  // raw->params.four_color_rgb = img->raw_params.four_color_rgb;
+  raw->params.four_color_rgb = 0;
   raw->params.use_camera_matrix = 0;
   raw->params.green_matching =  img->raw_params.greeneq;
   raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
+#if 0
   // new demosaicing params
   raw->params.amaze_ca_refine = -1;
   if ((img->raw_params.fill0 & 0x0F) == 6 ) {
@@ -439,14 +442,17 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     raw->params.eeci_refine = img->raw_params.fill0 & 0x010;
     raw->params.es_med_passes = (img->raw_params.fill0 & 0x1E0)>>5;
   }
+#endif
   // end of new demosaicing params
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
-  if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
-  { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
-    raw->params.user_qual = 0;
-    raw->params.half_size = 0;
-  }
+  // if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
+  // { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
+    // raw->params.user_qual = 0;
+    // raw->params.half_size = 0;
+  // }
+  raw->params.user_qual = 0;
+  raw->params.half_size = 0;
 
   // this image is raw, if we manage to load it.
   img->flags &= ~DT_IMAGE_LDR;
@@ -455,12 +461,17 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
   HANDLE_ERRORS(ret, 1);
+  printf("filters: %X\n", raw->idata.filters);
+  printf("colors: %d\n", raw->idata.colors);
   ret = libraw_dcraw_process(raw);
+  // ret = libraw_dcraw_document_mode_processing(raw);
   HANDLE_ERRORS(ret, 1);
   image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
-  img->filters = raw->idata.filters;
+  // filters seem only ever to take a useful value after unpack/process
+  // FIXME: EOS 400d hardcoded, doesn't seem to work else :(
+  img->filters = 0x61616161;//raw->idata.filters;
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;

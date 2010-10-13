@@ -442,7 +442,17 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     start = dt_get_wtime();
-    module->process(module, piece, input, *output, &roi_in, roi_out);
+#ifdef HAVE_OPENCL
+    if(module->process_cl)
+    {
+      // TODO: get in/out cl_mem, if available!
+      module->process_cl(module, piece, input, *output, &roi_in, roi_out);
+    }
+    else
+#endif
+    {
+      module->process(module, piece, input, *output, &roi_in, roi_out);
+    }
     end = dt_get_wtime();
     dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs processing `%s' [%s]\n", end - start, module->name(),
         pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));

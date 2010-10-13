@@ -111,51 +111,62 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   const int y = get_global_id(1);
 #if 1
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-  // const float fib2 = 34.0f, fib1 = 21.0f;
-  const float fib2 = 1.0f, fib1 = 1.0f;
-  for(int l=0;l<fib2;l++)
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = .5f/r_scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = ((int)px_footprint)/2 > 0 ? ((int)px_footprint)/2 : 1;
+
+  // init gauss with sigma = samples (half footprint)
+  // float filter[2*samples + 1];
+  // float sum = 0.0f;
+  // for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(samples*samples)));
+  // for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
+
+  // upper left corner:
+  int2 p = backtransformi((int2)(x, y), r_x, r_y, r_wd, r_ht, r_scale);
+  p -= (int2)(2*samples, 2*samples);
+  // from the dcraw source documentation, about filters:
+  //
+  //    0x16161616:   0x61616161:   0x49494949:   0x94949494:
+  //    0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5
+  //  0 B G B G B G 0 G R G R G R 0 G B G B G B 0 R G R G R G
+  //  1 G R G R G R 1 B G B G B G 1 R G R G R G 1 G B G B G B
+  //  2 B G B G B G 2 G R G R G R 2 G B G B G B 2 R G R G R G
+  //  3 G R G R G R 3 B G B G B G 3 R G R G R G 3 G B G B G B
+
+  // round down to next even number:
+  p.x &= ~0x1; p.y &= ~0x1;
+
+  // now move p to point to an rggb block:
+  if(FC(p.y, p.x+1, filters) != 1) p.x ++;
+  if(FC(p.y, p.x,   filters) != 0) p.x ++;
+  // switch(filters)
+  // {
+  //   case 0x16161616:
+  //     p.x ++; p.y++;
+  //     break;
+  //   case 0x61616161:
+  //     p.x ++;
+  //     break;
+  //   case 0x49494949:
+  //     p.y ++;
+  //     break;
+  //   default: // 0x94949494:
+  //     break;
+  // }
+
+  for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
   {
-    float r1x = l/fib2, r1y = l*(fib1/fib2); r1y -= (int)r1y;
-
-    // get point on input image, sampled in a backtransformed pixel footprint with fibonacci rank-1 lattice
-    int2 p = backtransformi((int2)(x-.5f+r1x, y-.5f+r1y), r_x, r_y, r_wd, r_ht, r_scale);
-
-    // from the dcraw source documentation, about filters:
-    //
-    //    0x16161616:   0x61616161:   0x49494949:   0x94949494:
-    //    0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5
-    //  0 B G B G B G 0 G R G R G R 0 G B G B G B 0 R G R G R G
-    //  1 G R G R G R 1 B G B G B G 1 R G R G R G 1 G B G B G B
-    //  2 B G B G B G 2 G R G R G R 2 G B G B G B 2 R G R G R G
-    //  3 G R G R G R 3 B G B G B G 3 R G R G R G 3 G B G B G B
-
-    // round down to next even number:
-    p.x &= ~0x1; p.y &= ~0x1;
-
-    // now move p to point to a rggb block:
-    switch(filters)
-    {
-      case 0x49494949:
-        p.x ++; p.y++;
-        break;
-      case 0x94949494:
-        p.x ++;
-        break;
-      case 0x16161616:
-        p.y ++;
-        break;
-      default: // 0x61616161:
-        break;
-    }
-
     // get four mosaic pattern uint16:
-    uint4 p1 = read_imageui(in, sampleri, p);
-    uint4 p2 = read_imageui(in, sampleri, (int2)(p.x+1, p.y  ));
-    uint4 p3 = read_imageui(in, sampleri, (int2)(p.x,   p.y+1));
-    uint4 p4 = read_imageui(in, sampleri, (int2)(p.x+1, p.y+1));
+    uint4 p1 = read_imageui(in, sampleri, (int2)(p.x+2*i,   p.y+2*j  ));
+    uint4 p2 = read_imageui(in, sampleri, (int2)(p.x+2*i+1, p.y+2*j  ));
+    uint4 p3 = read_imageui(in, sampleri, (int2)(p.x+2*i,   p.y+2*j+1));
+    uint4 p4 = read_imageui(in, sampleri, (int2)(p.x+2*i+1, p.y+2*j+1));
+    // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
     color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
   }
-  color *= (1.0f/fib2);
+  color /= (2*samples+1)*(2*samples+1);
 #endif
   write_imagef (out, (int2)(x, y), color);
 }
@@ -277,7 +288,7 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
       const float guess2 = ntr.z + nbl.z + 2.0f*color.y - ntr.y - nbl.y;
       if     (diff1 > diff2) color.z = guess2 * .5f;
       else if(diff1 < diff2) color.z = guess1 * .5f;
-      else                   color.z = (guess1 + guess2)*.25f;
+      else color.z = (guess1 + guess2)*.25f;
     }
     else // c == 2, blue pixel, fill red:
     {
@@ -287,7 +298,7 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
       const float guess2 = ntr.x + nbl.x + 2.0f*color.y - ntr.y - nbl.y;
       if     (diff1 > diff2) color.x = guess2 * .5f;
       else if(diff1 < diff2) color.x = guess1 * .5f;
-      else                   color.x = (guess1 + guess2)*.25f;
+      else color.x = (guess1 + guess2)*.25f;
     }
   }
   write_imagef (out, (int2)(x, y), color);
