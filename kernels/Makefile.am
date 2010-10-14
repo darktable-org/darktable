@@ -1,4 +1,8 @@
 ACLOCAL_AMFLAGS=-I m4
-EXTRA_DIST=demosaic_ppg.cl programs.conf
+EXTRA_DIST=programs.conf\
+           demosaic_ppg.cl\
+           atrous.cl
 dtopenclrootdir=$(datarootdir)/darktable/kernels
-dtopenclroot_DATA=demosaic_ppg.cl programs.conf
+dtopenclroot_DATA=programs.conf\
+                  demosaic_ppg.cl\
+                  atrous.cl
