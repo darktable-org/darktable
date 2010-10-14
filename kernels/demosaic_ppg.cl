@@ -23,10 +23,6 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 int
 FC(const int row, const int col, const unsigned int filters)
 {
-  // const int filters = 0x16161616;
-  // const int filters = 0x61616161; // EOS 400D
-  // const int filters = 0x49494949;
-  // const int filters = 0x94949494;
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
@@ -109,7 +105,6 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-#if 1
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -126,14 +121,6 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // upper left corner:
   int2 p = backtransformi((int2)(x, y), r_x, r_y, r_wd, r_ht, r_scale);
   p -= (int2)(2*samples, 2*samples);
-  // from the dcraw source documentation, about filters:
-  //
-  //    0x16161616:   0x61616161:   0x49494949:   0x94949494:
-  //    0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5   0 1 2 3 4 5
-  //  0 B G B G B G 0 G R G R G R 0 G B G B G B 0 R G R G R G
-  //  1 G R G R G R 1 B G B G B G 1 R G R G R G 1 G B G B G B
-  //  2 B G B G B G 2 G R G R G R 2 G B G B G B 2 R G R G R G
-  //  3 G R G R G R 3 B G B G B G 3 R G R G R G 3 G B G B G B
 
   // round down to next even number:
   p.x &= ~0x1; p.y &= ~0x1;
@@ -141,20 +128,6 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // now move p to point to an rggb block:
   if(FC(p.y, p.x+1, filters) != 1) p.x ++;
   if(FC(p.y, p.x,   filters) != 0) p.x ++;
-  // switch(filters)
-  // {
-  //   case 0x16161616:
-  //     p.x ++; p.y++;
-  //     break;
-  //   case 0x61616161:
-  //     p.x ++;
-  //     break;
-  //   case 0x49494949:
-  //     p.y ++;
-  //     break;
-  //   default: // 0x94949494:
-  //     break;
-  // }
 
   for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
   {
@@ -167,7 +140,6 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
     color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
   }
   color /= (2*samples+1)*(2*samples+1);
-#endif
   write_imagef (out, (int2)(x, y), color);
 }
 
@@ -177,7 +149,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
  * in (uint16_t) -> out (float4)
  */
 __kernel void
-ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
+ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -186,7 +158,7 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
   const int row = y;
   const int col = x;
   const int c = FC(row, col, filters);
-  float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f); // output color
+  float4 color = (float4)(100.0f, 100.0f, 100.0f, 10000.0f); // output color
 
   const float4 pc   = ui4_to_float4(read_imageui(in, sampleri, (int2)(col, row)));
 
@@ -223,16 +195,16 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
                          (fabs(pyM3.x - pyM.x) + fabs(pym3.x - pym.x)) * 2.0f;
     if(diffx > diffy)
     {
-      // i == 1 => d = dir[1] = y direction, use guessy
+      // use guessy
       const float m = fmin(pym.x, pyM.x);
       const float M = fmax(pym.x, pyM.x);
-      color.y = fmax(fmin(guessy, M), m);
+      color.y = fmax(fmin(guessy*.25f, M), m);
     }
     else
     {
       const float m = fmin(pxm.x, pxM.x);
       const float M = fmax(pxm.x, pxM.x);
-      color.y = fmax(fmin(guessx, M), m);
+      color.y = fmax(fmin(guessx*.25f, M), m);
     }
   }
   write_imagef (out, (int2)(x, y), color);
@@ -243,7 +215,7 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
  * in (float4) -> out (float4)
  */
 __kernel void
-ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
+ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
 {
   // image in contains full green and sparse r b
   const int x = get_global_id(0);

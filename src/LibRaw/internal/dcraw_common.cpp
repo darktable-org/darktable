@@ -8347,9 +8347,11 @@ dng_skip:
     strcpy (cdesc, colors == 3 ? "RGB":"GMCY");
   if (!raw_height) raw_height = height;
   if (!raw_width ) raw_width  = width;
+  printf("dcraw1 %X\n", filters);
   if (filters && colors == 3)
     filters |= ((filters >> 2 & 0x22222222) |
 		(filters << 2 & 0x88888888)) & filters << 1;
+  printf("dcraw2 %X\n", filters);
 notraw:
   if (flip == -1) flip = tiff_flip;
   if (flip == -1) flip = 0;

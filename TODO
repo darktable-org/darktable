@@ -1,5 +1,9 @@
 0.7 release:
 
+- port ppg demosaic to cpu
+- one pixel jump preview/full pipe
+- improve dr mode cache: selected module input has priority
+
 big stuff:
  * libraw process inside dt modules (full 16-bit buf..)
  * auto rate feature (sharpness/colors/user statistics learning)

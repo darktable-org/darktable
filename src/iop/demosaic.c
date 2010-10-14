@@ -93,7 +93,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   size_t region[] = {self->dev->image->width, self->dev->image->height, 1};
   size_t region_out[] = {roi_out->width, roi_out->height, 1};
   cl_int err;
-  // TODO: short-circuit cl in here for debugging :)
   cl_mem dev_in, dev_out;
   // as images (texture memory)
   cl_image_format fmt1 = {CL_LUMINANCE, CL_UNSIGNED_INT16};
@@ -117,30 +116,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
         ((uint16_t *)self->dev->image->pixels) + origin_in[1]*region[0] + origin_in[0], &err);
     if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
     // clEnqueueWriteImage(darktable.opencl->cmd_queue, dev_in, CL_FALSE, origin_in, region_out, region[0]*sizeof(uint16_t), 0, ((uint16_t *)self->dev->image->pixels) + origin_in[1]*region[0] + origin_in[0], 0, NULL, NULL);
-    printf("demosaicing!!\n");
     // demosaic!
     err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
     if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
     err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_out);
     if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_green, 2, sizeof(int), (void*)&roi_out->width);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 5 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_green, 3, sizeof(int), (void*)&roi_out->height);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 6 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_green, 4, sizeof(uint32_t), (void*)&data->filters);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 8 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
     err = dt_opencl_enqueue_kernel_2d(darktable.opencl, gd->kernel_ppg_green, sizes);
 
     err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_out);
     if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
     err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_out);
     if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_redblue, 2, sizeof(int), (void*)&roi_out->width);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 5 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_redblue, 3, sizeof(int), (void*)&roi_out->height);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 6 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_redblue, 4, sizeof(uint32_t), (void*)&data->filters);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 8 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
     err = dt_opencl_enqueue_kernel_2d(darktable.opencl, gd->kernel_ppg_redblue, sizes);
   }
   else
