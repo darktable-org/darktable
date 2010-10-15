@@ -1,8 +1,12 @@
 0.7 release:
 
 - port ppg demosaic to cpu
-- one pixel jump preview/full pipe
+- ppg + scale for > 0.5
+- one pixel jump preview/full pipe (only for large displays)
 - improve dr mode cache: selected module input has priority
+- ca auto corr on gpu in dt
+- cache with gpu bufs, if possible
+- avoid n-times compile for n gpu systems?
 
 big stuff:
  * libraw process inside dt modules (full 16-bit buf..)
