@@ -98,8 +98,8 @@ int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, c
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes);
 
 #else
-typedef struct dt_opencl_t {int x;} dt_opencl_t;
-void dt_opencl_init(dt_opencl_t *cl) {}
+typedef struct dt_opencl_t {int inited;} dt_opencl_t;
+void dt_opencl_init(dt_opencl_t *cl) { cl->inited = 0; }
 void dt_opencl_cleanup(dt_opencl_t *cl) {}
 int dt_opencl_lock_device(dt_opencl_t *cl, const int dev) {return -1;}
 void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev) {}

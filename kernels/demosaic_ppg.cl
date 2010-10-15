@@ -78,17 +78,17 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out,
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
-  const float fib2 = 34.0f, fib1 = 21.0f;
-  for(int l=0;l<fib2;l++)
+  float4 color = (float4)(1.0f, 0.0f, 0.0f, 0.0f);
+
+  const float px_footprint = .5f/r_scale;
+  const int samples = ((int)px_footprint);
+  float2 p = backtransformf((float2)(x, y), r_x, r_y, r_wd, r_ht, r_scale);
+  for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
   {
-    // get point on input image, sampled in a backtransformed pixel footprint with fibonacci rank-1 lattice
-    float r1x = l/fib2, r1y = l*(fib1/fib2); r1y -= (int)r1y;
-    float2 p = backtransformf((float2)(x-.5f+r1x, y-.5f+r1y), r_x, r_y, r_wd, r_ht, r_scale);
-    const float4 px = read_imagef(in, samplerf, p);
+    float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
     color += px;
   }
-  color *= (1.0f/fib2);
+  color /= (2*samples+1)*(2*samples+1);
   write_imagef (out, (int2)(x, y), color);
 }
 
@@ -110,7 +110,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // pixel footprint on input buffer, radius:
   const float px_footprint = .5f/r_scale;
   // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2 > 0 ? ((int)px_footprint)/2 : 1;
+  const int samples = ((int)px_footprint)/2;
 
   // init gauss with sigma = samples (half footprint)
   // float filter[2*samples + 1];
@@ -119,8 +119,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
 
   // upper left corner:
-  int2 p = backtransformi((int2)(x, y), r_x, r_y, r_wd, r_ht, r_scale);
-  p -= (int2)(2*samples, 2*samples);
+  const int2 p = backtransformi((int2)(x, y), r_x, r_y, r_wd, r_ht, r_scale);
 
   // round down to next even number:
   p.x &= ~0x1; p.y &= ~0x1;
