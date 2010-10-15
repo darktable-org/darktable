@@ -332,7 +332,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (self->widget), "expose-event", G_CALLBACK (expose), self);
   
   gtk_table_set_col_spacing (GTK_TABLE (self->widget), 0, 10);
-  g_object_set (GTK_TABLE (self->widget),"row-spacing",2,NULL);
+  gtk_table_set_row_spacings(GTK_TABLE (self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   
   /* adding the labels */
   g->label1 = GTK_LABEL (gtk_label_new (_("exposure")));     // EV

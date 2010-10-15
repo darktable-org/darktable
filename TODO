@@ -1,5 +1,10 @@
 0.7 release:
 
+inconsistent borders:
+tone curve
+color correction
+base curve
+
 big stuff:
  * libraw process inside dt modules (full 16-bit buf..)
  * auto rate feature (sharpness/colors/user statistics learning)
