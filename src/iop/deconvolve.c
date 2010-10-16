@@ -55,7 +55,7 @@ typedef struct dt_iop_deconvolve_gui_data_t
   GtkDarktableSlider *scale1, *scale2, *scale3;
   GtkComboBox *method;
   GtkDarktableSlider *snr, *num_iter;
-  GtkLabel  *label4, *label5;
+  GtkLabel  *label4, *label5, *label6, *label7;
   GtkCheckButton *chan_L, *chan_A, *chan_B;
 }
 dt_iop_deconvolve_gui_data_t;
@@ -212,6 +212,7 @@ float *normpsf (float *psfch, int w, int h)
 #define MAXIMUMLIKELIHOOD 3
 #define JANSENVANCITTERT 2
 #define WIENER 1
+#define JOHANNES 0
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -297,7 +298,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 	}
 	printf("Save deconvolved channel\n");
 	if (chan == 0) put_channel (imageDims.x, imageDims.y, out, deconvolvedImage, chan, 100.0f, 0.0f);
-	else put_channel (imageDims.x, imageDims.y, out, deconvolvedImage, chan, 128.0f, -128.0f);
+	else put_channel (imageDims.x, imageDims.y, out, deconvolvedImage, chan, 127.0f, -128.0f);
       }
     }
     Clarity_UnRegister();
@@ -374,9 +375,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 	}
 }
-#undef MAXIMUMLIKELIHOOD
-#undef JANSENVANCITTERT
-#undef WIENER
 
 static void
 radius_callback (GtkDarktableSlider *slider, gpointer user_data)
@@ -419,9 +417,22 @@ iterations_callback (GtkDarktableSlider *slider, gpointer user_data)
 }
 
 static void
+noise_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_deconvolve_params_t *p = (dt_iop_deconvolve_params_t *)self->params;
+  p->snr = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+
+static void
 method_callback (GtkComboBox *box, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_deconvolve_gui_data_t *g = (dt_iop_deconvolve_gui_data_t *)self->gui_data;
+
   if(self->dt->gui->reset) return;
   dt_iop_deconvolve_params_t *p = (dt_iop_deconvolve_params_t *)self->params;
   unsigned int active = gtk_combo_box_get_active(box);
@@ -429,8 +440,89 @@ method_callback (GtkComboBox *box, gpointer user_data)
   
   p->method = active & 0xf;
   printf("method_callback METHOD %d, %d\n", p->method, active);
+
+//   GtkLabel  *label1, *label2, *label3;
+//   GtkDarktableSlider *scale1, *scale2, *scale3;
+//   GtkComboBox *method;
+//   GtkDarktableSlider *snr, *num_iter;
+//   GtkLabel  *label4, *label5, *label6, *label7;
+//   GtkCheckButton *chan_L, *chan_A, *chan_B;
+
+  gtk_widget_set_visible(GTK_WIDGET(g->label2), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->scale2), FALSE);
+
+  gtk_widget_set_visible(GTK_WIDGET(g->label3), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->scale3), FALSE);
+
+  gtk_widget_set_visible(GTK_WIDGET(g->label5), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->snr), FALSE);
+
+  gtk_widget_set_visible(GTK_WIDGET(g->label6), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->num_iter), FALSE);
+
+  gtk_widget_set_visible(GTK_WIDGET(g->label7), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->chan_L), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->chan_A), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(g->chan_B), FALSE);
+//////////////////////
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->label2), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->scale2), TRUE);
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->label3), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->scale3), TRUE);
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->label5), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->snr),    TRUE);
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->label6), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->num_iter), TRUE);
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->label7), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->chan_L), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->chan_A), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->chan_B), TRUE);
+
+  if ( active == JOHANNES )
+  {
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->label2), FALSE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->scale2), FALSE);
+
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->label3), FALSE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->scale3), FALSE);
+
+    gtk_widget_show_all(GTK_WIDGET(g->label2));
+    gtk_widget_show_all(GTK_WIDGET(g->scale2));
+
+    gtk_widget_show_all(GTK_WIDGET(g->label3));
+    gtk_widget_show_all(GTK_WIDGET(g->scale3));
+  }
+  else if ( active == WIENER )
+  {
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->label5), FALSE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->snr), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(g->label5));
+    gtk_widget_show_all(GTK_WIDGET(g->snr));
+  }
+  else if ( active == JANSENVANCITTERT )
+  {
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->label6), FALSE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->num_iter), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(g->label6));
+    gtk_widget_show_all(GTK_WIDGET(g->num_iter));
+  }
+  else if ( active == MAXIMUMLIKELIHOOD )
+  {
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->label6), FALSE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->num_iter), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(g->label6));
+    gtk_widget_show_all(GTK_WIDGET(g->num_iter));
+  }
   dt_dev_add_history_item(darktable.develop, self);
 }
+#undef MAXIMUMLIKELIHOOD
+#undef JANSENVANCITTERT
+#undef WIENER
+#undef JOHANNES
 
 static void
 toggle_L_callback (GtkToggleButton *toggle, gpointer user_data)
@@ -601,19 +693,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->method, "wiener");
   gtk_combo_box_append_text(g->method, "jansenvancittert");
   gtk_combo_box_append_text(g->method, "maximumlikelihood");
-  gtk_combo_box_set_active(g->method, 0);
+  gtk_combo_box_set_active(g->method, p->method);
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label1), 0, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale1), 2, 6, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label4), 0, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->method), 2, 6, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label2), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale2), 2, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label1), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale1), 2, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label3), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale3), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label2), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale2), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label4), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->method), 2, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label3), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale3), 2, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->label5 = GTK_LABEL(gtk_label_new(_("snr")));
   gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
@@ -622,15 +714,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label5), 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->snr   ), 2, 6, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  g->label5 = GTK_LABEL(gtk_label_new(_("iteartions")));
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
+  g->label6 = GTK_LABEL(gtk_label_new(_("iteartions")));
+  gtk_misc_set_alignment(GTK_MISC(g->label6), 0.0, 0.5);
   g->num_iter = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 4094, 1.0, p->iterations, 0));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label5), 0, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label6), 0, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->num_iter), 2, 6, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  g->label5 = GTK_LABEL(gtk_label_new(_("Lab channel")));
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label5), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g->label7 = GTK_LABEL(gtk_label_new(_("Lab channel")));
+  gtk_misc_set_alignment(GTK_MISC(g->label7), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label7), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g->chan_L = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("L")));
   gtk_object_set(GTK_OBJECT(g->chan_L), "tooltip-text", _("Perform action on L channel of Lab color space."), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chan_L), (p->L));
@@ -645,6 +737,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->chan_B), "tooltip-text", _("Perform action on b channel of Lab color space."), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chan_B), (p->B));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->chan_B), 4, 5, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
@@ -662,6 +755,11 @@ void gui_init(struct dt_iop_module_t *self)
 		    G_CALLBACK (toggle_A_callback), self);
   g_signal_connect (G_OBJECT (g->chan_B), "toggled", 
 		    G_CALLBACK (toggle_B_callback), self);
+  g_signal_connect (G_OBJECT (g->snr), "value-changed",
+                    G_CALLBACK (noise_callback), self);
+
+  gtk_combo_box_set_active(g->method, p->method);
+  self->gui_update(self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
