@@ -136,52 +136,6 @@ _iop_zonesystem_calculate_zonemap (dt_iop_zonesystem_params_t *p, float *zonemap
   }*/
 }
 
-static inline void hue2rgb(float m1,float m2,float hue,float *channel)
-{
-  if(hue<0.0) hue+=1.0;
-  else if(hue>1.0) hue-=1.0;
-  
-  if( (6.0*hue) < 1.0) *channel = m1 + (m2-m1) * 6.0 * hue;
-  else if((2.0*hue) < 1.0) *channel = m2;
-  else if((3.0*hue) < 2.0) *channel = m1 + (m2-m1) * ((2.0/3.0)-hue) * 6.0;
-  else *channel=m1;
-}
-
-void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
-{
-  float pmax=fmaxf(r,fmaxf(g,b));
-  float pmin=fminf(r,fminf(g,b));
-  float delta=(pmax-pmin);
-  
-  *h=*s=*l=0;
-  *l=(pmin+pmax)/2.0;
- 
-  if(pmax!=pmin) 
-  {
-    *s=*l<0.5?delta/(pmax+pmin):delta/(2.0-pmax-pmin);
-  
-    if(pmax==r) *h=(g-b)/delta;
-    if(pmax==g) *h=2.0+(b-r)/delta;
-    if(pmax==b) *h=4.0+(r-g)/delta;
-    *h/=6.0;
-    if(*h<0.0) *h+=1.0;
-    else if(*h>1.0) *h-=1.0;
-  }
-}
-
-static inline void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
-{
-  float m1,m2;
-  *r=*g=*b=l;
-  if( s==0) return;
-  m2=l<0.5?l*(1.0+s):l+s-l*s;
-  m1=(2.0*l-m2);
-  hue2rgb(m1,m2,h + 1.0 / 3.0, r);
-  hue2rgb(m1,m2,h, g);
-  hue2rgb(m1,m2,h -  1.0 / 3.0, b);
-
-}
-
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -238,7 +192,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         for(int c=0;c<3;c++) out[c] = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-          for(int c=0;c<3;c++) out[c] += m[l*wd+k]*in[3*(l*roi_in->width+k)+c];
+          out[0] += m[l*wd+k]*in[3*(l*roi_in->width+k)];
         out += 3; in += 3;
       }
     }
@@ -251,9 +205,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     #endif
     for (int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      float hsl[3]={0};
-      rgb2hsl(out[3*k+0],out[3*k+1],out[3*k+2],&hsl[0],&hsl[1],&hsl[2]);
-      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (hsl[2]), zonemap, size);
+      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[3*k+0]), zonemap, size);
     }
     
     pthread_mutex_unlock(&g->lock);
@@ -265,19 +217,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for (int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    float hsl[3]={0};
-     
     /* remap lightness into zonemap and apply lightness */
-    rgb2hsl (in[3*k+0],in[3*k+1],in[3*k+2],&hsl[0],&hsl[1],&hsl[2]);
     const double rzw = (1.0/(size-1));                                                                                               // real zone width 
-    const int rz = (hsl[2]/rzw);                                                                                                    // real zone for lightness
+    const int rz = (in[3*k+0]/rzw);                                                                                                    // real zone for lightness
     const double zw = (zonemap[rz+1]-zonemap[rz]);                                                              // mapped zone width
     const double zs = zw/rzw ;                                                                                                    // mapped zone scale
-    const double sl = (hsl[2]-(rzw*rz)-(rzw*0.5))*zs;
+    const double sl = (in[3*k+0]-(rzw*rz)-(rzw*0.5))*zs;
     
     double l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      
      
-    hsl2rgb (&out[3*k+0],&out[3*k+1],&out[3*k+2],hsl[0],hsl[1],l);
+    out[3*k+0] = l;
+    out[3*k+1] = in[3*k+1];
+    out[3*k+2] = in[3*k+2];
     
   }
   
@@ -337,13 +288,12 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
-  module->priority = 261;
+  module->priority = 351;
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){10,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}};
   memcpy(module->params, &tmp, sizeof(dt_iop_zonesystem_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_zonesystem_params_t));
-  
 }
 
 void cleanup(dt_iop_module_t *module)
