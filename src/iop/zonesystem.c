@@ -180,7 +180,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
       m[l*wd + k] /= weight;
 
-    /* gauss blur the image */
+    /* gauss blur the L channel */
     #ifdef _OPENMP
       #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in) schedule(static)
     #endif
@@ -193,19 +193,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         for(int c=0;c<3;c++) out[c] = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
           out[0] += m[l*wd+k]*in[3*(l*roi_in->width+k)];
-        out += 3; in += 3;
+	out += 3; in += 3;
       }
     }
+    
     in  = (float *)ivoid;
     out = (float *)ovoid;
-
-
     #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, in, out,buffer,g,zonemap,stderr) schedule(static)
     #endif
     for (int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[3*k+0]), zonemap, size);
+      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[3*k]/100.0), zonemap, size);
     }
     
     pthread_mutex_unlock(&g->lock);
@@ -218,15 +217,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for (int k=0;k<roi_out->width*roi_out->height;k++)
   {
     /* remap lightness into zonemap and apply lightness */
+    const float lightness=in[3*k]/100.0;
     const double rzw = (1.0/(size-1));                                                                                               // real zone width 
-    const int rz = (in[3*k+0]/rzw);                                                                                                    // real zone for lightness
+    const int rz = (lightness/rzw);                                                                                                    // real zone for lightness
     const double zw = (zonemap[rz+1]-zonemap[rz]);                                                              // mapped zone width
     const double zs = zw/rzw ;                                                                                                    // mapped zone scale
-    const double sl = (in[3*k+0]-(rzw*rz)-(rzw*0.5))*zs;
+    const double sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
     
     double l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      
-     
-    out[3*k+0] = l;
+    out[3*k+0] = 100.0*l;
     out[3*k+1] = in[3*k+1];
     out[3*k+2] = in[3*k+2];
     
