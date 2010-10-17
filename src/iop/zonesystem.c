@@ -231,9 +231,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
   }
   
-  /* redraw width */
+  /* thread-safe redraw */
   if( g && buffer ) 
-    gtk_widget_queue_draw (g->preview);
+    dt_control_queue_draw(g->preview);
    
 }
 
