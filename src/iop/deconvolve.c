@@ -39,6 +39,7 @@ extern pthread_mutex_t clarity_mutex;
 DT_MODULE(1)
 
 #define MAXR 8
+#define JANSEN_MAX_ITER 11.0
 
 typedef struct dt_iop_deconvolve_params_t
 {
@@ -94,7 +95,6 @@ float * Tst_GenerateGaussianKernel(Clarity_Dim3 *dim, float sigma) {
   PSFX = dim->x;  PSFY = dim->y;  PSFZ = dim->z;
   float fz, fy, fx, value;
 
-  printf("Generate kernel x=%d y=%d z=%d, sigma=%f\n", dim->x, dim->y, dim->z, sigma);
 
   float *kernel = (float *) malloc(sizeof(float)*dim->x*dim->y*dim->z);
 
@@ -129,29 +129,29 @@ float * Tst_GenerateGaussianKernel(Clarity_Dim3 *dim, float sigma) {
 }
 
 /*extract from an RGB image the R, G of B channel*/
-float *get_channel (int w, int h, float * im, int chan, float *out)
+float *get_channel (int w, int h, float * im, int chan, float *out, float *max, float *min)
 {
   int i, j;
   int index, index1;
   int cmin, cmax;
-  float min, max;
-  min=99.0;
-  max=0.0;
+  // float min, max;
+  //*min=99.0;
+  //*max=0.0;
   cmin=0; cmax=0;
   //float *out = (float *) malloc (sizeof (float) * w * h);
-  printf("Get channel w=%d h=%d chan=%d\n", w, h, chan);
+  //printf("Get channel w=%d h=%d chan=%d\n", w, h, chan);
 
   for (i = 0; i < h; i++) {
       index = i * w;
       for (j = 0; j < w; j++) {
 	  index1 = (index + j) * 3;
 	  //out[index+j] = im->rgb_data[index1 + chan];
-	  if(im[index1 + chan] < min ) {min=im[index1 + chan]; cmin++;}
-	  if(im[index1 + chan] > max ) {max=im[index1 + chan]; cmax++;}
+	  if(im[index1 + chan] < *min ) {*min=im[index1 + chan]; cmin++;}
+	  if(im[index1 + chan] > *max ) {*max=im[index1 + chan]; cmax++;}
 	  out[index+j] = im[index1 + chan];
       }
   }
-  printf("Input MIN=%f:%d MAX=%f:%d\n", min, cmin, max, cmax);
+  //printf("Input MIN=%f:%d MAX=%f:%d\n", *min, cmin, *max, cmax);
   return out;
 }
 
@@ -176,7 +176,7 @@ float *put_channel (int w, int h, float * im, float *in, int chan, float maxValu
 	  im[index1 + chan] = in[index+j];
       }
   }
-  printf("Converted MIN=%f:%d MAX=%f:%d\n", min, cmin, max, cmax);
+  //printf("Converted MIN=%f:%d MAX=%f:%d\n", min, cmin, max, cmax);
   return in;
 }
 
@@ -185,27 +185,23 @@ float *normpsf (float *psfch, int w, int h)
 {
   int i, j;
   double sum;
-  printf (" \tnormpsf psf dimensions %dx%d\n", w, h);
   sum = 0.0;
   for (j = 0; j < h; j++) {
     for (i = 0; i < w; i++) {
       sum += fabs(psfch[i + w * j]);
     }
   }
-  printf (" \tnormpsf psf sum ready\n");
   for (j = 0; j < h; j++) {
     for (i = 0; i < w; i++) {
       psfch[i + w * j] = psfch[i + w * j] / sum;
     }
   }
-  printf (" \tnormpsf psf norm ready\n");
   sum = 0.0;
   for (j = 0; j < h; j++) {
     for (i = 0; i < w; i++) {
       sum += psfch[i + w * j];
     }
   }
-  printf (" \tnormpsf psf ready\n");
   return psfch;
 }
 
@@ -231,6 +227,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int wd = 2*rad+1;
   float *m = mat + rad*wd + rad;
   const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
+  float minV=0.0, maxV=0.0;
   //////////////////////////////////////////////////////////
   int channels[3];
   channels[0] = (data->L > 0) ? 1:0;
@@ -247,10 +244,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if (iterations<=0 || iterations >=4095) {
     iterations = 1;
   }
-  printf("METHOD %d ITERATIONS %d\n", method, iterations);
-  printf("SIZES IN %dx%d OUT %dx%d SIGMA %f radius %f effective radius %f\n\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height, 
-	 sqrtf(sigma2/(2.5*2.5)), data->radius, data->radius*roi_in->scale/piece->iscale);
-  //iterations = 2;
+  //printf("METHOD %d ITERATIONS %d\n", method, iterations);
+  //printf("SIZES IN %dx%d OUT %dx%d SIGMA %f radius %f effective radius %f\n\n", roi_in->width, roi_in->height, roi_out->width, roi_out->height, 
+  //	 sqrtf(sigma2/(2.5*2.5)), data->radius, data->radius*roi_in->scale/piece->iscale);
   if (method > 0) {
     pthread_mutex_lock(&clarity_mutex);
 
@@ -268,7 +264,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *deconvolvedImage = (float *) malloc(sizeof(float)*imageDims.x*imageDims.y*imageDims.z);
     float *inputImage = (float *) malloc(sizeof(float)*imageDims.x*imageDims.y*imageDims.z);
 
-    printf("Generate kernel\n");
     //kernelImage = Tst_GenerateGaussianKernel(&kernelDims, sqrtf(sigma2/(2.5*2.5)));
     // Create gaussian kernel. But can be external image, for example.
     // TODO - deconvolve in tiles. In theory can give better results.
@@ -276,29 +271,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     Clarity_Register();
     for(int chan =0; chan<3; chan++) {
       if (channels[chan]) {
-	printf("Get channel %d\n", chan);
-	get_channel (imageDims.x, imageDims.y, in, chan, inputImage);
+	minV=4000.0;
+	maxV=-4000.0;
+	//printf("Get channel %d\n", chan);
+	get_channel (imageDims.x, imageDims.y, in, chan, inputImage, &maxV, &minV);
 	// Now we are ready to apply a deconvolution algorithm.
-	printf("Deconvolve\n");
 	if (MAXIMUMLIKELIHOOD == method) {
-	  printf("MaximumLikelihood sizes x=%d y=%d z=%d\n", imageDims.x, imageDims.y, imageDims.z);
+	  //printf("MaximumLikelihood sizes x=%d y=%d z=%d\n", imageDims.x, imageDims.y, imageDims.z);
 	  Clarity_MaximumLikelihoodDeconvolve(inputImage, imageDims,
 						kernelImage, kernelDims,
 						deconvolvedImage, iterations);
 	} else if (JANSENVANCITTERT == method) {
-	  printf("JansenVanCittert sizes x=%d y=%d z=%d\n", imageDims.x, imageDims.y, imageDims.z);
+	  //printf("JansenVanCittert sizes x=%d y=%d z=%d\n", imageDims.x, imageDims.y, imageDims.z);
 	  Clarity_JansenVanCittertDeconvolve(inputImage, imageDims,
 					    kernelImage, kernelDims,
 					    deconvolvedImage, iterations);
 	} else if (WIENER == method) {
-	  printf("Wiener sizes x=%d y=%d z=%d K=%f\n", imageDims.x, imageDims.y, imageDims.z, data->snr);
+	  //printf("Wiener sizes x=%d y=%d z=%d K=%f\n", imageDims.x, imageDims.y, imageDims.z, data->snr);
 	  Clarity_WienerDeconvolve(inputImage, imageDims, kernelImage, kernelDims,
 				  deconvolvedImage, data->snr);
-				  //deconvolvedImage, data->threshold);
 	}
-	printf("Save deconvolved channel\n");
+	//printf("Save deconvolved channel %d\n", chan);
 	if (chan == 0) put_channel (imageDims.x, imageDims.y, out, deconvolvedImage, chan, 100.0f, 0.0f);
-	else put_channel (imageDims.x, imageDims.y, out, deconvolvedImage, chan, 127.0f, -128.0f);
+	//else put_channel (imageDims.x, imageDims.y, out, deconvolvedImage, chan, 127.0f, -128.0f);
+	else put_channel (imageDims.x, imageDims.y, out, deconvolvedImage, chan, maxV, minV);
       }
     }
     Clarity_UnRegister();
@@ -436,17 +432,8 @@ method_callback (GtkComboBox *box, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_deconvolve_params_t *p = (dt_iop_deconvolve_params_t *)self->params;
   unsigned int active = gtk_combo_box_get_active(box);
-  //unsigned int method = gtk_combo_box_get_active(g->method);
   
   p->method = active & 0xf;
-  printf("method_callback METHOD %d, %d\n", p->method, active);
-
-//   GtkLabel  *label1, *label2, *label3;
-//   GtkDarktableSlider *scale1, *scale2, *scale3;
-//   GtkComboBox *method;
-//   GtkDarktableSlider *snr, *num_iter;
-//   GtkLabel  *label4, *label5, *label6, *label7;
-//   GtkCheckButton *chan_L, *chan_A, *chan_B;
 
   gtk_widget_set_visible(GTK_WIDGET(g->label2), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->scale2), FALSE);
@@ -460,10 +447,6 @@ method_callback (GtkComboBox *box, gpointer user_data)
   gtk_widget_set_visible(GTK_WIDGET(g->label6), FALSE);
   gtk_widget_set_visible(GTK_WIDGET(g->num_iter), FALSE);
 
-  gtk_widget_set_visible(GTK_WIDGET(g->label7), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(g->chan_L), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(g->chan_A), FALSE);
-  gtk_widget_set_visible(GTK_WIDGET(g->chan_B), FALSE);
 //////////////////////
   gtk_widget_set_no_show_all(GTK_WIDGET(g->label2), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(g->scale2), TRUE);
@@ -476,11 +459,6 @@ method_callback (GtkComboBox *box, gpointer user_data)
 
   gtk_widget_set_no_show_all(GTK_WIDGET(g->label6), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(g->num_iter), TRUE);
-
-  gtk_widget_set_no_show_all(GTK_WIDGET(g->label7), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(g->chan_L), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(g->chan_A), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(g->chan_B), TRUE);
 
   if ( active == JOHANNES )
   {
@@ -509,6 +487,8 @@ method_callback (GtkComboBox *box, gpointer user_data)
     gtk_widget_set_no_show_all(GTK_WIDGET(g->num_iter), FALSE);
     gtk_widget_show_all(GTK_WIDGET(g->label6));
     gtk_widget_show_all(GTK_WIDGET(g->num_iter));
+    g->num_iter->adjustment->upper = JANSEN_MAX_ITER;
+    
   }
   else if ( active == MAXIMUMLIKELIHOOD )
   {
@@ -516,6 +496,8 @@ method_callback (GtkComboBox *box, gpointer user_data)
     gtk_widget_set_no_show_all(GTK_WIDGET(g->num_iter), FALSE);
     gtk_widget_show_all(GTK_WIDGET(g->label6));
     gtk_widget_show_all(GTK_WIDGET(g->num_iter));
+    g->num_iter->adjustment->upper = 4094.0;
+
   }
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -618,24 +600,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chan_A), p->A);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chan_B), p->B);
 }
-/*
-typedef struct dt_iop_deconvolve_gui_data_t
-{
-  GtkDarktableSlider *scale1, *scale2, *scale3;
-  GtkComboBox *method;
-  GtkDarktableSlider *snr, *num_iter;
-  GtkCheckButton *chan_L, *chan_A, *chan_B;
-}
-dt_iop_deconvolve_gui_data_t;
-
-typedef struct dt_iop_deconvolve_data_t
-{
-  float radius, amount, threshold, deconvdamping;
-  unsigned method : 4, iterations:12, L:1, A:1, B:1;
-  float  snr;
-}
-dt_iop_deconvolve_data_t;
-*/
 
 void init(dt_iop_module_t *module)
 {
@@ -646,18 +610,11 @@ void init(dt_iop_module_t *module)
   module->priority = 549;
   module->params_size = sizeof(dt_iop_deconvolve_params_t);
   module->gui_data = NULL;
-  dt_iop_deconvolve_params_t tmp = (dt_iop_deconvolve_params_t){0.5, 0.5, 0.004, 0.0, 0, 10, 1, 0, 0, 0.0001};
+  dt_iop_deconvolve_params_t tmp = (dt_iop_deconvolve_params_t){0.55, 0.5, 0.004, 0.0, 0, 10, 1, 0, 0, 0.00001};
   memcpy(module->params, &tmp, sizeof(dt_iop_deconvolve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_deconvolve_params_t));
 }
-/*
-typedef struct dt_iop_deconvolve_params_t
-{
-  float radius, amount, threshold, deconvdamping;
-  unsigned method : 4, iterations:12, L:1, A:1, B:1;
-  float snr;
-}
-*/
+
 void cleanup(dt_iop_module_t *module)
 {
   free(module->gui_data);
@@ -768,7 +725,5 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-//#define MAXIMUMLIKELIHOOD 4
-//#define JANSENVANCITTERT 3
-//#define WIENER 2
 #undef MAXR
+#undef JANSEN_MAX_ITER
