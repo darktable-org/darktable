@@ -950,7 +950,7 @@
          x="75.71431"
          y="1004.0408"
          id="tspan3689"
-         style="font-size:13px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.50000000000000000;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:AlMateen;-inkscape-font-specification:AlMateen Bold;stroke-linejoin:round;stroke-linecap:round">      Camera: $(EXIF.MODEL) $(EXIF.LENS)</tspan></text>
+         style="font-size:13px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.50000000000000000;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:AlMateen;-inkscape-font-specification:AlMateen Bold;stroke-linejoin:round;stroke-linecap:round">      Camera: $(EXIF.MAKER) - $(EXIF.MODEL) $(EXIF.LENS)</tspan></text>
     <rect
        style="opacity:0.95780592;fill:none;stroke:none"
        id="rect3779"

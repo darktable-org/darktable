@@ -149,7 +149,7 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
   
   if (g_file_test(configdir,G_FILE_TEST_EXISTS))
     filename=configdir;
-  else if (g_file_test(configdir,G_FILE_TEST_EXISTS))
+  else if (g_file_test(datadir,G_FILE_TEST_EXISTS))
     filename=datadir;
   else return NULL;
   
@@ -195,7 +195,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* Load svg if not loaded */
   gchar *svgdoc = _watermark_get_svgdoc (self);
   if (!svgdoc) {
-    memcpy(out,in,roi_in->width*roi_out->height*3);
+    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
   
@@ -203,7 +203,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   GError *error = NULL;
   RsvgHandle *svg = rsvg_handle_new_from_data ((const guint8 *)svgdoc,strlen (svgdoc),&error);
   if (error) {    
-    memcpy(out,in,roi_in->width*roi_out->height*3);
+    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
   g_free (svgdoc);
@@ -211,11 +211,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* get the dimension of svg */
   RsvgDimensionData dimension;
   rsvg_handle_get_dimensions (svg,&dimension);
+
+  /* calculate aligment of watermark */
+  const float iw=piece->buf_in.width*roi_out->scale;
+  const float ih=piece->buf_in.height*roi_out->scale;
+
   float scale=1.0;
   if ((dimension.width/dimension.height)>1.0)
-    scale = (float)roi_out->width/dimension.width;
+    scale = iw/dimension.width;
   else 
-    scale = (float)roi_out->height/dimension.height;
+    scale = ih/dimension.height;
   
   scale *= (data->scale/100.0);
   
@@ -224,37 +229,44 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   
   /* create cairo memory surface */
   guint8 *image= (guint8 *)g_malloc (stride*roi_out->height);
-  memset(image,0,stride*roi_out->height);
+  memset (image,0,stride*roi_out->height);
   cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
+  if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS) 
+  {
+    fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+    g_free (image);
+    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    return;
+  }
   
   /* create cairo context and setup transformation/scale */
   cairo_t *cr = cairo_create (surface);
   
-  /* calculate aligment of watermark */
   float ty=0,tx=0;
   if( data->alignment >=0 && data->alignment <3) // Align to verttop
     ty=0;
   else if( data->alignment >=3 && data->alignment <6) // Align to vertcenter
-    ty=(roi_out->height/2.0)-((dimension.height*scale)/2.0);
+    ty=(ih/2.0)-((dimension.height*scale)/2.0);
   else if( data->alignment >=6 && data->alignment <9) // Align to vertbottom
-    ty=roi_out->height-(dimension.height*scale);
+    ty=ih-(dimension.height*scale);
   
   if( data->alignment == 0 ||  data->alignment == 3 || data->alignment==6 )
     tx=0;
   else if( data->alignment == 1 ||  data->alignment == 4 || data->alignment==7 )
-    tx=(roi_out->width/2.0)-((dimension.width*scale)/2.0);
+    tx=(iw/2.0)-((dimension.width*scale)/2.0);
   else if( data->alignment == 2 ||  data->alignment == 5 || data->alignment==8 )
-    tx=roi_out->width-(dimension.width*scale);
+    tx=iw-(dimension.width*scale);
   
   /* translate to position */
-  cairo_translate (cr,tx-roi_in->x,ty-roi_in->y);
+  cairo_translate (cr,-roi_in->x,-roi_in->y);
+  cairo_translate (cr,tx,ty);
   
   /* scale */
   cairo_scale (cr,scale,scale);
   
   /* translate x and y offset */
-  cairo_translate (cr,data->xoffset*roi_out->width,data->yoffset*roi_out->height);
-  
+  cairo_translate (cr,data->xoffset*iw,data->yoffset*ih);
+    
   /* render svg into surface*/
   rsvg_handle_render_cairo (svg,cr);
     
