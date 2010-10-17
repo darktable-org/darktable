@@ -137,18 +137,18 @@ _iop_zonesystem_calculate_zonemap (dt_iop_zonesystem_params_t *p, float *zonemap
 }
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   //dt_iop_zonesystem_data_t *data = (dt_iop_zonesystem_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
-  dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
+  dt_iop_zonesystem_gui_data_t *g = NULL;
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
   
   guchar *buffer = NULL;
-  if( g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW )
+  if( self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW )
   {
+    g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
     pthread_mutex_lock(&g->lock);
     if(g->preview_buffer) 
       g_free (g->preview_buffer);
@@ -162,9 +162,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int size = p->size;
   float zonemap[MAX_ZONE_SYSTEM_SIZE]={-1};
   _iop_zonesystem_calculate_zonemap (p, zonemap);
-
+  
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
-  if(g && buffer)
+  if( self->dev->gui_attached && g && buffer)
   {
     /* setup gaussian kernel */
     const int radius = 8;
@@ -181,9 +181,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       m[l*wd + k] /= weight;
 
     /* gauss blur the L channel */
-    #ifdef _OPENMP
-      #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in) schedule(static)
-    #endif
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#endif
     for(int j=rad;j<roi_out->height-rad;j++)
     {
       in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
@@ -197,11 +197,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
     
+    /* create zonemap preview */
     in  = (float *)ivoid;
     out = (float *)ovoid;
-    #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, in, out,buffer,g,zonemap,stderr) schedule(static)
-    #endif
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out,buffer,g,zonemap,stderr) schedule(static)
+#endif
     for (int k=0;k<roi_out->width*roi_out->height;k++)
     {
       buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[3*k]/100.0), zonemap, size);
@@ -209,22 +210,24 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     pthread_mutex_unlock(&g->lock);
   }
-  
-  
+
+  /* proces the image */
+  in  = (float *)ivoid;
+  out = (float *)ovoid;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out,buffer,g,zonemap,stderr) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap) schedule(static)
 #endif
   for (int k=0;k<roi_out->width*roi_out->height;k++)
   {
     /* remap lightness into zonemap and apply lightness */
     const float lightness=in[3*k]/100.0;
-    const double rzw = (1.0/(size-1));                                                                                               // real zone width 
+    const float rzw = (1.0/(size-1));                                                                                               // real zone width 
     const int rz = (lightness/rzw);                                                                                                    // real zone for lightness
-    const double zw = (zonemap[rz+1]-zonemap[rz]);                                                              // mapped zone width
-    const double zs = zw/rzw ;                                                                                                    // mapped zone scale
-    const double sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
+    const float zw = (zonemap[rz+1]-zonemap[rz]);                                                              // mapped zone width
+    const float zs = zw/rzw ;                                                                                                    // mapped zone scale
+    const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
     
-    double l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      
+    float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      
     out[3*k+0] = 100.0*l;
     out[3*k+1] = in[3*k+1];
     out[3*k+2] = in[3*k+2];
@@ -232,7 +235,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   
   /* thread-safe redraw */
-  if( g && buffer ) 
+  if(  self->dev->gui_attached && g && buffer ) 
     dt_control_queue_draw(g->preview);
    
 }
@@ -291,7 +294,7 @@ void init(dt_iop_module_t *module)
   module->priority = 351;
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
-  dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){10,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}};
+  dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){10,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}};
   memcpy(module->params, &tmp, sizeof(dt_iop_zonesystem_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_zonesystem_params_t));
 }
@@ -370,9 +373,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 #define DT_ZONESYSTEM_INSET 5
 #define DT_ZONESYSTEM_BAR_SPLIT_WIDTH 0.0
 #define DT_ZONESYSTEM_REFERENCE_SPLIT 0.30
-
-
-
 static gboolean
 dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 { 
