@@ -89,7 +89,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_EFFECT;
 }
 
 guint _string_occurence(const gchar *haystack,const gchar *needle) 
@@ -206,16 +206,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(out,in,roi_in->width*roi_out->height*3);
     return;
   }
+  g_free (svgdoc);
     
   /* get the dimension of svg */
   RsvgDimensionData dimension;
   rsvg_handle_get_dimensions (svg,&dimension);
-  /*float sr = dimension.width/dimension.height;
-  float sw=1.0,sh=1.0;
-  if (dimension.width>dimension.height)
-    sh=sw/sr;
-  else
-    sw=sh*sr;*/
+  float scale=1.0;
+  if ((dimension.width/dimension.height)>1.0)
+    scale = (float)roi_out->width/dimension.width;
+  else 
+    scale = (float)roi_out->height/dimension.height;
+  
+  scale *= (data->scale/100.0);
   
   /* setup stride for performance */
   int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,roi_out->width);
@@ -233,21 +235,25 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if( data->alignment >=0 && data->alignment <3) // Align to verttop
     ty=0;
   else if( data->alignment >=3 && data->alignment <6) // Align to vertcenter
-    ty=(roi_out->height/2.0)-(dimension.height/2.0);
+    ty=(roi_out->height/2.0)-((dimension.height*scale)/2.0);
   else if( data->alignment >=6 && data->alignment <9) // Align to vertbottom
-    ty=roi_out->height-dimension.height;
+    ty=roi_out->height-(dimension.height*scale);
   
   if( data->alignment == 0 ||  data->alignment == 3 || data->alignment==6 )
     tx=0;
   else if( data->alignment == 1 ||  data->alignment == 4 || data->alignment==7 )
-    tx=(roi_out->width/2.0)-(dimension.width/2.0);
+    tx=(roi_out->width/2.0)-((dimension.width*scale)/2.0);
   else if( data->alignment == 2 ||  data->alignment == 5 || data->alignment==8 )
-    tx=roi_out->width/-dimension.width;
+    tx=roi_out->width-(dimension.width*scale);
   
   /* translate to position */
-  cairo_translate (cr,tx,ty);
+  cairo_translate (cr,tx-roi_in->x,ty-roi_in->y);
+  
   /* scale */
-  cairo_scale (cr,dimension.width*data->scale,dimension.height*data->scale);
+  cairo_scale (cr,scale,scale);
+  
+  /* translate x and y offset */
+  cairo_translate (cr,data->xoffset*roi_out->width,data->yoffset*roi_out->height);
   
   /* render svg into surface*/
   rsvg_handle_render_cairo (svg,cr);
@@ -257,7 +263,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   
   /* render surface on output */
   guint8 *sd = image;
-  float opacity=data->opacity/100.0;
+  float opacity = data->opacity/100.0;
+/*
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out,sd,opacity) schedule(static)
+#endif
+*/
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
     float alpha = (sd[3]/255.0)*opacity;
@@ -270,8 +281,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   
   
   /* clean up */
-  g_object_unref (svg);
   cairo_surface_destroy (surface);
+  g_object_unref (svg);
   g_free (image);
 
 }
@@ -284,6 +295,7 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
 
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  memset(p->filename,0,64);
   snprintf(p->filename,64,"%s",gtk_combo_box_get_active_text(g->combobox1));
   dt_dev_add_history_item(darktable.develop, self);
 }
@@ -484,7 +496,7 @@ void init(dt_iop_module_t *module)
   module->priority = 999;
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
-  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,4}; // opacity,scale,xoffs,yoffs,alignment
+  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,4,{"darktable.svg"}}; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
 }
@@ -559,7 +571,7 @@ void gui_init(struct dt_iop_module_t *self)
   // x/y offset
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
-   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale3 ), 1,2,4,5,GTK_EXPAND|GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale3 ), 1,2,4,5,GTK_EXPAND|GTK_FILL,0,0,0);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale4 ), 1,2,5,6,GTK_EXPAND|GTK_FILL,0,0,0);
  
   
