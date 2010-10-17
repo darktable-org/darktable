@@ -193,7 +193,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         for(int c=0;c<3;c++) out[c] = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
           out[0] += m[l*wd+k]*in[3*(l*roi_in->width+k)];
-	out += 3; in += 3;
+        out += 3; in += 3;
       }
     }
     
@@ -246,7 +246,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #else
   dt_iop_zonesystem_data_t *d = (dt_iop_zonesystem_data_t *)piece->data;
-  for(int i=0;i<MAX_ZONE_SYSTEM_SIZE;i++)
+  d->size = p->size;
+  for(int i=0;i<=MAX_ZONE_SYSTEM_SIZE;i++)
     d->zone[i] = p->zone[i];
 #endif
 }
