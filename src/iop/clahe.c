@@ -370,8 +370,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("radius")));
@@ -386,8 +386,8 @@ void gui_init(struct dt_iop_module_t *self)
   
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("size of features to preserve"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the effect"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("size of features to preserve"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the effect"), (char *)NULL);
   
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);

@@ -74,6 +74,8 @@ create_callback(GtkButton *button, gpointer user_data)
   dt_lib_capture_t *lib=self->data;
 
   dt_conf_set_string("plugins/capture/jobcode", gtk_entry_get_text(lib->gui.entry1) );
+  dt_conf_set_int("plugins/capture/current_filmroll", -1);
+
   dt_capture_view_set_jobcode(dt_view_manager_get_current_view( darktable.view_manager ), gtk_entry_get_text( lib->gui.entry1 ) );
 }
 
@@ -102,6 +104,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
   
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
  
   lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label( _("create") ));

@@ -24,13 +24,6 @@
 
 #define DT_HIST_INSET 5
 
-void 
-_histogram_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
-  // Reset size to match panel width
-  int height = a->width*0.5;
-  gtk_widget_set_size_request(w,a->width,height);
-}
 
 void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
 {
@@ -39,7 +32,7 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
   n->exposure = NULL;
 
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
-      _("drag to change exposure,\ndoubleclick resets"), NULL);
+      _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_gui_histogram_expose), n);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
@@ -52,8 +45,6 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_leave_notify), n);
   g_signal_connect (G_OBJECT (widget), "enter-notify-event",
                     G_CALLBACK (dt_gui_histogram_enter_notify), n);
-  g_signal_connect (G_OBJECT (widget), "size-allocate",
-                    G_CALLBACK (_histogram_size_allocate), n);
   
   gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 }
@@ -65,7 +56,6 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
   dt_develop_t *dev = darktable.develop;
   float *hist = dev->histogram;
   float hist_max = dev->histogram_max;
-  if(hist_max <= 0.0) return FALSE;
   const int inset = DT_HIST_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -189,12 +179,12 @@ gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event
     else if(pos < 0.2)
     {
       n->highlight = 1;
-      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change black point,\ndoubleclick resets"), NULL);
+      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change black point,\ndoubleclick resets"), (char *)NULL);
     }
     else
     {
       n->highlight = 2;
-      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"), NULL);
+      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
     }
     gtk_widget_queue_draw(widget);
   }

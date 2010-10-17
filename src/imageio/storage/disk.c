@@ -65,7 +65,7 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
               GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -102,6 +102,7 @@ gui_init (dt_imageio_module_storage_t *self)
     g_free(dir);
   }
   d->entry = GTK_ENTRY(widget);
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
                                                        "$(FILE_DIRECTORY) - directory of the input image\n"
                                                        "$(FILE_NAME) - basename of the input image\n"
@@ -116,10 +117,10 @@ gui_init (dt_imageio_module_storage_t *self)
                                                        "$(PICTURES_FOLDER) - pictures folder\n"
                                                        "$(HOME_FOLDER) - home folder\n"
                                                        "$(DESKTOP_FOLDER) - desktop folder"
-                                                       ), NULL);
+                                                       ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), NULL);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 }
@@ -149,9 +150,16 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   char filename[1024]={0};
   char dirname[1024]={0};
   dt_image_full_path(img, dirname, 1024);
+  int fail = 0;
+  // we're potentially called in parallel. have sequence number synchronized:
+#ifdef _OPENMP
+  #pragma omp critical
+#endif
+  {
   d->vp->filename = dirname;
   d->vp->jobcode = "export";
   d->vp->img = img;
+  d->vp->sequence = num;
   dt_variables_expand(d->vp, d->filename, TRUE);
   strncpy(filename, dt_variables_get_result(d->vp), 1024);
   strncpy(dirname, filename, 1024);
@@ -164,19 +172,32 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     fprintf(stderr, "[imageio_storage_disk] could not create directory %s!\n", dirname);
     dt_control_log(_("could not create directory %s!"), dirname);
     dt_image_cache_release(img, 'r');
-    return 1;
+    fail = 1;
+    goto failed;
   }
 
   c = filename + strlen(filename);
-  for(;c>filename && *c != '.';c--);
-  if(c <= filename) c = filename + strlen(filename);
+  for(;c>filename && *c != '.' && *c != '/' ;c--);
+  if(c <= filename || *c=='/') c = filename + strlen(filename);
 
   const char *ext = format->extension(fdata);
+  sprintf(c,".%s",ext);
+  
+  /* prevent overwrite of files */
+  int seq=1;
+failed:
+  if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
+  {
+    do {
+      sprintf(c,"_%.2d.%s",seq,ext);
+      seq++;
+    } while (g_file_test (filename,G_FILE_TEST_EXISTS));
+  }
 
-  // avoid name clashes for single images:
-  if(img->film_id == 1 && !strcmp(c+1, ext)) { strncpy(c, "_dt", 3); c += 3; }
-  *c = '.';
-  strncpy(c+1, ext, strlen(ext)+1);
+  } // end of critical block
+  if(fail) return 1;
+
+  /* export image to file */
   dt_imageio_export(img, filename, format, fdata);
   dt_image_cache_release(img, 'r');
 

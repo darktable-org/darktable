@@ -17,7 +17,6 @@
 */
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "gui/panel_sizegroup.h"
 #include "dtgtk/button.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -133,11 +132,11 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, name);
   gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->name), "tooltip-text", _("name of the preset"), NULL);
+  gtk_object_set(GTK_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
 
   g->description = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->description), "tooltip-text", _("description or further information"), NULL);
+  gtk_object_set(GTK_OBJECT(g->description), "tooltip-text", _("description or further information"), (char *)NULL);
 
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(darktable.db, "select description from presets where name = ?1 and operation = ?2", -1, &stmt, NULL);
@@ -286,7 +285,7 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       mi = gtk_menu_item_new_with_label((const char *)sqlite3_column_text(stmt, 0));
     }
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
-    gtk_object_set(GTK_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), NULL);
+    gtk_object_set(GTK_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt ++;
   }
@@ -431,6 +430,7 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
     GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
     gtk_container_set_focus_child(box, GTK_WIDGET(module->expander));
     // redraw gui (in case post expose is set)
+    gtk_widget_queue_resize(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
     dt_control_gui_queue_draw();
   }
   else
@@ -492,15 +492,15 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset,0));
+  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), NULL);
+  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   if(module->get_params)
   {
-    GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,0));
+    GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
-    gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), NULL);
+    gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
     gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (presetsbutton), "clicked", G_CALLBACK (popup_callback), module);
   }
@@ -521,11 +521,6 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
 
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
-  
-  //gtk_widget_set_name(evb,module->name());
-  dt_gui_panel_sizegroup_add (evb);
-  //dt_gui_panel_sizegroup_add (module->widget);
-
   
   return evb;
 }

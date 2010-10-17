@@ -23,14 +23,6 @@
 #include <math.h>
 #define DT_NAVIGATION_INSET 5
 
-void 
-_navigation_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
-  // Reset size to match panel width
-  int height = a->width*0.5;
-  gtk_widget_set_size_request(w,a->width,height);
-}
-
 
 void dt_gui_navigation_init(dt_gui_navigation_t *n, GtkWidget *widget)
 {
@@ -48,8 +40,6 @@ void dt_gui_navigation_init(dt_gui_navigation_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_navigation_motion_notify), n);
   g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (dt_gui_navigation_leave_notify), n);
-  g_signal_connect (G_OBJECT (widget), "size-allocate",
-                    G_CALLBACK (_navigation_size_allocate), n);	
 }
 
 void dt_gui_navigation_cleanup(dt_gui_navigation_t *n) {}

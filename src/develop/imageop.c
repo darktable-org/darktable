@@ -19,7 +19,6 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
-#include "gui/panel_sizegroup.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 
@@ -177,7 +176,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   }
   if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
-  if(!g_module_symbol(module->module, "groups",                   (gpointer)&(module->groups)))                   module->groups = _default_groups;
+  if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = _default_groups;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
@@ -318,7 +317,7 @@ void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   }
   char tooltip[512];
   snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-  gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, NULL);
+  gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
 static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
@@ -330,7 +329,7 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
   {
     gtk_widget_show(module->widget);
     // register to receive draw events
-    module->dev->gui_module = module;
+    dt_iop_request_focus(module);
     // hide all other module widgets
 #if 0 // TODO: make this an option. it is quite annoying when using expose/tonecurve together.
     GList *iop = module->dev->iop;
@@ -344,13 +343,14 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
     GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
     gtk_container_set_focus_child(box, module->topwidget);
     // redraw gui (in case post expose is set)
+    gtk_widget_queue_resize(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
     dt_control_gui_queue_draw();
   }
   else
   {
     if(module->dev->gui_module == module)
     {
-      module->dev->gui_module = NULL;
+      dt_iop_request_focus(NULL);
       dt_control_gui_queue_draw();
     }
     gtk_widget_hide(module->widget);
@@ -400,6 +400,25 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
 
+void dt_iop_request_focus(dt_iop_module_t *module)
+{
+  if(darktable.develop->gui_module)
+  {
+    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+    GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
+    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+  }
+  darktable.develop->gui_module = module;
+  if(module)
+  {
+    gtk_widget_set_state(module->topwidget, GTK_STATE_SELECTED);
+    gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+    GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
+    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+  }
+  dt_control_change_cursor(GDK_LEFT_PTR);
+}
+
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
@@ -410,24 +429,30 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   if(!module->hide_enable_button)
   {
     // GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
-    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch,0));
+    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+    gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
     char tooltip[512];
     snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, NULL);
+    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (button), "toggled",
                       G_CALLBACK (dt_iop_gui_off_callback), module);
     module->off = button;
   }
+  else
+  {
+     GtkWidget *w = gtk_expander_get_label_widget (module->expander);
+     gtk_misc_set_padding(GTK_MISC(w), 13, 0);
+  }
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset,0));
-  GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,0));
+  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), NULL);
-  gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), NULL);
+  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -451,7 +476,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
-  dt_gui_panel_sizegroup_add (evb);
   return evb;
 }
 
@@ -488,28 +512,32 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
   }
 }
 
-void dt_iop_clip_and_zoom_hq_downsample(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
-                                              float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
+void dt_iop_clip_and_zoom_hq_downsample(const float *i, const int32_t ix, const int32_t iy, const int32_t iw, const int32_t ih, const int32_t ibw, const int32_t ibh,
+                                              float *o, const int32_t ox, const int32_t oy, const int32_t ow, const int32_t oh, const int32_t obw, const int32_t obh)
 {
   // general case
   const float fib2 = 34.0f, fib1 = 21.0f;
   const float scalex = iw/(float)ow;
   const float scaley = ih/(float)oh;
-  int32_t ix2 = MAX(ix, 0);
-  int32_t iy2 = MAX(iy, 0);
-  int32_t ox2 = MAX(ox, 0);
-  int32_t oy2 = MAX(oy, 0);
-  int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
-  int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
+  const int32_t ix2 = MAX(ix, 0);
+  const int32_t iy2 = MAX(iy, 0);
+  const int32_t ox2 = MAX(ox, 0);
+  const int32_t oy2 = MAX(oy, 0);
+  const int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
+  const int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
   g_assert((int)(ix2 + ow2*scalex) <= ibw);
   g_assert((int)(iy2 + oh2*scaley) <= ibh);
   g_assert(ox2 + ow2 <= obw);
   g_assert(oy2 + oh2 <= obh);
   g_assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
-  float x = ix2, y = iy2;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(i, o) schedule(static)
+#endif
   for(int s=0;s<oh2;s++)
   {
     int idx = ox2 + obw*(oy2+s);
+    float y = iy2 + s*scaley;
+    float x = ix2;
     for(int t=0;t<ow2;t++)
     {
       // rank-1 resampling with fibonacci lattice for 21 points
@@ -521,7 +549,6 @@ void dt_iop_clip_and_zoom_hq_downsample(const float *i, int32_t ix, int32_t iy, 
       }
       x += scalex; idx++;
     }
-    y += scaley; x = ix2;
   }
 }
 

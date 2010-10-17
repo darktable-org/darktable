@@ -1,0 +1,33 @@
+<!ENTITY img_module_expander "../images/darkroom_module_expander.png">
+<!ENTITY icon_module_presets "../images/darkroom_module_icon_presets.png">
+<!ENTITY icon_module_enable "../images/darkroom_module_icon_enable.png">
+<!ENTITY icon_module_reset "../images/darkroom_module_icon_reset.png">
+
+<!ENTITY darkroom_modules SYSTEM "../darkroom/modules/modules.xml">
+<!ENTITY darkroom_module_rawimport SYSTEM "../darkroom/modules/rawimport.xml">	
+<!ENTITY darkroom_module_denoise SYSTEM "../darkroom/modules/denoise.xml">
+<!ENTITY darkroom_module_exposure SYSTEM "../darkroom/modules/exposure.xml">
+<!ENTITY darkroom_module_whitebalance SYSTEM "../darkroom/modules/whitebalance.xml">
+<!ENTITY darkroom_module_highlightreconstruction SYSTEM "../darkroom/modules/highlightreconstruction.xml">
+<!ENTITY darkroom_module_graduatedneutraldensity SYSTEM "../darkroom/modules/graduatedneutraldensity.xml">
+<!ENTITY darkroom_module_relight SYSTEM "../darkroom/modules/relight.xml">
+<!ENTITY darkroom_module_basecurve SYSTEM "../darkroom/modules/basecurve.xml">
+<!ENTITY darkroom_module_unbreakinputprofile SYSTEM "../darkroom/modules/unbreakinputprofile.xml">
+<!ENTITY darkroom_module_inputcolorprofile SYSTEM "../darkroom/modules/inputcolorprofile.xml">
+<!ENTITY darkroom_module_colortransfer SYSTEM "../darkroom/modules/colortransfer.xml">
+<!ENTITY darkroom_module_equalizer SYSTEM "../darkroom/modules/equalizer.xml">
+<!ENTITY darkroom_module_monochrome SYSTEM "../darkroom/modules/monochrome.xml">
+<!ENTITY darkroom_module_tonecurve SYSTEM "../darkroom/modules/tonecurve.xml">
+<!ENTITY darkroom_module_colorzones SYSTEM "../darkroom/modules/colorzones.xml">
+<!ENTITY darkroom_module_colorcorrection SYSTEM "../darkroom/modules/colorcorrection.xml">
+<!ENTITY darkroom_module_outputcolorprofile SYSTEM "../darkroom/modules/outputcolorprofile.xml">
+<!ENTITY darkroom_module_lenscorrection SYSTEM "../darkroom/modules/lenscorrection.xml">
+<!ENTITY darkroom_module_clipping SYSTEM "../darkroom/modules/clipping.xml">
+<!ENTITY darkroom_module_channelmixer SYSTEM "../darkroom/modules/channelmixer.xml">
+<!ENTITY darkroom_module_localcontrast SYSTEM "../darkroom/modules/localcontrast.xml">
+<!ENTITY darkroom_module_velvia SYSTEM "../darkroom/modules/velvia.xml">
+<!ENTITY darkroom_module_sharpen SYSTEM "../darkroom/modules/sharpen.xml">
+<!ENTITY darkroom_module_grain SYSTEM "../darkroom/modules/grain.xml">
+<!ENTITY darkroom_module_vignetting SYSTEM "../darkroom/modules/vignetting.xml">
+<!ENTITY darkroom_module_splittoning SYSTEM "../darkroom/modules/splittoning.xml">
+

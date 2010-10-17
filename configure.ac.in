@@ -1,4 +1,4 @@
-AC_INIT([darktable], [0.6.1~rc], [hanatos@gmail.com])
+AC_INIT([darktable], [REPLACE_WITH_DT_VERSION], [hanatos@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_CONFIG_MACRO_DIR([m4])
@@ -6,7 +6,7 @@ AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_CXX
 IT_PROG_INTLTOOL([0.40])
-ALL_LINGUAS="de es fi fr gl nl ru sv"
+ALL_LINGUAS="ca de es fi fr gl nl pl ru sv"
 AM_GLIB_GNU_GETTEXT
 AM_GLIB_DEFINE_LOCALEDIR(DARKTABLE_LOCALEDIR)
 GETTEXT_PACKAGE=darktable
@@ -61,9 +61,9 @@ fi
 if test "$try_openmp" = "yes"; then
     AC_OPENMP
     if test "$CC" = "icc"; then
-      OPENMP_LDFLAGS="-lguide"
+      AC_CHECK_LIB([guide], [omp_get_num_procs])
     else
-      OPENMP_LDFLAGS="-lgomp"
+      AC_CHECK_LIB([gomp], [omp_get_num_procs])
     fi
     AC_SUBST([OPENMP_LDFLAGS])
 fi
@@ -121,14 +121,14 @@ PKG_CHECK_MODULES(GPHOTO2, [libgphoto2 >= 2.4.5])
 PKG_CHECK_MODULES(CURL, [libcurl >= 7.18.0])
 PKG_CHECK_MODULES(DBUSGLIB, [dbus-glib-1 >= 0.80])
 
-AC_ARG_ENABLE(gnome-keyring,
-	      AC_HELP_STRING([--enable-gnome-keyring], [build the gnome keyring pw storage backend]),
+AC_ARG_ENABLE(gkeyring,
+	      AC_HELP_STRING([--enable-gkeyring], [build the gnome keyring pw storage backend]),
         [
-          if test "$enable_gnome-keyring" = "yes"; then
+          if test "$enable_gkeyring" = "yes"; then
              PKG_CHECK_MODULES(GNOME_KEYRING, gnome-keyring-1 >= 2.28.0)
              AC_DEFINE(HAVE_GNOME_KEYRING, 1, [whether build the gnome-keyring pwstorage backend])
           fi
-          AM_CONDITIONAL([HAVE_GNOME_KEYRING], [test "$enable_gnome-keyring" = yes])
+          AM_CONDITIONAL([HAVE_GNOME_KEYRING], [test "$enable_gkeyring" = "yes"])
         ],
         [
           PKG_CHECK_MODULES(GNOME_KEYRING, gnome-keyring-1 >= 2.28.0)
@@ -146,7 +146,7 @@ AC_ARG_ENABLE(lensfun,
              PKG_CHECK_MODULES(LENSFUN, lensfun >= 0.2.3)
              AC_DEFINE(HAVE_LENSFUN, 1, [whether build the lensfun plugin])
           fi
-          AM_CONDITIONAL([HAVE_LENSFUN], [test "$enable_lensfun" = yes])
+          AM_CONDITIONAL([HAVE_LENSFUN], [test "$enable_lensfun" = "yes"])
         ],
         [
           PKG_CHECK_MODULES(LENSFUN, lensfun >= 0.2.3)
@@ -219,6 +219,53 @@ if test $darwin = yes; then
 fi
 AC_SUBST(CARBON_LIBS)
 
+can_build_usermanual=yes
+AC_ARG_ENABLE(docs, AC_HELP_STRING([--enable-docs], [build usermanual]),
+        [
+          if test "$enable_docs" = "yes"; then
+             AC_PATH_PROG([xsltproc],[xsltproc])
+             if test -z "$xsltproc"; then
+                     AC_MSG_ERROR([xsltproc was not found. If you want to change and compile the documentation, \
+please install libxslt (http://xmlsoft.org/XSLT/)])
+                     can_build_usermanual=no
+             fi
+		AC_PATH_PROG([xml2po],[xml2po])
+             if test -z "$xml2po"; then
+                     AC_MSG_ERROR([xml2po was not found. If you want to change and compile the documentation, \
+please install xml2po])
+                     can_build_usermanual=no
+             fi
+             AC_PATH_PROG([fop],[fop])
+             if test -z "$fop"; then
+                     AC_MSG_ERROR([fop was not found. If you want to change and compile the documentation, \
+please install fop (http://xml.apache.org)])
+                     can_build_usermanual=no
+             fi
+          else
+             can_build_usermanual=no
+          fi
+        ],
+        [
+             can_build_usermanual=no
+             dnl ** AC_PATH_PROG([xsltproc],[xsltproc])
+             dnl ** if test -z "$xsltproc"; then
+             dnl **         AC_MSG_WARN([xsltproc was not found. If you want to change and compile the documentation, \
+             dnl ** please install libxslt (http://xmlsoft.org/XSLT/)])
+             dnl **         can_build_usermanual=no
+             dnl ** fi
+             dnl ** AC_PATH_PROG([fop],[fop])
+             dnl ** if test -z "$fop"; then
+             dnl **         AC_MSG_WARN([fop was not found. If you want to change and compile the documentation, \
+             dnl ** please install fop (http://xml.apache.org)])
+             dnl **         can_build_usermanual=no
+             dnl ** fi
+        ]
+        )
+AC_DEFINE(HAVE_DOCS, 1, [whether darktable usermanual can be changed and compiled])
+AM_CONDITIONAL([HAVE_DOCS], [test "$can_build_usermanual" = "yes"])
+AC_MSG_CHECKING([whether darktable usermanual can be changed and compiled])
+AC_MSG_RESULT($can_build_usermanual)
+AC_SUBST(can_build_usermanual)
 
 
 AC_CONFIG_HEADERS([config.h])
@@ -246,6 +293,10 @@ AC_CONFIG_FILES([
     src/imageio/format/Makefile
     src/imageio/storage/Makefile
     watermarks/Makefile
+    doc/Makefile
+    doc/usermanual/Makefile
+    doc/usermanual/po/Makefile
+    tools/Makefile
     ])
 dnl    src/gegl-operations/Makefile
 AC_OUTPUT

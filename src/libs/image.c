@@ -18,6 +18,8 @@
 #include "common/darktable.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
+#include "dtgtk/paint.h"
 #include "libs/lib.h"
 #include "control/jobs.h"
 #include <stdlib.h>
@@ -53,8 +55,11 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   long int i = (long int)user_data;
   if     (i == 0) dt_control_remove_images();
   else if(i == 1) dt_control_delete_images();
-  else if(i == 2) dt_control_write_dt_files();
+  else if(i == 2) dt_control_write_sidecar_files();
   else if(i == 3) dt_control_duplicate_images();
+  else if(i == 4) dt_control_flip_images(0);
+  else if(i == 5) dt_control_flip_images(1);
+  else if(i == 6) dt_control_flip_images(2);
   dt_control_queue_draw_all();
 }
 
@@ -75,27 +80,47 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("remove"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("remove from the collection"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("remove from the collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
   button = gtk_button_new_with_label(_("delete"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("physically delete from disk"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("write dt files"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write history stack and tags to sidecar files"), NULL);
+  button = gtk_button_new_with_label(_("write sidecar files"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)2);
 
   button = gtk_button_new_with_label(_("duplicate"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
+  GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
+  gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
+
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
+  gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
+  gtk_box_pack_start(hbox, GTK_WIDGET(hbox2), TRUE, TRUE, 0);
+
+  button = gtk_button_new_with_label(_("reset rotation"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }

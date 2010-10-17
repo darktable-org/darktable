@@ -31,6 +31,29 @@ The application relies on a modern plug-in architecture thus making it easy for
 All light-table and darkroom features are implemented as plug-ins, so you can 
 create your plug-ins reusing existing code.
 
+=head1 COMMAND LINE ARGUMENTS
+
+=over
+
+=item B<-d control>
+
+Enable job queue debugging. If you redirect darktables output to B<control.log> and
+call B<./tools/create_control_svg.sh control.log>, you will get a nice B<control.svg>
+with a visualization of the threads' work.
+
+=item B<-d cache>
+
+This will give you a lot of debugging info about the mipmap cache for light table mode. If
+compiled in debug mode, this will also tell you where in the code a certain buffer has
+last been locked.
+
+=item B<-d perf>
+
+Use this for performance tweaking your darkroom modules. It will rdtsc-measure the
+runtimes of all plugins and print them to stdout.
+
+=back
+
 =head1 OTHER INFO
 
 Please visit B<darktable>'s website for news, bug tracker and forum: L<http://darktable.sourceforge.net>
@@ -53,21 +76,29 @@ Show/hide sidebars
 
 Switch between light-table and darkroom modes
 
+=item B<F7>
+
+Decrease contrast
+
+=item B<F8>
+
+Increase contrast
+
 =back
 
 Lighttable mode:
 
 =over
 
-=item B<1>
+=item B<alt-1>
 
 Zoom in on image under cursor
 
-=item B<2, 3>
+=item B<alt-2, 3>
 
 Adjust zoom
 
-=item B<4>
+=item B<alt-4>
 
 Zoom out completely
 
@@ -79,7 +110,7 @@ Zoom out to fit all images in one row inside viewport, center on image under cur
 
 Move around (arrows also work)
 
-=item B<alt-1, 2, 3, 4>
+=item B<1, 2, 3, 4>
 
 Star rating
 
@@ -87,7 +118,7 @@ Star rating
 
 Strip all stars (reject image)
 
-=item B<ctrl-1, 2, 3>
+=item B<F1, F2, F3>
 
 Color labels: toggle red, yellow, green
 
@@ -105,7 +136,7 @@ Darkroom mode:
 
 =over
 
-=item B<1, 2, 3>
+=item B<alt-1, 2, 3>
 
 Zoom to 1:1, fill, and fit, respectively
 

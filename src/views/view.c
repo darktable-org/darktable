@@ -115,12 +115,13 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "enter",           (gpointer)&(view->enter)))           view->enter = NULL;
   if(!g_module_symbol(view->module, "leave",           (gpointer)&(view->leave)))           view->leave = NULL;
   if(!g_module_symbol(view->module, "reset",           (gpointer)&(view->reset)))           view->reset = NULL;
+  if(!g_module_symbol(view->module, "mouse_enter",     (gpointer)&(view->mouse_enter)))     view->mouse_enter= NULL;
   if(!g_module_symbol(view->module, "mouse_leave",     (gpointer)&(view->mouse_leave)))     view->mouse_leave = NULL;
   if(!g_module_symbol(view->module, "mouse_moved",     (gpointer)&(view->mouse_moved)))     view->mouse_moved = NULL;
   if(!g_module_symbol(view->module, "button_released", (gpointer)&(view->button_released))) view->button_released = NULL;
   if(!g_module_symbol(view->module, "button_pressed",  (gpointer)&(view->button_pressed)))  view->button_pressed = NULL;
   if(!g_module_symbol(view->module, "key_pressed",     (gpointer)&(view->key_pressed)))     view->key_pressed = NULL;
-  if(!g_module_symbol(view->module, "key_released",     (gpointer)&(view->key_released)))     view->key_released = NULL;
+  if(!g_module_symbol(view->module, "key_released",    (gpointer)&(view->key_released)))    view->key_released = NULL;
   if(!g_module_symbol(view->module, "configure",       (gpointer)&(view->configure)))       view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled",        (gpointer)&(view->scrolled)))        view->scrolled = NULL;
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
@@ -193,8 +194,14 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     v->height = height*(1.0-vm->film_strip_size) - tb;
     vm->film_strip.height = height * vm->film_strip_size;
     vm->film_strip.width  = width;
-    cairo_rectangle(cr, 0, v->height, width, tb);
-    cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
+    cairo_rectangle(cr, -10, v->height, width+20, tb);
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkStyle *style = gtk_widget_get_style(widget);
+    cairo_set_source_rgb (cr, 
+      style->bg[GTK_STATE_NORMAL].red/65535.0, 
+      style->bg[GTK_STATE_NORMAL].green/65535.0, 
+      style->bg[GTK_STATE_NORMAL].blue/65535.0
+    );
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 1.5);
     cairo_set_source_rgb (cr, .1, .1, .1);
@@ -231,6 +238,15 @@ void dt_view_manager_mouse_leave (dt_view_manager_t *vm)
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->mouse_leave) v->mouse_leave(v);
+  if(vm->film_strip_on && vm->film_strip.mouse_leave) vm->film_strip.mouse_leave(&vm->film_strip);
+}
+
+void dt_view_manager_mouse_enter (dt_view_manager_t *vm)
+{
+  if(vm->current_view < 0) return;
+  dt_view_t *v = vm->view + vm->current_view;
+  if(vm->film_strip_on && vm->film_strip.mouse_enter) vm->film_strip.mouse_enter(&vm->film_strip);
+  if(v->mouse_enter) v->mouse_enter(v);
 }
 
 void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
@@ -312,13 +328,13 @@ void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
   }
 }
 
-void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up)
+void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up, int state)
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.scrolled)
-    return vm->film_strip.scrolled(&vm->film_strip, x, y - v->height - darktable.control->tabborder, up);
-  if(v->scrolled) v->scrolled(v, x, y, up);
+    return vm->film_strip.scrolled(&vm->film_strip, x, y - v->height - darktable.control->tabborder, up, state);
+  if(v->scrolled) v->scrolled(v, x, y, up, state);
 }
 
 void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up)
@@ -457,8 +473,10 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   {
     mip = dt_image_get_matching_mip_size(img, imgwd*width, imgwd*height, &iwd, &iht);
     mip = dt_image_get(img, mip, 'r');
-    dt_image_get_mip_size(img, mip, &iwd, &iht);
-    dt_image_get_exact_mip_size(img, mip, &fwd, &fht);
+    iwd = img->mip_width[mip]; iht = img->mip_height[mip];
+    fwd = img->mip_width_f[mip]; fht = img->mip_height_f[mip];
+    // dt_image_get_mip_size(img, mip, &iwd, &iht);
+    // dt_image_get_exact_mip_size(img, mip, &fwd, &fht);
   }
   cairo_surface_t *surface = NULL;
   if(mip != DT_IMAGE_NONE)
@@ -602,17 +620,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     {
       cairo_save(cr);
       int col = sqlite3_column_int(stmt, 0);
-      if     (col == 0) cairo_set_source_rgb(cr, 0.8, 0.2, 0.2);
-      else if(col == 1) cairo_set_source_rgb(cr, 0.8, 0.8, 0.2);
-      else if(col == 2) cairo_set_source_rgb(cr, 0.2, 0.8, 0.2);
-      cairo_translate(cr, 4*r*col, 0.0);
-      cairo_translate(cr, x, y);
-      // cairo_scale(cr, .6, 1.);
-      cairo_arc(cr, 0.0, 0.0, r, 0.0, 2.0*M_PI);
-      cairo_fill_preserve(cr);
-      cairo_set_line_width(cr, 2.0);
-      cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-      cairo_stroke(cr);
+      // see src/dtgtk/paint.c
+      dtgtk_cairo_paint_label(cr, x+(4*r*col)-r, y-r, r*2, r*2, col);
       cairo_restore(cr);
     }
     sqlite3_finalize(stmt);

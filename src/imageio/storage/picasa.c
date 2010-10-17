@@ -18,6 +18,7 @@
 
 #include "dtgtk/button.h"
 #include "dtgtk/label.h"
+#include "gui/gtk.h"
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -202,8 +203,7 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       "</entry>",
       caption,description);
   
-  
-  
+
   // Hack for nonform multipart post...
   gchar mpart1[4096]={0};
   gchar *mpart_format="Media multipart posting\n--END_OF_PART\nContent-Type: application/atom+xml\n\n%s\n--END_OF_PART\nContent-Type: %s\n\n";
@@ -227,11 +227,13 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, uri);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,0);   // A post request !
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POST,1);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDS, postdata);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POSTFIELDSIZE, postdata_length);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &buffer);
+
   curl_easy_perform( ctx->curl_handle );
 
   curl_slist_free_all(headers);
@@ -252,7 +254,7 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       if( i < g_list_length( tags )-1)
         g_strlcat(keywords,", ",4096);
     }
-    
+
     xmlDocPtr doc;
     xmlNodePtr entryNode;
     // Parse xml document
@@ -298,7 +300,6 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       }
       
       // Let's update the photo 
-      
       struct curl_slist *headers = NULL;
       headers = curl_slist_append(headers,ctx->authHeader);
       headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
@@ -311,12 +312,13 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
   
       // Setup data to send..
       _buffer_t writebuffer;
-      
-      xmlDocDumpMemory(doc,(xmlChar **)&writebuffer.data,(int *)&writebuffer.size);
+      int datasize;
+      xmlDocDumpMemory(doc,(xmlChar **)&writebuffer.data, &datasize);
+      writebuffer.size = datasize;
       writebuffer.offset=0;
       
       curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, updateUri);
-      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,1);   // A put request
       curl_easy_setopt(ctx->curl_handle, CURLOPT_READDATA,&writebuffer);
@@ -324,10 +326,13 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       curl_easy_setopt(ctx->curl_handle, CURLOPT_READFUNCTION,_picasa_api_buffer_read_func);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEDATA, &response);
-      curl_easy_perform( ctx->curl_handle ); 
-      
+      curl_easy_perform( ctx->curl_handle );   
+
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
+      if (response.data != NULL)
+  g_free(response.data);
+
       curl_slist_free_all( headers );
     }
     
@@ -621,6 +626,7 @@ void button1_clicked(GtkButton *button,gpointer data) {
   refresh_albums(ui);
 }
 
+/*
 static gboolean
 focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
 {
@@ -634,6 +640,7 @@ focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
   dt_control_tab_shortcut_on(darktable.control);
   return FALSE;
 }
+*/
 
 void
 gui_init (dt_imageio_module_storage_t *self)
@@ -666,9 +673,16 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
   ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
 
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry1));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry2));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry3));
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry4));
+  
+/*
   gtk_widget_add_events(GTK_WIDGET(ui->entry1), GDK_FOCUS_CHANGE_MASK);
   g_signal_connect (G_OBJECT (ui->entry1), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
   g_signal_connect (G_OBJECT (ui->entry1), "focus-out-event", G_CALLBACK(focus_out), NULL);
+  
   gtk_widget_add_events(GTK_WIDGET(ui->entry2), GDK_FOCUS_CHANGE_MASK);
   g_signal_connect (G_OBJECT (ui->entry2), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
   g_signal_connect (G_OBJECT (ui->entry2), "focus-out-event", G_CALLBACK(focus_out), NULL);
@@ -678,7 +692,7 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_widget_add_events(GTK_WIDGET(ui->entry4), GDK_FOCUS_CHANGE_MASK);
   g_signal_connect (G_OBJECT (ui->entry4), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
   g_signal_connect (G_OBJECT (ui->entry4), "focus-out-event", G_CALLBACK(focus_out), NULL);
-
+*/
   GHashTable* table = dt_pwstorage_get("picasa");
   gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
   gchar* _password = g_strdup( g_hash_table_lookup(table, "password"));
@@ -698,13 +712,13 @@ gui_init (dt_imageio_module_storage_t *self)
   while(it)
   {
     GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
-    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
     it = g_list_next(it);
   }
   g_list_free(renderers);
   
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
-  gtk_object_set(GTK_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), NULL);
+  gtk_object_set(GTK_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
   gtk_combo_box_set_row_separator_func(ui->comboBox1,combobox_separator,ui->comboBox1,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
@@ -778,11 +792,17 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   int result=1;
   dt_storage_picasa_params_t *p=(dt_storage_picasa_params_t *)sdata;
   
+  int fail = 0;
+#ifdef _OPENMP // synch parallel store
+  #pragma omp critical
+#endif
   if( p->picasa_api->current_album == NULL ) 
     if( _picasa_api_create_album( p->picasa_api ) != 201 ) {
       dt_control_log("failed to create picasa album");
-      return 1; 
+      fail = 1;
     }
+
+  if(fail) return 1;
   
   const char *ext = format->extension(fdata);
 
@@ -827,6 +847,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   int size = g_mapped_file_get_length( imgfile );
   gchar *data =g_mapped_file_get_contents( imgfile );
   
+#ifdef _OPENMP
+  #pragma omp critical
+#endif
   // Upload image to picasa
   if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 ) 
     result=0;

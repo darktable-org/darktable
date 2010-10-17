@@ -54,20 +54,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in = (float *)i;
   float *out = (float *)o;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, d) schedule(static)
+#endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-#if 1 // in L(a/L)(b/L) float:
-    // uint32_t tmp = 0x3f800000ul | (d->table[CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff)]<<7);
-    // out[0] = *(float *)&tmp - 1.0f;
     // in Lab: correct compressed Luminance for saturation:
-    const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
-    out[0] = d->table[t];
-    out[1] = in[1];
-    out[2] = in[2];
-#else // in sRGB
-    for(int c=0;c<3;c++) out[c] = d->table[CLAMP((int)(in[c]*0x10000ul), 0, 0xffff)];
-#endif
-    in += 3; out += 3;
+    const int t = CLAMP((int)(in[3*k]/100.0*0xfffful), 0, 0xffff);
+    out[3*k+0] = d->table[t];
+    out[3*k+1] = in[3*k+1];
+    out[3*k+2] = in[3*k+2];
   }
 }
 
@@ -176,14 +172,6 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void 
-_tonecurve_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
- // Reset size to match panel width
-  int width = a->width*0.8;
-  int height = width;
-  gtk_widget_set_size_request(w,width,height);
-}
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_tonecurve_gui_data_t));
@@ -202,7 +190,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
- // gtk_drawing_area_size(c->area, 258, 258);
+  gtk_drawing_area_size(c->area, 258, 258);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -215,8 +203,6 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_tonecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_tonecurve_leave_notify), self);
- g_signal_connect (G_OBJECT (asp), "size-allocate",
-                    G_CALLBACK (_tonecurve_size_allocate), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

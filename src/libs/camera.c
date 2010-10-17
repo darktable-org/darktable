@@ -51,7 +51,13 @@ typedef struct dt_lib_camera_t
       GtkDarktableToggleButton *tb1,*tb2;        // Delayed capture, Sequenced capture
       GtkWidget *sb1,*sb2;                         // delay, sequence
       GtkWidget *button1;
-      GList *properties;    // a list of dt_lib_camera_property_t
+    
+      GtkBox *pvbox1,*pvbox2;                  // propertylabel,widget    
+      GtkWidget *plabel,*pname;                  // propertylabel,widget    
+      GList *properties;                            // a list of dt_lib_camera_property_t
+    
+      GtkMenu *properties_menu;                     // available properties 
+    
   } gui;
   
   /** Data part of the module */
@@ -110,7 +116,7 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       prop->values=GTK_COMBO_BOX(gtk_combo_box_new_text());
       
       prop->osd=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye,0));
-      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), NULL);
+      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), (char *)NULL);
       do
       {    
         gtk_combo_box_append_text(prop->values, value);
@@ -165,6 +171,26 @@ static void _camera_property_accessibility_changed(const dt_camera_t *camera,con
 {  
 }
 
+gboolean _bailout_of_tethering(gpointer user_data)
+{
+  /* consider all error types as failure and bailout of tethering mode */
+  dt_lib_camera_t *lib= (dt_lib_camera_t *)user_data;
+  dt_camctl_tether_mode (darktable.camctl,NULL,FALSE);
+  dt_camctl_unregister_listener (darktable.camctl,lib->data.listener);
+  
+  /* switch back to library mode */
+  dt_ctl_switch_mode_to (DT_LIBRARY);
+  
+  return FALSE;
+}
+
+/** Invoked when camera error appear */
+static void _camera_error_callback(const dt_camera_t *camera,dt_camera_error_t error,void *user_data)
+{
+  dt_control_log(_("Connection with camera lost, exiting tethering mode"));
+  g_idle_add(_bailout_of_tethering,user_data);
+}
+
 /** listener callback from callback control to get target directory for captured image... */
 const char *_camera_tethered_request_image_path(const dt_camera_t *camera,void *data)
 {
@@ -176,7 +202,7 @@ const char *_camera_tethered_request_image_path(const dt_camera_t *camera,void *
 /** listener callback from callback control to get target filename for captured image... */
 const char *_camera_tethered_request_image_filename(const dt_camera_t *camera,const char *filename, void *data)
 {
-  // Fetch the directory for current filmroll in  capture view..
+  // Fetch the directory for current filmroll in capture view..
   return dt_capture_view_get_session_filename( dt_view_manager_get_current_view(darktable.view_manager),filename );
 }
 
@@ -204,6 +230,62 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_add_job(darktable.control, &j);
 }
 
+
+static void _osd_button_clicked(GtkWidget *widget, gpointer user_data) {
+  dt_control_gui_queue_draw();
+}
+
+static void _property_choice_callback(GtkMenuItem *item, gpointer user_data) {
+  dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
+  gtk_entry_set_text(GTK_ENTRY (lib->gui.pname), gtk_menu_item_get_label(item));
+}
+
+
+static void 
+_show_property_popupmenu_clicked(GtkWidget *widget, gpointer user_data) 
+{
+  dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
+  gtk_menu_popup (lib->gui.properties_menu, NULL, NULL, NULL, NULL, 1,  gtk_get_current_event_time());
+}
+
+static void
+_add_property_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
+  const gchar *label = gtk_entry_get_text (GTK_ENTRY (lib->gui.plabel));
+  const gchar *property = gtk_entry_get_text (GTK_ENTRY (lib->gui.pname));
+  
+  /* let's try to add property */
+  if ( label && property )
+  {
+    dt_lib_camera_property_t *prop = NULL;
+    if ((prop=_lib_property_add_new (lib, label,property)) != NULL)
+    {
+      GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+      gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (prop->values), TRUE, TRUE, 0);
+      gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (prop->osd), FALSE, FALSE, 0);
+      gtk_box_pack_start (lib->gui.pvbox1, GTK_WIDGET (prop->label), TRUE, TRUE, 0);
+      gtk_box_pack_start (lib->gui.pvbox2, GTK_WIDGET (hbox), TRUE, TRUE, 0);
+      g_signal_connect (G_OBJECT (prop->osd), "clicked", G_CALLBACK (_osd_button_clicked), prop);
+      
+      gchar key[256]={"plugins/capture/tethering/properties/"};
+      strcat(key,label);
+      gchar *p = key;
+      while( p++<key+strlen(key) ) if(*p==' ') *p='_';
+      dt_conf_set_string(key,property);
+      
+      /* clean entries */
+      gtk_entry_set_text (GTK_ENTRY (lib->gui.plabel),"");
+      gtk_entry_set_text (GTK_ENTRY (lib->gui.pname),"");
+      
+      gtk_widget_show_all (GTK_WIDGET (prop->label));
+      gtk_widget_show_all (GTK_WIDGET (hbox));
+    }
+    
+  }
+}
+
+
 static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data) {
   dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
   GtkWidget *w=NULL;
@@ -215,9 +297,6 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data) 
   
 }
 
-static void _osd_button_clicked(GtkWidget *widget, gpointer user_data) {
-  dt_control_gui_queue_draw();
-}
 
 #define BAR_HEIGHT 18
 static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
@@ -299,12 +378,13 @@ gui_init (dt_lib_module_t *self)
   lib->data.listener = malloc(sizeof(dt_camctl_listener_t));
   memset(lib->data.listener,0,sizeof(dt_camctl_listener_t));
   lib->data.listener->data=lib;
+  lib->data.listener->camera_error=_camera_error_callback;
   lib->data.listener->image_downloaded=_camera_tethered_downloaded_callback;
   lib->data.listener->camera_property_value_changed=_camera_property_value_changed;
   lib->data.listener->camera_property_accessibility_changed=_camera_property_accessibility_changed;
   lib->data.listener->request_image_path=_camera_tethered_request_image_path;
   lib->data.listener->request_image_filename=_camera_tethered_request_image_filename;
-  
+
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
   GtkBox *hbox, *vbox1, *vbox2;
@@ -346,10 +426,10 @@ gui_init (dt_lib_module_t *self)
   lib->gui.button1=gtk_button_new_with_label(_("capture image(s)"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), FALSE, FALSE, 5);
 
-  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), NULL);
+  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
@@ -361,16 +441,16 @@ gui_init (dt_lib_module_t *self)
   // Camera settings
   dt_lib_camera_property_t *prop;
   gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new(_("properties"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  lib->gui.pvbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  lib->gui.pvbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
   
   if( (prop=_lib_property_add_new(lib, _("program"),"expprogram"))!=NULL )
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
   
@@ -379,8 +459,8 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
  
@@ -389,8 +469,8 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
   
@@ -399,8 +479,8 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
  
@@ -409,8 +489,8 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
  
@@ -419,8 +499,8 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
   
@@ -429,8 +509,8 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
   
@@ -439,8 +519,8 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
   
@@ -449,18 +529,79 @@ gui_init (dt_lib_module_t *self)
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(vbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
+    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+  }
+  
+  /* add user widgets */
+  GSList *options = dt_conf_all_string_entries ("plugins/capture/tethering/properties");
+  if (options) 
+  {
+    GSList *item = options;
+    if (item)
+    {
+      do {
+        dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
+        
+        /* get the label from key */
+	char *p=entry->key;
+        while (p++<entry->key+strlen(entry->key)) if (*p=='_') *p=' ';
+        
+        if ((prop = _lib_property_add_new (lib, entry->key,entry->value )) != NULL)
+        {
+          hbox = GTK_BOX (gtk_hbox_new(FALSE, 0));
+          gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (prop->values), TRUE, TRUE, 0);
+          gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (prop->osd), FALSE, FALSE, 0);
+          gtk_box_pack_start (lib->gui.pvbox1, GTK_WIDGET (prop->label), TRUE, TRUE, 0);
+          gtk_box_pack_start (lib->gui.pvbox2, GTK_WIDGET (hbox), TRUE, TRUE, 0);
+          g_signal_connect (G_OBJECT (prop->osd), "clicked", G_CALLBACK (_osd_button_clicked), prop);
+        }
+      } while ( (item = g_slist_next (item)) != NULL );
+    }
   }
   
   
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(lib->gui.pvbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(lib->gui.pvbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
 
-   // Get camera model name
+  /* build the propertymenu */
+  dt_camctl_camera_build_property_menu (darktable.camctl,NULL,&lib->gui.properties_menu,G_CALLBACK(_property_choice_callback),lib);
+  
+  // user specified properties
+  gtk_box_pack_start (GTK_BOX (self->widget), dtgtk_label_new (_("additional properties"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 5);
+  vbox1 = GTK_BOX (gtk_vbox_new (TRUE, 0));
+  vbox2 = GTK_BOX (gtk_vbox_new (TRUE, 0));
+  
+  gtk_box_pack_start (vbox1, GTK_WIDGET ( gtk_label_new (_("label"))), TRUE, TRUE, 0);
+  lib->gui.plabel = gtk_entry_new ();
+  dt_gui_key_accel_block_on_focus (lib->gui.plabel);
+  gtk_box_pack_start (vbox2, GTK_WIDGET ( lib->gui.plabel ), TRUE, TRUE, 0);
+  
+  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start (vbox1, GTK_WIDGET ( gtk_label_new (_("property"))), TRUE, TRUE, 0);
+  GtkWidget *widget = gtk_button_new_with_label("O");
+  g_signal_connect (G_OBJECT (widget), "clicked", G_CALLBACK (_show_property_popupmenu_clicked), lib);
+  lib->gui.pname = gtk_entry_new ();
+  dt_gui_key_accel_block_on_focus (lib->gui.pname);
+  gtk_box_pack_start (hbox, GTK_WIDGET ( lib->gui.pname ), TRUE, TRUE, 0);
+  gtk_box_pack_start (hbox, GTK_WIDGET ( widget ), TRUE, FALSE, 0);
+  gtk_box_pack_start (vbox2, GTK_WIDGET ( hbox ), TRUE, TRUE, 0);
+  
+  hbox = GTK_BOX (gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (vbox2), TRUE, TRUE, 5);
+  widget = gtk_button_new_with_label (_("add user property"));
+  g_signal_connect (G_OBJECT (widget), "clicked", G_CALLBACK (_add_property_button_clicked), lib);
+  gtk_widget_show(widget);
+  gtk_box_pack_start (GTK_BOX (self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
+  gtk_box_pack_start (GTK_BOX (self->widget), GTK_WIDGET (widget), TRUE, TRUE, 5);
+ 
+ 
+ 
+  // Get camera model name
   lib->data.camera_model=dt_camctl_camera_get_model(darktable.camctl,NULL);
   
   // Register listener 

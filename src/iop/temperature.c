@@ -151,10 +151,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)o;
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+#endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
-    out += 3; in += 3;
+    for(int c=0;c<3;c++) out[3*k+c] = in[3*k+c]*d->coeffs[c];
   }
 }
 
@@ -327,8 +329,8 @@ void gui_init (struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->label1 = GTK_LABEL(gtk_label_new(_("tint")));
   g->label2 = GTK_LABEL(gtk_label_new(_("temperature out")));
   gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
@@ -360,8 +362,8 @@ void gui_init (struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);
   hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);
@@ -409,7 +411,7 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_spin_button_set_value (g->finetune, 0);
   gtk_spin_button_set_digits(g->finetune, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), NULL);
+  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), (char *)NULL);
 
   self->gui_update(self);
 
@@ -532,7 +534,7 @@ apply_preset(dt_iop_module_t *self)
       break;
     case 1: // spot wb, exposure callback will set p->coeffs.
       for(int k=0;k<3;k++) p->coeffs[k] = fp->coeffs[k];
-      self->dev->gui_module = self;
+      dt_iop_request_focus(self);
       self->request_color_pick = 1;
       break;
     case 2: // passthrough mode, raw data

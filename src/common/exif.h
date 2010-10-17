@@ -36,10 +36,15 @@ int dt_exif_read_blob(uint8_t *blob, const char* path, const int sRGB);
 /** write blob to file exif. merges with existing exif information.*/
 int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path);
 
-/** initialize a exif context from data. \return context*/
-void *dt_exif_data_new(uint8_t *data,uint32_t size);
-/** get value of key from context*/	
-const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,uint32_t vsize);
+/** write xmp sidecar file. */
+int dt_exif_xmp_write (const int imgid, const char* filename);
+
+/** read xmp sidecar file. */
+int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_only);
+
+/** thread safe init and cleanup. */
+void dt_exif_init();
+void dt_exif_cleanup();
 
 #ifdef __cplusplus
 }

@@ -168,7 +168,7 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
 	const gchar *file = dt_variables_get_result(cv->vp);
 	
 	// Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
-	gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+	gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
 	if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
 	{
 		do
@@ -176,7 +176,7 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
 			g_free(fullfile);
 			dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
 			file = dt_variables_get_result(cv->vp);
-			fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,NULL);
+			fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
 		} while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
 	}
 	
@@ -187,14 +187,7 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 	g_assert( view != NULL );
 	dt_capture_t *cv=(dt_capture_t *)view->data;
 	
-	if(cv->jobcode) 
-		g_free(cv->jobcode);
-	cv->jobcode=g_strdup(name);
-	
-	// Setup variables jobcode...
-	cv->vp->jobcode = cv->jobcode;
-	
-	// Take care of previous capture filmroll
+	/* take care of previous capture filmroll */
 	if( cv->film ) {
 		if( dt_film_is_empty(cv->film->id) )
 			dt_film_remove(cv->film->id );
@@ -202,31 +195,61 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 			dt_film_cleanup( cv->film );
 	}
 	
-	// Lets setup a new filmroll for the capture...
+	/* lets initialize a new filmroll for the capture... */
 	cv->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
 	dt_film_init(cv->film);
 	
-	// Construct the direectory for filmroll...
-	cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory,NULL);
-	dt_variables_expand( cv->vp, cv->path, FALSE );
-	sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
-		
-	// Create recursive directories, abort if no access
-	if( g_mkdir_with_parents(cv->film->dirname,0755) == -1 )
+	int current_filmroll = dt_conf_get_int("plugins/capture/current_filmroll");
+	if(current_filmroll >= 0) 
 	{
-		dt_control_log(_("failed to create session path %s."), cv->film->dirname);
-		g_free( cv->film );
-		return;
+		/* open existing filmroll and import captured images into this roll */
+		cv->film->id = current_filmroll;
+		if (dt_film_open2 (cv->film) !=0)
+		{
+			/* failed to open the current filmroll, let's reset and create a new one */
+			dt_conf_set_int ("plugins/capture/current_filmroll",-1);
+		}
+		else
+			cv->path = g_strdup(cv->film->dirname);
+		
 	}
 	
-	if(dt_film_new(cv->film,cv->film->dirname) > 0)
+	if (dt_conf_get_int ("plugins/capture/current_filmroll") == -1)
 	{
-		// Switch to new filmroll
-		dt_film_open(cv->film->id);
+		if(cv->jobcode) 
+			g_free(cv->jobcode);
+		cv->jobcode = g_strdup(name);
 		
-	}
+		// Setup variables jobcode...
+		cv->vp->jobcode = cv->jobcode;
+		
+		/* reset session sequence number */
+		dt_variables_reset_sequence (cv->vp);
+		
+		// Construct the directory for filmroll...
+		cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory, (char *)NULL);
+		dt_variables_expand( cv->vp, cv->path, FALSE );
+		sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
+			
+		// Create recursive directories, abort if no access
+		if( g_mkdir_with_parents(cv->film->dirname,0755) == -1 )
+		{
+			dt_control_log(_("failed to create session path %s."), cv->film->dirname);
+			g_free( cv->film );
+			return;
+		}
+		
+		if(dt_film_new(cv->film,cv->film->dirname) > 0)
+		{
+			// Switch to new filmroll
+			dt_film_open(cv->film->id);
+			
+			/* store current filmroll */
+			dt_conf_set_int("plugins/capture/current_filmroll",cv->film->id);
+		}
 
-	dt_control_log(_("new session initiated '%s'"),cv->jobcode,cv->film->id);
+		dt_control_log(_("new session initiated '%s'"),cv->jobcode,cv->film->id);
+	} 
 	
 	
 }
@@ -259,7 +282,6 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 		dt_image_t *image = dt_image_cache_get(lib->image_id, 'r');
 		if( image )
 		{
-			dt_image_prefetch(image, DT_IMAGE_MIPF);
 			const float wd = width/1.0;
 			cairo_translate(cr,0.0f, TOP_MARGIN);
 			dt_view_image_expose(image, &(lib->image_over), lib->image_id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
@@ -322,7 +344,7 @@ void enter(dt_view_t *self)
 	gtk_widget_set_visible(widget, FALSE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander");
 	gtk_widget_set_visible(widget, FALSE);
-	widget = glade_xml_get_widget (darktable.gui->main_window, "tophbox");
+	widget = glade_xml_get_widget (darktable.gui->main_window, "top");
 	gtk_widget_set_visible(widget, TRUE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
 	gtk_widget_set_visible(widget, FALSE);
@@ -332,7 +354,9 @@ void enter(dt_view_t *self)
 	gtk_widget_set_visible(widget, FALSE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
 	gtk_widget_set_visible(widget, FALSE);
-	
+	 
+	gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
+	 
 	GList *modules = g_list_last(darktable.lib->plugins);
 	while(modules!=darktable.lib->plugins)
 	{
@@ -357,8 +381,7 @@ void enter(dt_view_t *self)
 	gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
 	g_signal_connect (G_OBJECT (endmarker), "expose-event",
 										G_CALLBACK (dt_control_expose_endmarker), 0);
-	g_signal_connect (G_OBJECT (endmarker), "size-allocate",
-                    G_CALLBACK (dt_control_size_allocate_endmarker), self);
+  gtk_widget_set_size_request(endmarker, -1, 50);
 	
 	gtk_widget_show_all(GTK_WIDGET(box));
 	 // close expanders
@@ -387,7 +410,6 @@ void enter(dt_view_t *self)
 	}
 	
 	// Setup key accelerators in capture view...	
-	dt_gui_key_accel_register(0,GDK_c,capture_view_switch_key_accel,(void *)self);
 	dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
 
 	// initialize a default session...
@@ -410,7 +432,6 @@ void leave(dt_view_t *self)
 	if( dt_film_is_empty(cv->film->id) != 0)
 		dt_film_remove(cv->film->id );
 	
-	dt_gui_key_accel_unregister(capture_view_switch_key_accel);
 	dt_gui_key_accel_unregister(film_strip_key_accel);
 	
 	// Restore user interface

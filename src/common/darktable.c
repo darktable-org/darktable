@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/collection.h"
+#include "common/exif.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/camera_control.h"
@@ -94,6 +95,8 @@ int dt_init(int argc, char *argv[])
   (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
+  // thread-safe init:
+  dt_exif_init();
   (void)cmsErrorAction(LCMS_ERROR_IGNORE);
   char *homedir = getenv("HOME");
   char filename[512];
@@ -121,6 +124,9 @@ int dt_init(int argc, char *argv[])
   else if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
   else                      snprintf(dbfilename, 512, "%s", dbname);
 
+  int load_cached = 1;
+  // if db file does not exist, also don't load the cache.
+  if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR)) load_cached = 0;
   if(sqlite3_open(dbfilename, &(darktable.db)))
   {
     fprintf(stderr, "[init] could not open database ");
@@ -154,7 +160,7 @@ int dt_init(int argc, char *argv[])
   dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
 
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)));
+  dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
 
   darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
   dt_lib_init(darktable.lib);
@@ -189,9 +195,6 @@ int dt_init(int argc, char *argv[])
   }
   if(!id)
   {
-    /* reset the collection and switch to library mode */
-    dt_collection_reset (darktable.collection);
-    
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
@@ -232,6 +235,7 @@ void dt_cleanup()
   pthread_mutex_destroy(&(darktable.db_insert));
   pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 
+  dt_exif_cleanup();
 #ifdef HAVE_GEGL
   gegl_exit();
 #endif

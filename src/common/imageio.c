@@ -131,7 +131,7 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
   return ret;
 }
 
-// only set mip4..0.
+// only set mip4..0 and mipf
 dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
 {
   if(!img->exif_inited)
@@ -160,8 +160,14 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
+  // are we going to need the image as input for a pixel pipe?
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+
+  // this image is raw, if we manage to load it.
+  img->flags &= ~DT_IMAGE_LDR;
+
   // if we have a history stack, don't load preview buffer!
-  if(!dt_image_altered(img) && !dt_conf_get_bool("never_use_embedded_thumb"))
+  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
   { // no history stack: get thumbnail
     ret = libraw_open_file(raw, filename);
     HANDLE_ERRORS(ret, 0);
@@ -176,8 +182,10 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
     img->exif_focal_length = raw->other.focal_len;
-    strncpy(img->exif_maker, raw->idata.make, 20);
-    strncpy(img->exif_model, raw->idata.model, 20);
+    strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+    img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
+    strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+    img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
     image = libraw_dcraw_make_mem_thumb(raw, &ret);
     if(!image) goto try_full_raw;
@@ -188,7 +196,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     if(image && image->type == LIBRAW_IMAGE_JPEG)
     {
       // JPEG: decode (directly rescaled to mip4)
-      const int orientation = img->orientation;// & 4 ? img->orientation : img->orientation ^ 1;
+      const int orientation = dt_image_orientation(img);
       dt_imageio_jpeg_t jpg;
       if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw_corrupted;
       if(orientation & 4)
@@ -210,7 +218,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       if(dt_image_alloc(img, DT_IMAGE_MIP4))
       {
         free(tmp);
-        fprintf(stderr, "[raw_preview] could not alloc mip4!\n");
+        fprintf(stderr, "[raw_preview] could not alloc mip4 for img `%s'!\n", img->filename);
         goto error_raw_cache_full;
       }
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
@@ -309,8 +317,10 @@ try_full_raw:
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
     img->exif_focal_length = raw->other.focal_len;
-    strncpy(img->exif_maker, raw->idata.make, 20);
-    strncpy(img->exif_model, raw->idata.model, 20);
+    strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+    img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
+    strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+    img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
     const float m = 1./0xffff;
@@ -344,15 +354,17 @@ try_full_raw:
       }
     }
 
+    // don't write mip4, it's shitty anyways (altered image has to be processed)
+#if 0
     // have first preview of non-processed image
     if(dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
-    dt_image_get(img, DT_IMAGE_MIPF, 'r');
     dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
     dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
     dt_image_release(img, DT_IMAGE_MIP4, 'w');
     retval = dt_image_update_mipmaps(img);
     dt_image_release(img, DT_IMAGE_MIP4, 'r');
+#endif
 
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -435,6 +447,9 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     raw->params.half_size = 0;
   }
 
+  // this image is raw, if we manage to load it.
+  img->flags &= ~DT_IMAGE_LDR;
+
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
@@ -451,8 +466,10 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
   img->exif_focal_length = raw->other.focal_len;
-  strncpy(img->exif_maker, raw->idata.make, 20);
-  strncpy(img->exif_model, raw->idata.model, 20);
+  strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+  img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
+  strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+  img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
   if(dt_image_alloc(img, DT_IMAGE_FULL))
@@ -485,7 +502,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-  const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
+  const int orientation = dt_image_orientation(img);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -505,7 +522,20 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     free(tmp);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
-  if(dt_image_alloc(img, DT_IMAGE_MIP4))
+  dt_image_buffer_t mip;
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+  if(altered)
+  {
+    // the image has a history stack. we want mipf and process it!
+    mip = DT_IMAGE_MIPF;
+  }
+  else
+  {
+    // the image has no history stack. we want mip4 directly.
+    mip = DT_IMAGE_MIP4;
+  }
+
+  if(dt_image_alloc(img, mip))
   {
     free(tmp);
     return DT_IMAGEIO_CACHE_FULL;
@@ -513,13 +543,13 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
 
   int p_wd, p_ht;
   float f_wd, f_ht;
-  dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
-  dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
+  dt_image_get_mip_size(img, mip, &p_wd, &p_ht);
+  dt_image_get_exact_mip_size(img, mip, &f_wd, &f_ht);
 
   // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
   // FIXME: there is a black border on the left side of a portrait image!
 
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
+  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):3*p_wd*p_ht*sizeof(float));
   const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
   const int p_wd2 = orientation & 4 ? p_ht : p_wd;
   const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
@@ -527,25 +557,41 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
 
   if(img->width == p_wd && img->height == p_ht)
   { // use 1:1
-    for (int j=0; j < jpg.height; j++)
-      for (int i=0; i < jpg.width; i++)
-        for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+    if(mip == DT_IMAGE_MIP4)
+      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
+        img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+    else
+      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
+        img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
   }
   else
   { // scale to fit
-    bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+    if(mip == DT_IMAGE_MIP4) bzero(img->mip[mip], 4*p_wd*p_ht*sizeof(uint8_t));
+    else                     bzero(img->mipf,     3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
+    if(mip == DT_IMAGE_MIP4)
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
     {
       uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
       for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
     }
+    else
+    for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
+    {
+      uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+      for(int k=0;k<3;k++) img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
+    }
   }
   free(tmp);
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  dt_imageio_retval_t retval = dt_image_update_mipmaps(img);
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return retval;
+  dt_image_release(img, mip, 'w');
+  if(mip == DT_IMAGE_MIP4)
+  {
+    dt_image_update_mipmaps(img);
+    // try to get mipf
+    dt_image_preview_to_raw(img);
+  }
+  dt_image_release(img, mip, 'r');
+  return DT_IMAGEIO_OK;
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
@@ -558,7 +604,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-  const int orientation = img->orientation == -1 ? 0 : (img->orientation & 4 ? img->orientation : img->orientation ^ 1);
+  const int orientation = dt_image_orientation(img);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -594,6 +640,8 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
+  // try to fill mipf
+  dt_image_raw_to_preview(img, img->pixels);
   return DT_IMAGEIO_OK;
 }
 
@@ -615,6 +663,7 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
 {
+  double start, end;
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, img);
@@ -622,12 +671,15 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   const int ht = dev.image->height;
   dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
 
+  start = dt_get_wtime();
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_init_export(&pipe, wd, ht);
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+  end = dt_get_wtime();
+  dt_print(DT_DEBUG_PERF, "[export] creating pixelpipe took %.3f secs\n", end - start);
 
   // find output color profile for this image:
   int sRGB = 1;
@@ -670,9 +722,11 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   { // ldr output: char
     dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     uint8_t *buf8 = pipe.backbuf;
-    for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(buf8) schedule(static)
+#endif
+    for(int k=0;k<processed_width*processed_height;k++)
     { // convert in place
-      const int k = x + processed_width*y;
       uint8_t tmp = buf8[4*k+0];
       buf8[4*k+0] = buf8[4*k+2];
       buf8[4*k+2] = tmp;
@@ -721,7 +775,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
     ret = dt_imageio_open_raw(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr(img, filename);
-  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush(img);
+  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   return ret;
 }
@@ -734,7 +788,7 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
     ret = dt_imageio_open_raw_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush(img);
+  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush_no_sidecars(img);
   return ret;
 }
 
@@ -744,14 +798,14 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
 
 int dt_imageio_dt_write (const int imgid, const char *filename)
 {
+  assert(0);
+  sqlite3_stmt *stmt;
   FILE *f = NULL;
   // read history from db
-  sqlite3_stmt *stmt;
-  int rc;
   size_t rd;
   dt_dev_operation_t op;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, imgid);
+  sqlite3_prepare_v2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     if(!f)
@@ -771,10 +825,11 @@ int dt_imageio_dt_write (const int imgid, const char *filename)
     rd = fwrite(&len, sizeof(int32_t), 1, f);
     rd = fwrite(sqlite3_column_blob(stmt, 4), len, 1, f);
   }
-  rc = sqlite3_finalize (stmt);
+  sqlite3_finalize (stmt);
   if(f) fclose(f);
   else
   { // nothing in history, delete the file
+    // printf("deleting history `%s'\n", filename);
     return g_unlink(filename);
   }
   return 0;
@@ -786,20 +841,16 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   if(!f) return 1;
 
   sqlite3_stmt *stmt;
-  int rc, num = 0;
+  int num = 0;
   size_t rd;
-  rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, imgid);
+  sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, imgid);
   sqlite3_step(stmt);
-  rc = sqlite3_finalize (stmt);
+  sqlite3_finalize (stmt);
 
   uint32_t magic = 0;
   rd = fread(&magic, sizeof(int32_t), 1, f);
-  if(rd != 1 || magic != 0xd731337)
-  {
-    printf("1\n");
-    goto delete_old_config;
-  }
+  if(rd != 1 || magic != 0xd731337) goto delete_old_config;
 
   while(!feof(f))
   {
@@ -817,27 +868,27 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
     char *params = (char *)malloc(len);
     rd = fread(params, 1, len, f);
     if(rd < len) { free(params); goto delete_old_config; }
-    rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
-    rc = sqlite3_bind_int (stmt, 2, num);
+    sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
+    sqlite3_bind_int (stmt, 1, imgid);
+    sqlite3_bind_int (stmt, 2, num);
     if(sqlite3_step(stmt) != SQLITE_ROW)
     {
-      rc = sqlite3_finalize(stmt);
-      rc = sqlite3_prepare_v2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
-      rc = sqlite3_bind_int (stmt, 1, imgid);
-      rc = sqlite3_bind_int (stmt, 2, num);
-      rc = sqlite3_step (stmt);
+      sqlite3_finalize(stmt);
+      sqlite3_prepare_v2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
+      sqlite3_bind_int (stmt, 1, imgid);
+      sqlite3_bind_int (stmt, 2, num);
+      sqlite3_step (stmt);
     }
-    rc = sqlite3_finalize (stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
-    rc = sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
-    rc = sqlite3_bind_blob(stmt, 2, params, len, SQLITE_TRANSIENT);
-    rc = sqlite3_bind_int (stmt, 3, modversion);
-    rc = sqlite3_bind_int (stmt, 4, enabled);
-    rc = sqlite3_bind_int (stmt, 5, imgid);
-    rc = sqlite3_bind_int (stmt, 6, num);
-    rc = sqlite3_step (stmt);
-    rc = sqlite3_finalize (stmt);
+    sqlite3_finalize (stmt);
+    sqlite3_prepare_v2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
+    sqlite3_bind_blob(stmt, 2, params, len, SQLITE_TRANSIENT);
+    sqlite3_bind_int (stmt, 3, modversion);
+    sqlite3_bind_int (stmt, 4, enabled);
+    sqlite3_bind_int (stmt, 5, imgid);
+    sqlite3_bind_int (stmt, 6, num);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
     free(params);
     num ++;
   }
@@ -855,6 +906,7 @@ delete_old_config:
 
 int dt_imageio_dttags_write (const int imgid, const char *filename)
 { // write out human-readable file containing images stars and tags.
+  assert(0);
   // refuse to write dttags for non-existent image:
   char imgfname[1024];
   snprintf(imgfname, 1024, "%s", filename);
@@ -912,7 +964,7 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
     if( strncmp( line, "stars:", 6) == 0) 
     {
       if( (rd = sscanf( line, "stars: %d\n", &stars)) == 1 )
-        img->flags |= 0x7 & stars;
+        img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
     else if( strncmp( line, "rawimport:",10) == 0) 
     {
@@ -1007,7 +1059,7 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
   }
   
   fclose(f);
-  dt_image_cache_flush(img);
+  dt_image_cache_flush_no_sidecars(img);
   // dt_image_cache_release(img, 'w');
   return 0;
 }

@@ -29,6 +29,7 @@
 #include <pthread.h>
 
 #include "common/darktable.h"
+#include "common/version.h"
 #include "common/camera_control.h"
 #include "common/collection.h"
 #include "develop/develop.h"
@@ -43,12 +44,12 @@
 #include "gui/iop_modulegroups.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
-#include "gui/panel_sizegroup.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
 #include "views/view.h"
-
+#include "views/capture.h"
+#include "tool_colorlabels.h"
 
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
@@ -107,6 +108,31 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   return TRUE;
 }
 
+static gboolean 
+_widget_focus_in_block_key_accelerators (GtkWidget *widget,GdkEventFocus *event,gpointer data) 
+{
+  dt_control_key_accelerators_off (darktable.control);
+  return FALSE;
+}
+
+static gboolean 
+_widget_focus_out_unblock_key_accelerators (GtkWidget *widget,GdkEventFocus *event,gpointer data) 
+{
+  dt_control_key_accelerators_on (darktable.control);
+  return FALSE;
+}
+
+void 
+dt_gui_key_accel_block_on_focus (GtkWidget *w)
+{
+  /* first off add focus change event mask */
+  gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
+  
+  /* conenct the signals */
+  g_signal_connect (G_OBJECT (w), "focus-in-event", G_CALLBACK(_widget_focus_in_block_key_accelerators), (gpointer)w);
+  g_signal_connect (G_OBJECT (w), "focus-out-event", G_CALLBACK(_widget_focus_out_unblock_key_accelerators), (gpointer)w);
+}
+
 static gboolean
 expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 { // draw arrows on borders
@@ -115,14 +141,27 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  cairo_set_source_rgb (cr, .13, .13, .13);
+  GtkWidget *cwidget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkStyle *style = gtk_widget_get_style(cwidget);
+  cairo_set_source_rgb (cr, 
+    .5f*style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    .5f*style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    .5f*style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+  // cairo_set_source_rgb (cr, .13, .13, .13);
   cairo_paint(cr);
 
   // draw scrollbar indicators
   int v = darktable.view_manager->current_view;
   dt_view_t *view = NULL;
   if(v >= 0 && v < darktable.view_manager->num_views) view = darktable.view_manager->view + v;
-  cairo_set_source_rgb (cr, .16, .16, .16);
+  // cairo_set_source_rgb (cr, .16, .16, .16);
+  cairo_set_source_rgb (cr, 
+    style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+  const float border = 0.3;
   if(!view) cairo_paint(cr);
   else
   {
@@ -135,9 +174,23 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_rectangle(cr, view->hscroll_pos/view->hscroll_size * width, 0.0, view->hscroll_viewport_size/view->hscroll_size * width, height);
         break;
     }
-    cairo_fill_preserve(cr);
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_stroke(cr);
+    cairo_fill(cr);
+    switch(which)
+    {
+      case 0:
+        cairo_rectangle(cr, (1.0-border)*width, 0.0, border*width, height);
+        break;
+      case 1:
+        cairo_rectangle(cr, 0.0, 0.0, border*width, height);
+        break;
+      case 2:
+        cairo_rectangle(cr, (1.0-border)*height, (1.0-border)*height, width-2*(1.0-border)*height, border*height);
+        break;
+      default:
+        cairo_rectangle(cr, (1.0-border)*height, 0.0, width-2*(1.0-border)*height, border*height);
+        break;
+    }
+    cairo_fill(cr);
   }
 
   // draw gui arrows.
@@ -236,9 +289,9 @@ update_colorpicker_panel()
   {
     char colstring[512];
     GtkWidget *w;
-    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
-    snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
-    gtk_label_set_label(GTK_LABEL(w), colstring);
+    // w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
+    // snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
+    // gtk_label_set_label(GTK_LABEL(w), colstring);
     w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), module->request_color_pick);
@@ -334,6 +387,47 @@ view_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data
   return FALSE;
 }
 
+gboolean
+darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  GtkWidget *dialog = gtk_about_dialog_new();
+  gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), DT_VERSION_DECORATION);
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika 2009-2010");
+  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
+  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
+  gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
+  const char *authors[] =
+      {_("* developers *"),
+      "Hendrik Andersson",
+      "Johannes Hanika",
+      "",
+      _("* ubuntu packaging, color management, video tutorials *"),
+      "Pascal de Bruijn",
+      "",
+      _("* networking, battle testing, translation expert *"),
+      "Alexandre Prokoudine",
+      "",
+      _("* contributors *"),
+      "Alexandre Prokoudine",
+      "Alexander Rabtchevich",
+      "Andrey Kaminsky",
+      "Christian Himpel",
+      "Gregor Quade",
+      "Mikko Ruohola",
+      "Pascal de Bruijn",
+      "Richard Hughes",
+      "Tobias Ellinghaus",
+      "Wyatt Olson",
+      "Xavier Besse", NULL};
+  gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
+      
+  gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
+  gtk_dialog_run(GTK_DIALOG (dialog));
+  gtk_widget_destroy(dialog);
+  return TRUE;
+}
+
 static void
 colorpicker_mean_changed (GtkComboBox *widget, gpointer p)
 {
@@ -348,12 +442,12 @@ colorpicker_toggled (GtkToggleButton *button, gpointer p)
   dt_iop_module_t *module = get_colorout_module();
   if(module)
   {
-    darktable.develop->gui_module = module;
+    dt_iop_request_focus(module);
     module->request_color_pick = gtk_toggle_button_get_active(button);
   }
   else
   {
-    darktable.develop->gui_module = NULL;
+    dt_iop_request_focus(NULL);
   }
   dt_control_gui_queue_draw();
 }
@@ -399,12 +493,12 @@ image_filter_changed (GtkComboBox *widget, gpointer user_data)
 
   
   /* update collection star filter flags */
-  if         (i == 0) dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_STAR|COLLECTION_FILTER_EQUAL_STAR));
-  else if (i == 1) dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_STAR) & ~COLLECTION_FILTER_ATLEAST_STAR);
-  else dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_STAR );
+  if         (i == 0) dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_RATING|COLLECTION_FILTER_EQUAL_RATING));
+  else if (i == 1) dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_RATING) & ~COLLECTION_FILTER_ATLEAST_RATING);
+  else dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_RATING );
   
   /* set the star filter in collection */
-  dt_collection_set_star(darktable.collection, i-1);		
+  dt_collection_set_rating(darktable.collection, i-1);		
   
   update_query();
 }
@@ -540,7 +634,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
               GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -578,7 +672,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
               GTK_FILE_CHOOSER_ACTION_OPEN,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              NULL);
+              (char *)NULL);
 
   char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
@@ -632,7 +726,7 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP);
+  dt_view_manager_scrolled(darktable.view_manager, event->x, event->y, event->direction == GDK_SCROLL_UP, event->state & 0xf);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -668,6 +762,37 @@ void quit()
   pthread_mutex_unlock(&darktable.control->cond_mutex);
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
+}
+
+static void _gui_switch_view_key_accel_callback(void *p)
+{
+  int view=(long int)p;
+  dt_ctl_gui_mode_t mode=DT_MODE_NONE;
+  /* do some setup before switch view*/
+  switch (view)
+  {
+    case DT_GUI_VIEW_SWITCH_TO_TETHERING:
+      // switching to capture view using "plugins/capture/current_filmroll" as session...
+      // and last used camera
+      if (dt_camctl_can_enter_tether_mode(darktable.camctl,NULL) )
+      {
+        dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
+        mode = DT_CAPTURE;
+      }
+    break;
+    
+    case DT_GUI_VIEW_SWITCH_TO_DARKROOM:
+      mode = DT_DEVELOP;
+    break;
+
+    case DT_GUI_VIEW_SWITCH_TO_LIBRARY:
+      mode = DT_LIBRARY;
+    break;
+    
+  }
+  
+  /* try switch to mode */
+  dt_ctl_switch_mode_to (mode);
 }
 
 static void quit_callback(void *p)
@@ -731,10 +856,24 @@ static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
   GList *i = darktable.gui->key_accels;
+  // fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
+  
+  /* check if we should handle key press */
+  if (dt_control_is_key_accelerators_on (darktable.control) !=1) 
+    return FALSE;
+
+  // we're only interested in ctrl, shift, mod1 (alt)
+  int estate = event->state & 0xf;
+  
   while(i)
   {
     dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
-    if(a->state == (a->state & event->state) && a->keyval == event->keyval)
+    // if a->state == 0, i.e. no modifiers are selected, no modifiers are allowed, in fact.
+    if( 
+        (
+          (!a->state && (!estate || (!(estate&GDK_MOD1_MASK) && !(estate&GDK_CONTROL_MASK)) ) ) || 
+          (a->state && (a->state == (a->state & estate)))
+        ) && a->keyval == event->keyval)
     {
       a->callback(a->data);
       return TRUE;
@@ -758,7 +897,7 @@ key_released (GtkWidget *w, GdkEventKey *event, gpointer user_data) {
 static gboolean
 button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state);
+  dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state & 0xf);
   gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
   return TRUE;
@@ -767,7 +906,7 @@ button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 button_released (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  dt_control_button_released(event->x, event->y, event->button, event->state);
+  dt_control_button_released(event->x, event->y, event->button, event->state & 0xf);
   gtk_widget_queue_draw(w);
   return TRUE;
 }
@@ -775,15 +914,23 @@ button_released (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 mouse_moved (GtkWidget *w, GdkEventMotion *event, gpointer user_data)
 {
-  dt_control_mouse_moved(event->x, event->y, event->state);
+  dt_control_mouse_moved(event->x, event->y, event->state & 0xf);
   gint x, y;
   gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 
-gboolean center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean
+center_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_control_mouse_leave();
+  return TRUE;
+}
+
+static gboolean
+center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_control_mouse_enter();
   return TRUE;
 }
 
@@ -837,10 +984,26 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
-  
-  
-  /* initialize the panelsize group used for dynamic left/right panel size*/
-  dt_gui_panel_sizegroup_init ();
+  // set constant width from gconf key
+  const int panel_width = MAX(-1, MIN(500, dt_conf_get_int("panel_width")));
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  gtk_widget_set_size_request (widget, panel_width, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  gtk_widget_set_size_request (widget, panel_width, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right_vbox");
+  gtk_widget_set_size_request (widget, panel_width-5, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
+  gtk_widget_set_size_request (widget, panel_width-5, -1);
+  // leave some space for scrollbars to appear:
+  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
+  // and make the scrollbars disappear when not needed:
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow");
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   
   // Update the devices module with available devices
   dt_gui_devices_init();
@@ -877,8 +1040,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_show_all(widget);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
-  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME"-"PACKAGE_VERSION"</b></big></span>");
-  dt_gui_panel_sizegroup_add (widget);
+  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "DT_VERSION_DECORATION"</b></big></span>");
   
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
 
@@ -892,6 +1054,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (mouse_moved), NULL);
   g_signal_connect (G_OBJECT (widget), "leave-notify-event",
                     G_CALLBACK (center_leave), NULL);
+  g_signal_connect (G_OBJECT (widget), "enter-notify-event",
+                    G_CALLBACK (center_enter), NULL);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
                     G_CALLBACK (button_pressed), NULL);
   g_signal_connect (G_OBJECT (widget), "button-release-event",
@@ -922,8 +1086,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   dt_gui_navigation_init(&gui->navigation, widget);
+  gtk_widget_set_size_request(widget, -1, panel_width*.5);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
+  gtk_widget_set_size_request(widget, -1, panel_width*.5);
   dt_gui_histogram_init(&gui->histogram, widget);
 
   dt_gui_filmview_init();
@@ -987,7 +1153,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)2);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_4_togglebutton");
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)3);*/
-
+  
   /* add recent filmrolls section label */
   widget = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
   GtkWidget *label = dtgtk_label_new (_("recently used film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
@@ -1001,7 +1167,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   {
     char wdname[20];
     snprintf (wdname, 20, "recent_film_%ld", k);
-    button = dtgtk_button_new_with_label (wdname,NULL,0);
+    button = dtgtk_button_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
     gtk_box_pack_start (GTK_BOX (recent_film_vbox),button,FALSE,FALSE,0);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (film_button_clicked),
@@ -1015,7 +1181,21 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   label = dtgtk_label_new (_("all film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
   gtk_widget_show(label);
   gtk_container_add (GTK_CONTAINER(widget),label);
-  
+
+  /* add content to toolbar */
+  /* top left: color labels */
+  dt_create_color_label_buttons(GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox")));
+  /*
+  toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_right_toolbox"));
+  gtk_box_pack_end(toolbox,gtk_label_new("right top toolbox"),FALSE,FALSE,0);
+  gtk_widget_show_all (GTK_WIDGET (toolbox));
+  toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox"));
+  gtk_box_pack_start(toolbox,gtk_label_new("left bottom toolbox"),FALSE,FALSE,0);
+  gtk_widget_show_all (GTK_WIDGET (toolbox));
+   toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_right_toolbox"));
+  gtk_box_pack_end(toolbox,gtk_label_new("right bottom toolbox"),FALSE,FALSE,0);
+  gtk_widget_show_all (GTK_WIDGET (toolbox));
+  */
 
   // color picker
   widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");
@@ -1039,14 +1219,17 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "endmarker_left");
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
-  g_signal_connect (G_OBJECT (widget), "size-allocate",
-                    G_CALLBACK (dt_control_size_allocate_endmarker), (gpointer)1);
 
   // switch modes in gui by double-clicking label
   widget = glade_xml_get_widget (darktable.gui->main_window, "view_label_eventbox");
-  dt_gui_panel_sizegroup_add (widget);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
                     G_CALLBACK (view_label_clicked),
+                    (gpointer)0);
+
+  // show about dialog when darktable label is clicked
+  widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label_eventbox");
+  g_signal_connect (G_OBJECT (widget), "button-press-event",
+                    G_CALLBACK (darktable_label_clicked),
                     (gpointer)0);
 
 
@@ -1065,6 +1248,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->redraw_widgets = NULL;
   darktable.gui->key_accels = NULL;
   
+  // register keys for view switching
+  dt_gui_key_accel_register(0, GDK_t, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_TETHERING);
+  dt_gui_key_accel_register(0, GDK_l, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_LIBRARY);
+  dt_gui_key_accel_register(0, GDK_d, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_DARKROOM);
+
   // register ctrl-q to quit:
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
   darktable.gui->reset = 0;

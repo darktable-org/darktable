@@ -30,3 +30,4 @@ void dt_gui_contrast_increase();
 void dt_gui_contrast_decrease();
 	
 #endif
+

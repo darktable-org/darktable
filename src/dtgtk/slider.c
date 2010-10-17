@@ -27,6 +27,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "paint.h"
 #include "slider.h"
+#include "gui/gtk.h"
 
 #define DTGTK_SLIDER_ADJUST_BUTTON_WIDTH 12
 #define DTGTK_SLIDER_BORDER_WIDTH 2
@@ -59,8 +60,6 @@ static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *
 
 // Slider entry events
 static gboolean _slider_entry_key_event(GtkWidget *widget,GdkEventKey *event, gpointer data);
-static gboolean _slider_entry_focus_in(GtkWidget *widget,GdkEventFocus *event,gpointer data);
-static gboolean _slider_entry_focus_out(GtkWidget *widget,GdkEventFocus *event,gpointer data);
 
 static guint _signals[LAST_SIGNAL] = { 0 };
 
@@ -144,8 +143,9 @@ static void _slider_init (GtkDarktableSlider *slider)
   gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
   
   g_signal_connect (G_OBJECT (slider->entry), "key-press-event", G_CALLBACK(_slider_entry_key_event), (gpointer)slider);
-  g_signal_connect (G_OBJECT (slider->entry), "focus-in-event", G_CALLBACK(_slider_entry_focus_in), (gpointer)slider);
-  g_signal_connect (G_OBJECT (slider->entry), "focus-out-event", G_CALLBACK(_slider_entry_focus_out), (gpointer)slider);
+  
+  dt_gui_key_accel_block_on_focus (slider->entry);
+  
   //g_signal_connect (G_OBJECT (slider->entry), "size-allocate", G_CALLBACK(_slider_entry_size_allocate), (gpointer)slider);
 
 }
@@ -269,19 +269,6 @@ static void _slider_entry_abort(GtkDarktableSlider *slider) {
   gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
-static gboolean _slider_entry_focus_in(GtkWidget *widget,GdkEventFocus *event,gpointer data) 
-{
-  dt_control_esc_shortcut_off(darktable.control);
-  dt_control_tab_shortcut_off(darktable.control);
-  return FALSE;
-}
-
-static gboolean _slider_entry_focus_out(GtkWidget *widget,GdkEventFocus *event,gpointer data) {
-  _slider_entry_abort(DTGTK_SLIDER(data));
-  dt_control_esc_shortcut_on(darktable.control);
-  dt_control_tab_shortcut_on(darktable.control);
-  return FALSE;
-}
 
 static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, gpointer data)
 {

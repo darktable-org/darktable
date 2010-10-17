@@ -53,12 +53,6 @@ void CLASS amaze_demosaic_RT() {
 
 #define TS 512	 // Tile size; the image is processed in square tiles to lower memory requirements and facilitate multi-threading
 	
-	// local variables
-
-	//position of top/left corner of the tile
-	int top, left;
-	//offset of R pixel within a Bayer quartet
-	int ex, ey;
 
 	//shifts of pointer value to access pixels in vertical and diagonal directions
 	static const int v1=TS, v2=2*TS, v3=3*TS, p1=-TS+1, p2=-2*TS+2, p3=-3*TS+3, m1=TS+1, m2=2*TS+2, m3=3*TS+3;
@@ -89,9 +83,22 @@ void CLASS amaze_demosaic_RT() {
 	static const float gausseven[2] = {0.13719494435797422f, 0.05640252782101291f};
 	//guassian on quincunx grid
 	static const float gquinc[4] = {0.169917f, 0.108947f, 0.069855f, 0.0287182f};
+	//determine GRBG coset; (ey,ex) is the offset of the R subarray
+	int ex, ey;
+	if (FC(0,0)==1) {//first pixel is G
+		if (FC(0,1)==0) {ey=0; ex=1;} else {ey=1; ex=0;}
+	} else {//first pixel is R or B
+		if (FC(0,0)==0) {ey=0; ex=0;} else {ey=1; ex=1;}
+	}
 
-
+#pragma omp parallel
+{
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// local variables
+
+	//position of top/left corner of the tile
+	int top, left;
+	//offset of R pixel within a Bayer quartet
 
 	// beginning of storage block for tile
 	char  *buffer;
@@ -227,16 +234,11 @@ void CLASS amaze_demosaic_RT() {
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-	//determine GRBG coset; (ey,ex) is the offset of the R subarray
-	if (FC(0,0)==1) {//first pixel is G
-		if (FC(0,1)==0) {ey=0; ex=1;} else {ey=1; ex=0;}
-	} else {//first pixel is R or B
-		if (FC(0,0)==0) {ey=0; ex=0;} else {ey=1; ex=1;}
-	}
 
 	// Main algorithm: Tile loop
 	//#pragma omp parallel for shared(ri->data,height,width,red,green,blue) private(top,left) schedule(dynamic)
 	//code is openmp ready; just have to pull local tile variable declarations inside the tile loop
+#pragma omp for
 	for (top=-16; top < height; top += TS-32)
 		for (left=-16; left < width; left += TS-32) {
 			//location of tile bottom edge
@@ -1084,7 +1086,7 @@ void CLASS amaze_demosaic_RT() {
 
 	// clean up
 	free(buffer);
-
+}
 	// done
 
 #undef TS

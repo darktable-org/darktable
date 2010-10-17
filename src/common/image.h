@@ -17,6 +17,9 @@
 */
 #ifndef DT_IMAGE_H
 #define DT_IMAGE_H
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
 
 #include <inttypes.h>
 #include <pthread.h>
@@ -37,11 +40,14 @@ dt_imageio_retval_t;
 
 typedef enum
 {
+  // the first 0x7 in flags are reserved for star ratings.
   DT_IMAGE_DELETE = 1,
   DT_IMAGE_OKAY = 2,
   DT_IMAGE_NICE = 3,
   DT_IMAGE_EXCELLENT = 4,
+  // this refers to the state of the mipf buffer and its source.
   DT_IMAGE_THUMBNAIL = 16,
+  // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping etc.
   DT_IMAGE_LDR = 32
 }
 dt_image_flags_t;
@@ -102,7 +108,12 @@ typedef struct dt_image_t
   int32_t cacheline; // for image_cache
   uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
   float *mipf;
+  int32_t mip_width [DT_IMAGE_FULL]; // mipmap buffer extents of the buffers in mip[.] and mipf
+  int32_t mip_height[DT_IMAGE_FULL];
+  float mip_width_f [DT_IMAGE_FULL]; // precise mipmap widths inside the buffers in mip[.] and mipf
+  float mip_height_f[DT_IMAGE_FULL];
   dt_image_lock_t lock[DT_IMAGE_NONE];
+  char lock_last[DT_IMAGE_NONE][100];
   int32_t import_lock;
   int32_t force_reimport;
 
@@ -141,14 +152,19 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */
 void dt_image_duplicate(const int32_t imgid);
+/** flips the image, clock wise, if given flag. */
+void dt_image_flip(const int32_t imgid, const int32_t cw);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const dt_image_t *img);
+/** returns the orientation bits of the image, exif or user override, if set. */
+static inline int dt_image_orientation(const dt_image_t *img)
+{
+  return img->raw_params.user_flip > 0 ? img->raw_params.user_flip : (img->orientation > 0 ?img->orientation : 0);
+}
 /** cleanup. */
 void dt_image_cleanup(dt_image_t *img);
 /** loads the requested buffer to cache, with read lock set. */
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip);
-/** prefetches given image buffer (mip map level/float preview/full raw), without marking it as used. */
-void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip);
 /** returns appropriate mip map size for given area to paint on (width, height). */
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h);
 /** returns appropriate mip map size for given mip level. */
@@ -157,8 +173,8 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
 void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, float *w, float *h);
 /** writes mip4 through to all smaller levels. */
 dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img);
-/** this writes a .dt and a .dttags file for this image. */
-void dt_image_write_dt_files(dt_image_t *img);
+/** this writes an xmp file for this image. */
+void dt_image_write_sidecar_file(dt_image_t *img);
 
 // memory management interface
 typedef struct dt_mipmap_cache_t
@@ -177,18 +193,45 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 
 /** if in debug mode, asserts image buffer size for mip is alloc'ed this large. */
 void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t size);
-/** alloc new buffer for this mip map and image. also lock for writing. */
-int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip);
 /** destroy buffer. */
 void dt_image_free(dt_image_t *img, dt_image_buffer_t mip);
+
+// locking-related functions:
+#ifdef _DEBUG
+// macros wrapping the stack trace information:
+#define dt_image_get(A, B, C)    dt_image_get_with_caller  (A, B, C,  __FILE__, __LINE__, __FUNCTION__)
+#define dt_image_alloc(img, mip) dt_image_alloc_with_caller(img, mip, __FILE__, __LINE__, __FUNCTION__)
+#define dt_image_get_blocking(img, mip, mode)  dt_image_get_blocking_with_caller(img, mip, mode, __FILE__, __LINE__, __FUNCTION__)
+#define dt_image_lock_if_available(img, mip_in, mode) dt_image_lock_if_available_with_caller(img, mip_in, mode, __FILE__, __LINE__, __FUNCTION__)
+#define dt_image_prefetch(img, mip) dt_image_prefetch_with_caller(img, mip, __FILE__, __LINE__, __FUNCTION__)
+
+// same as the non-debug versions, but with stack trace information:
+dt_image_buffer_t dt_image_get_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
+    const char *file, const int line, const char *function);
+int dt_image_alloc_with_caller(dt_image_t *img, dt_image_buffer_t mip,
+    const char *file, const int line, const char *function);
+dt_image_buffer_t dt_image_get_blocking_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
+    const char *file, const int line, const char *function);
+int dt_image_lock_if_available_with_caller(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode,
+    const char *file, const int line, const char *function);
+void dt_image_prefetch_with_caller(dt_image_t *img, dt_image_buffer_t mip,
+    const char *file, const int line, const char *function);
+#else
+
 /** gets the requested image buffer or a smaller preview if it is not available (w lock || =NULL), marking this with the read lock. returns found mip level. */
 dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
+/** alloc new buffer for this mip map and image. also lock for writing. */
+int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip);
 /** returns the requested image buffer. loads while blocking, if necessary. */
 dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t mip, const char mode);
-/** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
-void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 /** locks the given mode if the buffer is available. returns non-zero and does nothing else on failure (no async loading is scheduled). */
 int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode);
+/** prefetches given image buffer (mip map level/float preview/full raw), without marking it as used. */
+void dt_image_prefetch(dt_image_t *img, dt_image_buffer_t mip);
+
+#endif
+/** unflags the used flag of given mip map level. these remove r and w locks, respectively. dropping the w lock will leave the r lock in place. */
+void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode);
 
 /** converts img->pixels to img->mipf to img->mip[4--0]. needs full image buffer r locked. */
 dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw);

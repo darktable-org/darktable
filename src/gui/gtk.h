@@ -23,6 +23,12 @@
 #include "gui/navigation.h"
 #include "gui/histogram.h"
 
+#define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
+
+#define DT_GUI_VIEW_SWITCH_TO_TETHERING 		1
+#define DT_GUI_VIEW_SWITCH_TO_LIBRARY      		2
+#define DT_GUI_VIEW_SWITCH_TO_DARKROOM			3
+
 typedef struct dt_gui_key_accel_t
 {
   guint   state;
@@ -63,6 +69,9 @@ dt_gui_gtk_t;
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
+
+/** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
+void dt_gui_key_accel_block_on_focus (GtkWidget *w);
 
 /** register an accel callback for the whole window. data is not freed on unregister. */
 void dt_gui_key_accel_register(guint state, guint keyval, void (*callback)(void *), void *data);

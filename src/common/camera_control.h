@@ -53,7 +53,7 @@ typedef struct dt_camera_t {
   pthread_mutex_t jobqueue_lock;
   /** The jobqueue */
   GList *jobqueue;
-  
+    
   struct {
     CameraWidget *widget;
     uint32_t index;
@@ -133,8 +133,8 @@ typedef struct dt_camctl_listener_t
   /** Invoked when a image is downloaded while in tethered mode or  by import */
   void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
   
-  /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews() */
-  void (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *data);
+  /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews(), if 0 is returned the recurse is stopped.. */
+  int (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *data);
   
   /** Invoked when a value of a property is changed. */
   void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);
@@ -172,8 +172,12 @@ void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *lis
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Detect cameras and update list of available cameras */
 void dt_camctl_detect_cameras(const dt_camctl_t *c);
+/** Check if there is any camera connected */
+int dt_camctl_have_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
+/** Can tether...*/
+int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Enables/Disables the tether mode on camera. */
 void dt_camctl_tether_mode(const dt_camctl_t *c,const dt_camera_t *cam,gboolean enable);
 /** travers filesystem on camera an retreives previews of images */
@@ -197,5 +201,7 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,cons
 /** Get next choice availble for named property. */
 const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 
+/** build a popupmenu with all properties available */
+void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_t *cam,GtkMenu **menu, GCallback item_activate, gpointer user_data);
 
 #endif

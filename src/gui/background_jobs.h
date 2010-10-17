@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+
 typedef enum dt_gui_job_type_t {
 	/** Single job ... */
 	DT_JOB_SINGLE,
@@ -31,7 +32,7 @@ typedef enum dt_gui_job_type_t {
 typedef struct dt_gui_job_t {
 	dt_gui_job_type_t type;
 	GtkWidget *widget;
-	
+	struct dt_job_t *job;
 	/** One liner of message */
 	gchar *message;
 	
@@ -44,6 +45,10 @@ void dt_gui_background_jobs_init();
 
 /** initializes a new background job to display */
 const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gchar *message);
+
+/** enable user cancellation of job */
+void dt_gui_background_jobs_can_cancel(const dt_gui_job_t *j, struct dt_job_t *job);
+
 void dt_gui_background_jobs_destroy(const dt_gui_job_t *j);
 /** Set's the message to display of the current job. */
 void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *message);

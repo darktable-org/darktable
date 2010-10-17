@@ -1,0 +1,91 @@
+<sect1 status="final"><title>Modules</title>
+	<para>Each correction, enhancement or effect is implemented as modules, and this section includes documentation
+			of each module and its specific parameters.
+			A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;"/>  where the <inlinegraphic fileref="&icon_module_enable;"/> icon  is used to turn then module
+			on or off, then there are a title of the module press this to expand the module to see the parameters user interface.
+			<inlinegraphic fileref="&icon_module_presets;"/> icon is the preset icon to access the available presets stored for the module or to create new ones. The <inlinegraphic fileref="&icon_module_reset;"/>  icon is 				used to reset the module parameters to their default values.
+	</para>
+	<sect2 status="draft"><title>Interacting with modules</title>
+	   <para>For each slider, you can interact in three different ways, depending on the level of control you need.
+	   </para>
+	    <orderedlist>
+			   <listitem>
+			     <para>Arrows</para>
+			     <para> You can use the arrows around the slider to control precisely the increase/decrease of the value.
+			     </para>
+			   </listitem>
+			   <listitem>
+			     <para>Mouse wheel</para>
+			     <para>Hover a slider with your mouse, then use your mouse wheel to adjust by step the value.
+			     </para>
+			   </listitem>
+   			   <listitem>
+			     <para>Right-click</para>
+			     <para>Your mouse being over a slider, right-click gives you numerical access the slider values.
+			     Note that the numerical value needed to be entered is sometimes different from the one displayed.
+			     For example, the percentage repartition is displayed as X/Y (eg 70/30) but numerical value to be entered
+			     is -1 for 0/100, 0 for 50/50 and 1 for 0/100.
+			     </para>
+			   </listitem>			   
+			</orderedlist>
+	</sect2>
+	<sect2 status="final"><title>Presets</title>
+		<para>
+			Presets are stored configurations for the module parameters both internal and user-defined is available
+				through clicking the <inlinegraphic fileref="&icon_module_presets;"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text.
+		</para>
+		<para>
+			The preset system does also support automatic preset selection based on image data such as focal length, iso,  
+				camera model and much more fields.
+		</para>
+		<sect3><title>Creating a new preset</title>
+			<para>
+				Configure the specific module of choice as you like then you click the <inlinegraphic fileref="&icon_module_presets;"/> icon and select
+				store new preset menu choice.
+				Following dialog will be shown to configure the preset:
+			</para>
+			<graphic fileref="darkroom/modules/images/new_preset.png" scalefit="1" width="60%" align="center" />
+			<para>
+				The first two fields are used for setting a name and a description of the preset.
+			</para>
+			<para>
+				In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter
+				that is used to decide if the preset should be applied the image or not.
+				The example dialog above does set up following rules, if lens name matches and aperture is >= 8 and focal length is in range 24 - 35mm the preset will be automatically applied, 
+				it will also only show in the preset list if the image does match this rule.
+			</para>
+			<para>
+				The data used is the EXIF information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values,
+				lookup model string in metadata panel and enter it into the model field.
+			</para>
+			
+		</sect3>
+	</sect2>
+
+	&darkroom_module_rawimport;	
+	&darkroom_module_denoise;
+	&darkroom_module_exposure;
+	&darkroom_module_whitebalance;
+	&darkroom_module_highlightreconstruction;
+	&darkroom_module_graduatedneutraldensity;
+	&darkroom_module_relight;
+	&darkroom_module_basecurve;
+	&darkroom_module_unbreakinputprofile;
+	&darkroom_module_inputcolorprofile;
+	&darkroom_module_colortransfer;
+	&darkroom_module_equalizer;
+	&darkroom_module_monochrome;
+	&darkroom_module_tonecurve;
+	&darkroom_module_colorzones;
+	&darkroom_module_colorcorrection;
+	&darkroom_module_outputcolorprofile;
+	&darkroom_module_lenscorrection;
+	&darkroom_module_clipping;
+	&darkroom_module_channelmixer;
+	&darkroom_module_localcontrast;
+	&darkroom_module_velvia;
+	&darkroom_module_sharpen;
+	&darkroom_module_grain;
+	&darkroom_module_vignetting;
+	&darkroom_module_splittoning;
+</sect1>

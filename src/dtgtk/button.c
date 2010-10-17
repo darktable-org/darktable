@@ -56,6 +56,12 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   GtkStyle *style=gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
+  /* update paint flags depending of states */
+  int flags = DTGTK_BUTTON (widget)->icon_flags;
+
+  /* set inner border */
+  int border = (flags&CPF_DO_NOT_USE_BORDER)?2:4;
+
   /* create pango text settings if label exists */
   PangoLayout *layout=NULL;    
   int pw=0,ph=0;
@@ -67,52 +73,64 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
     pango_layout_set_text (layout,text,strlen(text));
     pango_layout_get_pixel_size (layout,&pw,&ph);
   }
-  
-  
+
+  /* begin cairo drawing */
+  cairo_t *cr;
+  cr = gdk_cairo_create (widget->window);
+
   int x = widget->allocation.x;
   int y = widget->allocation.y;
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
-  /* begin cairo drawing */
-  cairo_t *cr;
-  cr = gdk_cairo_create (widget->window);
-  
-  /* draw background dependent on state */
-  if (state != GTK_STATE_NORMAL)
+  /* draw standard button background if not transparent */
+  if( (flags & CPF_STYLE_FLAT ))
   {
-    cairo_rectangle (cr,x,y,width,height);
-    cairo_set_source_rgba (cr,
-                style->bg[state].red/65535.0, 
-                style->bg[state].green/65535.0, 
-                style->bg[state].blue/65535.0,
-                0.5);
-    cairo_fill (cr);
+    if( state != GTK_STATE_NORMAL )
+    {
+      cairo_rectangle (cr,x,y,width,height);
+      cairo_set_source_rgba (cr,
+          style->bg[state].red/65535.0, 
+          style->bg[state].green/65535.0, 
+          style->bg[state].blue/65535.0,
+          0.5);
+      cairo_fill (cr);
+    }
+  } 
+  else if( !(flags & CPF_BG_TRANSPARENT) )  
+  {
+    /* draw default boxed button */
+    gtk_paint_box (widget->style, widget->window,
+        GTK_WIDGET_STATE (widget),
+        GTK_SHADOW_OUT, NULL, widget, "button",
+        x, y, width, height);
   }
+
+
+  cairo_set_source_rgb (cr,
+      style->fg[state].red/65535.0, 
+      style->fg[state].green/65535.0, 
+      style->fg[state].blue/65535.0);
 
   /* draw icon */
   if (DTGTK_BUTTON (widget)->icon)
   {
-    if (DTGTK_BUTTON (widget)->icon_flags & CPF_IGNORE_FG_STATE) 
-    state = GTK_STATE_NORMAL;
-    cr = gdk_cairo_create (widget->window);
-    cairo_set_source_rgb (cr,
-        style->fg[state].red/65535.0, 
-        style->fg[state].green/65535.0, 
-        style->fg[state].blue/65535.0);
-    
+    if (flags & CPF_IGNORE_FG_STATE) 
+      state = GTK_STATE_NORMAL;
+
+
     if (text)
-      DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,height-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
+      DTGTK_BUTTON (widget)->icon (cr,x+border,y+border,height-(border*2),height-(border*2),flags);
     else
-      DTGTK_BUTTON (widget)->icon (cr,x+2,y+2,width-4,height-4,DTGTK_BUTTON (widget)->icon_flags);
+      DTGTK_BUTTON (widget)->icon (cr,x+border,y+border,width-(border*2),height-(border*2),flags);
   }
   cairo_destroy (cr);
-  
+
   /* draw label */
   if (text)
   {
     int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
-     if (DTGTK_BUTTON (widget)->icon) lx += width;
+    if (DTGTK_BUTTON (widget)->icon) lx += width;
     GdkRectangle t={x,y,x+width,y+height};
     gtk_paint_layout(style,widget->window, GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
   }

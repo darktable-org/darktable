@@ -16,6 +16,7 @@ libdarktable_la_SOURCES= \
 			common/exif.cc \
 			common/film.c \
 			common/fswatch.c \
+			common/history.c \
 			common/image.c \
 			common/image_cache.c \
 			common/image_compression.c \
@@ -57,8 +58,8 @@ libdarktable_la_SOURCES= \
 			gui/iop_modulegroups.c \
 			gui/metadata.c \
 			gui/navigation.c \
-			gui/panel_sizegroup.c \
 			gui/presets.c \
+			gui/tool_colorlabels.c \
 			libs/lib.c \
 			views/view.c 
 			
@@ -76,9 +77,9 @@ noinst_HEADERS= \
 			gui/iop_history.h \
 			gui/iop_modulegroups.h \
 			gui/draw.h \
-			gui/panel_sizegroup.h \
 			gui/presets.h \
 			gui/background_jobs.h \
+			gui/tool_colorlabels.h \
 			develop/develop.h \
 			develop/imageop.h \
 			common/collection.h \
@@ -88,7 +89,9 @@ noinst_HEADERS= \
 			common/camera_control.h \
 			common/darktable.h \
 			common/imageio.h \
+			common/history.h \
 			common/film.h \
+      common/version.h \
 			control/settings.h \
 			control/control.h \
 			control/jobs.h \
@@ -127,3 +130,11 @@ noinst_HEADERS= \
 			common/pwstorage/backend_gconf.h \
 			common/pwstorage/backend_gkeyring.h \
 			common/pwstorage/backend_kwallet.h
+
+# create version.h
+BUILT_SOURCES=common/version.h
+.PHONY:common/version.h
+common/version.h:
+	@echo "  >>     version.h"
+	@test -x $(srcdir)/../tools/create_version_h.sh && $(srcdir)/../tools/create_version_h.sh || true
+

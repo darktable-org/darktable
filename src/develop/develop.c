@@ -26,6 +26,7 @@
 
 #include <glib/gprintf.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <math.h>
 #include <string.h>
 #include <strings.h>
@@ -55,8 +56,8 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
   {
     // int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
     int32_t tmp;
-	  if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
-	  else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
+    if (k<0x10000*linear) tmp = MIN(c*k, 0xFFFF);
+    else tmp = MIN(pow(a*k/0x10000+b, g)*0x10000, 0xFFFF);
     arr[k] = tmp>>8;
   }
 }
@@ -199,6 +200,13 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
 
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
+  if(dev->image_loading && dt_image_lock_if_available(dev->image, DT_IMAGE_MIPF, 'r'))
+  {
+    // raw is already loading, and we don't have a mipf yet. no use starting another file access, we wait.
+    return;
+  }
+  else dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+
   dt_control_log_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_dirty = 1;
@@ -223,6 +231,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   }
   else
   {
+    // FIXME: when dr mode is left before demosaic completes, this will never return the lock!
     if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
     {
       dev->mipf = NULL;
@@ -413,18 +422,22 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
   if(dev->image_force_reload || dt_image_lock_if_available(dev->image, DT_IMAGE_FULL, 'r'))
   {
     int err;
-restart:
-    dev->image_loading = 1;
     // not loaded from cache because it is obviously not there yet.
     if(dev->image_force_reload) dt_image_release(img, DT_IMAGE_FULL, 'r');
+restart:
+    dev->image_loading = 1;
+    dt_print(DT_DEBUG_CONTROL, "[run_job+] 99 %f libraw loading image %d\n", dt_get_wtime(), img->id);
     double start = dt_get_wtime();
-    err = dt_image_load(img, DT_IMAGE_FULL); // load and lock
+    err = dt_image_load(img, DT_IMAGE_FULL); // load and lock 'r'
     double end = dt_get_wtime();
     dt_print(DT_DEBUG_PERF, "[dev_raw_load] libraw took %.3f secs to demosaic the image.\n", end - start);
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] 99 %f libraw loading image %d\n", dt_get_wtime(), img->id);
     if(err)
-    {
+    { // couldn't load image (cache slots full?)
       fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
-      return;
+      // spin lock:
+      sleep(1);
+      goto restart;
     }
 
     // obsoleted by another job?
@@ -432,6 +445,7 @@ restart:
     {
       printf("[dev_raw_load] recovering from obsoleted read!\n");
       img = dev->image;
+      dt_image_release(img, DT_IMAGE_FULL, 'r');
       goto restart;
     }
   }
@@ -478,7 +492,6 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   const float w = preview ? dev->preview_pipe->backbuf_width  : procw;
   const float h = preview ? dev->preview_pipe->backbuf_height : proch;
   if(preview) dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &prevw, &prevh);
-  prevw *= dev->preview_downsampling;
   switch(zoom)
   {
     case DT_ZOOM_FIT:
@@ -489,11 +502,11 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;
-      if(preview) zoom_scale *= dev->image->width/prevw;
+      if(preview) zoom_scale *= dev->preview_pipe->iscale / dev->preview_downsampling;
       break;
     default: // DT_ZOOM_FREE
       DT_CTL_GET_GLOBAL(zoom_scale, dev_zoom_scale);
-      if(preview) zoom_scale *= dev->image->width/prevw;
+      if(preview) zoom_scale *= dev->preview_pipe->iscale / dev->preview_downsampling;
       break;
   }
   return zoom_scale;
@@ -586,7 +599,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
   {
     // if gui_attached pop all operations down to dev->history_end
     dt_control_clear_history_items (dev->history_end-1);
-	  
+    
     // remove unused history items:
     GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
@@ -771,7 +784,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     }
     if(!hist->module)
     {
-      fprintf(stderr, "[read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
+      fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
       free(hist);
       continue;
     }
@@ -886,3 +899,8 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
     g_snprintf(label, cnt, "%s", hist->module->name());
 }
 
+int 
+dt_dev_is_current_image (dt_develop_t *dev, int imgid)
+{
+  return (dev->image && dev->image->id==imgid)?1:0;
+}

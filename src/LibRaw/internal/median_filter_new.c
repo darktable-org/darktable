@@ -1,3 +1,32 @@
+/* This file was taken from modified dcraw published by Paul Lee
+   on January 23, 2009, taking dcraw ver.8.90/rev.1.417
+   as basis.
+   http://sites.google.com/site/demosaicalgorithms/modified-dcraw
+
+   As modified dcraw source code was published, the release under
+   GPL Version 2 or later option could be applied, so this file 
+   is taken under this premise.
+*/
+
+/*
+    Copyright (C) 2009 Paul Lee
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+
 /* 
    differential median filter 
 */
@@ -22,6 +51,8 @@ void CLASS median_filter_new()
       for (indx=0; indx < height*width; indx++)
 	mf[indx][c] = image[indx][c] - image[indx][1];
       /* Apply 3x3 median fileter */
+#pragma omp parallel for private(row,col,pc)
+
       for (row=1; row < height-1; row++)
 	for (col=1; col < width-1; col++) {
 	  pc = mf + row*width+col;

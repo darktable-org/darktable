@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/darktable.h"
+#include "common/image_cache.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -110,6 +111,29 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
+static void
+synch_dttags(const int selected)
+{
+  if(selected > 0)
+  {
+    dt_image_t *img = dt_image_cache_get(selected, 'r');
+    dt_image_write_sidecar_file(img);
+    dt_image_cache_release(img, 'r');
+  }
+  else if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      dt_image_t *img = dt_image_cache_get(imgid, 'r');
+      dt_image_write_sidecar_file(img);
+      dt_image_cache_release(img, 'r');
+    }
+    sqlite3_finalize(stmt);
+  }
+}
 
 void dt_colorlabels_key_accel_callback(void *user_data)
 {
@@ -140,14 +164,16 @@ void dt_colorlabels_key_accel_callback(void *user_data)
         break;
     }
   }
+  // synch to dttags:
+  synch_dttags(selected);
   dt_control_queue_draw_all();
 }
 
 void dt_colorlabels_register_key_accels()
 {
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_1, dt_colorlabels_key_accel_callback, (void *)0);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_2, dt_colorlabels_key_accel_callback, (void *)1);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_3, dt_colorlabels_key_accel_callback, (void *)2);
+  dt_gui_key_accel_register(0, GDK_F1, dt_colorlabels_key_accel_callback, (void *)0);
+  dt_gui_key_accel_register(0, GDK_F2, dt_colorlabels_key_accel_callback, (void *)1);
+  dt_gui_key_accel_register(0, GDK_F3, dt_colorlabels_key_accel_callback, (void *)2);
 }
 
 void dt_colorlabels_unregister_key_accels()

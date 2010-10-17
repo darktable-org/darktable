@@ -73,16 +73,17 @@ groups ()
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+	dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+  const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
+ 	if(rad == 0)
+  {
+    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    return;
+  }
+
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
-  const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
-  if(rad == 0)
-  {
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
-    return;
-  }
   float mat[2*(MAXR+1)*2*(MAXR+1)];
   const int wd = 2*rad+1;
   float *m = mat + rad*wd + rad;
@@ -95,6 +96,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     m[l*wd + k] /= weight;
 
   // gauss blur the image
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#endif
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
@@ -115,6 +119,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad;j<roi_out->height;j++)
     memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(in, out, roi_out, roi_in) schedule(static)
+#endif
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     for(int i=0;i<rad;i++)
@@ -122,22 +129,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=roi_out->width-rad;i<roi_out->width;i++)
       for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
   }
-
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) private(in, out) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#endif
   // subtract blurred image, if diff > thrs, add *amount to orginal image
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-  {
-    for(int c=0;c<3;c++)
+  for(int j=0;j<roi_out->height;j++)
+  { 
+    in  = (float *)ivoid + j*3*roi_out->width;
+    out = (float *)ovoid + j*3*roi_out->width;
+	  
+	  for(int i=0;i<roi_out->width;i++)
     {
-      const float diff = in[c] - out[c];
-      if(fabsf(diff) > data->threshold)
+      for(int c=0;c<3;c++)
       {
-        const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
-        out[c] = fmaxf(0.0, in[c] + detail*data->amount);
+        const float diff = in[c] - out[c];
+        if(fabsf(diff) > data->threshold)
+        {
+          const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
+          out[c] = fmaxf(0.0, in[c] + detail*data->amount);
+        }
+        else out[c] = in[c];
       }
-      else out[c] = in[c];
+      out += 3; in += 3;
     }
-    out += 3; in += 3;
-  }
+	}
 }
 
 static void
@@ -245,8 +260,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("radius")));

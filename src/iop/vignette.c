@@ -99,24 +99,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   
-  int iw=piece->buf_in.width*roi_out->scale;
-  int ih=piece->buf_in.height*roi_out->scale;
-  int ix= (roi_in->x)*roi_out->scale;
-  int iy= (roi_in->y)*roi_out->scale;
+  const float iw=piece->buf_in.width*roi_out->scale;
+  const float ih=piece->buf_in.height*roi_out->scale;
+  const int ix= (roi_in->x);
+  const int iy= (roi_in->y);
     
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
+    const int k = 3*(roi_out->width*j + i);
     dt_iop_vector_2d_t pv, vv;
     
     // Lets translate current pixel coord to local coord
-    
-    
     pv.x=-1.0+(((double) (ix+i)/iw)*2.0);
     pv.y=-1.0+(((double) (iy+j)/ih)*2.0);
   
-    /*pv.x=-1.0+(((double) roi_in->x+i / piece->buf_out.width)*2.0);
-    pv.y=-1.0+(((double) roi_in->y+j / piece->buf_out.height )*2.0);*/
-     
     // Calculate the pixel weight in vinjett
     double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
     if(pv.x==0)
@@ -147,8 +146,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     // Let's apply weighted effect on brightness and desaturation
     float col[3];
-    for(int c=0;c<3;c++) col[c]=in[c];
-    if( weight > 0 ) {
+    for(int c=0;c<3;c++) col[c]=in[k+c];
+    if( weight > 0 )
+    {
       double bs=1.0;
       double ss=1.0;
       
@@ -160,9 +160,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       
       // Then apply falloff vignette
       double falloff=(data->invert_falloff==FALSE)?(1.0-(weight*bs*strength)):(weight*bs*strength);
-      col[0]=CLIP( ((data->invert_falloff==FALSE)? in[0]*falloff: in[0]+falloff) );
-      col[1]=CLIP( ((data->invert_falloff==FALSE)? in[1]*falloff: in[1]+falloff) );
-      col[2]=CLIP( ((data->invert_falloff==FALSE)? in[2]*falloff: in[2]+falloff) );
+      col[0]=CLIP( ((data->invert_falloff==FALSE)? in[k+0]*falloff: in[k+0]+falloff) );
+      col[1]=CLIP( ((data->invert_falloff==FALSE)? in[k+1]*falloff: in[k+1]+falloff) );
+      col[2]=CLIP( ((data->invert_falloff==FALSE)? in[k+2]*falloff: in[k+2]+falloff) );
       
       // apply saturation
       double mv=(col[0]+col[1]+col[2])/3.0;
@@ -182,8 +182,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       
     } 
-    for(int c=0;c<3;c++) out[c]=col[c];
-    out += 3; in += 3;
+    for(int c=0;c<3;c++) out[k+c]=col[c];
   }
 }
 
@@ -340,8 +339,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("scale")));
@@ -379,13 +378,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton2), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radii scale of vignette for start of fall-off"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("the radii scale of vignette for end of fall-off"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of effect"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("uniformity of vignette"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - only saturation"), NULL);
-  gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), NULL);
-  gtk_object_set(GTK_OBJECT(g->togglebutton2), "tooltip-text", _("inverts effect of fall-off, default is dark fall-off..."), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of effect"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("uniformity of vignette"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - only saturation"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->togglebutton2), "tooltip-text", _("inverts effect of fall-off, default is dark fall-off..."), (char *)NULL);
  
  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale1),DARKTABLE_SLIDER_FORMAT_PERCENT);
  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale2),DARKTABLE_SLIDER_FORMAT_PERCENT);

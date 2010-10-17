@@ -286,7 +286,7 @@ gui_init (dt_lib_module_t *self)
   self->data = (void *)d;
   d->imgsel = -1;
 
-  self->widget = gtk_vbox_new(TRUE, 0);
+  self->widget = gtk_vbox_new(TRUE, 5);
   gtk_widget_set_size_request(self->widget,100,-1);
 		
   g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
@@ -315,7 +315,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->current),
       GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->current, GTK_TREE_MODEL(liststore));
-  gtk_object_set(GTK_OBJECT(d->current), "tooltip-text", _("attached tags,\ndoubleclick to detach"), NULL);
+  gtk_object_set(GTK_OBJECT(d->current), "tooltip-text", _("attached tags,\ndoubleclick to detach"), (char *)NULL);
   g_signal_connect(G_OBJECT (d->current), "row-activated", G_CALLBACK (detach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
 
@@ -323,13 +323,13 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
  
   button = gtk_button_new_with_label(_("attach"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("attach tag to all selected images"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("attach tag to all selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (attach_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("detach"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("detach tag from all selected images"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("detach tag from all selected images"), (char *)NULL);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (detach_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
@@ -337,12 +337,13 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // right side, related 
-  box = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  box = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
   
   // text entry and new button
   w = gtk_entry_new();
-  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter tag name"), NULL);
+  dt_gui_key_accel_block_on_focus (w);
+  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter tag name"), (char *)NULL);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   // g_signal_connect(G_OBJECT(w), "key-release-event",
@@ -367,7 +368,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->related),
       GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->related, GTK_TREE_MODEL(liststore));
-  gtk_object_set(GTK_OBJECT(d->related), "tooltip-text", _("related tags,\ndoubleclick to attach"), NULL);
+  gtk_object_set(GTK_OBJECT(d->related), "tooltip-text", _("related tags,\ndoubleclick to attach"), (char *)NULL);
   g_signal_connect(G_OBJECT (d->related), "row-activated", G_CALLBACK (attach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
@@ -375,13 +376,13 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("new"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (new_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("delete"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("delete selected tag"), NULL);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("delete selected tag"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (delete_button_clicked), (gpointer)self);

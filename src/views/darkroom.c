@@ -270,7 +270,7 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
     gtk_expander_set_expanded(module->expander, FALSE);
     snprintf(option, 512, _("show %s"), module->name());
   }
-  gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, NULL);
+  gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
 }
 
 
@@ -334,11 +334,18 @@ select_this_image(const int imgid)
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
+  // stare last active group
+  dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+  // store last active plugin:
+  if(darktable.develop->gui_module)
+    dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
+  else
+    dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
   // commit image ops to db
   dt_dev_write_history(dev);
-  // write .dt file
-  dt_image_write_dt_files(dev->image);
+  // write .xmp file
+  dt_image_write_sidecar_file(dev->image);
 
   // commit updated mipmaps to db
   // TODO: bg process?
@@ -370,7 +377,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       GtkWidget *exp = GTK_WIDGET(module->expander);
       GtkWidget *shh = GTK_WIDGET(module->showhide);
       GtkWidget *parent = NULL;
-      g_object_get(G_OBJECT(module->widget), "parent", &parent, NULL);
+      g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
       // re-init and re-gui_init
       module->gui_cleanup(module);
       module->cleanup(module);
@@ -415,9 +422,25 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     modules = g_list_next(modules);
   }
+  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
+
+  // get last active plugin:
+  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
+  if(active_plugin)
+  {
+    modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      if(!strcmp(module->op, active_plugin))
+        dt_iop_request_focus(module);
+      modules = g_list_next(modules);
+    }
+    g_free(active_plugin);
+  }
 }
 
 static void
@@ -437,7 +460,44 @@ film_strip_activated(const int imgid, void *data)
   dt_view_film_strip_prefetch();
 }
 
-void film_strip_key_accel(void *data)
+static void
+zoom_key_accel(void *data)
+{
+  dt_develop_t *dev = darktable.develop;
+  int zoom, closeup;
+  float zoom_x, zoom_y;
+  switch ((long int)data)
+  {
+    case 1:
+      DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+      DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+      if(zoom == DT_ZOOM_1) closeup ^= 1;
+      DT_CTL_SET_GLOBAL(dev_closeup, closeup);
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
+      dt_dev_invalidate(dev);
+      break;
+    case 2:
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
+      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_invalidate(dev);
+      break;
+    case 3:
+      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
+      DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
+      DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
+      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_dev_invalidate(dev);
+      break;
+    default:
+      break;
+  }
+}
+
+static void
+film_strip_key_accel(void *data)
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
   dt_control_queue_draw_all();
@@ -522,11 +582,15 @@ void enter(dt_view_t *self)
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
       G_CALLBACK (dt_control_expose_endmarker), 0);
-  g_signal_connect (G_OBJECT (endmarker), "size-allocate",
-                    G_CALLBACK (dt_control_size_allocate_endmarker), self);
+  gtk_widget_set_size_request(endmarker, -1, 50);
 
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
+  
+    
+  /* set list of modules to modulegroups */
+  dt_gui_iop_modulegroups_set_list (dev->iop);
+  
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;
   while(modules)
@@ -550,9 +614,7 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
-  
-  /* set list of modules to modulegroups */
-  dt_gui_iop_modulegroups_set_list (dev->iop);
+
 
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
@@ -567,6 +629,27 @@ void enter(dt_view_t *self)
     dt_view_film_strip_prefetch();
   }
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel, (void *)1);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
+  
+  // switch on groups as they where last time:
+  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
+
+  // get last active plugin:
+  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
+  if(active_plugin)
+  {
+    modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      if(!strcmp(module->op, active_plugin))
+        dt_iop_request_focus(module);
+      modules = g_list_next(modules);
+    }
+    g_free(active_plugin);
+  }
 
   // image should be there now.
   float zoom_x, zoom_y;
@@ -576,16 +659,27 @@ void enter(dt_view_t *self)
 }
 
 
-static void dt_dev_remove_child(GtkWidget *widget, gpointer data)
+static void
+dt_dev_remove_child(GtkWidget *widget, gpointer data)
 {
   gtk_container_remove(GTK_CONTAINER(data), widget);
 }
 
 void leave(dt_view_t *self)
 {
+  // store groups for next time:
+  dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+
+  // store last active plugin:
+  if(darktable.develop->gui_module)
+    dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
+  else
+    dt_conf_set_string("plugins/darkroom/active", "");
+
   if(dt_conf_get_bool("plugins/filmstrip/on"))
     dt_view_film_strip_close(darktable.view_manager);
   dt_gui_key_accel_unregister(film_strip_key_accel);
+  dt_gui_key_accel_unregister(zoom_key_accel);
 
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
@@ -608,8 +702,8 @@ void leave(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // commit image ops to db
   dt_dev_write_history(dev);
-  // write .dt file
-  dt_image_write_dt_files(dev->image);
+  // write .xmp file
+  dt_image_write_sidecar_file(dev->image);
 
   // commit updated mipmaps to db
   dt_dev_process_to_mip(dev);
@@ -653,8 +747,11 @@ void leave(dt_view_t *self)
   dt_image_cache_release(dev->image, 'r');
 }
 
-
-// void mouse_leave(dt_view_t *self) {}
+void mouse_leave(dt_view_t *self)
+{
+  // reset any changes the selected plugin might have made.
+  dt_control_change_cursor(GDK_LEFT_PTR);
+}
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
@@ -790,7 +887,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 }
 
 
-void scrolled(dt_view_t *self, double x, double y, int up)
+void scrolled(dt_view_t *self, double x, double y, int up, int state)
 { // free zoom
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_zoom_t zoom;
@@ -866,44 +963,7 @@ int key_pressed(dt_view_t *self, uint16_t which)
   int handled = 0;
   if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
   if(handled) return handled;
-  int zoom, closeup;
-  float zoom_x, zoom_y;
-  switch (which)
-  {
-    case KEYCODE_1:
-      DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-      DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-      if(zoom == DT_ZOOM_1) closeup ^= 1;
-      DT_CTL_SET_GLOBAL(dev_closeup, closeup);
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
-      /*if(!closeup)
-      { // doesn't quite work as expected:
-        dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, 0, NULL, NULL);
-        DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-        DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
-      }*/
-      dt_dev_invalidate(dev);
-      break;
-    case KEYCODE_2:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
-      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(dev);
-      break;
-    case KEYCODE_3:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
-      dt_dev_invalidate(dev);
-      break;
-    default:
-      return 0;
-      break;
-  }
-  return 1;
+  return 0;
 }
 
 

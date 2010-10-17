@@ -91,11 +91,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, d) schedule(static)
+#endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    out[0] = color_filter(in[0], 0.01*in[0]*in[1], 0.01*in[0]*in[2], d->a, d->b, d->size);
-    out[1] = out[2] = 0.0f;
-    out += 3; in += 3;
+    out[3*k+0] = color_filter(in[3*k+0], 0.01*in[3*k+0]*in[3*k+1], 0.01*in[3*k+0]*in[3*k+2], d->a, d->b, d->size);
+    out[3*k+1] = out[3*k+2] = 0.0f;
   }
 }
 
@@ -296,15 +298,6 @@ gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   return TRUE;
 }
 
-void 
-_monochrome_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
-  // Reset size to match panel width
-  int width = a->width*0.8;
-  int height = width;
-  gtk_widget_set_size_request(w,width,height);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_monochrome_gui_data_t));
@@ -318,8 +311,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  //gtk_drawing_area_size(g->area, 258, 258);
-  gtk_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag and scroll\nto adjust the virtual\ncolor filter"), NULL);
+  gtk_drawing_area_size(g->area, 258, 258);
+  gtk_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag and scroll\nto adjust the virtual\ncolor filter"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (g->area), "expose-event",
@@ -334,9 +327,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_monochrome_leave_notify), self);
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_monochrome_scrolled), self);
-  g_signal_connect (G_OBJECT (asp), "size-allocate",
-                    G_CALLBACK (_monochrome_size_allocate), self);
-		    
+  
   g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));

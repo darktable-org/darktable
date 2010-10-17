@@ -26,8 +26,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
 #include <string.h>
 #include <glib/gstdio.h>
+#include <assert.h>
+
+#define DT_IMAGE_CACHE_FILE_VERSION 1
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
 {
@@ -89,6 +94,11 @@ void dt_image_cache_write(dt_image_cache_t *cache)
   FILE *f = fopen(dbfilename, "wb");
   if(!f) goto write_error;
 
+  // write version info:
+  const int32_t magic = 0xD71337 + DT_IMAGE_CACHE_FILE_VERSION;
+  written = fwrite(&magic, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
+
   // dump all cache metadata:
   written = fwrite(&(cache->num_lines), sizeof(int32_t), 1, f);
   if(written != 1) goto write_error;
@@ -113,7 +123,11 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       line.image.mip_buf_size[i] = 0;
     }
     for(int mip=0;mip<DT_IMAGE_MIPF;mip++) line.image.mip[mip] = line.image.mip[mip]?(uint8_t*)1:NULL;
+#ifdef DT_IMAGE_CACHE_WRITE_MIPF
     line.image.mipf = line.image.mipf?(float *)1:NULL;
+#else
+    line.image.mipf = NULL;
+#endif
     line.image.import_lock = line.image.force_reimport = 0;
     written = fwrite(&line, sizeof(dt_image_cache_line_t), 1, f);
     if(written != 1) goto write_error;
@@ -135,7 +149,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       free(blob);
     }
     // dump mipf in dct
-    if(img->mipf)
+    if(line.image.mipf)
     {
       dt_image_get_mip_size(img, DT_IMAGE_MIPF, &wd, &ht);
       dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
@@ -164,7 +178,7 @@ write_error:
   pthread_mutex_unlock(&(cache->mutex));
 }
 
-void dt_image_cache_read(dt_image_cache_t *cache)
+int dt_image_cache_read(dt_image_cache_t *cache)
 {
   pthread_mutex_lock(&(cache->mutex));
   char *homedir = getenv("HOME");
@@ -178,8 +192,15 @@ void dt_image_cache_read(dt_image_cache_t *cache)
   FILE *f = fopen(dbfilename, "rb");
   if(!f) goto read_error;
 
-  // read metadata:
   int32_t num = 0, rd = 0;
+
+  // read version info:
+  const int32_t magic = 0xD71337 + DT_IMAGE_CACHE_FILE_VERSION;
+  int32_t magic_file = 0;
+  rd = fread(&magic_file, sizeof(int32_t), 1, f);
+  if(rd != 1 || magic_file != magic) goto read_error;
+
+  // read metadata:
   rd = fread(&num, sizeof(int32_t), 1, f);
   if(rd != 1) goto read_error;
   if(cache->num_lines != num) goto read_error;
@@ -200,6 +221,7 @@ void dt_image_cache_read(dt_image_cache_t *cache)
     dt_image_t *image = &(cache->line[k].image);
     rd = fread(cache->line+k, sizeof(dt_image_cache_line_t), 1, f);
     if(rd != 1) goto read_error;
+    cache->line[k].image.import_lock = cache->line[k].image.force_reimport = 0;
 
     // printf("read image `%s' from disk cache\n", image->filename);
 
@@ -213,7 +235,7 @@ void dt_image_cache_read(dt_image_cache_t *cache)
       uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
       int32_t length = 0;
       rd = fread(&length, sizeof(int32_t), 1, f);
-      if(rd != 1) { free(blob); goto read_error; }
+      if(rd != 1 || length > 4*sizeof(uint8_t)*wd*ht) { free(blob); goto read_error; }
       rd = fread(blob, sizeof(uint8_t), length, f);
       if(rd != length) { free(blob); goto read_error; }
       if(!dt_image_alloc(image, mip))
@@ -238,8 +260,7 @@ void dt_image_cache_read(dt_image_cache_t *cache)
       uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
       int32_t length = wd*ht;
       rd = fread(&length, sizeof(int32_t), 1, f);
-      g_assert(length == wd*ht);
-      if(rd != 1) { free(buf); goto read_error; }
+      if(rd != 1 || length != wd*ht) { free(buf); goto read_error; }
       rd = fread(buf, sizeof(uint8_t), length, f);
       if(rd != length) { free(buf); goto read_error; }
       if(!dt_image_alloc(image, DT_IMAGE_MIPF))
@@ -257,15 +278,69 @@ void dt_image_cache_read(dt_image_cache_t *cache)
   if(rd != 1 || readmarker != endmarker) goto read_error;
   fclose(f);
   pthread_mutex_unlock(&(cache->mutex));
-  return;
+  return 0;
 
 read_error:
   if(f) fclose(f);
+  g_unlink(dbfilename);
   fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
   pthread_mutex_unlock(&(cache->mutex));
+  return 1;
 }
 
-void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
+/* copy file from src to dest, overwrites destination */
+static void _image_cache_copy_file (gchar *src,gchar *dest)
+{
+  int bs = 4*1024*1024;
+  gchar *block = g_malloc (bs);
+  int sh,dh,b;
+  if ((sh = open (src,O_RDONLY)) != -1)
+  {
+    if ((dh = open (dest,O_CREAT|O_TRUNC|O_WRONLY,S_IRUSR|S_IWUSR)) != -1)
+    {
+      while ((b=read(sh,block,bs))>0)
+        b=write (dh,block,b);
+      close (dh);
+    }
+    close (sh);
+  }
+  g_free (block);
+}
+
+static void _image_cache_backup()
+{
+  char *homedir = getenv("HOME");
+  char dbfilename[1024];
+  gchar *filename = dt_conf_get_string("cachefile");
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
+  else                                 snprintf(dbfilename, 512, "%s", filename);
+  g_free(filename);
+  
+  char *src = g_strdup (dbfilename);
+  strcat(dbfilename,".backup");
+  _image_cache_copy_file (src,dbfilename);
+  g_free (src);
+}
+
+static void _image_cache_restore()
+{
+  char *homedir = getenv("HOME");
+  char dbfilename[1024];
+  gchar *filename = dt_conf_get_string("cachefile");
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
+  else                                 snprintf(dbfilename, 512, "%s", filename);
+  g_free(filename);
+  
+  char *dest = g_strdup (dbfilename);
+  strcat(dbfilename,".backup");
+  _image_cache_copy_file (dbfilename,dest);
+  g_free (dest);
+}
+
+
+void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t load_cached)
 {
   pthread_mutex_init(&(cache->mutex), NULL);
   cache->num_lines = entries;
@@ -284,7 +359,33 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries)
   }
   cache->lru = 0;
   cache->mru = cache->num_lines-1;
-  dt_image_cache_read(cache);
+  if(load_cached!=0)
+  {
+    gboolean cb = dt_conf_get_bool ("cachefile_backup");
+      
+    if (dt_image_cache_read(cache))
+    {
+      // the cache failed to load, the file has been
+      // deleted.
+      // reset to useful values:
+      
+      dt_image_cache_cleanup(cache);
+      
+      /* restore cachefile backup if first failure */
+      if (cb && load_cached==1)
+        _image_cache_restore();
+
+      /* lets try to reinit */
+      dt_image_cache_init(cache, entries, (cb && load_cached==1)?2:0 );
+    } 
+    else
+    {
+      /* backup cachefile */
+      if (cb && load_cached==1)
+        _image_cache_backup();
+    
+    }
+  }
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
@@ -294,7 +395,6 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
   for(int k=0;k<cache->num_lines;k++)
   {
     dt_image_cache_flush(&(cache->line[k].image));
-    dt_image_write_dt_files(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
   }
   free(cache->line);
@@ -379,8 +479,8 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
       pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }
-    dt_image_cache_flush(&(cache->line[k].image));
-    dt_image_write_dt_files(&(cache->line[k].image));
+    // data/sidecar is flushed at each change for data safety. this is not necessary:
+    // dt_image_cache_flush(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
     dt_image_init(&(cache->line[k].image));
     cache->line[k].image.id = id;
@@ -449,7 +549,7 @@ void dt_image_cache_print(dt_image_cache_t *cache)
   printf("image cache: fill: %d/%d, users: %d, writers: %d\n", entries, cache->num_lines, users, write);
 }
 
-void dt_image_cache_flush(dt_image_t *img)
+void dt_image_cache_flush_no_sidecars(dt_image_t *img)
 {
   if(img->id <= 0) return;
   int rc;
@@ -479,5 +579,14 @@ void dt_image_cache_flush(dt_image_t *img)
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
+}
+
+void dt_image_cache_flush(dt_image_t *img)
+{
+  // assert(0);
+  if(img->id <= 0) return;
+  dt_image_cache_flush_no_sidecars(img);
+  // also synch dttags file:
+  dt_image_write_sidecar_file(img);
 }
 

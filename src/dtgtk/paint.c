@@ -156,6 +156,9 @@ void dtgtk_cairo_paint_switch(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
   
+  if( !(flags&CPF_ACTIVE) ) 
+    cairo_set_source_rgba(cr, 1,1,1,0.2);
+
   cairo_set_line_width(cr,0.125);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   cairo_arc (cr, 0.5, 0.5, 0.45, (-50*3.145/180),(230*3.145/180));
@@ -274,10 +277,16 @@ void dtgtk_cairo_paint_directory(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   cairo_restore(cr);
 }
 
-void dtgtk_cairo_paint_refresh(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags) {
+void dtgtk_cairo_paint_refresh(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
+  if(flags)
+  {
+    cairo_translate(cr, 1, 0);
+    cairo_scale(cr, -1, 1);
+  }
   
   cairo_set_line_width(cr,0.15);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
@@ -293,5 +302,78 @@ void dtgtk_cairo_paint_refresh(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
   cairo_identity_matrix(cr);
 }
 
+void dtgtk_cairo_paint_cancel(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale(cr,s,s);
+  
+  cairo_set_line_width(cr,0.2);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  cairo_move_to(cr,0.8,0.2);
+  cairo_line_to(cr,0.2,0.8);
+  cairo_stroke(cr);
+  cairo_move_to(cr,0.78,0.75);
+  cairo_line_to(cr,0.3,0.25);
+  cairo_stroke(cr);
+}
 
+void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale(cr,s,s);
+  
+  cairo_set_line_width(cr, 0.08);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_rectangle(cr, 0.07, 0.1, 0.5, 0.9);
+  cairo_stroke(cr);
+  cairo_set_line_width(cr, 0.15);
+  cairo_arc(cr, 0.1, 0.9, 0.8, -M_PI/2.0, 0.0);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.98, 0.82);
+  cairo_line_to(cr, 0.90, 0.93);
+  cairo_line_to(cr, 0.82, 0.82);
+  cairo_stroke(cr);
+}
+
+void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+  
+  /* fill base color */
+  cairo_arc (cr, 0.5, 0.5, 0.5, 0.0, 2.0*M_PI);
+  float alpha = (flags&8)?0.6:1.0;
+  switch((flags&7))
+  {
+    case  0: cairo_set_source_rgba (cr,1,0.0,0.0,alpha); break; // red
+    case  1: cairo_set_source_rgba (cr,1,1,0.0,alpha); break; // yellow
+    case  2: cairo_set_source_rgba (cr,0.0,1,0.0,alpha); break; // green
+    case  3: cairo_set_source_rgba (cr,1,1,1,alpha); break; // gray
+    default: cairo_set_source_rgba (cr,1,0.0,1,alpha); break; // gay
+  }
+  cairo_fill (cr);
+  
+  /* draw outline */
+  cairo_set_source_rgba (cr,0.5,0.5,0.5,0.5);
+  cairo_set_line_width(cr, 0.1);
+  cairo_arc (cr, 0.5, 0.5, 0.5, 0.0, 2.0*M_PI);
+  cairo_stroke (cr);
+
+}
+
+void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+  
+  /* draw outline */
+  cairo_set_line_width(cr, 0.1);
+  cairo_rectangle (cr, 0.1,0.1,0.9,0.9);
+  cairo_stroke (cr);
+  
+}
 

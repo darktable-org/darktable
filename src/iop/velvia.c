@@ -85,13 +85,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // Apply velvia saturation
   in  = (float *)ivoid;
   out = (float *)ovoid;
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  if(data->saturation <= 0.0)
   {
-    if(data->saturation > 0.0)
+    memcpy(in, out, sizeof(float)*3*roi_out->width*roi_out->height);
+  }
+  else
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
       // calculate vibrance, and apply boost velvia saturation at least saturated pixles
-      double pmax=fmax(in[0],fmax(in[1],in[2]));			// max value in RGB set
-      double pmin=fmin(in[0],fmin(in[1],in[2]));			// min value in RGB set
+      double pmax=fmax(in[3*k],fmax(in[3*k+1],in[3*k+2]));			// max value in RGB set
+      double pmin=fmin(in[3*k],fmin(in[3*k+1],in[3*k+2]));			// min value in RGB set
       double plum = (pmax+pmin)/2.0;					        // pixel luminocity
       double psat =(plum<=0.5) ? (pmax-pmin)/(1e-5 + pmax+pmin): (pmax-pmin)/(1e-5 + MAX(0.0, 2.0-pmax-pmin));
 
@@ -101,13 +108,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // Apply velvia saturation values
       double sba=1.0+saturation;
       double sda=(sba/2.0)-0.5;
-      out[0]=(in[0]*(sba))-(in[1]*(sda))-(in[2]*(sda));
-      out[1]=(in[1]*(sba))-(in[0]*(sda))-(in[2]*(sda));
-      out[2]=(in[2]*(sba))-(in[0]*(sda))-(in[1]*(sda));  
+      out[3*k+0]=(in[3*k+0]*(sba))-(in[3*k+1]*(sda))-(in[3*k+2]*(sda));
+      out[3*k+1]=(in[3*k+1]*(sba))-(in[3*k+0]*(sda))-(in[3*k+2]*(sda));
+      out[3*k+2]=(in[3*k+2]*(sba))-(in[3*k+0]*(sda))-(in[3*k+1]*(sda));  
     }
-    else
-      for(int c=0;c<3;c++) out[c]=in[c];
-    out += 3; in += 3;
   }
 }
 
@@ -217,8 +221,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("saturation")));
@@ -240,9 +244,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the amount of saturation to apply"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the vibrance amount"), NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to spare highlights and shadows"), NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the amount of saturation to apply"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the vibrance amount"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to spare highlights and shadows"), (char *)NULL);
   
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (saturation_callback), self);

@@ -77,7 +77,7 @@ static const basecurve_preset_t basecurve_presets[] = {
   // pascals nikon curve (new curve, needs testing):
   {nikon, "NIKON", "", 0, 51200, {{0.000000, 0.036290, 0.120968, 0.459677, 0.858871, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals sony alpha curve (needs testing):
-  {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.020161, 0.137097, 0.161290, 0.798387, 1.000000}, {0.000000, 0.018548, 0.146258, 0.191430, 0.918397, 1.000000}, 0}, 1},
+  {sony_alpha, "SONY", "", 0, 51200, {{0.000000, 0.031949, 0.105431, 0.434505, 0.855738, 1.000000}, {0.000000, 0.036532, 0.228226, 0.759678, 0.983468, 1.000000}, 0}, 1},
   // pascals pentax curve (needs testing):
   {pentax, "PENTAX", "", 0, 51200, {{0.000000, 0.032258, 0.120968, 0.205645, 0.604839, 1.000000}, {0.000000, 0.024596, 0.166419, 0.328527, 0.790171, 1.000000}, 0}, 1},
   // pascals olympus curve (needs testing):
@@ -158,12 +158,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
     dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
+#endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      out[0] = d->table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
-      out[1] = d->table[CLAMP((int)(in[1]*0x10000ul), 0, 0xffff)];
-      out[2] = d->table[CLAMP((int)(in[2]*0x10000ul), 0, 0xffff)];
-      in += 3; out += 3;
+      out[3*k+0] = d->table[CLAMP((int)(in[3*k+0]*0x10000ul), 0, 0xffff)];
+      out[3*k+1] = d->table[CLAMP((int)(in[3*k+1]*0x10000ul), 0, 0xffff)];
+      out[3*k+2] = d->table[CLAMP((int)(in[3*k+2]*0x10000ul), 0, 0xffff)];
     }
   }
 }
@@ -523,15 +525,6 @@ dt_iop_basecurve_button_release(GtkWidget *widget, GdkEventButton *event, gpoint
   return FALSE;
 }
 
-void 
-_basecurve_size_allocate(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
- // Reset size to match panel width
-  int width = a->width*0.8;
-  int height = width;
-  gtk_widget_set_size_request(w,width,height);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_basecurve_gui_data_t));
@@ -550,7 +543,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  //gtk_drawing_area_size(c->area, 258, 258);
+  gtk_drawing_area_size(c->area, 258, 258);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -563,8 +556,6 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_basecurve_leave_notify), self);
-  g_signal_connect (G_OBJECT (asp), "size-allocate",
-                    G_CALLBACK (_basecurve_size_allocate), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

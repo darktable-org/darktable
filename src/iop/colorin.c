@@ -76,35 +76,16 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
-#if 0
-static float
-lab_f(const float t)
-{
-  if(t > powf(6.0f/29.0f, 3.0f)) return powf(t, 1.0f/3.0f);
-  return 1.0/3.0 * (29.0/6.0)*(29.0/6.0)*t + 4.0/29.0;
-}
-// #else
-static double
-lab_f(double t)
-{
-  const double Limit = (24.0/116.0) * (24.0/116.0) * (24.0/116.0);
-
-  if (t <= Limit)
-    return (841.0/108.0) * t + (16.0/116.0);
-  else
-    // return CubeRoot((float) t); 
-    return pow(t, 1.0/3.0); 
-}
-#endif
-
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
-  // not thread safe.
+  // with the critical section around lcms, this is slower than monothread, even on dual cores.
+#if 0//def _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+#endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     double cam[3] = {0., 0., 0.};
@@ -114,8 +95,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
     const float YY = cam[0]+cam[1]+cam[2];
     const float zz = cam[2]/YY;
+    // lower amount and higher bound_z make the effect smaller.
+    // the effect is weakened the darker input values are, saturating at bound_Y
     const float bound_z = 0.5f, bound_Y = 0.5f;
-    const float amount = 0.10f;
+    const float amount = 0.11f;
     // if(YY > bound_Y && zz > bound_z)
     if(zz > bound_z)
     {
@@ -125,32 +108,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 #endif
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-#if 0 // manual xyz transition
-    double xyz[3];
-    const float X_n = D50X, Y_n = D50Y, Z_n = D50Z;
-    // const float X_n=0.9504, Y_n=1.00, Z_n=1.0888; // D65
-    cmsDoTransform(d->xform, cam, xyz, 1);
-#if 1
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float YY = xyz[0]+xyz[1]+xyz[2];
-    const float zz = xyz[2]/YY;
-    const float bound_z = 0.7f, bound_Y = 0.5f;
-    const float amount = 0.05f;
-    // if(YY > bound_Y && zz > bound_z)
-    if(zz > bound_z)
+    // lcms is not thread safe.
+// #pragma omp critical
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-      xyz[1] += t*amount;
-      xyz[2] -= t*amount;
-    }
-#endif
-
-    Lab.L = 116.0 * lab_f(xyz[1]/Y_n) - 16.0;
-    Lab.a = 500.0 * (lab_f(xyz[0]/X_n) - lab_f(xyz[1]/Y_n));
-    Lab.b = 200.0 * (lab_f(xyz[1]/Y_n) - lab_f(xyz[2]/Z_n));
-#else
     cmsDoTransform(d->xform, cam, &Lab, 1);
-#endif
+    }
     out[3*k + 0] = Lab.L;
     if(Lab.L > 0)
     {
@@ -436,8 +398,8 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
@@ -480,9 +442,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
 
   char tooltip[1024];
-  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), NULL);
+  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
   snprintf(tooltip, 1024, _("icc profiles in %s/color/in"), datadir);
-  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, NULL);
+  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "changed",
                     G_CALLBACK (intent_changed),

@@ -1,0 +1,5 @@
+<!ENTITY author_firstname "Henrik">
+<!ENTITY author_surname "Andersson">
+<!ENTITY chapter_overview SYSTEM "../overview/overview.xml">
+<!ENTITY chapter_lighttable SYSTEM "../lighttable/lighttable.xml">
+<!ENTITY chapter_darkroom SYSTEM "../darkroom/darkroom.xml">

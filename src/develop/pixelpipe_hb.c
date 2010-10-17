@@ -218,6 +218,7 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
   dt_iop_roi_t roi_in = *roi_out;
+  double start, end;
 
   void *input = NULL;
   dt_iop_module_t *module = NULL;
@@ -268,6 +269,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     // printf("[process] loading source image buffer\n");
+    start = dt_get_wtime();
     // optimized branch (for mipf-preview):
     if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
@@ -291,6 +293,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         }
       }
     }
+    end = dt_get_wtime();
+    dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer\n", end - start);
     pthread_mutex_unlock(&pipe->busy_mutex);
   }
   else
@@ -383,7 +387,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     if(!(dev->image->flags & DT_IMAGE_THUMBNAIL) && // converted jpg is useless.
-        dev->gui_attached && pipe == dev->preview_pipe && module == dev->gui_module && module->request_color_pick)
+        dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+        (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
+        module->request_color_pick) // and they need to want to pick ;)
     {
       for(int k=0;k<3;k++) module->picked_color_min[k] =  666.0f;
       for(int k=0;k<3;k++) module->picked_color_max[k] = -666.0f;
@@ -431,9 +437,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     // actual pixel processing done by module
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    double start = dt_get_wtime();
+    start = dt_get_wtime();
     module->process(module, piece, input, *output, &roi_in, roi_out);
-    double end = dt_get_wtime();
+    end = dt_get_wtime();
     dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs processing `%s' [%s]\n", end - start, module->name(),
         pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     pthread_mutex_unlock(&pipe->busy_mutex);

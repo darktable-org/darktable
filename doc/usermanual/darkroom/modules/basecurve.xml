@@ -1,0 +1,24 @@
+<sect2 status="draft"><title>Basecurve</title>
+	<sect3><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Darktable comes with general enhanced basecurve presets for several models that is per automatic applied
+							to raw images for better colors and contrast.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect3>
+
+	<sect3><title>Usage</title>
+		<para>As you see this curve forming tool confirms to Darktable standard for modifying curves, just a point in curve and drag to adjust, you can also
+			use the 4 controlpoints at bottom to adjust the curve.</para>
+	</sect3>
+</sect2>

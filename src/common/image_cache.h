@@ -50,7 +50,7 @@ typedef struct dt_image_cache_t
 }
 dt_image_cache_t;
 
-void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries);
+void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t load_cached);
 void dt_image_cache_cleanup(dt_image_cache_t *cache);
 /** print some debug info. */
 void dt_image_cache_print(dt_image_cache_t *cache);
@@ -66,6 +66,8 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode);
 void dt_image_cache_release(dt_image_t *img, const char mode);
 /** synches this image and the db entry. */
 void dt_image_cache_flush(dt_image_t *img);
+/** same as above, but doesn't write the redundant sidecar files. */
+void dt_image_cache_flush_no_sidecars(dt_image_t *img);
 /** invalidates resources occupied by this image. */
 void dt_image_cache_clear(int32_t id);
 

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "dtd/darktable.dtd">
+		%darktable_dtd;
+		<!ENTITY % darkroom_modules_dtd SYSTEM "dtd/darkroom_modules.dtd">
+		%darkroom_modules_dtd;
+		<!ENTITY % darkroom_examples_dtd SYSTEM "dtd/darkroom_examples.dtd">
+		%darkroom_examples_dtd;
+		]>
+	       
+<book lang="en">
+	<bookinfo>
+		<legalnotice>
+			<para>
+			The owner of the Darktable project is Johannes Hanika.
+			Main developers are Johannes Hanika and Henrik Andersson.
+
+  			Darktable is a free software: you can redistribute it and/or modify
+   			it under the terms of the GNU General Public License as published by
+   			the Free Software Foundation, either version 3 of the License, or
+   			(at your option) any later version.
+			</para>
+			<para>
+   			Darktable is distributed in the hope that it will be useful,
+   			but WITHOUT ANY WARRANTY; without even the implied warranty of
+   			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   			GNU General Public License for more details.
+			</para>
+			<para>
+   			You should have received a copy of the GNU General Public License
+   			along with Darktable.  If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>.
+			</para>
+			<para>
+			</para>
+			<para>
+			The present user manual is under license <emphasis>cc by-nc-sa </emphasis>,
+			meaning <emphasis>Attribution Non-Commercial Share Alike </emphasis>. 
+			You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information.
+			</para>
+		</legalnotice>
+		<author>
+			<firstname>Henrik</firstname>
+			<surname>Andersson</surname>
+		</author>
+		<copyright>
+			<year>2010</year>
+			<holder>P.H. Andersson</holder>
+		</copyright>
+	</bookinfo>
+	<title>Darktable</title>
+	<preface id="overview"><title>Preface to darktable</title>
+		<para><indexterm><primary>Darktable</primary></indexterm>
+			<indexterm><primary>Preface</primary></indexterm>
+		The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable Darktable version are listed below:
+				<informaltable frame="none"><tgroup cols="3" colsep="0" rowsep="0">
+					<colspec colwidth='3cm'/>
+					<tbody>
+						<row>
+							<entry></entry>
+							<entry>version</entry>
+							<entry>date</entry>
+						</row>
+						<row>
+							<entry>user manual</entry>
+							<entry>git-111010-1900</entry>
+							<entry>11/10/10</entry>
+						</row>
+						<row>
+							<entry>Darktable</entry>
+							<entry>> git-111010-1900</entry>
+							<entry>10/10/10</entry>
+						</row>
+					</tbody>
+				</tgroup></informaltable> 
+		</para>
+	</preface>
+&chapter_overview;
+&chapter_lighttable;
+&chapter_darkroom;
+</book>

@@ -18,7 +18,6 @@ src/libs/image.c
 src/libs/tagging.c
 src/libs/select.c
 src/libs/collect.c
-src/libs/colorlabels.c
 src/libs/capture.c
 src/libs/camera.c
 src/iop/clipping.c
@@ -28,6 +27,7 @@ src/iop/colorout.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/gamma.c
+src/iop/graduatednd.c
 src/iop/highlights.c
 src/iop/lens.c
 src/iop/monochrome.c
@@ -47,6 +47,7 @@ src/iop/profile_gamma.c
 src/iop/clahe.c
 src/iop/colortransfer.c
 src/iop/channelmixer.c
+src/iop/relight.c
 src/imageio/format/jpeg.c
 src/imageio/format/png.c
 src/imageio/format/exr.cc
@@ -67,6 +68,7 @@ src/gui/devices.c
 src/gui/camera_import_dialog.c
 src/gui/presets.c
 src/gui/background_jobs.c
+src/gui/tool_colorlabels.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/filmstrip.c

@@ -51,10 +51,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   float *in = (float *)i;
   uint8_t *out = (uint8_t *)o;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+#endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int c=0;c<3;c++) out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
-    out += 4; in += 3;
+    for(int c=0;c<3;c++) out[4*k + 2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[3*k+c]), 0, 0xffff)];
   }
 }
 

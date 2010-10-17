@@ -46,18 +46,25 @@
         <tr class="odd"> <td>Sony Alpha 200</td><td>x</td><td>experimental</td></tr>
         <tr class="even"><td>Sony Alpha 550</td><td>x</td><td>experimental</td></tr>
         <tr class="odd"> <td>Olympus E-PL1</td><td>x</td><td></td></tr>
-	<tr class="even"><td>Olympus SP570UZ</td><td>x</td><td></td></tr>        
+        <tr class="even"><td>Olympus SP570UZ</td><td>x</td><td></td></tr>        
       </table>
-      for better color rendition, darktable comes with custom profiled color matrices.
+      in general, darktable supports whatever <a href="http://www.libraw.org/">libraw</a>
+      supports.
+      additionally, for better color rendition, darktable comes with custom profiled
+      color matrices.
       plus, to reproduce the behavior of the camera's chip, we have reverse-engineered some
-      base curves for you.
+      base curves for you. these lists with enhanced support are what you see on the\
+      left, so don't worry if you can't find
+      your camera, it might still be supported.
       </div>
 
       <div class="listtext">
         <h1>cameras tested for tethering</h1>
+        while a lot of camera's might work with darktable's tethering mode only a few 
+        have been tested in real life.
       </div>
       <div class="text">
-      <table class="bigimg">
+      <table class="fullwdimg">
         <tr class="odd">
           <td><em>camera</em></td>
           <td><em>firmware</em></td>
@@ -65,14 +72,18 @@
           <td><em>gphoto</em></td>
           <td><em>darktable</em></td>
           <td><em>tester</em></td>
+          <td><em>comment</em></td>
         </tr>
-        <tr class="even"><td>Nikon D60</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
-        <tr class="even"><td>Nikon D90</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
-        <tr class="even"><td>Canon EOS 400D</td><td>1.1.1</td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.5+git20100716</td><td>Pascal de Bruijn</td></tr>
-        <tr class="even"><td>Panasonix DMC-FZ50</td><td></td><td>ArchLinux x86_64</td><td>2.4.9</td><td>git 2010/07/29</td><td>Aldrik Dunbar</td></tr>
+        <tr class="even"><td>Nikon D60</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td><td></td></tr>
+        <tr class="odd"><td>Nikon D90</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td><td></td></tr>
+        <tr class="even"><td>Nikon D5000</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.6</td><td>Jos&eacute; Carlos Garc&iacute;a Sogo</td><td></td></tr>
+        <tr class="odd"><td>Nikon P100</td><td></td><td>Slackware 13.1</td><td>2.4.8</td><td>0.6</td><td></td><td></td></tr>
+        <tr class="even"><td>Canon EOS 30D</td><td></td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.6.1~rc20100829
+</td><td>Olivier Tribout</td><td></td></tr>
+        <tr class="odd"><td>Canon EOS 400D</td><td>1.1.1</td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.5+git20100716</td><td>Pascal de Bruijn</td><td></td></tr>
+        <tr class="even"><td>Canon 5D</td><td></td><td>Slackware 13.1</td><td>2.4.8</td><td>0.6</td><td></td><td>stores only to flash card</td></tr>
+        <tr class="odd"><td>Panasonix DMC-FZ50</td><td></td><td>ArchLinux x86_64</td><td>2.4.9</td><td>git 2010/07/29</td><td>Aldrik Dunbar</td><td></td></tr>
       </table>
-      while a lot of camera's might work with darktable's tethering mode only a few 
-      have been tested in real life.
       </div>
 
       <div class="listtext"><h1>monochrome tool: convert an image to black and white</h1>
@@ -136,14 +147,14 @@
       </ul>
       <em>lighttable mode</em>
       <ul>
-        <li>1 -- zoom in on image under cursor</li>
-        <li>2, 3, 4 -- zoom out</li>
-        <li>alt-1,2,3,4 -- star rating</li>
+        <li>alt-1 -- zoom in on image under cursor</li>
+        <li>alt-2, 3, 4 -- zoom out (ctrl-mousewheel also works in filemanager view)</li>
+        <li>1,2,3,4 -- star rating</li>
         <li>a, s, d, w -- move around</li>
       </ul>
       <em>darkroom mode</em>
       <ul>
-        <li>1, 2, 3 -- zoom to 1:1, fill, and fit, respectively</li>
+        <li>alt-1, 2, 3 -- zoom to 1:1, fill, and fit, respectively</li>
       </ul>
       <em>hint for dvorak etc users</em>
       <p>the keys are chosen by location on the qwerty layout, not by keysym.</p>
@@ -164,11 +175,8 @@
       <div class="text">
     	<h1>size hack</h1>
       <ul>
-        <li> $ sqlite3 ~/.darktabledb</li>
-        <li> &gt; delete from mipmaps;</li>
-        <li> &gt; delete from mipmap_timestamps;</li>
-        <li> &gt; vacuum;</li>
-        <li> darktable will re-generate cached mipmaps in db on demand.</li>
+        <li> $ rm ~/.darktablecache</li>
+        <li> darktable will re-generate cached mipmaps on demand.</li>
       </ul>
     	</div>
 

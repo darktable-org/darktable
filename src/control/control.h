@@ -81,6 +81,8 @@
 #define KEYCODE_4           21
 #define KEYCODE_Escape      53
 #define KEYCODE_Caps        57
+#define KEYCODE_F7        98
+#define KEYCODE_F8        99
 #define KEYCODE_F11        103
 #define KEYCODE_Up         126
 #define KEYCODE_Down       125
@@ -122,11 +124,11 @@ typedef GdkCursorType dt_cursor_t;
 // called from gui
 void *dt_control_expose(void *voidptr);
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-void dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data);
 void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
 void dt_control_mouse_leave();
+void dt_control_mouse_enter();
 int  dt_control_key_pressed(uint16_t which);
 int  dt_control_key_released(uint16_t which);
 int  dt_control_key_pressed_override(uint16_t which);
@@ -136,7 +138,7 @@ void dt_control_log(const char* msg, ...);
 void dt_control_log_busy_enter();
 void dt_control_log_busy_leave();
 void dt_control_change_cursor(dt_cursor_t cursor);
-void dt_control_write_dt_files();
+void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 
@@ -154,21 +156,37 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
 struct dt_control_t;
-void dt_control_tab_shortcut_on(struct dt_control_t *s);
-void dt_control_tab_shortcut_off(struct dt_control_t *s);
-void dt_control_esc_shortcut_on(struct dt_control_t *s);
-void dt_control_esc_shortcut_off(struct dt_control_t *s);
+
+/** turn the use of key accelerators on */
+void dt_control_key_accelerators_on(struct dt_control_t *s);
+/** turn the use of key accelerators on */
+void dt_control_key_accelerators_off(struct dt_control_t *s);
+
+int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 
 /**
- * smalles unit of work.
+ * smallest unit of work.
  */
 struct dt_job_t;
-typedef void (*dt_job_finished_callback_t)(int32_t,struct dt_job_t*);
+typedef void (*dt_job_state_change_callback)(struct dt_job_t*,int state);
+#define DT_JOB_STATE_INITIALIZED		0
+#define DT_JOB_STATE_QUEUED		1
+#define DT_JOB_STATE_RUNNING		2
+#define DT_JOB_STATE_FINISHED		3
+#define DT_JOB_STATE_CANCELLED		4
+#define DT_JOB_STATE_DISCARDED		5
 typedef struct dt_job_t
 {
   int32_t (*execute) (struct dt_job_t *job);
-  dt_job_finished_callback_t finished_callback;
+  int32_t result;
+  
+  pthread_mutex_t state_mutex;  
+  pthread_mutex_t wait_mutex;
+  
+  int32_t state;
+  dt_job_state_change_callback state_changed_cb;
   void *user_data;
+ 
   int32_t param[32];
 #ifdef DT_CONTROL_JOB_DEBUG
   char description[DT_CONTROL_DESCRIPTION_LEN];
@@ -178,10 +196,14 @@ dt_job_t;
 
 /** intializes a job */
 void dt_control_job_init(dt_job_t *j, const char *msg, ...);
-/** initializes a job with callback on finish. */
-void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...);
+/** setup a state callback for job. */
+void dt_control_job_set_state_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data);
 void dt_control_job_print(dt_job_t *j);
-
+/** cancel a job, running or in queue. */
+void dt_control_job_cancel(dt_job_t *j);
+int dt_control_job_get_state(dt_job_t *j);
+/** wait for a job to finish execution. */
+void dt_control_job_wait(dt_job_t *j);
 
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
@@ -212,8 +234,11 @@ typedef struct dt_control_t
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
   pthread_mutex_t global_mutex, image_mutex;
-  int tab_shortcut_on;
-  int esc_shortcut_on;
+  /* deprecated
+	int tab_shortcut_on;
+	int esc_shortcut_on;
+  */
+  int key_accelerators_on;
 
   // xatom color profile:
   uint8_t *xprofile_data;

@@ -86,28 +86,32 @@ gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace
 
 gchar *_string_get_first_variable(gchar *string,gchar *variable)
 {
-   gchar *pend=string+strlen(string);
-   gchar *p,*e;
-   p=e=string;
-  while( p < pend && e < pend) 
+  if (g_strrstr (string,"$("))
   {
-    while( *p!='$' && *(p+1)!='(' && p<pend) p++;
-    if( *p=='$' && *(p+1)=='(' )
+    gchar *pend=string+strlen(string);
+    gchar *p,*e;
+    p=e=string;
+    while( p < pend && e < pend) 
     {
-      e=p;
-      while( *e!=')' && e < pend) e++;
-      if(e < pend && *e==')')
+      while( *p!='$' && *(p+1)!='(' && p<pend) p++;
+      if( *p=='$' && *(p+1)=='(' )
       {
-        strncpy(variable,p,e-p+1);
-        variable[e-p+1]='\0';
-        return p+1;
+        e=p;
+        while( *e!=')' && e < pend) e++;
+        if(e < pend && *e==')')
+        {
+          strncpy(variable,p,e-p+1);
+          variable[e-p+1]='\0';
+          return p+1;
+        }
+        else
+          return NULL;
       }
-      else
-        return NULL;
+      p++;
     }
-    p++;
+    return p+1;
   }
-  return p+1;
+  return NULL;
 }
 
 gchar *_string_get_next_variable(gchar *string,gchar *variable)
@@ -145,11 +149,11 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   const gchar *homedir=g_getenv("HOME");
   if( !homedir ) 
     homedir=g_get_home_dir();
-  
+
   gchar *pictures_folder=NULL;
   
   if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) == NULL)
-    pictures_folder=g_build_path(G_DIR_SEPARATOR_S,homedir,"Pictures",NULL);
+    pictures_folder=g_build_path(G_DIR_SEPARATOR_S,homedir,"Pictures",(char *)NULL);
   else 
     pictures_folder=g_strdup( g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) );
   
@@ -164,20 +168,20 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   struct tm exif_tm={0};
   if (params->img)
   {
-	if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-					&exif_tm.tm_year,
-					&exif_tm.tm_mon,
-					&exif_tm.tm_mday,
-					&exif_tm.tm_hour,
-					&exif_tm.tm_min,
-					&exif_tm.tm_sec
-				) == 6
-		)
-	{
-		exif_tm.tm_year--;
-		exif_tm.tm_mon--;
-		have_exif_tm = TRUE;
-	}
+  if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+          &exif_tm.tm_year,
+          &exif_tm.tm_mon,
+          &exif_tm.tm_mday,
+          &exif_tm.tm_hour,
+          &exif_tm.tm_min,
+          &exif_tm.tm_sec
+        ) == 6
+    )
+  {
+    exif_tm.tm_year--;
+    exif_tm.tm_mon--;
+    have_exif_tm = TRUE;
+  }
   }
   
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
@@ -198,7 +202,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
   else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )  { sprintf(value,"%s",g_path_get_basename(params->filename)); if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0; }
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
-  else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->data->sequence);
+  else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->sequence>=0?params->sequence:params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
   else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir);
   else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",pictures_folder);
@@ -232,6 +236,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
   (*params)->data = g_malloc(sizeof(dt_variables_data_t));
   memset((*params)->data ,0,sizeof(dt_variables_data_t));
   (*params)->data->time=time(NULL);
+  (*params)->sequence = -1;
 }
 
 void dt_variables_params_destroy(dt_variables_params_t *params)
@@ -250,13 +255,12 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   gchar *value=g_malloc(1024);
   gchar *token=NULL;
 
-  // Increase data..
-  if( iterate ) 
-    params->data->sequence++;
-  
   // Let's free previous expanded result if any...
   if( params->data->result )
     g_free(  params->data->result );
+  
+  if(iterate)
+    params->data->sequence++;
   
   // Lets expand string
   gchar *result=NULL;
@@ -277,7 +281,15 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
       }
     } while( (token=_string_get_next_variable(token,variable)) !=NULL );
   }
+  else
+    params->data->result = g_strdup (string);
+  
   g_free(variable);
   g_free(value);
   return TRUE;
+}
+
+void dt_variables_reset_sequence(dt_variables_params_t *params)
+{
+  params->data->sequence = 0;
 }

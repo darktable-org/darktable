@@ -17,6 +17,7 @@
 */
 
 #include "develop/develop.h"
+#include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
 #include "common/exif.h"
@@ -85,7 +86,7 @@ typedef struct _camera_import_dialog_t {
   } settings;
   
   GtkListStore *store;
-
+  dt_job_t *preview_job;
   dt_camera_import_dialog_param_t *params;
   dt_variables_params_t *vp;
 }
@@ -151,7 +152,7 @@ static void
 _update_example(_camera_import_dialog_t *dialog) 
 {
   // create path/filename and execute a expand..
-  gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",NULL);
+  gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",(char *)NULL);
   dt_variables_expand( dialog->vp, path, FALSE);
   gchar *ep=g_strdup(dt_variables_get_result(dialog->vp));
   dt_variables_expand( dialog->vp, dialog->settings.namepattern->value, TRUE);
@@ -212,14 +213,14 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
   
   GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,0);
-  g_object_set(button,"tooltip-text",_("store value as default"),NULL);
+  g_object_set(button,"tooltip-text",_("store value as default"),(char *)NULL);
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
         G_CALLBACK (_gcw_store_callback), gcw);
   
   button=dtgtk_button_new(dtgtk_cairo_paint_reset,0);
-  g_object_set(button,"tooltip-text",_("reset value to default"),NULL);
+  g_object_set(button,"tooltip-text",_("reset value to default"),(char *)NULL);
   gtk_widget_set_size_request(button,13,13);
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -276,11 +277,11 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   GtkTreeView *treeview=GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview)));  
   
   GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new( );
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer,"pixbuf",0, NULL);
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes( _("thumbnail") , renderer,"pixbuf",0, (char *)NULL);
   gtk_tree_view_append_column( treeview , column);
   
   renderer = gtk_cell_renderer_text_new( );
-  column = gtk_tree_view_column_new_with_attributes( _("storage file"), renderer, "text", 1, NULL);
+  column = gtk_tree_view_column_new_with_attributes( _("storage file"), renderer, "text", 1, (char *)NULL);
   gtk_tree_view_append_column( treeview , column);
   gtk_tree_view_column_set_expand( column, TRUE);
   
@@ -305,13 +306,13 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
   if( dt_conf_get_bool("plugins/capture/camera/import/delete_originals") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.general.delete_originals ), TRUE);
    
-  g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),NULL);
+  g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),(char *)NULL);
   g_signal_connect (G_OBJECT(data->settings.general.delete_originals), "clicked",G_CALLBACK (_check_button_callback),data);
  
   GtkWidget *hbox=gtk_hbox_new(FALSE,5);
   data->settings.general.date_override=gtk_check_button_new_with_label(_("override today's date"));
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_override,FALSE,FALSE,0);
-  g_object_set(data->settings.general.date_override,"tooltip-text",_("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),NULL);
+  g_object_set(data->settings.general.date_override,"tooltip-text",_("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),(char *)NULL);
   
   data->settings.general.date_entry=gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_entry,TRUE,TRUE,0);
@@ -360,15 +361,15 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   
   data->settings.backup.enable=gtk_check_button_new_with_label(_("enable backup"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.enable,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.enable,"tooltip-text",_("check this option to enable automatic backup of imported images"),NULL);
+  g_object_set(data->settings.backup.enable,"tooltip-text",_("check this option to enable automatic backup of imported images"),(char *)NULL);
   
   data->settings.backup.warn=gtk_check_button_new_with_label(_("warn if no backup destinations are present"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.warn,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),NULL);
+  g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),(char *)NULL);
    
   data->settings.backup.foldername=(_camera_import_gconf_widget(data,_("backup foldername"),"plugins/capture/camera/backup/foldername"))->widget;
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.foldername,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),NULL);
+  g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),(char *)NULL);
   
   if( dt_conf_get_bool("plugins/capture/backup/enable") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.enable ), TRUE);
   else
@@ -393,7 +394,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data) {
   _update_example(data);
 }
 
-void _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data) 
+int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data) 
 {
   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
   GtkTreeIter iter;
@@ -402,6 +403,12 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   GdkPixbuf *pixbuf=NULL;
   GdkPixbuf *thumb=NULL;
   
+  /* stop fetching previews if job is cancelled */
+  if (data->preview_job && dt_control_job_get_state(data->preview_job) == DT_JOB_STATE_CANCELLED )
+    return 0;
+    
+  
+  gdk_threads_enter();
   char exif_info[1024]={0};  
   char file_info[4096]={0};
   
@@ -448,6 +455,9 @@ void _camera_storage_image_filename(const dt_camera_t *camera,const char *filena
   gtk_list_store_set(data->store,&iter,0,thumb,1,file_info,-1);
   if(pixbuf) g_object_unref(pixbuf);
   if(thumb) g_object_ref(thumb);
+  
+  gdk_threads_leave();
+  return 1;
 }
 
 void _camera_import_dialog_free(_camera_import_dialog_t *data) {
@@ -457,27 +467,52 @@ void _camera_import_dialog_free(_camera_import_dialog_t *data) {
 }
 
 static void _control_status(dt_camctl_status_t status,void *user_data) {
-	 _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
-	switch( status ) {
-		case CAMERA_CONTROL_BUSY:
-		{
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, FALSE);
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, FALSE);
-			
-		} break;
-		case CAMERA_CONTROL_AVAILABLE:
-		{
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, TRUE);
-			gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, TRUE);
-			
-		} break;
-	}
+   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
+  switch( status ) {
+    case CAMERA_CONTROL_BUSY:
+    {
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, FALSE);
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, FALSE);
+      
+    } break;
+    case CAMERA_CONTROL_AVAILABLE:
+    {
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_ACCEPT, TRUE);
+      gtk_dialog_set_response_sensitive(GTK_DIALOG( data->dialog ), GTK_RESPONSE_NONE, TRUE);
+      
+    } break;
+  }
+}
+
+static void _preview_job_state_changed(dt_job_t *job,int state) {
+ _camera_import_dialog_t *data=(_camera_import_dialog_t*)job->user_data;
+  /* store job reference if needed for cancelation */
+  if(  state == DT_JOB_STATE_RUNNING )
+    data->preview_job = job;
+  else if (state == DT_JOB_STATE_FINISHED)
+    data->preview_job = NULL;
+    
+
+}
+
+static gboolean _dialog_close(GtkWidget *window, GdkEvent  *event,gpointer   user_data )
+{
+  _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
+  
+  if (data->preview_job)
+  {
+    /* cancel preview fetching job */
+    dt_control_job_cancel (data->preview_job);
+      
+    /* wait for job execution to signal finished */
+    dt_control_job_wait (data->preview_job);
+  }    
+  return FALSE;
 }
 
 void _camera_import_dialog_run(_camera_import_dialog_t *data) 
 {
   gtk_widget_show_all(data->dialog);
-  
   
   // Populate store
  
@@ -485,19 +520,23 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
   // then initiate fetch of all previews from camera
   if(data->params->camera!=NULL)
   {
+    /* setup a camctl listener */
     dt_camctl_listener_t listener={0};
     listener.data=data;
     listener.control_status=_control_status;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
     
-    dt_job_t j;
-    dt_camera_get_previews_job_init(&j,data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA);
-    dt_control_add_job(darktable.control, &j);
-  }
+    dt_job_t job;
+    dt_camera_get_previews_job_init(&job,data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA);
+    dt_control_job_set_state_callback(&job,_preview_job_state_changed,data);
+    dt_control_add_job(darktable.control, &job);
+  } else
+    return;
   
   // Lets run dialog
   gtk_label_set_text(GTK_LABEL(data->import.info),_("select the images from the list below that you want to import into a new filmroll"));
   gboolean all_good=FALSE;
+  g_signal_connect(G_OBJECT(data->dialog),"delete-event",G_CALLBACK(_dialog_close),data);
   while(!all_good) 
   {
     gint result = gtk_dialog_run (GTK_DIALOG (data->dialog));

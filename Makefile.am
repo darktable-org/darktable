@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS=src pixmaps po color watermarks
+SUBDIRS=src pixmaps po color doc tools watermarks
 INTLTOOL_FILES=intltool-extract.in intltool-merge.in intltool-update.in
 EXTRA_DIST=darktable.gtkrc darktable.glade darktable.desktop $(INTLTOOL_FILES) darktable.schemas.in darktable.1 TRANSLATORS LICENSE
 DISTCLEANFILES=intltool-extract intltool-merge intltool-update po/.intltool-merge-cache
@@ -22,7 +22,12 @@ if GCONF_SCHEMAS_INSTALL
 install-data-local:
 	if test -z "$(DESTDIR)" ; then \
 		for p in $(schema_DATA) ; do \
-			GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $$p ; \
+		  groups|grep root; \
+		  if [ "$?"="1" ] ; then \
+        GCONF_CONFIG_SOURCE="xml:readwrite:${HOME}/.gconf" $(GCONFTOOL) --makefile-install-rule $$p; \
+      else \
+        GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $$p; \
+      fi; \
 		done; \
 		killall gconfd-2 || true; \
 	fi

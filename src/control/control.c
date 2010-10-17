@@ -49,7 +49,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_string ("database", ".darktabledb");
 
   dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
-  dt_conf_set_bool ("write_dt_files", TRUE);
+  dt_conf_set_bool ("write_sidecar_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
   dt_conf_set_float("preview_subsample", .125f);
   dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
@@ -117,7 +117,7 @@ int dt_control_load_config(dt_control_t *c)
   int rc;
   sqlite3_stmt *stmt;
   // unsafe, fast write:
-  sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
+  // sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
   // free memory on disk if we call the line below:
   // rc = sqlite3_exec(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
@@ -370,8 +370,7 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
 
-  s->esc_shortcut_on = 1;
-  s->tab_shortcut_on = 1;
+  s->key_accelerators_on = 1;
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
@@ -409,24 +408,20 @@ void dt_control_init(dt_control_t *s)
   s->button_down_which = 0;
 }
 
-void dt_control_tab_shortcut_off(dt_control_t *s)
+void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
-  s->tab_shortcut_on = 0;
+    s->key_accelerators_on = 1;
 }
 
-void dt_control_tab_shortcut_on(dt_control_t *s)
+void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
-  s->tab_shortcut_on = 1;
+  s->key_accelerators_on = 0;
 }
 
-void dt_control_esc_shortcut_off(dt_control_t *s)
-{
-  s->esc_shortcut_on = 0;
-}
 
-void dt_control_esc_shortcut_on(dt_control_t *s)
+int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 {
-  s->esc_shortcut_on = 1;
+  return  s->key_accelerators_on == 1?1:0;
 }
 
 void dt_control_change_cursor(dt_cursor_t curs)
@@ -485,14 +480,14 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
   vsnprintf(j->description, DT_CONTROL_DESCRIPTION_LEN, msg, ap);
   va_end(ap);
 #endif
+  j->state = DT_JOB_STATE_INITIALIZED;
+  pthread_mutex_init (&j->state_mutex,NULL);
+  pthread_mutex_init (&j->wait_mutex,NULL);
 }
 
-void dt_control_job_init_with_callback(dt_job_t *j,dt_job_finished_callback_t callback,void *user_data, const char *msg, ...)
+void dt_control_job_set_state_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data)
 {
-  va_list argp;
-  va_start(argp, msg);
-  dt_control_job_init(j,msg,argp);
-  j->finished_callback = callback;
+  j->state_changed_cb = cb;
   j->user_data = user_data;
 }
 
@@ -502,6 +497,43 @@ void dt_control_job_print(dt_job_t *j)
 #ifdef DT_CONTROL_JOB_DEBUG
   dt_print(DT_DEBUG_CONTROL, "%s", j->description);
 #endif
+}
+
+void _control_job_set_state(dt_job_t *j,int state)
+{
+  pthread_mutex_lock (&j->state_mutex);
+  j->state = state;
+  /* pass state change to callback */
+  if (j->state_changed_cb)
+      j->state_changed_cb (j,state);
+  pthread_mutex_unlock (&j->state_mutex);
+
+}
+
+int dt_control_job_get_state(dt_job_t *j)
+{
+  pthread_mutex_lock (&j->state_mutex);
+  int state = j->state;
+  pthread_mutex_unlock (&j->state_mutex);
+  return state;
+}
+
+void dt_control_job_cancel(dt_job_t *j)
+{
+  _control_job_set_state (j,DT_JOB_STATE_CANCELLED);
+}
+
+void dt_control_job_wait(dt_job_t *j)
+{
+  int state = dt_control_job_get_state (j);
+ 
+  /* if job execution not is finished let's wait for signal */
+  if (state==DT_JOB_STATE_RUNNING || state==DT_JOB_STATE_CANCELLED)
+  {
+    pthread_mutex_lock (&j->wait_mutex);
+    pthread_mutex_unlock (&j->wait_mutex);
+  }
+ 
 }
 
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
@@ -514,17 +546,26 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   pthread_mutex_unlock(&s->queue_mutex);
   if(!j) return -1;
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job_res %d] ", (size_t)pthread_self());
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f ", res, dt_get_wtime());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
 
-   /* execute job */
-  int32_t exec_res = j->execute (j);
+  /* change state to running */
+  if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
+  {
+    _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
+    
+    /* execute job */
+    pthread_mutex_lock (&j->wait_mutex);
+    j->result = j->execute (j);
+    pthread_mutex_unlock (&j->wait_mutex);
+   
+    _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", res, dt_get_wtime());
+    dt_control_job_print(j);
+    dt_print(DT_DEBUG_CONTROL, "\n");
   
-  /* pass result to finished callback */
-  if (j->finished_callback)
-    j->finished_callback (exec_res,j);
-  
+  }
   return 0;
 }
 
@@ -543,17 +584,28 @@ int32_t dt_control_run_job(dt_control_t *s)
   j = s->job + i;
   pthread_mutex_unlock(&s->queue_mutex);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job %d] ", dt_control_get_threadid());
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
   dt_control_job_print(j);
   dt_print(DT_DEBUG_CONTROL, "\n");
   
-  /* execute job */
-  int32_t exec_res = j->execute (j);
+  /* change state to running */
+  if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
+  {
+    _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
+    
+    /* execute job */
+    pthread_mutex_lock (&j->wait_mutex);
+    j->result = j->execute (j);
+    pthread_mutex_unlock (&j->wait_mutex);
+
+    _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
+    
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
+    dt_control_job_print(j);
+    dt_print(DT_DEBUG_CONTROL, "\n");
+    
+  }
   
-  /* pass result to finished callback */
-  if (j->finished_callback)
-    j->finished_callback (exec_res,j);
-   
   pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);
   s->idle[s->idle_top++] = i;
@@ -568,6 +620,7 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d ", res);
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
+  _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
   s->job_res[res] = *job;
   s->new_res[res] = 1;
   pthread_mutex_unlock(&s->queue_mutex);
@@ -597,6 +650,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   if(s->idle_top != 0)
   {
     i = --s->idle_top;
+    _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
     s->job[s->idle[i]] = *job;
     s->queued[s->queued_top++] = s->idle[i];
     pthread_mutex_unlock(&s->queue_mutex);
@@ -604,6 +658,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   else
   {
     dt_print(DT_DEBUG_CONTROL, "[add_job] too many jobs in queue!\n");
+    _control_job_set_state (job,DT_JOB_STATE_DISCARDED); 
     pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
@@ -617,16 +672,17 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 
 int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 {
-  int32_t i;
+  int32_t found_j = -1;
   pthread_mutex_lock(&s->queue_mutex);
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  for(i=0;i<s->queued_top;i++)
+  for(int i=0;i<s->queued_top;i++)
   { // find equivalent job and push it up on top of the stack.
     const int j = s->queued[i];
     if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
     {
+      found_j = j;
       dt_print(DT_DEBUG_CONTROL, "[revive_job] found job in queue at position %d, moving to %d\n", i, s->queued_top);
       memmove(s->queued + i, s->queued + i + 1, sizeof(int32_t) * (s->queued_top - i - 1));
       s->queued[s->queued_top-1] = j;
@@ -638,13 +694,14 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   pthread_mutex_unlock(&s->cond_mutex);
-  return 0;
+  return found_j;
 }
 
 int32_t dt_control_get_threadid()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread[threadid] != pthread_self() && threadid < darktable.control->num_threads) threadid++;
+  while(darktable.control->thread[threadid] != pthread_self() && threadid < darktable.control->num_threads-1)
+    threadid++;
   assert(darktable.control->thread[threadid] == pthread_self());
   return threadid;
 }
@@ -652,7 +709,8 @@ int32_t dt_control_get_threadid()
 int32_t dt_control_get_threadid_res()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread_res[threadid] != pthread_self() && threadid < DT_CTL_WORKER_RESERVED) threadid++;
+  while(darktable.control->thread_res[threadid] != pthread_self() && threadid < DT_CTL_WORKER_RESERVED-1)
+    threadid++;
   assert(darktable.control->thread_res[threadid] == pthread_self());
   return threadid;
 }
@@ -728,7 +786,13 @@ void *dt_control_expose(void *voidptr)
   darktable.control->width = width;
   darktable.control->height = height;
 
-  cairo_set_source_rgb (cr, darktable.gui->bgcolor[0]+0.04, darktable.gui->bgcolor[1]+0.04, darktable.gui->bgcolor[2]+0.04);
+  GtkStyle *style = gtk_widget_get_style(widget);
+  cairo_set_source_rgb (cr, 
+    style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+
   cairo_set_line_width(cr, tb);
   cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
   cairo_stroke(cr);
@@ -825,14 +889,6 @@ void *dt_control_expose(void *voidptr)
   return NULL;
 }
 
-void 
-dt_control_size_allocate_endmarker(GtkWidget *w, GtkAllocation *a, gpointer *data)
-{
-  // Reset size to match panel width
-  int height = a->width*0.25;
-  gtk_widget_set_size_request(w,a->width,height);
-}
-
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   const int width = widget->allocation.width, height = widget->allocation.height;
@@ -851,6 +907,11 @@ gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, g
 void dt_control_mouse_leave()
 {
   dt_view_manager_mouse_leave(darktable.view_manager);
+}
+
+void dt_control_mouse_enter()
+{
+  dt_view_manager_mouse_enter(darktable.view_manager);
 }
 
 void dt_control_mouse_moved(double x, double y, int which)
@@ -880,6 +941,26 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 {
   dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode == mode) return;
+  
+  /* check sanitiy of mode switch etc*/
+  switch (mode)
+  {
+    case DT_DEVELOP:
+    {
+      int32_t mouse_over_id=0;
+      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+      if(mouse_over_id <= 0) return;
+    }break;
+    
+    case DT_LIBRARY:
+    case DT_CAPTURE:
+    default:
+    break;
+    
+  }
+
+  
+  /* everythings are ok, let's switch mode */
   dt_control_save_gui_settings(oldmode);
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
@@ -891,7 +972,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 
   dt_control_restore_gui_settings(mode);
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, NULL);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
   snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"), dt_view_manager_name(darktable.view_manager));
   gtk_label_set_label(GTK_LABEL(widget), buf);
   dt_conf_set_int ("ui_last/view", mode);
@@ -1144,6 +1225,9 @@ int dt_control_key_pressed_override(uint16_t which)
 {
   int fullscreen, visible;
   GtkWidget *widget;
+  /* check if key accelerators are enabled*/
+  if (darktable.control->key_accelerators_on != 1) return 0;
+  
   switch (which)
   {
     case KEYCODE_F7:
@@ -1163,7 +1247,6 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Escape: case KEYCODE_Caps:
-      if(darktable.control->esc_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
@@ -1171,7 +1254,6 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
-      if(darktable.control->tab_shortcut_on != 1) return 0;
       widget = glade_xml_get_widget (darktable.gui->main_window, "left");
       visible = GTK_WIDGET_VISIBLE(widget);
       if(visible) gtk_widget_hide(widget);
@@ -1255,68 +1337,26 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
 
 void dt_control_clear_history_items(int32_t num)
 {
-  /* reset if empty stack */
+  darktable.gui->reset = 1;
   if( num == -1 ) 
-  {
-  dt_gui_iop_history_reset();
-  return;
+  { /* reset if empty stack */
+    dt_gui_iop_history_reset();
   }
-  
-  /* pop items from top of history */
-  int size = dt_gui_iop_history_get_top () - MAX(0, num);
-  for(int k=1;k<size;k++)
-    dt_gui_iop_history_pop_top ();
+  else
+  { /* pop items from top of history */
+    int size = dt_gui_iop_history_get_top () - MAX(0, num);
+    for(int k=1;k<size;k++)
+      dt_gui_iop_history_pop_top ();
 
-  dt_gui_iop_history_update_labels ();
-  
+    dt_gui_iop_history_update_labels ();
+  }
+  darktable.gui->reset = 0;
 }
 
 void dt_control_update_recent_films()
 {
-  /*char wdname[20];
-  for(int k=1;k<5;k++)
-  {
-    snprintf(wdname, 20, "recent_film_%d", k);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_widget_hide(widget);
-  }
-  
-  sqlite3_stmt *stmt;
-  int rc, num = 1;
-  const char *filename, *cnt;
-  const int label_cnt = 256;
-  char label[256];
-  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const int id = sqlite3_column_int(stmt, 1);
-    if(id == 1)
-    {
-      snprintf(label, 256, _("single images"));
-      filename = _("single images");
-    }
-    else
-    {
-      filename = (char *)sqlite3_column_text(stmt, 0);
-      cnt = filename + MIN(512,strlen(filename));
-      int i;
-      for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
-      if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
-      else snprintf(label, label_cnt, "%s", cnt);
-    }
-    snprintf(wdname, 20, "recent_film_%d", num);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, wdname);
-    gtk_button_set_label(GTK_BUTTON(widget), label);
-    GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)));
-    gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
-    gtk_label_set_max_width_chars (label, 30);
-    g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
-    gtk_widget_show(widget);
-    num++;
-  }
-  sqlite3_finalize(stmt);
-  */
-  
+  int needlock = pthread_self() != darktable.control->gui_thread;
+  if(needlock) gdk_threads_enter();
   /* get the recent film vbox */
   GtkWidget *sb = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
   GtkWidget *recent_used_film_vbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sb)),1);
@@ -1356,7 +1396,7 @@ void dt_control_update_recent_films()
     gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
     gtk_label_set_max_width_chars (label, 30);
     
-    g_object_set(G_OBJECT(widget), "tooltip-text", filename, NULL);
+    g_object_set(G_OBJECT(widget), "tooltip-text", filename, (char *)NULL);
     
     gtk_widget_show(recent_used_film_vbox);
     gtk_widget_show(widget);
@@ -1366,5 +1406,6 @@ void dt_control_update_recent_films()
   
   GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
   dt_gui_filmview_update(gtk_entry_get_text(entry));
+  if(needlock) gdk_threads_leave();
 }
 
