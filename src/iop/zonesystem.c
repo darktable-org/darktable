@@ -40,12 +40,16 @@
 DT_MODULE(1)
 #define MAX_ZONE_SYSTEM_SIZE	24
 
+/** gui params. */
 typedef struct dt_iop_zonesystem_params_t
 {
   int size;
   float zone[MAX_ZONE_SYSTEM_SIZE+1];
 }
 dt_iop_zonesystem_params_t;
+
+/** and pixelpipe data is just the same */
+typedef struct dt_iop_zonesystem_params_t dt_iop_zonesystem_data_t;
 
 /*
 void init_presets (dt_iop_module_t *self)
@@ -73,12 +77,6 @@ typedef struct dt_iop_zonesystem_gui_data_t
 }
 dt_iop_zonesystem_gui_data_t;
 
-typedef struct dt_iop_zonesystem_data_t
-{
-  int size;
-  float zone[MAX_ZONE_SYSTEM_SIZE+1];
-}
-dt_iop_zonesystem_data_t;
 
 const char *name()
 {
@@ -104,7 +102,7 @@ _iop_zonesystem_zone_index_from_lightness (float lightness,float *zonemap,int si
 
 /* calculate a zonemap with scale values for each zone based on controlpoints from param */
 static inline void
-_iop_zonesystem_calculate_zonemap (dt_iop_zonesystem_params_t *p, float *zonemap)
+_iop_zonesystem_calculate_zonemap (struct dt_iop_zonesystem_params_t *p, float *zonemap)
 {
   int steps=0;
   int pk=0;
@@ -139,11 +137,10 @@ _iop_zonesystem_calculate_zonemap (dt_iop_zonesystem_params_t *p, float *zonemap
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  //dt_iop_zonesystem_data_t *data = (dt_iop_zonesystem_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   dt_iop_zonesystem_gui_data_t *g = NULL;
-  dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
+  dt_iop_zonesystem_data_t *data = (dt_iop_zonesystem_data_t*)piece->data;
   
   guchar *buffer = NULL;
   if( self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW )
@@ -159,9 +156,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   
   /* calculate zonemap */
-  const int size = p->size;
+  const int size = data->size;
   float zonemap[MAX_ZONE_SYSTEM_SIZE]={-1};
-  _iop_zonesystem_calculate_zonemap (p, zonemap);
+  _iop_zonesystem_calculate_zonemap (data, zonemap);
   
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
   if( self->dev->gui_attached && g && buffer)
@@ -210,6 +207,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     pthread_mutex_unlock(&g->lock);
   }
+
+  printf("zonemap: ");
+  for(int k=0;k<size+1;k++) printf("%f ", zonemap[k]);
+  printf("\n");
 
   /* proces the image */
   in  = (float *)ivoid;
@@ -365,6 +366,8 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
+  pthread_mutex_destroy(&g->lock);
   self->request_color_pick = 0;
   free(self->gui_data);
   self->gui_data = NULL;
