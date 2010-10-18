@@ -17,6 +17,7 @@
 */
 #include "develop/imageop.h"
 #include "common/opencl.h"
+#include "gui/draw.h"
 #include <memory.h>
 #include <stdlib.h>
 
@@ -39,6 +40,16 @@ dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
 {
+#if 0 // draw curve gui? use sliders?
+  dt_draw_curve_t *minmax_curve;
+  GtkDrawingArea *area;
+  double draw_xs[DT_IOP_EQUALIZER_RES], draw_ys[DT_IOP_EQUALIZER_RES];
+  double draw_min_xs[DT_IOP_EQUALIZER_RES], draw_min_ys[DT_IOP_EQUALIZER_RES];
+  double draw_max_xs[DT_IOP_EQUALIZER_RES], draw_max_ys[DT_IOP_EQUALIZER_RES];
+  // have histogram in bg?
+  float band_hist[DT_IOP_EQUALIZER_BANDS];
+  float band_max;
+#endif
 }
 dt_iop_atrous_gui_data_t;
 
@@ -240,17 +251,18 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 150;
+  module->priority = 370;
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
   tmp.octaves = 5;
-  for(int ch=0;ch<3;ch++) for(int k=0;k<7;k++)
+  for(int k=0;k<7;k++)
   {
-    tmp.sharpen[k] = 200.0f;
+    tmp.sharpen[k] = .03f;
     tmp.boost  [k] = 0.0f;
     tmp.thrs   [k] = 0.001f;
   }
+  tmp.sharpen[0] = 0.0f;
   memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
 

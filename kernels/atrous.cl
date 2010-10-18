@@ -23,7 +23,8 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 float
 weight(const float4 c1, const float4 c2, const float sharpen)
 {
-  return exp((-(c1.x-c2.x)*(c1.x-c2.x)-(c1.y-c2.y)*(c1.y-c2.y)-(c1.z-c2.z)*(c1.z-c2.z)) * sharpen);
+  // return exp((-(c1.x-c2.x)*(c1.x-c2.x)-(c1.y-c2.y)*(c1.y-c2.y)-(c1.z-c2.z)*(c1.z-c2.z)) * sharpen);
+  return exp(-(c1.x-c2.x)*(c1.x-c2.x) * sharpen);
 }
 
 
