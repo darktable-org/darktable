@@ -78,12 +78,11 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
   // with the critical section around lcms, this is slower than monothread, even on dual cores.
-#if 0//def _OPENMP
+#ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
@@ -108,11 +107,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 #endif
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    // lcms is not thread safe.
-// #pragma omp critical
-    {
-    cmsDoTransform(d->xform, cam, &Lab, 1);
-    }
+    // lcms is not thread safe, so work on one copy for each thread :(
+    cmsDoTransform(d->xform[dt_get_thread_num()], cam, &Lab, 1);
     out[3*k + 0] = Lab.L;
     if(Lab.L > 0)
     {
@@ -125,7 +121,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[3*k + 2] = Lab.b;
     }
   }
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -138,8 +133,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
+  const int num_threads = dt_get_num_threads();
   d->input = NULL;
-  if(d->xform) cmsDeleteTransform(d->xform);
+  for(int t=0;t<num_threads;t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
   d->cmatrix[0][0] = -666.0;
   char datadir[1024];
   char filename[1024];
@@ -205,7 +201,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
   if(d->input)
-    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   else
   {
     if(strcmp(p->iccprofile, "sRGB"))
@@ -213,15 +209,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->input = dt_colorspaces_create_linear_rgb_profile();
     }
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
-    d->xform = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
   }
   // user selected a non-supported output profile, check that:
-  if(!d->xform)
+  if(!d->xform[0])
   {
     dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
-    d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_Lab_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_Lab_DBL, p->intent, 0);
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
@@ -235,7 +231,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = malloc(sizeof(dt_iop_colorin_data_t));
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
-  d->xform = NULL;
+  d->xform = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
+  for(int t=0;t<dt_get_num_threads();t++) d->xform[t] = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
@@ -251,7 +248,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) dt_colorspaces_cleanup_profile(d->input);
   dt_colorspaces_cleanup_profile(d->Lab);
-  if(d->xform) cmsDeleteTransform(d->xform);
+  for(int t=0;t<dt_get_num_threads();t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
+  free(d->xform);
   free(piece->data);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
