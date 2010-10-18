@@ -7,6 +7,11 @@
 - cache with gpu bufs, if possible
 - avoid n-times compile for n gpu systems?
 
+inconsistent borders:
+tone curve
+color correction
+base curve
+
 big stuff:
  * libraw process inside dt modules (full 16-bit buf..)
  * auto rate feature (sharpness/colors/user statistics learning)

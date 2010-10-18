@@ -53,7 +53,7 @@ typedef struct dt_iop_colorout_data_t
 {
   cmsHPROFILE output;
   cmsHPROFILE Lab;
-  cmsHTRANSFORM xform;
+  cmsHTRANSFORM *xform;
 }
 dt_iop_colorout_data_t;
 

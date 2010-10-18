@@ -156,10 +156,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    float hsl[3]={0};
-    rgb2hsl (in[3*k+0],in[3*k+1],in[3*k+2],&hsl[0],&hsl[1],&hsl[2]);
-
-    const float x = -1.0+(hsl[2]*2.0);
+    const float lightness = in[3*k]/100.0;
+    const float x = -1.0+(lightness*2.0);
     float gauss = GAUSS(a,b,c,x);
 
     if(isnan(gauss) || isinf(gauss)) 
@@ -169,9 +167,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     if(isnan(relight) || isinf(relight)) 
       relight = 1.0;
-    
-    for(int l=0;l<3;l++)
-      out[3*k+l] = CLIP (in[3*k+l]*relight);
+
+    out[3*k+0] = 100.0*CLIP (lightness*relight);
+    out[3*k+1] = in[3*k+1];
+    out[3*k+2] = in[3*k+2];
   }
 }
 
@@ -279,7 +278,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 252;
+  module->priority = 352;
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t){0.33,0,4};
@@ -332,7 +331,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (self->widget), "expose-event", G_CALLBACK (expose), self);
   
   gtk_table_set_col_spacing (GTK_TABLE (self->widget), 0, 10);
-  g_object_set (GTK_TABLE (self->widget),"row-spacing",2,NULL);
+  gtk_table_set_row_spacings(GTK_TABLE (self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   
   /* adding the labels */
   g->label1 = GTK_LABEL (gtk_label_new (_("exposure")));     // EV

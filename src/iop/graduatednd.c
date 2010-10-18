@@ -366,6 +366,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_table_new (7,2,FALSE);
   gtk_table_set_col_spacing(GTK_TABLE(self->widget), 0, 10);
+  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   
   /* adding the labels */
   g->label1 = GTK_LABEL(gtk_label_new(_("density")));
