@@ -421,11 +421,6 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
   cairo_stroke (cr);
   cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
   
-  cairo_set_line_width (cr, 1.5);
-  cairo_rectangle (cr,0,0,width+(2*inset),height+(2*inset));
-  cairo_set_source_rgb (cr, 0,0,0);
-  cairo_stroke (cr);
-  
   /* render control points handles */
   cairo_set_source_rgb (cr, 0.6, 0.6, 0.6);
   cairo_set_line_width (cr, 1.);
@@ -435,7 +430,7 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
     float nzw=zonemap[k+1]-zonemap[k];
     float pzw=zonemap[k]-zonemap[k-1];
     if (
-        ( ((g->mouse_x/width)> (zonemap[k]-(pzw/2.0))) && 
+        ( ((g->mouse_x/width) > (zonemap[k]-(pzw/2.0))) && 
           ((g->mouse_x/width) < (zonemap[k]+(nzw/2.0))) ) || 
         p->zone[k] != -1)
     {
@@ -579,11 +574,23 @@ dt_iop_zonesystem_bar_motion_notify (GtkWidget *widget, GdkEventMotion *event, d
 static gboolean 
 dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
+  const int inset = 2;
+  int width = widget->allocation.width, height = widget->allocation.height;
+
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
 
-  const int inset = 2;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+
+  /* clear background */
+  GtkStateType state = gtk_widget_get_state(self->topwidget);
+  GtkStyle *style = gtk_widget_get_style(self->topwidget);
+  cairo_set_source_rgb (cr, style->bg[state].red/65535.0, style->bg[state].green/65535.0, style->bg[state].blue/65535.0);
+  cairo_paint (cr);
+
+  width -= 2*inset; height -= 2*inset;
+  cairo_translate(cr, inset, inset);
 
   pthread_mutex_lock(&g->lock);
   if( g->preview_buffer )
@@ -593,104 +600,47 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
     _iop_zonesystem_calculate_zonemap (p,zonemap);
     
     /* let's generate a pixbuf from pixel zone buffer */
-    guchar *image = g_malloc ((g->preview_width*g->preview_height)*3);
+    guchar *image = g_malloc ((g->preview_width*g->preview_height)*4);
     for (int k=0;k<g->preview_width*g->preview_height;k++)
     {
       int zone = 255*CLIP (((1.0/(p->size-1))*g->preview_buffer[k]));
       float value =  g->mouse_x/(width-(2*DT_ZONESYSTEM_INSET));
       int zone_under_mouse = _iop_zonesystem_zone_index_from_lightness (value, zonemap,p->size); 
-      image[3*k+0] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?255:zone;
-      image[3*k+1] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?255:zone;
-      image[3*k+2] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?0:zone;
+      image[4*k+2] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?255:zone;
+      image[4*k+1] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?255:zone;
+      image[4*k+0] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?0:zone;
     }
     pthread_mutex_unlock(&g->lock);
-    GdkPixbuf *zonemap_pixbuf = gdk_pixbuf_new_from_data (image,GDK_COLORSPACE_RGB,FALSE,8,
-                  g->preview_width,g->preview_height,g->preview_width*3,NULL,NULL);
-    
-    /* scale and view pixbuff */
-    int wd = gdk_pixbuf_get_width (zonemap_pixbuf);
-    int ht = gdk_pixbuf_get_height (zonemap_pixbuf);
-    const float scale = fminf ((width-(2*inset))/(float)wd, (height-(2*inset))/(float)ht);
-    int sw = (int)(wd*scale);
-    int sh = (int)(ht*scale);
-    GdkPixbuf *scaled = gdk_pixbuf_scale_simple (zonemap_pixbuf,sw,sh,GDK_INTERP_BILINEAR);
-    
-    /* draw pixbuf */
-    gdk_draw_pixbuf (widget->window,NULL,scaled,0,0,(width/2.0)-(sw/2.0),(height/2.0)-(sh/2.0),sw,sh,GDK_RGB_DITHER_NONE,0,0);
-    gdk_pixbuf_unref (zonemap_pixbuf);
-    gdk_pixbuf_unref (scaled);
-    g_free (image);
-  }
-  else 
-    pthread_mutex_unlock(&g->lock);
-  
-#if 0
-  dt_develop_t *dev = darktable.develop;
-  if(dev->image && dev->preview_pipe->backbuf && !dev->preview_dirty)
-  {
-    cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *cr = cairo_create(cst);
-    
-    /* clear background */
-    GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
-    cairo_set_source_rgb (cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
-    cairo_paint (cr);
 
-    width -= 2*inset; height -= 2*inset;
-    cairo_translate(cr, inset, inset);
-
-    pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-    pthread_mutex_lock(mutex);
-    const int wd = dev->preview_pipe->backbuf_width;
-    const int ht = dev->preview_pipe->backbuf_height;
+    const int wd = g->preview_width, ht = g->preview_height;
     const float scale = fminf(width/(float)wd, height/(float)ht);
-
     const int stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    cairo_surface_t *surface = cairo_image_surface_create_for_data (image, CAIRO_FORMAT_RGB24, wd, ht, stride); 
     cairo_translate(cr, width/2.0, height/2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f*wd, -.5f*ht);
-
-    // draw shadow around
-    /*float alpha = 1.0f;
-    for(int k=0;k<4;k++)
-    {
-      cairo_rectangle(cr, -k/scale, -k/scale, wd + 2*k/scale, ht + 2*k/scale);
-      cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-      alpha *= 0.6f;
-      cairo_fill(cr);
-    }*/
-
-    /* render control lines */
-    cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
-    cairo_set_line_width (cr, 1.);
-    cairo_rectangle (cr,inset,inset,width,height);
-    cairo_set_source_rgb (cr, .1,.1,.1);
-    cairo_stroke (cr);
-    cairo_set_antialias (cr, CAIRO_ANTIALIAS_DEFAULT);
     
-    cairo_set_line_width (cr, 1.5);
-    cairo_rectangle (cr,0,0,width+(2*inset),height+(2*inset));
-    cairo_set_source_rgb (cr, 0,0,0);
-    cairo_stroke (cr);
-
-    cairo_rectangle(cr, 0, 0, wd, ht);
+    cairo_rectangle(cr, 1, 1, wd-2, ht-2);
     cairo_set_source_surface (cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_fill(cr);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
+    cairo_fill_preserve(cr);
     cairo_surface_destroy (surface);
 
-    pthread_mutex_unlock(mutex);
-    
-    
-    cairo_destroy(cr);
-    cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-    cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-    cairo_paint(cr_pixmap);
-    cairo_destroy(cr_pixmap);
-    cairo_surface_destroy(cst);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgb(cr, .1, .1, .1);
+    cairo_stroke(cr);
+
+    g_free(image);
   }
-#endif
+  else 
+    pthread_mutex_unlock(&g->lock);
+
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
   
   return TRUE;
 }
