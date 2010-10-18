@@ -327,8 +327,6 @@ void gui_init(struct dt_iop_module_t *self)
   
   pthread_mutex_init(&g->lock, NULL);
   
-//  dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
-
   self->widget = gtk_vbox_new (FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   /* create the zone preview widget */
@@ -337,7 +335,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->preview = gtk_drawing_area_new();
   g_signal_connect (G_OBJECT (g->preview), "expose-event", G_CALLBACK (dt_iop_zonesystem_preview_expose), self);
   gtk_widget_add_events (GTK_WIDGET (g->preview), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  gtk_drawing_area_size (GTK_DRAWING_AREA (g->preview), -1,  panel_width*.5);
+  gtk_widget_set_size_request(g->preview, panel_width * 0.8, panel_width * 0.8);
   
   /* create the zonesystem bar widget */
   g->zones = gtk_drawing_area_new();
@@ -348,11 +346,13 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->zones), "button-release-event", G_CALLBACK (dt_iop_zonesystem_bar_button_release), self);
   g_signal_connect (G_OBJECT (g->zones), "scroll-event", G_CALLBACK (dt_iop_zonesystem_bar_scrolled), self);
   gtk_widget_add_events (GTK_WIDGET (g->zones), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  gtk_drawing_area_size (GTK_DRAWING_AREA (g->zones), -1, 40);
+  gtk_widget_set_size_request(g->zones, -1, 40);
   
-  gtk_box_pack_start (GTK_BOX (self->widget),g->preview,TRUE,TRUE,0);
+  GtkWidget *aspect = gtk_aspect_frame_new(NULL, .5f, .5f, 1.0f, FALSE);
+  gtk_frame_set_shadow_type(GTK_FRAME(aspect), GTK_SHADOW_NONE);
+  gtk_container_add(GTK_CONTAINER(aspect), g->preview);
+  gtk_box_pack_start (GTK_BOX (self->widget),aspect,TRUE,TRUE,0);
   gtk_box_pack_start (GTK_BOX (self->widget),g->zones,TRUE,TRUE,0);
-  
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
