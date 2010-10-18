@@ -78,7 +78,7 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out,
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  float4 color = (float4)(1.0f, 0.0f, 0.0f, 0.0f);
+  float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
 
   const float px_footprint = .5f/r_scale;
   const int samples = ((int)px_footprint);
