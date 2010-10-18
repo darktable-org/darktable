@@ -127,11 +127,6 @@ _iop_zonesystem_calculate_zonemap (struct dt_iop_zonesystem_params_t *p, float *
       steps = 0;
     }
   }
-/*  fprintf(stderr,"---------------------------------\n");
-  for (int k=0;k<MAX_ZONE_SYSTEM_SIZE;k++)
-  {
-    fprintf(stderr,"zonemap[%.2d] = %f  param %f\n",k,zonemap[k],p->zone[k]);
-  }*/
 }
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
@@ -207,10 +202,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
     pthread_mutex_unlock(&g->lock);
   }
-
-  printf("zonemap: ");
-  for(int k=0;k<size+1;k++) printf("%f ", zonemap[k]);
-  printf("\n");
 
   /* proces the image */
   in  = (float *)ivoid;
