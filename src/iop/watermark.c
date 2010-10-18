@@ -92,6 +92,27 @@ int groups()
   return IOP_GROUP_EFFECT;
 }
 
+
+gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
+  gboolean found=FALSE;
+  gchar *sv=NULL;
+  GtkTreeIter iter;
+  GtkTreeModel *tm=gtk_combo_box_get_model(cb);
+  if(  gtk_tree_model_get_iter_first (tm,&iter) ) {
+    do { 
+      GValue value = { 0, };
+      gtk_tree_model_get_value(tm,&iter,0,&value);
+       if (G_VALUE_HOLDS_STRING (&value)) 
+        if( (sv=(gchar *)g_value_get_string(&value))!=NULL && strcmp(sv,text)==0) {
+          gtk_combo_box_set_active_iter(cb, &iter);
+          found=TRUE;
+          break;
+        }
+    } while( gtk_tree_model_iter_next(tm,&iter) );
+  }
+  return found;
+}
+
 guint _string_occurence(const gchar *haystack,const gchar *needle) 
 {
   guint o=0;
@@ -312,9 +333,13 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
+
 void refresh_watermarks( dt_iop_module_t *self ) {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
+  g_signal_handlers_block_by_func (g->combobox1,watermark_callback,self);
+  
   // Clear combobox...
   GtkTreeModel *model=gtk_combo_box_get_model(g->combobox1);
   gtk_list_store_clear (GTK_LIST_STORE(model));
@@ -352,9 +377,10 @@ void refresh_watermarks( dt_iop_module_t *self ) {
     }
   }
 
-  
-  if( count != 0)
-    gtk_combo_box_set_active(g->combobox1,0);
+   _combo_box_set_active_text( g->combobox1, p->filename );
+ 
+  g_signal_handlers_unblock_by_func (g->combobox1,watermark_callback,self);
+
 }
 
 static void 
@@ -363,7 +389,9 @@ refresh_callback(GtkWidget *tb, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   refresh_watermarks(self);
 }  
-  
+
+
+
   
 static void 
 alignment_callback(GtkWidget *tb, gpointer user_data) 
@@ -436,7 +464,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->xoffset= p->xoffset;
   d->yoffset= p->yoffset;
   d->alignment= p->alignment;
-  strcpy(d->filename,p->filename);
+  memset(d->filename,0,64);
+  sprintf(d->filename,"%s",p->filename);
+  
+  fprintf(stderr,"Commit params: %s...\n",d->filename);
 #endif
 }
 
@@ -447,7 +478,6 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = NULL;
 #else
   piece->data = malloc(sizeof(dt_iop_watermark_data_t));
-  memset(piece->data,0,sizeof(dt_iop_watermark_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -463,25 +493,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #endif
 }
 
-gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
-  gboolean found=FALSE;
-  gchar *sv=NULL;
-  GtkTreeIter iter;
-  GtkTreeModel *tm=gtk_combo_box_get_model(cb);
-  if(  gtk_tree_model_get_iter_first (tm,&iter) ) {
-    do { 
-      GValue value = { 0, };
-      gtk_tree_model_get_value(tm,&iter,0,&value);
-       if (G_VALUE_HOLDS_STRING (&value)) 
-        if( (sv=(gchar *)g_value_get_string(&value))!=NULL) {
-          gtk_combo_box_set_active_iter(cb, &iter);
-          found=TRUE;
-          break;
-        }
-    } while( gtk_tree_model_iter_next(tm,&iter) );
-  }
-  return found;
-}
 
 void gui_update(struct dt_iop_module_t *self)
 {
@@ -591,9 +602,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), NULL);
 
-  g_signal_connect (G_OBJECT (g->combobox1), "changed",
-                    G_CALLBACK (watermark_callback), self);     
-  
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (opacity_callback), self);     
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
@@ -609,6 +617,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->dtbutton1), "clicked",G_CALLBACK (refresh_callback), self);        
   
   refresh_watermarks( self );
+  
+  
+  g_signal_connect (G_OBJECT (g->combobox1), "changed",
+                    G_CALLBACK (watermark_callback), self);     
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
