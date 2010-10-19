@@ -985,7 +985,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
 
   // set constant width from gconf key
-  const int panel_width = MAX(-1, MIN(500, dt_conf_get_int("panel_width")));
+  int panel_width = dt_conf_get_int("panel_width");
+  if(panel_width < 20 || panel_width > 500)
+  {
+    // fix for unset/insane values.
+    panel_width = 300;
+    dt_conf_set_int("panel_width", panel_width);
+  }
   widget = glade_xml_get_widget (darktable.gui->main_window, "right");
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");

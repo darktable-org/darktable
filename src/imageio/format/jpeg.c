@@ -649,7 +649,6 @@ void gui_cleanup (dt_imageio_module_format_t *self)
 void gui_reset (dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
-  // reset gconf values to hardcoded defaults
-  dtgtk_slider_set_value(g->quality, 97);
+  dtgtk_slider_set_value(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
 }
 
