@@ -942,25 +942,6 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode == mode) return;
   
-  /* check sanitiy of mode switch etc*/
-  switch (mode)
-  {
-    case DT_DEVELOP:
-    {
-      int32_t mouse_over_id=0;
-      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      if(mouse_over_id <= 0) return;
-    }break;
-    
-    case DT_LIBRARY:
-    case DT_CAPTURE:
-    default:
-    break;
-    
-  }
-
-  
-  /* everythings are ok, let's switch mode */
   dt_control_save_gui_settings(oldmode);
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
@@ -972,7 +953,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 
   dt_control_restore_gui_settings(mode);
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
+  if(oldmode != DT_MODE_NONE) gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
   snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"), dt_view_manager_name(darktable.view_manager));
   gtk_label_set_label(GTK_LABEL(widget), buf);
   dt_conf_set_int ("ui_last/view", mode);
