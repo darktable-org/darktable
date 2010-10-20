@@ -44,11 +44,15 @@ void dt_film_init(dt_film_t *film)
 	film->ref = 0;
 }
 
+//FIXME: recursion messes up the progress counter.
+//FIXME: film rolls added recursively are not added to the lists on the left. they are shown when a film roll is selected.
 void dt_film_import1(dt_film_t *film)
 {
 	const gchar *d_name;
 	char filename[1024];
 	dt_image_t image;
+
+	gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 
 	while(1)
 	{
@@ -72,7 +76,11 @@ void dt_film_import1(dt_film_t *film)
 		}
 		pthread_mutex_unlock(&film->images_mutex);
 
-		if(dt_image_import(film->id, filename))
+		if(recursive && g_file_test(filename, G_FILE_TEST_IS_DIR))
+		{
+			dt_film_import(filename);
+		}
+		else if(dt_image_import(film->id, filename))
 		{
 			pthread_mutex_lock(&film->images_mutex);
 			darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
