@@ -33,7 +33,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.25
+#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.15
 // (m_pi/2)/4 = half hue colorspan
 #define GRAIN_HUE_COLORRANGE 0.392699082
 #define GRAIN_HUE_STRENGTH_SCALE 0.25
@@ -64,7 +64,6 @@ typedef struct dt_iop_grain_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
   GtkLabel  *label1,*label2,*label3;	      // channel, scale, strength
-  GtkComboBox *combo1;			                // channel
   GtkDarktableSlider *scale1,*scale2;       // scale, strength
 }
 dt_iop_grain_gui_data_t;
@@ -254,56 +253,11 @@ double _simplex_2d_noise(double x,double y,uint32_t octaves,double persistance,d
   return total;
 }
 
-void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
-{
-  float pmax=fmax(r,fmax(g,b));
-  float pmin=fmin(r,fmin(g,b));
-  float delta=(pmax-pmin);
-  
-  *h=*s=*l=0;
-  *l=(pmin+pmax)/2.0;
- 
-  if(pmax!=pmin) 
-  {
-    *s=*l<0.5?delta/(pmax+pmin):delta/(2.0-pmax-pmin);
-  
-    if(pmax==r) *h=(g-b)/delta;
-    if(pmax==g) *h=2.0+(b-r)/delta;
-    if(pmax==b) *h=4.0+(r-g)/delta;
-    *h/=6.0;
-    if(*h<0.0) *h+=1.0;
-    else if(*h>1.0) *h-=1.0;
-  }
-}
-void hue2rgb(float m1,float m2,float hue,float *channel)
-{
-  if(hue<0.0) hue+=1.0;
-  else if(hue>1.0) hue-=1.0;
-  
-  if( (6.0*hue) < 1.0) *channel=(m1+(m2-m1)*hue*6.0);
-  else if((2.0*hue) < 1.0) *channel=m2;
-  else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
-  else *channel=m1;
-}
-
-void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
-{
-  float m1,m2;
-  *r=*g=*b=l;
-  if( s==0) return;
-  m2=l<0.5?l*(1.0+s):l+s-l*s;
-  m1=(2.0*l-m2);
-  hue2rgb(m1,m2,h +(1.0/3.0), r);
-  hue2rgb(m1,m2,h, g);
-  hue2rgb(m1,m2,h - (1.0/3.0), b);
-}
-
 
 const char *name()
 {
   return _("grain");
 }
-
 
 int 
 groups () 
@@ -331,7 +285,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0;j<roi_out->height;j++)
   {
-    float h, s, l;
     float *in  = ((float *)ivoid) + roi_out->width * j * 3;
     float *out = ((float *)ovoid) + roi_out->width * j * 3;
     for(int i=0;i<roi_out->width;i++)
@@ -360,47 +313,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         noise = _simplex_2d_noise(x, y, octaves, 1.0, zoom);
       }
-      if(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS || data->channel==DT_GRAIN_CHANNEL_SATURATION || data->channel==DT_GRAIN_CHANNEL_HUE) 
-      {
-        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+
+      out[0] = in[0]+((100.0*(noise*(strength)))*GRAIN_LIGHTNESS_STRENGTH_SCALE);
+      out[1] = in[1];
+      out[2] = in[2];
       
-        h+=(data->channel==DT_GRAIN_CHANNEL_HUE)?GRAIN_HUE_COLORRANGE*(noise*(strength*GRAIN_HUE_STRENGTH_SCALE)) : 0;
-        s-=(data->channel==DT_GRAIN_CHANNEL_SATURATION)? noise*(strength*GRAIN_SATURATION_STRENGTH_SCALE) : 0;
-        l+=(data->channel==DT_GRAIN_CHANNEL_LIGHTNESS)? noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE) : 0;
-        
-        // Clip and wrapHSL values
-        s=CLIP(s); 
-        l=CLIP(l);
-        if(h<0.0) h+=1.0;
-        if(h>1.0) h-=1.0;
-        
-        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
-      } 
-      else if( data->channel==DT_GRAIN_CHANNEL_RGB )
-      {
-        out[0]=CLIP(in[0]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-        out[1]=CLIP(in[1]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-        out[2]=CLIP(in[2]+(noise*(strength*GRAIN_RGB_STRENGTH_SCALE)));
-      } 
-      else
-      { // No noisemethod lets jsut copy source to dest
-        out[0]=in[0];
-        out[1]=in[1];
-        out[2]=in[2];
-      }  
       out += 3; in += 3;
     }
   }
-}
-
-static void
-channel_changed (GtkComboBox *combo, dt_iop_module_t *self)
-{
-  dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->channel = gtk_combo_box_get_active(g->combo1);
-  dt_dev_add_history_item(darktable.develop, self);
 }
 
 static void
@@ -466,7 +386,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)module->params;
-  gtk_combo_box_set_active(g->combo1, p->channel);
+
   dtgtk_slider_set_value(g->scale1, p->scale*53.3);
   dtgtk_slider_set_value(g->scale2, p->strength);
 }
@@ -477,7 +397,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 995;
+  module->priority = 855;
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp = (dt_iop_grain_params_t){DT_GRAIN_CHANNEL_LIGHTNESS, 400.0/53.3, 25.0};
@@ -504,24 +424,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("channel")));
   g->label2 = GTK_LABEL(gtk_label_new(_("coarseness")));
   g->label3 = GTK_LABEL(gtk_label_new(_("strength")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  
-  g->combo1=GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->combo1,_("hue"));
-  gtk_combo_box_append_text(g->combo1,_("saturation"));
-  gtk_combo_box_append_text(g->combo1,_("lightness"));
-  //gtk_combo_box_append_text(g->combo1,_("rgb"));
-  gtk_combo_box_set_active(g->combo1,p->channel);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->combo1), TRUE, TRUE, 0);
-  
+
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 100.0, 3200.0, 20.0, p->scale*53.3, 0));
   dtgtk_slider_set_snap(g->scale1, 20);
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->strength, 2));
@@ -531,8 +440,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the grain size (~iso of the film)"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
   
- g_signal_connect (G_OBJECT (g->combo1), "changed",
-            G_CALLBACK (channel_changed), self);
  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",

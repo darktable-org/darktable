@@ -105,9 +105,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
     for(int i=rad;i<roi_out->width-rad;i++)
     {
-      for(int c=0;c<3;c++) out[c] = 0.0f;
+      out[0] = 0.0f;
       for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-        for(int c=0;c<3;c++) out[c] += m[l*wd+k]*in[3*(l*roi_in->width+k)+c];
+        out[0] += m[l*wd+k]*in[3*(l*roi_in->width+k)];
       out += 3; in += 3;
     }
   }
@@ -125,9 +125,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     for(int i=0;i<rad;i++)
-      for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+      out[3*(roi_out->width*j + i)] = in[3*(roi_in->width*j + i)];
     for(int i=roi_out->width-rad;i<roi_out->width;i++)
-      for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+      out[3*(roi_out->width*j + i)] = in[3*(roi_in->width*j + i)];
   }
 #ifdef _OPENMP
   #pragma omp parallel for default(none) private(in, out) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
@@ -140,16 +140,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 	  
 	  for(int i=0;i<roi_out->width;i++)
     {
-      for(int c=0;c<3;c++)
+      out[1] = in[1];
+      out[2] = in[2];
+      const float diff = in[0] - out[0];
+      if(fabsf(diff) > data->threshold)
       {
-        const float diff = in[c] - out[c];
-        if(fabsf(diff) > data->threshold)
-        {
-          const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
-          out[c] = fmaxf(0.0, in[c] + detail*data->amount);
-        }
-        else out[c] = in[c];
+        const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
+        out[0] = fmaxf(0.0, in[0] + detail*data->amount);
       }
+      else out[0] = in[0];
       out += 3; in += 3;
     }
 	}
@@ -237,7 +236,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_enabled = 1;
-  module->priority = 990;
+  module->priority = 850;
   module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){2.0, 0.5, 0.004};

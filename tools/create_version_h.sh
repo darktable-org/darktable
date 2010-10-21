@@ -1,19 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 # this is called from autogen.sh and from src/Makefile.am
-if [ -x ./tools/create_version_sh.sh ]; then
-  if [ ! -f version.sh ]; then
-    ./tools/create_version_sh.sh
-  fi
-  . version.sh
-else
-  if [ ! -f ../version.sh ]; then
-    cd ..
-    ./tools/create_version_sh.sh
-    cd -
-  fi
-  . ../version.sh
+
+dir=$(dirname $(readlink -f $0))
+
+if [ ! -f $dir/version.sh ]; then
+    $dir/create_version_sh.sh
 fi
 
+. $dir/version.sh
+
+mkdir -p common
 cat > common/version.h << EOF
 #ifndef DT_VERSION_H
 #define DT_VERSION_H

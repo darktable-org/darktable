@@ -81,12 +81,16 @@ void init_presets (dt_iop_module_t *self)
   for(int k=0;k<6;k++) p.tonecurve_y[k] = linear[k];
   p.tonecurve_y[1] -= 0.03; p.tonecurve_y[4] += 0.03;
   p.tonecurve_y[2] -= 0.03; p.tonecurve_y[3] += 0.03;
+  for(int k=1;k<5;k++) p.tonecurve_y[k] = powf(p.tonecurve_y[k], 2.2f);
+  for(int k=1;k<5;k++) p.tonecurve_x[k] = powf(p.tonecurve_x[k], 2.2f);
   dt_gui_presets_add_generic(_("med contrast"), self->op, &p, self->params_size, 1);
 
   for(int k=0;k<6;k++) p.tonecurve_x[k] = linear[k];
   for(int k=0;k<6;k++) p.tonecurve_y[k] = linear[k];
   p.tonecurve_y[1] -= 0.06; p.tonecurve_y[4] += 0.06;
   p.tonecurve_y[2] -= 0.10; p.tonecurve_y[3] += 0.10;
+  for(int k=1;k<5;k++) p.tonecurve_y[k] = powf(p.tonecurve_y[k], 2.2f);
+  for(int k=1;k<5;k++) p.tonecurve_x[k] = powf(p.tonecurve_x[k], 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, &p, self->params_size, 1);
 }
 

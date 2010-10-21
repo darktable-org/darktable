@@ -11,3 +11,6 @@ src/LibRaw/internal/refinement.c
 src/LibRaw/internal/vcd_interpolate.c
 src/gegl-operations/dt-contrast-curve.c
 src/gegl-operations/dt-gamma.c
+darktable.glade
+src/imageio/format/rgbe.c
+src/iop/useless.c
