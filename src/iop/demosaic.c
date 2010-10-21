@@ -107,7 +107,40 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy out buffer on device: %d\n", err);
   
 
-  if(global_scale > .999f)
+  if(!self->dev->image->filters)
+  {
+    // TODO:
+#if 0
+    // actually no demosaic is needed at all
+    dt_iop_roi_t roi;
+    roi.x = ((int)(roi_in->x/global_scale)) & ~0x1; roi.y = ((int)(roi_in->y/global_scale)) & ~0x1;
+    roi.width = roi_in->width/global_scale; roi.height = roi_in->height/global_scale;
+    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
+        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+        &fmt4,
+        roi.width, roi.height, sizeof(uint16_t)*region[0],
+        ((uint16_t *)self->dev->image->pixels) + roi.y*region[0] + roi.x, &err);
+    // scale temp buffer to output buffer
+    int zero = 0;
+    sizes[0] = roi_out->width; sizes[1] = roi_out->height;
+    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_in);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 2, sizeof(int), (void*)&zero);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 3, sizeof(int), (void*)&zero);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 4 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 4, sizeof(int), (void*)&roi_out->width);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 5 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 5, sizeof(int), (void*)&roi_out->height);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 6 setting failed: %d\n", err);
+    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 6, sizeof(float), (void*)&global_scale);
+    if(err != CL_SUCCESS) fprintf(stderr, "param 7 setting failed: %d\n", err);
+    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_downsample, sizes);
+#endif
+  }
+  else if(global_scale > .999f)
   {
     // 1:1 demosaic
     size_t origin_in[] = {((size_t)roi_out->x)&~0x1, ((size_t)roi_out->y)&~0x1, 0};
@@ -171,7 +204,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
     if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
     err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_redblue, sizes);
 
-    // FIXME: produces weird red cast..??
     // scale temp buffer to output buffer
     int zero = 0;
     sizes[0] = roi_out->width; sizes[1] = roi_out->height;
@@ -240,9 +272,6 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
-  // if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
-  // else                                    module->default_enabled = 1;
-  // FIXME: only enable it for raw images? or handle zoom for non raws, too?
   module->default_enabled = 1;
   module->priority = 1;
   module->hide_enable_button = 1;
