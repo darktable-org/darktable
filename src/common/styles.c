@@ -212,6 +212,24 @@ dt_styles_get_list (const char *filter)
   return result;
 }
 
+gchar *dt_styles_get_description (const char *name)
+{
+  sqlite3_stmt *stmt;
+  int id=0,rc=0;
+  gchar *description = NULL;
+  if ((id=_styles_get_id_by_name(name)) != 0)
+  {
+    rc = sqlite3_prepare_v2 (darktable.db, "select description from styles where styleid=?1", -1, &stmt, NULL);
+    rc = sqlite3_bind_int (stmt, 1, id);
+    rc = sqlite3_step(stmt);
+    description = (char *)sqlite3_column_text (stmt, 0);
+    if (description)
+      description = g_strdup (description);
+    sqlite3_finalize (stmt);
+  }
+  return description;
+}
+
 int32_t 
 _styles_get_id_by_name (const char *name)
 {
