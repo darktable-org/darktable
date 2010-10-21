@@ -17,26 +17,20 @@
 */
 
 #include "gui/preferences.h"
+#include "gui/preferences_gen.h"
 
 void dt_gui_preferences_show()
 {
   GtkWidget *dialog = gtk_dialog_new_with_buttons(
       _("darktable preferences"), NULL, 
       GTK_DIALOG_MODAL,
-      _("cancel"),
-      GTK_RESPONSE_NONE,
-      _("apply"),
+      _("close"),
       GTK_RESPONSE_ACCEPT,
       NULL);
-  GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+  // GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
   GtkWidget *notebook = gtk_notebook_new();
 
-  const int num_tabs = 2;
-  const char *labels = {
-    _("gui"),
-    _("core"),
-  };
-
-  gtk_notebook_append_page(
-  
+  init_tab_gui(notebook);
+  init_tab_core(notebook);
+  (void) gtk_dialog_run(GTK_DIALOG(dialog));
 }
