@@ -1,6 +1,6 @@
 <gconfschemafile>
   <schemalist>
-    <schema>
+    <schema><!--tab:core-->
       <key>/schemas/apps/darktable/database</key>
       <applyto>/apps/darktable/database</applyto>
       <owner>darktable</owner>
@@ -13,7 +13,7 @@
       </locale>
     </schema>
 
-    <schema>
+    <schema><!--tab:core-->
       <key>/schemas/apps/darktable/cachefile</key>
       <applyto>/apps/darktable/cachefile</applyto>
       <owner>darktable</owner>
@@ -26,7 +26,7 @@
       </locale>
     </schema>
     
-    <schema>
+    <schema><!--tab:core-->
       <key>/schemas/apps/darktable/cachefile_backup</key>
       <applyto>/apps/darktable/cachefile_backup</applyto>
       <owner>darktable</owner>
@@ -39,7 +39,7 @@
       </locale>
     </schema>
 
-    <schema>
+    <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/themefile</key>
       <applyto>/apps/darktable/themefile</applyto>
       <owner>darktable</owner>
