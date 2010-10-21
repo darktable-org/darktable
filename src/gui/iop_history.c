@@ -23,8 +23,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/iop_history.h"
-#include "gui/styles.h"
-#include "dtgtk/button.h"
+
 
 static void
 history_compress_clicked (GtkWidget *widget, gpointer user_data)
@@ -78,12 +77,7 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_dev_pop_history_items (darktable.develop, num);
 }
 
-static void
-create_style_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  if(darktable.develop->image)
-    dt_gui_styles_dialog_new (darktable.develop->image->id);
-}
+
 
 void 
 dt_gui_iop_history_init ()
@@ -96,13 +90,6 @@ dt_gui_iop_history_init ()
   gtk_box_pack_start (GTK_BOX (hbody),hbutton,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (history_compress_clicked),(gpointer)0);
   gtk_widget_show_all (hbody);
-  
-  /* add toolbar button for creating style */
-  hbutton = dtgtk_button_new (dtgtk_cairo_paint_styles,0);
-  gtk_box_pack_start (GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")),hbutton,FALSE,FALSE,0);
-  g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (create_style_button_clicked),(gpointer)0);
-  g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a style from current developed image and it's history stack"), (char *)NULL);
-  gtk_widget_show_all(hbutton);
 }
 
 void 
