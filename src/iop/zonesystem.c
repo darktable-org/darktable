@@ -73,6 +73,7 @@ typedef struct dt_iop_zonesystem_gui_data_t
   gboolean hilite_zone;
   gboolean is_dragging;
   int current_zone;
+  int zone_under_mouse;
   pthread_mutex_t lock;
 }
 dt_iop_zonesystem_gui_data_t;
@@ -551,6 +552,8 @@ dt_iop_zonesystem_bar_motion_notify (GtkWidget *widget, GdkEventMotion *event, d
   g->mouse_x = CLAMP(event->x - inset, 0, width);
   g->mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
   
+  g->zone_under_mouse = (g->mouse_x/width) / (1.0/(p->size-1));
+     
   if (g->is_dragging)
   {
       /* calculate zonemap */
@@ -604,11 +607,9 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
     for (int k=0;k<g->preview_width*g->preview_height;k++)
     {
       int zone = 255*CLIP (((1.0/(p->size-1))*g->preview_buffer[k]));
-      float value =  g->mouse_x/(width-(2*DT_ZONESYSTEM_INSET));
-      int zone_under_mouse = _iop_zonesystem_zone_index_from_lightness (value, zonemap,p->size); 
-      image[4*k+2] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?255:zone;
-      image[4*k+1] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?255:zone;
-      image[4*k+0] = (g->hilite_zone && g->preview_buffer[k]==zone_under_mouse)?0:zone;
+      image[4*k+2] = (g->hilite_zone && g->preview_buffer[k]==g->zone_under_mouse)?255:zone;
+      image[4*k+1] = (g->hilite_zone && g->preview_buffer[k]==g->zone_under_mouse)?255:zone;
+      image[4*k+0] = (g->hilite_zone && g->preview_buffer[k]==g->zone_under_mouse)?0:zone;
     }
     pthread_mutex_unlock(&g->lock);
 
