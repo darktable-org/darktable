@@ -150,6 +150,8 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "drop table tags", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table tagxtag", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table tagged_images", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table styles", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table style_items", NULL, NULL, NULL);
       goto create_tables;
     }
     else
@@ -168,7 +170,11 @@ int dt_control_load_config(dt_control_t *c)
       // insert new tables, if not there (statement will just fail if so):
       sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table mipmaps", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL); 
+      
+      sqlite3_exec(darktable.db, "create table styles (styleid integer primary key,name varchar,description varchar)", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
+    
       pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
 #endif
@@ -192,6 +198,11 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_exec(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    rc = sqlite3_exec(darktable.db, "create table style_items (style_id integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
+    HANDLE_SQLITE_ERR(rc);
+    
     sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
 
     // add dummy film roll for single images

@@ -335,6 +335,26 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint f
   cairo_line_to(cr, 0.90, 0.93);
   cairo_line_to(cr, 0.82, 0.82);
   cairo_stroke(cr);
+<<<<<<< HEAD
+=======
+}
+
+void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+	gint s=w<h?w:h;
+	cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+	cairo_scale(cr,s,s);
+	
+	cairo_set_line_width(cr, 0.08);
+	cairo_arc (cr, 0.2, 0.8, 0.2, 0.0, 2.0*M_PI);
+	cairo_stroke(cr);
+	cairo_arc (cr, 0.7, 0.7, 0.3, 0.0, 2.0*M_PI);
+	cairo_stroke(cr);
+	cairo_arc (cr, 0.4, 0.2, 0.25, 0.0, 2.0*M_PI);
+	cairo_stroke(cr);
+	
+	cairo_stroke(cr);
+>>>>>>> master-styles
 }
 
 void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)

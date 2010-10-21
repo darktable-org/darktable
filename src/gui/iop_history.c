@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "gui/iop_history.h"
 
+
 static void
 history_compress_clicked (GtkWidget *widget, gpointer user_data)
 {
@@ -75,6 +76,7 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   long int num = (long int)user_data;
   dt_dev_pop_history_items (darktable.develop, num);
 }
+
 
 
 void 
