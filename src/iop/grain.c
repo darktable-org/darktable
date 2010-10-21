@@ -33,7 +33,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.25
+#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.15
 // (m_pi/2)/4 = half hue colorspan
 #define GRAIN_HUE_COLORRANGE 0.392699082
 #define GRAIN_HUE_STRENGTH_SCALE 0.25
@@ -314,7 +314,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         noise = _simplex_2d_noise(x, y, octaves, 1.0, zoom);
       }
 
-      out[0] = in[0]+(100.0*CLIP(noise*(strength*GRAIN_LIGHTNESS_STRENGTH_SCALE)));
+      out[0] = in[0]+((100.0*(noise*(strength)))*GRAIN_LIGHTNESS_STRENGTH_SCALE);
       out[1] = in[1];
       out[2] = in[2];
       
