@@ -22,6 +22,7 @@
 #include "common/imageio.h"
 #include "common/image_cache.h"
 #include "common/styles.h"
+#include "common/tags.h"
 
 int32_t _styles_get_id_by_name (const char *name);
 
@@ -131,6 +132,11 @@ dt_styles_apply_to_image(const char *name,int32_t imgid)
     rc = sqlite3_bind_int (stmt, 3, id);
     rc = sqlite3_step (stmt);
     rc = sqlite3_finalize (stmt);
+    
+    /* add tag */
+    guint tagid=0;
+    if (dt_tag_new(name,&tagid))
+      dt_tag_attach(tagid,imgid);
     
     /* if current image in develop reload history */
     if (dt_dev_is_current_image(darktable.develop, imgid))
