@@ -541,7 +541,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_hbox_new(FALSE,0);
   GtkTable *table = GTK_TABLE(gtk_table_new(6,2,FALSE) );
   gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET(table),TRUE,TRUE,5);
-  gtk_table_set_row_spacings(GTK_TABLE(table),0);
+  gtk_table_set_row_spacings(GTK_TABLE(table),2);
   gtk_table_set_col_spacings(GTK_TABLE(table),8);
   
   g->label1 = GTK_LABEL(gtk_label_new(_("marker")));
@@ -585,8 +585,9 @@ void gui_init(struct dt_iop_module_t *self)
   // Create the 3x3 gtk table toggle button table...
   GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
   for(int i=0;i<9;i++) {
-    g->dtba[i] = DTGTK_TOGGLEBUTTON( dtgtk_togglebutton_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE) );
-    gtk_table_attach(GTK_TABLE(bat), GTK_WIDGET(g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
+    g->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<(i+1))));
+    gtk_widget_set_size_request (GTK_WIDGET (g->dtba[i]),16,16);
+    gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
     g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);          
   }
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(bat), 1,2,3,4,GTK_EXPAND|GTK_FILL,0,0,0);

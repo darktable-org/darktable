@@ -377,3 +377,66 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   
 }
 
+void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale(cr,s,s);
+ 
+  cairo_set_line_width(cr,0.3);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  switch (flags>>12)
+  {
+    case 1:     // Top left
+      cairo_move_to(cr,0.9,0.1);
+      cairo_line_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.1,0.9);
+    break;
+    
+    case 2:     // Top center
+      cairo_move_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.9,0.1);
+    break;
+    
+    case 4:     // Top right
+      cairo_move_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.9,0.1);
+      cairo_line_to(cr,0.9,0.9);
+    break;
+    
+    case 8:     // left
+      cairo_move_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.1,0.9);
+    break;
+    case 16:     // center
+      cairo_move_to(cr,0.1,0.5);
+      cairo_line_to(cr,0.9,0.5);
+      cairo_move_to(cr,0.5,0.1);
+      cairo_line_to(cr,0.5,0.9);
+    break;
+    case 32:     // right
+      cairo_move_to(cr,0.9,0.1);
+      cairo_line_to(cr,0.9,0.9);
+    break;
+    
+     case 64:     // bottom left
+      cairo_move_to(cr,0.9,0.9);
+      cairo_line_to(cr,0.1,0.9);
+      cairo_line_to(cr,0.1,0.1);
+    break;
+    
+    case 128:     // bottom center
+      cairo_move_to(cr,0.1,0.9);
+      cairo_line_to(cr,0.9,0.9);
+    break;
+    
+    case 256:     // bottom right
+      cairo_move_to(cr,0.1,0.9);
+      cairo_line_to(cr,0.9,0.9);
+      cairo_line_to(cr,0.9,0.1);
+    break;
+    
+  }
+  cairo_stroke(cr);
+
+}
