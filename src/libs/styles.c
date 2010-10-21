@@ -69,6 +69,46 @@ typedef enum _styles_columns_t
 }
 _styles_columns_t;
 
+static int
+get_font_height(GtkWidget *widget, const char *str)
+{
+  int width, height;
+
+  PangoLayout *layout = pango_layout_new (gtk_widget_get_pango_context (widget));
+
+  pango_layout_set_text(layout, str, -1);
+  pango_layout_set_font_description(layout, NULL);
+  pango_layout_get_pixel_size (layout, &width, &height);
+
+  g_object_unref (layout);
+  return height;
+}
+
+static int
+_gui_styles_count(const char *filter)
+{
+  char filterstring[512];
+  snprintf(filterstring, 512, "%%%s%%", filter);
+  int count = 0;
+  sqlite3_stmt *stmt;
+  int rc;
+  rc = sqlite3_prepare_v2(darktable.db, "select count(*) from styles where name like ?1 order by name", -1, &stmt, NULL);
+  rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count += sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
+
+static void
+focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_styles_t *d)
+{
+    int count = 1 + _gui_styles_count (gtk_entry_get_text(d->entry));
+  int ht = get_font_height( GTK_WIDGET (d->list), "Dreggn");
+  const int size = MAX (2*ht, MIN (10*ht, count*ht));
+  gtk_widget_set_size_request (GTK_WIDGET (d->list), -1, size);
+}
+
 static void _gui_styles_update_view( dt_lib_styles_t *d)
 {
    /* clear current list */
@@ -123,6 +163,7 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
   
 }
 
+/*
 static void edit_clicked(GtkWidget *w,gpointer user_data)
 {
     dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
@@ -141,7 +182,7 @@ static void edit_clicked(GtkWidget *w,gpointer user_data)
     dt_gui_styles_dialog_edit (name);
      _gui_styles_update_view(d);
   }
-}
+}*/
 
 static void delete_clicked(GtkWidget *w,gpointer user_data)
 {
@@ -191,6 +232,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_model (GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
   g_object_unref (liststore);
   g_signal_connect (d->list, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
+  g_signal_connect(d->list, "focus-in-event",  G_CALLBACK(focus_in_callback), d);
   
   /* filter entry */
   d->entry=GTK_ENTRY (gtk_entry_new ());
@@ -199,16 +241,22 @@ gui_init (dt_lib_module_t *self)
   
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->entry),TRUE,FALSE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->list),TRUE,FALSE,0);
-  
+
   GtkWidget *hbox=gtk_hbox_new (FALSE,5);
+ 
+   GtkWidget *widget;
+#if 0
+  // TODO: Unfinished stuff
   GtkWidget *widget=gtk_button_new_with_label(_("edit"));
   g_signal_connect (widget, "clicked", G_CALLBACK(edit_clicked),d);
-  
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
+#endif
+  
   widget=gtk_button_new_with_label(_("delete"));
   g_signal_connect (widget, "clicked", G_CALLBACK(delete_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
+  
   
   /* update filtered list */
   _gui_styles_update_view(d);
