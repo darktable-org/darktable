@@ -16,21 +16,31 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <glade/glade.h>
+#include "common/darktable.h"
+#include "gui/gtk.h"
 #include "gui/preferences.h"
 #include "gui/preferences_gen.h"
 
 void dt_gui_preferences_show()
 {
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *dialog = gtk_dialog_new_with_buttons(
-      _("darktable preferences"), NULL, 
+      _("darktable preferences"), GTK_WINDOW (win), 
       GTK_DIALOG_MODAL,
       _("close"),
       GTK_RESPONSE_ACCEPT,
       NULL);
-  // GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
+  gtk_window_resize(GTK_WINDOW(dialog), 600, 300);
+  GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
   GtkWidget *notebook = gtk_notebook_new();
+  gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 
   init_tab_gui(notebook);
   init_tab_core(notebook);
+  gtk_widget_show_all(dialog);
   (void) gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
 }
+

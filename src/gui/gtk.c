@@ -44,6 +44,7 @@
 #include "gui/iop_modulegroups.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
+#include "gui/preferences.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -624,6 +625,11 @@ film_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 
+void
+preferences_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  dt_gui_preferences_show();
+}
 
 void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
@@ -1017,6 +1023,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_background_jobs_init();
   
   /* connect the signals in the interface */
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "button_preferences");
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (preferences_button_clicked),
+                    NULL);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
   g_signal_connect (G_OBJECT (widget), "clicked",
