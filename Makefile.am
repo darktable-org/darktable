@@ -22,8 +22,8 @@ if GCONF_SCHEMAS_INSTALL
 install-data-local:
 	if test -z "$(DESTDIR)" ; then \
 		for p in $(schema_DATA) ; do \
-			GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $$p || \
-      GCONF_CONFIG_SOURCE="xml:readwrite:${HOME}/.gconf" $(GCONFTOOL) --makefile-install-rule $$p ; \
+		  groups|grep root >& /dev/null || GCONF_CONFIG_SOURCE="xml:readwrite:${HOME}/.gconf" $(GCONFTOOL) --makefile-install-rule $$p; \
+      groups|grep root >& /dev/null && GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $$p; \
 		done; \
 		killall gconfd-2 || true; \
 	fi

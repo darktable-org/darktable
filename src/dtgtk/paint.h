@@ -21,16 +21,24 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-typedef enum dtgtk_cairo_paint_flags_t {
+#define CPF_USER_DATA 0x1000
+
+typedef enum dtgtk_cairo_paint_flags_t
+{
 	CPF_DIRECTION_UP=1,
 	CPF_DIRECTION_DOWN=2,
 	CPF_DIRECTION_LEFT=4,
 	CPF_DIRECTION_RIGHT=8,
 	CPF_ACTIVE=16,
 	CPF_PRELIGHT=32,
-	CPF_IGNORE_FG_STATE=64	// Ignore state when setting foregroundcolor 
-	
-} dtgtk_cairo_paint_flags_t;
+	CPF_IGNORE_FG_STATE=64,	    // Ignore state when setting foregroundcolor 
+  CPF_BG_TRANSPARENT=128,     // transparent background
+  CPF_STYLE_FLAT=256,         // flat style widget
+  CPF_STYLE_BOX=512,          // boxed style widget
+  CPF_DO_NOT_USE_BORDER=1024, // do not paint inner border
+  CPF_SPECIAL_FLAG=2048
+}
+dtgtk_cairo_paint_flags_t;
 
 
 typedef void (*DTGTKCairoPaintIconFunc)(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
@@ -67,5 +75,7 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint f
 void dtgtk_cairo_paint_label(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint styles icon */
 void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint a color picker icon */
+void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 
 #endif

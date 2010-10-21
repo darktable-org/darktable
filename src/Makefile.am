@@ -62,6 +62,7 @@ libdarktable_la_SOURCES= \
 			gui/presets.c \
 			gui/styles.c \
 			gui/tool_colorlabels.c \
+      gui/preferences.c \
 			libs/lib.c \
 			views/view.c 
 			
@@ -83,6 +84,8 @@ noinst_HEADERS= \
 			gui/styles.h \
 			gui/background_jobs.h \
 			gui/tool_colorlabels.h \
+      gui/preferences.h\
+      gui/preferences_gen.h\
 			develop/develop.h \
 			develop/imageop.h \
 			common/collection.h \
@@ -136,9 +139,13 @@ noinst_HEADERS= \
 			common/pwstorage/backend_kwallet.h
 
 # create version.h
-BUILT_SOURCES=common/version.h
+BUILT_SOURCES=common/version.h gui/preferences_gen.h
 .PHONY:common/version.h
 common/version.h:
 	@echo "  >>     version.h"
 	@test -x $(srcdir)/../tools/create_version_h.sh && $(srcdir)/../tools/create_version_h.sh || true
+
+gui/preferences_gen.h: $(srcdir)/../darktable.schemas.in $(srcdir)/../tools/create_preferences.sh
+	@echo "  >>     preferences_gen.h"
+	@$(srcdir)/../tools/create_preferences.sh $(srcdir)/../darktable.schemas.in > gui/preferences_gen.h
 

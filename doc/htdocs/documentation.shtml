@@ -60,9 +60,11 @@
 
       <div class="listtext">
         <h1>cameras tested for tethering</h1>
+        while a lot of camera's might work with darktable's tethering mode only a few 
+        have been tested in real life.
       </div>
       <div class="text">
-      <table class="bigimg">
+      <table class="fullwdimg">
         <tr class="odd">
           <td><em>camera</em></td>
           <td><em>firmware</em></td>
@@ -70,15 +72,18 @@
           <td><em>gphoto</em></td>
           <td><em>darktable</em></td>
           <td><em>tester</em></td>
+          <td><em>comment</em></td>
         </tr>
-        <tr class="even"><td>Nikon D60</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
-        <tr class="even"><td>Nikon D90</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td></tr>
-        <tr class="even"><td>Nikon D5000</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.6</td><td>Jos&eacute; Carlos Garc&iacute;a Sogo</td></tr>
-        <tr class="even"><td>Canon EOS 400D</td><td>1.1.1</td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.5+git20100716</td><td>Pascal de Bruijn</td></tr>
-        <tr class="even"><td>Panasonix DMC-FZ50</td><td></td><td>ArchLinux x86_64</td><td>2.4.9</td><td>git 2010/07/29</td><td>Aldrik Dunbar</td></tr>
+        <tr class="even"><td>Nikon D60</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td><td></td></tr>
+        <tr class="odd"><td>Nikon D90</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.5+git20100716</td><td>Henrik Andersson</td><td></td></tr>
+        <tr class="even"><td>Nikon D5000</td><td></td><td>Ubuntu 10.04</td><td>2.4.5-2</td><td>0.6</td><td>Jos&eacute; Carlos Garc&iacute;a Sogo</td><td></td></tr>
+        <tr class="odd"><td>Nikon P100</td><td></td><td>Slackware 13.1</td><td>2.4.8</td><td>0.6</td><td></td><td></td></tr>
+        <tr class="even"><td>Canon EOS 30D</td><td></td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.6.1~rc20100829
+</td><td>Olivier Tribout</td><td></td></tr>
+        <tr class="odd"><td>Canon EOS 400D</td><td>1.1.1</td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.5+git20100716</td><td>Pascal de Bruijn</td><td></td></tr>
+        <tr class="even"><td>Canon 5D</td><td></td><td>Slackware 13.1</td><td>2.4.8</td><td>0.6</td><td></td><td>stores only to flash card</td></tr>
+        <tr class="odd"><td>Panasonix DMC-FZ50</td><td></td><td>ArchLinux x86_64</td><td>2.4.9</td><td>git 2010/07/29</td><td>Aldrik Dunbar</td><td></td></tr>
       </table>
-      while a lot of camera's might work with darktable's tethering mode only a few 
-      have been tested in real life.
       </div>
 
       <div class="listtext"><h1>monochrome tool: convert an image to black and white</h1>

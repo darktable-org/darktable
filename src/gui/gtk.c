@@ -44,6 +44,7 @@
 #include "gui/iop_modulegroups.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
+#include "gui/preferences.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -141,14 +142,27 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  cairo_set_source_rgb (cr, .13, .13, .13);
+  GtkWidget *cwidget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkStyle *style = gtk_widget_get_style(cwidget);
+  cairo_set_source_rgb (cr, 
+    .5f*style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    .5f*style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    .5f*style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+  // cairo_set_source_rgb (cr, .13, .13, .13);
   cairo_paint(cr);
 
   // draw scrollbar indicators
   int v = darktable.view_manager->current_view;
   dt_view_t *view = NULL;
   if(v >= 0 && v < darktable.view_manager->num_views) view = darktable.view_manager->view + v;
-  cairo_set_source_rgb (cr, .16, .16, .16);
+  // cairo_set_source_rgb (cr, .16, .16, .16);
+  cairo_set_source_rgb (cr, 
+    style->bg[GTK_STATE_NORMAL].red/65535.0, 
+    style->bg[GTK_STATE_NORMAL].green/65535.0, 
+    style->bg[GTK_STATE_NORMAL].blue/65535.0
+  );
+  const float border = 0.3;
   if(!view) cairo_paint(cr);
   else
   {
@@ -161,9 +175,23 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_rectangle(cr, view->hscroll_pos/view->hscroll_size * width, 0.0, view->hscroll_viewport_size/view->hscroll_size * width, height);
         break;
     }
-    cairo_fill_preserve(cr);
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_stroke(cr);
+    cairo_fill(cr);
+    switch(which)
+    {
+      case 0:
+        cairo_rectangle(cr, (1.0-border)*width, 0.0, border*width, height);
+        break;
+      case 1:
+        cairo_rectangle(cr, 0.0, 0.0, border*width, height);
+        break;
+      case 2:
+        cairo_rectangle(cr, (1.0-border)*height, (1.0-border)*height, width-2*(1.0-border)*height, border*height);
+        break;
+      default:
+        cairo_rectangle(cr, (1.0-border)*height, 0.0, width-2*(1.0-border)*height, border*height);
+        break;
+    }
+    cairo_fill(cr);
   }
 
   // draw gui arrows.
@@ -262,9 +290,9 @@ update_colorpicker_panel()
   {
     char colstring[512];
     GtkWidget *w;
-    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
-    snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
-    gtk_label_set_label(GTK_LABEL(w), colstring);
+    // w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
+    // snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
+    // gtk_label_set_label(GTK_LABEL(w), colstring);
     w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_togglebutton");
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), module->request_color_pick);
@@ -365,7 +393,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
 {
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
-  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), DT_VERSION_DECORATION" "DT_VERSION_SHA1SUM);
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), DT_VERSION_DECORATION);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika 2009-2010");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
@@ -597,6 +625,11 @@ film_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 
+void
+preferences_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  dt_gui_preferences_show();
+}
 
 void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
@@ -958,16 +991,26 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
 
   // set constant width from gconf key
-  const int panel_width = MAX(-1, MIN(500, dt_conf_get_int("panel_width")));
+  int panel_width = dt_conf_get_int("panel_width");
+  if(panel_width < 20 || panel_width > 500)
+  {
+    // fix for unset/insane values.
+    panel_width = 300;
+    dt_conf_set_int("panel_width", panel_width);
+  }
   widget = glade_xml_get_widget (darktable.gui->main_window, "right");
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
   gtk_widget_set_size_request (widget, panel_width, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "right_vbox");
+  gtk_widget_set_size_request (widget, panel_width-5, -1);
+  widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
+  gtk_widget_set_size_request (widget, panel_width-5, -1);
   // leave some space for scrollbars to appear:
   widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
-  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
-  gtk_widget_set_size_request (widget, panel_width-14, -1);
+  gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   // and make the scrollbars disappear when not needed:
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -980,6 +1023,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_background_jobs_init();
   
   /* connect the signals in the interface */
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "button_preferences");
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (preferences_button_clicked),
+                    NULL);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
   g_signal_connect (G_OBJECT (widget), "clicked",
@@ -1009,7 +1057,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_show_all(widget);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
-  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "DT_VERSION_DECORATION" "DT_VERSION_SHA1SUM"</b></big></span>");
+  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "DT_VERSION_DECORATION"</b></big></span>");
   
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
 
@@ -1136,7 +1184,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   {
     char wdname[20];
     snprintf (wdname, 20, "recent_film_%ld", k);
-    button = dtgtk_button_new_with_label (wdname,NULL,0);
+    button = dtgtk_button_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
     gtk_box_pack_start (GTK_BOX (recent_film_vbox),button,FALSE,FALSE,0);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (film_button_clicked),

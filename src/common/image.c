@@ -736,7 +736,9 @@ int dt_image_open(const int32_t id)
 
 int dt_image_open2(dt_image_t *img, const int32_t id)
 { // load stuff from db and store in cache:
+  if(id <= 0) return 1;
   int rc, ret = 1;
+  char *str;
   sqlite3_stmt *stmt;
   rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
@@ -747,15 +749,22 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->film_id = sqlite3_column_int(stmt, 1);
     img->width   = sqlite3_column_int(stmt, 2);
     img->height  = sqlite3_column_int(stmt, 3);
-    strncpy(img->filename,   (char *)sqlite3_column_text(stmt, 4), 512);
-    strncpy(img->exif_maker, (char *)sqlite3_column_text(stmt, 5), 32);
-    strncpy(img->exif_model, (char *)sqlite3_column_text(stmt, 6), 32);
-    strncpy(img->exif_lens,  (char *)sqlite3_column_text(stmt, 7), 52);
+    img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] =
+      img->exif_datetime_taken[0] = '\0';
+    str = (char *)sqlite3_column_text(stmt, 4);
+    if(str) strncpy(img->filename,   str, 512);
+    str = (char *)sqlite3_column_text(stmt, 5);
+    if(str) strncpy(img->exif_maker, str, 32);
+    str = (char *)sqlite3_column_text(stmt, 6);
+    if(str) strncpy(img->exif_model, str, 32);
+    str = (char *)sqlite3_column_text(stmt, 7);
+    if(str) strncpy(img->exif_lens,  str, 52);
     img->exif_exposure = sqlite3_column_double(stmt, 8);
     img->exif_aperture = sqlite3_column_double(stmt, 9);
     img->exif_iso = sqlite3_column_double(stmt, 10);
     img->exif_focal_length = sqlite3_column_double(stmt, 11);
-    strncpy(img->exif_datetime_taken, (char *)sqlite3_column_text(stmt, 12), 20);
+    str = (char *)sqlite3_column_text(stmt, 12);
+    if(str) strncpy(img->exif_datetime_taken, str, 20);
     img->flags = sqlite3_column_int(stmt, 13);
     img->output_width  = sqlite3_column_int(stmt, 14);
     img->output_height = sqlite3_column_int(stmt, 15);

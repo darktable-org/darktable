@@ -31,9 +31,10 @@ config.guess
 config.h
 config.h.in
 config.h.in~
-config.log
 config.status
 config.sub
+*.cdbs-orig
+stamp-*
 configure
 depcomp
 install-sh
@@ -48,8 +49,15 @@ ltmain.sh
 *Makefile.in
 *.lo
 *.a
+*.log
 .libs
 .deps
+tmp
 doc/usermanual/build/darktable-usermanual.fo
 doc/usermanual/darktable-usermanual.pdf
 src/common/version.h
+version.sh
+debian/files
+*.substvars
+debian/darktable
+debian/darktable-dbg

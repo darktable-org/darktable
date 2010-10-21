@@ -17,6 +17,7 @@
 */
 #include <string.h>
 #include "togglebutton.h"
+#include "button.h"
 
 static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass);
 static void _togglebutton_init(GtkDarktableToggleButton *slider);
@@ -54,8 +55,27 @@ static void  _togglebutton_size_request(GtkWidget *widget,GtkRequisition *requis
   g_return_if_fail(widget != NULL);
   g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
   g_return_if_fail(requisition != NULL);
-  requisition->width = 17;
-  requisition->height = 17;
+
+  /* create pango text settings if label exists */
+  GtkStyle *style = gtk_widget_get_style(widget);
+  PangoLayout *layout = NULL;    
+  int pw=0,ph=0;
+  const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
+  if (text)
+  {
+    layout = gtk_widget_create_pango_layout (widget,NULL);
+    pango_layout_set_font_description (layout,style->font_desc);
+    pango_layout_set_text (layout,text,strlen(text));
+    pango_layout_get_pixel_size (layout,&pw,&ph);
+
+    requisition->width = pw+4;
+    requisition->height = ph+4;
+  } 
+  else 
+  {
+    requisition->width = 22;
+    requisition->height = 17;
+  }
 }
 
 static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
@@ -74,34 +94,6 @@ static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *alloca
      );
    }
 }
-
-/*
-static void _togglebutton_realize(GtkWidget *widget)
-{
-  GdkWindowAttr attributes;
-  guint attributes_mask;
-
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
-
-  GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
-
-  attributes.window_type = GDK_WINDOW_CHILD;
-  attributes.x = widget->allocation.x;
-  attributes.y = widget->allocation.y;
-  attributes.width = 18;
-  attributes.height = 18;
-
-  attributes.wclass = GDK_INPUT_OUTPUT;
-  attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
-
-  attributes_mask = GDK_WA_X | GDK_WA_Y;
-
-  widget->window = gdk_window_new( gtk_widget_get_parent_window (widget->parent),& attributes, attributes_mask);
-  gdk_window_set_user_data(widget->window, widget);
-  widget->style = gtk_style_attach(widget->style, widget->window);
-  gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
-}*/
 
 static void _togglebutton_destroy(GtkObject *object)
 {
@@ -122,72 +114,100 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   GtkStyle *style=gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
-  /* update paint flags depending of states */
-  int flags=DTGTK_TOGGLEBUTTON (widget)->icon_flags;
-  gboolean active = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON (widget));
+  /* fix text style */
+  for(int i=0;i<5;i++)
+    style->text[i]=style->fg[i];
+
+  /* fetch flags */
+  int flags = DTGTK_TOGGLEBUTTON (widget)->icon_flags;
+
+  /* set inner border */
+  int border = (flags&CPF_DO_NOT_USE_BORDER)?2:6;
+
+  /* update active state paint flag */
+  gboolean active = gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON (widget));
   if (active)
     flags |= CPF_ACTIVE;
   else
     flags &=~(CPF_ACTIVE);
-  
+
+
+  /* begin cairo drawing */
+  cairo_t *cr;
+  cr = gdk_cairo_create (widget->window);
+
+  int x = widget->allocation.x;
+  int y = widget->allocation.y;
+  int width = widget->allocation.width;
+  int height = widget->allocation.height;
+
+  /* draw standard button background if not transparent nor flat styled */
+  if( (flags & CPF_STYLE_FLAT ))
+  {
+    if( state != GTK_STATE_NORMAL )
+    {
+      cairo_rectangle (cr,x,y,width,height);
+      cairo_set_source_rgba (cr,
+          style->bg[state].red/65535.0, 
+          style->bg[state].green/65535.0, 
+          style->bg[state].blue/65535.0,
+          0.5);
+      cairo_fill (cr);
+    }
+  } 
+  else if( !(flags & CPF_BG_TRANSPARENT) )  
+  {
+    /* draw default boxed button */
+    gtk_paint_box (widget->style, widget->window,
+        GTK_WIDGET_STATE (widget),
+        GTK_SHADOW_OUT, NULL, widget, "button",
+        x, y, width, height);
+  }
+
+
   /* create pango text settings if label exists */
   PangoLayout *layout=NULL;    
   int pw=0,ph=0;
   const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
   if (text)
   {
-    layout = gtk_widget_create_pango_layout (widget,NULL);
+    layout = pango_cairo_create_layout (cr);
     pango_layout_set_font_description (layout,style->font_desc);
     pango_layout_set_text (layout,text,strlen(text));
     pango_layout_get_pixel_size (layout,&pw,&ph);
   }
-  
-  
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
 
-  /* begin cairo drawing */
-  cairo_t *cr;
-  cr = gdk_cairo_create (widget->window);
-  
-  /* draw background dependent on state */
-  cairo_rectangle (cr,x,y,width,height);
-  cairo_set_source_rgba (cr,
-              style->bg[state].red/65535.0, 
-              style->bg[state].green/65535.0, 
-              style->bg[state].blue/65535.0,
-              0.5);
-  cairo_fill (cr);
+  cairo_set_source_rgb (cr,
+      style->fg[state].red/65535.0, 
+      style->fg[state].green/65535.0, 
+      style->fg[state].blue/65535.0);
 
-  
   /* draw icon */
   if (DTGTK_TOGGLEBUTTON (widget)->icon)
   {
     if (flags & CPF_IGNORE_FG_STATE) 
-    state = GTK_STATE_NORMAL;
-    cr = gdk_cairo_create (widget->window);
-    cairo_set_source_rgb (cr,
-        style->fg[state].red/65535.0, 
-        style->fg[state].green/65535.0, 
-        style->fg[state].blue/65535.0);
-    
+      state = GTK_STATE_NORMAL;
+
+
     if (text)
-      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,height-8,height-8,flags);
+      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+border,y+border,height-(border*2),height-(border*2),flags);
     else
-      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+4,y+4,width-8,height-8,flags);
+      DTGTK_TOGGLEBUTTON (widget)->icon (cr,x+border,y+border,width-(border*2),height-(border*2),flags);
   }
-  cairo_destroy (cr);
-  
+
+
   /* draw label */
   if (text)
   {
     int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
-     if (DTGTK_TOGGLEBUTTON (widget)->icon) lx += width;
-    GdkRectangle t={x,y,x+width,y+height};
-    gtk_paint_layout(style,widget->window, GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
+    //if (DTGTK_TOGGLEBUTTON (widget)->icon) lx += width;
+    //GdkRectangle t={x,y,x+width,y+height};
+    //gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"togglebutton",lx,ly,layout);
+    cairo_translate(cr, lx, ly);
+    pango_cairo_show_layout (cr,layout);
   }
+
+  cairo_destroy (cr);
 
   return FALSE;
 }
@@ -230,3 +250,4 @@ GtkType dtgtk_togglebutton_get_type()
   }
   return dtgtk_togglebutton_type;
 }
+

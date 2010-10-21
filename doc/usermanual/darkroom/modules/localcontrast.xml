@@ -17,12 +17,14 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>Local contrast boost the details of your image without changing the global contrast.</para>
+		<para>Local contrast boosts the details of your image without changing the global contrast.</para>
 		<sect4><title>radius</title>
-			<para>Set the size of the details to preserve.</para>
+			<para>Set the size of the region around pixels whose histogram will be equalized in order to boost contrast. This value must be greater than the size of the details to preserve.
+				A small value limits the effect.
+			</para>
 		</sect4>
 		<sect4><title>amount</title>
-			<para>Set the strength of the effect.</para>
+			<para>Set the strength of the effect, by giving the allowable stretch in histogram. the greater the value, the stronger the effect.</para>
 		</sect4>			
 	</sect3>
 </sect2>

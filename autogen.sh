@@ -1,6 +1,16 @@
-#!/bin/bash
-dt_decoration=$(git log master^..master --decorate | head -1 | cut -d' ' -f4 | cut -f1 -d')' | sed -e 's/,//' -e 's/origin\///' )
-dt_sha1sum=$(git log master^..master | head -1 | cut -f2 -d ' ' | cut -c -8)
+#!/bin/sh
+
+dir=$(dirname $(readlink -f $0))/tools
+
+if [ ! -f $dir/version.sh ]; then
+    $dir/create_version_sh.sh
+fi
+. $dir/version.sh
+
 sed -e "s/REPLACE_WITH_DT_VERSION/$dt_sha1sum/" < configure.ac.in > configure.ac
 autoreconf --install --force
 intltoolize --copy --force --automake
+
+
+
+

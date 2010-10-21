@@ -141,7 +141,11 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
-  else                                    module->default_enabled = 1;
+  else
+  {
+    module->default_enabled = 1;
+    module->hide_enable_button = 1;
+  }
   module->priority = 150;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
@@ -304,8 +308,8 @@ void gui_init(struct dt_iop_module_t *self)
   self->request_color_pick = 0;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("black")));
@@ -317,14 +321,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -.5, 1.0, .001,p->black,3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -.5, 1.0, .001,p->black,3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), (char *)NULL);
   
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_VALUE, -9.0, 9.0, .02, p->exposure,3));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure,3));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), (char *)NULL);
   
   
-  // g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.0, 2.0, .005, p->gain,3));
+  // g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0, .005, p->gain,3));
   // gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("leave black and white,\nbut compress brighter\nvalues (non-linear)"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
@@ -332,7 +336,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  g->autoexpp = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.0, 0.2, .001, 0.01,3));
+  g->autoexpp = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 0.2, .001, 0.01,3));
   gtk_object_set(GTK_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out"), (char *)NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->autoexp), TRUE, TRUE, 0);

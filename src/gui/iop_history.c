@@ -140,7 +140,7 @@ dt_gui_iop_history_add_item (long int num, const gchar *label)
   g_snprintf(numlabel, 256, "%ld - %s", num, label);
   
   /* create toggle button */
-  widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,0);
+  widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,CPF_STYLE_FLAT);
   g_object_set_data (G_OBJECT (widget),"history_number",(gpointer)num);
   g_object_set_data (G_OBJECT (widget),"label",(gpointer) g_strdup(label));
   
@@ -191,7 +191,8 @@ dt_gui_iop_history_update_labels ()
   
   /* update labels for all hist items excluding oringal */
   int hsize = g_list_length(darktable.develop->history);
-  for(int i=0;i<hsize;i++) {
+  for(int i=0;i<hsize;i++)
+  {
     gchar numlabel[256]={0}, numlabel2[256]={0};
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)g_list_nth_data (darktable.develop->history, i);
     if( !hist ) break;
@@ -199,9 +200,12 @@ dt_gui_iop_history_update_labels ()
     /* get new label */
     dt_dev_get_history_item_label (hist, numlabel2, 256);
     snprintf(numlabel, 256, "%d - %s", i+1, numlabel2);
- 
+
     /* update ui hist item label from bottom to top */
     GtkWidget *button=g_list_nth_data (items,(hsize-1)-i);
-    gtk_button_set_label (GTK_BUTTON (button),numlabel);
+    if(button) gtk_button_set_label (GTK_BUTTON (button),numlabel);
   }
+  // might not yet be inited when popping just before pushing a new history item:
+  GtkWidget *button=g_list_nth_data (items, hsize);
+  if(button) gtk_button_set_label (GTK_BUTTON (button), _("0 - original"));
 }

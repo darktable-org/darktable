@@ -249,7 +249,7 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
   module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
   module->default_enabled = 0;
-  module->priority = 150;
+  module->priority = 170;
   module->params_size = sizeof(dt_iop_bilateral_params_t);
   module->gui_data = NULL;
   dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t){{15.0, 15.0, 0.005, 0.005, 0.005}};
@@ -272,8 +272,8 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   g->label1 = GTK_LABEL(gtk_label_new(_("radius")));

@@ -557,7 +557,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 950;
+  module->priority = 875;
   dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, 0.0};
   memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
@@ -678,6 +678,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->straightening = 0;
 
   self->widget = gtk_table_new(10, 6, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   g->hflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,CPF_DIRECTION_UP));
   g->vflip = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
   GtkWidget *label = gtk_label_new(_("flip"));

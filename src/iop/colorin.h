@@ -64,7 +64,7 @@ typedef struct dt_iop_colorin_data_t
 {
   cmsHPROFILE input;
   cmsHPROFILE Lab;
-  cmsHTRANSFORM xform;
+  cmsHTRANSFORM *xform;
   float cmatrix[3][4];
 }
 dt_iop_colorin_data_t;

@@ -286,7 +286,7 @@ gui_init (dt_lib_module_t *self)
   self->data = (void *)d;
   d->imgsel = -1;
 
-  self->widget = gtk_vbox_new(TRUE, 0);
+  self->widget = gtk_vbox_new(TRUE, 5);
   gtk_widget_set_size_request(self->widget,100,-1);
 		
   g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
@@ -337,7 +337,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // right side, related 
-  box = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  box = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
   
   // text entry and new button
