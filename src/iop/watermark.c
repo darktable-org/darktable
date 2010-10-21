@@ -403,9 +403,21 @@ alignment_callback(GtkWidget *tb, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   
-  for(int i=0; i<9; i++) {
-    if( GTK_WIDGET(g->dtba[i]) == tb ) index=i;
+    
+  for(int i=0; i<9; i++) 
+  {
+    /* block signal handler */
+    g_signal_handlers_block_by_func (g->dtba[i],alignment_callback,user_data);
+
+    if( GTK_WIDGET(g->dtba[i]) == tb ) 
+    {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[i]),TRUE);
+      index=i;
+    }
     else gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[i]),FALSE);
+    
+    /* unblock signal handler */
+    g_signal_handlers_unblock_by_func (g->dtba[i],alignment_callback,user_data);
   }
   p->alignment= index;
   dt_dev_add_history_item(darktable.develop, self);
@@ -503,9 +515,6 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale2, p->scale);
   dtgtk_slider_set_value(g->scale3, p->xoffset);
   dtgtk_slider_set_value(g->scale4, p->yoffset);
-  for(int i=0;i<9;i++)
-    gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ i ]), FALSE);
-  
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
   _combo_box_set_active_text( g->combobox1, p->filename );
 }
