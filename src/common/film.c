@@ -45,7 +45,6 @@ void dt_film_init(dt_film_t *film)
 }
 
 //FIXME: recursion messes up the progress counter.
-//FIXME: film rolls added recursively are not added to the lists on the left. they are shown when a film roll is selected.
 void dt_film_import1(dt_film_t *film)
 {
 	const gchar *d_name;
@@ -98,6 +97,16 @@ void dt_film_cleanup(dt_film_t *film)
 		g_dir_close(film->dir);
 		film->dir = NULL;
 	}
+	// if the film is empty => remove it again.
+	if(dt_film_is_empty(film->id)){
+		dt_film_remove(film->id);
+// 		g_print("removing empty filmroll: %s\n", film->dirname); // FIXME: just for debugging
+	}
+	else
+	{
+		dt_control_update_recent_films();
+	}
+
 }
 
 void dt_film_set_query(const int32_t id)
