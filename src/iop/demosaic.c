@@ -20,6 +20,9 @@
 #include <memory.h>
 #include <stdlib.h>
 
+// we assume people have -msee support.
+#include <xmmintrin.h>
+
 DT_MODULE(1)
 
 typedef struct dt_iop_demosaic_params_t
@@ -63,14 +66,217 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
-
-void
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem *i, cl_mem *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+static int
+FC(const int row, const int col, const unsigned int filters)
 {
-  // TODO:
+  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
-#ifdef HAVE_OPENCL
+/** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
+static void
+demosaic_ppg(float *out, const uint16_t *in, const dt_iop_roi_t *roi_in, dt_iop_roi_t *roi_out, const int filters)
+{
+  // snap to start of mosaic block:
+  roi_out->x &= ~1;
+  roi_out->y &= ~1;
+  // offsets only where the buffer ends:
+  const int offx = MAX(0, 3 - roi_out->x);
+  const int offy = MAX(0, 3 - roi_out->y);
+  const int offX = MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
+  const int offY = MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
+  const float i2f = 1.0f/((float)0xffff);
+  // for all pixels: interpolate green into float array, or copy color.
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, out, in) schedule(static)
+#endif
+  for (int j=offy; j < roi_out->height-offY; j++)
+  {
+    float *buf = out + 4*roi_out->width*j;
+    const uint16_t *buf_in = in + roi_in->width*(j + roi_out->y) + roi_out->x;
+    for (int i=offx; i < roi_out->width-offX; i++)
+    // for (int i=3+(FC(j,3,filters) & 1); i < roi_out_>width-3; i+=2)
+    {
+      const int c = FC(j,i,filters);
+      // prefetch what we need soon (load to cpu caches)
+      _mm_prefetch((char *)buf_in + 256, _MM_HINT_NTA); // TODO: try HINT_T0-3
+      _mm_prefetch((char *)buf_in +   roi_in->width + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf_in + 2*roi_in->width + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf_in + 3*roi_in->width + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf_in -   roi_in->width + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf_in - 2*roi_in->width + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf_in - 3*roi_in->width + 256, _MM_HINT_NTA);
+      __m128 col;
+      float *color = (float*)&col;
+      const float pc = buf_in[0];
+      color[c] = i2f*pc; 
+      if(c == 0 || c == 2)
+      {
+        // get stuff (hopefully from cache)
+        const float pym  = buf_in[ - roi_in->width*1];
+        const float pym2 = buf_in[ - roi_in->width*2];
+        const float pym3 = buf_in[ - roi_in->width*3];
+        const float pyM  = buf_in[ + roi_in->width*1];
+        const float pyM2 = buf_in[ + roi_in->width*2];
+        const float pyM3 = buf_in[ + roi_in->width*3];
+        const float pxm  = buf_in[ - 1];
+        const float pxm2 = buf_in[ - 2];
+        const float pxm3 = buf_in[ - 3];
+        const float pxM  = buf_in[ + 1];
+        const float pxM2 = buf_in[ + 2];
+        const float pxM3 = buf_in[ + 3];
+
+        const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
+        const float diffx  = (fabsf(pxm2 - pc) +
+                              fabsf(pxM2 - pc) + 
+                              fabsf(pxm  - pxM)) * 3.0f +
+                             (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
+        const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
+        const float diffy  = (fabsf(pym2 - pc) +
+                              fabsf(pyM2 - pc) + 
+                              fabsf(pym  - pyM)) * 3.0f +
+                             (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
+        if(diffx > diffy)
+        {
+          // use guessy
+          const float m = fminf(pym, pyM);
+          const float M = fmaxf(pym, pyM);
+          color[1] = i2f*fmaxf(fminf(guessy*.25f, M), m);
+        }
+        else
+        {
+          const float m = fminf(pxm, pxM);
+          const float M = fmaxf(pxm, pxM);
+          color[1] = i2f*fmaxf(fminf(guessx*.25f, M), m);
+        }
+      }
+      // write using MOVNTPS (write combine omitting caches)
+      _mm_stream_ps(buf, col);
+      buf += 4;
+      buf_in ++;
+    }
+  }
+  // SFENCE (make sure stuff is stored now)
+  _mm_sfence();
+
+#if 0
+  // get offsets in aligned block
+  const int g1x = FC(0, 0, filters) & 1 ? 0 : 1;
+  const int g2x = FC(0, 0, filters) & 1 ? 1 : 0;
+  const int ry = (FC(0, 0, filters) == 1 || FC(0, 0, filters) == 1) ? 0 : 1;
+  const int rx = FC(ry, 0, filters) == 1 ? 0 : 1;
+  const int gy = 1-ry;
+  const int gx = 1-rx;
+#endif
+
+  // for all pixels: interpolate colors into float array
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, out, in) schedule(static)
+#endif
+  for (int j=1; j < roi_out->height-1; j++)
+  {
+    float *buf = out + 4*roi_out->width*j;
+    for (int i=1; i < roi_out->width-1; i++)
+    {
+      // also prefetch direct nbs top/bottom
+      _mm_prefetch((char *)buf + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf -   roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf +   roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
+
+      const int c = FC(j, i, filters);
+      __m128 col;
+      float *color = (float *)&col;
+      // fill all four pixels with correctly interpolated stuff: r/b for green1/2
+      // b for r and r for b
+      if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
+      { // calculate red and blue for green pixels:
+        // need 4-nbhood:
+        const float* nt = buf - 4*roi_out->width;
+        const float* nb = buf + 4*roi_out->width;
+        const float* nl = buf - 4;
+        const float* nr = buf + 4;
+        if(FC(j, i+1, filters) == 0) // red nb in same row
+        {
+          color[2] = (nt[2] + nb[2] + 2.0f*color[1] - nt[1] - nb[1])*.5f;
+          color[0] = (nl[0] + nr[0] + 2.0f*color[1] - nl[1] - nr[1])*.5f;
+        }
+        else
+        { // blue nb
+          color[0] = (nt[0] + nb[0] + 2.0f*color[1] - nt[1] - nb[1])*.5f;
+          color[2] = (nl[2] + nr[2] + 2.0f*color[1] - nl[1] - nr[1])*.5f;
+        }
+      }
+      else
+      {
+        // get 4-star-nbhood:
+        const float* ntl = buf - 4 - 4*roi_out->width;
+        const float* ntr = buf + 4 - 4*roi_out->width;
+        const float* nbl = buf - 4 + 4*roi_out->width;
+        const float* nbr = buf + 4 + 4*roi_out->width;
+
+        if(c == 0)
+        { // red pixel, fill blue:
+          const float diff1  = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float guess1 = ntl[2] + nbr[2] + 2.0f*color[1] - ntl[1] - nbr[1];
+          const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float guess2 = ntr[2] + nbl[2] + 2.0f*color[1] - ntr[1] - nbl[1];
+          if     (diff1 > diff2) color[2] = guess2 * .5f;
+          else if(diff1 < diff2) color[2] = guess1 * .5f;
+          else color[2] = (guess1 + guess2)*.25f;
+        }
+        else // c == 2, blue pixel, fill red:
+        {
+          const float diff1  = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float guess1 = ntl[0] + nbr[0] + 2.0f*color[1] - ntl[1] - nbr[1];
+          const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float guess2 = ntr[0] + nbl[0] + 2.0f*color[1] - ntr[1] - nbl[1];
+          if     (diff1 > diff2) color[0] = guess2 * .5f;
+          else if(diff1 < diff2) color[0] = guess1 * .5f;
+          else color[0] = (guess1 + guess2)*.25f;
+        }
+      }
+      _mm_stream_ps(buf, col);
+      buf += 4;
+    }
+  }
+  _mm_sfence();
+}
+
+
+void
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_roi_t roi, roo;
+  roi.scale = 1.0f;
+  roi.x = roi.y = 0;
+  roi.width  = self->dev->image->width;
+  roi.height = self->dev->image->height;
+  roo = *roi_out;
+
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+
+  demosaic_ppg((float *)o, (const uint16_t *)self->dev->image->pixels, &roi, &roo, data->filters);
+#if 0
+  // TODO:
+  if(!self->dev->image->filters)
+  {
+    // no bayer pattern, directly clip and zoom image
+  }
+  else if(global_scale > .999f)
+  {
+    // output 1:1
+  }
+  else if(global_scale > .5f)
+  {
+    // demosaic and then clip and zoom
+  }
+  else
+  {
+    // sample half-size raw
+  }
+#endif
+}
+
+#if 0//def HAVE_OPENCL
 void
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -107,7 +313,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy out buffer on device: %d\n", err);
   
 
-  if(!self->dev->image->filters)
+  if(!data->filters)
   {
     // TODO:
 #if 0
