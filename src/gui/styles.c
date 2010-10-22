@@ -63,7 +63,7 @@ _gui_styles_get_active_items (dt_gui_styles_dialog_t *sd)
       guint num=0;
       gtk_tree_model_get (model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &active, DT_STYLE_ITEMS_COL_NUM, &num, -1);
       if (active)
-        result = g_list_append (result, (gpointer) num);
+        result = g_list_append (result, (gpointer)(long unsigned int) num);
       
     } while (gtk_tree_model_iter_next (model,&iter));
   }
