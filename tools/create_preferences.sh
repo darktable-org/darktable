@@ -134,7 +134,7 @@ EOF
     val="gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))"
     setval="gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), $def);"
     cat >> $initfile << EOF
-  widget = gtk_spin_button_new_with_range(0, 1000, 1);
+  widget = gtk_spin_button_new_with_range(0, 1000000000, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("$key"));
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback), (gpointer)(long int)$num);
@@ -153,7 +153,7 @@ EOF
     val="gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))"
     setval="gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), $def);"
     cat >> $initfile << EOF
-  widget = gtk_spin_button_new_with_range(-100.0, 100.0, 0.001);
+  widget = gtk_spin_button_new_with_range(-1000000000.0, 1000000000.0, 0.001);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("$key"));
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback), (gpointer)(long int)$num);
