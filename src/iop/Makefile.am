@@ -36,6 +36,7 @@ libdemosaic_la_SOURCES=demosaic.c
 librelight_la_SOURCES=relight.c
 libatrous_la_SOURCES=atrous.c
 libzonesystem_la_SOURCES=zonesystem.c
+dtpluginsdir=$(libdir)/darktable/plugins
 dtplugins_LTLIBRARIES=libtonecurve.la\
                       libgamma.la\
                       libtemperature.la\
