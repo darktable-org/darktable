@@ -255,7 +255,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
   data->filters = 0x94949494;
+  dt_image_t *img = self->dev->image;
+  dt_image_buffer_t full = dt_image_get(img, DT_IMAGE_FULL, 'r');
+  if(full != DT_IMAGE_FULL) return;
   demosaic_ppg((float *)o, (const uint16_t *)self->dev->image->pixels, &roi, &roo, data->filters);
+  dt_image_release(img, DT_IMAGE_FULL, 'r');
 #if 0
   // TODO:
   if(!self->dev->image->filters)

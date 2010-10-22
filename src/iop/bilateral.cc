@@ -98,7 +98,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
   if(rad <= 6 && self->dev->image->flags & DT_IMAGE_THUMBNAIL)
   { // no use denoising the thumbnail. takes ages without permutohedral
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
   }
   else if(rad <= 6)
   {

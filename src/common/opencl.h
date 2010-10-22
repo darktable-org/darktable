@@ -98,18 +98,19 @@ int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, c
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes);
 
 #else
+#include <stdlib.h>
 typedef struct dt_opencl_t {int inited;} dt_opencl_t;
-void dt_opencl_init(dt_opencl_t *cl) { cl->inited = 0; }
-void dt_opencl_cleanup(dt_opencl_t *cl) {}
-int dt_opencl_lock_device(dt_opencl_t *cl, const int dev) {return -1;}
-void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev) {}
-int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename) {return -1;}
-int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int program) {return -1;}
-int dt_opencl_create_kernel(dt_opencl_t *cl, const int program, const char *name) {return -1;}
-void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel) {}
-int  dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, const int dev, size_t *sizes) {}
-int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, const size_t size, const void *arg) {return -1;}
-int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes) {return -1;}
+static inline void dt_opencl_init(dt_opencl_t *cl) { cl->inited = 0; }
+static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
+static inline int dt_opencl_lock_device(dt_opencl_t *cl, const int dev) {return -1;}
+static inline void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev) {}
+static inline int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename) {return -1;}
+static inline int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int program) {return -1;}
+static inline int dt_opencl_create_kernel(dt_opencl_t *cl, const int program, const char *name) {return -1;}
+static inline void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel) {}
+static inline int  dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, const int dev, size_t *sizes) { return 0; }
+static inline int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, const size_t size, const void *arg) {return -1;}
+static inline int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes) {return -1;}
 #endif
 
 
