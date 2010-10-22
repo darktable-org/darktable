@@ -70,6 +70,8 @@ src/gui/camera_import_dialog.c
 src/gui/presets.c
 src/gui/background_jobs.c
 src/gui/tool_colorlabels.c
+src/gui/preferences.c
+src/gui/preferences_gen.h
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/filmstrip.c
