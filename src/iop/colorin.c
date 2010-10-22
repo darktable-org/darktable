@@ -81,6 +81,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
+  const int ch = piece->colors;
   // with the critical section around lcms, this is slower than monothread, even on dual cores.
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
@@ -89,7 +90,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     double cam[3] = {0., 0., 0.};
     cmsCIELab Lab;
-    for(int c=0;c<3;c++) cam[c] = in[3*k + c];
+    for(int c=0;c<3;c++) cam[c] = in[ch*k + c];
 #if 1
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
     const float YY = cam[0]+cam[1]+cam[2];
@@ -109,16 +110,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     // lcms is not thread safe, so work on one copy for each thread :(
     cmsDoTransform(d->xform[dt_get_thread_num()], cam, &Lab, 1);
-    out[3*k + 0] = Lab.L;
+    out[ch*k + 0] = Lab.L;
     if(Lab.L > 0)
     {
-      out[3*k + 1] = 100.0*Lab.a/Lab.L;
-      out[3*k + 2] = 100.0*Lab.b/Lab.L;
+      out[ch*k + 1] = 100.0*Lab.a/Lab.L;
+      out[ch*k + 2] = 100.0*Lab.b/Lab.L;
     }
     else
     {
-      out[3*k + 1] = Lab.a;
-      out[3*k + 2] = Lab.b;
+      out[ch*k + 1] = Lab.a;
+      out[ch*k + 2] = Lab.b;
     }
   }
 }

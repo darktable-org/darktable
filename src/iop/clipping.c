@@ -263,6 +263,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
 
+  const int ch = piece->colors;
+
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->keystone > 1 && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
@@ -271,12 +273,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0;j<roi_out->height;j++)
     {
-      out = ((float *)o)+3*roi_out->width*j;
-      in  = ((float *)i)+3*roi_out->width*j;
+      out = ((float *)o)+ch*roi_out->width*j;
+      in  = ((float *)i)+ch*roi_out->width*j;
       for(int i=0;i<roi_out->width;i++)
       {
         for(int c=0;c<3;c++) out[c] = in[c];
-        out += 3; in += 3;
+        out += ch; in += ch;
       }
     }
   }
@@ -292,7 +294,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // out = ((float *)o)+3*roi_out->width*j;
       for(int i=0;i<roi_out->width;i++)
       {
-        out = ((float *)o)+3*roi_out->width*j + 3*i;
+        out = ((float *)o)+ch*roi_out->width*j + ch*i;
         float pi[2], po[2];
 
         pi[0] = roi_out->x + roi_out->scale*d->cix + i + .5;
@@ -312,10 +314,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         {
           const float fi = po[0] - ii, fj = po[1] - jj;
           for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];
-                ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-                 (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-                 (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-                 (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
+                ((1.0f-fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj)   + (ii)  ) + c] +
+                 (1.0f-fj)*(     fi)*in[ch*(roi_in->width*(jj)   + (ii+1)) + c] +
+                 (     fj)*(     fi)*in[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
+                 (     fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
         }
         else for(int c=0;c<3;c++) out[c] = 0.0f;
       }

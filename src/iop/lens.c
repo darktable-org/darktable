@@ -57,10 +57,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
+  const int ch = piece->colors;
+
+  const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
   if(!d->lens->Maker)
   {
-    memcpy(out, in, 3*sizeof(float)*roi_out->width*roi_out->height);
+    memcpy(out, in, ch*sizeof(float)*roi_out->width*roi_out->height);
     return;
   }
 
@@ -83,7 +86,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      const size_t req2 = roi_in->width*2*3*sizeof(float);
+      const size_t req2 = roi_in->width*2*ch*sizeof(float);
       if(req2 > 0 && d->tmpbuf2_len < req2)
       {
         d->tmpbuf2_len = req2;
@@ -106,22 +109,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
             {
               const float fi = pi0 - ii, fj = pi1 - jj;
-              buf[c] = // in[3*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*in[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-               (1.0f-fj)*(     fi)*in[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-               (     fj)*(     fi)*in[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-               (     fj)*(1.0f-fi)*in[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
+              buf[c] = // in[ch*(roi_in->width*jj + ii) + c];
+              ((1.0f-fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj)   + (ii)  ) + c] +
+               (1.0f-fj)*(     fi)*in[ch*(roi_in->width*(jj)   + (ii+1)) + c] +
+               (     fj)*(     fi)*in[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
+               (     fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
             }
             else for(int c=0;c<3;c++) buf[c] = 0.0f;
             pi+=2;
           }
-          buf += 3;
+          buf += ch;
         }
       }
     }
     else
     {
-      memcpy(out, in, 3*sizeof(float)*roi_out->width*roi_out->height);
+      memcpy(out, in, ch*sizeof(float)*roi_out->width*roi_out->height);
     }
 
     if (modflags & LF_MODIFY_VIGNETTING)
@@ -132,17 +135,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter. but give a buffer pointer
         // offset by -roi_in.x
-        float *buf = out - 3*(roi_out->width*roi_out->y + roi_out->x);
+        float *buf = out - ch*(roi_out->width*roi_out->y + roi_out->x);
         if(lf_modifier_apply_color_modification (modifier,
-              buf + 3*roi_out->width*y, roi_out->x, roi_out->y + y,
-              roi_out->width, 1, LF_CR_3 (RED, GREEN, BLUE), 3*roi_out->width)) break;
+              buf + ch*roi_out->width*y, roi_out->x, roi_out->y + y,
+              roi_out->width, 1, pixelformat, ch*roi_out->width)) break;
       }
     }
   }
   else // correct distortions:
   {
     // acquire temp memory for image buffer
-    const size_t req = roi_in->width*roi_in->height*3*sizeof(float);
+    const size_t req = roi_in->width*roi_in->height*ch*sizeof(float);
     if(req > 0 && d->tmpbuf_len < req)
     {
       d->tmpbuf_len = req;
@@ -157,14 +160,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter. but give a buffer pointer
         // offset by -roi_in.x
-        float *buf = d->tmpbuf - 3*(roi_in->width*roi_in->y + roi_in->x);
+        float *buf = d->tmpbuf - ch*(roi_in->width*roi_in->y + roi_in->x);
         if(lf_modifier_apply_color_modification (modifier,
-              buf + 3*roi_in->width*y, roi_in->x, roi_in->y + y,
-              roi_in->width, 1, LF_CR_3 (RED, GREEN, BLUE), 3*roi_in->width)) break;
+              buf + ch*roi_in->width*y, roi_in->x, roi_in->y + y,
+              roi_in->width, 1, pixelformat, ch*roi_in->width)) break;
       }
     }
 
-    const size_t req2 = roi_out->width*2*3*sizeof(float);
+    const size_t req2 = roi_out->width*2*ch*sizeof(float);
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
           LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
@@ -190,22 +193,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
             {
               const float fi = pi0 - ii, fj = pi1 - jj;
-              out[c] = // in[3*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*d->tmpbuf[3*(roi_in->width*(jj)   + (ii)  ) + c] +
-               (1.0f-fj)*(     fi)*d->tmpbuf[3*(roi_in->width*(jj)   + (ii+1)) + c] +
-               (     fj)*(     fi)*d->tmpbuf[3*(roi_in->width*(jj+1) + (ii+1)) + c] +
-               (     fj)*(1.0f-fi)*d->tmpbuf[3*(roi_in->width*(jj+1) + (ii)  ) + c]);
+              out[c] = // in[ch*(roi_in->width*jj + ii) + c];
+              ((1.0f-fj)*(1.0f-fi)*d->tmpbuf[ch*(roi_in->width*(jj)   + (ii)  ) + c] +
+               (1.0f-fj)*(     fi)*d->tmpbuf[ch*(roi_in->width*(jj)   + (ii+1)) + c] +
+               (     fj)*(     fi)*d->tmpbuf[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
+               (     fj)*(1.0f-fi)*d->tmpbuf[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
             }
             else for(int c=0;c<3;c++) out[c] = 0.0f;
             pi+=2;
           }
-          out += 3;
+          out += ch;
         }
       }
     }
     else
     {
-      size_t len = sizeof(float)*3*roi_out->width*roi_out->height;
+      size_t len = sizeof(float)*ch*roi_out->width*roi_out->height;
       if (d->tmpbuf_len >= len)
            memcpy(out, d->tmpbuf, len);
       else memcpy(out, in, len);

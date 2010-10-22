@@ -135,6 +135,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_splittoning_data_t *data = (dt_iop_splittoning_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int ch = piece->colors;
   
   // Apply velvia saturation
   in  = (float *)ivoid;
@@ -149,7 +150,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     float h,s,l;
-    rgb2hsl(in[3*k+0],in[3*k+1],in[3*k+2],&h,&s,&l);
+    rgb2hsl(in[ch*k+0],in[ch*k+1],in[ch*k+2],&h,&s,&l);
     lhigh=fmax(lhigh,l);
     llow=fmin(llow,l);
   }
@@ -165,7 +166,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     double ra,la;
     float mixrgb[3];
     float h,s,l;
-    rgb2hsl(in[3*k+0],in[3*k+1],in[3*k+2],&h,&s,&l);
+    rgb2hsl(in[ch*k+0],in[ch*k+1],in[ch*k+2],&h,&s,&l);
     if(l < data->balance-compress || l > data->balance+compress)
     {      
       h=l<data->balance?data->shadow_hue:data->highlight_hue;
@@ -175,15 +176,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
      
       hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
       
-      out[3*k+0]=in[3*k+0]*la + mixrgb[0]*ra;
-      out[3*k+1]=in[3*k+1]*la + mixrgb[1]*ra;
-      out[3*k+2]=in[3*k+2]*la + mixrgb[2]*ra;
+      out[ch*k+0]=in[ch*k+0]*la + mixrgb[0]*ra;
+      out[ch*k+1]=in[ch*k+1]*la + mixrgb[1]*ra;
+      out[ch*k+2]=in[ch*k+2]*la + mixrgb[2]*ra;
     } 
     else 
     {
-      out[3*k+0]=in[3*k+0];
-      out[3*k+1]=in[3*k+1];
-      out[3*k+2]=in[3*k+2];
+      out[ch*k+0]=in[ch*k+0];
+      out[ch*k+1]=in[ch*k+1];
+      out[ch*k+2]=in[ch*k+2];
     }
   }
 }

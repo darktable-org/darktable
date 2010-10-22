@@ -74,10 +74,11 @@ groups ()
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
 	dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+  const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
  	if(rad == 0)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -101,14 +102,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=rad;j<roi_out->height-rad;j++)
   {
-    in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
-    out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
+    in  = ((float *)ivoid) + ch*(j*roi_in->width  + rad);
+    out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
     for(int i=rad;i<roi_out->width-rad;i++)
     {
       out[0] = 0.0f;
       for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-        out[0] += m[l*wd+k]*in[3*(l*roi_in->width+k)];
-      out += 3; in += 3;
+        out[0] += m[l*wd+k]*in[ch*(l*roi_in->width+k)];
+      out += ch; in += ch;
     }
   }
   in  = (float *)ivoid;
@@ -116,18 +117,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // fill unsharpened border
   for(int j=0;j<rad;j++)
-    memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+    memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad;j<roi_out->height;j++)
-    memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+    memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(in, out, roi_out, roi_in) schedule(static)
 #endif
   for(int j=rad;j<roi_out->height-rad;j++)
   {
     for(int i=0;i<rad;i++)
-      out[3*(roi_out->width*j + i)] = in[3*(roi_in->width*j + i)];
+      out[ch*(roi_out->width*j + i)] = in[ch*(roi_in->width*j + i)];
     for(int i=roi_out->width-rad;i<roi_out->width;i++)
-      out[3*(roi_out->width*j + i)] = in[3*(roi_in->width*j + i)];
+      out[ch*(roi_out->width*j + i)] = in[ch*(roi_in->width*j + i)];
   }
 #ifdef _OPENMP
   #pragma omp parallel for default(none) private(in, out) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
@@ -135,8 +136,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // subtract blurred image, if diff > thrs, add *amount to orginal image
   for(int j=0;j<roi_out->height;j++)
   { 
-    in  = (float *)ivoid + j*3*roi_out->width;
-    out = (float *)ovoid + j*3*roi_out->width;
+    in  = (float *)ivoid + j*ch*roi_out->width;
+    out = (float *)ovoid + j*ch*roi_out->width;
 	  
 	  for(int i=0;i<roi_out->width;i++)
     {
@@ -149,7 +150,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         out[0] = fmaxf(0.0, in[0] + detail*data->amount);
       }
       else out[0] = in[0];
-      out += 3; in += 3;
+      out += ch; in += ch;
     }
 	}
 }

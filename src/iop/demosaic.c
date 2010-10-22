@@ -276,19 +276,14 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 #endif
 }
 
-#if 0//def HAVE_OPENCL
+#ifdef HAVE_OPENCL
 void
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-#if 0
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    memcpy(o, i, sizeof(float)*3*roi_in->width*roi_in->height);
-    return;
-  }
-#endif
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
+  // const int ch = piece->colors;
+  // assert(ch == 4);
   // global scale is roi scale and pipe input prescale
   const float global_scale = roi_in->scale / piece->iscale;
   // const uint16_t *in = (const uint16_t *)i;
@@ -312,8 +307,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
       NULL, &err);
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy out buffer on device: %d\n", err);
   
+  printf("using filters %X\n", data->filters);
 
-  if(!data->filters)
+  data->filters = 0x94949494;
+  if(0)//!data->filters)
   {
     // TODO:
 #if 0
@@ -466,7 +463,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   // double end = dt_get_wtime();
   // dt_print(DT_DEBUG_PERF, "[demosaic] took %.3f secs\n", end - start);
 
-  for(int k=0;k<roi_out->width*roi_out->height;k++) for(int c=0;c<3;c++) out[3*k+c] = out[4*k+c];
+  // for(int k=0;k<roi_out->width*roi_out->height;k++) for(int c=0;c<3;c++) out[3*k+c] = out[4*k+c];
 
   clReleaseMemObject(dev_in);
   clReleaseMemObject(dev_out);

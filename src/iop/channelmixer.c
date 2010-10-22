@@ -164,6 +164,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
+  const int ch = piece->colors;
   float h,s,l, hmix,smix,lmix,rmix,gmix,bmix,graymix;
  
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
@@ -218,7 +219,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0]=out[1]=out[2] = mix;
     }
     */
-    out += 3; in += 3; 
+    out += ch; in += ch;
   }
 }
 

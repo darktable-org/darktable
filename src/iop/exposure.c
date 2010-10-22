@@ -51,6 +51,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)o;
   float black = d->black;
   float white = exp2f(-d->exposure);
+  const int ch = piece->colors;
 
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
   { // path for already exposed preview buffer
@@ -64,7 +65,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int i=0;i<3;i++) out[3*k+i] = fmaxf(0.0, (in[3*k+i]-black)*coeff[i]);
+    for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0, (in[ch*k+i]-black)*coeff[i]);
   }
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = scale;

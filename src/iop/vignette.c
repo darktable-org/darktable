@@ -98,6 +98,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int ch = piece->colors;
   
   const float iw=piece->buf_in.width*roi_out->scale;
   const float ih=piece->buf_in.height*roi_out->scale;
@@ -109,7 +110,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
-    const int k = 3*(roi_out->width*j + i);
+    const int k = ch*(roi_out->width*j + i);
     dt_iop_vector_2d_t pv, vv;
     
     // Lets translate current pixel coord to local coord

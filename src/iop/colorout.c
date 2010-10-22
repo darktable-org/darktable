@@ -132,6 +132,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
+  const int ch = piece->colors;
   // with the critical section around lcms, this is slower than monothread, even on dual cores.
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d)
@@ -141,12 +142,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int t = dt_get_thread_num();
     double rgb[3];
     cmsCIELab Lab;
-    Lab.L = in[3*k+0];
-    Lab.a = in[3*k+1]*Lab.L*(1.0/100.0);
-    Lab.b = in[3*k+2]*Lab.L*(1.0/100.0);
+    Lab.L = in[ch*k+0];
+    Lab.a = in[ch*k+1]*Lab.L*(1.0/100.0);
+    Lab.b = in[ch*k+2]*Lab.L*(1.0/100.0);
     // lcms is not thread safe, so use local copy
     cmsDoTransform(d->xform[t], &Lab, rgb, 1);
-    for(int c=0;c<3;c++) out[3*k + c] = rgb[c];
+    for(int c=0;c<3;c++) out[ch*k + c] = rgb[c];
   }
 }
 

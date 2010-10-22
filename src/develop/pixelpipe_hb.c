@@ -35,13 +35,13 @@
 
 void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*width*height, 2);
+  dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
 }
 
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
+  dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
 }
 
@@ -117,6 +117,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
       piece->enabled = module->enabled;
+      piece->colors  = 4;
       piece->iscale  = pipe->iscale;
       piece->iwidth  = pipe->iwidth;
       piece->iheight = pipe->iheight;
@@ -376,9 +377,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       float *pixel = (float *)input;
       dev->histogram_pre_max = 0;
       bzero(dev->histogram_pre, sizeof(float)*4*64);
-      for(int j=0;j<roi_in.height;j+=3) for(int i=0;i<roi_in.width;i+=3)
+      for(int j=0;j<roi_in.height;j+=4) for(int i=0;i<roi_in.width;i+=4)
       {
-        uint8_t L = CLAMP(63/100.0*(pixel[3*j*roi_in.width+3*i]), 0, 63);
+        uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
         dev->histogram_pre[4*L+3] ++;
       }
       // don't count <= 0 pixels
@@ -411,13 +412,13 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       {
         for(int k=0;k<3;k++)
         {
-          module->picked_color_min[k] = fminf(module->picked_color_min[k], in[3*(roi_in.width*j + i) + k]);
-          module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[3*(roi_in.width*j + i) + k]);
-          rgb[k] += w*in[3*(roi_in.width*j + i) + k];
+          module->picked_color_min[k] = fminf(module->picked_color_min[k], in[4*(roi_in.width*j + i) + k]);
+          module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[4*(roi_in.width*j + i) + k]);
+          rgb[k] += w*in[4*(roi_in.width*j + i) + k];
         }
-        const float L = in[3*(roi_in.width*j + i) + 0];
-        const float a = fminf(128, fmaxf(-128.0, in[3*(roi_in.width*j + i) + 1]*L));
-        const float b = fminf(128, fmaxf(-128.0, in[3*(roi_in.width*j + i) + 2]*L));
+        const float L = in[4*(roi_in.width*j + i) + 0];
+        const float a = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 1]*L));
+        const float b = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 2]*L));
         Lab[1] += w*a;
         Lab[2] += w*b;
         module->picked_color_min_Lab[0] = fminf(module->picked_color_min_Lab[0], L);
@@ -462,9 +463,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 #ifdef _DEBUG
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    if(strcmp(module->op, "gamma")) for(int k=0;k<3*roi_out->width*roi_out->height;k++)
+    if(strcmp(module->op, "gamma")) for(int k=0;k<4*roi_out->width*roi_out->height;k++)
     {
-      if(!isfinite(((float*)(*output))[k]))
+      if((k&3)<3 && !isfinite(((float*)(*output))[k]))
       {
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats!\n", module->name());
         break;

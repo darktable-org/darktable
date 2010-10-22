@@ -53,6 +53,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   float *in = (float *)i;
   float *out = (float *)o;
+  const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, d) schedule(static)
@@ -60,10 +61,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     // in Lab: correct compressed Luminance for saturation:
-    const int t = CLAMP((int)(in[3*k]/100.0*0xfffful), 0, 0xffff);
-    out[3*k+0] = d->table[t];
-    out[3*k+1] = in[3*k+1];
-    out[3*k+2] = in[3*k+2];
+    const int t = CLAMP((int)(in[ch*k]/100.0*0xfffful), 0, 0xffff);
+    out[ch*k+0] = d->table[t];
+    out[ch*k+1] = in[ch*k+1];
+    out[ch*k+2] = in[ch*k+2];
   }
 }
 

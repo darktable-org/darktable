@@ -56,9 +56,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   float *in = (float *)i;
   float *out = (float *)o;
+  const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(out, in, 3*sizeof(float)*width*height);
+  memcpy(out, in, chs*sizeof(float)*width*height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -100,9 +101,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       int ch = (int)c->channel;
       {
         const int step = 1<<l;
-        for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) c->band_hist[band] += out[3*width*j + 3*i + ch]*out[3*width*j + 3*i + ch];
-        for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      c->band_hist[band] += out[3*width*j + 3*i + ch]*out[3*width*j + 3*i + ch];
-        for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) c->band_hist[band] += out[3*width*j + 3*i + ch]*out[3*width*j + 3*i + ch]*.5f;
+        for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) c->band_hist[band] += out[chs*width*j + chs*i + ch]*out[chs*width*j + chs*i + ch];
+        for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      c->band_hist[band] += out[chs*width*j + chs*i + ch]*out[chs*width*j + chs*i + ch];
+        for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) c->band_hist[band] += out[chs*width*j + chs*i + ch]*out[chs*width*j + chs*i + ch]*.5f;
       }
     }
     c->band_max = 0.0f;
@@ -126,14 +127,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch==0?0:1], band);
       const int step = 1<<l;
 #if 1 // scale coefficients
-      for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff;
-      for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] *= coeff;
-      for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] *= coeff*coeff;
+      for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[chs*width*j + chs*i + ch] *= coeff;
+      for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[chs*width*j + chs*i + ch] *= coeff;
+      for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[chs*width*j + chs*i + ch] *= coeff*coeff;
 #else // soft-thresholding (shrinkage)
-#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[3*width*j + 3*i + ch]) - (1.0-coeff)), out[3*width*j + 3*i + ch]))
-      for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] = wshrink;
-      for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[3*width*j + 3*i + ch] = wshrink;
-      for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[3*width*j + 3*i + ch] = wshrink;
+#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[chs*width*j + chs*i + ch]) - (1.0-coeff)), out[chs*width*j + chs*i + ch]))
+      for(int j=0;j<height;j+=step)      for(int i=step/2;i<width;i+=step) out[chs*width*j + chs*i + ch] = wshrink;
+      for(int j=step/2;j<height;j+=step) for(int i=0;i<width;i+=step)      out[chs*width*j + chs*i + ch] = wshrink;
+      for(int j=step/2;j<height;j+=step) for(int i=step/2;i<width;i+=step) out[chs*width*j + chs*i + ch] = wshrink;
 #undef wshrink
 #endif
     }

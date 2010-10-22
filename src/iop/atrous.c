@@ -151,7 +151,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
 
   const int width = roi_out->width, height = roi_out->height;
 
-  float *in4 = (float *)malloc(4*sizeof(float)*sizes[0]*sizes[1]);
+  // float *in4 = (float *)malloc(4*sizeof(float)*sizes[0]*sizes[1]);
 
   // for all tiles:
   for(int tx=0;tx<ceilf(width/(float)tile_wd);tx++)
@@ -166,9 +166,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
     // printf("origin %lu %lu and size: %lu %lu\n", origin[0], origin[1], wd, ht);
 
     // TODO: one more buffer and interleaved write/process
-    for(int j=0;j<ht;j++) for(int i=0;i<wd;i++) for(int c=0;c<3;c++) in4[4*(sizes[0]*j+i)+c] = in[3*((origin[1]+j)*width + (origin[0]+i))+c];
-    // clEnqueueWriteImage(darktable.opencl->cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, in4 + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
-    clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*sizes[0]*sizeof(float), 0, in4, 0, NULL, NULL);
+    // for(int j=0;j<ht;j++) for(int i=0;i<wd;i++) for(int c=0;c<3;c++) in4[4*(sizes[0]*j+i)+c] = in[3*((origin[1]+j)*width + (origin[0]+i))+c];
+    // clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*sizes[0]*sizeof(float), 0, in4, 0, NULL, NULL);
+    clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, in + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
     if(tx > 0) { origin[0] += max_filter_radius; orig0[0] += max_filter_radius; region[0] -= max_filter_radius; }
     if(ty > 0) { origin[1] += max_filter_radius; orig0[1] += max_filter_radius; region[1] -= max_filter_radius; }
     // total number of work-items (threads*blocks):
@@ -234,10 +234,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   // wait for async read
   clFinish(darktable.opencl->dev[devid].cmd_queue);
 
-  free(in4);
+  // free(in4);
 
   // write output images:
-  for(int k=0;k<width*height;k++) for(int c=0;c<3;c++) out[3*k+c] = out[4*k+c];
+  // for(int k=0;k<width*height;k++) for(int c=0;c<3;c++) out[3*k+c] = out[4*k+c];
 
   // free device mem
   clReleaseMemObject(dev_in);

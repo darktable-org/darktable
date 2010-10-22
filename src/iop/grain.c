@@ -271,6 +271,7 @@ groups ()
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
+  const int ch = piece->colors;
   // Apply grain to image
   const double strength=(data->strength/100.0);
   const double octaves=3;
@@ -285,8 +286,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0;j<roi_out->height;j++)
   {
-    float *in  = ((float *)ivoid) + roi_out->width * j * 3;
-    float *out = ((float *)ovoid) + roi_out->width * j * 3;
+    float *in  = ((float *)ivoid) + roi_out->width * j * ch;
+    float *out = ((float *)ovoid) + roi_out->width * j * ch;
     for(int i=0;i<roi_out->width;i++)
     {
       // calculate x, y in a resolution independent way:
@@ -318,7 +319,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[1] = in[1];
       out[2] = in[2];
       
-      out += 3; in += 3;
+      out += ch; in += ch;
     }
   }
 }
