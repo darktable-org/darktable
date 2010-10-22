@@ -43,10 +43,10 @@ typedef struct dt_style_item_t
 void dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *items);
 
 /** applies the style to selection of images */
-void dt_styles_apply_to_selection (const char *name);
+void dt_styles_apply_to_selection (const char *name,gboolean duplicate);
 
 /** applies the style to image by imgid*/
-void dt_styles_apply_to_image (const char *name,int32_t imgid);
+void dt_styles_apply_to_image (const char *name,gboolean dulpicate,int32_t imgid);
 
 /** delete a style by name */
 void dt_styles_delete_by_name (const char *name);

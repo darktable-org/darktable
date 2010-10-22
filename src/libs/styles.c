@@ -32,6 +32,7 @@ DT_MODULE(1)
 typedef struct dt_lib_styles_t
 {
   GtkEntry *entry;
+  GtkWidget *duplicate;
   GtkTreeView *list;
 }
 dt_lib_styles_t;
@@ -159,11 +160,11 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
   gtk_tree_model_get (model, &iter, DT_STYLES_COL_NAME, &name, -1);
   
   if (name)
-    dt_styles_apply_to_selection(name);
+    dt_styles_apply_to_selection (name,gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (d->duplicate)));
   
 }
 
-/*
+#if 0
 static void edit_clicked(GtkWidget *w,gpointer user_data)
 {
     dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
@@ -182,7 +183,8 @@ static void edit_clicked(GtkWidget *w,gpointer user_data)
     dt_gui_styles_dialog_edit (name);
      _gui_styles_update_view(d);
   }
-}*/
+}
+#endif
 
 static void delete_clicked(GtkWidget *w,gpointer user_data)
 {
@@ -208,6 +210,14 @@ static gboolean
 entry_callback (GtkEntry *entry, gpointer user_data)
 {
   _gui_styles_update_view(user_data);
+  return FALSE;
+}
+
+static gboolean
+duplicate_callback (GtkEntry *entry, gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+  dt_conf_set_bool ("ui_last/styles_create_duplicate", gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON (d->duplicate)));
   return FALSE;
 }
 
@@ -244,7 +254,13 @@ gui_init (dt_lib_module_t *self)
 
   GtkWidget *hbox=gtk_hbox_new (FALSE,5);
  
-   GtkWidget *widget;
+  GtkWidget *widget;
+   
+  d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
+  gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->duplicate),TRUE,FALSE,0);
+  g_signal_connect (d->duplicate, "toggled", G_CALLBACK(duplicate_callback),d);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->duplicate), dt_conf_get_bool("ui_last/styles_create_duplicate"));
+   
 #if 0
   // TODO: Unfinished stuff
   GtkWidget *widget=gtk_button_new_with_label(_("edit"));

@@ -77,7 +77,7 @@ _gui_styles_get_active_items (dt_gui_styles_dialog_t *sd)
 static void
 _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, dt_gui_styles_dialog_t *g)
 {
-  if (response_id!=GTK_RESPONSE_CANCEL)
+  if (response_id == GTK_RESPONSE_ACCEPT)
   {
     /* get the filtered list from dialog */
     GList *result = _gui_styles_get_active_items(g);
@@ -96,7 +96,7 @@ _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, dt_gui_style
 static void
 _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id, dt_gui_styles_dialog_t *g)
 {
-  if (response_id != GTK_RESPONSE_CANCEL)
+  if (response_id == GTK_RESPONSE_ACCEPT)
   {
     /* get the filtered list from dialog */
     //GList *result = _gui_styles_get_active_items(g);
@@ -184,9 +184,9 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
       GTK_WINDOW(window),
       GTK_DIALOG_DESTROY_WITH_PARENT,
       GTK_STOCK_CANCEL,
-      GTK_RESPONSE_NONE,
+      GTK_RESPONSE_REJECT,
       GTK_STOCK_SAVE,
-      GTK_RESPONSE_NONE,
+      GTK_RESPONSE_ACCEPT,
       NULL));
   
   GtkContainer *content_area = GTK_CONTAINER (gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
