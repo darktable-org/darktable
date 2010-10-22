@@ -384,10 +384,11 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   dt_image_cache_release(img, 'r');
 }
 
-void dt_image_duplicate(const int32_t imgid)
+int32_t dt_image_duplicate(const int32_t imgid)
 {
   int rc;
   sqlite3_stmt *stmt;
+  pthread_mutex_lock(&darktable.db_insert);
   rc = sqlite3_prepare_v2(darktable.db, "insert into images "
       "(id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
       "focal_length, datetime_taken, flags, output_width, output_height, crop, "
@@ -398,7 +399,10 @@ void dt_image_duplicate(const int32_t imgid)
       "from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, imgid);
   rc = sqlite3_step(stmt);
+  int32_t newid = sqlite3_last_insert_rowid(darktable.db);
   sqlite3_finalize(stmt);
+  pthread_mutex_unlock(&darktable.db_insert);
+  return newid;
 }
 
 void dt_image_remove(const int32_t imgid)

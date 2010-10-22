@@ -151,7 +151,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */
-void dt_image_duplicate(const int32_t imgid);
+int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const int32_t imgid, const int32_t cw);
 /** returns 1 if there is history data found for this image, 0 else. */
