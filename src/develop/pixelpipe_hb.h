@@ -48,6 +48,8 @@ typedef struct dt_dev_pixelpipe_iop_t
   float iscale;                    // input actually just downscaled buffer? iscale*iwidth = actual width
   int iwidth, iheight;             // width and height of input buffer
   uint64_t hash;                   // hash of params and enabled.
+  int bpc;                         // bits per channel, 32 means flat
+  int colors;                      // how many colors per pixel
   dt_iop_roi_t buf_in, buf_out;    // theoretical full buffer regions of interest, as passed through modify_roi_out
 }
 dt_dev_pixelpipe_iop_t;

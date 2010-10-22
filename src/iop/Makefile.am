@@ -35,8 +35,7 @@ libgraduatednd_la_SOURCES=graduatednd.c
 libdemosaic_la_SOURCES=demosaic.c
 librelight_la_SOURCES=relight.c
 libatrous_la_SOURCES=atrous.c
-noinst_HEADERS=tonecurve.h gamma.h temperature.h colorcorrection.h exposure.h equalizer.h equalizer_eaw.h colorin.h colorout.h lens.h wb_presets.c Permutohedral.h profile_gamma.h
-dtpluginsdir=$(libdir)/darktable/plugins
+libzonesystem_la_SOURCES=zonesystem.c
 dtplugins_LTLIBRARIES=libtonecurve.la\
                       libgamma.la\
                       libtemperature.la\
@@ -64,7 +63,8 @@ dtplugins_LTLIBRARIES=libtonecurve.la\
                       libgraduatednd.la\
                       libdemosaic.la\
                       librelight.la\
-                      libatrous.la
+                      libatrous.la\
+                      libzonesystem.la
 if HAVE_LENSFUN
   liblens_la_SOURCES=lens.c
   liblens_la_CFLAGS=$(LENSFUN_CFLAGS)

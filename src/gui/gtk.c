@@ -44,6 +44,7 @@
 #include "gui/iop_modulegroups.h"
 #include "gui/devices.h"
 #include "gui/presets.h"
+#include "gui/preferences.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -624,6 +625,11 @@ film_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 
+void
+preferences_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  dt_gui_preferences_show();
+}
 
 void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
@@ -986,7 +992,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
 
   // set constant width from gconf key
-  const int panel_width = MAX(-1, MIN(500, dt_conf_get_int("panel_width")));
+  int panel_width = dt_conf_get_int("panel_width");
+  if(panel_width < 20 || panel_width > 500)
+  {
+    // fix for unset/insane values.
+    panel_width = 300;
+    dt_conf_set_int("panel_width", panel_width);
+  }
   widget = glade_xml_get_widget (darktable.gui->main_window, "right");
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
@@ -1012,6 +1024,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_background_jobs_init();
   
   /* connect the signals in the interface */
+
+  widget = glade_xml_get_widget (darktable.gui->main_window, "button_preferences");
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (preferences_button_clicked),
+                    NULL);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
   g_signal_connect (G_OBJECT (widget), "clicked",

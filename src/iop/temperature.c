@@ -229,7 +229,11 @@ void init (dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
   // raw images need wb:
   if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
-  else                                    module->default_enabled = 1;
+  else
+  {
+    module->default_enabled = 1;
+    module->hide_enable_button = 1;
+  }
   module->priority = 200;
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;

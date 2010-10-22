@@ -1,1 +1,1 @@
-EXTRA_DIST=create_control_svg.sh create_darktablerc.sh create_version_h.sh
+EXTRA_DIST=create_control_svg.sh create_darktablerc.sh create_version_h.sh create_preferences.sh
