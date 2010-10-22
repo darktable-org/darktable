@@ -32,6 +32,9 @@
 					</tbody>
 				</tgroup>
 			</informaltable>
+
+			<para>In able to locate where you are in your collection, you have read-only sliders at the extreme border of the window : left/right for your vertical position in the collection, 
+				top/bottom (when in zoomable lighttable mode, see below) for your zoom level.</para>
 							
 			<para>While mouse is over an image frame, you have additional actions accessed from keyboard to apply on image; here
 				follows a table of key accelerators and assigned actions.
@@ -69,6 +72,8 @@
 			<para>While in filemanager you can use <emphasis>ctrl-(mouse wheel)</emphasis> to change the number of thumbs displayed
 			in a row. That action is a key accelerator of the counter that can be found beside the filemanager option.
 			Use your mouse wheel to navigate through your collection.
+			</para>
+			<para>By pressing <emphasis>a/s/d/w</emphasis> you can navigate through your collection
 			</para>
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>
@@ -328,6 +333,7 @@
 						<row>						
 							<entry>Each workflow has to end by this panel: the exportation of your developed images.
 							Currently, you can export either to a file on your disk, or to various on-line storages.
+							<emphasis>TIP</emphasis>: you can use <emphasis>ctrl-alt-e</emphasis> to export.
               </entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />

@@ -17,10 +17,7 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>The grain can be obtained on different channels and with different rendering.</para>
-		<sect4><title>channel</title>
-			<para>Set the channel you want to work on. Hue, saturation or lightness are available.</para>
-		</sect4>
+		<para>The grain is processed on the L* channel from CIELAB.</para>
 		<sect4><title>coarseness</title>
 			<para>Set the grain size, which has been scaled to simulate an ISO number.</para>
 		</sect4>

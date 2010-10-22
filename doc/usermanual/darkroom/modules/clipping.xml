@@ -23,6 +23,7 @@
 			Use <emphasis>ctrl-x</emphasis> or the button right to the aspect box, to swap between portrait and landscape of the cropping rectangle.
 			You can move around the crop rectangle by holding down left mouse button and move around.
 			When you are done and want to execute the crop, hit enter key or double click in the crop rectangle.
+			<emphasis>TIP:hit "backspace" to reset the crop rectangle.</emphasis>
 		</para>
 
 		<sect4><title>Flip image</title>
