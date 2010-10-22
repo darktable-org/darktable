@@ -67,7 +67,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       {
         if(list!=g_list_first(list))
           strcat(include,",");
-        sprintf(tmp,"%d",(guint)list->data);
+        sprintf(tmp,"%ld",(long int)list->data);
         strcat(include,tmp);
       } while ((list=g_list_next(list)));
       strcat(include,")");
