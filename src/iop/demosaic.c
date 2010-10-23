@@ -94,7 +94,6 @@ demosaic_ppg(float *out, const uint16_t *in, const dt_iop_roi_t *roi_in, dt_iop_
     float *buf = out + 4*roi_out->width*j;
     const uint16_t *buf_in = in + roi_in->width*(j + roi_out->y) + roi_out->x;
     for (int i=offx; i < roi_out->width-offX; i++)
-    // for (int i=3+(FC(j,3,filters) & 1); i < roi_out_>width-3; i+=2)
     {
       const int c = FC(j,i,filters);
       // prefetch what we need soon (load to cpu caches)
@@ -105,12 +104,13 @@ demosaic_ppg(float *out, const uint16_t *in, const dt_iop_roi_t *roi_in, dt_iop_
       _mm_prefetch((char *)buf_in -   roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 2*roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 3*roi_in->width + 256, _MM_HINT_NTA);
-      __m128 col;
+      __m128 col;// = _mm_set1_ps(100.0f);//_mm_setzero_ps();
       float *color = (float*)&col;
       const float pc = buf_in[0];
-      color[c] = i2f*pc; 
+      // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)
       {
+        color[c] = i2f*pc; 
         // get stuff (hopefully from cache)
         const float pym  = buf_in[ - roi_in->width*1];
         const float pym2 = buf_in[ - roi_in->width*2];
@@ -149,14 +149,18 @@ demosaic_ppg(float *out, const uint16_t *in, const dt_iop_roi_t *roi_in, dt_iop_
           color[1] = i2f*fmaxf(fminf(guessx*.25f, M), m);
         }
       }
+      else color[1] = i2f*pc; 
+
       // write using MOVNTPS (write combine omitting caches)
-      _mm_stream_ps(buf, col);
+      // _mm_stream_ps(buf, col);
+      memcpy(buf, color, 4*sizeof(float));
       buf += 4;
       buf_in ++;
     }
   }
   // SFENCE (make sure stuff is stored now)
-  _mm_sfence();
+  // _mm_sfence();
+  // return;
 
 #if 0
   // get offsets in aligned block
@@ -174,16 +178,18 @@ demosaic_ppg(float *out, const uint16_t *in, const dt_iop_roi_t *roi_in, dt_iop_
 #endif
   for (int j=1; j < roi_out->height-1; j++)
   {
-    float *buf = out + 4*roi_out->width*j;
+    float *buf = out + 4*roi_out->width*j + 4;
     for (int i=1; i < roi_out->width-1; i++)
     {
       // also prefetch direct nbs top/bottom
       _mm_prefetch((char *)buf + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf -   roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf +   roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf - roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
+      _mm_prefetch((char *)buf + roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
 
       const int c = FC(j, i, filters);
-      __m128 col;
+      __m128 col = _mm_load_ps(buf);
+      // __m128 col = _mm_loadr_ps(buf);
+      // __m128 col = _mm_set_ps(buf[0], buf[1], buf[2], buf[3]);
       float *color = (float *)&col;
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b
@@ -234,11 +240,12 @@ demosaic_ppg(float *out, const uint16_t *in, const dt_iop_roi_t *roi_in, dt_iop_
           else color[0] = (guess1 + guess2)*.25f;
         }
       }
-      _mm_stream_ps(buf, col);
+      // _mm_stream_ps(buf, col);
+      memcpy(buf, color, 4*sizeof(float));
       buf += 4;
     }
   }
-  _mm_sfence();
+  // _mm_sfence();
 }
 
 
@@ -254,7 +261,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
+  // data->filters = 0x61616161;//0x49494949;//0x94949494;
   data->filters = 0x94949494;
+  // data->filters = 0x49494949;
   dt_image_t *img = self->dev->image;
   dt_image_buffer_t full = dt_image_get(img, DT_IMAGE_FULL, 'r');
   if(full != DT_IMAGE_FULL) return;
