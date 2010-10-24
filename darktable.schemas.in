@@ -508,7 +508,7 @@
       </locale>
     </schema>
 
-    <schema>
+    <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/plugins/filmstrip/on</key>
       <applyto>/apps/darktable/plugins/filmstrip/on</applyto>
       <owner>darktable</owner>
@@ -516,7 +516,7 @@
       <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short></short>
+        <short>enable filmstrip in darkroom mode</short>
         <long></long>
       </locale>
     </schema>
