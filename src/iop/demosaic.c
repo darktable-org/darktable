@@ -115,7 +115,8 @@ clip_and_zoom_demosaic_half_size(float *out, const uint16_t *in,
       int px = (x + roi_out->x + .5f)/roi_out->scale, py = (y + roi_out->y + .5f)/roi_out->scale;
 
       // round down to next even number:
-      px &= ~0x1; py &= ~0x1;
+      px = MAX(0, px & ~1);
+      py = MAX(0, py & ~1);
 
       // now move p to point to an rggb block:
       if(FC(py, px+1, filters) != 1) px ++;
@@ -148,8 +149,8 @@ static void
 demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters)
 {
   // snap to start of mosaic block:
-  roi_out->x &= ~1;
-  roi_out->y &= ~1;
+  roi_out->x = MAX(0, roi_out->x & ~1);
+  roi_out->y = MAX(0, roi_out->y & ~1);
   // offsets only where the buffer ends:
   const int offx = MAX(0, 3 - roi_out->x);
   const int offy = MAX(0, 3 - roi_out->y);
@@ -163,7 +164,7 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
   for (int j=offy; j < roi_out->height-offY; j++)
   {
     float *buf = out + 4*roi_out->width*j;
-    const uint16_t *buf_in = in + roi_in->width*(j + roi_out->y) + roi_out->x;
+    const uint16_t *buf_in = in + roi_in->width*(j + roi_out->y) + offx + roi_out->x;
     for (int i=offx; i < roi_out->width-offX; i++)
     {
       const int c = FC(j,i,filters);
