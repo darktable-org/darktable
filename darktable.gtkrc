@@ -72,7 +72,10 @@ style "clearlooks-wide" = "clearlooks-default"
 
 style "clearlooks-notebook" = "clearlooks-wide"
 {
-  bg[NORMAL] = "#5a5c5f"
+# bg[ACTIVE]        = "#494949"
+# bg[NORMAL]        = "#212121" 
+  bg[NORMAL]        = "#494949"
+  bg[ACTIVE]        = "#212121" 
 }
 
 style "clearlooks-tasklist" = "clearlooks-default"
@@ -279,7 +282,7 @@ widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 #widget_class "*.GtkFrame.GtkLabel" style "clearlooks-frame-title"
 #widget_class "BasePWidget.GtkEventBox.GtkTable.GtkFrame" style "clearlooks-panel"
 widget "gtk-tooltips" style "clearlooks-tooltips"
-#class "GtkNotebook" style "clearlooks-notebook"
+class "GtkNotebook" style "clearlooks-notebook"
 #class "GtkProgressBar" style "clearlooks-progressbar"
 #widget_class "*.GtkComboBox.GtkButton" style "clearlooks-combo"
 #widget_class "*.GtkCombo.GtkButton" style "clearlooks-combo"
