@@ -139,6 +139,7 @@ static void _slider_init (GtkDarktableSlider *slider)
   
   gtk_container_add(GTK_CONTAINER(slider),hbox);
   //gtk_container_set_reallocate_redraws(GTK_CONTAINER(slider),TRUE);
+  // gtk_event_box_set_visible_window(GTK_EVENT_BOX(slider), FALSE);
 
   gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
   

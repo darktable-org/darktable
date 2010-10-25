@@ -64,6 +64,7 @@ function key_end {
   cat >> $initfile << EOF
   snprintf(tooltip, 1024, _("double click to reset to \`%s'"), $4);
   gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, NULL);
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", "$2", NULL);
   gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
@@ -91,6 +92,7 @@ init_tab_$tab (GtkWidget *tab)
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 1.0, 0.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 20, 20, 20);
   gtk_container_add(GTK_CONTAINER(alignment), hbox);
   gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("$tab options")));
 
@@ -134,7 +136,7 @@ EOF
     val="gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))"
     setval="gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), $def);"
     cat >> $initfile << EOF
-  widget = gtk_spin_button_new_with_range(0, 1000, 1);
+  widget = gtk_spin_button_new_with_range(0, 1000000000, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("$key"));
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback), (gpointer)(long int)$num);
@@ -153,7 +155,7 @@ EOF
     val="gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))"
     setval="gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), $def);"
     cat >> $initfile << EOF
-  widget = gtk_spin_button_new_with_range(-100.0, 100.0, 0.001);
+  widget = gtk_spin_button_new_with_range(-1000000000.0, 1000000000.0, 0.001);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("$key"));
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback), (gpointer)(long int)$num);

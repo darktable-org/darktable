@@ -17,13 +17,13 @@
 				</tgroup>
 			</informaltable>
 	</sect3>
-	<sect3><title>The most obvious: monochrome module</title>
+	<sect3><title>The obvious way: monochrome module</title>
 		<para>To perform such conversion, just activate the monochrome module.
 		You can then simulate a color filter, by dragging the circle above the colours you want to
 		filter. Filter size can be modified thanks to wheel scrolling.
 		</para>
 	</sect3>
-	<sect3><title>The most simple: color correction module</title>
+	<sect3><title>The simple way: color correction module</title>
 		<para>To perform such conversion we use the color correction module.
 		</para>
 		  <orderedlist>
@@ -35,7 +35,7 @@
 			  </listitem>
 			</orderedlist>
 	</sect3>	
-	<sect3><title>The most artistic: color zones module</title>
+	<sect3><title>The artistic way: color zones module</title>
 		<para>To perform such conversion we use the color zone module.
 		</para>
 		  <orderedlist>
@@ -60,7 +60,7 @@
 			  </listitem>
 			</orderedlist>
 	</sect3>		
-	<sect3><title>The most sophisticated: channel mixer module</title>
+	<sect3><title>The sophisticated way: channel mixer module</title>
 		<para>To perform such conversion we use the channel mixer module.
 		</para>
 		  <orderedlist>

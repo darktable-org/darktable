@@ -22,7 +22,7 @@
 			<para>Set the fill-light exposure in [ev].</para>
 		</sect4>
 		<sect4><title>center</title>
-			<para>Set the median lightness being impacted by the fill-light directly on the gray scale or by using the button on the right and then selecting a area in the image.</para>
+			<para>Set the median lightness being impacted by the fill-light directly on the gray scale or by using the button on the right and then selecting an area in the image.</para>
 		</sect4>
 		<sect4><title>width</title>
 			<para>Set the width of the Gaussian curve. It is expressed in zone, the whole dynamic being 10 zones. The Gaussian being symmetric, only even numbers can be entered.</para>
