@@ -72,8 +72,7 @@ style "clearlooks-wide" = "clearlooks-default"
 
 style "clearlooks-notebook" = "clearlooks-wide"
 {
-# bg[ACTIVE]        = "#494949"
-# bg[NORMAL]        = "#212121" 
+  # interestingly, notebook swaps the meaning of these two:
   bg[NORMAL]        = "#494949"
   bg[ACTIVE]        = "#212121" 
 }
