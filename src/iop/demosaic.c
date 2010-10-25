@@ -112,7 +112,7 @@ clip_and_zoom_demosaic_half_size(float *out, const uint16_t *in,
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
       // upper left corner:
-      int px = (x + roi_out->x)/roi_out->scale, py = (y + roi_out->y)/roi_out->scale;
+      int px = (x + roi_out->x + .5f)/roi_out->scale, py = (y + roi_out->y + .5f)/roi_out->scale;
 
       // round down to next even number:
       px &= ~0x1; py &= ~0x1;

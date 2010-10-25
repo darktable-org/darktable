@@ -182,7 +182,6 @@ if test "$have_opencl" = "yes"; then
   AC_DEFINE(HAVE_OPENCL, 1, [whether to use opencl for gpu acceleration])
 else
   AM_CONDITIONAL([HAVE_OPENCL], [false])
-  AC_DEFINE(HAVE_OPENCL, 0, [whether to use opencl for gpu acceleration])
 fi
 AC_SUBST(OPENCL_LIBS)
 

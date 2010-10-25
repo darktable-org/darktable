@@ -82,7 +82,7 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out,
 
   const float px_footprint = .5f/r_scale;
   const int samples = ((int)px_footprint);
-  float2 p = backtransformf((float2)(x, y), r_x, r_y, r_wd, r_ht, r_scale);
+  float2 p = backtransformf((float2)(x+.5f, y+.5f), r_x, r_y, r_wd, r_ht, r_scale);
   for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
   {
     float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
@@ -119,7 +119,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
   // for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
 
   // upper left corner:
-  const int2 p = backtransformi((int2)(x, y), r_x, r_y, r_wd, r_ht, r_scale);
+  const int2 p = backtransformi((int2)(x+.5f, y+.5f), r_x, r_y, r_wd, r_ht, r_scale);
 
   // round down to next even number:
   p.x &= ~0x1; p.y &= ~0x1;
