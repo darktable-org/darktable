@@ -47,6 +47,7 @@ libdarktable_la_SOURCES= \
 			dtgtk/paint.c \
 			dtgtk/slider.c \
 			dtgtk/togglebutton.c \
+      dtgtk/resetlabel.c \
 			gui/camera_import_dialog.c \
 			gui/contrast.c \
 			gui/background_jobs.c \
@@ -129,6 +130,7 @@ noinst_HEADERS= \
 			dtgtk/button.h \
 			dtgtk/togglebutton.h \
 			dtgtk/paint.h \
+      dtgtk/resetlabel.h \
 			common/fswatch.h \
 			common/colorspaces.h \
 			common/colorlabels.h \

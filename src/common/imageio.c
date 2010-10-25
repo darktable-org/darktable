@@ -306,6 +306,7 @@ try_full_raw:
     img->maximum = raw->color.maximum/65535.0;
     HANDLE_ERRORS(ret, 1);
     ret = libraw_dcraw_process(raw);
+    // ret = libraw_dcraw_document_mode_processing(raw);
     HANDLE_ERRORS(ret, 1);
     image = libraw_dcraw_make_mem_image(raw, &ret);
     HANDLE_ERRORS(ret, 1);
