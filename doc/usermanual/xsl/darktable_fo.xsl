@@ -14,6 +14,9 @@
 <xsl:param name="body.margin.bottom">0.65in</xsl:param>
 <xsl:param name="double.sided">1</xsl:param>
 
+<xsl:param name="header.rule">0</xsl:param>
+<xsl:param name="footer.rule">0</xsl:param>
+
 <xsl:param name="title.font.family">Ubuntu</xsl:param>
 <xsl:param name="body.font.family">Ubuntu</xsl:param>
 
@@ -70,7 +73,7 @@
       <xsl:value-of select="$body.font.master * 0.9"/>
       <xsl:text>pt</xsl:text>
     </xsl:attribute>  
-     <xsl:attribute name="start-indent">5em</xsl:attribute>
+     <xsl:attribute name="start-indent">4em</xsl:attribute>
   </xsl:attribute-set> 
 
   <xsl:attribute-set name="section.title.level5.properties">
