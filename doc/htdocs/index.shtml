@@ -12,6 +12,14 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
+    	<img src="images/see.jpg" class="img" alt="dreggn" /><h1>draft usermanual</h1>
+      <em>(2010-10-26)</em> while waiting for 0.7, we have put up an
+      <a href="darktable-usermanual-draft-20101022.pdf">early draft usermanual</a> for you, to push forward
+      this great effort, get some feedback, and reveal some details to you.<br />
+      thanks to henrik and olivier who worked hard on this one!
+      </div>
+
+      <div class="listtext">
     	<img src="images/watt.jpg" class="img" alt="dreggn" /><h1>released 0.6</h1>
       <em>(2010-08-28)</em> finally a new release.. it has been so long that i hardly remember
       all the changes. let's try to list the most important ones:
