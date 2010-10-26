@@ -4,14 +4,16 @@
 
 <xsl:param name="fop1.extensions" select="1"></xsl:param>
 <xsl:param name="paper.type" select="'A4'"/> 
-<xsl:param name="page.margin.inner">0.75in</xsl:param>
-<xsl:param name="page.margin.outer">0.50in</xsl:param>
-<xsl:param name= "page.margin.top">0.17in</xsl:param>   
-<xsl:param name="region.before.extent">0.17in</xsl:param>  
-<xsl:param name="body.margin.top">0.33in</xsl:param>  
-<xsl:param name="region.after.extent">0.35in</xsl:param>
-<xsl:param name="page.margin.bottom">0.50in</xsl:param>
-<xsl:param name="body.margin.bottom">0.65in</xsl:param>
+
+<xsl:param name="page.margin.inner">0.90in</xsl:param>
+<xsl:param name="page.margin.outer">1.10in</xsl:param>
+<xsl:param name= "page.margin.top">1.00in</xsl:param>   
+<xsl:param name="region.before.extent">0.20in</xsl:param>  
+<xsl:param name="body.margin.top">0.25in</xsl:param>  
+<xsl:param name="region.after.extent">0.20in</xsl:param>
+<xsl:param name="page.margin.bottom">1.00in</xsl:param>
+<xsl:param name="body.margin.bottom">0.25in</xsl:param>
+
 <xsl:param name="double.sided">1</xsl:param>
 
 <xsl:param name="header.rule">0</xsl:param>
@@ -73,7 +75,7 @@
       <xsl:value-of select="$body.font.master * 0.9"/>
       <xsl:text>pt</xsl:text>
     </xsl:attribute>  
-     <xsl:attribute name="start-indent">4em</xsl:attribute>
+     <xsl:attribute name="start-indent">0.25in</xsl:attribute>
   </xsl:attribute-set> 
 
   <xsl:attribute-set name="section.title.level5.properties">
@@ -82,5 +84,8 @@
       <xsl:text>pt</xsl:text>
     </xsl:attribute>  
   </xsl:attribute-set> 
+  
+  <xsl:template name="header.content">  
+  </xsl:template>
 
 </xsl:stylesheet>
