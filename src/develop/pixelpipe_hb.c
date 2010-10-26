@@ -273,20 +273,29 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     // printf("[process] loading source image buffer\n");
     start = dt_get_wtime();
-#if 1
-    *output = pipe->input;
-#else
+    if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      *output = pipe->input;
+    }
     // optimized branch (for mipf-preview):
-    if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
+    else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW && roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
     {
-      // printf("[process] scale/pan\n");
+      // printf("[process] scale/pan [%s]\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : "");
       // reserve new cache line: output
       if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output))
       {
         bzero(*output, pipe->backbuf_size);
+        roi_in.x /= roi_out->scale;
+        roi_in.y /= roi_out->scale;
+        roi_in.width /= roi_out->scale;
+        roi_in.height /= roi_out->scale;
+        roi_in.scale = 1.0f;
+        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
+#if 0
         if(roi_out->scale < 0.5)
         {
+          // TODO: optimize this for speed:
           dt_iop_clip_and_zoom_hq_downsample(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,
               roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
               *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
@@ -297,9 +306,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
               roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
               *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
         }
+#endif
       }
     }
-#endif
     end = dt_get_wtime();
     dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer\n", end - start);
     pthread_mutex_unlock(&pipe->busy_mutex);

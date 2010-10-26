@@ -48,7 +48,9 @@ typedef enum
   // this refers to the state of the mipf buffer and its source.
   DT_IMAGE_THUMBNAIL = 16,
   // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping etc.
-  DT_IMAGE_LDR = 32
+  DT_IMAGE_LDR = 32,
+  // set during import if the image is raw data, i.e. it needs demosaicing.
+  DT_IMAGE_RAW = 64
 }
 dt_image_flags_t;
 

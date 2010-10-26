@@ -72,78 +72,6 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
-
-/**
- * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
- * and writes it to out in float4 format.
- * filters is the dcraw supplied int encoding the bayer pattern.
- * resamping is done via rank-1 lattices and demosaicing using half-size interpolation.
- */
-static void
-clip_and_zoom_demosaic_half_size(float *out, const uint16_t *in,
-    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const unsigned int filters)
-{
-  // adjust to pixel region and don't sample more than scale/2 nbs!
-  // pixel footprint on input buffer, radius:
-  const float px_footprint = .5f/roi_out->scale;
-  // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2;
-
-  // init gauss with sigma = samples (half footprint)
-  // float filter[2*samples + 1];
-  // float sum = 0.0f;
-  // for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(samples*samples)));
-  // for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
-
-  // FIXME: ??
-  const int offx = 0;//MAX(0, samples - roi_out->x);
-  const int offy = 0;//MAX(0, samples - roi_out->y);
-  const int offX = 0;//MAX(0, samples - (roi_in->width  - (roi_out->x + roi_out->width)));
-  const int offY = 0;//MAX(0, samples - (roi_in->height - (roi_out->y + roi_out->height)));
-
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out, in)
-#endif
-  for(int y=offy;y<roi_out->height-offY;y++)
-  {
-    float *outc = out + 4*roi_out->width*y;
-    for(int x=offx;x<roi_out->width-offX;x++)
-    {
-      __m128 col = _mm_setzero_ps();
-      // _mm_prefetch
-      // upper left corner:
-      int px = (x + roi_out->x + .5f)/roi_out->scale, py = (y + roi_out->y + .5f)/roi_out->scale;
-
-      // round down to next even number:
-      px = MAX(0, px & ~1);
-      py = MAX(0, py & ~1);
-
-      // now move p to point to an rggb block:
-      if(FC(py, px+1, filters) != 1) px ++;
-      if(FC(py, px,   filters) != 0) px ++;
-
-      const uint16_t *inc = in + py*roi_in->width + px;
-
-      for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
-      {
-        // get four mosaic pattern uint16:
-        float p1 = inc[2*i];
-        float p2 = inc[2*i+1];
-        float p3 = inc[2*i   + roi_in->width];
-        float p4 = inc[2*i+1 + roi_in->width];
-        // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
-        // color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
-        col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));
-      }
-      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
-      memcpy(outc, &col, 4*sizeof(float));
-      // _mm_stream_ps(outc, col);
-      outc += 4;
-    }
-  }
-  // _mm_sfence();
-}
-
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void
 demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters)
@@ -342,29 +270,37 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   dt_image_t *img = self->dev->image;
   dt_image_buffer_t full = dt_image_get(img, DT_IMAGE_FULL, 'r');
   if(full != DT_IMAGE_FULL) return;
-#if 0
-  // TODO:
   if(!self->dev->image->filters)
   {
     // no bayer pattern, directly clip and zoom image
+    dt_iop_clip_and_zoom((float *)o, (float *)i, roi_out, &roi);
   }
-  else
-#endif
-  if(global_scale > .999f)
+  else if(global_scale > .999f)
   {
     // output 1:1
     demosaic_ppg((float *)o, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
   }
-#if 0
   else if(global_scale > .5f)
   {
     // demosaic and then clip and zoom
+    roo.x = roi_out->x / global_scale;
+    roo.y = roi_out->y / global_scale;
+    roo.width  = roi_out->width / global_scale;
+    roo.height = roi_out->height / global_scale;
+    roo.scale = 1.0f;
+     
+    float *tmp = (float *)malloc(roo.width*roo.height*4*sizeof(float));
+    demosaic_ppg(tmp, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
+    roi = *roi_out;
+    roi.x = roi.y = 0;
+    roi.scale = global_scale;
+    dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo);
+    free(tmp);
   }
-#endif
   else
   {
     // sample half-size raw
-    clip_and_zoom_demosaic_half_size((float *)o, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
+    dt_iop_clip_and_zoom_demosaic_half_size((float *)o, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
   }
   dt_image_release(img, DT_IMAGE_FULL, 'r');
 }
@@ -605,6 +541,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   // dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
+  // if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
   d->filters = self->dev->image->filters;
 }
 

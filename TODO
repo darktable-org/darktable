@@ -1,7 +1,10 @@
 0.7 release:
 
-- port ppg demosaic to cpu
-- one pixel jump preview/full pipe (only for large displays)
+- mipf handling:
+  - load mipf downsampled and use 1:1 in preview pipe?
+
+  - write gets buf float4 now for hdr! (pfm, tiff16, exr)
+    
 - improve dr mode cache: selected module input has priority
 - ca auto corr on gpu in dt
 - cache with gpu bufs, if possible

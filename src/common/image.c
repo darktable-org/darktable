@@ -298,15 +298,15 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, mip, 4*mip_wd*mip_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
   const int ldr = dt_image_is_ldr(img);
   if(mip_wd == p_wd && mip_ht == p_ht)
   { // use 1:1
     if(ldr) for(int j=0;j<mip_ht;j++) for(int i=0;i<mip_wd;i++)
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*(j*mip_wd + i) + 2-k]*(1.0/255.0);
+      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = img->mip[mip][4*(j*mip_wd + i) + 2-k]*(1.0/255.0);
     else for(int j=0;j<mip_ht;j++) for(int i=0;i<mip_wd;i++)
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*(j*mip_wd + i) + 2-k]];
+      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*(j*mip_wd + i) + 2-k]];
   }
   else
   { // scale to fit
@@ -314,8 +314,8 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
     const float scale = fmaxf(mip_wd/f_wd, mip_ht/f_ht);
     for(int j=0;j<p_ht && (int)(scale*j)<mip_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < mip_wd;i++)
     {
-      if(ldr) for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]*(1.0/255.0);
-      else    for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]];
+      if(ldr) for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]*(1.0/255.0);
+      else    for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]];
     }
   }
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
@@ -334,24 +334,24 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
 
   if(dt_image_alloc(img, DT_IMAGE_MIPF)) return DT_IMAGEIO_CACHE_FULL;
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
   if(raw_wd == p_wd && raw_ht == p_ht)
   { // use 1:1
     for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
     {
-      const float *cam = raw + 3*(j*raw_wd + i);
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
+      const float *cam = raw + 4*(j*raw_wd + i);
+      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = cam[k];
     }
   }
   else
   { // scale to fit
-    bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
+    bzero(img->mipf, 4*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
     for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
     {
-      const float *cam = raw + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
+      const float *cam = raw + 4*((int)(scale*j)*raw_wd + (int)(scale*i));
+      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = cam[k];
     }
   }
 
@@ -962,8 +962,9 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   void *ptr = NULL;
   if     ((int)mip <  (int)DT_IMAGE_MIPF) { size *= 4*sizeof(uint8_t); ptr = (void *)(img->mip[mip]); }
-  else if(mip == DT_IMAGE_MIPF) { size *= 3*sizeof(float); ptr = (void *)(img->mipf); }
-  else if(mip == DT_IMAGE_FULL) { size *= 3*sizeof(float); ptr = (void *)(img->pixels); }
+  else if(mip == DT_IMAGE_MIPF) { size *= 4*sizeof(float); ptr = (void *)(img->mipf); }
+  else if(mip == DT_IMAGE_FULL ||  (img->flags & DT_IMAGE_RAW)) { size *= 4*sizeof(float);  ptr = (void *)(img->pixels); }
+  else if(mip == DT_IMAGE_FULL || !(img->flags & DT_IMAGE_RAW)) { size *= sizeof(uint16_t); ptr = (void *)(img->pixels); }
   else
   {
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));

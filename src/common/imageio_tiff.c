@@ -83,9 +83,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
     {
       TIFFReadScanline(image, buf, row, 0);
       if(bpp < 12) for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[mul*i + k]*(1.0/255.0);
+        for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[mul*i + k]*(1.0/255.0);
       else for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[mul/2*i + k]*(1.0/65535.0);
+        for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[mul/2*i + k]*(1.0/65535.0);
         // for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = ((buf16[mul*i + k]>>8)|((buf16[mul*i + k]<<8)&0xff00))*(1.0/65535.0);
     }
   }
@@ -182,7 +182,7 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
   // FIXME: there is a black border on the left side of a portrait image!
 
-  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):4*p_wd*p_ht*sizeof(float));
   const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
   const int p_wd2 = orientation & 4 ? p_ht : p_wd;
   const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
@@ -201,15 +201,15 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
     {
       for (int j=0; j < height; j++) for (int i=0; i < width; i++)
         if(bpp >= 12)
-          for(int k=0;k<3;k++) img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp16[3*width*j+3*i+k]*(1.0/65535.0);
+          for(int k=0;k<3;k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp16[3*width*j+3*i+k]*(1.0/65535.0);
         else
-          for(int k=0;k<3;k++) img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp8 [3*width*j+3*i+k]*(1.0/255.0);
+          for(int k=0;k<3;k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp8 [3*width*j+3*i+k]*(1.0/255.0);
     }
   }
   else
   { // scale to fit
     if(mip == DT_IMAGE_MIP4) bzero(img->mip[mip], 4*p_wd*p_ht*sizeof(uint8_t));
-    else                     bzero(img->mipf,     3*p_wd*p_ht*sizeof(float));
+    else                     bzero(img->mipf,     4*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
     if(mip == DT_IMAGE_MIP4)
     for(int j=0;j<p_ht2 && scale*j<height;j++) for(int i=0;i<p_wd2 && scale*i < width;i++)
@@ -225,7 +225,7 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
       float cam[3];
       if(bpp < 12) for(int k=0;k<3;k++) cam[k] = tmp8 [3*((int)(scale*j)*width + (int)(scale*i)) + k] * (1.0/255.0);
       else         for(int k=0;k<3;k++) cam[k] = tmp16[3*((int)(scale*j)*width + (int)(scale*i)) + k] * (1.0/65535.0);
-      for(int k=0;k<3;k++) img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k];
+      for(int k=0;k<3;k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k];
     }
   }
   free(tmp);

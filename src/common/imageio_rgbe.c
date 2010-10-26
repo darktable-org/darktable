@@ -468,7 +468,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
   if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
 
   if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
   if(RGBE_ReadPixels_RLE(f, img->pixels, img->width, img->height))
   {
     dt_image_release(img, DT_IMAGE_FULL, 'w');
@@ -477,7 +477,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
   }
   fclose(f);
   // repair nan/inf etc
-  for(int i=0; i < img->width*img->height*3; i++) img->pixels[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
+  for(int i=img->width*img->height*4-1;i>=0; i++) for(int c=0;c<3;c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0, img->pixels[3*i+c]));
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return DT_IMAGEIO_OK;
 
@@ -499,7 +499,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe_preview(dt_image_t *img, const char *fi
 
   if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
 
-  float *buf = (float *)malloc(3*sizeof(float)*img->width*img->height);
+  float *buf = (float *)malloc(4*sizeof(float)*img->width*img->height);
   if(!buf) goto error_corrupt;
   if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height))
   {
@@ -507,7 +507,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe_preview(dt_image_t *img, const char *fi
     goto error_corrupt;
   }
   // repair nan/inf etc
-  for(int i=0; i < img->width*img->height*3; i++) buf[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
+  for(int i=img->width*img->height*4-1;i>=0; i++) for(int c=0;c<3;c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0, buf[3*i+c]));
   dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
   free(buf);
   fclose(f);

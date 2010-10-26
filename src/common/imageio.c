@@ -112,7 +112,7 @@ all_good:
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
   ret = DT_IMAGEIO_OK;
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
@@ -165,6 +165,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
 
   // this image is raw, if we manage to load it.
   img->flags &= ~DT_IMAGE_LDR;
+  img->flags &= DT_IMAGE_RAW;
 
   // if we have a history stack, don't load preview buffer!
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
@@ -336,22 +337,22 @@ try_full_raw:
     dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
 
     if(dt_image_alloc(img, DT_IMAGE_MIPF)) goto error_raw_cache_full;
-    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+    dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
     if(raw_wd == p_wd && raw_ht == p_ht)
     { // use 1:1
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
       }
     }
     else
     { // scale to fit
-      bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
+      bzero(img->mipf, 4*p_wd*p_ht*sizeof(float));
       const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
       for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
       }
     }
 
@@ -447,23 +448,17 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   // end of new demosaicing params
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
-  // if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
-  // { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
-    // raw->params.user_qual = 0;
-    // raw->params.half_size = 0;
-  // }
   raw->params.user_qual = 0;
   raw->params.half_size = 0;
 
   // this image is raw, if we manage to load it.
   img->flags &= ~DT_IMAGE_LDR;
+  img->flags &= DT_IMAGE_RAW;
 
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
   HANDLE_ERRORS(ret, 1);
-  printf("filters: %X\n", raw->idata.filters);
-  printf("colors: %d\n", raw->idata.colors);
   ret = libraw_dcraw_process(raw);
   // ret = libraw_dcraw_document_mode_processing(raw);
   HANDLE_ERRORS(ret, 1);
@@ -471,8 +466,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   HANDLE_ERRORS(ret, 1);
 
   // filters seem only ever to take a useful value after unpack/process
-  // FIXME: EOS 400d hardcoded, doesn't seem to work else :(
-  img->filters = 0x61616161;//raw->idata.filters;
+  img->filters = raw->idata.filters;
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
@@ -493,10 +487,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     free(image);
     return DT_IMAGEIO_CACHE_FULL;
   }
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width)*(img->height)*sizeof(float));
-  // const float m = 1./0xffff;
-// #pragma omp parallel for schedule(static) shared(img, image)
-  // for(int k=0;k<3*(img->width)*(img->height);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
+  dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
   memcpy(img->pixels, image->data, img->width*img->height*sizeof(uint16_t));
   // clean up raw stuff.
   libraw_recycle(raw);
@@ -564,7 +555,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
   // FIXME: there is a black border on the left side of a portrait image!
 
-  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):4*p_wd*p_ht*sizeof(float));
   const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
   const int p_wd2 = orientation & 4 ? p_ht : p_wd;
   const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
@@ -577,12 +568,12 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
         img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
     else
       for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
-        img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
+        img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
   }
   else
   { // scale to fit
     if(mip == DT_IMAGE_MIP4) bzero(img->mip[mip], 4*p_wd*p_ht*sizeof(uint8_t));
-    else                     bzero(img->mipf,     3*p_wd*p_ht*sizeof(float));
+    else                     bzero(img->mipf,     4*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
     if(mip == DT_IMAGE_MIP4)
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
@@ -594,7 +585,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
     {
       uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
+      for(int k=0;k<3;k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
     }
   }
   free(tmp);
@@ -647,11 +638,11 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
  
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
 
   for(int j=0; j < jpg.height; j++)
     for(int i=0; i < jpg.width; i++)
-      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
+      for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
@@ -684,7 +675,6 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   dt_dev_load_image(&dev, img);
   const int wd = dev.image->width;
   const int ht = dev.image->height;
-  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
 
   start = dt_get_wtime();
   dt_dev_pixelpipe_t pipe;
@@ -755,7 +745,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
     { // convert in place
       const int k = x + processed_width*y;
-      for(int i=0;i<3;i++) buf16[3*k+i] = CLAMP(buff[3*k+i]*0x10000, 0, 0xffff);
+      for(int i=0;i<3;i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
     }
   }
   else if(bpp == 32)
