@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "LibRaw/libraw/libraw.h"
@@ -72,7 +73,7 @@ void init_presets (dt_iop_module_t *self)
 typedef struct dt_iop_graduatednd_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;                                            // left and right controlboxes
-  GtkLabel  *label1,*label2,*label3,*label4,*label5,*label6;            			      // density, compression, rotation, offset, hue, saturation
+  GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;            			      // density, compression, rotation, offset, hue, saturation
   GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;        // density, compression, rotation, offset
   GtkDarktableGradientSlider *gslider1,*gslider2;		// hue, saturation
 }
@@ -369,18 +370,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   
   /* adding the labels */
-  g->label1 = GTK_LABEL(gtk_label_new(_("density")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("compression")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("rotation")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("split")));
-  g->label5 = GTK_LABEL(gtk_label_new(_("hue")));
-  g->label6 = GTK_LABEL(gtk_label_new(_("saturation")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label6), 0.0, 0.5);
+  
+  g->label1 = dtgtk_reset_label_new(_("density"), self, &p->density, sizeof(float));
+  g->label2 = dtgtk_reset_label_new(_("compression"), self, &p->compression, sizeof(float));
+  g->label3 = dtgtk_reset_label_new(_("rotation"), self, &p->rotation, sizeof(float));
+  g->label4 = dtgtk_reset_label_new(_("split"), self, &p->offset, sizeof(float));
+  g->label5 = dtgtk_reset_label_new(_("hue"), self, &p->hue, sizeof(float));
+  g->label6 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
   
   
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label1), 0,1,0,1,GTK_FILL,0,0,0);
