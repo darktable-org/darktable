@@ -14,6 +14,9 @@
 <xsl:param name="body.margin.bottom">0.65in</xsl:param>
 <xsl:param name="double.sided">1</xsl:param>
 
+<xsl:param name="title.font.family">Ubuntu</xsl:param>
+<xsl:param name="body.font.family">Ubuntu</xsl:param>
+
 <xsl:param name="chapter.autolabel" select="1"></xsl:param>
 <xsl:param name="section.autolabel" select="1"></xsl:param>
 <xsl:param name="section.autolabel.max.depth">3</xsl:param>
