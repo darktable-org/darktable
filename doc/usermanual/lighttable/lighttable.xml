@@ -73,7 +73,8 @@
 			in a row. That action is a key accelerator of the counter that can be found beside the filemanager option.
 			Use your mouse wheel to navigate through your collection.
 			</para>
-			<para>By pressing <emphasis>a/s/d/w</emphasis> you can navigate through your collection
+			<para>While in filemanager, by pressing <emphasis>w/s</emphasis> you can scroll (not select) up and down through your collection. 
+			In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move right/left/up/down through your collection.
 			</para>
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>

@@ -64,15 +64,19 @@
 						<row>
 							<entry>user manual</entry>
 							<entry></entry>
-							<entry>22/10/10</entry>
+							<entry>27/10/10</entry>
 						</row>
 						<row>
 							<entry>Darktable</entry>
-							<entry>darktable 0.6+408~gdd52b32</entry>
-							<entry>22/10/10</entry>
+							<entry>darktable 0.6+429~g6de9bfb</entry>
+							<entry>27/10/10</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable> 
+		</para>
+		<para>Please note that every key accelerators given in this manual is only applicable on english keyboards layout. 
+			The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard. 
+			For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard.
 		</para>
 	</preface>
 &chapter_overview;

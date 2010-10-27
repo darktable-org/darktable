@@ -7,13 +7,13 @@
 		</keywordset>
 	</chapterinfo>
 	<title>Overview</title>
-	<para>Darktable is an application to manage and develop your digital images...</para>
+	<para>Darktable is an application to manage and develop your digital images.</para>
+	<para>It is fully non-destructive and works on a 32 bit floating point format per channel. Most of the actions on the pixelpipe are done in CIELab.
 
 	<sect1 status="final"><title>Preferences</title>
 		<para> A recently introduced button located at the upper panel allows you to define various parameters.
 		</para>
 	</sect1>
-
 
 	<sect1 status="final"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
