@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/label.h"
+#include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/button.h"
@@ -53,7 +54,7 @@ dt_iop_splittoning_params_t;
 typedef struct dt_iop_splittoning_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1,*label2,*label3,*label4,*label5,*label6;	 			 // highlight hue, h sat, shadow hue, s sat, balance, compress
+  GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;	 			 // highlight hue, h sat, shadow hue, s sat, balance, compress
   GtkDarktableSlider *scale1,*scale2;       							//  balance, compress
   GtkDarktableButton *colorpick1,*colorpick2;	   					// shadow, highlight
   GtkDarktableGradientSlider *gslider1,*gslider2,*gslider3,*gslider4;		//highligh hue, highlight saturation, shadow hue, shadow saturation
@@ -80,7 +81,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT;
 }
 
 
@@ -320,7 +321,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   s=(button==g->colorpick1)?p->shadow_saturation:p->highlight_saturation;
   l=0.5;	
   hsl2rgb(&color[0],&color[1],&color[2],h,s,l);
-	
+  
   c.red= 65535 * color[0];
   c.green= 65535 * color[1];
   c.blue= 65535 * color[2];
@@ -396,7 +397,7 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->gslider2,p->shadow_saturation);
   dtgtk_slider_set_value(g->scale1, p->balance);
   dtgtk_slider_set_value(g->scale2, p->compress);
-	
+  
   float color[3];
   hsl2rgb(&color[0],&color[1],&color[2],p->shadow_hue,p->shadow_saturation,0.5);
   
@@ -411,9 +412,9 @@ void gui_update(struct dt_iop_module_t *self)
   c.red=color[0]*65535.0;
   c.green=color[1]*65535.0;
   c.blue=color[2]*65535.0;
-  	
+    
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
-	
+  
 }
 
 void init(dt_iop_module_t *module)
@@ -458,11 +459,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(g->colorpick1),FALSE,FALSE,0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  
-  g->label1 = GTK_LABEL(gtk_label_new(_("hue")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("saturation")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
+  g->label1 = dtgtk_reset_label_new (_("hue"), self, &p->shadow_hue, sizeof(float));
+  g->label2 = dtgtk_reset_label_new (_("saturation"), self, &p->shadow_saturation, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   int lightness=32768;
@@ -493,10 +491,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox),GTK_WIDGET(g->colorpick2),FALSE,FALSE,0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->label3 = GTK_LABEL(gtk_label_new(_("hue")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("saturation")));
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
+  g->label3 = dtgtk_reset_label_new (_("hue"), self, &p->highlight_hue, sizeof(float));
+  g->label4 = dtgtk_reset_label_new (_("saturation"), self, &p->highlight_saturation, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
 
@@ -522,10 +518,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->label5 = GTK_LABEL(gtk_label_new(_("balance")));
-  g->label6 = GTK_LABEL(gtk_label_new(_("compress")));
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label6), 0.0, 0.5);
+  g->label5 = dtgtk_reset_label_new (_("balance"), self, &p->balance, sizeof(float));
+  g->label6 = dtgtk_reset_label_new (_("compress"), self, &p->compress, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label6), TRUE, TRUE, 0);
   
