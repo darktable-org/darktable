@@ -782,7 +782,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     dt_control_queue_draw_all();
     return;
   }
-  if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
+  if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x-offx, y-offy, which);
   if(handled) return;
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
