@@ -342,18 +342,16 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   roi_in.height = raw_ht;
   roi_in.scale = 1.0f;
   roi_out.x = roi_out.y = 0;
-  roi_out.width = p_wd;
-  roi_out.height = p_ht;
-  roi_out.scale = p_wd/(float)raw_wd;
+  roi_out.width = f_wd;
+  roi_out.height = f_ht;
+  roi_out.scale = f_wd/(float)raw_wd;
   if(img->flags & DT_IMAGE_RAW)
   { // demosaic during downsample
     dt_iop_clip_and_zoom_demosaic_half_size(img->mipf, (const uint16_t *)raw, &roi_out, &roi_in, img->filters);
-    assert(0);
   }
   else
   { // downsample
     dt_iop_clip_and_zoom(img->mipf, raw, &roi_out, &roi_in);
-    assert(0);
   }
 #if 0
   if(raw_wd == p_wd && raw_ht == p_ht)

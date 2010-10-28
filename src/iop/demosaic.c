@@ -86,6 +86,36 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
   const int offX = MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
   const int offY = MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
   const float i2f = 1.0f/((float)0xffff);
+
+#if 1
+  // border interpolate
+  float sum[8];
+  for (int j=0; j < roi_out->height; j++) for (int i=0; i < roi_out->width; i++)
+  {
+    if (i == offx && j >= offy && j < roi_out->height-offY)
+      i = roi_out->width-offX;
+    if(i == roi_out->width) break;
+    memset (sum, 0, sizeof(float)*8);
+    for (int y=j-1; y != j+2; y++) for (int x=i-1; x != i+2; x++)
+    {
+      const int yy = y + roi_out->y, xx = x + roi_out->x;
+      if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
+      {
+        int f = FC(y,x,filters);
+        sum[f] += in[yy*roi_in->width+xx];
+        sum[f+4]++;
+      }
+    }
+    int f = FC(j,i,filters);
+    for(int c=0;c<3;c++)
+    {
+      if (c != f && sum[c+4] > 0.0f)
+        out[4*(j*roi_out->width+i)+c] = i2f * sum[c] / sum[c+4];
+      else
+        out[4*(j*roi_out->width+i)+c] = i2f * in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
+    }
+  }
+#endif
   // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_in, roi_out, out, in) schedule(static)
@@ -253,12 +283,6 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  // TODO: disable pipe and this mcpy : same result
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    memcpy(o, i, roi_out->width*roi_out->height*4*sizeof(float));
-    return;
-  }
   dt_iop_roi_t roi, roo;
   roi.scale = 1.0f;
   roi.x = roi.y = 0;
@@ -548,7 +572,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   // dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
-  // if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
+  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
   d->filters = self->dev->image->filters;
 }
 
@@ -570,7 +594,7 @@ void gui_update   (struct dt_iop_module_t *self)
 
 void gui_init     (struct dt_iop_module_t *self)
 {
-  self->widget = gtk_label_new(_("this module doesn't have any options"));
+  self->widget = gtk_label_new(_("this module doesn't have any options (yet)"));
 }
 
 void gui_cleanup  (struct dt_iop_module_t *self)
