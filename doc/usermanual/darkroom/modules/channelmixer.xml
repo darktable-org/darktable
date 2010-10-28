@@ -50,7 +50,7 @@
 							</entry>						
 							<entry>
 								<para>In this example we use a rgb mix of 0.4, 0.75, -0.15, the difference with the previous example here is that we use more green than red
-								which brings some futures back back we did still reduce the blu channel in the mix to remove artefacts..</para>
+								which brings some features back but we will still reduce the blue channel in the mix to dampen artefacts..</para>
 							</entry>
 						</row>
 					</tbody>
