@@ -44,11 +44,14 @@ void dt_film_init(dt_film_t *film)
 	film->ref = 0;
 }
 
+//FIXME: recursion messes up the progress counter.
 void dt_film_import1(dt_film_t *film)
 {
 	const gchar *d_name;
 	char filename[1024];
 	dt_image_t image;
+
+	gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 
 	while(1)
 	{
@@ -72,7 +75,11 @@ void dt_film_import1(dt_film_t *film)
 		}
 		pthread_mutex_unlock(&film->images_mutex);
 
-		if(dt_image_import(film->id, filename))
+		if(recursive && g_file_test(filename, G_FILE_TEST_IS_DIR))
+		{
+			dt_film_import(filename);
+		}
+		else if(dt_image_import(film->id, filename))
 		{
 			pthread_mutex_lock(&film->images_mutex);
 			darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
@@ -90,6 +97,16 @@ void dt_film_cleanup(dt_film_t *film)
 		g_dir_close(film->dir);
 		film->dir = NULL;
 	}
+	// if the film is empty => remove it again.
+	if(dt_film_is_empty(film->id)){
+		dt_film_remove(film->id);
+// 		g_print("removing empty filmroll: %s\n", film->dirname); // FIXME: just for debugging
+	}
+	else
+	{
+		dt_control_update_recent_films();
+	}
+
 }
 
 void dt_film_set_query(const int32_t id)

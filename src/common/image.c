@@ -548,7 +548,10 @@ int dt_image_import(const int32_t film_id, const char *filename)
   for(;*cc!='.'&&cc>filename;cc--);
   if(!strcmp(cc, ".dt")) return 0;
   if(!strcmp(cc, ".dttags")) return 0;
+  if(!strcmp(cc, ".xmp")) return 0;
   char *ext = g_ascii_strdown(cc+1, -1);
+  if((!strcmp(ext, "jpg") || !strcmp(ext, "jpeg")) && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
+    return 0;
   int supported = 0;
   char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
   for(char **i=extensions;*i!=NULL;i++)

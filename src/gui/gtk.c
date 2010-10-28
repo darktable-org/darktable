@@ -644,8 +644,38 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
+  char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
+  if(last_directory != NULL)
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
+
+  // add extra lines to 'extra'. don't forget to destroy the widgets later.
+  GtkWidget *extra;
+  extra = gtk_vbox_new(FALSE, 0);
+
+  // recursive opening.
+  GtkWidget *recursive;
+  recursive = gtk_check_button_new_with_label (_("Import directories recursively"));
+  g_object_set(recursive, "tooltip-text", _("Recursively import subdirectories. Each directory goes into a new film roll."), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
+  gtk_widget_show (recursive);
+  gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
+
+  // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
+  GtkWidget *ignore_jpeg;
+  ignore_jpeg = gtk_check_button_new_with_label (_("Ignore JPEG files"));
+  g_object_set(ignore_jpeg, "tooltip-text", _("Do not load files with an extension of .jpg or .jpeg. This can be useful when there are RAW+JPEG in a directory."), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
+  gtk_widget_show (ignore_jpeg);
+  gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
+
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), extra);
+
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
+    dt_conf_set_bool("ui_last/import_recursive", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (recursive)));
+    dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ignore_jpeg)));
+    dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
+
     char *filename;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
     GSList *it = list;
@@ -664,6 +694,9 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
     }
     g_slist_free (list);
   }
+  gtk_widget_destroy(recursive);
+  gtk_widget_destroy(ignore_jpeg);
+  gtk_widget_destroy(extra);
   gtk_widget_destroy (filechooser);
   win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(win);
