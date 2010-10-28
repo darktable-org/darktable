@@ -91,6 +91,7 @@ void dt_film_import1(dt_film_t *film)
 
 void dt_film_cleanup(dt_film_t *film)
 {
+  printf("cleaning up film roll %d\n", film->id);
 	pthread_mutex_destroy(&film->images_mutex);
 	if(film->dir)
 	{
@@ -98,15 +99,15 @@ void dt_film_cleanup(dt_film_t *film)
 		film->dir = NULL;
 	}
 	// if the film is empty => remove it again.
-	if(dt_film_is_empty(film->id)){
+	if(dt_film_is_empty(film->id))
+  {
 		dt_film_remove(film->id);
-// 		g_print("removing empty filmroll: %s\n", film->dirname); // FIXME: just for debugging
+ 		printf("removing empty filmroll: %s\n", film->dirname); // FIXME: just for debugging
 	}
 	else
 	{
 		dt_control_update_recent_films();
 	}
-
 }
 
 void dt_film_set_query(const int32_t id)
@@ -248,9 +249,12 @@ int dt_film_new(dt_film_t *film,const char *directory)
 		rc = sqlite3_step(stmt);
 		if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
 		rc = sqlite3_finalize(stmt);
-		film->id = sqlite3_last_insert_rowid(darktable.db);
+		sqlite3_prepare_v2(darktable.db, "select id from film_rolls where folder=?1", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, directory, strlen(directory), SQLITE_STATIC);
+    if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
+	  sqlite3_finalize(stmt);
 		pthread_mutex_unlock(&(darktable.db_insert));
-	 
+    printf("######## new film `%s' id %d\n", directory, film->id);
 	}
 	
 	if(film->id<=0)
@@ -294,8 +298,12 @@ int dt_film_import(const char *dirname)
 		rc = sqlite3_step(stmt);
 		if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
 		rc = sqlite3_finalize(stmt);
-		film->id = sqlite3_last_insert_rowid(darktable.db);
+		sqlite3_prepare_v2(darktable.db, "select id from film_rolls where folder=?1", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, dirname, strlen(dirname), SQLITE_STATIC);
+    if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
+	  sqlite3_finalize(stmt);
 		pthread_mutex_unlock(&(darktable.db_insert));
+    printf("######## new film `%s' id %d\n", dirname, film->id);
 	}
 	if(film->id <= 0)
 	{
@@ -312,7 +320,7 @@ int dt_film_import(const char *dirname)
 
 	const int ret = film->id;
 	// darktable.control->progress = .001f;
-	for(int k=0;k<MAX(1,dt_ctl_get_num_procs());k++) // keep one proc for the user.
+	for(int k=0;k<MAX(1,dt_ctl_get_num_procs());k++)
 	{
 		// last job will destroy film struct.
 		dt_job_t j;
@@ -322,18 +330,20 @@ int dt_film_import(const char *dirname)
 	return ret;
 }
 
-int dt_film_is_empty(const int id) {
+int dt_film_is_empty(const int id)
+{
 	int rc, empty=0;
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);
 	sqlite3_bind_int(stmt, 1, id);
-	if( sqlite3_step(stmt) == SQLITE_DONE) empty=1;
+	if( sqlite3_step(stmt) != SQLITE_ROW) empty=1;
 	rc = sqlite3_finalize(stmt);
 	return empty;
 }
 
 void dt_film_remove(const int id)
 {
+  printf("removing film id %d\n", id);
 	int rc;
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);

@@ -637,7 +637,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
               GTK_WINDOW (win),
-              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, //GTK_FILE_CHOOSER_ACTION_OPEN,
+              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
               (char *)NULL);
@@ -654,16 +654,16 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
 
   // recursive opening.
   GtkWidget *recursive;
-  recursive = gtk_check_button_new_with_label (_("Import directories recursively"));
-  g_object_set(recursive, "tooltip-text", _("Recursively import subdirectories. Each directory goes into a new film roll."), NULL);
+  recursive = gtk_check_button_new_with_label (_("import directories recursively"));
+  g_object_set(recursive, "tooltip-text", _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
   gtk_widget_show (recursive);
   gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
 
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
   GtkWidget *ignore_jpeg;
-  ignore_jpeg = gtk_check_button_new_with_label (_("Ignore JPEG files"));
-  g_object_set(ignore_jpeg, "tooltip-text", _("Do not load files with an extension of .jpg or .jpeg. This can be useful when there are RAW+JPEG in a directory."), NULL);
+  ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
+  g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
   gtk_widget_show (ignore_jpeg);
   gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);

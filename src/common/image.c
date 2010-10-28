@@ -588,9 +588,14 @@ int dt_image_import(const int32_t film_id, const char *filename)
   pthread_mutex_lock(&(darktable.db_insert));
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
-  id = sqlite3_last_insert_rowid(darktable.db);
-  pthread_mutex_unlock(&(darktable.db_insert));
   rc = sqlite3_finalize(stmt);
+
+  sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
+  sqlite3_bind_int (stmt, 1, film_id);
+  sqlite3_bind_text(stmt, 2, imgfname, strlen(imgfname), SQLITE_STATIC);
+  if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  pthread_mutex_unlock(&(darktable.db_insert));
 
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
   dt_image_t *img = dt_image_cache_get_uninited(id, 'w');

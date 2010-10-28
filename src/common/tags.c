@@ -23,7 +23,7 @@
 gboolean dt_tag_new(const char *name,guint *tagid)
 {
   int rc, rt;
-  guint id;
+  guint id = 0;
   sqlite3_stmt *stmt;
   
   if(!name || name[0] == '\0') return FALSE; // no tagid name.
@@ -42,21 +42,24 @@ gboolean dt_tag_new(const char *name,guint *tagid)
   
   
   
-  rc = sqlite3_prepare_v2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
-  rc = sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  pthread_mutex_lock(&(darktable.db_insert));
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  id = sqlite3_last_insert_rowid(darktable.db);
-  pthread_mutex_unlock(&(darktable.db_insert));
-  rc = sqlite3_prepare_v2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, id);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int(stmt, 1, id);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
+  sqlite3_prepare_v2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_prepare_v2(darktable.db, "select id from tags where name = ?1", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  sqlite3_prepare_v2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  sqlite3_prepare_v2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
   
   if( tagid != NULL)
       *tagid=id;
