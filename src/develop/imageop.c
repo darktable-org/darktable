@@ -646,8 +646,8 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
 
       float num=0.0f;
       // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
-      for(int j=MAX(0, py-samples);j<=MIN(roi_in->height, py+samples);j++)
-      for(int i=MAX(0, px-samples);i<=MIN(roi_in->width,  px+samples);i++)
+      for(int j=MAX(0, py-samples);j<=MIN(roi_in->height-2, py+samples);j++)
+      for(int i=MAX(0, px-samples);i<=MIN(roi_in->width -2, px+samples);i++)
       {
         // assert(i + px < roi_in->width);
         // assert(i + px >= 0);
@@ -734,10 +734,10 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
         // assert(2*j + py + 1 < roi_in->height);
         // assert(2*j + py >= 0);
         // get four mosaic pattern uint16:
-        float p1 = in[2*i + roi_in->width*2*j];
-        float p2 = in[2*i + roi_in->width*2*j + 1];
-        float p3 = in[2*i   + roi_in->width*2*j + roi_in->width];
-        float p4 = in[2*i+1 + roi_in->width*2*j + roi_in->width];
+        float p1 = in[i + roi_in->width*j];
+        float p2 = in[i + roi_in->width*j + 1];
+        float p3 = in[i   + roi_in->width*j + roi_in->width];
+        float p4 = in[i+1 + roi_in->width*j + roi_in->width];
         // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
         // color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
         col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));

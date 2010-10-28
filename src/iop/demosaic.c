@@ -19,6 +19,7 @@
 #include "common/opencl.h"
 #include <memory.h>
 #include <stdlib.h>
+#include <string.h>
 
 // we assume people have -msee support.
 #include <xmmintrin.h>
@@ -252,6 +253,12 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  // TODO: disable pipe and this mcpy : same result
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    memcpy(o, i, roi_out->width*roi_out->height*4*sizeof(float));
+    return;
+  }
   dt_iop_roi_t roi, roo;
   roi.scale = 1.0f;
   roi.x = roi.y = 0;

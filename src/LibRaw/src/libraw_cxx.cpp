@@ -1414,7 +1414,6 @@ int LibRaw::rotate_fuji_raw(void)
 
 int LibRaw::dcraw_process(void)
 {
-  printf("libraw filters1: %X\n", P1.filters);
     int quality,i;
     int iterations=-1, dcb_enhance=1, noiserd=0;
     int eeci_refine_fl=0, es_med_passes_fl=0;
@@ -1499,7 +1498,6 @@ int LibRaw::dcraw_process(void)
         pre_interpolate();
         SET_PROC_FLAG(LIBRAW_PROGRESS_PRE_INTERPOLATE);
 
-  printf("libraw filters2: %X\n", P1.filters);
 
         if (quality == 5 && O.amaze_ca_refine >0 ) {CA_correct_RT();}
         if (P1.filters && !O.document_mode) 
