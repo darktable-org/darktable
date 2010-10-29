@@ -36,13 +36,87 @@ typedef struct dt_imageio_png_t
 {
   int max_width, max_height;
   int width, height;
-  int bytespp;
+  int bpp;
   FILE *f;
   png_structp png_ptr;
   png_infop info_ptr;
 }
 dt_imageio_png_t;
 
+typedef struct dt_imageio_png_gui_t
+{
+  GtkToggleButton *b8, *b16;
+}
+dt_imageio_png_gui_t;
+
+/* Write EXIF data to PNG file.
+ * Code copied from DigiKam's libs/dimg/loaders/pngloader.cpp.
+ * The EXIF embeding is defined by ImageMagicK.
+ * It is documented in the ExifTool page:
+ * http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html
+ *
+ * ..and in turn copied from ufraw. thanks to udi and colleagues
+ * for making useful code much more readable and discoverable ;)
+ */
+
+static void PNGwriteRawProfile(png_struct *ping,
+    png_info *ping_info, char *profile_type, guint8 *profile_data,
+    png_uint_32 length)
+{
+  png_textp text;
+  long i;
+  guint8 *sp;
+  png_charp dp;
+  png_uint_32 allocated_length, description_length;
+
+  const guint8 hex[16] =
+  {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+  text = png_malloc(ping, sizeof(png_text));
+  description_length = strlen(profile_type);
+  allocated_length = length*2 + (length >> 5) + 20 + description_length;
+
+  text[0].text = png_malloc(ping, allocated_length);
+  text[0].key = png_malloc(ping, 80);
+  text[0].key[0] = '\0';
+
+  g_strlcat(text[0].key, "Raw profile type ", 80);
+  g_strlcat(text[0].key, profile_type, 80);
+
+  sp = profile_data;
+  dp = text[0].text;
+  *dp++='\n';
+
+  g_strlcpy(dp, profile_type, allocated_length);
+
+  dp += description_length;
+  *dp++='\n';
+  *dp='\0';
+
+  g_snprintf(dp, allocated_length-strlen(text[0].text), "%8lu ", length);
+
+  dp += 8;
+
+  for (i=0; i < (long) length; i++)
+  {
+    if (i%36 == 0)
+      *dp++='\n';
+
+    *(dp++) = hex[((*sp >> 4) & 0x0f)];
+    *(dp++) = hex[((*sp++ ) & 0x0f)];
+  }
+
+  *dp++='\n';
+  *dp='\0';
+  text[0].text_length = (dp-text[0].text);
+  text[0].compression = -1;
+
+  if (text[0].text_length <= allocated_length)
+    png_set_text(ping, ping_info,text, 1);
+
+  png_free(ping, text[0].text);
+  png_free(ping, text[0].key);
+  png_free(ping, text);
+}
 
 int
 write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
@@ -87,25 +161,44 @@ write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, voi
   png_set_compression_buffer_size(png_ptr, 8192);
 
   png_set_IHDR(png_ptr, info_ptr, width, height,
-      8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+      p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
       PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
   png_write_info(png_ptr, info_ptr);
 
   // png_bytep row_pointer = (png_bytep) in;
-  png_byte row[3*width];
+  png_byte row[6*width];
   // unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
-  for (int y = 0; y < height; y++)
+  if(p->bpp > 8)
   {
-    for(int x=0;x<width;x++) for(int k=0;k<3;k++) row[3*x+k] = in[4*width*y + 4*x + k];
-    png_write_row(png_ptr, row);
-  }	
+    for (int y = 0; y < height; y++)
+    {
+      for(int x=0;x<width;x++) for(int k=0;k<3;k++)
+      {
+        uint16_t pix = ((uint16_t *)in)[4*width*y + 4*x + k];
+        uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
+        ((uint16_t *)row)[3*x+k] = swapped;
+      }
+      png_write_row(png_ptr, row);
+    }
+  }
+  else
+  {
+    for (int y = 0; y < height; y++)
+    {
+      for(int x=0;x<width;x++) for(int k=0;k<3;k++) row[3*x+k] = in[4*width*y + 4*x + k];
+      png_write_row(png_ptr, row);
+    }	
+  }
+
+  PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
+
+  // TODO: embed icc profile!
 
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
   fclose(f);
-  // TODO: append exif and embed icc profile!
   return 0;
 }
 
@@ -178,7 +271,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
   if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 	png_set_gray_to_rgb(png->png_ptr);
 
-  png->bytespp = 3*bit_depth/8;
+  // png->bytespp = 3*bit_depth/8;
   png->width  = png_get_image_width(png->png_ptr, png->info_ptr);
   png->height = png_get_image_height(png->png_ptr, png->info_ptr);
 
@@ -233,8 +326,12 @@ int read_image (dt_imageio_png_t *png, uint8_t *out)
 void*
 get_params(dt_imageio_module_format_t *self, int *size)
 {
-  *size = sizeof(dt_imageio_png_t);
+  *size = 5*sizeof(int);
   dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+  bzero(d, sizeof(dt_imageio_png_t));
+  d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
+  if(d->bpp < 12) d->bpp = 8;
+  else            d->bpp = 16;
   return d;
 }
 
@@ -247,17 +344,22 @@ free_params(dt_imageio_module_format_t *self, void *params)
 int
 set_params(dt_imageio_module_format_t *self, void *params, int size)
 {
-  if(size != sizeof(dt_imageio_png_t)) return 1;
+  if(size != 5*sizeof(int)) return 1;
+  dt_imageio_png_t *d = (dt_imageio_png_t *)params;
+  dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
+  if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);
+  else            gtk_toggle_button_set_active(g->b16, TRUE);
+  dt_conf_set_int("plugins/imageio/format/png/bpp", d->bpp);
   return 0;
 }
 
-int bpp(dt_imageio_module_data_t *p)
+int bpp(dt_imageio_png_t *p)
 {
-  return 8;
+  return p->bpp;
 }
 
 const char*
-mime(dt_imageio_module_data_t *data)
+mime(dt_imageio_png_t *data)
 {
   return "image/png";
 }
@@ -271,12 +373,41 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("8-bit png");
+  return _("8/16-bit png");
+}
+
+static void
+radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
+{
+  long int bpp = (long int)user_data;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
+    dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
 
 // TODO: some quality/compression stuff?
-void gui_init    (dt_imageio_module_format_t *self) {}
-void gui_cleanup (dt_imageio_module_format_t *self) {}
-void gui_reset   (dt_imageio_module_format_t *self) {}
+void gui_init (dt_imageio_module_format_t *self)
+{
+  dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
+  self->gui_data = (void *)gui;
+  int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
+  self->widget = gtk_hbox_new(TRUE, 5);
+  GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
+  gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
+  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)8);
+  if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
+  gui->b16 = GTK_TOGGLE_BUTTON(radiobutton);
+  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)16);
+  if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+}
+
+void gui_cleanup (dt_imageio_module_format_t *self)
+{
+  free(self->gui_data);
+}
+
+void gui_reset (dt_imageio_module_format_t *self) {}
 
 

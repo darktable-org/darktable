@@ -85,9 +85,12 @@ int write_image (dt_imageio_module_data_t *pfm, const char *filename, const floa
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", pfm->width, pfm->height);
     for(int j=pfm->height-1;j>=0;j--)
     {
-      int cnt = fwrite(in + 3*pfm->width*j, sizeof(float)*3, pfm->width, f);
-      if(cnt != pfm->width) status = 1;
-      else status = 0;
+      for(int i=0;i<pfm->width;i++)
+      {
+        int cnt = fwrite(in + 4*(pfm->width*j + i), sizeof(float)*3, 1, f);
+        if(cnt != 1) status = 1;
+        else status = 0;
+      }
     }
     fclose(f);
   }

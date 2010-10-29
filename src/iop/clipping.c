@@ -741,7 +741,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, 0);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, CPF_STYLE_FLAT);
   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("swap the aspect ratio (ctrl-x)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, FALSE, 0);

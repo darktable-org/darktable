@@ -256,6 +256,7 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
           const float guess1 = ntl[2] + nbr[2] + 2.0f*color[1] - ntl[1] - nbr[1];
           const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
           const float guess2 = ntr[2] + nbl[2] + 2.0f*color[1] - ntr[1] - nbl[1];
+          // FIXME: valgrind reports cond jump depends on uninited values in the next 3 lines!
           if     (diff1 > diff2) color[2] = guess2 * .5f;
           else if(diff1 < diff2) color[2] = guess1 * .5f;
           else color[2] = (guess1 + guess2)*.25f;
@@ -266,6 +267,7 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
           const float guess1 = ntl[0] + nbr[0] + 2.0f*color[1] - ntl[1] - nbr[1];
           const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
           const float guess2 = ntr[0] + nbl[0] + 2.0f*color[1] - ntr[1] - nbl[1];
+          // FIXME: valgrind reports cond jump depends on uninited values in the next 3 lines!
           if     (diff1 > diff2) color[0] = guess2 * .5f;
           else if(diff1 < diff2) color[0] = guess1 * .5f;
           else color[0] = (guess1 + guess2)*.25f;

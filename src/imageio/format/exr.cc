@@ -89,13 +89,13 @@ int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, v
   float *green=(float *)malloc(channelsize*sizeof(float));
   float *blue=(float *)malloc(channelsize*sizeof(float));
   
-  for(uint32_t j=0;j<channelsize;j++) { red[j]=in[j*3+0]; }
+  for(uint32_t j=0;j<channelsize;j++) { red[j]=in[j*4+0]; }
   data.insert("R",Imf::Slice(Imf::FLOAT,(char *)red,sizeof(float)*1,sizeof(float)*exr->width));
   
-  for(uint32_t j=0;j<channelsize;j++) { blue[j]=in[j*3+2]; }
+  for(uint32_t j=0;j<channelsize;j++) { blue[j]=in[j*4+2]; }
   data.insert("B",Imf::Slice(Imf::FLOAT,(char *)blue,sizeof(float)*1,sizeof(float)*exr->width));
   
-  for(uint32_t j=0;j<channelsize;j++) { green[j]=in[j*3+1]; }
+  for(uint32_t j=0;j<channelsize;j++) { green[j]=in[j*4+1]; }
   data.insert("G",Imf::Slice(Imf::FLOAT,(char *)green,sizeof(float)*1,sizeof(float)*exr->width));
   
   file.setFrameBuffer(data);

@@ -28,18 +28,20 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint
 {
   int status=0;
   uint16_t *row=(uint16_t*)in;
-  uint32_t rowlength=(ppm->width*3);
-  uint16_t swappedrow[rowlength];
+  uint16_t swapped[3];
   FILE *f = fopen(filename, "wb");
   if(f)
   {
     (void)fprintf(f, "P6\n%d %d\n65535\n", ppm->width, ppm->height);
     for(int y=0;y<ppm->height;y++)
     {
-      for(int x=0;x<3*ppm->width;x++) swappedrow[x] = (0xff00 & (row[x]<<8))|(row[x]>>8);;
-      int cnt = fwrite(swappedrow, (ppm->width*3)*sizeof(uint16_t), 1, f);
-      if(cnt != 1) break;
-      row+=rowlength;
+      for(int x=0;x<ppm->width;x++)
+      {
+        for(int c=0;c<3;c++) swapped[c] = (0xff00 & (row[c]<<8))|(row[c]>>8);
+        int cnt = fwrite(&swapped, sizeof(uint16_t), 3, f);
+        if(cnt != 3) break;
+        row+=4;
+      }
     }
     fclose(f);
     status=0;

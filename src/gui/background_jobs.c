@@ -52,7 +52,7 @@ void _gui_background_jobs_add_cancel( const dt_gui_job_t *j )
   GtkWidget *w=j->widget;
   GtkBox *hbox = GTK_BOX (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER ( gtk_bin_get_child (GTK_BIN (w) ) ) ), 0));
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel,CPF_STYLE_FLAT);
-  gtk_widget_set_size_request(button,12,12);
+  gtk_widget_set_size_request(button,17,17);
   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (_cancel_job_clicked), (gpointer)j);
   gtk_box_pack_start (hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
   gtk_widget_show_all(button);
