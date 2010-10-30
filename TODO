@@ -4,7 +4,7 @@
   of valgrind errors!
 - improve dr mode cache: selected module input has priority
 
-- cleanup raw_import then demosaic, bring back some libraw opts this way
+- downsampling mosaic looks bad (jaggies), do gauss interpolation?
 - ca auto corr on gpu in dt
 - cache with gpu bufs, if possible
 - avoid n-times compile for n gpu systems?

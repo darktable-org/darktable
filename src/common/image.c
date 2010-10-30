@@ -83,7 +83,7 @@ void dt_image_write_sidecar_file(dt_image_t *img)
   }
 }
 
-int dt_image_is_ldr(dt_image_t *img)
+int dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
@@ -560,6 +560,38 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   return 0;
 }
 
+static void
+dt_image_get_raw_import_preset(dt_image_t *image)
+{
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select op_params from presets where operation = 'rawimport' and "
+      "autoapply=1 and "
+      "?1 like model and ?2 like maker and ?3 like lens and "
+      "?4 between iso_min and iso_max and "
+      "?5 between exposure_min and exposure_max and "
+      "?6 between aperture_min and aperture_max and "
+      "?7 between focal_length_min and focal_length_max and "
+      "(isldr = 0 or isldr=?8) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 2, image->exif_maker, strlen(image->exif_maker), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 3, image->exif_lens,  strlen(image->exif_lens),  SQLITE_TRANSIENT);
+  sqlite3_bind_double(stmt, 4, fmaxf(0.0f, fminf(1000000, image->exif_iso)));
+  sqlite3_bind_double(stmt, 5, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
+  sqlite3_bind_double(stmt, 6, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
+  sqlite3_bind_double(stmt, 7, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
+  // 0: dontcare, 1: ldr, 2: raw
+  sqlite3_bind_double(stmt, 8, 2-dt_image_is_ldr(image));
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *blob = sqlite3_column_blob(stmt, 0);
+    int length = sqlite3_column_bytes(stmt, 0);
+    if(length == sizeof(dt_image_raw_parameters_t) + 2*sizeof(float))
+      memcpy(&(image->raw_denoise_threshold), blob, length);
+  }
+  sqlite3_finalize(stmt);
+}
+
 int dt_image_import(const int32_t film_id, const char *filename)
 {
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 0;
@@ -627,8 +659,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   dt_image_cache_flush_no_sidecars(img);
 
-  // sprintf(c, ".dt");
-  // (void)dt_imageio_dt_read(img->id, dtfilename);
+  dt_image_get_raw_import_preset(img);
 
   g_free(imgfname);
 
@@ -796,6 +827,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->maximum = sqlite3_column_double(stmt, 21);
     img->exif_inited = 1;
     
+    dt_image_get_raw_import_preset(img);
+
     ret = 0;
   }
   else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(darktable.db));
