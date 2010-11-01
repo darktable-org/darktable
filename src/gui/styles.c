@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/styles.h"
 #include "common/history.h"
+#include "control/control.h"
 #include "gui/styles.h"
 #include "gui/gtk.h"
 
@@ -288,20 +289,28 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   else 
   {
     GList *items = dt_history_get_items (imgid);
-    do
-      {
-        dt_history_item_t *item = (dt_history_item_t *)items->data;
-       
-        gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
-        gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
-                          DT_STYLE_ITEMS_COL_ENABLED, TRUE,
-                          DT_STYLE_ITEMS_COL_NAME, item->name,
-                          DT_STYLE_ITEMS_COL_NUM, (guint)item->num,
-                          -1);
+    if (items)
+    {
+      do
+        {
+          dt_history_item_t *item = (dt_history_item_t *)items->data;
+         
+          gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
+          gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
+                            DT_STYLE_ITEMS_COL_ENABLED, TRUE,
+                            DT_STYLE_ITEMS_COL_NAME, item->name,
+                            DT_STYLE_ITEMS_COL_NUM, (guint)item->num,
+                            -1);
 
-        g_free(item->name);
-        g_free(item);
-      } while ((items=g_list_next(items)));
+          g_free(item->name);
+          g_free(item);
+        } while ((items=g_list_next(items)));
+    } 
+    else 
+    {  
+      dt_control_log(_("can't create style out of unaltered image"));
+      return;
+    }
   }
   
   g_object_unref (liststore);
