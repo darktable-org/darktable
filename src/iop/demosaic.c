@@ -576,7 +576,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   // dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
   if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
-  // d->filters = dt_image_flipped_filter(self->dev->image);
+  d->filters = dt_image_flipped_filter(self->dev->image);
+#if 0
   const int orient = dt_image_orientation(self->dev->image);
   // FIXME: copy back to image.h!
   // FIXME: the other clip_and_zoom needs the right filters, too!
@@ -590,6 +591,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   }
 
   printf("filters found to be %X\n", d->filters);
+#endif
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

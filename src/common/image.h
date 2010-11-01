@@ -113,6 +113,7 @@ typedef struct dt_image_t
   int32_t mip_width [DT_IMAGE_FULL]; // mipmap buffer extents of the buffers in mip[.] and mipf
   int32_t mip_height[DT_IMAGE_FULL];
   float mip_width_f [DT_IMAGE_FULL]; // precise mipmap widths inside the buffers in mip[.] and mipf
+  uint8_t mip_invalid; // bit map to invalidate buffers.
   float mip_height_f[DT_IMAGE_FULL];
   dt_image_lock_t lock[DT_IMAGE_NONE];
   char lock_last[DT_IMAGE_NONE][100];

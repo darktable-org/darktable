@@ -161,7 +161,8 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
   // are we going to need the image as input for a pixel pipe?
-  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
 
   // this image is raw, if we manage to load it.
   img->flags &= ~DT_IMAGE_LDR;
@@ -522,7 +523,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   dt_image_buffer_t mip;
-  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
   if(altered)
   {
     // the image has a history stack. we want mipf and process it!

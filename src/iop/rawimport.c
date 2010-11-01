@@ -131,7 +131,7 @@ reimport_button_callback (GtkButton *button, gpointer user_data)
   module->dev->image->raw_params.four_color_rgb  = p->raw_four_color_rgb;
   module->dev->image->raw_params.greeneq         = p->raw_greeneq;
   module->dev->image->raw_params.highlight       = p->raw_highlight;
-  module->dev->image->raw_params.user_flip       = p->raw_user_flip;
+  // module->dev->image->raw_params.user_flip       = p->raw_user_flip;
   module->dev->image->raw_params.fill0           = p->fill1;
   // also write to db
   dt_image_cache_flush(module->dev->image);

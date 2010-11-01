@@ -629,7 +629,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 
       // now move p to point to an rggb block:
       if(FC(py, px+1, filters) != 1) px ++;
-      if(FC(py, px,   filters) != 0) px ++;
+      if(FC(py, px,   filters) != 0) { px ++; py ++; }
 
       // const uint16_t *inc = in + py*roi_in->width + px;
 

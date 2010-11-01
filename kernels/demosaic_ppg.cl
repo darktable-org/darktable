@@ -126,7 +126,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
 
   // now move p to point to an rggb block:
   if(FC(p.y, p.x+1, filters) != 1) p.x ++;
-  if(FC(p.y, p.x,   filters) != 0) p.x ++;
+  if(FC(p.y, p.x,   filters) != 0) { p.x ++; p.y ++; }
 
   for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
   {
