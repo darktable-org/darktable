@@ -344,35 +344,15 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   roi_out.x = roi_out.y = 0;
   roi_out.width = f_wd;
   roi_out.height = f_ht;
-  roi_out.scale = f_wd/(float)raw_wd;
+  roi_out.scale = fminf(f_wd/(float)raw_wd, f_ht/(float)raw_ht);
   if(img->flags & DT_IMAGE_RAW)
   { // demosaic during downsample
-    dt_iop_clip_and_zoom_demosaic_half_size(img->mipf, (const uint16_t *)raw, &roi_out, &roi_in, img->filters);
+    dt_iop_clip_and_zoom_demosaic_half_size(img->mipf, (const uint16_t *)raw, &roi_out, &roi_in, p_wd, raw_wd, img->filters);
   }
   else
   { // downsample
-    dt_iop_clip_and_zoom(img->mipf, raw, &roi_out, &roi_in);
+    dt_iop_clip_and_zoom(img->mipf, raw, &roi_out, &roi_in, p_wd, raw_wd);
   }
-#if 0
-  if(raw_wd == p_wd && raw_ht == p_ht)
-  { // use 1:1
-    for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
-    {
-      const float *cam = raw + 4*(j*raw_wd + i);
-      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = cam[k];
-    }
-  }
-  else
-  { // scale to fit
-    bzero(img->mipf, 4*p_wd*p_ht*sizeof(float));
-    const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
-    for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
-    {
-      const float *cam = raw + 4*((int)(scale*j)*raw_wd + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = cam[k];
-    }
-  }
-#endif
 
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
   dt_image_release(img, DT_IMAGE_MIPF, 'r');

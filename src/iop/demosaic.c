@@ -306,7 +306,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   if(!self->dev->image->filters)
   {
     // no bayer pattern, directly clip and zoom image
-    dt_iop_clip_and_zoom((float *)o, (float *)i, roi_out, &roi);
+    dt_iop_clip_and_zoom((float *)o, (float *)i, roi_out, &roi, roi_out->width, roi.width);
   }
   else if(global_scale > .999f)
   {
@@ -327,13 +327,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     roi = *roi_out;
     roi.x = roi.y = 0;
     roi.scale = global_scale;
-    dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo);
+    dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo, roi.width, roo.width);
     free(tmp);
   }
   else
   {
     // sample half-size raw
-    dt_iop_clip_and_zoom_demosaic_half_size((float *)o, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
+    dt_iop_clip_and_zoom_demosaic_half_size((float *)o, (const uint16_t *)self->dev->image->pixels, &roo, &roi, roo.width, roi.width, data->filters);
   }
   dt_image_release(img, DT_IMAGE_FULL, 'r');
 }

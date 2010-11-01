@@ -343,7 +343,7 @@ try_full_raw:
     { // use 1:1
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[4*(j*(int)f_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
       }
     }
     else
@@ -352,21 +352,11 @@ try_full_raw:
       const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
       for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[4*(j*(int)f_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
       }
     }
 
     // don't write mip4, it's shitty anyways (altered image has to be processed)
-#if 0
-    // have first preview of non-processed image
-    if(dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
-    dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-    dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-    dt_image_release(img, DT_IMAGE_MIP4, 'w');
-    retval = dt_image_update_mipmaps(img);
-    dt_image_release(img, DT_IMAGE_MIP4, 'r');
-#endif
 
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');

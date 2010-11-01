@@ -519,7 +519,7 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
 
 void
 dt_iop_clip_and_zoom(float *out, const float *const in,
-    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in)
+    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -544,7 +544,7 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
 #endif
   for(int y=offy;y<roi_out->height-offY;y++)
   {
-    float *outc = out + 4*(roi_out->width*y + offx);
+    float *outc = out + 4*(out_stride*y + offx);
     for(int x=offx;x<roi_out->width-offX;x++)
     {
       __m128 col = _mm_setzero_ps();
@@ -562,7 +562,7 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
         // assert(i + px >= 0);
         // assert(j + py < roi_in->height);
         // assert(j + py >= 0);
-        __m128 p = _mm_load_ps(in + 4*(i + roi_in->width*j));
+        __m128 p = _mm_load_ps(in + 4*(i + in_stride*j));
         col = _mm_add_ps(col, p);
         num++;
       }
@@ -590,7 +590,7 @@ FC(const int row, const int col, const unsigned int filters)
  */
 void
 dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const unsigned int filters)
+    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -615,7 +615,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
   for(int y=offy;y<roi_out->height-offY;y++)
   {
-    float *outc = out + 4*(roi_out->width*y + offx);
+    float *outc = out + 4*(out_stride*y + offx);
     for(int x=offx;x<roi_out->width-offX;x++)
     {
       __m128 col = _mm_setzero_ps();
@@ -643,10 +643,10 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
         // assert(2*j + py + 1 < roi_in->height);
         // assert(2*j + py >= 0);
         // get four mosaic pattern uint16:
-        float p1 = in[i + roi_in->width*j];
-        float p2 = in[i + roi_in->width*j + 1];
-        float p3 = in[i   + roi_in->width*j + roi_in->width];
-        float p4 = in[i+1 + roi_in->width*j + roi_in->width];
+        float p1 = in[i   + in_stride*j];
+        float p2 = in[i   + in_stride*j + 1];
+        float p3 = in[i   + in_stride*(j + 1)];
+        float p4 = in[i+1 + in_stride*(j + 1)];
         // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
         // color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
         col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));

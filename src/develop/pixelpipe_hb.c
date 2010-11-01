@@ -288,25 +288,10 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         bzero(*output, pipe->backbuf_size);
         roi_in.x /= roi_out->scale;
         roi_in.y /= roi_out->scale;
-        roi_in.width /= roi_out->scale;
-        roi_in.height /= roi_out->scale;
+        roi_in.width = pipe->iwidth;
+        roi_in.height = pipe->iheight;
         roi_in.scale = 1.0f;
-        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in);
-#if 0
-        if(roi_out->scale < 0.5)
-        {
-          // TODO: optimize this for speed:
-          dt_iop_clip_and_zoom_hq_downsample(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,
-              roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
-              *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
-        }
-        else
-        {
-          dt_iop_clip_and_zoom(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,
-              roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
-              *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
-        }
-#endif
+        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
       }
     }
     end = dt_get_wtime();
