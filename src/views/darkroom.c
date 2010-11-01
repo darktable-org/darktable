@@ -316,7 +316,10 @@ static void
 create_style_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   if(darktable.develop->image)
+  {
+    dt_dev_write_history(darktable.develop);
     dt_gui_styles_dialog_new (darktable.develop->image->id);
+  }
 }
 
 static void
