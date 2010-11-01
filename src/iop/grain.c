@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -63,7 +64,7 @@ dt_iop_grain_params_t;
 typedef struct dt_iop_grain_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1,*label2,*label3;	      // channel, scale, strength
+  GtkWidget  *label1,*label2,*label3;	      // channel, scale, strength
   GtkDarktableSlider *scale1,*scale2;       // scale, strength
 }
 dt_iop_grain_gui_data_t;
@@ -210,8 +211,8 @@ double __value_smooth_noise(uint32_t level,double x,double y)
 double __preline_cosine_interpolate(double a,double b,double x)
 {
   double ft = x * 3.1415927;
-	double f = (1 - cos(ft)) * .5;
-	return  a*(1-f) + b*f;
+  double f = (1 - cos(ft)) * .5;
+  return  a*(1-f) + b*f;
 }
 
 double __value_interpolate(uint32_t level,double x,double y) 
@@ -262,7 +263,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT;
 }
 
 
@@ -425,10 +426,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label2 = GTK_LABEL(gtk_label_new(_("coarseness")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("strength")));
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
+  
+  g->label2 = dtgtk_reset_label_new(_("coarseness"), self, &p->scale, sizeof(float));
+  g->label3 = dtgtk_reset_label_new(_("strength"), self, &p->strength, sizeof(float));
+  
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
 

@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -48,7 +49,7 @@ dt_iop_velvia_params_t;
 typedef struct dt_iop_velvia_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1,*label2,*label3;
+  GtkWidget  *label1,*label2,*label3;
   GtkDarktableSlider *scale1,*scale2,*scale3;       // saturation, vibrance, luminance
 }
 dt_iop_velvia_gui_data_t;
@@ -70,7 +71,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR;
 }
 
 
@@ -226,12 +227,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("saturation")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("vibrance")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("mid-tones bias")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
+  
+  g->label1 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
+  g->label2 = dtgtk_reset_label_new(_("vibrance"), self, &p->vibrance, sizeof(float));
+  g->label3 = dtgtk_reset_label_new(_("mid-tones bias"), self, &p->luminance, sizeof(float));
+ 
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);

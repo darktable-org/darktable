@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -49,7 +50,7 @@ dt_iop_rlce_params_t;
 typedef struct dt_iop_rlce_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1,*label2;
+  GtkWidget  *label1,*label2;
   GtkDarktableSlider *scale1,*scale2;       // radie pixels, slope
 }
 dt_iop_rlce_gui_data_t;
@@ -69,7 +70,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT;
 }
 
 
@@ -375,12 +376,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("radius")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("amount")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+
+  g->label1 = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), g->label1, TRUE, TRUE, 0);
+  g->label2 = dtgtk_reset_label_new(_("amount"), self, &p->slope, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), g->label2, TRUE, TRUE, 0);
+  
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 256.0, 1.0, p->radius, 0));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 3.0, 0.05, p->slope, 2));
   //dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);

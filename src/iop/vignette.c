@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -59,7 +60,7 @@ dt_iop_vignette_params_t;
 typedef struct dt_iop_vignette_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkLabel  *label1,*label2,*label3,*label4,*label5,*label6,*label7;			                	// scale, strength, uniformity, b/s ratio, invert saturation, invert falloff, falloff scale
+  GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6,*label7;			                	// scale, strength, uniformity, b/s ratio, invert saturation, invert falloff, falloff scale
   GtkToggleButton *togglebutton1,*togglebutton2;				// invert saturation, invert falloff vignette
   GtkDarktableSlider *scale1,*scale2,*scale3,*scale4,*scale5;	  	// scale, strength, uniformity, b/s ratio, falloff sclae
 }
@@ -87,7 +88,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT;
 }
 
 
@@ -344,20 +345,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("scale")));
-  g->label7 = GTK_LABEL(gtk_label_new(_("fall-off strength")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("strength")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("uniformity")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("b/s ratio")));
-  g->label5 = GTK_LABEL(gtk_label_new(_("saturation")));
-  g->label6 = GTK_LABEL(gtk_label_new(_("fall-off")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label7), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label6), 0.0, 0.5);
+
+  g->label1 = dtgtk_reset_label_new (_("scale"), self, &p->scale, sizeof(float));
+  g->label7 = dtgtk_reset_label_new (_("fall-off strength"), self, &p->falloff_scale, sizeof(float));
+  g->label2 = dtgtk_reset_label_new (_("strength"), self, &p->strength, sizeof(float));
+  g->label3 = dtgtk_reset_label_new (_("uniformity"), self, &p->uniformity, sizeof(float));
+  g->label4 = dtgtk_reset_label_new (_("b/s ratio"), self, &p->bsratio, sizeof(float));
+  g->label5 = dtgtk_reset_label_new (_("saturation"), self, &p->invert_saturation, sizeof(float));
+  g->label6 = dtgtk_reset_label_new (_("fall-off"), self, &p->invert_falloff, sizeof(float));
+  
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label7), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);

@@ -26,7 +26,12 @@
 			     For example, the percentage repartition is displayed as X/Y (eg 70/30) but numerical value to be entered
 			     is -1 for 0/100, 0 for 50/50 and 1 for 0/100.
 			     </para>
-			   </listitem>			   
+			   </listitem>		
+   			   <listitem>
+			     <para>Double-click on parameter label</para>
+			     <para>In some modules, you can double-click on a parameter label to reset its value to default.
+			     </para>
+			   </listitem>		   
 			</orderedlist>
 	</sect2>
 	<sect2 status="final"><title>Presets</title>

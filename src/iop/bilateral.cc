@@ -30,6 +30,7 @@ extern "C"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include "iop/Permutohedral.h"
@@ -277,21 +278,20 @@ void gui_init(dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("radius")));
-  // g->label2 = GTK_LABEL(gtk_label_new(_("height")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("red")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("green")));
-  g->label5 = GTK_LABEL(gtk_label_new(_("blue")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  // gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
+
+  
+  GtkWidget *widget = dtgtk_reset_label_new(_("radius"), self, &p->sigma[0], sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new(_("red"), self, &p->sigma[1], sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new(_("green"), self, &p->sigma[2], sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new(_("blue"), self, &p->sigma[3], sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
+  
+  
+  
+
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 30.0, 1.0, p->sigma[0], 1));
   // g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 30.0, 1.0, p->sigma[1], 0));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[2], 4));

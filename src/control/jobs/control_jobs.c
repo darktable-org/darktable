@@ -171,6 +171,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     // remove from disk:
     (void)g_unlink(dtfilename);
     char *c = dtfilename + strlen(dtfilename);
+    sprintf(c, ".xmp");
+    (void)g_unlink(dtfilename);
     sprintf(c, ".dt");
     (void)g_unlink(dtfilename);
     sprintf(c, ".dttags");

@@ -37,7 +37,7 @@ $(pdfusermanual):
 	@ $(MAKE) check_can_build_usermanual
 	$(MAKE) doc-clean
 	$(xsltproc) --output build/$(PACKAGE)-usermanual.fo  $(FO_STYLESHEET) $(PACKAGE).xml 
-	$(fop) build/$(PACKAGE)-usermanual.fo -pdf $(PACKAGE)-usermanual.pdf
+	$(fop) -c fopconfig.xml build/$(PACKAGE)-usermanual.fo -pdf $(PACKAGE)-usermanual.pdf
 	
 $(pdfusermanual_final): 
 	@ $(MAKE) check_can_build_usermanual
@@ -45,7 +45,7 @@ $(pdfusermanual_final):
 	@echo "Profiling final xml document"
 	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final.xml $(PROFILE_STYLESHEET) $(PACKAGE).xml 
 	$(xsltproc) --output build/$(PACKAGE)-usermanual_profiled_final.fo $(FO_STYLESHEET)  build/$(PACKAGE)-usermanual_profiled_final.xml
-	$(fop) build/$(PACKAGE)-usermanual_profiled_final.fo -pdf $(PACKAGE)-usermanual-final.pdf
+	$(fop) -c fopconfig.xml build/$(PACKAGE)-usermanual_profiled_final.fo -pdf $(PACKAGE)-usermanual-final.pdf
 	
 $(PO_LINGUAS): 
 	@ $(MAKE) check_can_build_usermanual
@@ -55,7 +55,7 @@ $(PO_LINGUAS):
 	@echo "Translating final xml document"
 	$(xml2po) -e -p po/$@.po -l $@ build/$(PACKAGE)-usermanual_profiled_final.xml > build/$(PACKAGE)-usermanual_profiled_final-$@.xml
 	$(xsltproc) --output build/$(PACKAGE)-usermanual-$@.fo $(FO_STYLESHEET) build/$(PACKAGE)-usermanual_profiled_final-$@.xml
-	$(fop) build/$(PACKAGE)-usermanual-$@.fo -pdf $(PACKAGE)-usermanual-$@.pdf
+	$(fop) -c fopconfig.xml build/$(PACKAGE)-usermanual-$@.fo -pdf $(PACKAGE)-usermanual-$@.pdf
 	
 maintainer-clean-local: doc-clean maintainer-clean-recursive
 

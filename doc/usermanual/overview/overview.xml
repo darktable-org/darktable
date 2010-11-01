@@ -7,13 +7,14 @@
 		</keywordset>
 	</chapterinfo>
 	<title>Overview</title>
-	<para>Darktable is an application to manage and develop your digital images...</para>
+	<para>Darktable is an application to manage and develop your digital images.</para>
+	<para>It is fully non-destructive and works on a 32 bit floating point format per channel. 
+			Most of the actions on the pixelpipe are done in CIELab.</para>
 
 	<sect1 status="final"><title>Preferences</title>
 		<para> A recently introduced button located at the upper panel allows you to define various parameters.
 		</para>
 	</sect1>
-
 
 	<sect1 status="final"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -71,7 +72,6 @@
 			  You can navigate along the filmstrip by wheel scrolling.
 				The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, 
 				switch to another image to develop by double clicking the thumb in the filmstrip.
-				
 			</para>
 			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
 			<para>The filmstrip also provides some actions to be performed on image under the mouse pointer and here follows a table of available key accelerators
@@ -102,7 +102,7 @@
 	<sect1 status="final"><title>Darktable workflow</title>
 		<sect2 status="draft"><title>Importing images</title>
 			<para>To begin with Darktable, you first need to import images. You can either import
-      from your filesystem or from your camera if supported.</para>
+					from your filesystem or from your camera if supported.</para>
 		</sect2>
 		
 		<sect2 status="draft"><title>Importing from camera</title>
@@ -113,5 +113,4 @@
 			<para></para>
 		</sect2>
 	</sect1>
-		
 </chapter>
