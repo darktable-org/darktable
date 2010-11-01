@@ -164,6 +164,18 @@ static inline int dt_image_orientation(const dt_image_t *img)
 {
   return img->raw_params.user_flip > 0 ? img->raw_params.user_flip : (img->orientation > 0 ?img->orientation : 0);
 }
+/** returns the (flipped) filter string for the demosaic pattern. */
+static inline uint32_t dt_image_flipped_filter(const dt_image_t *img)
+{
+  const int orient = dt_image_orientation(img);
+  switch(orient)
+  {
+    case 6:  return 0x61616161u;
+    case 5:  return 0x49494949u;
+    case 3:  return 0x16161616u;
+    default: return 0x94949494u;
+  }
+}
 /** cleanup. */
 void dt_image_cleanup(dt_image_t *img);
 /** loads the requested buffer to cache, with read lock set. */
