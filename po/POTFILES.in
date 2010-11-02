@@ -3,6 +3,8 @@ darktable.schemas.in
 src/common/darktable.h
 src/common/film.c
 src/common/image.c
+src/common/history.c
+src/common/styles.c
 src/control/control.c
 src/control/jobs/camera_jobs.c
 src/control/jobs/control_jobs.c
@@ -20,6 +22,7 @@ src/libs/select.c
 src/libs/collect.c
 src/libs/capture.c
 src/libs/camera.c
+src/libs/styles.c
 src/iop/clipping.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
@@ -48,6 +51,7 @@ src/iop/clahe.c
 src/iop/colortransfer.c
 src/iop/channelmixer.c
 src/iop/relight.c
+src/iop/watermark.c
 src/iop/zonesystem.c
 src/imageio/format/jpeg.c
 src/imageio/format/png.c
@@ -72,6 +76,7 @@ src/gui/background_jobs.c
 src/gui/tool_colorlabels.c
 src/gui/preferences.c
 src/gui/preferences_gen.h
+src/gui/styles.c
 src/dtgtk/resetlabel.c
 src/views/darkroom.c
 src/views/lighttable.c
