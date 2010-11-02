@@ -164,7 +164,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
       float val[4] = {in[0], in[1], in[2], 1.0};
       lattice.splat(pos, val);
-      in += 3;
+      in += ch;
     }
     
     // blur the lattice
