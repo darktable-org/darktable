@@ -160,6 +160,11 @@ dt_gui_styles_dialog_edit (const char *name)
   _gui_styles_dialog_run (TRUE,name,0);
 }
 
+static gint _g_list_find_module_by_name(gconstpointer a, gconstpointer b)
+{
+  return strncmp (((dt_iop_module_t*)a)->op, b, strlen (((dt_iop_module_t*)a)->op) );
+}
+
 static void 
 _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
 {
@@ -168,7 +173,6 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   /* check if style exists */
   if (name && (dt_styles_exists (name))==0)
     return;
-    
   
   /* initialize the dialog */
   dt_gui_styles_dialog_t *sd=(dt_gui_styles_dialog_t *)g_malloc (sizeof (dt_gui_styles_dialog_t));
@@ -196,7 +200,6 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   gtk_container_add (content_area, alignment);
   GtkBox *box = GTK_BOX (gtk_vbox_new(FALSE, 5));
   gtk_container_add (GTK_CONTAINER (alignment), GTK_WIDGET (box));
-  
   
   sd->name = gtk_entry_new();
   sd->description = gtk_entry_new();
@@ -294,10 +297,23 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
       do
         {
           dt_history_item_t *item = (dt_history_item_t *)items->data;
-         
+ 
+          /* lookup history item module */
+          gboolean enabled = TRUE;
+          GList *modules = g_list_first(darktable.develop->iop);
+          if (modules) {
+            GList *result = g_list_find_custom (modules, item->name, _g_list_find_module_by_name); // (dt_iop_module_t *)(modules->data);
+            if( result )
+            {
+              dt_iop_module_t *module = (dt_iop_module_t *)(result->data);
+              enabled  = (module->flags() & IOP_FLAGS_INCLUDE_IN_STYLES)?TRUE:FALSE;
+            }
+          }
+            
+          
           gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
           gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
-                            DT_STYLE_ITEMS_COL_ENABLED, TRUE,
+                            DT_STYLE_ITEMS_COL_ENABLED, enabled,
                             DT_STYLE_ITEMS_COL_NAME, item->name,
                             DT_STYLE_ITEMS_COL_NUM, (guint)item->num,
                             -1);
