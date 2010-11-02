@@ -217,11 +217,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int ch = piece->colors;
   
   /* Load svg if not loaded */
   gchar *svgdoc = _watermark_get_svgdoc (self);
   if (!svgdoc) {
-    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
   
@@ -229,7 +230,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   GError *error = NULL;
   RsvgHandle *svg = rsvg_handle_new_from_data ((const guint8 *)svgdoc,strlen (svgdoc),&error);
   if (error) {    
-    memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
   g_free (svgdoc);
@@ -314,7 +315,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
     out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
     
-    out+=3; in+=3; sd+=4;
+    out+=ch; in+=ch; sd+=4;
   }
   
   
