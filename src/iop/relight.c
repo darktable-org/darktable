@@ -361,7 +361,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set (GTK_OBJECT (g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
         G_CALLBACK (center_callback), self);
-  g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, 0));
+  g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
   g_signal_connect (G_OBJECT (g->tbutton1), "toggled",
         G_CALLBACK (picker_callback), self);
  
