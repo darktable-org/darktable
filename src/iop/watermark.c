@@ -87,6 +87,11 @@ const char *name()
   return _("watermark");
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
+
 int groups()
 {
   return IOP_GROUP_EFFECT;

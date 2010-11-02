@@ -92,6 +92,11 @@ const char
   return _("color zones");
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
+
 int 
 groups () 
 {

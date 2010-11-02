@@ -107,6 +107,11 @@ const char *name()
   return _("channel mixer");
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
+
 int 
 groups () 
 {

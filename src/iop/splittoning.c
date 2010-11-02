@@ -76,6 +76,10 @@ const char *name()
   return _("split toning");
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
 
 int 
 groups () 
