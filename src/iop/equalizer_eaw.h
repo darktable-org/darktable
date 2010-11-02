@@ -21,7 +21,7 @@
 // #define gweight(i, j, ii, jj) 1.0/(powf(fabsf(weight_a[l][wd*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][wd*((jj)>>(l-1)) + ((ii)>>(l-1))]),0.8)+1.e-5)
 // std cdf(2,2) wavelet:
 // #define gweight(i, j, ii, jj) (wd ? 1.0 : 1.0) //1.0
-#define gbuf(BUF, A, B) ((BUF)[3*width*((B)) + 3*((A)) + ch])
+#define gbuf(BUF, A, B) ((BUF)[4*(width*((B)) + ((A))) + ch])
 
 
 void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int width, const int height)

@@ -523,7 +523,7 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = .5f/roi_out->scale;
+  const float px_footprint = .9f/roi_out->scale;
   // how many 2x2 blocks can be sampled inside that area
   const int samples = ((int)px_footprint)/2;
 
@@ -532,7 +532,7 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
   float sum = 0.0f;
   if(samples)
   {
-    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(2.0f*samples*samples)));
+    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
     for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
   }
   else filter[0] = 1.0f;
@@ -603,7 +603,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = .5f/roi_out->scale;
+  const float px_footprint = .9f/roi_out->scale;
   // how many 2x2 blocks can be sampled inside that area
   const int samples = ((int)px_footprint)/2;
 
@@ -612,10 +612,10 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   float sum = 0.0f;
   if(samples)
   {
-    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(2.0f*samples*samples)));
+    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
     for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
   }
-  else filter[0] = 1.0f;;
+  else filter[0] = 1.0f;
 
   // FIXME: ??
   const int offx = 0;//MAX(0, samples - roi_out->x);
@@ -651,13 +651,9 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-1, py+2*samples);j+=2)
       for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-1,  px+2*samples);i+=2)
       {
-        // assert(2*i + px + 1 < roi_in->width);
-        // assert(2*i + px >= 0);
-        // assert(2*j + py + 1 < roi_in->height);
-        // assert(2*j + py >= 0);
         // get four mosaic pattern uint16:
         float p1 = in[i   + in_stride*j];
-        float p2 = in[i   + in_stride*j + 1];
+        float p2 = in[i+1 + in_stride*j];
         float p3 = in[i   + in_stride*(j + 1)];
         float p4 = in[i+1 + in_stride*(j + 1)];
         // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
@@ -666,7 +662,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
         // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));
         // num ++;
 
-        const float f = filter[i-px]*filter[j-py];
+        const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
         col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(f/65535.0f)));
         num += f;
       }
