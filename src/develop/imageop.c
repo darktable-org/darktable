@@ -562,10 +562,6 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
       for(int j=MAX(0, py-samples);j<=MIN(roi_in->height-2, py+samples);j++)
       for(int i=MAX(0, px-samples);i<=MIN(roi_in->width -2, px+samples);i++)
       {
-        // assert(i + px < roi_in->width);
-        // assert(i + px >= 0);
-        // assert(j + py < roi_in->height);
-        // assert(j + py >= 0);
         __m128 p = _mm_load_ps(in + 4*(i + in_stride*j));
 
         // col = _mm_add_ps(col, p);
@@ -577,12 +573,12 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
       }
       // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
       col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
-      memcpy(outc, &col, 4*sizeof(float));
-      // _mm_stream_ps(outc, col);
+      // memcpy(outc, &col, 4*sizeof(float));
+      _mm_stream_ps(outc, col);
       outc += 4;
     }
   }
-  // _mm_sfence();
+  _mm_sfence();
 }
 
 static int
@@ -668,12 +664,12 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       }
       col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
-      memcpy(outc, &col, 4*sizeof(float));
-      // _mm_stream_ps(outc, col);
+      // memcpy(outc, &col, 4*sizeof(float));
+      _mm_stream_ps(outc, col);
       outc += 4;
     }
   }
-  // _mm_sfence();
+  _mm_sfence();
 }
 
 
