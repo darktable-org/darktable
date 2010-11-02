@@ -202,8 +202,11 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   gtk_container_add (GTK_CONTAINER (alignment), GTK_WIDGET (box));
   
   sd->name = gtk_entry_new();
+  g_object_set (sd->name, "tooltip-text", _("enter a name for the new style"), (char *)NULL);
+ 
   sd->description = gtk_entry_new();
-  
+  g_object_set (sd->name, "tooltip-text", _("enter a description for the new style, this description is searchable"), (char *)NULL);
+ 
   /*set values*/
   if (edit)
   {
