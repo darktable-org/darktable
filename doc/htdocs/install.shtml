@@ -56,9 +56,8 @@ libdbus-glib-1-dev, libgnome-keyring-dev, fop</li>
     	<div class="listtext">
     	<img src="images/foehr.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
       <ul>
-        <li>get Russell Harrisons' <a href="http://russellharrison.com/yum/rlh/rlh.repo">unofficial fedora repo</a>.</li>
-        <li>copy it to /etc/yum.repos.d/</li>
-        <li>$ sudo yum install darktable</li>
+        <li># yum install darktable</li>
+        <li>:)</li>
       </ul>
     	</div>
     	<div class="listtext">
