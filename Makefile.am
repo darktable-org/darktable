@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS=-I m4
-SUBDIRS=src pixmaps po color doc tools kernels
+SUBDIRS=src pixmaps po color doc tools kernels watermarks
 INTLTOOL_FILES=intltool-extract.in intltool-merge.in intltool-update.in
 EXTRA_DIST=darktable.gtkrc darktable.glade darktable.desktop $(INTLTOOL_FILES) darktable.schemas.in darktable.1 TRANSLATORS LICENSE
 DISTCLEANFILES=intltool-extract intltool-merge intltool-update po/.intltool-merge-cache

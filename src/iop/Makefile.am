@@ -72,3 +72,11 @@ if HAVE_LENSFUN
   liblens_la_LIBADD=$(LENSFUN_LIBS)
   dtplugins_LTLIBRARIES+=liblens.la
 endif
+
+if HAVE_RSVG
+  libwatermark_la_SOURCES=watermark.c
+  libwatermark_la_CFLAGS=$(RSVG_CFLAGS)
+  libwatermark_la_LIBADD=$(RSVG_LIBS)
+  dtplugins_LTLIBRARIES+=libwatermark.la
+endif
+  
