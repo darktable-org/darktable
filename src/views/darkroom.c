@@ -25,9 +25,8 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "gui/gtk.h"
-#include "gui/styles.h"
 #include "gui/iop_modulegroups.h"
-#include "dtgtk/button.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -316,15 +315,7 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-static void
-create_style_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  if(darktable.develop->image)
-  {
-    dt_dev_write_history(darktable.develop);
-    dt_gui_styles_dialog_new (darktable.develop->image->id);
-  }
-}
+
 
 static void
 select_this_image(const int imgid)
@@ -665,16 +656,7 @@ void enter(dt_view_t *self)
     }
     g_free(active_plugin);
   }
-  
-  /* add toolbar button for creating style */
-  GtkWidget *hbutton = dtgtk_button_new (dtgtk_cairo_paint_styles,0);
-  gtk_widget_set_size_request (hbutton,24,-1);
-  gtk_box_pack_start (GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")),gtk_label_new(""),TRUE,TRUE,10);
-  gtk_box_pack_start (GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")),hbutton,FALSE,FALSE,10);
-  g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (create_style_button_clicked),(gpointer)0);
-  g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a style from current developed image and it's history stack"), (char *)NULL);
-  gtk_widget_show_all(hbutton);
-
+   
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);

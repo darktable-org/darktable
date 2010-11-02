@@ -19,10 +19,12 @@
 #include <glade/glade.h>
 
 #include "gui/gtk.h"
+#include "gui/styles.h"
 #include "common/darktable.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/iop_history.h"
+#include "dtgtk/button.h"
 
 
 static void
@@ -77,19 +79,41 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_dev_pop_history_items (darktable.develop, num);
 }
 
-
+static void
+create_style_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.develop->image)
+  {
+    dt_dev_write_history(darktable.develop);
+    dt_gui_styles_dialog_new (darktable.develop->image->id);
+  }
+}
 
 void 
 dt_gui_iop_history_init ()
 {
   GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hhbox = gtk_hbox_new (FALSE,0);
   GtkWidget *hvbox = gtk_vbox_new (FALSE,0);
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));  
   g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"), (char *)NULL);
   gtk_box_pack_start (GTK_BOX (hbody),hvbox,FALSE,FALSE,0);
-  gtk_box_pack_start (GTK_BOX (hbody),hbutton,FALSE,FALSE,0);
-  g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (history_compress_clicked),(gpointer)0);
+  
+  /* add toolbar button for creating style */
+  GtkWidget *hbutton2 = dtgtk_button_new (dtgtk_cairo_paint_styles,0);
+  //gtk_widget_set_size_request (hbutton,24,-1);
+  g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (create_style_button_clicked),(gpointer)0);
+  g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from current developed image and it's history stack"), (char *)NULL);
+  
+  gtk_box_pack_start (GTK_BOX (hhbox),hbutton,TRUE,TRUE,0);
+  gtk_box_pack_start (GTK_BOX (hhbox),hbutton2,FALSE,FALSE,2);
+  gtk_box_pack_start (GTK_BOX (hbody),hhbox,FALSE,FALSE,0);
+ 
+  g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (history_compress_clicked),(gpointer)0);
+  
   gtk_widget_show_all (hbody);
+  gtk_widget_show_all (hhbox);
+
 }
 
 void 
