@@ -100,13 +100,9 @@ typedef struct dt_iop_module_t
   /** get name of the module, to be translated. */
   const char* (*name)     ();
   /** get the groups this module belongs to. */
-<<<<<<< HEAD
   int (*groups)           ();
-=======
-  int (*groups) ();
   /** get the iop module flags. */
-  int (*flags) ();
->>>>>>> master
+  int (*flags)            ();
   
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
