@@ -297,9 +297,6 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  /// data->filters = 0x61616161;//0x49494949;//0x94949494;
-  // data->filters = 0x94949494;
-  /// data->filters = 0x49494949;
   dt_image_t *img = self->dev->image;
   dt_image_buffer_t full = dt_image_get(img, DT_IMAGE_FULL, 'r');
   if(full != DT_IMAGE_FULL) return;
@@ -369,9 +366,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
       NULL, &err);
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy out buffer on device: %d\n", err);
   
-  // printf("using filters %X\n", data->filters);
-
-  // data->filters = 0x94949494;
   if(!data->filters)
   {
     dt_iop_clip_and_zoom((float *)o, (float *)i, roi_out, &roi, roi_out->width, roi.width);
@@ -577,21 +571,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
   if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
   d->filters = dt_image_flipped_filter(self->dev->image);
-#if 0
-  const int orient = dt_image_orientation(self->dev->image);
-  // FIXME: copy back to image.h!
-  // FIXME: the other clip_and_zoom needs the right filters, too!
-  printf("orient: %d\n", orient);
-  switch(orient)
-  {
-    case 6:  d->filters = 0x61616161u; break;
-    case 5:  d->filters = 0x49494949u; break;
-    case 3:  d->filters = 0x16161616u; break;
-    default: d->filters = 0x94949494u; break;
-  }
-
-  printf("filters found to be %X\n", d->filters);
-#endif
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
