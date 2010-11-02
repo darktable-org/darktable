@@ -239,7 +239,8 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->duplicate),TRUE,FALSE,0);
   g_signal_connect (d->duplicate, "toggled", G_CALLBACK(duplicate_callback),d);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->duplicate), dt_conf_get_bool("ui_last/styles_create_duplicate"));
-   
+  g_object_set (d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"), (char *)NULL);
+ 
 #if 0
   // TODO: Unfinished stuff
   GtkWidget *widget=gtk_button_new_with_label(_("edit"));
@@ -251,7 +252,8 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (widget, "clicked", G_CALLBACK(delete_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
-  
+   g_object_set (d->duplicate, "tooltip-text", _("delete's the selected style in list above"), (char *)NULL);
+ 
   
   /* update filtered list */
   _gui_styles_update_view(d);
