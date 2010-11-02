@@ -113,20 +113,21 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     
      /* if merge onto history stack, lets find history offest in destination image */
     int32_t offs = 0; 
-    if (FALSE)
+#if 1
     { 
       /* apply on top of history stack */
       rc = sqlite3_prepare_v2 (darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
       rc = sqlite3_bind_int (stmt, 1, imgid);
       while (sqlite3_step (stmt) == SQLITE_ROW) offs++;
     }
-    else
+#else
     { 
       /* replace history stack */
       rc = sqlite3_prepare_v2 (darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
       rc = sqlite3_bind_int (stmt, 1, imgid);
       rc = sqlite3_step (stmt);
     }
+#endif
     rc = sqlite3_finalize (stmt);
     
     /* copy history items from styles onto image */
