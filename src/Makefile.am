@@ -61,7 +61,7 @@ libdarktable_la_SOURCES= \
 			gui/metadata.c \
 			gui/navigation.c \
 			gui/presets.c \
-			gui/styles.c \
+			gui/styles_dialog.c \
 			gui/tool_colorlabels.c \
       gui/preferences.c \
 			libs/lib.c \

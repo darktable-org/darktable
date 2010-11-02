@@ -76,7 +76,7 @@ src/gui/background_jobs.c
 src/gui/tool_colorlabels.c
 src/gui/preferences.c
 src/gui/preferences_gen.h
-src/gui/styles.c
+src/gui/styles_dialog.c
 src/dtgtk/resetlabel.c
 src/views/darkroom.c
 src/views/lighttable.c

@@ -1,5 +1,5 @@
 AC_INIT([darktable], [REPLACE_WITH_DT_VERSION], [hanatos@gmail.com])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
 AC_PREREQ(2.63)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
