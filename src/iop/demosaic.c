@@ -368,6 +368,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   
   if(!data->filters)
   {
+    dt_iop_roi_t roi;
+    roi.scale = 1.0f;
+    roi.x = roi.y = 0;
+    roi.width  = self->dev->image->width;
+    roi.height = self->dev->image->height;
     dt_iop_clip_and_zoom((float *)o, (float *)i, roi_out, &roi, roi_out->width, roi.width);
     // TODO:
 #if 0
