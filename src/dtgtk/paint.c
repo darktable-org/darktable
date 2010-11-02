@@ -374,6 +374,21 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_set_line_width(cr, 0.1);
   cairo_rectangle (cr, 0.1,0.1,0.9,0.9);
   cairo_stroke (cr);
+}
+
+void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
   
+  cairo_set_line_width(cr, .3);
+  cairo_arc (cr, 0.5, 0.5, 0.4, 0., 2.0f*M_PI);
+  cairo_stroke (cr);
+
+  double dashes = .21;
+  cairo_set_dash(cr, &dashes, 1, 0);
+  cairo_arc (cr, 0.5, 0.5, 0.55, 0., 2.0f*M_PI);
+  cairo_stroke (cr);
 }
 

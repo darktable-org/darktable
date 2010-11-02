@@ -1017,17 +1017,22 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow");
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   
+  // create preferences button:
+  widget = glade_xml_get_widget (darktable.gui->main_window, "topfilterhbox");
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
+  gtk_box_pack_end(GTK_BOX(widget), button, FALSE, FALSE, 20);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("show global preferences"), NULL);
+  g_signal_connect (G_OBJECT (button), "clicked",
+                    G_CALLBACK (preferences_button_clicked),
+                    NULL);
+
+
   // Update the devices module with available devices
   dt_gui_devices_init();
   
   dt_gui_background_jobs_init();
   
   /* connect the signals in the interface */
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "button_preferences");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (preferences_button_clicked),
-                    NULL);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
   g_signal_connect (G_OBJECT (widget), "clicked",
@@ -1178,7 +1183,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_container_add (GTK_CONTAINER(widget),label);
   
    /* setup film history */
-  GtkWidget *button;
   GtkWidget *recent_film_vbox =  gtk_vbox_new(FALSE,0);
   for (long k=1;k<5;k++) 
   {

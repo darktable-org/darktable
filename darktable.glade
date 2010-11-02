@@ -1247,18 +1247,7 @@ color label</property>
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkButton" id="button_preferences">
-                                <property name="label">preferences</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="padding">10</property>
-                                <property name="position">4</property>
-                              </packing>
+                              <placeholder/>
                             </child>
                           </widget>
                           <packing>
