@@ -259,7 +259,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
   if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS) 
   {
-    fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+ //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free (image);
     memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
@@ -484,7 +484,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   memset(d->filename,0,64);
   sprintf(d->filename,"%s",p->filename);
   
-  fprintf(stderr,"Commit params: %s...\n",d->filename);
+  //fprintf(stderr,"Commit params: %s...\n",d->filename);
 #endif
 }
 
