@@ -19,6 +19,7 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
+		<para>The tonecurve works on Lightness channel only.</para>
 		<para>The horizontal axis is split in 5 zones thanks to 4 triangles. Those triangles have a constant vertical value, thus moving them modifies the curve so their output value is kept.</para>
 		<para>When your mouse hovers the curve, brighter zone are shown to visualize the degree of liberty you have without damaging too much your image.</para>			
 	</sect3>

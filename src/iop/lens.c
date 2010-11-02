@@ -643,6 +643,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
   char _variant [100];
 
   strncpy(p->camera, cam->Model, 52);
+  p->crop = cam->CropFactor;
   g->camera = cam;
   if (!cam)
   {

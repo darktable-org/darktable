@@ -139,6 +139,7 @@ static void _slider_init (GtkDarktableSlider *slider)
   
   gtk_container_add(GTK_CONTAINER(slider),hbox);
   //gtk_container_set_reallocate_redraws(GTK_CONTAINER(slider),TRUE);
+  // gtk_event_box_set_visible_window(GTK_EVENT_BOX(slider), FALSE);
 
   gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
   
@@ -436,22 +437,28 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
     state=GTK_STATE_PRELIGHT;
 
   // Widget bakground
+#if 0
   gtk_paint_box(style,widget->window, GTK_STATE_NORMAL,
-   GTK_SHADOW_ETCHED_OUT,
+   // GTK_SHADOW_ETCHED_OUT,
+   GTK_SHADOW_NONE,
    NULL,
    widget,
    "button",
    0,0,width,height); 
+#endif
   
   // Value background
   GdkRectangle vr;
   _slider_get_value_area(widget,&vr);
+#if 0
   gtk_paint_box(style,widget->window, state,
-   GTK_SHADOW_ETCHED_OUT,
+   // GTK_SHADOW_ETCHED_OUT,
+   GTK_SHADOW_NONE,
    NULL,
    widget,
    "button",
    vr.x,0,vr.width,height);
+#endif
   
   // Begin cairo drawing 
   cairo_t *cr;

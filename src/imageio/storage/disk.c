@@ -104,6 +104,7 @@ gui_init (dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
+                                                       "$(ROLL_NAME) - roll of the input image\n"
                                                        "$(FILE_DIRECTORY) - directory of the input image\n"
                                                        "$(FILE_NAME) - basename of the input image\n"
                                                        "$(FILE_EXTENSION) - extension of the input image\n"

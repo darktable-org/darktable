@@ -238,7 +238,11 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_stroke(cri);
   }
   else if(dev->gui_module && dev->gui_module->gui_post_expose)
+  {
+    if(width_i  > DT_IMAGE_WINDOW_SIZE) pointerx += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
+    if(height_i > DT_IMAGE_WINDOW_SIZE) pointery += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
     dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+  }
 }
 
 
@@ -841,7 +845,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 {
   dt_develop_t *dev = darktable.develop;
   int handled = 0;
-  if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
+  if(dev->gui_module && dev->gui_module->button_released) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
   if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
   return 1;

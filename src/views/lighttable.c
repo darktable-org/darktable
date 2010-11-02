@@ -158,7 +158,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 	return;
   
   if(offset < 0) lib->offset = offset = 0;
-  while(offset > count-iir) lib->offset = (offset -= iir);
+  while(offset >= count) lib->offset = (offset -= iir);
   dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_rows*iir);
 
   int32_t imgids_num = 0;

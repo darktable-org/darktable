@@ -3484,7 +3484,7 @@ void CLASS green_matching()
 
       m1=(o1_1+o1_2+o1_3+o1_4)/4.0;
       m2=(o2_1+o2_2+o2_3+o2_4)/4.0;
-
+         if (m2 > .0) {
       c1=(abs(o1_1-o1_2)+abs(o1_1-o1_3)+abs(o1_1-o1_4)+abs(o1_2-o1_3)+abs(o1_3-o1_4)+abs(o1_2-o1_4))/6.0;
       c2=(abs(o2_1-o2_2)+abs(o2_1-o2_3)+abs(o2_1-o2_4)+abs(o2_2-o2_3)+abs(o2_3-o2_4)+abs(o2_2-o2_4))/6.0;
       if((img[j*width+i][3]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
@@ -3492,6 +3492,7 @@ void CLASS green_matching()
         f = image[j*width+i][3]*m1/m2;
         image[j*width+i][3]=f>0xffff?0xffff:f;
       }
+    }
     }
   free(img);
 }
