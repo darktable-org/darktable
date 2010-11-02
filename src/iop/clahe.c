@@ -69,7 +69,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT;
 }
 
 int flags()

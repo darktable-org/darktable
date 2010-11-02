@@ -84,7 +84,7 @@ int flags()
 int 
 groups () 
 {
-	return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT;
 }
 
 
@@ -324,7 +324,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   s=(button==g->colorpick1)?p->shadow_saturation:p->highlight_saturation;
   l=0.5;	
   hsl2rgb(&color[0],&color[1],&color[2],h,s,l);
-	
+  
   c.red= 65535 * color[0];
   c.green= 65535 * color[1];
   c.blue= 65535 * color[2];
@@ -400,7 +400,7 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->gslider2,p->shadow_saturation);
   dtgtk_slider_set_value(g->scale1, p->balance);
   dtgtk_slider_set_value(g->scale2, p->compress);
-	
+  
   float color[3];
   hsl2rgb(&color[0],&color[1],&color[2],p->shadow_hue,p->shadow_saturation,0.5);
   
@@ -415,9 +415,9 @@ void gui_update(struct dt_iop_module_t *self)
   c.red=color[0]*65535.0;
   c.green=color[1]*65535.0;
   c.blue=color[2]*65535.0;
-  	
+    
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
-	
+  
 }
 
 void init(dt_iop_module_t *module)
