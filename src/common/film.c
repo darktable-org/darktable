@@ -44,54 +44,8 @@ void dt_film_init(dt_film_t *film)
 	film->ref = 0;
 }
 
-//FIXME: recursion messes up the progress counter.
-void dt_film_import1(dt_film_t *film)
-{
-	const gchar *d_name;
-	char filename[1024];
-	dt_image_t image;
-
-	gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
-
-	while(1)
-	{
-		pthread_mutex_lock(&film->images_mutex);
-		if (film->dir && (d_name = g_dir_read_name(film->dir)) && dt_control_running())
-		{
-			snprintf(filename, 1024, "%s/%s", film->dirname, d_name);
-			image.film_id = film->id;
-			film->last_loaded++;
-		}
-		else
-		{
-			if(film->dir)
-			{
-				g_dir_close(film->dir);
-				film->dir = NULL;
-			}
-			darktable.control->progress = 200.0f;
-			pthread_mutex_unlock(&film->images_mutex);
-			return;
-		}
-		pthread_mutex_unlock(&film->images_mutex);
-
-		if(recursive && g_file_test(filename, G_FILE_TEST_IS_DIR))
-		{
-			dt_film_import(filename);
-		}
-		else if(dt_image_import(film->id, filename))
-		{
-			pthread_mutex_lock(&film->images_mutex);
-			darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
-			pthread_mutex_unlock(&film->images_mutex);
-			dt_control_queue_draw_all();
-		} // else not an image.
-	}
-}
-
 void dt_film_cleanup(dt_film_t *film)
 {
-  printf("cleaning up film roll %d\n", film->id);
 	pthread_mutex_destroy(&film->images_mutex);
 	if(film->dir)
 	{
@@ -102,7 +56,6 @@ void dt_film_cleanup(dt_film_t *film)
 	if(dt_film_is_empty(film->id))
   {
 		dt_film_remove(film->id);
- 		printf("removing empty filmroll: %s\n", film->dirname); // FIXME: just for debugging
 	}
 	else
 	{
@@ -235,7 +188,7 @@ int dt_film_new(dt_film_t *film,const char *directory)
 	rc = sqlite3_finalize(stmt);
 	
 	if(film->id <= 0)
-	{ // Create a new filmroll
+	{ // create a new filmroll
 		int rc;
 		sqlite3_stmt *stmt;
 		char datetime[20];
@@ -254,7 +207,6 @@ int dt_film_new(dt_film_t *film,const char *directory)
     if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
 	  sqlite3_finalize(stmt);
 		pthread_mutex_unlock(&(darktable.db_insert));
-    printf("######## new film `%s' id %d\n", directory, film->id);
 	}
 	
 	if(film->id<=0)
@@ -270,7 +222,8 @@ void dt_film_image_import(dt_film_t *film,const char *filename)
 		 dt_control_queue_draw_all();
 }
 
-int dt_film_import(const char *dirname)
+static int
+dt_film_import_blocking(const char *dirname, const int blocking)
 {
 	// init film and give each thread a pointer, last one cleans up.
 	dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
@@ -294,7 +247,6 @@ int dt_film_import(const char *dirname)
 		rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
 		rc = sqlite3_bind_text(stmt, 2, dirname, strlen(dirname), SQLITE_STATIC);
 		HANDLE_SQLITE_ERR(rc);
-		pthread_mutex_lock(&(darktable.db_insert));
 		rc = sqlite3_step(stmt);
 		if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
 		rc = sqlite3_finalize(stmt);
@@ -302,8 +254,6 @@ int dt_film_import(const char *dirname)
     sqlite3_bind_text(stmt, 1, dirname, strlen(dirname), SQLITE_STATIC);
     if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
 	  sqlite3_finalize(stmt);
-		pthread_mutex_unlock(&(darktable.db_insert));
-    printf("######## new film `%s' id %d\n", dirname, film->id);
 	}
 	if(film->id <= 0)
 	{
@@ -319,15 +269,76 @@ int dt_film_import(const char *dirname)
 	// TODO: set film->num_images for progress bar!
 
 	const int ret = film->id;
-	// darktable.control->progress = .001f;
-	for(int k=0;k<MAX(1,dt_ctl_get_num_procs());k++)
-	{
-		// last job will destroy film struct.
-		dt_job_t j;
-		dt_film_import1_init(&j, film);
-		dt_control_add_job(darktable.control, &j);
-	}
+  if(blocking)
+  {
+    dt_film_import1(film);
+    dt_film_cleanup(film);
+    free(film);
+  }
+  else
+  {
+    // darktable.control->progress = .001f;
+    // not more than one job: recursive import is not thread-safe, and multiple
+    // threads accessing the harddisk at once is not a good idea performance wise.
+    // for(int k=0;k<MAX(1,dt_ctl_get_num_procs());k++)
+    {
+      // last job will destroy film struct.
+      dt_job_t j;
+      dt_film_import1_init(&j, film);
+      dt_control_add_job(darktable.control, &j);
+    }
+  }
 	return ret;
+}
+
+//FIXME: recursion messes up the progress counter.
+void dt_film_import1(dt_film_t *film)
+{
+	const gchar *d_name;
+	char filename[1024];
+	dt_image_t image;
+
+	gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
+
+	while(1)
+	{
+		pthread_mutex_lock(&film->images_mutex);
+		if (film->dir && (d_name = g_dir_read_name(film->dir)) && dt_control_running())
+		{
+			snprintf(filename, 1024, "%s/%s", film->dirname, d_name);
+			image.film_id = film->id;
+			film->last_loaded++;
+		}
+		else
+		{
+			if(film->dir)
+			{
+				g_dir_close(film->dir);
+				film->dir = NULL;
+			}
+			darktable.control->progress = 200.0f;
+			pthread_mutex_unlock(&film->images_mutex);
+			return;
+		}
+		pthread_mutex_unlock(&film->images_mutex);
+
+		if(recursive && g_file_test(filename, G_FILE_TEST_IS_DIR))
+		{ // import in this thread (recursive import is not thread-safe):
+			dt_film_import_blocking(filename, 1);
+		}
+		else if(dt_image_import(film->id, filename))
+		{
+			pthread_mutex_lock(&film->images_mutex);
+			darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
+			pthread_mutex_unlock(&film->images_mutex);
+			dt_control_queue_draw_all();
+		} // else not an image.
+	}
+}
+
+int dt_film_import(const char *dirname)
+{
+  return dt_film_import_blocking(dirname, 0);
 }
 
 int dt_film_is_empty(const int id)
@@ -343,7 +354,6 @@ int dt_film_is_empty(const int id)
 
 void dt_film_remove(const int id)
 {
-  printf("removing film id %d\n", id);
 	int rc;
 	sqlite3_stmt *stmt;
 	sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);
