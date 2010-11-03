@@ -17,8 +17,9 @@
 */
 
 #include "develop/pixelpipe_cache.h"
+#include "develop/pixelpipe_hb.h"
 #include <stdlib.h>
-#include <inttypes.h>
+
 
 void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
 {
