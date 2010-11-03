@@ -250,9 +250,9 @@ gui_init (dt_lib_module_t *self)
   
   widget=gtk_button_new_with_label(_("delete"));
   g_signal_connect (widget, "clicked", G_CALLBACK(delete_clicked),d);
+  g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
-   g_object_set (d->duplicate, "tooltip-text", _("delete's the selected style in list above"), (char *)NULL);
  
   
   /* update filtered list */
