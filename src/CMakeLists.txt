@@ -66,7 +66,7 @@ include_directories(${GCONF2_INCLUDE_DIRS})
 list(APPEND LIBS ${GCONF2_LIBRARIES})
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} GDK LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL TIFF LCMS)
+foreach(lib ${OUR_LIBS} GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL TIFF LCMS)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
