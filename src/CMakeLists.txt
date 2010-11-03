@@ -35,6 +35,54 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/LibRaw)
 
+# initial compiler flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DHAVE_CONFIG_H")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
+
+# Check for openmp
+find_package(OpenMP)
+if(OpenMP_FOUND)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	add_definitions("-DHAVE_OPENMP")
+endif(OpenMP_FOUND)
+
+
+#
+# Find all other required libraries for building
+#
+find_package(GTK2 2.6 REQUIRED gtk glade)
+include_directories(${GTK2_INCLUDE_DIRS})
+list(APPEND LIBS ${GTK2_LIBRARIES})
+
+# Check for libxml2 / broken cmake module can't be included in the foreach() below
+find_package(LibXml2 2.6 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIR})
+list(APPEND LIBS ${LIBXML2_LIBRARIES})
+
+# Check for gconf2 / broken cmake module can't be included in the foreach() below
+find_package(GConf2)
+include_directories(${GCONF2_INCLUDE_DIRS})
+list(APPEND LIBS ${GCONF2_LIBRARIES})
+
+# Find all the libs that don't require extra parameters
+foreach(lib ${OUR_LIBS} GDK LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL TIFF LCMS)
+	find_package(${lib} REQUIRED)
+	include_directories(${${lib}_INCLUDE_DIRS})
+	list(APPEND LIBS ${${lib}_LIBRARIES})
+	add_definitions(${${lib}_DEFINITIONS})
+endforeach(lib)
+
+find_package(Gettext)
+if(Gettext_FOUND)
+	include_directories(${Gettext_INCLUDE_DIRS})
+	list(APPEND LIBS ${Gettext_LIBRARIES})
+	add_definitions("-DUSE_GETTEXT")
+	message(STATUS "Internationalization: Enabled")
+else()
+	message(STATUS "Internationalization: Disabled (libintl not found)")
+endif()
+
 #
 # Detect compile of optional pwstorage backends
 #
@@ -58,36 +106,15 @@ endif(GNOMEKEYRING_FOUND)
 
 
 #
-# Find all other required libraries
+# Add HAVE_xxx defines used by darktable
 #
-find_package(GTK2 2.6 REQUIRED gtk glade)
-include_directories(${GTK2_INCLUDE_DIRS})
-list(APPEND LIBS ${GTK2_LIBRARIES})
+if(INOTIFY_FOUND)
+	add_definitions("-DHAVE_INOTIFY")
+endif(INOTIFY_FOUND)
 
-find_package(LibXml2 2.6 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
-list(APPEND LIBS ${LIBXML2_LIBRARIES})
-
-# Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} Sqlite3 Exiv2 Gphoto2 GDK-PixBuf Pango CURL TIFF LCMS)
-	find_package(${lib} REQUIRED)
-	include_directories(${${lib}_INCLUDE_DIRS})
-	list(APPEND LIBS ${${lib}_LIBRARIES})
-	add_definitions(${${lib}_DEFINITIONS})
-endforeach(lib)
-
-find_package(Gettext)
-if(Gettext_FOUND)
-	include_directories(${Gettext_INCLUDE_DIRS})
-	list(APPEND LIBS ${Gettext_LIBRARIES})
-	add_definitions("-DUSE_GETTEXT")
-	message(STATUS "Internationalization: Enabled")
-else()
-	message(STATUS "Internationalization: Disabled (libintl not found)")
-endif()
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DHAVE_CONFIG_H")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H")
+if(GCONF2_FOUND)
+	add_definitions("-DHAVE_GCONF")
+endif(GCONF2_FOUND)
 
 # Set default compile flags for GCC
 if(CMAKE_COMPILER_IS_GNUC)

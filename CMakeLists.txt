@@ -30,7 +30,7 @@ if(WIN32)
 else(WIN32)
 	if(NOT LIB_INSTALL)
 		set( LIB_INSTALL "lib" CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-	endif(NOT SHARE_INSTALL)
+	endif(NOT LIB_INSTALL)
 endif(WIN32)
 
 mark_as_advanced(LIB_INSTALL)
