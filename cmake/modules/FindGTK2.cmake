@@ -64,8 +64,10 @@
 # (To distributed this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
-# modified by Henrik Andersson
+# Version 0.9 (2/11/2010)
+#  * Added check for library gtk-quartz and gdk-quartz 
 #  * Get module working under MacOSX ports by adding /opt/local/include /opt/local/lib
+#  * Skip add of -NOTFOUND library ti GTK2_LIBRARIES for gdk-xxx and gtk-xxx
 # Version 0.8 (1/4/2010)
 #   * Get module working under MacOSX fink by adding /sw/include, /sw/lib
 #     to PATHS and the gobject library
@@ -168,8 +170,8 @@ function(_GTK2_FIND_INCLUDE_DIR _var _hdr)
             /usr/local/lib
             /usr/lib64
             /usr/lib
-	    /opt/local/include
-	    /opt/local/lib
+      /opt/local/include
+      /opt/local/lib
             /opt/gnome/include
             /opt/gnome/lib
             /opt/openwin/include
@@ -286,7 +288,7 @@ function(_GTK2_FIND_LIBRARY _var _lib _expand_vc _append_version)
             /opt/gnome/lib64
             /usr/openwin/lib
             /usr/openwin/lib64
-	    /opt/local/lib
+      /opt/local/lib
             /sw/lib
             $ENV{GTKMM_BASEPATH}/lib
             [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/lib
@@ -311,18 +313,22 @@ function(_GTK2_FIND_LIBRARY _var _lib _expand_vc _append_version)
             if(NOT GTK2_SKIP_MARK_AS_ADVANCED)
                 mark_as_advanced(${_var}_DEBUG)
             endif()
-            set(GTK2_LIBRARIES ${GTK2_LIBRARIES} optimized ${${_var}} debug ${${_var}_DEBUG})
-            set(GTK2_LIBRARIES ${GTK2_LIBRARIES} PARENT_SCOPE)
+            if(NOT ${${_var}} MATCHES ".+\-NOTFOUND")
+                set(GTK2_LIBRARIES ${GTK2_LIBRARIES} optimized ${${_var}} debug ${${_var}_DEBUG})
+                set(GTK2_LIBRARIES ${GTK2_LIBRARIES} PARENT_SCOPE)
+            endif()
         endif()
     else()
         if(NOT GTK2_SKIP_MARK_AS_ADVANCED)
             mark_as_advanced(${_var})
         endif()
-        set(GTK2_LIBRARIES ${GTK2_LIBRARIES} ${${_var}})
-        set(GTK2_LIBRARIES ${GTK2_LIBRARIES} PARENT_SCOPE)
-        # Set debug to release
-        set(${_var}_DEBUG ${${_var}})
-        set(${_var}_DEBUG ${${_var}} PARENT_SCOPE)
+        if(NOT ${${_var}} MATCHES ".+\-NOTFOUND")
+            set(GTK2_LIBRARIES ${GTK2_LIBRARIES} ${${_var}})
+            set(GTK2_LIBRARIES ${GTK2_LIBRARIES} PARENT_SCOPE)
+            # Set debug to release
+            set(${_var}_DEBUG ${${_var}})
+            set(${_var}_DEBUG ${${_var}} PARENT_SCOPE)
+        endif()
     endif()
 endfunction(_GTK2_FIND_LIBRARY)
 
@@ -408,10 +414,12 @@ foreach(_GTK2_component ${GTK2_FIND_COMPONENTS})
         _GTK2_FIND_INCLUDE_DIR(GTK2_GDKCONFIG_INCLUDE_DIR gdkconfig.h)
         _GTK2_FIND_LIBRARY    (GTK2_GDK_LIBRARY gdk-x11 false true)
         _GTK2_FIND_LIBRARY    (GTK2_GDK_LIBRARY gdk-win32 false true)
+        _GTK2_FIND_LIBRARY    (GTK2_GDK_LIBRARY gdk-quartz false true)
 
         _GTK2_FIND_INCLUDE_DIR(GTK2_GTK_INCLUDE_DIR gtk/gtk.h)
         _GTK2_FIND_LIBRARY    (GTK2_GTK_LIBRARY gtk-x11 false true)
         _GTK2_FIND_LIBRARY    (GTK2_GTK_LIBRARY gtk-win32 false true)
+        _GTK2_FIND_LIBRARY    (GTK2_GTK_LIBRARY gtk-quartz false true)
 
         _GTK2_FIND_INCLUDE_DIR(GTK2_CAIRO_INCLUDE_DIR cairo.h)
         _GTK2_FIND_LIBRARY    (GTK2_CAIRO_LIBRARY cairo false false)
