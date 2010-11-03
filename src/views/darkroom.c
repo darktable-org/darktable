@@ -810,13 +810,13 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     float old_zoom_x, old_zoom_y;
     DT_CTL_GET_GLOBAL(old_zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(old_zoom_y, dev_zoom_y);
-    float zx = old_zoom_x - (1.0/scale)*(x - darktable.control->button_x)/procw;
-    float zy = old_zoom_y - (1.0/scale)*(y - darktable.control->button_y)/proch;
+    float zx = old_zoom_x - (1.0/scale)*(x - ctl->button_x - offx)/procw;
+    float zy = old_zoom_y - (1.0/scale)*(y - ctl->button_y - offy)/proch;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
     DT_CTL_SET_GLOBAL(dev_zoom_x, zx);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
-    darktable.control->button_x = x;
-    darktable.control->button_y = y;
+    ctl->button_x = x - offx;
+    ctl->button_y = y - offy;
     dt_dev_invalidate(dev);
     dt_control_queue_draw_all();
   }
