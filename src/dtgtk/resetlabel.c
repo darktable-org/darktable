@@ -58,7 +58,7 @@ dtgtk_reset_label_new (const gchar *text, dt_iop_module_t *module, void *param, 
   GtkWidget *lb = gtk_label_new(text);
   gtk_misc_set_alignment(GTK_MISC(lb), 0.0, 0.5);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(label), FALSE);
-  gtk_object_set(GTK_OBJECT(label), "tooltip-text", _("double-click to reset"), NULL);
+  gtk_object_set(GTK_OBJECT(label), "tooltip-text", _("double-click to reset"), (char *)NULL);
   gtk_container_add(GTK_CONTAINER(label), lb);
   gtk_widget_add_events(GTK_WIDGET(label), GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(label), "button-press-event", G_CALLBACK(_reset_label_callback), (gpointer)NULL);
