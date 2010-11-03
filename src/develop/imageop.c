@@ -183,7 +183,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = _default_groups;
-  if(!g_module_symbol(module->module, "flags",                 (gpointer)&(module->flags)))                 module->flags = _default_flags;
+  if(!g_module_symbol(module->module, "flags",                  (gpointer)&(module->flags)))                  module->flags = _default_flags;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
