@@ -73,6 +73,10 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
 
 
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 

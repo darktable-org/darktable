@@ -337,6 +337,21 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint f
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale(cr,s,s);
+  
+  cairo_set_line_width(cr, 0.08);
+  cairo_arc (cr, 0.2, 0.8, 0.2, 0.0, 2.0*M_PI);
+  cairo_stroke(cr);
+  cairo_arc (cr, 0.7, 0.7, 0.3, 0.0, 2.0*M_PI);
+  cairo_stroke(cr);
+  cairo_arc (cr, 0.4, 0.2, 0.25, 0.0, 2.0*M_PI);
+  cairo_stroke(cr);
+}
+
 void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   gint s = (w<h?w:h);
@@ -374,6 +389,84 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_set_line_width(cr, 0.1);
   cairo_rectangle (cr, 0.1,0.1,0.9,0.9);
   cairo_stroke (cr);
-  
 }
 
+void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+  
+  cairo_set_line_width(cr, .3);
+  cairo_arc (cr, 0.5, 0.5, 0.4, 0., 2.0f*M_PI);
+  cairo_stroke (cr);
+
+  double dashes = .21;
+  cairo_set_dash(cr, &dashes, 1, 0);
+  cairo_arc (cr, 0.5, 0.5, 0.55, 0., 2.0f*M_PI);
+  cairo_stroke (cr);
+}
+
+void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale(cr,s,s);
+ 
+  cairo_set_line_width(cr,0.3);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  switch (flags>>12)
+  {
+    case 1:     // Top left
+      cairo_move_to(cr,0.9,0.1);
+      cairo_line_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.1,0.9);
+    break;
+    
+    case 2:     // Top center
+      cairo_move_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.9,0.1);
+    break;
+    
+    case 4:     // Top right
+      cairo_move_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.9,0.1);
+      cairo_line_to(cr,0.9,0.9);
+    break;
+    
+    case 8:     // left
+      cairo_move_to(cr,0.1,0.1);
+      cairo_line_to(cr,0.1,0.9);
+    break;
+    case 16:     // center
+      cairo_move_to(cr,0.1,0.5);
+      cairo_line_to(cr,0.9,0.5);
+      cairo_move_to(cr,0.5,0.1);
+      cairo_line_to(cr,0.5,0.9);
+    break;
+    case 32:     // right
+      cairo_move_to(cr,0.9,0.1);
+      cairo_line_to(cr,0.9,0.9);
+    break;
+    
+     case 64:     // bottom left
+      cairo_move_to(cr,0.9,0.9);
+      cairo_line_to(cr,0.1,0.9);
+      cairo_line_to(cr,0.1,0.1);
+    break;
+    
+    case 128:     // bottom center
+      cairo_move_to(cr,0.1,0.9);
+      cairo_line_to(cr,0.9,0.9);
+    break;
+    
+    case 256:     // bottom right
+      cairo_move_to(cr,0.1,0.9);
+      cairo_line_to(cr,0.9,0.9);
+      cairo_line_to(cr,0.9,0.1);
+    break;
+    
+  }
+  cairo_stroke(cr);
+
+}

@@ -42,10 +42,15 @@ const char *name()
   return _("color correction");
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
+
 int 
 groups () 
 {
-	return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR;
 }
 
 

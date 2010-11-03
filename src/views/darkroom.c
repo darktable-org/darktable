@@ -315,6 +315,8 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
+
+
 static void
 select_this_image(const int imgid)
 {
@@ -654,7 +656,7 @@ void enter(dt_view_t *self)
     }
     g_free(active_plugin);
   }
-
+   
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -685,6 +687,13 @@ void leave(dt_view_t *self)
   dt_gui_key_accel_unregister(film_strip_key_accel);
   dt_gui_key_accel_unregister(zoom_key_accel);
 
+  GList *childs = gtk_container_get_children (
+  GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")));
+  while(childs) {
+    gtk_widget_destroy ( GTK_WIDGET (childs->data));
+    childs=g_list_next(childs);
+  }
+ 
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, FALSE);
@@ -801,13 +810,13 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     float old_zoom_x, old_zoom_y;
     DT_CTL_GET_GLOBAL(old_zoom_x, dev_zoom_x);
     DT_CTL_GET_GLOBAL(old_zoom_y, dev_zoom_y);
-    float zx = old_zoom_x - (1.0/scale)*(x - darktable.control->button_x)/procw;
-    float zy = old_zoom_y - (1.0/scale)*(y - darktable.control->button_y)/proch;
+    float zx = old_zoom_x - (1.0/scale)*(x - ctl->button_x - offx)/procw;
+    float zy = old_zoom_y - (1.0/scale)*(y - ctl->button_y - offy)/proch;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
     DT_CTL_SET_GLOBAL(dev_zoom_x, zx);
     DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
-    darktable.control->button_x = x;
-    darktable.control->button_y = y;
+    ctl->button_x = x - offx;
+    ctl->button_y = y - offy;
     dt_dev_invalidate(dev);
     dt_control_queue_draw_all();
   }

@@ -95,6 +95,10 @@ const char *name()
   return _("graduated neutral density");
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
 
 int 
 groups () 

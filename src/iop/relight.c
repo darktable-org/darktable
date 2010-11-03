@@ -79,6 +79,10 @@ const char *name()
   return _("relight");
 }
 
+int flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES;
+}
 
 int 
 groups () 

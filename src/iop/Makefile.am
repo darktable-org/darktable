@@ -1,6 +1,6 @@
 include $(srcdir)/../shared.am
 LDFLAGS= -module -avoid-version
-CFLAGS+=$(AM_CFLAGS) -I$(srcdir) -I$(srcdir)/..  -I$(srcdir)/dtgtk -Werror -g
+CFLAGS+=$(AM_CFLAGS) -I$(srcdir) -I$(srcdir)/..  -I$(srcdir)/dtgtk -Werror -g $(RSVG_CFLAGS)
 CXXFLAGS+=$(AM_CPPFLAGS) -I$(srcdir) -I$(srcdir)/..  -I$(srcdir)/dtgtk -Werror -g
 LTADD=$(GEGL_LIBS) $(CAIRO_LIBS) $(GLADE_LIBS) $(GTK_LIBS) $(GTHREAD_LIBS) $(SQLITE_LIBS) -fPIC
 libtonecurve_la_SOURCES=tonecurve.c
@@ -69,3 +69,11 @@ if HAVE_LENSFUN
   liblens_la_LIBADD=$(LENSFUN_LIBS)
   dtplugins_LTLIBRARIES+=liblens.la
 endif
+
+if HAVE_RSVG
+  libwatermark_la_SOURCES=watermark.c
+  libwatermark_la_CFLAGS=$(RSVG_CFLAGS)
+  libwatermark_la_LIBADD=$(RSVG_LIBS)
+  dtplugins_LTLIBRARIES+=libwatermark.la
+endif
+  

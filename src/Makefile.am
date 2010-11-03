@@ -30,6 +30,7 @@ libdarktable_la_SOURCES= \
 			common/pwstorage/backend_gkeyring.c \
 			common/pwstorage/backend_kwallet.c \
 			common/pwstorage/pwstorage.c \
+			common/styles.c \
 			common/tags.c \
 			common/variables.c \
 			control/control.c \
@@ -60,6 +61,7 @@ libdarktable_la_SOURCES= \
 			gui/metadata.c \
 			gui/navigation.c \
 			gui/presets.c \
+			gui/styles_dialog.c \
 			gui/tool_colorlabels.c \
       gui/preferences.c \
 			libs/lib.c \
@@ -80,6 +82,7 @@ noinst_HEADERS= \
 			gui/iop_modulegroups.h \
 			gui/draw.h \
 			gui/presets.h \
+			gui/styles.h \
 			gui/background_jobs.h \
 			gui/tool_colorlabels.h \
       gui/preferences.h\
@@ -95,7 +98,8 @@ noinst_HEADERS= \
 			common/imageio.h \
 			common/history.h \
 			common/film.h \
-      common/version.h \
+			common/version.h \
+			common/styles.h \
 			control/settings.h \
 			control/control.h \
 			control/jobs.h \
