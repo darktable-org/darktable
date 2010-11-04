@@ -6,7 +6,6 @@ set(PROJECT_VERSION "0.6+")
 include(cmake/darktable-packaging.cmake)
 
 
-
 # Avoid source tree pollution
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
@@ -80,3 +79,9 @@ add_subdirectory(pixmaps)
 #
 set(SHARE_FILES darktable.gtkrc darktable.glade)
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
+
+#
+# Install watermarks
+#
+FILE(GLOB WATERMARKS "watermarks/*.svg")
+install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
