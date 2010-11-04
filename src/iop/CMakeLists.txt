@@ -5,7 +5,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DI
 set(MODULES tonecurve gamma temperature colorcorrection exposure equalizer
 	colorin colorout clipping sharpen monochrome rawimport basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain clahe bilateral profile_gamma
-	colortransfer channelmixer graduatednd relight zonesystem
+	colortransfer channelmixer graduatednd relight zonesystem watermark
 )
 
 add_library(tonecurve MODULE "tonecurve.c")
@@ -35,6 +35,7 @@ add_library(channelmixer MODULE "channelmixer.c")
 add_library(graduatednd MODULE "graduatednd.c")
 add_library(relight MODULE "relight.c")
 add_library(zonesystem MODULE "zonesystem.c")
+add_library(watermark MODULE "watermark.c")
 
 foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION lib/darktable/plugins)

@@ -90,7 +90,7 @@ list(APPEND LIBS ${GCONF2_LIBRARIES})
 add_definitions(${GCONF2_DEFINITIONS})
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
+foreach(lib ${OUR_LIBS} Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
