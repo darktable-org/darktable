@@ -61,7 +61,7 @@ if(UNIX)
 		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.04")
 
 		if("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
-			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4")
+			set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-6, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4")
 		endif("${LSB_DISTRIB}" MATCHES "Ubuntu10.10")
 
 		# Debian
