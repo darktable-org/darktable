@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
+#
+# Add files for libdarktable
+#
 FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"  
 	"common/collection.c" 
 	"common/colorlabels.c" 
@@ -42,11 +45,12 @@ FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"
 	"gui/presets.c"  
 	"gui/styles_dialog.c"  
 	"gui/tool_colorlabels.c"  
-	"imageio/*.c" "libs/lib.*" "LibRaw/internal/dcraw_common.cpp" "LibRaw/src/libraw_cxx.cpp" 
-	"LibRaw/internal/dcraw_fileio.cpp" "LibRaw/src/libraw_c_api.cpp")
+	"imageio/*.c" "libs/lib.c" "LibRaw/internal/dcraw_common.cpp" "LibRaw/src/libraw_cxx.cpp" 
+	"LibRaw/internal/dcraw_fileio.cpp" "LibRaw/src/libraw_c_api.cpp"
+	"views/view.c"
+	)
 FILE(GLOB HEADER_FILES "*.h" "common/*.h")
 
-set(SOURCE_FILES ${SOURCE_FILES} "views/view.c")
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -147,23 +151,40 @@ if(GPHOTO2_FOUND)
 	add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
 
+#
 # Set default compile flags for GCC
+#
 if(CMAKE_COMPILER_IS_GNUC)
 	message(STATUS "GCC detected, adding compile flags")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers")
-	# -pthread is unrecognized on Windows and ansi standard causes errors
 	if(NOT WIN32)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pthread")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 	endif(NOT WIN32)
 endif(CMAKE_COMPILER_IS_GNUC)
 
+#
+# Generate config.h
+#
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
+include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
+
+#
+# build libdarktable
+#
 add_library(lib_darktable SHARED ${SOURCES})
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 target_link_libraries(lib_darktable ${LIBS})
+install(TARGETS lib_darktable DESTINATION lib/darktable)
+list(APPEND LIBS lib_darktable)
 
+#
+# build darktable
+#
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
 set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib/darktable)
-target_link_libraries(darktable lib_darktable ${LIBS})
+target_link_libraries(darktable ${LIBS})
+install(TARGETS darktable DESTINATION bin)
+
 
 #
 # Compile views modules
@@ -187,11 +208,6 @@ add_subdirectory(imageio)
 
 
 
-# Generate config.h
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
-include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
-install(TARGETS lib_darktable DESTINATION lib/darktable)
-install(TARGETS darktable DESTINATION bin)
 
 
