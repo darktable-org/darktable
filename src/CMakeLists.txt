@@ -133,8 +133,9 @@ if(CMAKE_COMPILER_IS_GNUC)
 	endif(NOT WIN32)
 endif(CMAKE_COMPILER_IS_GNUC)
 
-add_library(lib_darktable STATIC SHARED ${SOURCES})
+add_library(lib_darktable SHARED ${SOURCES})
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
+target_link_libraries(lib_darktable ${LIBS})
 
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
 set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib/darktable)
