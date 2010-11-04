@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 set(PROJECT_VERSION "0.6+")
 
+#
+# Configurable options
+#
+option(DARKTABLE_USE_GCONF_IF_AVAILABLE on)			# Does check if gconf is available by default
+
 # Avoid source tree pollution
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
@@ -14,6 +19,14 @@ if(NOT CMAKE_BUILD_TYPE)
 	message("WARNING: CMAKE_BUILD_TYPE is not defined!\n         Defaulting to CMAKE_BUILD_TYPE=RelWithDebInfo. Use ccmake to set a proper value.")
 	SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
+
+if(WIN32)
+	# use current directory
+	set(RELATIVE_PATH_FROM_BIN "." CACHE STRING "Relative path to library from binary")
+else(WIN32)
+	# use parent directory
+	set(RELATIVE_PATH_FROM_BIN ".." CACHE STRING "Relative path to library from binary")
+endif(WIN32)
 
 if(WIN32)
 	set(SHARE_INSTALL "." CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
@@ -63,7 +76,7 @@ endif(Gettext_FOUND)
 
 add_subdirectory(src)
 
-option(DARKTABLE_USE_GCONF_IF_AVAILABLE on)
+# Disable check of gconf on win32 platform
 if(WIN32)
 	option(DARKTABLE_USE_GCONF_IF_AVAILABLE off)
 endif(WIN32)
