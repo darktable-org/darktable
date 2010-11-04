@@ -71,8 +71,9 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 
-
 add_subdirectory(src)
+
+add_subdirectory(pixmaps)
 
 #
 # Add files that should go into shared
