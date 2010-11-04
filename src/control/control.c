@@ -36,6 +36,10 @@
 #  include <CoreServices/CoreServices.h>
 #endif
 
+#ifdef G_OS_WIN32
+#  include <windows.h>
+#endif
+
 #include <stdlib.h>
 #include <strings.h>
 #include <assert.h>
