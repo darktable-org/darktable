@@ -14,7 +14,7 @@ libfind_pkg_check_modules(GDK-PixBuf_PKGCONF gdk-pixbuf-2.0)
 find_path(GDK-PixBuf_INCLUDE_DIR
   NAMES gdk-pixbuf/gdk-pixbuf.h
   PATHS ${GDK-PixBuf_PKGCONF_INCLUDE_DIRS}
-  PATH_SUFFIXES gtk-2.0
+  PATH_SUFFIXES gtk-2.0 gdk-pixbuf-2.0
 )
 
 # Finally the library itself
