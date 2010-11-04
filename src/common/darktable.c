@@ -23,7 +23,9 @@
 #include "common/exif.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
+#ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
+#endif
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -105,9 +107,10 @@ int dt_init(int argc, char *argv[])
   // Initialize the filesystem watcher  
   darktable.fswatch=dt_fswatch_new();	
   
+#ifdef HAVE_GPHOTO2
   // Initialize the camera control 
   darktable.camctl=dt_camctl_new();
-  
+#endif
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
