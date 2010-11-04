@@ -20,6 +20,8 @@
 #include "gui/draw.h"
 #include <memory.h>
 #include <stdlib.h>
+#include <xmmintrin.h>
+#include <smmintrin.h>
 
 #define DT_GUI_EQUALIZER_INSET 5
 #define DT_GUI_CURVE_INFL .3f
@@ -82,11 +84,169 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+#if 0
+/* x in -1 .. 1 */
+static const __m128
+fast_exp_ps(const __m128 exponent)
+{
+  const __m128 x2 = _mm_mul_ps( exponent, exponent);
+  const __m128 term1 =  _mm_add_ps( _mm_set1_ps( 0.496879224f), _mm_mul_ps( _mm_set1_ps(0.190809553f), exponent));
+  const __m128 term2 = _mm_add_ps( _mm_set1_ps(1.0f), exponent);
+  return  _mm_add_ps( term2,  _mm_mul_ps( x2, term1));
+}
+#endif
+
+#if 1
+static inline float
+fastexp(const float x)
+{
+    return fmaxf(0.0f, (6+x*(6+x*(3+x)))*0.16666666f);
+}
+#endif
+
+#if 0
+static inline float
+fastexp(const float x)
+{
+    return fmaxf(0.0f, (120+x*(120+x*(60+x*(20+x*(5+x)))))*0.0083333333f);
+}
+#endif
+
+static const __m128
+weight (const float *c1, const float *c2, const float sharpen)
+{
+  // const __m128 dot = _mm_dp_ps(c1, c2, 0xff);
+  // float w = expf((*(float *)&dot)*sharpen);
+  const float wc = fastexp(-((c1[1] - c2[1])*(c1[1] - c2[1]) + (c1[2] - c2[2])*(c1[2] - c2[2])) * sharpen);
+  const float wl = fastexp(-(c1[0] - c2[0])*(c1[0] - c2[0]) * sharpen);
+  // printf("w = %f | %f %f %f -- %f %f %f\n", w, c1[0], c1[1], c1[2], c2[0], c2[1], c2[2]);
+  return _mm_set_ps(1.0f, wc, wc, wl);
+  // return fast_exp_ps(_mm_mul_ps(_mm_dp_ps(c1, c2), sharpen));
+}
+
+static void
+eaw_decompose (float *const out, const float *const in, float *const detail, const int scale,
+    const float sharpen, const int32_t width, const int32_t height)
+{
+  const int mult = 1<<scale;
+  const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=0;j<height;j++)
+  {
+    const __m128 *px = ((__m128 *)in) + j*width;
+    float *pdetail = detail + 4*j*width;
+    float *pcoarse = out + 4*j*width;
+    for(int i=0;i<width;i++)
+    {
+      // TODO: prefetch? _mm_prefetch()
+      __m128 sum = _mm_setzero_ps(), wgt = _mm_setzero_ps();
+      for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
+      {
+        if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width || j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height) continue;
+        const __m128 *px2 = px + mult*(ii-2) + width*mult*(jj-2);
+        const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
+        // const __m128 w = _mm_set1_ps(filter[ii]*filter[jj]*weight((float *)px, (float *)px2, sharpen));
+        sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
+        wgt = _mm_add_ps(wgt, w);
+      }
+      // sum = _mm_div_ps(sum, wgt);
+      sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); // less precise, but faster
+
+      // write back
+
+      // TODO: check which one's faster:
+      // memcpy?
+      // const __m128 d = _mm_sub_ps(*px, sum);
+      // memcpy(pdetail, &d, sizeof(float)*4);
+      // memcpy(pcoarse, &sum, sizeof(float)*4);
+      _mm_stream_ps(pdetail, _mm_sub_ps(*px, sum));
+      _mm_stream_ps(pcoarse, sum);
+      px++;
+      pdetail+=4;
+      pcoarse+=4;
+    }
+  }
+  _mm_sfence();
+}
+
+#if 0
+static void
+eaw_synthesize (float *const out, const float *const in, const float *const detail,
+    const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+{
+  const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
+  const __m128 boost     = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=0;j<height;j++)
+  {
+    // TODO: prefetch? _mm_prefetch()
+     const __m128 *pin = (__m128 *)in + j*width;
+    __m128 *pdetail = (__m128 *)detail + j*width;
+    float *pout = out + 4*j*width;
+    for(int i=0;i<width;i++)
+    {
+      const __m128 mask = (__m128)_mm_set1_epi32(0x10000000u);
+      const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*pdetail, mask), threshold));
+      const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, mask), _mm_andnot_ps(absamt, mask));
+      _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, amount)));
+      pdetail ++;
+      pin ++;
+      pout += 4;
+    }
+  }
+  _mm_sfence();
+}
+#endif
 
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // TODO:
+  float *detail = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height);
+  float *tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height);
+  float *buf1 = (float *)i, *buf2;
+  const int max_scale = 5;
+
+  if(max_scale & 1) buf2 = (float *)o;
+  else              buf2 = tmp;
+
+  /*
+  in -> tmp
+  tmp->out
+  out->tmp
+  tmp->out
+
+  in ->out
+  out->tmp
+  tmp->out
+  out->tmp
+  tmp->out
+  */
+
+  for(int scale=0;scale<max_scale;scale++)
+  {
+    eaw_decompose (buf2, buf1, detail, scale, .01f, roi_out->width, roi_out->height);
+    if(scale == 0)
+    {
+      if(max_scale & 1) buf1 = tmp;
+      else              buf1 = (float *)o;
+    }
+    float *buf3 = buf2;
+    buf2 = buf1;
+    buf1 = buf3;
+  }
+#if 0
+  eaw_synthesize ((float *)o, (float *)i, detail,
+    const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+#endif
+  free(detail);
+  free(tmp);
 }
 
 #ifdef HAVE_OPENCL
