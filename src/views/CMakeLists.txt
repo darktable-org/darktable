@@ -9,6 +9,9 @@ add_library(lighttable MODULE "lighttable.c")
 add_library(views_capture MODULE "capture.c")
 set_target_properties(views_capture PROPERTIES OUTPUT_NAME capture)
 
+foreach(module ${MODULES})
+	target_link_libraries(${module} ${LIBS})
+endforeach(module)
 
 foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION lib/darktable/views)

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
-set(MODULES export copy_history styles image select collect capture camera)
+set(MODULES export copy_history styles image select collect capture)
 
 add_library(export MODULE "export.c")
 add_library(copy_history MODULE "copy_history.c")
@@ -11,7 +11,11 @@ add_library(tagging MODULE "tagging.c")
 add_library(select MODULE "select.c")
 add_library(collect MODULE "collect.c")
 add_library(capture MODULE "capture.c")
-add_library(camera MODULE "camera.c")
+
+if(GPHOTO2_FOUND)
+	add_library(camera MODULE "camera.c")
+	set(MODULES ${MODULES} camera)
+endif(GPHOTO2_FOUND)
 
 foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION lib/darktable/plugins/lighttable)

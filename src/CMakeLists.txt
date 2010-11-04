@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
 FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"  
-	"common/camera_control.c" 
 	"common/collection.c" 
 	"common/colorlabels.c" 
 	"common/colormatrices.c" 
@@ -63,10 +62,12 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
 # Check for gconf2 / broken cmake module can't be included in the foreach() below
-find_package(GConf2)
-include_directories(${GCONF2_INCLUDE_DIRS})
-list(APPEND LIBS ${GCONF2_LIBRARIES})
-add_definitions(${GCONF2_DEFINITIONS})
+if(DARKTABLE_USE_GCONF_IF_AVAILABLE)
+	find_package(GConf2)
+	include_directories(${GCONF2_INCLUDE_DIRS})
+	list(APPEND LIBS ${GCONF2_LIBRARIES})
+	add_definitions(${GCONF2_DEFINITIONS})
+endif(DARKTABLE_USE_GCONF_IF_AVAILABLE)
 
 # Find all the libs that don't require extra parameters
 foreach(lib ${OUR_LIBS} GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
@@ -122,6 +123,11 @@ endif(GCONF2_FOUND)
 if(OPENEXR_FOUND)
 	add_definitions("-DHAVE_OPENEXR")
 endif(OPENEXR_FOUND)
+
+if(GPHOTO2_FOUND)
+	set(SOURCES ${SOURCES} "common/camera_control.c")
+	add_definitions("-DHAVE_GPHOTO2")
+endif(GPHOTO2_FOUND)
 
 # Set default compile flags for GCC
 if(CMAKE_COMPILER_IS_GNUC)

@@ -63,17 +63,13 @@ endif(Gettext_FOUND)
 
 add_subdirectory(src)
 
+option(DARKTABLE_USE_GCONF_IF_AVAILABLE on)
+if(WIN32)
+	option(DARKTABLE_USE_GCONF_IF_AVAILABLE off)
+endif(WIN32)
+
+#
+# Add files that should go into shared
+#
 set(SHARE_FILES darktable.gtkrc darktable.glade)
-
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
-
-#option(ENABLE_TOOLS "Enable extra tools (e.g. Singstar ripper)" ON)
-
-#if (ENABLE_TOOLS)
-#  add_subdirectory(tools)
-#endif (ENABLE_TOOLS)
-
-#if(WIN32)
-#	option(ENABLE_VERSIONING "Add number version information. This allows to add version information to exe. Be carefull, in beta (and a lot useless)" OFF)
-#	install(FILES win32/ConfigureSongDirectory.bat DESTINATION bin)
-#endif(WIN32)
