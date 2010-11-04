@@ -1,7 +1,17 @@
 project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
+
+#
+# Auto create version
+#
+exec_program(git ARGS describe --tags HEAD | "sed 's,^release-,,;s,-,+,;s,-,~,;'" OUTPUT_VARIABLE _dt_decoration)
+exec_program(git ARGS rev-parse --short HEAD OUTPUT_VARIABLE _dt_sha1sum)
+execute_process(COMMAND echo "#ifndef DT_VERSION_H\n#define DT_VERSION_H\n#define DT_VERSION_SHA1SUM \"${_dt_sha1sum}\"\n#define DT_VERSION_DECORATION \"${_dt_decoration}\"\n#endif" OUTPUT_VARIABLE _version_h)
+file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h "${_version_h}")
+
 set(PROJECT_VERSION "0.6+")
+
 
 include(cmake/darktable-packaging.cmake)
 
