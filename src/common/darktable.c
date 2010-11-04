@@ -229,8 +229,9 @@ void dt_cleanup()
   free(darktable.conf);
   dt_points_cleanup(darktable.points);
   free(darktable.points);
-
+#ifdef HAVE_GPHOTO2
   dt_camctl_destroy(darktable.camctl);
+#endif
   dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
 
