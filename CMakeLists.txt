@@ -5,10 +5,7 @@ set(PROJECT_VERSION "0.6+")
 
 include(cmake/darktable-packaging.cmake)
 
-#
-# Configurable options
-#
-option(DARKTABLE_USE_GCONF_IF_AVAILABLE on)			# Does check if gconf is available by default
+
 
 # Avoid source tree pollution
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
@@ -74,12 +71,8 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 
-add_subdirectory(src)
 
-# Disable check of gconf on win32 platform
-if(WIN32)
-	option(DARKTABLE_USE_GCONF_IF_AVAILABLE off)
-endif(WIN32)
+add_subdirectory(src)
 
 #
 # Add files that should go into shared

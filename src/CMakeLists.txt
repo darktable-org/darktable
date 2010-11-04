@@ -84,12 +84,10 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
 # Check for gconf2 / broken cmake module can't be included in the foreach() below
-if(DARKTABLE_USE_GCONF_IF_AVAILABLE)
-	find_package(GConf2)
-	include_directories(${GCONF2_INCLUDE_DIRS})
-	list(APPEND LIBS ${GCONF2_LIBRARIES})
-	add_definitions(${GCONF2_DEFINITIONS})
-endif(DARKTABLE_USE_GCONF_IF_AVAILABLE)
+find_package(GConf2)
+include_directories(${GCONF2_INCLUDE_DIRS})
+list(APPEND LIBS ${GCONF2_LIBRARIES})
+add_definitions(${GCONF2_DEFINITIONS})
 
 # Find all the libs that don't require extra parameters
 foreach(lib ${OUR_LIBS} GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
