@@ -11,13 +11,19 @@ add_library(tagging MODULE "tagging.c")
 add_library(select MODULE "select.c")
 add_library(collect MODULE "collect.c")
 
-
+# check if gphoto2 found and add build of camera modules...
 if(GPHOTO2_FOUND)
 	add_library(capture MODULE "capture.c")
 	add_library(camera MODULE "camera.c")
 	set(MODULES ${MODULES} camera)
 endif(GPHOTO2_FOUND)
 
+# Add libs references
+foreach(module ${MODULES})
+	target_link_libraries(${module} ${LIBS})
+endforeach(module)
+
+# Add installation target for each module
 foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION lib/darktable/plugins/lighttable)
 endforeach(module)
