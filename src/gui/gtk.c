@@ -950,7 +950,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gchar *themefile = dt_conf_get_string("themefile");
   snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
-    snprintf(path, 1023, "%s/%s", DATADIR, themefile ? themefile : "darktable.gtkrc");
+    snprintf(path, 1023, "%s/%s", DARKTABLE_DATADIR, themefile ? themefile : "darktable.gtkrc");
   (void)setenv("GTK2_RC_FILES", path, 1);
 
   GtkWidget *widget;
@@ -981,11 +981,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
   else
   {
-    snprintf(path, 1023, "%s/darktable.glade", DATADIR);
+    snprintf(path, 1023, "%s/darktable.glade", DARKTABLE_DATADIR);
     if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
     else
     {
-      fprintf(stderr, "[gtk_init] could not find darktable.glade in . or %s!\n", DATADIR);
+      fprintf(stderr, "[gtk_init] could not find darktable.glade in . or %s!\n", DARKTABLE_DATADIR);
       return 1;
     }
   }

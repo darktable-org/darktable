@@ -94,7 +94,7 @@ int dt_init(int argc, char *argv[])
   }
 
 #ifdef HAVE_GEGL
-  (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
+  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
   // thread-safe init:
@@ -308,7 +308,7 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
   else
   { // no idea where we have been called. use compiled in path
     g_free(curr);
-    snprintf(datadir, bufsize, "%s/darktable", LIBDIR);
+    snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
     return;
   }
   size_t len = MIN(strlen(datadir), bufsize);
@@ -319,7 +319,7 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
   strcpy(t, "/lib/darktable");
   g_free(curr);
 #else
-  snprintf(datadir, bufsize, "%s/darktable", LIBDIR);
+  snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
 #endif
 }
 
@@ -335,7 +335,7 @@ void dt_get_datadir(char *datadir, size_t bufsize)
   else
   { // no idea where we have been called. use compiled in path
     g_free(curr);
-    snprintf(datadir, bufsize, "%s", DATADIR);
+    snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
     return;
   }
   size_t len = MIN(strlen(datadir), bufsize);
@@ -346,7 +346,7 @@ void dt_get_datadir(char *datadir, size_t bufsize)
   strcpy(t, "/share/darktable");
   g_free(curr);
 #else
-  snprintf(datadir, bufsize, "%s", DATADIR);
+  snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
 #endif
 }
 
