@@ -54,19 +54,22 @@ endif(OpenMP_FOUND)
 find_package(GTK2 2.6 REQUIRED gtk glade)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
+add_definitions(${GTK2_DEFINITIONS})
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
+add_definitions(${LIBXML2_DEFINITIONS})
 
 # Check for gconf2 / broken cmake module can't be included in the foreach() below
 find_package(GConf2)
 include_directories(${GCONF2_INCLUDE_DIRS})
 list(APPEND LIBS ${GCONF2_LIBRARIES})
+add_definitions(${GCONF2_DEFINITIONS})
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL TIFF LCMS)
+foreach(lib ${OUR_LIBS} GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -115,6 +118,10 @@ endif(INOTIFY_FOUND)
 if(GCONF2_FOUND)
 	add_definitions("-DHAVE_GCONF")
 endif(GCONF2_FOUND)
+
+if(OPENEXR_FOUND)
+	add_definitions("-DHAVE_OPENEXR")
+endif(OPENEXR_FOUND)
 
 # Set default compile flags for GCC
 if(CMAKE_COMPILER_IS_GNUC)
