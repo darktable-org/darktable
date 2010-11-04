@@ -23,7 +23,25 @@ FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"
 	"common/tags.c" 
 	"common/variables.c" 
 	"common/pwstorage/pwstorage.c" 
-	"common/pwstorage/backend_gconf.c" "control/*.c"  "control/jobs/*.c"  "develop/develop.c" "develop/imageop.c"  "develop/pixelpipe.c" "dtgtk/*.c" "gui/*.c"  
+	"common/pwstorage/backend_gconf.c" "control/*.c"  
+	"control/jobs/control_jobs.c"  
+	"control/jobs/develop_jobs.c"  
+	"control/jobs/film_jobs.c"  
+	"control/jobs/image_jobs.c"  
+	"develop/develop.c" "develop/imageop.c"  "develop/pixelpipe.c" "dtgtk/*.c" 
+	"gui/background_jobs.c"  
+	"gui/contrast.c"  
+	"gui/filmview.c"  
+	"gui/gtk.c"  
+	"gui/histogram.c"  
+	"gui/iop_history.c"  
+	"gui/iop_modulegroups.c"  
+	"gui/metadata.c"  
+	"gui/navigation.c"  
+	"gui/preferences.c"  
+	"gui/presets.c"  
+	"gui/styles_dialog.c"  
+	"gui/tool_colorlabels.c"  
 	"imageio/*.c" "libs/lib.*" "LibRaw/internal/dcraw_common.cpp" "LibRaw/src/libraw_cxx.cpp" 
 	"LibRaw/internal/dcraw_fileio.cpp" "LibRaw/src/libraw_c_api.cpp")
 FILE(GLOB HEADER_FILES "*.h" "common/*.h")
@@ -125,7 +143,7 @@ if(OPENEXR_FOUND)
 endif(OPENEXR_FOUND)
 
 if(GPHOTO2_FOUND)
-	set(SOURCES ${SOURCES} "common/camera_control.c")
+	set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/image_jobs.c" "gui/camera_import_dialog.c" "gui/devices.c" )
 	add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
 

@@ -30,7 +30,9 @@
 
 #include "common/darktable.h"
 #include "common/version.h"
-#include "common/camera_control.h"
+#ifdef HAVE_GPHOTO2
+#   include "common/camera_control.h"
+#endif
 #include "common/collection.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -777,6 +779,7 @@ static void _gui_switch_view_key_accel_callback(void *p)
   /* do some setup before switch view*/
   switch (view)
   {
+#ifdef HAVE_GPHOTO
     case DT_GUI_VIEW_SWITCH_TO_TETHERING:
       // switching to capture view using "plugins/capture/current_filmroll" as session...
       // and last used camera
@@ -786,6 +789,7 @@ static void _gui_switch_view_key_accel_callback(void *p)
         mode = DT_CAPTURE;
       }
     break;
+#endif
     
     case DT_GUI_VIEW_SWITCH_TO_DARKROOM:
       mode = DT_DEVELOP;
