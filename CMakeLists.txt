@@ -21,11 +21,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 if(WIN32)
-	# use current directory
-	set(RELATIVE_PATH_FROM_BIN "." CACHE STRING "Relative path to library from binary")
+	set(RELATIVE_PATH_FROM_BIN ${CMAKE_INSTALL_PREFIX} CACHE STRING "Relative path to library from binary")
 else(WIN32)
-	# use parent directory
-	set(RELATIVE_PATH_FROM_BIN ".." CACHE STRING "Relative path to library from binary")
+	set(RELATIVE_PATH_FROM_BIN ${CMAKE_INSTALL_PREFIX} CACHE STRING "Relative path to library from binary")
 endif(WIN32)
 
 if(WIN32)
