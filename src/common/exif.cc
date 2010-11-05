@@ -455,7 +455,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
     if (sRGB)
       exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
 
-    exifData["Exif.Image.Software"] = "Darktable "PACKAGE_VERSION;
+    exifData["Exif.Image.Software"] = PACKAGE_STRING;
 
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);

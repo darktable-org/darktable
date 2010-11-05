@@ -426,7 +426,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       for(int k=0;k<3;k++) module->picked_color[k] = rgb[k];
 
       pthread_mutex_unlock(&pipe->busy_mutex);
-      int needlock = pthread_self() != darktable.control->gui_thread;
+      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
       if(needlock) gdk_threads_enter();
       gtk_widget_queue_draw(module->widget);
       if(needlock) gdk_threads_leave();

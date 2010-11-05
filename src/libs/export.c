@@ -258,7 +258,7 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
     // Lets try to set selected format if fail select first in list..
     k = dt_conf_get_int("plugins/lighttable/export/format");
     GList *it = g_list_nth(darktable.imageio->plugins_format, k);
-    if( _combo_box_set_active_text( d->format, ((dt_imageio_module_format_t *)it->data)->name() ) == FALSE )
+    if( it==NULL || _combo_box_set_active_text( d->format, ((dt_imageio_module_format_t *)it->data)->name() ) == FALSE )
       gtk_combo_box_set_active( d->format, 0);
     
     gtk_widget_show_all(GTK_WIDGET(d->storage_box));

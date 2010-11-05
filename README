@@ -9,11 +9,10 @@ other used packages (supplied in the source tree):
  - LibRaw nikon_curve (taken from ufraw)
 
 then, type:
-
- $ ./autogen.sh
- $ ./configure [--enable-debug] --prefix=/usr
- # make install
- $ darktable
+$ mkdir build && cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+# make install
+$ darktable
 
 (the first step is only necessary when building from git for the first time)
 and enjoy!

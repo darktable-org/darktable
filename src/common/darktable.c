@@ -16,14 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "../config.h"
+  #include "config.h"
 #endif
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/exif.h"
 #include "common/fswatch.h"
 #include "common/pwstorage/pwstorage.h"
+#ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
+#endif
 #include "common/film.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -92,7 +94,7 @@ int dt_init(int argc, char *argv[])
   }
 
 #ifdef HAVE_GEGL
-  (void)setenv("GEGL_PATH", DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
+  (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
   // thread-safe init:
@@ -105,9 +107,10 @@ int dt_init(int argc, char *argv[])
   // Initialize the filesystem watcher  
   darktable.fswatch=dt_fswatch_new();	
   
+#ifdef HAVE_GPHOTO2
   // Initialize the camera control 
   darktable.camctl=dt_camctl_new();
-  
+#endif
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
@@ -226,8 +229,9 @@ void dt_cleanup()
   free(darktable.conf);
   dt_points_cleanup(darktable.points);
   free(darktable.points);
-
+#ifdef HAVE_GPHOTO2
   dt_camctl_destroy(darktable.camctl);
+#endif
   dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
 
@@ -305,7 +309,7 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
   else
   { // no idea where we have been called. use compiled in path
     g_free(curr);
-    snprintf(datadir, bufsize, "%s/darktable", LIBDIR);
+    snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
     return;
   }
   size_t len = MIN(strlen(datadir), bufsize);
@@ -316,7 +320,7 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
   strcpy(t, "/lib/darktable");
   g_free(curr);
 #else
-  snprintf(datadir, bufsize, "%s/darktable", LIBDIR);
+  snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
 #endif
 }
 
@@ -332,7 +336,7 @@ void dt_get_datadir(char *datadir, size_t bufsize)
   else
   { // no idea where we have been called. use compiled in path
     g_free(curr);
-    snprintf(datadir, bufsize, "%s", DATADIR);
+    snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
     return;
   }
   size_t len = MIN(strlen(datadir), bufsize);
@@ -343,7 +347,7 @@ void dt_get_datadir(char *datadir, size_t bufsize)
   strcpy(t, "/share/darktable");
   g_free(curr);
 #else
-  snprintf(datadir, bufsize, "%s", DATADIR);
+  snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
 #endif
 }
 

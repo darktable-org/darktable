@@ -36,6 +36,10 @@
 #  include <CoreServices/CoreServices.h>
 #endif
 
+#ifdef G_OS_WIN32
+#  include <windows.h>
+#endif
+
 #include <stdlib.h>
 #include <strings.h>
 #include <assert.h>
@@ -710,18 +714,18 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 int32_t dt_control_get_threadid()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread[threadid] != pthread_self() && threadid < darktable.control->num_threads-1)
+  while( !pthread_equal(darktable.control->thread[threadid],pthread_self()) && threadid < darktable.control->num_threads-1)
     threadid++;
-  assert(darktable.control->thread[threadid] == pthread_self());
+  assert(pthread_equal(darktable.control->thread[threadid],pthread_self()));
   return threadid;
 }
 
 int32_t dt_control_get_threadid_res()
 {
   int32_t threadid = 0;
-  while(darktable.control->thread_res[threadid] != pthread_self() && threadid < DT_CTL_WORKER_RESERVED-1)
+  while(!pthread_equal(darktable.control->thread_res[threadid],pthread_self()) && threadid < DT_CTL_WORKER_RESERVED-1)
     threadid++;
-  assert(darktable.control->thread_res[threadid] == pthread_self());
+  assert(pthread_equal(darktable.control->thread_res[threadid], pthread_self()));
   return threadid;
 }
 
@@ -1064,7 +1068,7 @@ void dt_control_queue_draw_all()
 {
   if(dt_control_running())
   {
-    int needlock = pthread_self() != darktable.control->gui_thread;
+    int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
     if(needlock) gdk_threads_enter();
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_queue_draw(widget);
@@ -1076,9 +1080,9 @@ void dt_control_queue_draw(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    if(pthread_self() != darktable.control->gui_thread) gdk_threads_enter();
+    if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
     gtk_widget_queue_draw(widget);
-    if(pthread_self() != darktable.control->gui_thread) gdk_threads_leave();
+    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
   }
 }
 
@@ -1346,7 +1350,7 @@ void dt_control_clear_history_items(int32_t num)
 
 void dt_control_update_recent_films()
 {
-  int needlock = pthread_self() != darktable.control->gui_thread;
+  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
   /* get the recent film vbox */
   GtkWidget *sb = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");

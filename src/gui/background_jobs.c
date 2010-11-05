@@ -80,7 +80,7 @@ void dt_gui_background_jobs_can_cancel(const dt_gui_job_t *j, dt_job_t *job)
 const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gchar *message)
 {
   // we call gtk stuff, possibly from a worker thread:
-  int needlock = pthread_self() != darktable.control->gui_thread;
+  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
   /* initialize a dt_gui_job */
   dt_gui_job_t *j=g_malloc(sizeof(dt_gui_job_t));
@@ -120,7 +120,7 @@ const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gch
 
 void dt_gui_background_jobs_destroy(const dt_gui_job_t *j) 
 {
-  int needlock = pthread_self() != darktable.control->gui_thread;
+  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
   // remove widget if not already removed from jobcontainer...
   GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "jobs_content_box");
@@ -139,7 +139,7 @@ void dt_gui_background_jobs_destroy(const dt_gui_job_t *j)
 void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *message)
 {
   if(!darktable.control->running) return;
-  int needlock = pthread_self() != darktable.control->gui_thread;
+  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
  
  // g_static_mutex_lock ( &_gui_background_mutex );
@@ -151,7 +151,7 @@ void dt_gui_background_jobs_set_message(const dt_gui_job_t *j,const gchar *messa
 void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
 {
   if(!darktable.control->running) return;
-  int needlock = pthread_self() != darktable.control->gui_thread;
+  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
   
   // g_static_mutex_lock ( &_gui_background_mutex );

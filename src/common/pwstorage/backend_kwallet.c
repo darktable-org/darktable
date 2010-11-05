@@ -55,7 +55,7 @@
 // http://websvn.kde.org/trunk/KDE/kdelibs/kdeui/util/kwallet.cpp?revision=1107541&view=markup
 
 #ifdef HAVE_CONFIG_H
-#include "../config.h"
+#include "config.h"
 #endif
 
 #include "backend_kwallet.h"

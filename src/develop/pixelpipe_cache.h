@@ -18,7 +18,7 @@
 #ifndef DT_PIXELPIPE_CACHE_H
 #define DT_PIXELPIPE_CACHE_H
 
-
+#include <inttypes.h>
 /**
  * implements a simple pixel cache suitable for caching float images
  * corresponding to history items and zoom/pan settings in the develop module.
