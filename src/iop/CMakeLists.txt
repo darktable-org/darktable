@@ -38,6 +38,10 @@ add_library(zonesystem MODULE "zonesystem.c")
 add_library(watermark MODULE "watermark.c")
 
 foreach(module ${MODULES})
+	target_link_libraries(${module} ${LIBS})
+endforeach(module)
+
+foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION lib/darktable/plugins)
 endforeach(module)
 
