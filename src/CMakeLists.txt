@@ -45,8 +45,7 @@ FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"
 	"gui/presets.c"  
 	"gui/styles_dialog.c"  
 	"gui/tool_colorlabels.c"  
-	"imageio/*.c" "libs/lib.c" "LibRaw/internal/dcraw_common.cpp" "LibRaw/src/libraw_cxx.cpp" 
-	"LibRaw/internal/dcraw_fileio.cpp" "LibRaw/src/libraw_c_api.cpp"
+	"imageio/*.c" "libs/lib.c"
 	"views/view.c"
 	)
 FILE(GLOB HEADER_FILES "*.h" "common/*.h")
@@ -84,10 +83,17 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
 # Check for gconf2 / broken cmake module can't be included in the foreach() below
-find_package(GConf2)
-include_directories(${GCONF2_INCLUDE_DIRS})
-list(APPEND LIBS ${GCONF2_LIBRARIES})
-add_definitions(${GCONF2_DEFINITIONS})
+if(WIN32)
+	message("-- Win32 does not support gconf backend, disabling it.")
+	set(USE_GCONF_BACKEND OFF)
+endif(WIN32)
+
+if(USE_GCONF_BACKEND)
+	find_package(GConf2)
+	include_directories(${GCONF2_INCLUDE_DIRS})
+	list(APPEND LIBS ${GCONF2_LIBRARIES})
+	add_definitions(${GCONF2_DEFINITIONS})
+endif(USE_GCONF_BACKEND)
 
 # Find all the libs that don't require extra parameters
 foreach(lib ${OUR_LIBS} Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
@@ -166,45 +172,41 @@ endif(CMAKE_COMPILER_IS_GNUC)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
+
+
 #
 # build libdarktable
 #
 add_library(lib_darktable SHARED ${SOURCES})
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
-target_link_libraries(lib_darktable ${LIBS})
+target_link_libraries(lib_darktable ${LIBS} libraw_r)
 install(TARGETS lib_darktable DESTINATION lib/darktable)
 list(APPEND LIBS lib_darktable)
 
+# Compile views modules
+add_subdirectory(LibRaw)
+
+# Compile views modules
+add_subdirectory(views)
+
+# Compile lighttable modules
+add_subdirectory(libs)
+
+# Compile darkroom modules
+add_subdirectory(iop)
+
+# Compile darkroom modules
+add_subdirectory(imageio)
+
+
+
 #
-# build darktable
+# build darktable executable
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
 set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib/darktable)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
-
-
-#
-# Compile views modules
-#
-add_subdirectory(views)
-
-#
-# Compile lighttable modules
-#
-add_subdirectory(libs)
-
-#
-# Compile darkroom modules
-#
-add_subdirectory(iop)
-
-#
-# Compile darkroom modules
-#
-add_subdirectory(imageio)
-
-
 
 
 

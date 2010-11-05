@@ -2,6 +2,9 @@ project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
+option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
+
+
 #
 # Auto create version
 #
@@ -14,7 +17,6 @@ set(PROJECT_VERSION "${_dt_decoration}")
 
 
 include(cmake/darktable-packaging.cmake)
-
 
 # Avoid source tree pollution
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
