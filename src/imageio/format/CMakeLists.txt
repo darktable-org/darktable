@@ -15,7 +15,9 @@ if(OPENEXR_FOUND)
 	add_library(exr MODULE "exr.cc")
 endif(OPENEXR_FOUND)
 
+
 foreach(module ${MODULES})
+	target_link_libraries(${module} ${LIBS})
 	install(TARGETS  ${module} DESTINATION lib/darktable/plugins/imageio/format)
 endforeach(module)
 

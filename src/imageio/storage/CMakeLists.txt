@@ -8,6 +8,7 @@ foreach(module ${MODULES})
 endforeach(module)
 
 foreach(module ${MODULES})
+	target_link_libraries(${module} ${LIBS})
 	install(TARGETS  ${module} DESTINATION lib/darktable/plugins/imageio/storage)
 endforeach(module)
 
