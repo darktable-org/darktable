@@ -213,7 +213,7 @@ void*
 get_params(dt_imageio_module_storage_t *self, int* size)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
-  bzero(d, sizeof(dt_imageio_disk_t));
+  memset(d, 0, sizeof(dt_imageio_disk_t));
   // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
   *size = sizeof(dt_imageio_disk_t) - sizeof(void *);
   disk_t *g = (disk_t *)self->gui_data;

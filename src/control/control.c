@@ -487,7 +487,7 @@ void dt_control_cleanup(dt_control_t *s)
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
 {
-  bzero(j, sizeof(dt_job_t));
+  memset(j, 0, sizeof(dt_job_t));
 #ifdef DT_CONTROL_JOB_DEBUG
   va_list ap;
   va_start(ap, msg);

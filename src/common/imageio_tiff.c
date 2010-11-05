@@ -208,8 +208,8 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   }
   else
   { // scale to fit
-    if(mip == DT_IMAGE_MIP4) bzero(img->mip[mip], 4*p_wd*p_ht*sizeof(uint8_t));
-    else                     bzero(img->mipf,     3*p_wd*p_ht*sizeof(float));
+    if(mip == DT_IMAGE_MIP4) memset(img->mip[mip], 0, 4*p_wd*p_ht*sizeof(uint8_t));
+    else                     memset(img->mipf, 0,     3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
     if(mip == DT_IMAGE_MIP4)
     for(int j=0;j<p_ht2 && scale*j<height;j++) for(int i=0;i<p_wd2 && scale*i < width;i++)

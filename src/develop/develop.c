@@ -97,8 +97,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
     dev->histogram = (float *)malloc(sizeof(float)*4*256);
     dev->histogram_pre = (float *)malloc(sizeof(float)*4*256);
-    bzero(dev->histogram, sizeof(float)*256*4);
-    bzero(dev->histogram_pre, sizeof(float)*256*4);
+    memset(dev->histogram, 0, sizeof(float)*256*4);
+    memset(dev->histogram_pre, 0, sizeof(float)*256*4);
     dev->histogram_max = -1;
     dev->histogram_pre_max = -1;
 

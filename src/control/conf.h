@@ -62,7 +62,7 @@ static inline int dt_conf_get_var_pos(const char *name)
   }
   int num = darktable.conf->num++;
   snprintf(darktable.conf->varname[num], DT_CONF_MAX_VAR_BUF, "%s", name);
-  bzero(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF);
+  memset(darktable.conf->varval[num], 0, DT_CONF_MAX_VAR_BUF);
   return num;
 }
 #endif
@@ -253,8 +253,8 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   cf->gconf = gconf_client_get_default();
   return;
 #else
-  bzero(cf->varname, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
-  bzero(cf->varval,  DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
+  memset(cf->varname,0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
+  memset(cf->varval, 0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
   pthread_mutex_init(&darktable.conf->mutex, NULL);
   snprintf(darktable.conf->filename, 1024, "%s", filename);
   darktable.conf->num = 0;

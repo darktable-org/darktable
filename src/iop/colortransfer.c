@@ -115,7 +115,7 @@ static void
 capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 {
   // build separate histogram
-  bzero(hist, HISTN*sizeof(int));
+  memset(hist,0, HISTN*sizeof(int));
   for(int k=0;k<roi->height;k++) for(int i=0;i<roi->width;i++)
   {
     const int bin = CLAMP(HISTN*col[3*(k*roi->width+i)+0]/100.0, 0, HISTN-1);
@@ -374,9 +374,9 @@ spinbutton_changed (GtkSpinButton *button, dt_iop_module_t *self)
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
 //  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   p->n = gtk_spin_button_get_value(button);
-  bzero(p->hist, sizeof(float)*HISTN);
-  bzero(p->mean, sizeof(float)*MAXN*2);
-  bzero(p->var,  sizeof(float)*MAXN*2);
+  memset(p->hist,0, sizeof(float)*HISTN);
+  memset(p->mean,0, sizeof(float)*MAXN*2);
+  memset(p->var,0,  sizeof(float)*MAXN*2);
   //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   dt_control_queue_draw(self->widget);
 }
@@ -518,9 +518,9 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
   tmp.flag = NEUTRAL;
-  bzero(tmp.hist, sizeof(float)*HISTN);
-  bzero(tmp.mean, sizeof(float)*MAXN*2);
-  bzero(tmp.var,  sizeof(float)*MAXN*2);
+  memset(tmp.hist, 0, sizeof(float)*HISTN);
+  memset(tmp.mean, 0, sizeof(float)*MAXN*2);
+  memset(tmp.var, 0,  sizeof(float)*MAXN*2);
   tmp.n = 3;
   memcpy(module->params, &tmp, sizeof(dt_iop_colortransfer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colortransfer_params_t));
