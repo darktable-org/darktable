@@ -60,8 +60,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/LibRaw)
 
 # initial compiler flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DHAVE_CONFIG_H -fno-leading-underscore")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H -fno-leading-underscore")
+add_definitions("-DHAVE_CONFIG_H")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
 # Check for openmp
 find_package(OpenMP)
@@ -190,7 +190,6 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 add_library(lib_darktable SHARED ${SOURCES})
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
-
 target_link_libraries(lib_darktable ${LIBS} libraw_r)
 install(TARGETS lib_darktable DESTINATION lib/darktable)
 list(APPEND LIBS lib_darktable)
