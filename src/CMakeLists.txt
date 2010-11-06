@@ -179,6 +179,8 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 #
 add_library(lib_darktable SHARED ${SOURCES})
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
+set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
+
 target_link_libraries(lib_darktable ${LIBS} libraw_r)
 install(TARGETS lib_darktable DESTINATION lib/darktable)
 list(APPEND LIBS lib_darktable)
@@ -205,6 +207,7 @@ add_subdirectory(imageio)
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
 set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib/darktable)
+set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
 
