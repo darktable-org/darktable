@@ -11,7 +11,7 @@ add_library(pfm MODULE "pfm.c")
 add_library(tiff MODULE "tiff.c")
 
 if(OPENEXR_FOUND)
-	set(MODULES ${MODUELS} "exr")
+	list(APPEND MODULES ${MODUELS} "exr")
 	add_library(exr MODULE "exr.cc")
 endif(OPENEXR_FOUND)
 
