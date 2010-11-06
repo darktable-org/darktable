@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 2.6)
 #
 # Add files for libdarktable
 #
-FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"  
+FILE(GLOB SOURCE_FILES
 	"common/collection.c" 
 	"common/colorlabels.c" 
 	"common/colormatrices.c" 
 	"common/colorspaces.c" 
 	"common/darktable.c" 
-	"common/exif.cc" 
+  "common/exif.cc" 
 	"common/film.c" 
 	"common/fswatch.c" 
 	"common/history.c" 
@@ -26,12 +26,16 @@ FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"
 	"common/tags.c" 
 	"common/variables.c" 
 	"common/pwstorage/pwstorage.c" 
-	"common/pwstorage/backend_gconf.c" "control/*.c"  
+	"common/pwstorage/backend_gconf.c"
+  "control/control.c"  
 	"control/jobs/control_jobs.c"  
 	"control/jobs/develop_jobs.c"  
 	"control/jobs/film_jobs.c"  
 	"control/jobs/image_jobs.c"  
-	"develop/develop.c" "develop/imageop.c"  "develop/pixelpipe.c" "dtgtk/*.c" 
+	"develop/develop.c"
+  "develop/imageop.c"
+  "develop/pixelpipe.c"
+  "dtgtk/*.c" 
 	"gui/background_jobs.c"  
 	"gui/contrast.c"  
 	"gui/filmview.c"  
@@ -45,10 +49,10 @@ FILE(GLOB SOURCE_FILES "*.c" "dtgtk/*.c"
 	"gui/presets.c"  
 	"gui/styles_dialog.c"  
 	"gui/tool_colorlabels.c"  
-	"imageio/*.c" "libs/lib.c"
+  "libs/lib.c"
 	"views/view.c"
 	)
-FILE(GLOB HEADER_FILES "*.h" "common/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -118,7 +122,7 @@ endif()
 find_package(DBUSGLIB)
 if(DBUSGLIB_FOUND)
 	message(DBUSGLIB_FOUND)
-	list(APPEND SOURCES "common/pwstorage/backend_kwallet.*")
+	list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
 	include_directories(${DBUSGLIB_INCLUDE_DIRS})
 	list(APPEND LIBS ${DBUSGLIB_LIBRARIES})
 	add_definitions("-DHAVE_KWALLET")
@@ -166,7 +170,7 @@ endif(GPHOTO2_FOUND)
 #
 if(CMAKE_COMPILER_IS_GNUC)
 	message(STATUS "GCC detected, adding compile flags")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -Wno-missing-field-initializers -ffast-math -O3 -mfpmath=sse -march=native")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -Wno-missing-field-initializers -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
 	if(NOT WIN32)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 	endif(NOT WIN32)

@@ -5,5 +5,7 @@ set(LIBRAW_SOURCES internal/dcraw_common.cpp src/libraw_cxx.cpp internal/dcraw_f
 #
 # build libdarktable
 #
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
 add_library(libraw_r STATIC ${LIBRAW_SOURCES})
 target_link_libraries(libraw_r)
