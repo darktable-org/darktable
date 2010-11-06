@@ -278,7 +278,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       // reserve new cache line: output
       if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output))
       {
-        bzero(*output, pipe->backbuf_size);
+        memset(*output, 0, pipe->backbuf_size);
         if(roi_out->scale < 0.5)
         {
           dt_iop_clip_and_zoom_hq_downsample(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,
@@ -369,7 +369,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     {
       float *pixel = (float *)input;
       dev->histogram_pre_max = 0;
-      bzero(dev->histogram_pre, sizeof(float)*4*64);
+      memset (dev->histogram_pre, 0, sizeof(float)*4*64);
       for(int j=0;j<roi_in.height;j+=3) for(int i=0;i<roi_in.width;i+=3)
       {
         uint8_t L = CLAMP(63/100.0*(pixel[3*j*roi_in.width+3*i]), 0, 63);
@@ -465,7 +465,7 @@ post_process_collect_info:
     {
       uint8_t *pixel = (uint8_t *)*output;
       dev->histogram_max = 0;
-      bzero(dev->histogram, sizeof(float)*4*64);
+      memset(dev->histogram, 0, sizeof(float)*4*64);
       for(int j=0;j<roi_out->height;j+=4) for(int i=0;i<roi_out->width;i+=4)
       {
         uint8_t rgb[3];

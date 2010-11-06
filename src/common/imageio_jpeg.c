@@ -16,14 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/colorspaces.h"
+
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
+#include "common/colorspaces.h"
 #include "common/imageio_jpeg.h"
 #include <setjmp.h>
-#include <lcms.h>
+
 
 // error functions
 

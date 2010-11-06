@@ -310,7 +310,7 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
   }
   else
   { // scale to fit
-    bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
+    memset(img->mipf,0, 3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(mip_wd/f_wd, mip_ht/f_ht);
     for(int j=0;j<p_ht && (int)(scale*j)<mip_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < mip_wd;i++)
     {
@@ -346,7 +346,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   }
   else
   { // scale to fit
-    bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
+    memset(img->mipf,0, 3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
     for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
     {
@@ -684,7 +684,7 @@ void dt_image_init(dt_image_t *img)
     dt_fswatch_remove(darktable.fswatch,DT_FSWATCH_IMAGE,img);
   
   for(int k=0;(int)k<(int)DT_IMAGE_MIPF;k++) img->mip[k] = NULL;
-  bzero(img->lock, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
+  memset(img->lock,0, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
   img->import_lock = 0;
   img->output_width = img->output_height = img->width = img->height = 0;
   img->mipf = NULL;
@@ -724,10 +724,10 @@ void dt_image_init(dt_image_t *img)
   img->cacheline = -1;
   img->force_reimport = 0;
   img->exif_inited = 0;
-  bzero(img->exif_maker, sizeof(img->exif_maker));
-  bzero(img->exif_model, sizeof(img->exif_model));
-  bzero(img->exif_lens, sizeof(img->exif_lens));
-  bzero(img->filename, sizeof(img->filename));
+  memset(img->exif_maker,0, sizeof(img->exif_maker));
+  memset(img->exif_model,0, sizeof(img->exif_model));
+  memset(img->exif_lens,0, sizeof(img->exif_lens));
+  memset(img->filename,0, sizeof(img->filename));
   strncpy(img->filename, "(unknown)", 10);
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
   strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
@@ -912,7 +912,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache, int32_t entries)
     dt_print(DT_DEBUG_CACHE, "[mipmap_cache_init] cache has %d entries for mip %d.\n", entries, k);
     cache->num_entries[k] = entries;
     cache->mip_lru[k] = (dt_image_t **)malloc(sizeof(dt_image_t*)*entries);
-    bzero(cache->mip_lru[k], sizeof(dt_image_t*)*entries);
+    memset(cache->mip_lru[k],0, sizeof(dt_image_t*)*entries);
   }
 }
 

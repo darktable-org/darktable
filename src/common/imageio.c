@@ -235,7 +235,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       }
       else
       { // scale to fit
-        bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+        memset(img->mip[DT_IMAGE_MIP4], 0, 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
         for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
         {
@@ -274,7 +274,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       }
       else
       { // scale to fit
-        bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+        memset(img->mip[DT_IMAGE_MIP4], 0, 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
         for(int j=0;j<p_ht2 && scale*j<image->height;j++) for(int i=0;i<p_wd2 && scale*i < image->width;i++)
         {
@@ -347,7 +347,7 @@ try_full_raw:
     }
     else
     { // scale to fit
-      bzero(img->mipf, 3*p_wd*p_ht*sizeof(float));
+      memset(img->mipf, 0, 3*p_wd*p_ht*sizeof(float));
       const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
       for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
       {
@@ -567,8 +567,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   }
   else
   { // scale to fit
-    if(mip == DT_IMAGE_MIP4) bzero(img->mip[mip], 4*p_wd*p_ht*sizeof(uint8_t));
-    else                     bzero(img->mipf,     3*p_wd*p_ht*sizeof(float));
+    if(mip == DT_IMAGE_MIP4) memset(img->mip[mip], 0,4*p_wd*p_ht*sizeof(uint8_t));
+    else                     memset(img->mipf, 0,     3*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
     if(mip == DT_IMAGE_MIP4)
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)

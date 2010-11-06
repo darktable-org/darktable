@@ -82,7 +82,7 @@ int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod)
 int dt_view_load_module(dt_view_t *view, const char *module)
 {
   int retval = -1;
-  bzero(view, sizeof(dt_view_t));
+  memset(view, 0, sizeof(dt_view_t));
   view->data = NULL;
   view->vscroll_size = view->vscroll_viewport_size = 1.0;
   view->hscroll_size = view->hscroll_viewport_size = 1.0;

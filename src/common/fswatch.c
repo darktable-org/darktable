@@ -67,9 +67,9 @@ static void *_fswatch_thread(void *data) {
   uint32_t res=0;
   uint32_t event_hdr_size=sizeof(inotify_event_t);
   inotify_event_t *event_hdr=g_malloc(sizeof(inotify_event_t));
-  bzero(event_hdr, event_hdr_size);
+  memset (event_hdr,0,event_hdr_size);
   char *name=g_malloc(2048);
-  bzero(name, 2048);
+  memset (name,0, 2048);
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Starting thread of context %lx\n",(unsigned long int)data);
   while(1) {
     // Blocking read loop of event fd into event
@@ -134,7 +134,7 @@ static void *_fswatch_thread(void *data) {
 const dt_fswatch_t* dt_fswatch_new()
 {
   dt_fswatch_t *fswatch=g_malloc(sizeof(dt_fswatch_t));
-  bzero(fswatch, sizeof(dt_fswatch_t));
+  memset (fswatch, 0, sizeof(dt_fswatch_t));
   if((fswatch->inotify_fd=inotify_init())==-1)
     return NULL;
   fswatch->items=NULL;
