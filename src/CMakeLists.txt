@@ -96,7 +96,7 @@ if(USE_GCONF_BACKEND)
 endif(USE_GCONF_BACKEND)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
+foreach(lib ${OUR_LIBS} GModule PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
