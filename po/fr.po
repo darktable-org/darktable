@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-03 19:21+0100\n"
-"PO-Revision-Date: 2010-11-03 19:44+0100\n"
+"POT-Creation-Date: 2010-11-06 17:45+0100\n"
+"PO-Revision-Date: 2010-11-06 19:32+0100\n"
 "Last-Translator: Olivier TRIBOUT <olivier.tribout@noos.fr>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -97,6 +97,7 @@ msgstr ""
 "id\n"
 "label de couleur"
 
+# choix de traduire "filmroll" par "dossier" plutôt que par "pellicule"
 #: ../darktable.glade.h:23
 #: ../src/libs/collect.c:303
 msgid "film roll"
@@ -119,6 +120,7 @@ msgstr "historique"
 msgid "images sorted by"
 msgstr "trier les images par"
 
+# les boutons d'action sont traduits par des verbes, leur bulle explicative par un verbe à la 3ème personne
 #: ../darktable.glade.h:28
 msgid "import film roll"
 msgstr "importer un dossier"
@@ -192,6 +194,7 @@ msgstr "ouvre le dossier sélectionné dans la table lumineuse"
 msgid "pick"
 msgstr "sélectionner"
 
+# lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../darktable.glade.h:45
 #: ../src/libs/image.c:82
 msgid "remove"
@@ -254,6 +257,7 @@ msgstr "toujours demander avant de supprimer un fichier image."
 msgid "always ask the user before any image is removed from db."
 msgstr "toujours demander avant d'enlever une image de la base de données."
 
+# "history stack" dans le contexte de la table lumineuse est traduit par "développement"
 #: ../darktable.schemas.in.h:8
 msgid "append or replace history stack if pasted"
 msgstr "empiler ou remplacer le développement"
@@ -275,7 +279,7 @@ msgstr "demander avant d'enlever des images"
 
 #: ../darktable.schemas.in.h:12
 msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
-msgstr "Créer une sauvegarde du fichier de cache afin d'éviter une perte des miniatures lors d'un crash (nécessite un redémarrage)."
+msgstr "créer une sauvegarde du fichier de cache afin d'éviter une perte des miniatures lors d'un crash (nécessite un redémarrage)"
 
 #: ../darktable.schemas.in.h:13
 #: ../src/gui/preferences_gen.h:393
@@ -304,7 +308,7 @@ msgstr "nom du fichier du thème utilisateur dans share/darktable/"
 
 #: ../darktable.schemas.in.h:18
 msgid "filename relative to your home directory, or starting with a slash (needs a restart)."
-msgstr "nom de fichier relatif au dossier home, ou commençant par un '/' (nécessite un redémarrage)."
+msgstr "nom de fichier relatif au dossier home, ou commençant par un '/' (nécessite un redémarrage)"
 
 #: ../darktable.schemas.in.h:19
 msgid "flag if backup of imported images should be performed"
@@ -333,7 +337,7 @@ msgstr "hauteur de l'image exportée, ou 0 pour ne pas changer d'échelle "
 
 #: ../darktable.schemas.in.h:25
 msgid "how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode). be warned: every thread will need about 1GB of memory (needs a restart)."
-msgstr "images raw (résolution max en virgule flottante en mémoire-tampon) à garder en mémoire principale. mettre cette valeur à nb_fils +1 si vous voulez exporter en multi-fils d'exécution (garder un pour le mode chambre noire). attention, chaque fil nécessite environ 1Go de mémoire (nécessite un redémarrage)."
+msgstr "images raw (résolution max en virgule flottante en mémoire-tampon) à garder en mémoire principale. mettre cette valeur à nb_fils +1 si vous voulez exporter en multi-fils d'exécution (garder un fil pour le mode chambre noire). attention, chaque fil nécessite environ 1Go de mémoire (nécessite un redémarrage)."
 
 #: ../darktable.schemas.in.h:26
 msgid "how many images are in one row"
@@ -360,99 +364,111 @@ msgid "if this number is smaller than the darktable internal version number, the
 msgstr "si ce nombre est plus petit que la version interne de darktable, les valeurs seront réinitialisées aux nouvelles valeurs par défaut."
 
 #: ../darktable.schemas.in.h:32
+msgid "ignore jpeg images when importing film rolls."
+msgstr "ignorer les images jpeg lors de l'import de dossiers"
+
+#: ../darktable.schemas.in.h:33
 #: ../src/gui/preferences_gen.h:409
 msgid "image cache file"
 msgstr "fichier de cache image"
 
-#: ../darktable.schemas.in.h:33
+#: ../darktable.schemas.in.h:34
 #: ../src/gui/preferences_gen.h:425
 msgid "image cache file backup"
 msgstr "sauvegarde du fichier de cache des images"
 
-#: ../darktable.schemas.in.h:34
+#: ../darktable.schemas.in.h:35
 msgid "jobcode of import job"
 msgstr "code projet de l'importation"
 
-#: ../darktable.schemas.in.h:35
+#: ../darktable.schemas.in.h:36
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "qualité jpeg des miniatures sauvegardées sur le disque"
 
-#: ../darktable.schemas.in.h:36
+#: ../darktable.schemas.in.h:37
 #: ../src/gui/preferences_gen.h:441
 msgid "memory in bytes to use for mipmap cache"
 msgstr "memoire (en octets) à utiliser pour le cache mipmap"
 
-#: ../darktable.schemas.in.h:37
+#: ../darktable.schemas.in.h:38
 msgid "name of capture job"
 msgstr "nom du projet de capture"
 
-#: ../darktable.schemas.in.h:38
+#: ../darktable.schemas.in.h:39
 #: ../src/gui/preferences_gen.h:491
 msgid "password storage backend to use"
 msgstr "stockage à utiliser pour les mots de passe"
 
-#: ../darktable.schemas.in.h:39
+#: ../darktable.schemas.in.h:40
 msgid "path of storage for captured images"
 msgstr "chemin de stockage des images capturées"
 
-#: ../darktable.schemas.in.h:40
+#: ../darktable.schemas.in.h:41
+msgid "recursive directory traversal when importing filmrolls."
+msgstr "importer les dossiers de façon récursive"
+
+#: ../darktable.schemas.in.h:42
 msgid "rename pattern for captured images"
 msgstr "modèle de renommage pour les images capturées"
 
-#: ../darktable.schemas.in.h:41
+#: ../darktable.schemas.in.h:43
 msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
 msgstr "sélectionner un affichage pour la table lumineuse: 0 -zoomable ou 1 -gestionnaire de fichiers"
 
-#: ../darktable.schemas.in.h:42
+#: ../darktable.schemas.in.h:44
 #: ../src/gui/preferences_gen.h:262
 msgid "size of the side panels in pixels"
 msgstr "taille des panneaux latéraux en pixels"
 
-#: ../darktable.schemas.in.h:43
+#: ../darktable.schemas.in.h:45
 msgid "small thumbnails to keep in main memory cache"
 msgstr "miniatures à conserver dans la mémoire cache principale"
 
-#: ../darktable.schemas.in.h:44
+#: ../darktable.schemas.in.h:46
 msgid "subpath pattern in storage for captured images"
 msgstr "modèle de sous-répertoire pour le stockage des images capturées"
 
-#: ../darktable.schemas.in.h:45
+#: ../darktable.schemas.in.h:47
 msgid "the name of backup directory to search for on mounted medias"
 msgstr "nom du répertoire de sauvegarde à chercher dans les supports montés"
 
-#: ../darktable.schemas.in.h:46
+#: ../darktable.schemas.in.h:48
 msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 msgstr "interface pour pwstorage: 0 - aucun, 1 - gconf (ne pas utiliser), 2 - kwallet, 3 - gnome keyring"
 
-#: ../darktable.schemas.in.h:47
+#: ../darktable.schemas.in.h:49
 msgid "these files can later be re-imported into a different database, preserving your changes to the image."
 msgstr "ces fichiers pourront être réimportés dans une base de données différente par la suite, tout en préservant les modifications apportées aux images."
 
-#: ../darktable.schemas.in.h:48
+#: ../darktable.schemas.in.h:50
 msgid "this overrides the per-image settings, if not set to `image'."
 msgstr "cela surcharge les réglages par image, sauf si `image' est sélectionné."
 
-#: ../darktable.schemas.in.h:49
+#: ../darktable.schemas.in.h:51
 msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
-msgstr "cette valeur inférieure à 1.0 sous-échantillonne les pixels de pré-visualisation pour un rendu plus rapide."
+msgstr "si cette valeur est inférieure à 1.0, darktable sous-échantillonne les pixels de pré-visualisation pour un rendu plus rapide."
 
-#: ../darktable.schemas.in.h:50
+#: ../darktable.schemas.in.h:52
 msgid "version of these dt-gconf entries"
 msgstr "version des entrées dt-gconf"
 
-#: ../darktable.schemas.in.h:51
+#: ../darktable.schemas.in.h:53
+msgid "when having raw+jpeg images together in one directory it makes no sense to import both. with this flag one can ignore all jpegs found."
+msgstr "lorsque des images raw+jpeg sont présentes dans un dossier, il est inutile d'importer les deux. cette option permet d'ignorer les fichiers jpeg."
+
+#: ../darktable.schemas.in.h:54
 msgid "which layout should lighttable mode show"
 msgstr "quel affichage pour le mode table lumineuse"
 
-#: ../darktable.schemas.in.h:52
+#: ../darktable.schemas.in.h:55
 msgid "width of the exported image"
 msgstr "largeur de l'image exportée"
 
-#: ../darktable.schemas.in.h:53
+#: ../darktable.schemas.in.h:56
 msgid "width of the exported image, or 0 if no scaling should be done."
 msgstr "largeur de l'image exportée, ou 0 pour ne pas changer d'échelle "
 
-#: ../darktable.schemas.in.h:54
+#: ../darktable.schemas.in.h:57
 #: ../src/gui/preferences_gen.h:475
 msgid "write a redundant sidecar file for each image"
 msgstr "écrire un fichier xmp redondant pour chaque image"
@@ -643,6 +659,7 @@ msgstr "réinitialiser les paramètres"
 msgid "presets"
 msgstr "pré-réglages"
 
+# dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
 #: ../src/libs/copy_history.c:43
 msgid "history stack"
 msgstr "développement"
@@ -656,12 +673,12 @@ msgid "xmp sidecar files"
 msgstr "fichiers xmp"
 
 #: ../src/libs/copy_history.c:70
-#: ../src/gui/gtk.c:700
+#: ../src/gui/gtk.c:733
 msgid "all files"
 msgstr "tous les fichiers"
 
 #: ../src/libs/copy_history.c:84
-#: ../src/gui/gtk.c:720
+#: ../src/gui/gtk.c:753
 #, c-format
 msgid "error loading file '%s'"
 msgstr "erreur de chargement du fichier '%s'"
@@ -679,6 +696,7 @@ msgstr ""
 "la première image \n"
 "sélectionnée (ctrl-c)"
 
+# lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
 #: ../src/libs/copy_history.c:198
 msgid "discard"
 msgstr "supprimer"
@@ -951,6 +969,7 @@ msgstr ""
 "écrit le développement et les tags\n"
 "dans un fichier attaché xmp"
 
+# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
 #: ../src/libs/image.c:100
 msgid "duplicate"
 msgstr "cloner"
@@ -1334,7 +1353,7 @@ msgstr "crée une image virtuelle avant d'appliquer le style"
 msgid "edit"
 msgstr "modifier"
 
-#: ../src/libs/styles.c:255
+#: ../src/libs/styles.c:253
 msgid "deletes the selected style in list above"
 msgstr "supprime le style sélectionné dans la liste ci-dessus"
 
@@ -2884,9 +2903,9 @@ msgid ""
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
-"entrer le chemin vers lequel exporter les images:\n"
+"entrer le chemin vers lequel exporter les images :\n"
 "$(ROLL_NAME) - dossier de l'image originelle\n"
-"$(FILE_DIRECTORY) - répertoire de l'image originelle\n"
+"$(FILE_DIRECTORY) - chemin  du dossier de l'image originelle\n"
 "$(FILE_NAME) - nom de base de l'image originelle\n"
 "$(FILE_EXTENSION) - extension de l'image originelle\n"
 "$(SEQUENCE) - séquence\n"
@@ -3023,27 +3042,43 @@ msgstr ""
 msgid "import film"
 msgstr "importer un dossier"
 
-#: ../src/gui/gtk.c:676
+#: ../src/gui/gtk.c:657
+msgid "import directories recursively"
+msgstr "importer les dossiers récursivement"
+
+#: ../src/gui/gtk.c:658
+msgid "recursively import subdirectories. each directory goes into a new film roll."
+msgstr "importe les dossiers de manière récursive"
+
+#: ../src/gui/gtk.c:665
+msgid "ignore jpeg files"
+msgstr "ignorer les fichiers jpeg"
+
+#: ../src/gui/gtk.c:666
+msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
+msgstr "les fichiers possédant une extension .jpg ou .jpeg ne sont pas importés. cela peut être utile lorsqu'un dossier possède des fichiers raw+jpeg."
+
+#: ../src/gui/gtk.c:709
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/gui/gtk.c:695
+#: ../src/gui/gtk.c:728
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/gui/gtk.c:1024
+#: ../src/gui/gtk.c:1057
 msgid "show global preferences"
 msgstr "montrer les préférences globales"
 
-#: ../src/gui/gtk.c:1152
+#: ../src/gui/gtk.c:1185
 msgid "take snapshot"
 msgstr "prendre un instantané"
 
-#: ../src/gui/gtk.c:1181
+#: ../src/gui/gtk.c:1214
 msgid "recently used film rolls"
 msgstr "dossiers récents"
 
-#: ../src/gui/gtk.c:1202
+#: ../src/gui/gtk.c:1235
 msgid "all film rolls"
 msgstr "tous les dossiers"
 
@@ -3085,8 +3120,8 @@ msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produise la même image"
 
 #: ../src/gui/iop_history.c:106
-msgid "create a style from current developed image and it's history stack"
-msgstr "crée un style depuis l'historique de l'image développée"
+msgid "create a style from currently developed image and its history stack"
+msgstr "crée un style depuis l'historique de l'image développée courante"
 
 #: ../src/gui/iop_history.c:130
 #: ../src/gui/iop_history.c:221
