@@ -2618,7 +2618,7 @@ msgstr "Quanto sfocare il blu"
 
 #: ../src/iop/profile_gamma.c:37
 msgid "unbreak input profile"
-msgstr "Ricostruisci profilo di ingresso"
+msgstr "Correzione profilo di ingresso"
 
 #: ../src/iop/clahe.c:67
 msgid "local contrast (slow)"
@@ -2971,7 +2971,7 @@ msgstr "* Contributori *"
 
 #: ../src/gui/gtk.c:426
 msgid "translator-credits"
-msgstr "Crediti - Traduttori"
+msgstr "Daniele Giorgis <daniele.giorgis@gmail.com>"
 
 #: ../src/gui/gtk.c:638
 msgid "import film"
