@@ -1415,7 +1415,7 @@ int LibRaw::rotate_fuji_raw(void)
 int LibRaw::dcraw_process(void)
 {
     int quality,i;
-    int iterations=-1, dcb_enhance=1, noiserd=0;
+    int iterations=-1, dcb_enhance=1;
     int eeci_refine_fl=0, es_med_passes_fl=0;
 
 
@@ -1475,8 +1475,6 @@ int LibRaw::dcraw_process(void)
 
 	if (O.dcb_iterations >= 0) iterations = O.dcb_iterations;
 	if (O.dcb_enhance_fl >=0 ) dcb_enhance = O.dcb_enhance_fl;
-	if (O.fbdd_noiserd >=0 ) noiserd = O.fbdd_noiserd;
-        //if (O.user_qual == 6) {verbose=1;} else {verbose=0;}
 	if (O.eeci_refine >=0 ) eeci_refine_fl = O.eeci_refine;
 	if (O.es_med_passes >0 ) es_med_passes_fl = O.es_med_passes;
 
@@ -1498,10 +1496,17 @@ int LibRaw::dcraw_process(void)
         pre_interpolate();
         SET_PROC_FLAG(LIBRAW_PROGRESS_PRE_INTERPOLATE);
 
-        if (quality == 5 && O.amaze_ca_refine >0 ) {CA_correct_RT();}
+        if (O.amaze_ca_refine)
+            {
+                CA_correct_RT();
+            }
+        if (O.fbdd_noiserd)
+            {
+                fbdd(O.fbdd_noiserd);	
+            }
+
         if (P1.filters && !O.document_mode) 
             {
-		if (noiserd>0) fbdd(noiserd);	
                 if (quality == 0)
                     lin_interpolate();
                 else if (quality == 1 || P1.colors > 3)

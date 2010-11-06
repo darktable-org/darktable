@@ -149,6 +149,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
+  const int ch = piece->colors;
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
 #ifdef _OPENMP
@@ -156,7 +157,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int c=0;c<3;c++) out[3*k+c] = in[3*k+c]*d->coeffs[c];
+    for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*d->coeffs[c];
   }
 }
 

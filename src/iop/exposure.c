@@ -52,6 +52,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)o;
   float black = d->black;
   float white = exp2f(-d->exposure);
+  const int ch = piece->colors;
 
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
   { // path for already exposed preview buffer
@@ -65,24 +66,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int i=0;i<3;i++) out[3*k+i] = fmaxf(0.0, (in[3*k+i]-black)*coeff[i]);
+    for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0, (in[ch*k+i]-black)*coeff[i]);
   }
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = scale;
 }
-
-#if 0
-void reload_defaults (struct dt_iop_module_t *self)
-{
-  dt_iop_exposure_params_t *p  = (dt_iop_exposure_params_t *)self->default_params;
-  dt_iop_exposure_params_t *fp = (dt_iop_exposure_params_t *)self->factory_params;
-  int cp = memcmp(self->default_params, self->params, self->params_size);
-  fp->black = p->black = 0.0f;//self->dev->image->black;
-  // FIXME: this function is called from render threads, but these values
-  // should be written by gui threads. but it is only a matter of gui synching..
-  if(!cp) memcpy(self->params, self->default_params, self->params_size);
-}
-#endif
 
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

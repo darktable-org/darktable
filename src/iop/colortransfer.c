@@ -284,6 +284,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int ch = piece->colors;
 
   if(data->flag == ACQUIRE)
   {
@@ -303,7 +304,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
       p->flag = ACQUIRE2;
     }
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
   }
   else if(data->flag == APPLY)
   { // apply histogram of L and clustering of (a,b)
@@ -314,12 +315,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0;k<roi_out->height;k++)
     {
-      int j = 3*roi_out->width*k;
+      int j = ch*roi_out->width*k;
       for(int i=0;i<roi_out->width;i++)
       { // L: match histogram
         out[j] = data->hist[hist[(int)CLAMP(HISTN*in[j]/100.0, 0, HISTN-1)]];
         out[j] = CLAMP(out[j], 0, 100);
-        j+=3;
+        j+=ch;
       }
     }
 
@@ -338,7 +339,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int k=0;k<roi_out->height;k++)
     {
       float weight[MAXN];
-      int j = 3*roi_out->width*k;
+      int j = ch*roi_out->width*k;
       for(int i=0;i<roi_out->width;i++)
       {
         const float L = in[j];
@@ -357,13 +358,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           out[j+2] += weight[c] * 100.0/out[j] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
         }
 #endif
-        j+=3;
+        j+=ch;
       }
     }
   }
   else
   {
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
   }
 }
 

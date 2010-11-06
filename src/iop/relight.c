@@ -149,6 +149,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int ch = piece->colors;
  
   // Precalculate parameters for gauss function
   const float a = 1.0;                                                                // Height of top
@@ -160,7 +161,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    const float lightness = in[3*k]/100.0;
+    const float lightness = in[ch*k]/100.0;
     const float x = -1.0+(lightness*2.0);
     float gauss = GAUSS(a,b,c,x);
 
@@ -172,9 +173,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if(isnan(relight) || isinf(relight)) 
       relight = 1.0;
 
-    out[3*k+0] = 100.0*CLIP (lightness*relight);
-    out[3*k+1] = in[3*k+1];
-    out[3*k+2] = in[3*k+2];
+    out[ch*k+0] = 100.0*CLIP (lightness*relight);
+    out[ch*k+1] = in[ch*k+1];
+    out[ch*k+2] = in[ch*k+2];
   }
 }
 
@@ -364,7 +365,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set (GTK_OBJECT (g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
         G_CALLBACK (center_callback), self);
-  g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, 0));
+  g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
   g_signal_connect (G_OBJECT (g->tbutton1), "toggled",
         G_CALLBACK (picker_callback), self);
  

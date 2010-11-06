@@ -137,6 +137,7 @@ find_package(OpenCL)
 if(OPENCL_FOUND)
   include_directories($OPENCL_INCLUDE_DIR)
   list(APPEND LIBS $OPENCL_LIBRARIES)
+  list(APPEND SOURCE_FILES "common/opencl.c")
 	add_definitions("-DHAVE_OPENCL")
 endif(OPENCL_FOUND)
 

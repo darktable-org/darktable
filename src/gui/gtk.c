@@ -426,6 +426,8 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
       
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   gtk_dialog_run(GTK_DIALOG (dialog));
   gtk_widget_destroy(dialog);
   return TRUE;
@@ -985,7 +987,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   char path[1024], datadir[1024];
   dt_get_datadir(datadir, 1024);
   gchar *themefile = dt_conf_get_string("themefile");
-  snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
+  if(themefile && themefile[0] == '/') snprintf(path, 1023, "%s", themefile);
+  else snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
     snprintf(path, 1023, "%s/%s", DARKTABLE_DATADIR, themefile ? themefile : "darktable.gtkrc");
   (void)setenv("GTK2_RC_FILES", path, 1);

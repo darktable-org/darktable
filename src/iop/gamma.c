@@ -49,6 +49,7 @@ groups ()
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
+  const int ch = piece->colors;
   float *in = (float *)i;
   uint8_t *out = (uint8_t *)o;
 #ifdef _OPENMP
@@ -56,7 +57,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    for(int c=0;c<3;c++) out[4*k + 2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[3*k+c]), 0, 0xffff)];
+    for(int c=0;c<3;c++) out[4*k + 2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[ch*k+c]), 0, 0xffff)];
   }
 }
 

@@ -92,6 +92,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale/roi_in->scale;
+  // how many colors in our buffer?
+  const int ch = piece->colors;
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
   // optional: parallelize it!
@@ -99,16 +101,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0;j<roi_out->height;j++)
   {
-    float *in  = ((float *)i) + 3*roi_in->width *j;
-    float *out = ((float *)o) + 3*roi_out->width*j;
+    float *in  = ((float *)i) + ch*roi_in->width *j;
+    float *out = ((float *)o) + ch*roi_out->width*j;
     for(int i=0;i<roi_out->width;i++)
     {
       // calculate world space coordinates:
       int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
       if((wi/d->checker_scale+wj/d->checker_scale)&1) for(int c=0;c<3;c++) out[c] = 0;
       else                                            for(int c=0;c<3;c++) out[c] = in[c];
-      in += 3;
-      out += 3;
+      in += ch;
+      out += ch;
     }
   }
 }

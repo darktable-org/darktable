@@ -31,6 +31,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/points.h"
+#include "common/opencl.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
@@ -77,13 +78,14 @@ int dt_init(int argc, char *argv[])
       }
       if(argv[k][1] == 'd' && argc > k+1)
       {
-        if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
-        if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
-        if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        if(!strcmp(argv[k+1], "fswatch")) darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
-        if(!strcmp(argv[k+1], "camctl")) darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
-        if(!strcmp(argv[k+1], "perf"))    darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
+        if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;     // enable debugging for lib/film/cache module
+        if(!strcmp(argv[k+1], "control"))   darktable.unmuted |= DT_DEBUG_CONTROL;   // enable debugging for scheduler module
+        if(!strcmp(argv[k+1], "dev"))       darktable.unmuted |= DT_DEBUG_DEV;       // develop module
+        if(!strcmp(argv[k+1], "fswatch"))   darktable.unmuted |= DT_DEBUG_FSWATCH;   // fswatch module
+        if(!strcmp(argv[k+1], "camctl"))    darktable.unmuted |= DT_DEBUG_CAMCTL;    // camera control module
+        if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF;      // performance measurements
         if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
+        if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
         k ++;
       }
     }
@@ -149,6 +151,9 @@ int dt_init(int argc, char *argv[])
   g_free(dbname);
   pthread_mutex_init(&(darktable.db_insert), NULL);
   pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+
+  darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
+  dt_opencl_init(darktable.opencl);
 
   darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
@@ -229,6 +234,8 @@ void dt_cleanup()
   free(darktable.conf);
   dt_points_cleanup(darktable.points);
   free(darktable.points);
+  dt_opencl_cleanup(darktable.opencl);
+  free(darktable.opencl);
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy(darktable.camctl);
 #endif

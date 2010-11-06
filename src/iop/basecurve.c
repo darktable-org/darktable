@@ -151,9 +151,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   float *in = (float *)i;
   float *out = (float *)o;
+  const int ch = piece->colors;
   if(self->dev->image->flags & DT_IMAGE_THUMBNAIL)
   {
-    memcpy(o, i, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(o, i, sizeof(float)*ch*roi_out->width*roi_out->height);
   }
   else
   {
@@ -163,9 +164,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      out[3*k+0] = d->table[CLAMP((int)(in[3*k+0]*0x10000ul), 0, 0xffff)];
-      out[3*k+1] = d->table[CLAMP((int)(in[3*k+1]*0x10000ul), 0, 0xffff)];
-      out[3*k+2] = d->table[CLAMP((int)(in[3*k+2]*0x10000ul), 0, 0xffff)];
+      out[ch*k+0] = d->table[CLAMP((int)(in[ch*k+0]*0x10000ul), 0, 0xffff)];
+      out[ch*k+1] = d->table[CLAMP((int)(in[ch*k+1]*0x10000ul), 0, 0xffff)];
+      out[ch*k+2] = d->table[CLAMP((int)(in[ch*k+2]*0x10000ul), 0, 0xffff)];
     }
   }
 }

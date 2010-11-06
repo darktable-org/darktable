@@ -30,6 +30,9 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
   for(int k=0;k<entries;k++)
   {
     cache->data[k] = (void *)dt_alloc_align(16, size);
+#ifdef _DEBUG
+    memset(cache->data[k], 0x5d, size);
+#endif
     cache->hash[k] = -1;
     cache->used[k] = 0;
   }

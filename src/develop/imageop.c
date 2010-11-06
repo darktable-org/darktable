@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
@@ -30,6 +31,7 @@
 #include <string.h>
 #include <gmodule.h>
 #include <pthread.h>
+#include <xmmintrin.h>
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -181,7 +183,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = _default_groups;
-  if(!g_module_symbol(module->module, "flags",                 (gpointer)&(module->flags)))                 module->flags = _default_flags;
+  if(!g_module_symbol(module->module, "flags",                  (gpointer)&(module->flags)))                  module->flags = _default_flags;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
@@ -203,6 +205,8 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "init_pipe",              (gpointer)&(module->init_pipe)))              goto error;
   if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;
+  if(!darktable.opencl->inited ||
+     !g_module_symbol(module->module, "process_cl",             (gpointer)&(module->process_cl)))             module->process_cl = NULL;
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   module->init(module);
@@ -517,95 +521,162 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
   }
 }
 
-void dt_iop_clip_and_zoom_hq_downsample(const float *i, const int32_t ix, const int32_t iy, const int32_t iw, const int32_t ih, const int32_t ibw, const int32_t ibh,
-                                              float *o, const int32_t ox, const int32_t oy, const int32_t ow, const int32_t oh, const int32_t obw, const int32_t obh)
+
+void
+dt_iop_clip_and_zoom(float *out, const float *const in,
+    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
-  // general case
-  const float fib2 = 34.0f, fib1 = 21.0f;
-  const float scalex = iw/(float)ow;
-  const float scaley = ih/(float)oh;
-  const int32_t ix2 = MAX(ix, 0);
-  const int32_t iy2 = MAX(iy, 0);
-  const int32_t ox2 = MAX(ox, 0);
-  const int32_t oy2 = MAX(oy, 0);
-  const int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
-  const int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
-  g_assert((int)(ix2 + ow2*scalex) <= ibw);
-  g_assert((int)(iy2 + oh2*scaley) <= ibh);
-  g_assert(ox2 + ow2 <= obw);
-  g_assert(oy2 + oh2 <= obh);
-  g_assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(i, o) schedule(static)
-#endif
-  for(int s=0;s<oh2;s++)
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = .9f/roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = ((int)px_footprint)/2;
+
+  // init gauss with sigma = samples (half footprint)
+  float filter[2*samples + 1];
+  float sum = 0.0f;
+  if(samples)
   {
-    int idx = ox2 + obw*(oy2+s);
-    float y = iy2 + s*scaley;
-    float x = ix2;
-    for(int t=0;t<ow2;t++)
+    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
+    for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
+  }
+  else filter[0] = 1.0f;
+
+  // FIXME: ??
+  const int offx = 0;//MAX(0, samples - roi_out->x);
+  const int offy = 0;//MAX(0, samples - roi_out->y);
+  const int offX = 0;//MAX(0, samples - (roi_in->width  - (roi_out->x + roi_out->width)));
+  const int offY = 0;//MAX(0, samples - (roi_in->height - (roi_out->y + roi_out->height)));
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out, filter)
+#endif
+  for(int y=offy;y<roi_out->height-offY;y++)
+  {
+    float *outc = out + 4*(out_stride*y + offx);
+    for(int x=offx;x<roi_out->width-offX;x++)
     {
-      // rank-1 resampling with fibonacci lattice for 21 points
-      for(int k=0;k<3;k++) o[3*idx + k] = 0.0f;
-      for(int l=0;l<fib2;l++)
+      __m128 col = _mm_setzero_ps();
+      // _mm_prefetch
+      // upper left corner:
+      int px = (x + roi_out->x + .5f)/roi_out->scale, py = (y + roi_out->y + .5f)/roi_out->scale;
+      // const float *inc = in + 4*(py*roi_in->width + px);
+
+      float num=0.0f;
+      // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
+      for(int j=MAX(0, py-samples);j<=MIN(roi_in->height-2, py+samples);j++)
+      for(int i=MAX(0, px-samples);i<=MIN(roi_in->width -2, px+samples);i++)
       {
-        float px = l/fib2, py = l*(fib1/fib2); py -= (int)py;
-        for(int k=0;k<3;k++) o[3*idx + k] += (1.0/fib2)*i[(3*(ibw*(int32_t) (y + py*scaley) + (int32_t) (x + px*scalex)) + k)];
+        __m128 p = _mm_load_ps(in + 4*(i + in_stride*j));
+
+        // col = _mm_add_ps(col, p);
+        // num++;
+
+        const float f = filter[i-px]*filter[j-py];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(f), p));
+        num += f;
       }
-      x += scalex; idx++;
+      // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
+      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      // memcpy(outc, &col, 4*sizeof(float));
+      _mm_stream_ps(outc, col);
+      outc += 4;
     }
   }
+  _mm_sfence();
 }
 
-void dt_iop_clip_and_zoom(const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
-                                float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh)
+static int
+FC(const int row, const int col, const unsigned int filters)
 {
-  // general case
-  const float scalex = iw/(float)ow;
-  const float scaley = ih/(float)oh;
-  int32_t ix2 = MAX(ix, 0);
-  int32_t iy2 = MAX(iy, 0);
-  int32_t ox2 = MAX(ox, 0);
-  int32_t oy2 = MAX(oy, 0);
-  int32_t oh2 = MIN(MIN(oh, (ibh - iy2)/scaley), obh - oy2);
-  int32_t ow2 = MIN(MIN(ow, (ibw - ix2)/scalex), obw - ox2);
-  g_assert((int)(ix2 + ow2*scalex) <= ibw);
-  g_assert((int)(iy2 + oh2*scaley) <= ibh);
-  g_assert(ox2 + ow2 <= obw);
-  g_assert(oy2 + oh2 <= obh);
-  g_assert(ix2 >= 0 && iy2 >= 0 && ox2 >= 0 && oy2 >= 0);
-  float x = ix2, y = iy2;
-  if(fabsf(scalex - 1.0) < 0.001f && fabsf(scaley - 1.0) < 0.001f)
-  {
-    for(int s=0;s<oh2;s++)
-    {
-      int idx = ox2 + obw*(oy2+s);
-      for(int t=0;t<ow2;t++)
-      {
-        for(int k=0;k<3;k++) o[3*idx + k] = i[3*(ibw* (int32_t)y + (int)x) + k];
-        x ++; idx++;
-      }
-      y ++; x = ix2;
-    }
-  }
-  else
-  {
-    for(int s=0;s<oh2;s++)
-    {
-      int idx = ox2 + obw*(oy2+s);
-      for(int t=0;t<ow2;t++)
-      {
-        for(int k=0;k<3;k++) o[3*idx + k] =  //i[3*(ibw* (int)y +             (int)x             ) + k)];
-               (i[(3*(ibw*(int32_t) y +            (int32_t) (x + .5f*scalex)) + k)] +
-                i[(3*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x + .5f*scalex)) + k)] +
-                i[(3*(ibw*(int32_t)(y+.5f*scaley) +(int32_t) (x             )) + k)] +
-                i[(3*(ibw*(int32_t) y +            (int32_t) (x             )) + k)])*0.25;
-        x += scalex; idx++;
-      }
-      y += scaley; x = ix2;
-    }
-  }
+  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
+
+/**
+ * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
+ * and writes it to out in float4 format.
+ * filters is the dcraw supplied int encoding the bayer pattern.
+ * resamping is done via rank-1 lattices and demosaicing using half-size interpolation.
+ */
+void
+dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
+    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = .9f/roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = ((int)px_footprint)/2;
+
+  // init gauss with sigma = samples (half footprint)
+  float filter[2*samples + 1];
+  float sum = 0.0f;
+  if(samples)
+  {
+    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
+    for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
+  }
+  else filter[0] = 1.0f;
+
+  // FIXME: ??
+  const int offx = 0;//MAX(0, samples - roi_out->x);
+  const int offy = 0;//MAX(0, samples - roi_out->y);
+  const int offX = 0;//MAX(0, samples - (roi_in->width  - (roi_out->x + roi_out->width)));
+  const int offY = 0;//MAX(0, samples - (roi_in->height - (roi_out->y + roi_out->height)));
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out, filter)
+#endif
+  for(int y=offy;y<roi_out->height-offY;y++)
+  {
+    float *outc = out + 4*(out_stride*y + offx);
+    for(int x=offx;x<roi_out->width-offX;x++)
+    {
+      __m128 col = _mm_setzero_ps();
+      // _mm_prefetch
+      // upper left corner:
+      int px = (x + roi_out->x + .5f)/roi_out->scale, py = (y + roi_out->y + .5f)/roi_out->scale;
+
+      // round down to next even number:
+      px = MAX(0, px & ~1);
+      py = MAX(0, py & ~1);
+
+      // now move p to point to an rggb block:
+      if(FC(py, px+1, filters) != 1) px ++;
+      if(FC(py, px,   filters) != 0) { px ++; py ++; }
+
+      // const uint16_t *inc = in + py*roi_in->width + px;
+
+      // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
+      float num = 0.0f;
+      for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-1, py+2*samples);j+=2)
+      for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-1,  px+2*samples);i+=2)
+      {
+        // get four mosaic pattern uint16:
+        float p1 = in[i   + in_stride*j];
+        float p2 = in[i+1 + in_stride*j];
+        float p3 = in[i   + in_stride*(j + 1)];
+        float p4 = in[i+1 + in_stride*(j + 1)];
+        // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
+        // color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
+
+        // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));
+        // num ++;
+
+        const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(f/65535.0f)));
+        num += f;
+      }
+      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
+      // memcpy(outc, &col, 4*sizeof(float));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
 
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {

@@ -148,6 +148,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int ch = piece->colors;
   
   const int ix= (roi_in->x);
   const int iy= (roi_in->y);
@@ -172,7 +173,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     for(int x=0;x<roi_out->width;x++)
     {
-      int k=(roi_out->width*y+x)*3;
+      int k=(roi_out->width*y+x)*ch;
       
       /* rotate pixel around center of offset*/
       dt_iop_vector_2d_t pv={-1,-1};

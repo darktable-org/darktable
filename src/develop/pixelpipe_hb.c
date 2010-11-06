@@ -18,6 +18,7 @@
 #include "develop/pixelpipe.h"
 #include "gui/gtk.h"
 #include "control/control.h"
+#include "common/opencl.h"
 
 #include <assert.h>
 #include <string.h>
@@ -34,18 +35,19 @@
 
 void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*width*height, 2);
+  dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
 }
 
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_init_cached(pipe, 3*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
+  dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
 }
 
 void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries)
 {
+  pipe->devid = -1;
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   pipe->processed_width  = pipe->backbuf_width  = pipe->iwidth = 0;
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = 0;
@@ -115,6 +117,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
       piece->enabled = module->enabled;
+      piece->colors  = 4;
       piece->iscale  = pipe->iscale;
       piece->iwidth  = pipe->iwidth;
       piece->iheight = pipe->iheight;
@@ -270,27 +273,26 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     // printf("[process] loading source image buffer\n");
     start = dt_get_wtime();
+    if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      *output = pipe->input;
+    }
     // optimized branch (for mipf-preview):
-    if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
+    else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW && roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
     {
-      // printf("[process] scale/pan\n");
+      // printf("[process] scale/pan [%s]\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : "");
       // reserve new cache line: output
       if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output))
       {
         memset(*output, 0, pipe->backbuf_size);
-        if(roi_out->scale < 0.5)
-        {
-          dt_iop_clip_and_zoom_hq_downsample(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,
-              roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
-              *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
-        }
-        else
-        {
-          dt_iop_clip_and_zoom(pipe->input, roi_out->x/roi_out->scale, roi_out->y/roi_out->scale,
-              roi_out->width/roi_out->scale, roi_out->height/roi_out->scale, pipe->iwidth, pipe->iheight,
-              *output, 0, 0, roi_out->width, roi_out->height, roi_out->width, roi_out->height);
-        }
+        bzero(*output, pipe->backbuf_size);
+        roi_in.x /= roi_out->scale;
+        roi_in.y /= roi_out->scale;
+        roi_in.width = pipe->iwidth;
+        roi_in.height = pipe->iheight;
+        roi_in.scale = 1.0f;
+        dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
       }
     }
     end = dt_get_wtime();
@@ -370,9 +372,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       float *pixel = (float *)input;
       dev->histogram_pre_max = 0;
       memset (dev->histogram_pre, 0, sizeof(float)*4*64);
-      for(int j=0;j<roi_in.height;j+=3) for(int i=0;i<roi_in.width;i+=3)
+      for(int j=0;j<roi_in.height;j+=4) for(int i=0;i<roi_in.width;i+=4)
       {
-        uint8_t L = CLAMP(63/100.0*(pixel[3*j*roi_in.width+3*i]), 0, 63);
+        uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
         dev->histogram_pre[4*L+3] ++;
       }
       // don't count <= 0 pixels
@@ -405,13 +407,13 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       {
         for(int k=0;k<3;k++)
         {
-          module->picked_color_min[k] = fminf(module->picked_color_min[k], in[3*(roi_in.width*j + i) + k]);
-          module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[3*(roi_in.width*j + i) + k]);
-          rgb[k] += w*in[3*(roi_in.width*j + i) + k];
+          module->picked_color_min[k] = fminf(module->picked_color_min[k], in[4*(roi_in.width*j + i) + k]);
+          module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[4*(roi_in.width*j + i) + k]);
+          rgb[k] += w*in[4*(roi_in.width*j + i) + k];
         }
-        const float L = in[3*(roi_in.width*j + i) + 0];
-        const float a = fminf(128, fmaxf(-128.0, in[3*(roi_in.width*j + i) + 1]*L));
-        const float b = fminf(128, fmaxf(-128.0, in[3*(roi_in.width*j + i) + 2]*L));
+        const float L = in[4*(roi_in.width*j + i) + 0];
+        const float a = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 1]*L));
+        const float b = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 2]*L));
         Lab[1] += w*a;
         Lab[2] += w*b;
         module->picked_color_min_Lab[0] = fminf(module->picked_color_min_Lab[0], L);
@@ -438,7 +440,17 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     start = dt_get_wtime();
-    module->process(module, piece, input, *output, &roi_in, roi_out);
+#ifdef HAVE_OPENCL
+    if(module->process_cl)
+    {
+      // TODO: get in/out cl_mem, if available!
+      module->process_cl(module, piece, input, *output, &roi_in, roi_out);
+    }
+    else
+#endif
+    {
+      module->process(module, piece, input, *output, &roi_in, roi_out);
+    }
     end = dt_get_wtime();
     dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs processing `%s' [%s]\n", end - start, module->name(),
         pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
@@ -446,9 +458,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 #ifdef _DEBUG
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    if(strcmp(module->op, "gamma")) for(int k=0;k<3*roi_out->width*roi_out->height;k++)
+    if(strcmp(module->op, "gamma")) for(int k=0;k<4*roi_out->width*roi_out->height;k++)
     {
-      if(!isfinite(((float*)(*output))[k]))
+      if((k&3)<3 && !isfinite(((float*)(*output))[k]))
       {
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats!\n", module->name());
         break;
@@ -510,6 +522,8 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
   pipe->processing = 1;
+  pipe->devid = dt_opencl_lock_device(darktable.opencl, -1);
+  dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
   for(int k=0;k<3;k++) pipe->processed_maximum[k] = dev->image->maximum;
   dt_iop_roi_t roi = (dt_iop_roi_t){x, y, width, height, scale};
   // printf("pixelpipe homebrew process start\n");
@@ -520,7 +534,13 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
   void *buf = NULL;
-  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &roi, modules, pieces, pos)) return 1;
+  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &roi, modules, pieces, pos))
+  {
+    pipe->processing = 0;
+    dt_opencl_unlock_device(darktable.opencl, pipe->devid);
+    pipe->devid = -1;
+    return 1;
+  }
   pthread_mutex_lock(&pipe->backbuf_mutex);
   pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(dev->image->id, &roi, pipe, 0);
   pipe->backbuf = buf;
@@ -530,6 +550,8 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 
   // printf("pixelpipe homebrew process end\n");
   pipe->processing = 0;
+  dt_opencl_unlock_device(darktable.opencl, pipe->devid);
+  pipe->devid = -1;
   return 0;
 }
 
@@ -564,3 +586,4 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
   *height = roi_out.height;
   pthread_mutex_unlock(&pipe->busy_mutex);
 }
+

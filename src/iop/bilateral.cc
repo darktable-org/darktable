@@ -82,6 +82,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
+  const int ch = piece->colors;
   float sigma[5];
   sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
   sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
@@ -90,7 +91,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   sigma[4] = data->sigma[4];
   if(fmaxf(sigma[0], sigma[1]) < .1)
   {
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -98,7 +99,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
   if(rad <= 6 && self->dev->image->flags & DT_IMAGE_THUMBNAIL)
   { // no use denoising the thumbnail. takes ages without permutohedral
-    memcpy(out, in, sizeof(float)*3*roi_out->width*roi_out->height);
+    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
   }
   else if(rad <= 6)
   {
@@ -117,8 +118,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=rad;j<roi_out->height-rad;j++)
     {
-      in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
-      out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
+      in  = ((float *)ivoid) + ch*(j*roi_in->width  + rad);
+      out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
       float weights[2*(6+1)*2*(6+1)];
       float *w = weights + rad*wd + rad;
       float sumw;
@@ -127,29 +128,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         sumw = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
           sumw += w[l*wd+k] = m[l*wd+k]*expf(-
-              ((in[0]-in[3*(l*roi_in->width+k)+0])*(in[0]-in[3*(l*roi_in->width+k)+0])*isig2col[0] +
-               (in[1]-in[3*(l*roi_in->width+k)+1])*(in[1]-in[3*(l*roi_in->width+k)+1])*isig2col[1] +
-               (in[2]-in[3*(l*roi_in->width+k)+2])*(in[2]-in[3*(l*roi_in->width+k)+2])*isig2col[2]));
+              ((in[0]-in[ch*(l*roi_in->width+k)+0])*(in[0]-in[ch*(l*roi_in->width+k)+0])*isig2col[0] +
+               (in[1]-in[ch*(l*roi_in->width+k)+1])*(in[1]-in[ch*(l*roi_in->width+k)+1])*isig2col[1] +
+               (in[2]-in[ch*(l*roi_in->width+k)+2])*(in[2]-in[ch*(l*roi_in->width+k)+2])*isig2col[2]));
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++) w[l*wd+k] /= sumw;
         for(int c=0;c<3;c++) out[c] = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-          for(int c=0;c<3;c++) out[c] += in[3*(l*roi_in->width+k)+c]*w[l*wd+k];
-        out += 3; in += 3;
+          for(int c=0;c<3;c++) out[c] += in[ch*(l*roi_in->width+k)+c]*w[l*wd+k];
+        out += ch; in += ch;
       }
     }
     // fill unprocessed border
     in  = (float *)ivoid;
     out = (float *)ovoid;
     for(int j=0;j<rad;j++)
-      memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+      memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
     for(int j=roi_out->height-rad;j<roi_out->height;j++)
-      memcpy(((float*)ovoid) + 3*j*roi_out->width, ((float*)ivoid) + 3*j*roi_in->width, 3*sizeof(float)*roi_out->width);
+      memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
     for(int j=rad;j<roi_out->height-rad;j++)
     {
       for(int i=0;i<rad;i++)
-        for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+        for(int c=0;c<3;c++) out[ch*(roi_out->width*j + i) + c] = in[ch*(roi_in->width*j + i) + c];
       for(int i=roi_out->width-rad;i<roi_out->width;i++)
-        for(int c=0;c<3;c++) out[3*(roi_out->width*j + i) + c] = in[3*(roi_in->width*j + i) + c];
+        for(int c=0;c<3;c++) out[ch*(roi_out->width*j + i) + c] = in[ch*(roi_in->width*j + i) + c];
     }
   }
   else
@@ -163,7 +164,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
       float val[4] = {in[0], in[1], in[2], 1.0};
       lattice.splat(pos, val);
-      in += 3;
+      in += ch;
     }
     
     // blur the lattice
@@ -176,7 +177,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float val[4];
       lattice.slice(val);
       for(int k=0;k<3;k++) out[k] = val[k]/val[3];
-      out += 3;
+      out += ch;
     }
   }
 }

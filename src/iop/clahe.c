@@ -129,6 +129,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
+  const int ch = piece->colors;
   
   // PASS1: Get a luminance map of image...
   float *luminance=(float *)malloc((roi_out->width*roi_out->height)*sizeof(float));
@@ -139,7 +140,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     double pmax=CLIP(fmax(in[0],fmax(in[1],in[2]))); // Max value in RGB set
     double pmin=CLIP(fmin(in[0],fmin(in[1],in[2]))); // Min value in RGB set
     *lm=(pmax+pmin)/2.0;        // Pixel luminocity
-    in+=3; lm++;
+    in+=ch; lm++;
     
     if( pmax > lsmax ) lsmax=pmax;
     if( pmin < lsmin ) lsmin=pmin;
@@ -268,7 +269,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       rgb2hsl(in[0],in[1],in[2],&H,&S,&L);
       //hsl2rgb(&out[0],&out[1],&out[2],H,S,( L / dest[r] ) * (L-lsmin) + lsmin );
       hsl2rgb(&out[0],&out[1],&out[2],H,S,dest[r] );
-      out += 3; in += 3;ld++; 
+      out += ch; in += ch;ld++; 
     }
     
   }

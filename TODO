@@ -1,5 +1,14 @@
 0.7 release:
 
+- remove bilateral filter (pemutohedral code), as it causes a lot
+  of valgrind errors!
+- improve dr mode cache: selected module input has priority
+
+- ROI all to the left: magenta/red edges!
+- ca auto corr on gpu in dt
+- cache with gpu bufs, if possible
+- avoid n-times compile for n gpu systems?
+
 inconsistent borders:
 tone curve
 color correction

@@ -112,7 +112,7 @@ all_good:
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
   ret = DT_IMAGEIO_OK;
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
@@ -161,10 +161,12 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
   // are we going to need the image as input for a pixel pipe?
-  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
 
   // this image is raw, if we manage to load it.
   img->flags &= ~DT_IMAGE_LDR;
+  img->flags |= DT_IMAGE_RAW;
 
   // if we have a history stack, don't load preview buffer!
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
@@ -336,36 +338,26 @@ try_full_raw:
     dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
 
     if(dt_image_alloc(img, DT_IMAGE_MIPF)) goto error_raw_cache_full;
-    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+    dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
     if(raw_wd == p_wd && raw_ht == p_ht)
     { // use 1:1
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
       }
     }
     else
     { // scale to fit
-      memset(img->mipf, 0, 3*p_wd*p_ht*sizeof(float));
+      memset(img->mipf, 0, 4*p_wd*p_ht*sizeof(float));
       const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
       for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
       }
     }
 
     // don't write mip4, it's shitty anyways (altered image has to be processed)
-#if 0
-    // have first preview of non-processed image
-    if(dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
-    dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-    dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
-    dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-    dt_image_release(img, DT_IMAGE_MIP4, 'w');
-    retval = dt_image_update_mipmaps(img);
-    dt_image_release(img, DT_IMAGE_MIP4, 'r');
-#endif
 
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -410,20 +402,27 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.no_auto_bright = 1;
   // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
   // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
+  raw->params.document_mode = 1; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
-  raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
-  raw->params.four_color_rgb = img->raw_params.four_color_rgb;
+  // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
+  raw->params.user_qual = 0;
+  // raw->params.four_color_rgb = img->raw_params.four_color_rgb;
+  raw->params.four_color_rgb = 0;
   raw->params.use_camera_matrix = 0;
   raw->params.green_matching =  img->raw_params.greeneq;
   raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
+
+  raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x10;
+  raw->params.fbdd_noiserd   = (img->raw_params.fill0>>7) & 3;
+#if 0
   // new demosaicing params
-  raw->params.amaze_ca_refine = -1;
+  raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x10;
   if ((img->raw_params.fill0 & 0x0F) == 6 ) {
     raw->params.user_qual = 4;
     raw->params.dcb_enhance_fl = img->raw_params.fill0 & 0x010;
@@ -439,27 +438,29 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     raw->params.eeci_refine = img->raw_params.fill0 & 0x010;
     raw->params.es_med_passes = (img->raw_params.fill0 & 0x1E0)>>5;
   }
+#endif
   // end of new demosaicing params
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
-  if(raw->idata.dng_version || (raw->sizes.width <= 1200 && raw->sizes.height <= 800))
-  { // FIXME: this is a temporary bugfix avoiding segfaults for dng images. (and to avoid shrinking on small images).
-    raw->params.user_qual = 0;
-    raw->params.half_size = 0;
-  }
+  raw->params.user_qual = 0;
+  raw->params.half_size = 0;
 
   // this image is raw, if we manage to load it.
   img->flags &= ~DT_IMAGE_LDR;
+  img->flags |= DT_IMAGE_RAW;
 
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
+  // ret = libraw_dcraw_document_mode_processing(raw);
   HANDLE_ERRORS(ret, 1);
   image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
+  // filters seem only ever to take a useful value after unpack/process
+  img->filters = raw->idata.filters;
   img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
@@ -480,10 +481,8 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     free(image);
     return DT_IMAGEIO_CACHE_FULL;
   }
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*(img->width)*(img->height)*sizeof(float));
-  const float m = 1./0xffff;
-// #pragma omp parallel for schedule(static) shared(img, image)
-  for(int k=0;k<3*(img->width)*(img->height);k++) img->pixels[k] = ((uint16_t *)(image->data))[k]*m;
+  dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
+  memcpy(img->pixels, image->data, img->width*img->height*sizeof(uint16_t));
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
@@ -524,7 +523,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   dt_image_buffer_t mip;
-  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
   if(altered)
   {
     // the image has a history stack. we want mipf and process it!
@@ -550,7 +550,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
   // FIXME: there is a black border on the left side of a portrait image!
 
-  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):4*p_wd*p_ht*sizeof(float));
   const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
   const int p_wd2 = orientation & 4 ? p_ht : p_wd;
   const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
@@ -563,12 +563,12 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
         img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
     else
       for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
-        img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
+        img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
   }
   else
   { // scale to fit
-    if(mip == DT_IMAGE_MIP4) memset(img->mip[mip], 0,4*p_wd*p_ht*sizeof(uint8_t));
-    else                     memset(img->mipf, 0,     3*p_wd*p_ht*sizeof(float));
+    if(mip == DT_IMAGE_MIP4) memset(img->mip[mip], 0, 4*p_wd*p_ht*sizeof(uint8_t));
+    else                     memset(img->mipf, 0,     4*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
     if(mip == DT_IMAGE_MIP4)
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
@@ -580,7 +580,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
     {
       uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mipf[3*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
+      for(int k=0;k<3;k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
     }
   }
   free(tmp);
@@ -633,11 +633,11 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
  
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
 
   for(int j=0; j < jpg.height; j++)
     for(int i=0; i < jpg.width; i++)
-      for(int k=0;k<3;k++) img->pixels[3*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
+      for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
@@ -670,7 +670,6 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   dt_dev_load_image(&dev, img);
   const int wd = dev.image->width;
   const int ht = dev.image->height;
-  dt_image_check_buffer(dev.image, DT_IMAGE_FULL, 3*wd*ht*sizeof(float));
 
   start = dt_get_wtime();
   dt_dev_pixelpipe_t pipe;
@@ -741,7 +740,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
     { // convert in place
       const int k = x + processed_width*y;
-      for(int i=0;i<3;i++) buf16[3*k+i] = CLAMP(buff[3*k+i]*0x10000, 0, 0xffff);
+      for(int i=0;i<3;i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
     }
   }
   else if(bpp == 32)
@@ -776,7 +775,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
     ret = dt_imageio_open_raw(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr(img, filename);
-  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush_no_sidecars(img);
+  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   return ret;
 }
@@ -789,7 +788,7 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
     ret = dt_imageio_open_raw_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) dt_image_cache_flush_no_sidecars(img);
+  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   return ret;
 }
 

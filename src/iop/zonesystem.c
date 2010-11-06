@@ -159,6 +159,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int size = data->size;
   float zonemap[MAX_ZONE_SYSTEM_SIZE]={-1};
   _iop_zonesystem_calculate_zonemap (data, zonemap);
+  const int ch = piece->colors;
   
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
   if( self->dev->gui_attached && g && buffer)
@@ -183,14 +184,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=rad;j<roi_out->height-rad;j++)
     {
-      in  = ((float *)ivoid) + 3*(j*roi_in->width  + rad);
-      out = ((float *)ovoid) + 3*(j*roi_out->width + rad);
+      in  = ((float *)ivoid) + ch*(j*roi_in->width  + rad);
+      out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
       for(int i=rad;i<roi_out->width-rad;i++)
       {
         for(int c=0;c<3;c++) out[c] = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-          out[0] += m[l*wd+k]*in[3*(l*roi_in->width+k)];
-        out += 3; in += 3;
+          out[0] += m[l*wd+k]*in[ch*(l*roi_in->width+k)];
+        out += ch; in += ch;
       }
     }
     
@@ -202,7 +203,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for (int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[3*k]/100.0), zonemap, size);
+      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[ch*k]/100.0), zonemap, size);
     }
     
     pthread_mutex_unlock(&g->lock);
@@ -217,7 +218,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for (int k=0;k<roi_out->width*roi_out->height;k++)
   {
     /* remap lightness into zonemap and apply lightness */
-    const float lightness=in[3*k]/100.0;
+    const float lightness=in[ch*k]/100.0;
     const float rzw = (1.0/(size-1));                                                                                               // real zone width 
     const int rz = (lightness/rzw);                                                                                                    // real zone for lightness
     const float zw = (zonemap[rz+1]-zonemap[rz]);                                                              // mapped zone width
@@ -225,9 +226,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
     
     float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      
-    out[3*k+0] = 100.0*l;
-    out[3*k+1] = in[3*k+1];
-    out[3*k+2] = in[3*k+2];
+    out[ch*k+0] = 100.0*l;
+    out[ch*k+1] = in[ch*k+1];
+    out[ch*k+2] = in[ch*k+2];
     
   }
   

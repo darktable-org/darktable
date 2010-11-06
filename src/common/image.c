@@ -83,7 +83,7 @@ void dt_image_write_sidecar_file(dt_image_t *img)
   }
 }
 
-int dt_image_is_ldr(dt_image_t *img)
+int dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
@@ -221,7 +221,8 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
 {
   float wd = img->output_width  ? img->output_width  : img->width,
         ht = img->output_height ? img->output_height : img->height;
-  if(darktable.develop->image == img)
+  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  if(darktable.develop->image == img && mode == DT_DEVELOP)
   {
     int tmpw, tmph;
     dt_dev_get_processed_size(darktable.develop, &tmpw, &tmph);
@@ -298,24 +299,24 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, mip, 4*mip_wd*mip_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
   const int ldr = dt_image_is_ldr(img);
   if(mip_wd == p_wd && mip_ht == p_ht)
   { // use 1:1
     if(ldr) for(int j=0;j<mip_ht;j++) for(int i=0;i<mip_wd;i++)
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*(j*mip_wd + i) + 2-k]*(1.0/255.0);
+      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = img->mip[mip][4*(j*mip_wd + i) + 2-k]*(1.0/255.0);
     else for(int j=0;j<mip_ht;j++) for(int i=0;i<mip_wd;i++)
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*(j*mip_wd + i) + 2-k]];
+      for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*(j*mip_wd + i) + 2-k]];
   }
   else
   { // scale to fit
-    memset(img->mipf,0, 3*p_wd*p_ht*sizeof(float));
+    memset(img->mipf,0, 4*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(mip_wd/f_wd, mip_ht/f_ht);
     for(int j=0;j<p_ht && (int)(scale*j)<mip_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < mip_wd;i++)
     {
-      if(ldr) for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]*(1.0/255.0);
-      else    for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]];
+      if(ldr) for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]*(1.0/255.0);
+      else    for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = dt_dev_de_gamma[img->mip[mip][4*((int)(scale*j)*mip_wd + (int)(scale*i)) + 2-k]];
     }
   }
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
@@ -334,25 +335,24 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
 
   if(dt_image_alloc(img, DT_IMAGE_MIPF)) return DT_IMAGEIO_CACHE_FULL;
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 3*p_wd*p_ht*sizeof(float));
+  dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
-  if(raw_wd == p_wd && raw_ht == p_ht)
-  { // use 1:1
-    for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
-    {
-      const float *cam = raw + 3*(j*raw_wd + i);
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
-    }
+  dt_iop_roi_t roi_in, roi_out;
+  roi_in.x = roi_in.y = 0;
+  roi_in.width  = raw_wd;
+  roi_in.height = raw_ht;
+  roi_in.scale = 1.0f;
+  roi_out.x = roi_out.y = 0;
+  roi_out.width = f_wd;
+  roi_out.height = f_ht;
+  roi_out.scale = fminf(f_wd/(float)raw_wd, f_ht/(float)raw_ht);
+  if(img->flags & DT_IMAGE_RAW)
+  { // demosaic during downsample
+    dt_iop_clip_and_zoom_demosaic_half_size(img->mipf, (const uint16_t *)raw, &roi_out, &roi_in, p_wd, raw_wd, dt_image_flipped_filter(img));
   }
   else
-  { // scale to fit
-    memset(img->mipf,0, 3*p_wd*p_ht*sizeof(float));
-    const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
-    for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
-    {
-      const float *cam = raw + 3*((int)(scale*j)*raw_wd + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mipf[3*(j*p_wd + i) + k] = cam[k];
-    }
+  { // downsample
+    dt_iop_clip_and_zoom(img->mipf, raw, &roi_out, &roi_in, p_wd, raw_wd);
   }
 
   dt_image_release(img, DT_IMAGE_MIPF, 'w');
@@ -380,6 +380,8 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   if(cw == 2) orientation = -1; // reset
   img->raw_params.user_flip = orientation;
   img->force_reimport = 1;
+  img->mip_invalid |= 1<<DT_IMAGE_MIPF; 
+  img->mip_invalid |= 1<<DT_IMAGE_FULL;
   dt_image_cache_flush(img);
   dt_image_cache_release(img, 'r');
 }
@@ -482,7 +484,6 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
       return 0;
     }
   }
-  // TODO: this line is responsible for uncropped output of still correct thumbs during re-processing :(
   img->output_width = img->output_height = 0;
   dt_imageio_retval_t ret = dt_imageio_open_preview(img, filename);
   if(ret == DT_IMAGEIO_CACHE_FULL)
@@ -494,7 +495,6 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   {
     fprintf(stderr, "[image_reimport] could not open %s\n", filename);
     // dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
-    // dt_image_cache_release(img, 'w');
     dt_image_import_unlock(img);
     dt_image_remove(img->id);
     return 1;
@@ -502,8 +502,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 
   // fprintf(stderr, "[image_reimport] loading `%s' to fill mip %d!\n", filename, mip);
 
-  // already some db entry there?
-  int altered = 0;//img->force_reimport;
+  int altered = 0;//(img->raw_params.user_flip != -1) && img->force_reimport;
   img->force_reimport = 0;
   if(dt_image_altered(img)) altered = 1;
 
@@ -522,15 +521,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
     else dt_image_release(img, DT_IMAGE_MIP4, 'r');
   }
 
-  // try loading a .dt[tags] file
-  // char dtfilename[1031];
-  // strncpy(dtfilename, filename, 1024);
-  // dt_image_path_append_version(img, dtfilename, 1024);
-  // char *c = dtfilename + strlen(dtfilename);
-  // sprintf(c, ".dttags");
-  // (void)dt_imageio_dttags_read(img, dtfilename);
-  // sprintf(c, ".dt");
-  if(altered)// || !dt_imageio_dt_read(img->id, dtfilename))
+  if(altered)
   {
     dt_develop_t dev;
     dt_dev_init(&dev, 0);
@@ -541,8 +532,41 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
   }
   dt_image_import_unlock(img);
-  // dt_image_cache_release(imgl, 'w');
   return 0;
+}
+
+static void
+dt_image_get_raw_import_preset(dt_image_t *image)
+{
+  int user_flip = image->raw_params.user_flip;
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select op_params from presets where operation = 'rawimport' and "
+      "autoapply=1 and "
+      "?1 like model and ?2 like maker and ?3 like lens and "
+      "?4 between iso_min and iso_max and "
+      "?5 between exposure_min and exposure_max and "
+      "?6 between aperture_min and aperture_max and "
+      "?7 between focal_length_min and focal_length_max and "
+      "(isldr = 0 or isldr=?8) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 2, image->exif_maker, strlen(image->exif_maker), SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 3, image->exif_lens,  strlen(image->exif_lens),  SQLITE_TRANSIENT);
+  sqlite3_bind_double(stmt, 4, fmaxf(0.0f, fminf(1000000, image->exif_iso)));
+  sqlite3_bind_double(stmt, 5, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
+  sqlite3_bind_double(stmt, 6, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
+  sqlite3_bind_double(stmt, 7, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
+  // 0: dontcare, 1: ldr, 2: raw
+  sqlite3_bind_double(stmt, 8, 2-dt_image_is_ldr(image));
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *blob = sqlite3_column_blob(stmt, 0);
+    int length = sqlite3_column_bytes(stmt, 0);
+    if(length == sizeof(dt_image_raw_parameters_t) + 2*sizeof(float))
+      memcpy(&(image->raw_denoise_threshold), blob, length);
+  }
+  sqlite3_finalize(stmt);
+  image->raw_params.user_flip = user_flip;
 }
 
 int dt_image_import(const int32_t film_id, const char *filename)
@@ -620,8 +644,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   dt_image_cache_flush_no_sidecars(img);
 
-  // sprintf(c, ".dt");
-  // (void)dt_imageio_dt_read(img->id, dtfilename);
+  dt_image_get_raw_import_preset(img);
 
   g_free(imgfname);
 
@@ -690,6 +713,7 @@ void dt_image_init(dt_image_t *img)
   img->mipf = NULL;
   img->pixels = NULL;
   img->orientation = 0;
+  img->mip_invalid = 0;
 
   img->black = 0.0f;
   img->maximum = 1.0f;
@@ -706,6 +730,7 @@ void dt_image_init(dt_image_t *img)
   img->raw_params.fill0 = 0;
   img->raw_denoise_threshold = 0.f;
   img->raw_auto_bright_threshold = 0.01f;
+  img->filters = 0;
 
   // try to get default raw parameters from db:
   sqlite3_stmt *stmt;
@@ -788,6 +813,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->maximum = sqlite3_column_double(stmt, 21);
     img->exif_inited = 1;
     
+    dt_image_get_raw_import_preset(img);
+
     ret = 0;
   }
   else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(darktable.db));
@@ -823,18 +850,18 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   // else we might be able to fetch it from the caches.
   else if(mip == DT_IMAGE_MIPF)
   {
-    // TODO: can get this more efficiently via open_preview instead of reimport?
-    // TODO: also restructure reimport?
     ret = 0;
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     { // get mipf from half-size raw
       ret = dt_imageio_open_preview(img, filename);
+      img->mip_invalid &= ~(1<<DT_IMAGE_MIPF);
       if(!ret && dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
     }
     else
     { // downscale full buffer
       ret = dt_image_raw_to_preview(img, img->pixels);
+      img->mip_invalid &= ~(1<<DT_IMAGE_MIPF);
       dt_image_release(img, DT_IMAGE_FULL, 'r');
       if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
@@ -845,11 +872,13 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     // after _open, the full buffer will be 'r' locked.
     ret = dt_imageio_open(img, filename);
     dt_image_raw_to_preview(img, img->pixels);
+    img->mip_invalid &= ~(1<<DT_IMAGE_MIPF);
   }
   else
   {
     // refuse to load thumbnails for currently developed image.
-    if(darktable.develop->image == img) ret = 1;
+    dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+    if(darktable.develop->image == img && mode == DT_DEVELOP) ret = 1;
     else
     {
       ret = dt_image_reimport(img, filename, mip);
@@ -857,6 +886,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
       else ret = 0;
     }
   }
+  if(!ret) img->mip_invalid &= ~(1<<mip);
   // TODO: insert abstract hook here?
   dt_control_queue_draw_all();
   return ret;
@@ -973,8 +1003,9 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   void *ptr = NULL;
   if     ((int)mip <  (int)DT_IMAGE_MIPF) { size *= 4*sizeof(uint8_t); ptr = (void *)(img->mip[mip]); }
-  else if(mip == DT_IMAGE_MIPF) { size *= 3*sizeof(float); ptr = (void *)(img->mipf); }
-  else if(mip == DT_IMAGE_FULL) { size *= 3*sizeof(float); ptr = (void *)(img->pixels); }
+  else if(mip == DT_IMAGE_MIPF) { size *= 4*sizeof(float); ptr = (void *)(img->mipf); }
+  else if(mip == DT_IMAGE_FULL ||  (img->flags & DT_IMAGE_RAW)) { size *= 4*sizeof(float);  ptr = (void *)(img->pixels); }
+  else if(mip == DT_IMAGE_FULL || !(img->flags & DT_IMAGE_RAW)) { size *= sizeof(uint16_t); ptr = (void *)(img->pixels); }
   else
   {
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
@@ -1122,6 +1153,7 @@ int dt_image_lock_if_available(dt_image_t *img, const dt_image_buffer_t mip, con
   {
     if(img->pixels == NULL || img->lock[mip].write) ret = 1;
   }
+  if(img->mip_invalid & (1<<mip)) ret = 1;
   if(ret == 0)
   {
     if(mode == 'w')
@@ -1260,6 +1292,8 @@ dt_image_buffer_t dt_image_get(dt_image_t *img, const dt_image_buffer_t mip_in, 
   if((mip != DT_IMAGE_MIPF && mip != DT_IMAGE_FULL && img->force_reimport) ||
      (mip != DT_IMAGE_MIPF && img == darktable.develop->image && darktable.develop->image_force_reload))
         mip = DT_IMAGE_NONE;
+  const int invalid = img->mip_invalid & (1<<mip);
+  if(invalid) mip = DT_IMAGE_NONE;
   if(mip != DT_IMAGE_NONE)
   {
     if(mode == 'w')

@@ -118,6 +118,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   float Lmean = 0.0f, Cmean = 0.0f, hmean = 0.0f;
+  const int ch = piece->colors;
   for(int k=0;k<10;k++) Lmean += dt_draw_curve_calc_value(d->curve[0], k/9.0)/10.0;
   for(int k=0;k<10;k++) Cmean += dt_draw_curve_calc_value(d->curve[1], k/9.0)/10.0;
   for(int k=0;k<10;k++) hmean += dt_draw_curve_calc_value(d->curve[2], k/9.0)/10.0;
@@ -126,8 +127,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    float *in = (float *)i + 3*k;
-    float *out = (float *)o + 3*k;
+    float *in = (float *)i + ch*k;
+    float *out = (float *)o + ch*k;
     const float a = in[1], b = in[2];
     const float h = fmodf(atan2f(b, a) + 2.0*M_PI, 2.0*M_PI)/(2.0*M_PI);
     const float C = sqrtf(b*b + a*a);

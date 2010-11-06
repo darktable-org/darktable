@@ -386,8 +386,8 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_scale (cr,s,s);
   
   /* draw outline */
-  cairo_set_line_width(cr, 0.1);
-  cairo_rectangle (cr, 0.1,0.1,0.9,0.9);
+  cairo_set_line_width(cr, 0.2);
+  cairo_rectangle (cr, 0.01,0.01,0.99,0.99);
   cairo_stroke (cr);
 }
 

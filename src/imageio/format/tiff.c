@@ -83,20 +83,38 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
   
-  const uint8_t *in8=(const uint8_t *)in_void;
+  const uint8_t  *in8 =(const uint8_t  *)in_void;
+  const uint16_t *in16=(const uint16_t *)in_void;
   if(d->bpp == 16)
   {
     uint32_t rowsize=(d->width*3)*sizeof(uint16_t);
     uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
-    uint8_t *stripedata=(uint8_t*)in_void;
+    uint16_t *rowdata = (uint16_t *)malloc(stripesize);
+    uint16_t *wdata = rowdata;
     uint32_t stripe=0;
-    uint32_t insize=((d->width*d->height)*3)*sizeof(uint16_t);
-    while(stripedata<(in8+insize)-(stripesize)) {
-      TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
-      stripedata+=stripesize;  
+    // uint32_t insize=((d->width*d->height)*3)*sizeof(uint16_t);
+    // while(stripedata<(in8+insize)-(stripesize)) {
+      // TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
+      // stripedata+=stripesize;  
+    // }
+    for (int y = 0; y < d->height; y++)
+    {
+      for(int x=0;x<d->width;x++) 
+        for(int k=0;k<3;k++) 
+        {
+          (wdata)[0] = in16[4*d->width*y + 4*x + k];
+          wdata++;
+        }
+      if((wdata-stripesize/sizeof(uint16_t))==rowdata)
+      {
+        TIFFWriteEncodedStrip(tif,stripe++,rowdata,rowsize*DT_TIFFIO_STRIPE);
+        wdata=rowdata;
+      }
     }
-    TIFFWriteEncodedStrip(tif,stripe++,stripedata,(in8+insize)-stripedata);
+    if((wdata-stripesize/sizeof(uint16_t))!=rowdata)
+      TIFFWriteEncodedStrip(tif,stripe++,rowdata,(wdata-rowdata)*sizeof(uint16_t));
     TIFFClose(tif);
+    free(rowdata);
   }
   else
   {
@@ -121,7 +139,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
       }
     }
     if((wdata-stripesize)!=rowdata)
-    TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
+      TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
     TIFFClose(tif);
     free(rowdata);
   }

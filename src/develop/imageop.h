@@ -29,13 +29,12 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_iop_roi_t;
 
-/** */
-#define	IOP_GROUP_BASIC			        1
-#define	IOP_GROUP_COLOR			      2
-#define	IOP_GROUP_CORRECT			4
-#define	IOP_GROUP_EFFECT		      	8
+#define	IOP_GROUP_BASIC    1
+#define	IOP_GROUP_COLOR    2
+#define	IOP_GROUP_CORRECT  4
+#define	IOP_GROUP_EFFECT   8
 
-#define	IOP_GROUP_ALL   (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
+#define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
 
 /** Flag for the iop module to be enabled/included by default when creating a style */
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
@@ -101,9 +100,9 @@ typedef struct dt_iop_module_t
   /** get name of the module, to be translated. */
   const char* (*name)     ();
   /** get the groups this module belongs to. */
-  int (*groups) ();
+  int (*groups)           ();
   /** get the iop module flags. */
-  int (*flags) ();
+  int (*flags)            ();
   
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
@@ -124,27 +123,29 @@ typedef struct dt_iop_module_t
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
   
-  void (*init) (struct dt_iop_module_t *self); // this MUST set params_size!
-  void (*cleanup) (struct dt_iop_module_t *self);
+  void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
+  void (*cleanup)         (struct dt_iop_module_t *self);
   /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
-  void (*init_presets) (struct dt_iop_module_t *self);
+  void (*init_presets)    (struct dt_iop_module_t *self);
   /** this inits the piece of the pipe, allocing piece->data as necessary. */
-  void (*init_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
   /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
-  void (*commit_params) (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this is the chance to update default parameters, after the full raw is loaded. */
   void (*reload_defaults) (struct dt_iop_module_t *self);
   /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
-  void (*cleanup_pipe)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  void (*modify_roi_in)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
-  void (*modify_roi_out) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
+  void (*cleanup_pipe)    (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*modify_roi_in)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
+  void (*modify_roi_out)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
 
   /** this is the temp homebrew callback to operations, as long as gegl is so slow.
     * x,y, and scale are just given for orientation in the framebuffer. i and o are
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */
-  void (*process) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  /** the opencl equivalent of process(). */
+  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 }
 dt_iop_module_t;
 
@@ -165,11 +166,11 @@ void dt_iop_load_default_params(dt_iop_module_t *module);
 
 
 /** for homebrew pixel pipe: zoom pixel array. */
-void dt_iop_clip_and_zoom  (const float *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
-                                  float *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
-/** uses more samples for a smoother downsampled preview. */
-void dt_iop_clip_and_zoom_hq_downsample (const float *i, const int32_t ix, const int32_t iy, const int32_t iw, const int32_t ih, const int32_t ibw, const int32_t ibh,
-                                               float *o, const int32_t ox, const int32_t oy, const int32_t ow, const int32_t oh, const int32_t obw, const int32_t obh);
+void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride);
+
+/** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
+void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters);
+
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
                                   uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);

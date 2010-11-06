@@ -48,12 +48,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_profile_gamma_data_t *d = (dt_iop_profile_gamma_data_t *)piece->data;
   float *in = (float *)i;
   float *out = (float *)o;
+  const int ch = piece->colors;
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     out[0] = d->table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
     out[1] = d->table[CLAMP((int)(in[1]*0x10000ul), 0, 0xffff)];
     out[2] = d->table[CLAMP((int)(in[2]*0x10000ul), 0, 0xffff)];
-    in += 3; out += 3;
+    in += ch; out += ch;
   }
 }
 

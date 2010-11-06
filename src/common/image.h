@@ -48,7 +48,9 @@ typedef enum
   // this refers to the state of the mipf buffer and its source.
   DT_IMAGE_THUMBNAIL = 16,
   // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping etc.
-  DT_IMAGE_LDR = 32
+  DT_IMAGE_LDR = 32,
+  // set during import if the image is raw data, i.e. it needs demosaicing.
+  DT_IMAGE_RAW = 64
 }
 dt_image_flags_t;
 
@@ -111,6 +113,7 @@ typedef struct dt_image_t
   int32_t mip_width [DT_IMAGE_FULL]; // mipmap buffer extents of the buffers in mip[.] and mipf
   int32_t mip_height[DT_IMAGE_FULL];
   float mip_width_f [DT_IMAGE_FULL]; // precise mipmap widths inside the buffers in mip[.] and mipf
+  uint8_t mip_invalid; // bit map to invalidate buffers.
   float mip_height_f[DT_IMAGE_FULL];
   dt_image_lock_t lock[DT_IMAGE_NONE];
   char lock_last[DT_IMAGE_NONE][100];
@@ -121,6 +124,7 @@ typedef struct dt_image_t
   float black, maximum;
   float raw_denoise_threshold, raw_auto_bright_threshold;
   dt_image_raw_parameters_t raw_params;
+  uint32_t filters;  // demosaic pattern
   float *pixels;
   int32_t mip_buf_size[DT_IMAGE_NONE];
 }
@@ -130,7 +134,7 @@ dt_image_t;
 /** inits basic values to sensible defaults. */
 void dt_image_init(dt_image_t *img);
 /** returns non-zero if the image contains low-dynamic range data. */
-int dt_image_is_ldr(dt_image_t *img);
+int dt_image_is_ldr(const dt_image_t *img);
 /** returns the full path name where the image was imported from. */
 void dt_image_full_path(dt_image_t *img, char *pathname, int len);
 /** returns the full path where to export the image (file ending remains original). */
@@ -160,6 +164,18 @@ int dt_image_altered(const dt_image_t *img);
 static inline int dt_image_orientation(const dt_image_t *img)
 {
   return img->raw_params.user_flip > 0 ? img->raw_params.user_flip : (img->orientation > 0 ?img->orientation : 0);
+}
+/** returns the (flipped) filter string for the demosaic pattern. */
+static inline uint32_t dt_image_flipped_filter(const dt_image_t *img)
+{
+  const int orient = dt_image_orientation(img);
+  switch(orient)
+  {
+    case 6:  return 0x61616161u;
+    case 5:  return 0x49494949u;
+    case 3:  return 0x16161616u;
+    default: return 0x94949494u;
+  }
 }
 /** cleanup. */
 void dt_image_cleanup(dt_image_t *img);

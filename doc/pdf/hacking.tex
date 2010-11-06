@@ -170,6 +170,33 @@ image import: only load \code{dt\_image\_t} and mip[0--4] to database.
 
 \code{dt\_image\_get}: check mipmap cache, check database, else \code{dt\_imageio\_open[\_preview]}.
 
+The buffers are as follows:
+
+\begin{description}
+  \item[\code{DT\_IMAGE\_MIP0-4}] are used for rendering in light table mode. These are either loaded from the embedded
+    thumbnail in the raw files (if the \code{never\_use\_embedded\_thumb} key is not set), or store small versions of
+    processed buffers.
+
+    The function \code{dt\_imageio\_open\_preview} will fill these low-dynamic range buffers ready for display. If a history
+    stack is present (i.e.\ the image is {\em altered}), this function will load \code{MIPF} instead.
+
+  \item[\code{DT\_IMAGE\_MIPF}] is used by the preview pipe or by pipelines spawned by the light table when creating
+    \code{DT\_IMAGE\_MIP0-4}. It stores a capped-size four float per pixel representation of the input image.
+
+    This buffer is needed to reduce the overall mem requirements and still process multiple thumbnails of large images
+    in parallel. Darktable rather stores and prefetches a few low-resolution \code{MIPF} buffers instead of full images.
+
+    \code{MIPF} can never be explicitly loaded.
+
+    \code{MIPF} are written if a prefetch is requested for fast darkroom mode entering later on, or by \code{dt\_imageio\_open\_preview}
+    if the image is altered. It is also written if a full image is requested, to avoid duplicate file accesses in this case.
+
+  \item[\code{DT\_IMAGE\_FULL}] is the full image buffer as read from disk. That is, raw images will store one \code{uint16\_t}
+    per pixel, mosaiced input data, while high dynamic range input will result in a four float buffer.
+
+\end{description}
+
+
 \newpage
 \subsection{Cache Interfaces}
 
