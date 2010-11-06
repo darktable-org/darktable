@@ -68,7 +68,6 @@ if(OpenMP_FOUND)
 	add_definitions("-DHAVE_OPENMP")
 endif(OpenMP_FOUND)
 
-
 #
 # Find all other required libraries for building
 #
@@ -128,6 +127,12 @@ if(GNOMEKEYRING_FOUND)
 	add_definitions("-DHAVE_GKEYRING")
 endif(GNOMEKEYRING_FOUND)
 
+find_package(OpenCL)
+if(OPENCL_FOUND)
+  include_directories($OPENCL_INCLUDE_DIR)
+  list(APPEND LIBS $OPENCL_LIBRARIES)
+	add_definitions("-DHAVE_OPENCL")
+endif(OPENCL_FOUND)
 
 #
 # Add HAVE_xxx defines used by darktable
@@ -154,7 +159,7 @@ endif(GPHOTO2_FOUND)
 #
 if(CMAKE_COMPILER_IS_GNUC)
 	message(STATUS "GCC detected, adding compile flags")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -Wno-missing-field-initializers -ffast-math -O3 -mfpmath=sse -march=native")
 	if(NOT WIN32)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 	endif(NOT WIN32)
