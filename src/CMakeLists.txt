@@ -165,6 +165,10 @@ if(GPHOTO2_FOUND)
 	add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
 
+# essential compile flags (dt will not build correctly without most of them)
+# as well as some optimization flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
+
 #
 # Set default compile flags for GCC
 #
@@ -190,7 +194,16 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 add_library(lib_darktable SHARED ${SOURCES})
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
-target_link_libraries(lib_darktable ${LIBS} libraw_r)
+#
+# the libraw part is a bit of a hack:
+# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
+# so we do a custom dependency and pretend an imported liblibraw_r.a so no other -l are
+# appended.
+#
+add_dependencies(lib_darktable libraw_r)
+add_library(libraw_static STATIC IMPORTED)
+set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/LibRaw/liblibraw_r.a)
+target_link_libraries(lib_darktable ${LIBS} libraw_static)
 install(TARGETS lib_darktable DESTINATION lib/darktable)
 list(APPEND LIBS lib_darktable)
 

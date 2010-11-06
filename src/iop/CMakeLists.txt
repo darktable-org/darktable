@@ -5,7 +5,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DI
 set(MODULES tonecurve gamma temperature colorcorrection exposure equalizer
 	colorin colorout clipping sharpen monochrome rawimport basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain clahe bilateral profile_gamma
-	colortransfer channelmixer graduatednd relight zonesystem watermark demosaic atrous
+	colortransfer channelmixer graduatednd relight zonesystem watermark demosaic
 )
 
 add_library(tonecurve MODULE "tonecurve.c")
@@ -37,7 +37,6 @@ add_library(relight MODULE "relight.c")
 add_library(zonesystem MODULE "zonesystem.c")
 add_library(watermark MODULE "watermark.c")
 add_library(demosaic MODULE "demosaic.c")
-add_library(atrous MODULE "atrous.c")
 
 foreach(module ${MODULES})
 	target_link_libraries(${module} ${LIBS})
