@@ -414,15 +414,29 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
       _("* contributors *"),
       "Alexandre Prokoudine",
       "Alexander Rabtchevich",
+      "Andrea Purracchio",
       "Andrey Kaminsky",
+      "Anton Blanchard",
+      "Bernhard Schneider",
+      "Christian Fuchs",
       "Christian Himpel",
+      "David Bremner",
       "Gregor Quade",
+      "Jan Rinze",
+      "Jose Carlos Garcia Sogo",
       "Mikko Ruohola",
+      "Nao Nakashima",
+      "Olivier Tribout",
       "Pascal de Bruijn",
       "Richard Hughes",
+      "Stephen van den Berg",
+      "Stuart Henderson",
+      "Thierry Leconte",
       "Tobias Ellinghaus",
       "Wyatt Olson",
-      "Xavier Besse", NULL};
+      "Xavier Besse",
+      "Zeus Panchenko",
+      NULL};
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
       
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
