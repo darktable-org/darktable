@@ -589,7 +589,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(hbox), 1,2,0,1,GTK_EXPAND|GTK_FILL,0,0,0);
   
   // Add opacity/scale sliders to table
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, p->opacity, 0.5));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->opacity, 0.5));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
