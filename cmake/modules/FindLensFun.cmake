@@ -1,69 +1,30 @@
-# - Try to find lensfun
-# Once done this will define
+# - Find the native lensfun includes and library
 #
-#  LENSFUN_FOUND - system has lensfun
-#  LENSFUN_INCLUDE_DIRS - the lensfun include directory
-#  LENSFUN_LIBRARIES - Link these to use lensfun
-#  LENSFUN_DEFINITIONS - Compiler switches required for using lensfun
-#
-#  Copyright (c) 2008 Adrian Schroeter <adrian@suse.de>
-#
-#  Redistribution and use is allowed according to the terms of the New
-#  BSD license.
-#  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
-#
+# This module defines
+#  LENSFUN_INCLUDE_DIR, where to find lensfun.h, etc.
+#  LENSFUN_LIBRARIES, the libraries to link against to use lensfun.
+#  LENSFUN_FOUND, If false, do not try to use lensfun.
+# also defined, but not for general use are
+#  LENSFUN_LIBRARY, where to find the lensfun library.
 
-if (LENSFUN_LIBRARIES AND LENSFUN_INCLUDE_DIRS)
-  # in cache already
-  set(LENSFUN_FOUND TRUE)
-else (LENSFUN_LIBRARIES AND LENSFUN_INCLUDE_DIRS)
-  # use pkg-config to get the directories and then use these values
-  # in the FIND_PATH() and FIND_LIBRARY() calls
-  IF (NOT WIN32)
-    include(UsePkgConfig)
 
-    pkgconfig(lensfun _lensfunIncDir _lensfunLinkDir _lensfunLinkFlags _lensfunCflags)
-  
-    set(LENSFUN_DEFINITIONS ${_lensfunCflags})
-  ENDIF (NOT WIN32)
+#=============================================================================
+# Copyright 2010 henrik andersson
+#=============================================================================
 
-  find_path(LENSFUN_INCLUDE_DIR
-    NAMES
-      lensfun.h
-    PATHS
-      ${_lensfunIncDir}
-      /opt/local/include
-      /sw/include
-  )
+find_path(LENSFUN_INCLUDE_DIR lensfun.h)
+mark_as_advanced(LENSFUN_INCLUDE_DIR)
 
-  find_library(LENSFUN_LIBRARY
-    NAMES
-      lensfun
-    PATHS
-      ${_lensfunLinkDir}
-      /opt/local/lib
-      /sw/lib
-  )
+set(LENSFUN_NAMES ${LENSFUN_NAMES} lensfun liblensfun)
+find_library(LENSFUN_LIBRARY NAMES ${LENSFUN_NAMES} )
+mark_as_advanced(LENSFUN_LIBRARY)
 
-  if (LENSFUN_LIBRARY)
-    set(LENSFUN_FOUND TRUE)
-  endif (LENSFUN_LIBRARY)
+# handle the QUIETLY and REQUIRED arguments and set LENSFUN_FOUND to TRUE if
+# all listed variables are TRUE
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(LENSFUN DEFAULT_MSG LENSFUN_LIBRARY LENSFUN_INCLUDE_DIR)
 
-  set(LENSFUN_INCLUDE_DIRS
-    ${LENSFUN_INCLUDE_DIR}
-  )
-
-  if (LENSFUN_FOUND)
-    set(LENSFUN_LIBRARIES
-      ${LENSFUN_LIBRARIES}
-      ${LENSFUN_LIBRARY}
-    )
-  endif (LENSFUN_FOUND)
-
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(LensFun DEFAULT_MSG LENSFUN_INCLUDE_DIRS LENSFUN_LIBRARIES )
-
-  # show the LENSFUN_INCLUDE_DIRS and LENSFUN_LIBRARIES variables only in the advanced view
-  mark_as_advanced(LENSFUN_INCLUDE_DIRS LENSFUN_LIBRARIES)
-
-endif (LENSFUN_LIBRARIES AND LENSFUN_INCLUDE_DIRS)
-
+IF(LENSFUN_FOUND)
+  SET(LensFun_LIBRARIES ${LENSFUN_LIBRARY})
+  SET(LensFun_INCLUDE_DIRS ${LENSFUN_INCLUDE_DIR})
+ENDIF(LENSFUN_FOUND)

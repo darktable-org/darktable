@@ -37,10 +37,10 @@ add_library(relight MODULE "relight.c")
 add_library(zonesystem MODULE "zonesystem.c")
 add_library(watermark MODULE "watermark.c")
 add_library(demosaic MODULE "demosaic.c")
+
 if(LENSFUN_FOUND)
-	list(APPEND MODULES ${MODUELS} "lens")
 	add_library(lens MODULE "lens.c")
-  target_link_libraries(lens ${LENSFUN_LIBRARIES})
+	set(MODULES ${MODULES} lens)
 endif(LENSFUN_FOUND)
 
 foreach(module ${MODULES})
