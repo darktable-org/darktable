@@ -548,6 +548,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 static void
 dt_image_get_raw_import_preset(dt_image_t *image)
 {
+  int user_flip = image->raw_params.user_flip;
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(darktable.db, "select op_params from presets where operation = 'rawimport' and "
       "autoapply=1 and "
@@ -575,6 +576,7 @@ dt_image_get_raw_import_preset(dt_image_t *image)
       memcpy(&(image->raw_denoise_threshold), blob, length);
   }
   sqlite3_finalize(stmt);
+  image->raw_params.user_flip = user_flip;
 }
 
 
