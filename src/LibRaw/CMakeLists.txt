@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 set(LIBRAW_SOURCES internal/dcraw_common.cpp src/libraw_cxx.cpp internal/dcraw_fileio.cpp src/libraw_c_api.cpp)
 
 #
-# build libdarktable
+# build liblibraw_r
 #
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
