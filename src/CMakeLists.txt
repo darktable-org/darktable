@@ -170,22 +170,22 @@ if(GPHOTO2_FOUND)
   add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
 
-# essential compile flags (dt will not build correctly without most of them)
-# as well as some optimization flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -mfpmath=sse -march=native -g")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -O0 -g -DDEBUG")
+
 
 #
 # Set default compile flags for GCC
 #
-if(CMAKE_COMPILER_IS_GNUC)
-  message(STATUS "GCC detected, adding compile flags")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -Wno-missing-field-initializers -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
-  if(NOT WIN32)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-  endif(NOT WIN32)
-endif(CMAKE_COMPILER_IS_GNUC)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers -fno-strict-aliasing")
+if(NOT WIN32)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+endif(NOT WIN32)
+
+if(NOT APPLE)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4 -mfpmath=sse -march=native -g")
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math")
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -DDEBUG")
+endif(NOT APPLE)
+  
 
 #
 # Generate config.h
