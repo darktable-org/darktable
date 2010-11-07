@@ -130,7 +130,7 @@ dt_image_t;
 /** inits basic values to sensible defaults. */
 void dt_image_init(dt_image_t *img);
 /** returns non-zero if the image contains low-dynamic range data. */
-int dt_image_is_ldr(dt_image_t *img);
+int dt_image_is_ldr(const dt_image_t *img);
 /** returns the full path name where the image was imported from. */
 void dt_image_full_path(dt_image_t *img, char *pathname, int len);
 /** returns the full path where to export the image (file ending remains original). */
