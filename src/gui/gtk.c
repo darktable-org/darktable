@@ -424,6 +424,8 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
       
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   gtk_dialog_run(GTK_DIALOG (dialog));
   gtk_widget_destroy(dialog);
   return TRUE;
