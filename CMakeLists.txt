@@ -18,7 +18,7 @@ if(APPLE)
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
 	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
 	
-	set(LIBS ${LIBS} -Wl,-framework -Wl,Carbon -Wl,-framework -Wl,Cocoa)
+	set(LIBS ${LIBS} -Wl,-framework -Wl,Carbon)
 endif(APPLE)
 
 if(WIN32)
