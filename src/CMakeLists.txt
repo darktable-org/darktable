@@ -194,13 +194,22 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BIN
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 
+#
+# Setup generation of preference dialog files..
+#
+add_custom_command(
+   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/..//darktable.schemas.in > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+)
 
 #
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${SOURCES})
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
+
+
 #
 # the libraw part is a bit of a hack:
 # the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
@@ -228,6 +237,7 @@ add_subdirectory(iop)
 
 # Compile darkroom modules
 add_subdirectory(imageio)
+
 
 
 

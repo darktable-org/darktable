@@ -20,7 +20,7 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
-#include "gui/preferences_gen.h"
+#include "preferences_gen.h"
 
 void dt_gui_preferences_show()
 {

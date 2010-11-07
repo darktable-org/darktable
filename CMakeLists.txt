@@ -16,6 +16,7 @@ file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h "${_version_h}")
 set(PROJECT_VERSION "${_dt_decoration}")
 
 
+
 include(cmake/darktable-packaging.cmake)
 
 # Avoid source tree pollution
