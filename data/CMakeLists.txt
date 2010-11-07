@@ -9,6 +9,8 @@ add_subdirectory(pixmaps)
 set(SHARE_FILES darktable.gtkrc darktable.glade)
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
 
+
+
 #
 # Install watermarks
 #

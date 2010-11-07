@@ -4,7 +4,6 @@ cmake_policy(VERSION 2.6)
 
 option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
 
-
 #
 # Auto create version
 #
@@ -14,8 +13,6 @@ execute_process(COMMAND echo "#ifndef DT_VERSION_H\n#define DT_VERSION_H\n#defin
 file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h "${_version_h}")
 
 set(PROJECT_VERSION "${_dt_decoration}")
-
-
 
 include(cmake/darktable-packaging.cmake)
 
@@ -82,6 +79,15 @@ if(Gettext_FOUND)
 		endif()
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
+
+
+#
+# ##
+#
+if(APPLE)
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
+	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
+endif(APPLE)
 
 # lets continue into build directories
 add_subdirectory(src)

@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 
+#
+# Install Doc files
+#
+set(DOC_FILES README AUTHORS TRANSLATORS LICENSE)
+install(FILES ${DOC_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/darktable)
+
 # Build manual page
 add_custom_command(
 	OUTPUT darktable.1
