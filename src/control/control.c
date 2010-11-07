@@ -785,6 +785,7 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 void *dt_control_expose(void *voidptr)
 {
   int width, height, pointerx, pointery;
+  if(!darktable.gui->pixmap) return;
   gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_get_pointer(widget, &pointerx, &pointery);

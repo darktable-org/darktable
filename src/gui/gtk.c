@@ -1015,6 +1015,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->request_snapshot = 0;
   gui->selected_snapshot = 0;
   gui->snapshot_image = NULL;
+  gui->pixmap = NULL;
   memset(gui->snapshot, 0, sizeof(gui->snapshot));
   for(int k=0;k<4;k++) snprintf(gui->snapshot[k].filename, 30, "/tmp/dt_snapshot_%d.png", k);
   gui->presets_popup_menu = NULL;
