@@ -220,7 +220,7 @@ add_custom_command(
 #
 add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${SOURCES})
 if(APPLE)
-  set_target_properties(mylib PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
+  set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)
 set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
