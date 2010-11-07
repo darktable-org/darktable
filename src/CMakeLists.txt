@@ -85,21 +85,25 @@ include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
-# Check for gconf2 / broken cmake module can't be included in the foreach() below
-if(WIN32)
-  message("-- Win32 does not support gconf backend, disabling it.")
-  set(USE_GCONF_BACKEND OFF)
-endif(WIN32)
 
+# Check for gconf2 / broken cmake module can't be included in the foreach() below
 if(USE_GCONF_BACKEND)
   find_package(GConf2)
-  include_directories(${GCONF2_INCLUDE_DIRS})
-  list(APPEND LIBS ${GCONF2_LIBRARIES})
-  add_definitions(${GCONF2_DEFINITIONS})
+  include_directories(${GConf2_INCLUDE_DIRS})
+  list(APPEND LIBS ${GConf2_LIBRARIES})
+  add_definitions(${GConf2_DEFINITIONS})
 endif(USE_GCONF_BACKEND)
 
+
+if(USE_CAMERA_SUPPORT)
+  find_package(Gphoto2)
+  include_directories(${Gphoto2_INCLUDE_DIRS})
+  list(APPEND LIBS ${Gphoto2_LIBRARIES})
+  add_definitions(${Gphoto2_DEFINITIONS})
+endif(USE_CAMERA_SUPPORT)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GModule PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
+foreach(lib ${OUR_LIBS} LensFun GModule PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL JPEG TIFF OpenEXR LCMS)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -178,7 +182,7 @@ endif(GPHOTO2_FOUND)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers -fno-strict-aliasing")
 
 if(NOT WIN32)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif(NOT WIN32)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4 -mfpmath=sse -march=native -g")

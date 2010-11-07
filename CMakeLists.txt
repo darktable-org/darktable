@@ -3,6 +3,24 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
 option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
+option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
+
+
+#
+# Set platform defaults...
+#
+if(APPLE)
+	message("-- Mac OSX build detected, setting default features");
+	set(USE_GCONF_BACKEND OFF) 
+	set(USE_CAMERA_SUPPORT OFF)
+endif(APPLE)
+
+if(WIN32)
+ message("-- Win32 build detected, setting default features");
+  set(USE_GCONF_BACKEND OFF) 
+  set(USE_CAMERA_SUPPORT OFF)
+endif(WIN32)
+
 
 #
 # Auto create version
