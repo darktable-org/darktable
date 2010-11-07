@@ -812,6 +812,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->black   = sqlite3_column_double(stmt, 20);
     img->maximum = sqlite3_column_double(stmt, 21);
     img->exif_inited = 1;
+
+    dt_image_get_raw_import_preset(img);
     
     dt_image_get_raw_import_preset(img);
 

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-03 00:26+0100\n"
-"PO-Revision-Date: 2010-11-03 00:49+0100\n"
+"POT-Creation-Date: 2010-11-06 15:20+0100\n"
+"PO-Revision-Date: 2010-11-06 15:46+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: \n"
@@ -261,17 +261,17 @@ msgstr "toevoegen of vervangen van de bewerkingsgeschiedenis bij het plakken"
 #: ../darktable.schemas.in.h:9
 #: ../src/gui/preferences_gen.h:360
 msgid "ask before deleting a tag"
-msgstr "vraag voordat een label wordt verwijderd"
+msgstr "vraag eerst voordat een label wordt verwijderd"
 
 #: ../darktable.schemas.in.h:10
 #: ../src/gui/preferences_gen.h:311
 msgid "ask before deleting images"
-msgstr "vraag voordat afbeeldingen worden verwijderd"
+msgstr "vraag eerst voordat afbeeldingen worden verwijderd"
 
 #: ../darktable.schemas.in.h:11
 #: ../src/gui/preferences_gen.h:295
 msgid "ask before removing images"
-msgstr "vraag voordat afbeeldingen worden verplaatst"
+msgstr "vraag eerst voordat afbeeldingen worden verplaatst"
 
 #: ../darktable.schemas.in.h:12
 msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
@@ -295,12 +295,12 @@ msgstr "subsampling de voorbeeld pixels"
 #: ../darktable.schemas.in.h:16
 #: ../src/gui/preferences_gen.h:344
 msgid "enable filmstrip in darkroom mode"
-msgstr "vertoon de  filmstrip  in de Darkroom modus"
+msgstr "toon de fotomap in de Darkroom modus"
 
 #: ../darktable.schemas.in.h:17
 #: ../src/gui/preferences_gen.h:246
 msgid "filename of your custom theme in share/darktable/"
-msgstr "bestandsnaam van uw eigen thema/darktable"
+msgstr "bestandsnaam van uw eigen thema in share/darktable"
 
 #: ../darktable.schemas.in.h:18
 msgid "filename relative to your home directory, or starting with a slash (needs a restart)."
@@ -369,102 +369,114 @@ msgid "if this number is smaller than the darktable internal version number, the
 msgstr "als het nummer lager is dan het Darktable interne versie nummer, dan zullen de waarden worden gesynchroniseerd naar de nieuw standaard waarden"
 
 #: ../darktable.schemas.in.h:32
+msgid "ignore jpeg images when importing film rolls."
+msgstr "negeer jpeg afbeelding zodra een fotomap wordt geïmporteerd"
+
+#: ../darktable.schemas.in.h:33
 #: ../src/gui/preferences_gen.h:409
 msgid "image cache file"
 msgstr "bufferbestand van de afbeelding"
 
-#: ../darktable.schemas.in.h:33
+#: ../darktable.schemas.in.h:34
 #: ../src/gui/preferences_gen.h:425
 msgid "image cache file backup"
 msgstr "afbeeldings bufferbestand backup"
 
-#: ../darktable.schemas.in.h:34
+#: ../darktable.schemas.in.h:35
 msgid "jobcode of import job"
 msgstr "de werkcode van de importeer taak"
 
-#: ../darktable.schemas.in.h:35
+#: ../darktable.schemas.in.h:36
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "JPEG kwaliteit van de miniaturen op de schijf"
 
-#: ../darktable.schemas.in.h:36
+#: ../darktable.schemas.in.h:37
 #: ../src/gui/preferences_gen.h:441
 msgid "memory in bytes to use for mipmap cache"
 msgstr "geheugen in bytes te gebruiken voor het mipmap cache"
 
-#: ../darktable.schemas.in.h:37
+#: ../darktable.schemas.in.h:38
 msgid "name of capture job"
 msgstr "name van opname opdracht"
 
-#: ../darktable.schemas.in.h:38
+#: ../darktable.schemas.in.h:39
 #: ../src/gui/preferences_gen.h:491
 msgid "password storage backend to use"
 msgstr "te gebruiken wachtwoord voor backend opslag"
 
-#: ../darktable.schemas.in.h:39
+#: ../darktable.schemas.in.h:40
 msgid "path of storage for captured images"
 msgstr "opslagplaats voor opgenomen afbeeldingen"
 
-#: ../darktable.schemas.in.h:40
+#: ../darktable.schemas.in.h:41
+msgid "recursive directory traversal when importing filmrolls."
+msgstr "controleer mappen recursief bij het importeren van mappen"
+
+#: ../darktable.schemas.in.h:42
 msgid "rename pattern for captured images"
 msgstr "hernoem patroon voor opgenomen afbeeldingen"
 
-#: ../darktable.schemas.in.h:41
+#: ../darktable.schemas.in.h:43
 msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
 msgstr "selecteer een layout voor de Lighttablel: 0 - zoomen of 1 - bestands manager"
 
-#: ../darktable.schemas.in.h:42
+#: ../darktable.schemas.in.h:44
 #: ../src/gui/preferences_gen.h:262
 msgid "size of the side panels in pixels"
-msgstr "de maat van de zijpanelen uitgedrukt in pixels."
+msgstr "de maat van de zijpanelen in pixels."
 
-#: ../darktable.schemas.in.h:43
+#: ../darktable.schemas.in.h:45
 msgid "small thumbnails to keep in main memory cache"
 msgstr "kleine miniaturen om in het hoofd cache geheugen te bewaren"
 
-#: ../darktable.schemas.in.h:44
+#: ../darktable.schemas.in.h:46
 msgid "subpath pattern in storage for captured images"
 msgstr "opgeslagen subpad patroon voor opgenomen afbeeldingen"
 
-#: ../darktable.schemas.in.h:45
+#: ../darktable.schemas.in.h:47
 msgid "the name of backup directory to search for on mounted medias"
 msgstr "de naam van de reservekopieën map waarnaar gezocht moet worden op aangekoppelde media"
 
-#: ../darktable.schemas.in.h:46
+#: ../darktable.schemas.in.h:48
 msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 msgstr "de opslag voor pwstorage: 0 - geen, 1 - gconf(gebruik die niet), 2 - kwallet, 3 - gnome keyring "
 
-#: ../darktable.schemas.in.h:47
+#: ../darktable.schemas.in.h:49
 msgid "these files can later be re-imported into a different database, preserving your changes to the image."
 msgstr "deze bestanden kunnen later opnieuw worden geïmporteerd in aan andere database, veranderingen van de afbeelding blijven zo bewaard"
 
-#: ../darktable.schemas.in.h:48
+#: ../darktable.schemas.in.h:50
 msgid "this overrides the per-image settings, if not set to `image'."
 msgstr "dit overschrijft de persoonlijke afbeeldingsinstellingen, als niet is ingesteld op `afbeelding'."
 
-#: ../darktable.schemas.in.h:49
+#: ../darktable.schemas.in.h:51
 msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
 msgstr "deze waarde, kleiner dan 1.0, geeft een grovere voorbeschouwing voor een snellere feedback"
 
-#: ../darktable.schemas.in.h:50
+#: ../darktable.schemas.in.h:52
 msgid "version of these dt-gconf entries"
 msgstr "versie van deze DT-gconf ingangen"
 
-#: ../darktable.schemas.in.h:51
+#: ../darktable.schemas.in.h:53
+msgid "when having raw+jpeg images together in one directory it makes no sense to import both. with this flag one can ignore all jpegs found."
+msgstr "Als de RAW en JPG afbeeldingen in eenzelfde map staan heeft het geen zin beide bestanden te importeren. Met hulp van deze markering worden alle gevonden JPG bestanden genegeerd."
+
+#: ../darktable.schemas.in.h:54
 msgid "which layout should lighttable mode show"
 msgstr "kies de layout voor Lighttable"
 
-#: ../darktable.schemas.in.h:52
+#: ../darktable.schemas.in.h:55
 msgid "width of the exported image"
 msgstr "breedte van de geëxporteerde afbeelding"
 
-#: ../darktable.schemas.in.h:53
+#: ../darktable.schemas.in.h:56
 msgid "width of the exported image, or 0 if no scaling should be done."
 msgstr "breedte van de geëxporteerde afbeelding, of 0 indien geen herschaling uitgevoerd moet worden"
 
-#: ../darktable.schemas.in.h:54
+#: ../darktable.schemas.in.h:57
 #: ../src/gui/preferences_gen.h:475
 msgid "write a redundant sidecar file for each image"
-msgstr "maak een overbodige xmp sidecar bestand van elke afbeelding"
+msgstr "maak xmp sidecar bestanden van elke afbeelding"
 
 #. single images
 #: ../src/common/image.c:98
@@ -665,12 +677,12 @@ msgid "xmp sidecar files"
 msgstr "xmp sidecar files"
 
 #: ../src/libs/copy_history.c:70
-#: ../src/gui/gtk.c:700
+#: ../src/gui/gtk.c:733
 msgid "all files"
 msgstr "alle bestanden"
 
 #: ../src/libs/copy_history.c:84
-#: ../src/gui/gtk.c:720
+#: ../src/gui/gtk.c:753
 #, c-format
 msgid "error loading file '%s'"
 msgstr "fout bij het inladen van het bestand '%s"
@@ -1323,9 +1335,9 @@ msgstr "maakt een kopie van de afbeelding voordat het profiel wordt toegepast"
 msgid "edit"
 msgstr "bewerk"
 
-#: ../src/libs/styles.c:255
-msgid "delete's the selected style in list above"
-msgstr "verwijder in bovenstaande lijst de geselecteerde stijl"
+#: ../src/libs/styles.c:253
+msgid "deletes the selected style in list above"
+msgstr "verwijdert het geselecteerde profiel in de hierbovenstaande lijst"
 
 #: ../src/iop/clipping.c:116
 msgid "crop and rotate"
@@ -2994,7 +3006,7 @@ msgstr ""
 "Ger Siemerink\n"
 "\n"
 "Voor vragen of opmerking over deze vertaling\n"
-"in het Nederlands mag u mailen naar:\n"
+"mag u mailen naar:\n"
 "\n"
 "g.siemerink at gmail.com"
 
@@ -3002,27 +3014,43 @@ msgstr ""
 msgid "import film"
 msgstr "importeer een map"
 
-#: ../src/gui/gtk.c:676
+#: ../src/gui/gtk.c:657
+msgid "import directories recursively"
+msgstr "importeer mappen recursief"
+
+#: ../src/gui/gtk.c:658
+msgid "recursively import subdirectories. each directory goes into a new film roll."
+msgstr "recursief onderliggende mappen importeren, elke map wordt daarbij in een nieuwe map geplaatst."
+
+#: ../src/gui/gtk.c:665
+msgid "ignore jpeg files"
+msgstr "negeer JPG-bestanden"
+
+#: ../src/gui/gtk.c:666
+msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
+msgstr "laad geen bestanden met de extensie JPG of JPEG. Dit kan zinvol zijn wanneer er RAW + JPG bestanden bestaan in eenzelfde map."
+
+#: ../src/gui/gtk.c:709
 msgid "import image"
 msgstr "importeer afbeelding"
 
-#: ../src/gui/gtk.c:695
+#: ../src/gui/gtk.c:728
 msgid "supported images"
 msgstr "ondersteunde afbeeldingen"
 
-#: ../src/gui/gtk.c:1024
+#: ../src/gui/gtk.c:1057
 msgid "show global preferences"
 msgstr "toon algemene voorkeuren"
 
-#: ../src/gui/gtk.c:1152
+#: ../src/gui/gtk.c:1185
 msgid "take snapshot"
 msgstr "neem een momentopname"
 
-#: ../src/gui/gtk.c:1181
+#: ../src/gui/gtk.c:1214
 msgid "recently used film rolls"
 msgstr "recent gebruikte mappen"
 
-#: ../src/gui/gtk.c:1202
+#: ../src/gui/gtk.c:1235
 msgid "all film rolls"
 msgstr "alle mappen"
 
@@ -3065,8 +3093,8 @@ msgid "create a minimal history stack which produces the same image"
 msgstr "creëer een minimale stapel waarmee eenzelfde afbeelding wordt gemaakt"
 
 #: ../src/gui/iop_history.c:106
-msgid "create a style from current developed image and it's history stack"
-msgstr "maakt een profiel van de nu ontwikkelde afbeelding en zijn bewerkingsgeschiedenis"
+msgid "create a style from currently developed image and its history stack"
+msgstr "maak een profiel van de nu ontwikkelde afbeelding"
 
 #: ../src/gui/iop_history.c:130
 #: ../src/gui/iop_history.c:221
