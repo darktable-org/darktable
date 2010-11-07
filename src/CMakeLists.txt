@@ -99,7 +99,7 @@ if(USE_GCONF_BACKEND)
 endif(USE_GCONF_BACKEND)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
+foreach(lib ${OUR_LIBS} GModule PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2 Gphoto2 CURL JPEG TIFF OpenEXR LCMS)
 	find_package(${lib} REQUIRED)
 	include_directories(${${lib}_INCLUDE_DIRS})
 	list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -145,6 +145,8 @@ if(OPENCL_FOUND)
 	add_definitions("-DHAVE_OPENCL")
 endif(OPENCL_FOUND)
 
+find_package(LensFun)
+
 #
 # Add HAVE_xxx defines used by darktable
 #
@@ -167,7 +169,9 @@ endif(GPHOTO2_FOUND)
 
 # essential compile flags (dt will not build correctly without most of them)
 # as well as some optimization flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -mfpmath=sse -march=native -g")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -O0 -g -DDEBUG")
 
 #
 # Set default compile flags for GCC
