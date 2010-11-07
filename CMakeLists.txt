@@ -85,8 +85,8 @@ endif(Gettext_FOUND)
 # ##
 #
 if(APPLE)
-	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/lib)
-	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/include)
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
+	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
 endif(APPLE)
 
 # lets continue into build directories
