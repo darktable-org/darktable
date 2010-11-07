@@ -82,18 +82,8 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 
+# lets continue into build directories
 add_subdirectory(src)
 
-add_subdirectory(pixmaps)
+add_subdirectory(data)
 
-#
-# Add files that should go into shared
-#
-set(SHARE_FILES darktable.gtkrc darktable.glade)
-install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
-
-#
-# Install watermarks
-#
-FILE(GLOB WATERMARKS "watermarks/*.svg")
-install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
