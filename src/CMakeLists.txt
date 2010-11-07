@@ -103,7 +103,7 @@ if(USE_CAMERA_SUPPORT)
 endif(USE_CAMERA_SUPPORT)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GModule PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL JPEG TIFF OpenEXR LCMS)
+foreach(lib ${OUR_LIBS} LensFun GThread GModule PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL JPEG TIFF OpenEXR LCMS)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
