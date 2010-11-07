@@ -428,6 +428,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
       "Nao Nakashima",
       "Olivier Tribout",
       "Pascal de Bruijn",
+      "Robert Park",
       "Richard Hughes",
       "Stephen van den Berg",
       "Stuart Henderson",
