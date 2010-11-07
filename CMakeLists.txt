@@ -84,6 +84,6 @@ endif(Gettext_FOUND)
 
 # lets continue into build directories
 add_subdirectory(src)
-
 add_subdirectory(data)
+add_subdirectory(doc)
 
