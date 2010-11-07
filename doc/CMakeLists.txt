@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 2.6)
 add_custom_command(
 	OUTPUT darktable.1
 	SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod
-	COMMAND pod2man ARGS -s 1 
+# COMMAND pod2man ARGS -s 1 
+	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/darktable.1
 	${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod 
 	${CMAKE_CURRENT_BINARY_DIR}/darktable.1 
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod
