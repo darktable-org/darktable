@@ -17,7 +17,8 @@ endif("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 
 # Set package generator for MacOSX
 if(APPLE)
-	set(CPACK_GENERATOR "PACKAGEMAKER;OSXX11")
+	set(CPACK_GENERATOR "OSXX11")
+	set(CPACK_PACKAGE_EXECUTABLES "darktable" "Darktable - Raw Editor")
 endif(APPLE)
 
 # Set package for unix
