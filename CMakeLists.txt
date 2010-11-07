@@ -13,6 +13,12 @@ if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
 	set(USE_GCONF_BACKEND OFF) 
 	set(USE_CAMERA_SUPPORT OFF)
+	
+	# setup mac ports path...
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
+	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
+	
+	set(LIBS ${LIBS} -framework Carbon -framework Cocoa)
 endif(APPLE)
 
 if(WIN32)
@@ -97,15 +103,6 @@ if(Gettext_FOUND)
 		endif()
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
-
-
-#
-# ##
-#
-if(APPLE)
-	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
-	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
-endif(APPLE)
 
 # lets continue into build directories
 add_subdirectory(src)
