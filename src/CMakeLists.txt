@@ -167,7 +167,9 @@ endif(GPHOTO2_FOUND)
 
 # essential compile flags (dt will not build correctly without most of them)
 # as well as some optimization flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -mfpmath=sse -march=native -g")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -ffast-math -O3 -mfpmath=sse -march=native")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wno-missing-field-initializers -fno-strict-aliasing -msse4 -O0 -g -DDEBUG")
 
 #
 # Set default compile flags for GCC
