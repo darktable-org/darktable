@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
+#include "control/conf.h"
 
 dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
 {
@@ -162,7 +163,8 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   }
 
   dt_image_buffer_t mip;
-  const int altered = dt_image_altered(img) || (img == darktable.develop->image);
+  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
   if(altered) mip = DT_IMAGE_MIPF;
   else        mip = DT_IMAGE_MIP4;
 
