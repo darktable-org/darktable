@@ -149,8 +149,8 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
        cairo_fill(cr);
       
       // hline
-      cairo_move_to(cr,x,y+height-2); 
-      cairo_line_to(cr,x+width-rw-6,y+height-2);
+      cairo_move_to(cr,x,y+height-1); 
+      cairo_line_to(cr,x+width-rw-6,y+height-1);
       cairo_stroke(cr);
     }
     else
@@ -162,8 +162,8 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
        cairo_fill(cr);
       
       // hline
-      cairo_move_to(cr,x+rw+4,y+height-2); 
-      cairo_line_to(cr,x+width,y+height-2);
+      cairo_move_to(cr,x+rw+4,y+height-1); 
+      cairo_line_to(cr,x+width,y+height-1);
       cairo_stroke(cr);
     }	
   }
