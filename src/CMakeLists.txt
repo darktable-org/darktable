@@ -176,15 +176,14 @@ endif(GPHOTO2_FOUND)
 # Set default compile flags for GCC
 #
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers -fno-strict-aliasing")
+
 if(NOT WIN32)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif(NOT WIN32)
 
-if(NOT APPLE)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4 -mfpmath=sse -march=native -g")
-	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math")
-	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -DDEBUG")
-endif(NOT APPLE)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4 -mfpmath=sse -march=native -g")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -DDEBUG")
   
 
 #
