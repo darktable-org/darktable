@@ -145,6 +145,8 @@ if(OPENCL_FOUND)
 	add_definitions("-DHAVE_OPENCL")
 endif(OPENCL_FOUND)
 
+find_package(LensFun)
+
 #
 # Add HAVE_xxx defines used by darktable
 #
