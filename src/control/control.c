@@ -412,11 +412,11 @@ void dt_control_init(dt_control_t *s)
   s->running = 1;
   pthread_mutex_unlock(&s->run_mutex);
   for(k=0;k<s->num_threads;k++)
-    pthread_create(s->thread[k], NULL, dt_control_work, s);
+    pthread_create(&s->thread[k], NULL, dt_control_work, s);
   for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
   {
     s->new_res[k] = 0;
-    pthread_create(s->thread_res[k], NULL, dt_control_work_res, s);
+    pthread_create(&s->thread_res[k], NULL, dt_control_work_res, s);
   }
   s->button_down = 0;
   s->button_down_which = 0;
@@ -785,7 +785,7 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 void *dt_control_expose(void *voidptr)
 {
   int width, height, pointerx, pointery;
-  if(!darktable.gui->pixmap) return;
+  if(!darktable.gui->pixmap) return NULL;
   gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
