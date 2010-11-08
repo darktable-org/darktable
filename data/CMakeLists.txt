@@ -14,7 +14,7 @@ install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
 #
 # Install other system shares
 #
-install(FILES darktable.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
+install(FILES darktable.desktop DESTINATION ./share/applications)
 
 #
 # Install watermarks
