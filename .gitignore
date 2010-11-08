@@ -61,3 +61,4 @@ debian/files
 *.substvars
 debian/darktable
 debian/darktable-dbg
+src/gui/preferences_gen.h
