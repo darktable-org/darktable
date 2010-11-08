@@ -44,6 +44,7 @@ if(UNIX)
 		set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
 		set(CPACK_DEBIAN_PACKAGE_SECTION "photos")
 		set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "")
+		set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/cmake/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/cmake/debian/prerm;" )
 		
 		# We need to alter the architecture names as per distro rules
 		if("${CPACK_PACKAGE_ARCHITECTURE}" MATCHES "i[3-6]86")
