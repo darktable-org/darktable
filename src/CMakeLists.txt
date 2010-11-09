@@ -95,10 +95,6 @@ if(USE_GCONF_BACKEND)
 endif(USE_GCONF_BACKEND)
 
 
-if(NOT DEFINED USE_CAMERA_SUPPORT)
-  set(USE_CAMERA_SUPPORT 1)
-endif(NOT DEFINED USE_CAMERA_SUPPORT)
-
 if(USE_CAMERA_SUPPORT)
   find_package(Gphoto2)
   include_directories(${Gphoto2_INCLUDE_DIRS})
