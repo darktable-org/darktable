@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>darktable</string>
 	<key>CFBundleIconFile</key>
-	<string>Icons.icns</string>
+	<string>darktable.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>net.sourceforge.darktable</string>
 	<key>CFBundleInfoDictionaryVersion</key>
