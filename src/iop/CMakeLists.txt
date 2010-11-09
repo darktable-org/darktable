@@ -38,7 +38,7 @@ add_library(zonesystem MODULE "zonesystem.c")
 add_library(demosaic MODULE "demosaic.c")
 
 if(RSVG2_FOUND)
-	add_library(lens MODULE "watermark.c")
+	add_library(watermark MODULE "watermark.c")
 	set(MODULES ${MODULES} watermark)
 endif(RSVG2_FOUND)
 
