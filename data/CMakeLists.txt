@@ -12,12 +12,13 @@ if(APPLE)
 	# 8 is very tiny on mac
 	set(GTKRC_FONT_SIZE 11)
 endif(APPLE)
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${SHARE_INSTALL}/darktable.gtkrc )
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc )
+
 
 #
 # Add files that should go into shared
 #
-set(SHARE_FILES darktable.glade)
+set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc darktable.glade)
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
 
 #
