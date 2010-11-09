@@ -1,16 +1,13 @@
 cmake_minimum_required(VERSION 2.6)
 
-set(THEME hicolor)
-set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
-
 #
 # Install fixed sized icons
 #
 set(FIXED_SIZES "16x16" "22x22" "32x32" "48x48" "64x64" "scalable")
 foreach(pixmap_size ${FIXED_SIZES})
 	# install apps icons
-	FILE(GLOB PIXMAP_FILES ${pixmap_size}/*.png ${pixmap_size}/*.svg)
-	install(FILES ${PIXMAP_FILES} DESTINATION ${THEME_DIRECTORY}/${pixmap_size}/apps)
+	FILE(GLOB PIXMAP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${pixmap_size}/*.png ${CMAKE_CURRENT_SOURCE_DIR}/${pixmap_size}/*.svg)
+	install(FILES ${PIXMAP_FILES} DESTINATION ./share/icons/${THEME}/${pixmap_size}/apps)
 endforeach(pixmap_size)
 
 #
@@ -23,13 +20,13 @@ install(FILES ${DARKROOM_PLUGIN_PIXMAPS} DESTINATION ${SHARE_INSTALL}/pixmaps/pl
 #
 # Add debian package postinstall icon cache update
 #
-set(GTK_UPDATE_ICON_CACHE "gtk-update-icon-cache -f -t ${THEME_DIRECTORY}")
-set(POSTINSTALL_SCRIPT "# update icon cache\n
-	if test -z \"$(DESTDIR)\"; then\n 
-		echo \"Updating Gtk icon cache.\"; \n 
-		${GTK_UPDATE_ICON_CACHE};\n
-	else \n 
-		echo \"*** Icon cache not updated. After (un)install, run this:\";\n 
-		echo \"*** ${GTK_UPDATE_ICON_CACHE}\";\n
-	fi")
-file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/debian/postinst "${POSTINSTALL_SCRIPT}")
+#set(GTK_UPDATE_ICON_CACHE "gtk-update-icon-cache -f -t ${THEME_DIRECTORY}")
+#set(POSTINSTALL_SCRIPT "# update icon cache\n
+#	if test -z \"$(DESTDIR)\"; then\n 
+#		echo \"Updating Gtk icon cache.\"; \n 
+#		${GTK_UPDATE_ICON_CACHE};\n
+#	else \n 
+#		echo \"*** Icon cache not updated. After (un)install, run this:\";\n 
+#		echo \"*** ${GTK_UPDATE_ICON_CACHE}\";\n
+#	fi")
+#file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/debian/postinst "${POSTINSTALL_SCRIPT}")

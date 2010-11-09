@@ -17,10 +17,13 @@ endif("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 
 # Set package generator for MacOSX
 if(APPLE)
+	make_directory(${CMAKE_BINARY_DIR}/packaging/macosx)
+	configure_file( ${CMAKE_SOURCE_DIR}/cmake/macosx/template_Info.plist ${CMAKE_BINARY_DIR}/packaging/macosx/Info.plist )
 	set(CPACK_GENERATOR "Bundle")
-	set(CPACK_BUNDLE_ICON "")
+	set(CPACK_BUNDLE_PLIST ${CMAKE_BINARY_DIR}/packaging/macosx/Info.plist)
+	set(CPACK_BUNDLE_ICON ${CMAKE_SOURCE_DIR}/cmake/macosx/Info.plist)
 	set(CPACK_BUNDLE_NAME "darktable")
-	set(CPACK_BUNDLE_STARTUP_COMMAND "bin/darktable")
+	#set(CPACK_BUNDLE_STARTUP_COMMAND "bin/darktable")
 	set(CPACK_PACKAGE_EXECUTABLES "darktable" "Darktable - Raw Editor")
 endif(APPLE)
 
@@ -40,11 +43,17 @@ if(UNIX)
 	endif(NOT LSB_DISTRIB)
 	# For Debian-based distros we want to create DEB packages.
 	if("${LSB_DISTRIB}" MATCHES "Ubuntu|Debian")
+		
+		make_directory(${CMAKE_BINARY_DIR}/packaging/debian)
+		set(GTK_UPDATE_ICON_CACHE "gtk-update-icon-cache -f -t ${THEME_DIRECTORY}")
+		configure_file( ${CMAKE_SOURCE_DIR}/cmake/debian/template_postinst ${CMAKE_BINARY_DIR}/packaging/debian/postinst )
+		configure_file( ${CMAKE_SOURCE_DIR}/cmake/debian/template_prerm ${CMAKE_BINARY_DIR}/packaging/debian/prerm )
+	
 		set(CPACK_GENERATOR "DEB")
 		set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
 		set(CPACK_DEBIAN_PACKAGE_SECTION "photos")
 		set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "")
-		set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/cmake/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/cmake/debian/prerm;" )
+		set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/packaging/debian/postinst;${CMAKE_BINARY_DIR}/packaging/debian/prerm;" )
 		
 		# We need to alter the architecture names as per distro rules
 		if("${CPACK_PACKAGE_ARCHITECTURE}" MATCHES "i[3-6]86")

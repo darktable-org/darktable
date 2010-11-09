@@ -168,11 +168,11 @@ if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
 endif(OPENEXR_FOUND)
 
+
 if(GPHOTO2_FOUND)
   set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" "gui/devices.c" )
   add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
-
 
 
 #
