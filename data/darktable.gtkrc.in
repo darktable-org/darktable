@@ -28,7 +28,7 @@ style "clearlooks-default"
   GtkExpander::expander_size = 0 #12
   GtkExpander::focus-padding = 2
   GtkProgressBar::min-horizontal-bar-height = 12
-  font_name = "Sans 8"
+  font_name = "Sans ${GTKRC_FONT_SIZE}"
 
   xthickness = 2
   ythickness = 2
@@ -182,7 +182,7 @@ style "clearlooks-checkbutton" = "clearlooks-default"
 
 style "scale-fixed-font" = "clearlooks-default"
 {
-  font_name = "Monospace 8"
+  font_name = "Monospace ${GTKRC_FONT_SIZE}"
 }
 
 style "clearlooks-header" = "clearlooks-default"
