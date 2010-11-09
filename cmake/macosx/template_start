@@ -1,4 +1,4 @@
 #!/bin/bash
 
-`dirname "$0"`"/../bin/darktable" 
+`dirname "$0"`"/../Resources/bin/darktable" 
 
