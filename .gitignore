@@ -53,8 +53,8 @@ ltmain.sh
 .libs
 .deps
 tmp
-doc/usermanual/build/darktable-usermanual.fo
-doc/usermanual/darktable-usermanual.pdf
+doc/usermanual/build/
+doc/usermanual/darktable-usermanual*.pdf
 src/common/version.h
 version.sh
 debian/files
