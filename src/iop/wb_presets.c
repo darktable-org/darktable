@@ -92,6 +92,14 @@ const wb_data wb_preset[] = {
   { "Canon", "PowerShot A710 IS", DaylightFluorescent, 0, { 1.820287, 1, 1.820287, 0 } },
   { "Canon", "PowerShot A710 IS", Underwater, 0, { 2.926108, 1, 1.376847, 0 } },
 
+  { "Canon", "PowerShot A720 IS", Daylight, 0,	{ 2.059371, 1, 1.975553, 0 } },
+  { "Canon", "PowerShot A720 IS", Cloudy, 0,	{ 2.262722, 1, 1.818935, 0 } },
+  { "Canon", "PowerShot A720 IS", Tungsten, 0,	{ 1.632258, 1, 2.974194, 0 } },
+  { "Canon", "PowerShot A720 IS", Fluorescent, 0, { 1.902728, 1, 2.365362, 0 } },
+  { "Canon", "PowerShot A720 IS", FluorescentHigh, 0, { 2.243961, 1, 1.935990, 0 } },
+  { "Canon", "PowerShot A720 IS", Underwater, 0, { 2.303465, 1, 1.882915, 0 } },
+  { "Canon", "PowerShot A720 IS", Flash, 0,	{ 2.151586, 1, 1.864865, 0 } },
+
   { "Canon", "PowerShot G2", Daylight, 0,	{ 2.011483, 1, 1.299522, 0 } },
   { "Canon", "PowerShot G2", Cloudy, 0,		{ 2.032505, 1, 1.285851, 0 } },
   { "Canon", "PowerShot G2", Tungsten, 0,	{ 1.976008, 1, 1.332054, 0 } },
