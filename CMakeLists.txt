@@ -118,19 +118,20 @@ if(NOT USE_SSE_FLAG)
 	message("-- Checking SSE instructions support by current CPU")
 	foreach(sse_test ${SSE_C_TESTS})
 		if(NOT SSE_FOUND)
-			try_run(run_var result_var
-				${CMAKE_BINARY_DIR}/CMakeTmp
-				${CMAKE_SOURCE_DIR}/cmake/modules/sse_test.c
-				COMPILE_DEFINITIONS "-m${sse_test}"
-				COMPILE_OUTPUT_VARIABLE cout_var
-				RUN_OUTPUT_VARIABLE rout_var
-			)
+			if(WIN32)
+				set(SSE_CHECK_COMMAND "FAILURE")
+			elseif(APPLE)
+				set(SSE_CHECK_COMMAND "sysctl -a | grep ${sse_test}")
+			else()#other os
+				set(SSE_CHECK_COMMAND "cat /proc/cpuinfo | grep ${sse_test}")
+			endif(WIN32)
+			execute_process(COMMAND ${SSE_CHECK_COMMAND} RESULT_VARIABLE ret_var)
 			
-			if(cout_var AND result_var)
+			if(ret_var)
 				set(SSE_FOUND TRUE)
 				message("--  ${sse_test} detected and working.")
 				set(USE_SSE_SET ${sse_test})
-			endif(cout_var AND result_var)
+			endif(ret_var)
 			
 		endif(NOT SSE_FOUND)
 	endforeach(sse_test)
