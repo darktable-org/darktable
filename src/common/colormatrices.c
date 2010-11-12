@@ -130,6 +130,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G1",             { 747467, 300064,  74265}, { 225922, 1028946, -310913}, { 91782, -229019, 1153793}, {846222, 864502, 694458}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Panasonic DMC-G2",             { 753250, 303024,  75287}, { 225540, 1036041, -320923}, { 90927, -233749, 1170151}, {837860, 857056, 687210}},
+
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}}
 };
