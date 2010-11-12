@@ -43,10 +43,10 @@ make_directory(${CMAKE_CURRENT_SOURCE_DIR}/packaging/debian)
 
 set(PROJECT_VERSION "${_dt_decoration}")
 
-
-
+#
 # Avoid source tree pollution
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+#
+If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
@@ -109,6 +109,36 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 
+#
+# Test SSE level
+#
+if(NOT USE_SSE_FLAG)
+	set(SSE_C_TESTS "sse4" "sse3" "sse2" "sse")
+	message("-- Checking SSE instructions support by current CPU")
+	foreach(sse_test ${SSE_C_TESTS})
+		if(NOT SSE_FOUND)
+			try_run(run_var result_var
+				${CMAKE_BINARY_DIR}/CMakeTmp
+				${CMAKE_SOURCE_DIR}/cmake/modules/sse_test.c
+				COMPILE_DEFINITIONS "-m${sse_test}"
+				COMPILE_OUTPUT_VARIABLE cout_var
+				RUN_OUTPUT_VARIABLE rout_var
+			)
+			
+			if(cout_var AND result_var)
+				set(SSE_FOUND TRUE)
+				message("--  ${sse_test} detected and working.")
+				set(USE_SSE_SET ${sse_test})
+			endif(cout_var AND result_var)
+			
+		endif(NOT SSE_FOUND)
+	endforeach(sse_test)
+endif(NOT USE_SSE_FLAG)
+
+# set the SSE
+if(USE_SSE_SET)
+	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")
+endif(USE_SSE_SET)
 
 # setup some theme specific variables
 set(THEME hicolor)
