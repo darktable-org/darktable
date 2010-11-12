@@ -95,6 +95,7 @@ if(USE_GCONF_BACKEND)
 endif(USE_GCONF_BACKEND)
 
 
+
 if(USE_CAMERA_SUPPORT)
   find_package(Gphoto2)
   include_directories(${Gphoto2_INCLUDE_DIRS})

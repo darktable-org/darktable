@@ -23,35 +23,51 @@
 #include <xmmintrin.h>
 #include <smmintrin.h>
 
-#define DT_GUI_EQUALIZER_INSET 5
-#define DT_GUI_CURVE_INFL .3f
+#define INSET 5
+#define INFL .3f
 
 DT_MODULE(1)
+
+#define BANDS 6
+#define MAX_LEVEL 6
+#define RES 64
+
+typedef enum atrous_channel_t
+{
+  atrous_L    = 0,  // luminance boost
+  atrous_c    = 1,  // chrominance boost
+  atrous_Lt   = 2,  // luminance noise threshold
+  atrous_ct   = 3,  // chrominance noise threshold
+  atrous_s    = 4,  // edge sharpness
+  atrous_none = 5
+}
+atrous_channel_t;
 
 typedef struct dt_iop_atrous_params_t
 {
   int32_t octaves; // max is 7 -> 5*2^7 = 640px support
-  // noise threshold for each band
-  float thrs[7];
-  // contrast enhancement for each band
-  float boost[7];
-  // how sharp do you want the edges of the wavelets for each band
-  float sharpen[7];
+  float x[atrous_none][BANDS], y[atrous_none][BANDS];
 }
 dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
 {
-#if 0 // draw curve gui? use sliders?
-  dt_draw_curve_t *minmax_curve;
   GtkDrawingArea *area;
-  double draw_xs[DT_IOP_EQUALIZER_RES], draw_ys[DT_IOP_EQUALIZER_RES];
-  double draw_min_xs[DT_IOP_EQUALIZER_RES], draw_min_ys[DT_IOP_EQUALIZER_RES];
-  double draw_max_xs[DT_IOP_EQUALIZER_RES], draw_max_ys[DT_IOP_EQUALIZER_RES];
-  // have histogram in bg?
-  float band_hist[DT_IOP_EQUALIZER_BANDS];
+  GtkHBox *hbox;
+  GtkComboBox *presets;
+  GtkRadioButton *channel_button[atrous_none];
+  double mouse_x, mouse_y, mouse_pick;
+  float mouse_radius;
+  dt_iop_atrous_params_t drag_params;
+  int dragging;
+  int x_move;
+  dt_draw_curve_t *minmax_curve;
+  atrous_channel_t channel;
+  double draw_xs[RES], draw_ys[RES];
+  double draw_min_xs[RES], draw_min_ys[RES];
+  double draw_max_xs[RES], draw_max_ys[RES];
+  float band_hist[BANDS];
   float band_max;
-#endif
 }
 dt_iop_atrous_gui_data_t;
 
@@ -66,9 +82,7 @@ typedef struct dt_iop_atrous_data_t
 {
   // demosaic pattern
   int32_t octaves;
-  float thrs[7];
-  float boost[7];
-  float sharpen[7];
+  dt_draw_curve_t *curve[atrous_none];
 }
 dt_iop_atrous_data_t;
 
@@ -100,7 +114,7 @@ fast_exp_ps(const __m128 exponent)
 static inline float
 fastexp(const float x)
 {
-    return fmaxf(0.0f, (6+x*(6+x*(3+x)))*0.16666666f);
+  return fmaxf(0.0f, (6+x*(6+x*(3+x)))*0.16666666f);
 }
 #endif
 
@@ -108,7 +122,7 @@ fastexp(const float x)
 static inline float
 fastexp(const float x)
 {
-    return fmaxf(0.0f, (120+x*(120+x*(60+x*(20+x*(5+x)))))*0.0083333333f);
+  return fmaxf(0.0f, (120+x*(120+x*(60+x*(20+x*(5+x)))))*0.0083333333f);
 }
 #endif
 
@@ -416,13 +430,12 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
   tmp.octaves = 5;
-  for(int k=0;k<7;k++)
+  for(int ch=0;ch<atrous_none;ch++)
+  for(int k=0;k<BANDS;k++)
   {
-    tmp.sharpen[k] = .03f;
-    tmp.boost  [k] = 0.0f;
-    tmp.thrs   [k] = 0.001f;
+    tmp.y[ch][k] = 0.5f;
+    tmp.x[ch][k] = k/(BANDS-1.0f);
   }
-  tmp.sharpen[0] = 0.0f;
   memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
 
@@ -451,38 +464,403 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)params;
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   d->octaves = p->octaves;
-  for(int k=0;k<7;k++)
-  {
-    d->thrs[k] = p->thrs[k];
-    d->boost[k] = p->boost[k];
-    d->sharpen[k] = p->sharpen[k];
-  }
+  for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
+    dt_draw_curve_set_point(d->curve[ch], k, p->x[ch][k], p->y[ch][k]);
+  int l = 0;
+  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale);k;k>>=1) l++;
+  d->octaves = MIN(MAX_LEVEL, l);
 }
 
-void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_atrous_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
+  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)malloc(sizeof(dt_iop_atrous_data_t));
+  dt_iop_atrous_params_t *default_params = (dt_iop_atrous_params_t *)self->default_params;
+  piece->data = (void *)d;
+  for(int ch=0;ch<atrous_none;ch++)
+  {
+    d->curve[ch] = dt_draw_curve_new(0.0, 1.0);
+    for(int k=0;k<BANDS;k++)
+      (void)dt_draw_curve_add_point(d->curve[ch], default_params->x[ch][k], default_params->y[ch][k]);
+  }
+  int l = 0;
+  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale);k;k>>=1) l++;
+  d->octaves = MIN(MAX_LEVEL, l);
 }
 
 void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
+  for(int ch=0;ch<atrous_none;ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
 }
 
+#if 0
+void init_presets (dt_iop_module_t *self)
+{
+}
+#endif
+
 void gui_update   (struct dt_iop_module_t *self)
 {
-  // nothing
   gtk_widget_queue_draw(self->widget);
 }
 
-void gui_init     (struct dt_iop_module_t *self)
+
+// gui stuff:
+
+static gboolean
+area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  self->widget = gtk_label_new(_("this module doesn't have any options"));
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  if(!c->dragging) c->mouse_x = c->mouse_y = -1.0;
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+// fills in new parameters based on mouse position (in 0,1)
+static void
+get_params(dt_iop_atrous_params_t *p, const int ch, const double mouse_x, const double mouse_y, const float rad)
+{
+  for(int k=0;k<BANDS;k++)
+  {
+    const float f = expf(-(mouse_x - p->x[ch][k])*(mouse_x - p->x[ch][k])/(rad*rad));
+    p->y[ch][k] = (1-f)*p->y[ch][k] + f*mouse_y;
+  }
+}
+
+static gboolean
+area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
+  int ch = (int)c->channel;
+  for(int k=0;k<BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
+  const int inset = INSET;
+  int width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  // clear bg
+  cairo_set_source_rgb (cr, .2, .2, .2);
+  cairo_paint(cr);
+
+  cairo_translate(cr, inset, inset);
+  width -= 2*inset; height -= 2*inset;
+
+  cairo_set_line_width(cr, 1.0);
+  cairo_set_source_rgb (cr, .1, .1, .1);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_stroke(cr);
+
+  cairo_set_source_rgb (cr, .3, .3, .3);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_fill(cr);
+
+  if(c->mouse_y > 0 || c->dragging)
+  {
+    // draw min/max curves:
+    get_params(&p, c->channel, c->mouse_x, 1., c->mouse_radius);
+    for(int k=0;k<BANDS;k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
+    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_min_xs, c->draw_min_ys);
+
+    p = *(dt_iop_atrous_params_t *)self->params;
+    get_params(&p, c->channel, c->mouse_x, .0, c->mouse_radius);
+    for(int k=0;k<BANDS;k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
+    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_max_xs, c->draw_max_ys);
+  }
+
+  // draw grid
+  cairo_set_line_width(cr, .4);
+  cairo_set_source_rgb (cr, .1, .1, .1);
+  dt_draw_grid(cr, 8, width, height);
+
+  // draw x positions
+  cairo_set_line_width(cr, 1.);
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+  const float arrw = 7.0f;
+  for(int k=0;k<BANDS;k++)
+  {
+    cairo_move_to(cr, width*p.x[c->channel][k], height+inset-1);
+    cairo_rel_line_to(cr, -arrw*.5f, 0);
+    cairo_rel_line_to(cr, arrw*.5f, -arrw);
+    cairo_rel_line_to(cr, arrw*.5f, arrw);
+    cairo_close_path(cr);
+    if(c->x_move == k) cairo_fill(cr);
+    else               cairo_stroke(cr);
+  }
+  
+  // draw selected cursor
+  cairo_set_line_width(cr, 1.);
+  cairo_translate(cr, 0, height);
+
+  // draw frequency histogram in bg.
+#if 1
+  if(c->band_max > 0)
+  {
+    cairo_save(cr);
+    cairo_scale(cr, width/(BANDS-1.0), -(height-5)/c->band_max);
+    cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+    cairo_move_to(cr, 0, 0);
+    for(int k=0;k<BANDS;k++) cairo_line_to(cr, k, c->band_hist[k]);
+    cairo_line_to(cr, BANDS-1.0, 0.);
+    cairo_close_path(cr);
+    cairo_fill(cr);
+    cairo_restore(cr);
+  }
+#endif
+ 
+  // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  cairo_set_line_width(cr, 2.);
+  for(int i=0;i<3;i++)
+  { // draw curves, selected last.
+    int ch = ((int)c->channel+i+1)%atrous_none;
+    if(ch == 2) continue;
+    switch(ch)
+    {
+      case atrous_L:
+        cairo_set_source_rgba(cr, .6, .6, .6, .3);
+        break;
+      case atrous_c:
+        cairo_set_source_rgba(cr, .4, .2, .0, .4);
+        break;
+      case atrous_Lt:
+        cairo_set_source_rgba(cr, .1, .1, .1, .7);
+        break;
+      case atrous_ct:
+        cairo_set_source_rgba(cr, .2, .1, .0, .7);
+        break;
+      default: //case atrous_s:
+        cairo_set_source_rgba(cr, 0., .2, .4, .4);
+        break;
+    }
+    p = *(dt_iop_atrous_params_t *)self->params;
+    for(int k=0;k<BANDS;k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
+    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
+    // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
+    cairo_move_to(cr, 0, 0);
+    for(int k=0;k<RES;k++) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_ys[k]);
+    cairo_line_to(cr, width, 0);
+    cairo_close_path(cr);
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+  }
+
+  // draw dots on knots
+  cairo_save(cr);
+  cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+  cairo_set_line_width(cr, 1.);
+  for(int k=0;k<BANDS;k++)
+  {
+    cairo_arc(cr, width*p.x[c->channel][k], - height*p.y[c->channel][k], 3.0, 0.0, 2.0*M_PI);
+    if(c->x_move == k) cairo_fill(cr);
+    else               cairo_stroke(cr);
+  }
+  cairo_restore(cr);
+
+  if(c->mouse_y > 0 || c->dragging)
+  { // draw min/max, if selected
+    // cairo_set_source_rgba(cr, .6, .6, .6, .5);
+    cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
+    for(int k=1;k<RES;k++)    cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_min_ys[k]);
+    for(int k=RES-2;k>=0;k--) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_max_ys[k]);
+    cairo_close_path(cr);
+    cairo_fill(cr);
+    // draw mouse focus circle
+    cairo_set_source_rgba(cr, .9, .9, .9, .5);
+    const float pos = RES * c->mouse_x;
+    int k = (int)pos; const float f = k - pos;
+    if(k >= RES-1) k = RES - 2;
+    float ht = -height*(f*c->draw_ys[k] + (1-f)*c->draw_ys[k+1]);
+    cairo_arc(cr, c->mouse_x*width, ht, c->mouse_radius*width, 0, 2.*M_PI);
+    cairo_stroke(cr);
+  }
+
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+static gboolean
+area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  const int inset = INSET;
+  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
+  c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
+  if(c->dragging)
+  {
+    *p = c->drag_params;
+    if(c->x_move >= 0)
+    {
+      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+      if(c->x_move > 0 && c->x_move < BANDS-1)
+      {
+        const float minx = p->x[c->channel][c->x_move-1] + 0.001f;
+        const float maxx = p->x[c->channel][c->x_move+1] - 0.001f;
+        p->x[c->channel][c->x_move] = fminf(maxx, fmaxf(minx, mx));
+      }
+    }
+    else
+    {
+      get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
+    }
+    dt_dev_add_history_item(darktable.develop, self);
+  }
+  else if(event->y > height)
+  {
+    c->x_move = 0;
+    float dist = fabsf(p->x[c->channel][0] - c->mouse_x);
+    for(int k=1;k<BANDS;k++)
+    {
+      float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
+      if(d2 < dist)
+      {
+        c->x_move = k;
+        dist = d2;
+      }
+    }
+  }
+  else
+  {
+    c->x_move = -1;
+  }
+  gtk_widget_queue_draw(widget);
+  gint x, y;
+  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  return TRUE;
+}
+
+static gboolean
+area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{ // set active point
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    c->drag_params = *(dt_iop_atrous_params_t *)self->params;
+    const int inset = INSET;
+    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
+    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
+    c->dragging = 1;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean
+area_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(event->button == 1)
+  {
+    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    c->dragging = 0;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean
+area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  if(event->direction == GDK_SCROLL_UP   && c->mouse_radius > 0.25/BANDS) c->mouse_radius *= 0.9; //0.7;
+  if(event->direction == GDK_SCROLL_DOWN && c->mouse_radius < 1.0) c->mouse_radius *= (1.0/0.9); //1.42;
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+static void
+button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  if(gtk_toggle_button_get_active(togglebutton))
+  {
+    for(int k=0;k<atrous_none;k++) if(c->channel_button[k] == GTK_RADIO_BUTTON(togglebutton))
+    {
+      c->channel = (atrous_channel_t)k;
+      gtk_widget_queue_draw(self->widget);
+      return;
+    }
+  }
+}
+
+
+
+
+void gui_init (struct dt_iop_module_t *self)
+{
+  self->gui_data = malloc(sizeof(dt_iop_atrous_gui_data_t));
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+
+  c->band_max = 0;
+  c->channel = atrous_L;
+  int ch = (int)c->channel;
+  c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
+  for(int k=0;k<BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
+  c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
+  c->dragging = 0;
+  c->x_move = -1;
+  c->mouse_radius = 1.0/BANDS;
+  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_drawing_area_size(c->area, 195, 195);
+
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
+  g_signal_connect (G_OBJECT (c->area), "expose-event",
+                    G_CALLBACK (area_expose), self);
+  g_signal_connect (G_OBJECT (c->area), "button-press-event",
+                    G_CALLBACK (area_button_press), self);
+  g_signal_connect (G_OBJECT (c->area), "button-release-event",
+                    G_CALLBACK (area_button_release), self);
+  g_signal_connect (G_OBJECT (c->area), "motion-notify-event",
+                    G_CALLBACK (area_motion_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
+                    G_CALLBACK (area_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "scroll-event",
+                    G_CALLBACK (area_scrolled), self);
+  // init gtk stuff
+  c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
+
+  c->channel_button[atrous_L]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma")));
+  c->channel_button[atrous_c]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("chroma")));
+  c->channel_button[atrous_Lt] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("luma noise")));
+  c->channel_button[atrous_ct] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("color noise")));
+  c->channel_button[atrous_s]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("sharpness")));
+
+  for(int k=atrous_s;k>=0;k--)
+  {
+    g_signal_connect (G_OBJECT (c->channel_button[k]), "toggled",
+                      G_CALLBACK (button_toggled), self);
+    gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[k]), FALSE, FALSE, 5);
+  }
 }
 
 void gui_cleanup  (struct dt_iop_module_t *self)
 {
-  // nothing
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_draw_curve_destroy(c->minmax_curve);
+  free(self->gui_data);
+  self->gui_data = NULL;
 }
 
