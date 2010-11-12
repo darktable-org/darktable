@@ -124,6 +124,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Henrik Andersson, Homebrew ColorChecker, camera strobe, well lit
   { "OLYMPUS SP570UZ",              { 780991, 262283,  27969}, { 147522, 1135239, -422974}, {142731, -293610, 1316803}, {769669, 804474, 676895}},
 
+  // Robert Park, ColorChecker Passport, camera strobe, well lit
+  { "Panasonic DMC-FZ40",           { 833542, 259720,  35721}, { 129517, 1239594, -525848}, {117340, -405273, 1440384}, {825226, 863846, 688431}},
+
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}}
 };
