@@ -27,6 +27,10 @@ it under the terms of the one of three licenses as you choose:
 #define _FILE_OFFSET_BITS 64
 #endif
 
+// maximum file size to use LibRaw_file_datastream (fully buffered) I/O
+#define LIBRAW_USE_STREAMS_DATASTREAM_MAXSIZE (250*1024L*1024L)
+
+
 #include <limits.h>
 #include <memory.h>
 #include <stdio.h>
@@ -48,11 +52,13 @@ DllDef    const char          *libraw_strprogress(enum LibRaw_progress);
     /* LibRaw C API */
 DllDef    libraw_data_t       *libraw_init(unsigned int flags);
 DllDef    int                 libraw_open_file(libraw_data_t*, const char *);
+DllDef    int                 libraw_open_file_ex(libraw_data_t*, const char *, INT64 max_buff_sz);
 DllDef    int                 libraw_open_buffer(libraw_data_t*, void * buffer, size_t size);
 DllDef    int                 libraw_unpack(libraw_data_t*);
 DllDef    int                 libraw_unpack_thumb(libraw_data_t*);
 DllDef    void                libraw_recycle(libraw_data_t*);
 DllDef    void                libraw_close(libraw_data_t*);
+DllDef    void                libraw_subtract_black(libraw_data_t*);
     /* version helpers */
 DllDef    const char*               libraw_version();
 DllDef    int                 libraw_versionNumber();
@@ -75,7 +81,7 @@ DllDef    int                 libraw_dcraw_thumb_writer(libraw_data_t* lr,const 
 DllDef    int                 libraw_dcraw_process(libraw_data_t* lr);
 DllDef    libraw_processed_image_t* libraw_dcraw_make_mem_image(libraw_data_t* lr, int *errc);
 DllDef    libraw_processed_image_t* libraw_dcraw_make_mem_thumb(libraw_data_t* lr, int *errc);
-
+DllDef    void libraw_dcraw_clear_mem(libraw_processed_image_t*);
 #ifdef __cplusplus
 }
 #endif
@@ -92,13 +98,14 @@ class DllDef LibRaw
     LibRaw(unsigned int flags = LIBRAW_OPTIONS_NONE);
     
     libraw_output_params_t*     output_params_ptr() { return &imgdata.params;}
-    int                         open_file(const char *fname);
+    int                         open_file(const char *fname, INT64 max_buffered_sz=LIBRAW_USE_STREAMS_DATASTREAM_MAXSIZE);
     int                         open_buffer(void *buffer, size_t size);
     int                         open_datastream(LibRaw_abstract_datastream *);
     int                         unpack(void);
     int                         unpack_thumb(void);
 
     int                         adjust_sizes_info_only(void);
+    void                        subtract_black();
     int                         adjust_maximum();
     void                        set_memerror_handler( memory_callback cb,void *data) {callbacks.memcb_data = data; callbacks.mem_cb = cb; }
     void                        set_dataerror_handler(data_callback func, void *data) { callbacks.datacb_data = data; callbacks.data_cb = func;}
@@ -118,22 +125,22 @@ class DllDef LibRaw
     int                         dcraw_process(void);
     /* memory writers */
     libraw_processed_image_t*   dcraw_make_mem_image(int *errcode=NULL);  
-    libraw_processed_image_t*   dcraw_make_mem_thumb(int *errcode=NULL);  
+    libraw_processed_image_t*   dcraw_make_mem_thumb(int *errcode=NULL);
+    static void                 dcraw_clear_mem(libraw_processed_image_t*);
 
     /* free all internal data structures */
     void         recycle(); 
     ~LibRaw(void) { recycle(); delete tls; }
 
     int COLOR(int row, int col) { return libraw_internal_data.internal_output_params.fuji_width? FCF(row,col):FC(row,col);}
-
-    int FC(int row,int col) { return (imgdata.idata.filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3);}
+ 
+    int FC(int row,int col) { return (imgdata.idata.filters >> (((row << 1 & 14) | (col & 1)) << 1) & 3);}
     int         fc (int row, int col);
     int add_masked_borders_to_bitmap();
     
     const char *unpack_function_name();
     int         rotate_fuji_raw();
 
-    void        free(void *p);
   private:
 
     int FCF(int row,int col) { 
@@ -150,6 +157,8 @@ class DllDef LibRaw
 
     void*        malloc(size_t t);
     void*        calloc(size_t n,size_t t);
+    void*        realloc(void *p, size_t s);
+    void        free(void *p);
     void        merror (void *ptr, const char *where);
     void        derror();
 
@@ -161,10 +170,10 @@ class DllDef LibRaw
     libraw_callbacks_t callbacks;
 
     LibRaw_constants rgb_constants;
-    void        (LibRaw:: *write_thumb)(), 
-                (LibRaw:: *write_fun)();
-    void        (LibRaw:: *load_raw)(),
-                (LibRaw:: *thumb_load_raw)();
+    void        (LibRaw:: *write_thumb)();
+    void        (LibRaw:: *write_fun)();
+    void        (LibRaw:: *load_raw)();
+    void        (LibRaw:: *thumb_load_raw)();
 
     void        kodak_thumb_loader();
     void        write_thumb_ppm_tiff(FILE *); 
@@ -179,6 +188,7 @@ class DllDef LibRaw
     void        convert_to_rgb();
     void        kodak_ycbcr_load_raw();
     void        remove_zeroes();
+    void        crop_pixels();
 #ifndef NO_LCMS
     void	apply_profile(const char*,const char*);
 #endif
