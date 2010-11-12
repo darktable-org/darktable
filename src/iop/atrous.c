@@ -226,7 +226,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   float *detail = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height*d->octaves);
   float *tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height);
   float *buf1 = (float *)i, *buf2;
-  const int max_scale = 3;//d->octaves;
+  const int max_scale = 5;//d->octaves;
 
   float thrs [max_scale][4];
   float boost[max_scale][4];
@@ -237,9 +237,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L],  (i+.5f)/(max_scale));
     boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c],  (i+.5f)/(max_scale));
     for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
-    thrs [i][0] = thrs [i][3] = 5.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], (i+.5f)/(max_scale));
-    thrs [i][1] = thrs [i][2] = 5.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], (i+.5f)/(max_scale));
-    sharp[i]    = 0.01f*dt_draw_curve_calc_value(d->curve[atrous_s],  (i+.5f)/(max_scale));
+    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], (i+.5f)/(max_scale));
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], (i+.5f)/(max_scale));
+    sharp[i]    = 0.001f*dt_draw_curve_calc_value(d->curve[atrous_s],  (i+.5f)/(max_scale));
+    //for(int k=0;k<4;k++) boost[i][k] *= 1.0f/(1.0f - thrs[i][k]);
     printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
   }
 
@@ -449,11 +450,13 @@ void init(dt_iop_module_t *module)
   tmp.octaves = 3;
   for(int k=0;k<BANDS;k++)
   {
-    tmp.y[atrous_L][k] = tmp.y[atrous_s][k] = tmp.y[atrous_c][k] = 0.5f;
+    tmp.y[atrous_L][k] = tmp.y[atrous_c][k] = 0.5f;
     tmp.x[atrous_L][k] = tmp.x[atrous_s][k] = tmp.x[atrous_c][k] = k/(BANDS-1.0f);
     tmp.y[atrous_Lt][k] = tmp.y[atrous_ct][k] = 0.0f;
     tmp.x[atrous_Lt][k] = tmp.x[atrous_ct][k] = k/(BANDS-1.0f);
+    tmp.y[atrous_s][k] = 0.5f + (k-1)*0.5f/(BANDS-2.0f);
   }
+  tmp.y[atrous_s][0] = 0.5f;
   memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
 
@@ -699,7 +702,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_set_line_width(cr, 1.);
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   const float arrw = 7.0f;
-  for(int k=0;k<BANDS;k++)
+  for(int k=1;k<BANDS-1;k++)
   {
     cairo_move_to(cr, width*p.x[ch][k], inset-1);
     cairo_rel_line_to(cr, -arrw*.5f, 0);
