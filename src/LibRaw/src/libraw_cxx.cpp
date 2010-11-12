@@ -22,6 +22,9 @@ it under the terms of the one of three licenses as you choose:
 #include <errno.h>
 #include <float.h>
 #include <math.h>
+#include <new>
+#include <sys/types.h>
+#include <sys/stat.h>
 #ifndef WIN32
 #include <netinet/in.h>
 #else
@@ -75,6 +78,8 @@ extern "C"
                 return "Input/output error";
             case LIBRAW_CANCELLED_BY_CALLBACK:
                 return "Cancelled by user callback";
+            case LIBRAW_BAD_CROP:
+                return "Bad crop box";
             default:
                 return "Unknown error code";
         }
@@ -104,7 +109,7 @@ const float LibRaw_constants::d65_white[3] =  { 0.950456, 1, 1.088754 };
 #define ID libraw_internal_data.internal_data
 
 #define EXCEPTION_HANDLER(e) do{                        \
-        fprintf(stderr,"Exception %d caught\n",e);      \
+        /* fprintf(stderr,"Exception %d caught\n",e);*/ \
         switch(e)                                       \
             {                                           \
             case LIBRAW_EXCEPTION_ALLOC:                \
@@ -121,6 +126,9 @@ const float LibRaw_constants::d65_white[3] =  { 0.950456, 1, 1.088754 };
             case LIBRAW_EXCEPTION_CANCELLED_BY_CALLBACK:\
                 recycle();                              \
                 return LIBRAW_CANCELLED_BY_CALLBACK;    \
+            case LIBRAW_EXCEPTION_BAD_CROP:             \
+                recycle();                              \
+                return LIBRAW_BAD_CROP;                 \
             default:                                    \
                 return LIBRAW_UNSPECIFIED_ERROR;        \
             } \
@@ -152,6 +160,11 @@ void LibRaw::derror()
     libraw_internal_data.unpacker_data.data_error++;
 }
 
+void LibRaw::dcraw_clear_mem(libraw_processed_image_t* p)
+{
+    if(p) ::free(p);
+}
+
 #define ZERO(a) memset(&a,0,sizeof(a))
 
 
@@ -160,6 +173,7 @@ LibRaw:: LibRaw(unsigned int flags)
     double aber[4] = {1,1,1,1};
     double gamm[6] = { 0.45,4.5,0,0,0,0 };
     unsigned greybox[4] =  { 0, 0, UINT_MAX, UINT_MAX };
+    unsigned cropbox[4] =  { 0, 0, UINT_MAX, UINT_MAX };
 #ifdef DCRAW_VERBOSE
     verbose = 1;
 #else
@@ -173,6 +187,7 @@ LibRaw:: LibRaw(unsigned int flags)
     memmove(&imgdata.params.aber,&aber,sizeof(aber));
     memmove(&imgdata.params.gamm,&gamm,sizeof(gamm));
     memmove(&imgdata.params.greybox,&greybox,sizeof(greybox));
+    memmove(&imgdata.params.cropbox,&cropbox,sizeof(cropbox));
     
     imgdata.params.bright=1;
     imgdata.params.use_camera_matrix=-1;
@@ -199,6 +214,13 @@ void* LibRaw:: malloc(size_t t)
     void *p = memmgr.malloc(t);
     return p;
 }
+void* LibRaw:: realloc(void *q,size_t t)
+{
+    void *p = memmgr.realloc(q,t);
+    return p;
+}
+
+
 void* LibRaw::       calloc(size_t n,size_t t)
 {
     void *p = memmgr.calloc(n,t);
@@ -528,10 +550,33 @@ int LibRaw::add_masked_borders_to_bitmap()
     return LIBRAW_SUCCESS;
 }
 
-int LibRaw::open_file(const char *fname)
+int LibRaw::open_file(const char *fname, INT64 max_buf_size)
 {
-    // this stream will close on recycle()
-    LibRaw_file_datastream *stream = new LibRaw_file_datastream(fname);
+#ifndef WIN32
+    struct stat st;
+    if(stat(fname,&st))
+        return LIBRAW_IO_ERROR;
+    int big = (st.st_size > max_buf_size)?1:0;
+#else
+	struct _stati64 st;
+    if(_stati64(fname,&st))	
+        return LIBRAW_IO_ERROR;
+    int big = (st.st_size > max_buf_size)?1:0;
+#endif
+
+    LibRaw_abstract_datastream *stream;
+    try {
+        if(big)
+         stream = new LibRaw_bigfile_datastream(fname);
+        else
+         stream = new LibRaw_file_datastream(fname);
+    }
+
+    catch (std::bad_alloc)
+        {
+            recycle();
+            return LIBRAW_UNSUFFICIENT_MEMORY;
+        }
     if(!stream->valid())
         {
             delete stream;
@@ -557,7 +602,15 @@ int LibRaw::open_buffer(void *buffer, size_t size)
     if(!buffer  || buffer==(void*)-1)
         return LIBRAW_IO_ERROR;
 
-    LibRaw_buffer_datastream *stream = new LibRaw_buffer_datastream(buffer,size);
+    LibRaw_buffer_datastream *stream;
+    try {
+        stream = new LibRaw_buffer_datastream(buffer,size);
+    }
+    catch (std::bad_alloc)
+        {
+            recycle();
+            return LIBRAW_UNSUFFICIENT_MEMORY;
+        }
     if(!stream->valid())
         {
             delete stream;
@@ -600,7 +653,7 @@ int LibRaw::open_datastream(LibRaw_abstract_datastream *stream)
             {
                 IO.fwidth = S.width;
                 IO.fheight = S.height;
-                S.iwidth = S.width = IO.fuji_width << !libraw_internal_data.unpacker_data.fuji_layout;
+                S.iwidth = S.width = IO.fuji_width << (int)(!libraw_internal_data.unpacker_data.fuji_layout);
                 S.iheight = S.height = S.raw_height;
                 S.raw_height += 2*S.top_margin;
             }
@@ -727,7 +780,16 @@ int LibRaw::unpack(void)
 
         if (O.filtering_mode & LIBRAW_FILTERING_AUTOMATIC_BIT)
             O.filtering_mode = LIBRAW_FILTERING_AUTOMATIC; // restore automated mode
-        
+
+        // adjust black to possible maximum
+        unsigned int i = C.cblack[3];
+        unsigned int c;
+        for(c=0;c<3;c++)
+            if (i > C.cblack[c]) i = C.cblack[c];
+        for (c=0;c<4;c++)
+            C.cblack[c] -= i;
+        C.black += i;
+
         SET_PROC_FLAG(LIBRAW_PROGRESS_LOAD_RAW);
         RUN_CALLBACK(LIBRAW_PROGRESS_LOAD_RAW,1,2);
         
@@ -745,20 +807,26 @@ int LibRaw::dcraw_document_mode_processing(void)
 
     try {
 
-        if(IO.fwidth) 
-            rotate_fuji_raw();
-
         if(!own_filtering_supported() && (O.filtering_mode & LIBRAW_FILTERING_AUTOMATIC_BIT))
             O.filtering_mode = LIBRAW_FILTERING_AUTOMATIC_BIT; // turn on black and zeroes filtering
 
-        O.document_mode = 2;
-
-        O.use_fuji_rotate = 0;
         if (!(O.filtering_mode & LIBRAW_FILTERING_NOZEROES) && IO.zero_is_bad)
             {
                 remove_zeroes();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_REMOVE_ZEROES);
             }
+
+        if (O.user_black >= 0) 
+            C.black = O.user_black;
+        subtract_black();
+
+        if(IO.fwidth) 
+            rotate_fuji_raw();
+
+        O.document_mode = 2;
+
+        O.use_fuji_rotate = 0;
+
         if(O.bad_pixels) 
             {
                 bad_pixels(O.bad_pixels);
@@ -769,11 +837,10 @@ int LibRaw::dcraw_document_mode_processing(void)
                 subtract (O.dark_frame);
                 SET_PROC_FLAG(LIBRAW_PROGRESS_DARK_FRAME);
             }
-        if(O.filtering_mode & LIBRAW_FILTERING_NOBLACKS)
-            C.black=0;
+        if (~O.cropbox[2] && ~O.cropbox[3]) crop_pixels();
 
-        if (O.user_black >= 0) 
-            C.black = O.user_black;
+
+        adjust_maximum();
 
         if (O.user_sat > 0) 
             C.maximum = O.user_sat;
@@ -1223,7 +1290,7 @@ void LibRaw::kodak_thumb_loader()
 
 
 
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ thumbnail пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ thumb_format пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// Достает thumbnail из файла, ставит thumb_format в соответствии с форматом
 int LibRaw::unpack_thumb(void)
 {
     CHECK_ORDER_LOW(LIBRAW_PROGRESS_IDENTIFY);
@@ -1411,6 +1478,74 @@ int LibRaw::rotate_fuji_raw(void)
     
 }
 
+void LibRaw::subtract_black()
+{
+
+#define BAYERC(row,col,c) imgdata.image[((row) >> IO.shrink)*S.iwidth + ((col) >> IO.shrink)][c] 
+
+    if(imgdata.masked_pixels.ph1_black)
+        {
+            // Phase One compressed format
+            int row,col,val,cc;
+            for(row=0;row<S.height;row++)
+                for(col=0;col<S.width;col++)
+                    {
+                        cc=FC(row,col);
+                        val = BAYERC(row,col,cc) 
+                            - imgdata.color.phase_one_data.t_black 
+                            + imgdata.masked_pixels.ph1_black[row+S.top_margin][(col + S.left_margin) 
+                                                                                >=C.phase_one_data.split_col];
+                        if(val<0) val = 0;
+                        BAYERC(row,col,cc) = val;
+                    }
+            C.maximum -= C.black;
+            if(!( O.filtering_mode & LIBRAW_FILTERING_NORAWCURVE) )
+                {
+                    phase_one_correct();
+                }
+            // recalculate channel maximum
+            ZERO(C.channel_maximum);
+            for(row=0;row<S.height;row++)
+                for(col=0;col<S.width;col++)
+                    {
+                        cc=FC(row,col);
+                        val = BAYERC(row,col,cc);
+                        if(C.channel_maximum[cc] > val) C.channel_maximum[cc] = val;
+                    }
+            // clear P1 black level data
+            imgdata.color.phase_one_data.t_black = 0;
+            if(imgdata.masked_pixels.ph1_black)
+                {
+                    free(imgdata.masked_pixels.ph1_black);
+                    imgdata.masked_pixels.ph1_black = 0;
+                }
+            ZERO(C.cblack);
+            C.black = 0;
+        }
+    else if((C.black || C.cblack[0] || C.cblack[1] || C.cblack[2] || C.cblack[3]))
+        {
+            int cblk[4],i,row,col,val,cc;
+            for(i=0;i<4;i++)
+                cblk[i] = C.cblack[i]+C.black;
+            ZERO(C.channel_maximum);
+
+            for(row=0;row<S.height;row++)
+                for(col=0;col<S.width;col++)
+                    {
+                        cc=COLOR(row,col);
+                        val = BAYERC(row,col,cc);
+                        if(val > cblk[cc])
+                            val -= cblk[cc];
+                        else
+                            val = 0;
+                        if(C.channel_maximum[cc] < val) C.channel_maximum[cc] = val;
+                        BAYERC(row,col,cc) = val;
+                    }
+            C.maximum -= C.black;
+            ZERO(C.cblack);
+            C.black = 0;
+        }
+}
 
 int LibRaw::dcraw_process(void)
 {
@@ -1423,23 +1558,29 @@ int LibRaw::dcraw_process(void)
     CHECK_ORDER_HIGH(LIBRAW_PROGRESS_PRE_INTERPOLATE);
 
     try {
-
-        adjust_maximum();
-        if(IO.fwidth) 
-            rotate_fuji_raw();
-
+        
+        int save_4color = O.four_color_rgb;
 
         if(!own_filtering_supported() && (O.filtering_mode & LIBRAW_FILTERING_AUTOMATIC_BIT))
             O.filtering_mode = LIBRAW_FILTERING_AUTOMATIC_BIT; // turn on black and zeroes filtering
-
-        if(O.half_size) 
-            O.four_color_rgb = 1;
 
         if (!(O.filtering_mode & LIBRAW_FILTERING_NOZEROES) && IO.zero_is_bad) 
             {
                 remove_zeroes();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_REMOVE_ZEROES);
             }
+
+        // black already set to possible maximum
+        if (O.user_black >= 0) C.black = O.user_black;
+        subtract_black();
+
+        if(IO.fwidth) 
+            rotate_fuji_raw();
+
+
+        if(O.half_size) 
+            O.four_color_rgb = 1;
+
         if(O.bad_pixels) 
             {
                 bad_pixels(O.bad_pixels);
@@ -1451,26 +1592,14 @@ int LibRaw::dcraw_process(void)
                 SET_PROC_FLAG(LIBRAW_PROGRESS_DARK_FRAME);
             }
 
-        quality = 2 + !IO.fuji_width;
+        if (~O.cropbox[2] && ~O.cropbox[3]) crop_pixels();
 
-        if(O.filtering_mode & LIBRAW_FILTERING_NOBLACKS)
-            {
-                C.black=0;
-                memset(&C.cblack,0,sizeof(C.cblack));
-            }
+        quality = 2 + !IO.fuji_width;
 
         if (O.user_qual >= 0) quality = O.user_qual;
 
-        unsigned int i = C.cblack[3];
-        unsigned int c;
-        for(c=0;c<3;c++)
-            if (i > C.cblack[c]) i = C.cblack[c];
-        for (c=0;c<4;c++)
-            C.cblack[c] -= i;
-        C.black += i;
+        adjust_maximum();
 
-
-        if (O.user_black >= 0) C.black = O.user_black;
         if (O.user_sat > 0) C.maximum = O.user_sat;
 
 	if (O.dcb_iterations >= 0) iterations = O.dcb_iterations;
@@ -1513,16 +1642,8 @@ int LibRaw::dcraw_process(void)
                     vng_interpolate();
                 else if (quality == 2)
                     ppg_interpolate();
-                else if (quality == 3)
+                else 
                     ahd_interpolate();
-                else if (quality == 4)
-		    dcb(iterations, dcb_enhance);
-                else if (quality == 5)
-		    amaze_demosaic_RT();
-                else if (quality == 6)
-		    vcd_interpolate(12);
-		//else vcd_interpolate(0);
-		else ahd_interpolate();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_INTERPOLATE);
             }
         if (IO.mix_green)
@@ -1534,13 +1655,7 @@ int LibRaw::dcraw_process(void)
 
         if (P1.colors == 3) 
             {
-		if (quality == 6) {
-		    if (eeci_refine_fl == 1) refinement();
-		    if (O.med_passes > 0)    median_filter_new();
-		    if (es_med_passes_fl > 0) es_median_filter();
-		} else {
-		    median_filter();
-		}
+                median_filter();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
             }
         
@@ -1585,6 +1700,9 @@ int LibRaw::dcraw_process(void)
             }
         if (O.filtering_mode & LIBRAW_FILTERING_AUTOMATIC_BIT)
             O.filtering_mode = LIBRAW_FILTERING_AUTOMATIC; // restore automated mode
+
+        O.four_color_rgb = save_4color; // also, restore
+
         return 0;
     }
     catch ( LibRaw_exceptions err) {
@@ -1633,6 +1751,7 @@ static const char  *static_camera_list[] =
 "Canon PowerShot G9",
 "Canon PowerShot G10",
 "Canon PowerShot G11",
+"Canon PowerShot G12",
 "Canon PowerShot S2 IS (CHDK hack)",
 "Canon PowerShot S3 IS (CHDK hack)",
 "Canon PowerShot S5 IS (CHDK hack)",
@@ -1646,6 +1765,7 @@ static const char  *static_camera_list[] =
 "Canon PowerShot S90",
 "Canon PowerShot SX1 IS",
 "Canon PowerShot SX110 IS (CHDK hack)",
+"Canon PowerShot SX120 IS (CHDK hack)",
 "Canon PowerShot SX20 IS (CHDK hack)",
 "Canon EOS D30",
 "Canon EOS D60",
@@ -1657,6 +1777,7 @@ static const char  *static_camera_list[] =
 "Canon EOS 30D",
 "Canon EOS 40D",
 "Canon EOS 50D",
+"Canon EOS 60D",
 "Canon EOS 300D / Digital Rebel / Kiss Digital",
 "Canon EOS 350D / Digital Rebel XT / Kiss Digital N",
 "Canon EOS 400D / Digital Rebel XTi / Kiss Digital X",
@@ -1721,6 +1842,7 @@ static const char  *static_camera_list[] =
 "Fuji IS-1",
 "Hasselblad CFV",
 "Hasselblad H3D",
+"Hasselblad H4D",
 "Hasselblad V96C",
 "Imacon Ixpress 16-megapixel",
 "Imacon Ixpress 22-megapixel",
@@ -1832,7 +1954,9 @@ static const char  *static_camera_list[] =
 "Nikon D300s",
 "Nikon D700",
 "Nikon D3000",
+"Nikon D3100",
 "Nikon D5000",
+"Nikon D7000",
 "Nikon E700 (\"DIAG RAW\" hack)",
 "Nikon E800 (\"DIAG RAW\" hack)",
 "Nikon E880 (\"DIAG RAW\" hack)",
@@ -1853,8 +1977,10 @@ static const char  *static_camera_list[] =
 "Nikon E8700",
 "Nikon E8800",
 "Nikon Coolpix P6000",
+"Nikon Coolpix P7000",
 "Nikon Coolpix S6 (\"DIAG RAW\" hack)",
 "Nokia N95",
+"Nokia X2",
 "Olympus C3030Z",
 "Olympus C5050Z",
 "Olympus C5060WZ",
@@ -1866,6 +1992,7 @@ static const char  *static_camera_list[] =
 "Olympus X200,D560Z,C350Z",
 "Olympus E-1",
 "Olympus E-3",
+"Olympus E-5",
 "Olympus E-10",
 "Olympus E-20",
 "Olympus E-30",
@@ -1894,7 +2021,9 @@ static const char  *static_camera_list[] =
 "Panasonic DMC-FZ28",
 "Panasonic DMC-FZ30",
 "Panasonic DMC-FZ35/FZ38",
+"Panasonic DMC-FZ40",
 "Panasonic DMC-FZ50",
+"Panasonic DMC-FZ100",
 "Panasonic DMC-FX150",
 "Panasonic DMC-G1",
 "Panasonic DMC-G10",
@@ -1907,6 +2036,7 @@ static const char  *static_camera_list[] =
 "Panasonic DMC-LX1",
 "Panasonic DMC-LX2",
 "Panasonic DMC-LX3",
+"Panasonic DMC-LX5",
 "Pentax *ist D",
 "Pentax *ist DL",
 "Pentax *ist DL2",
@@ -1919,11 +2049,14 @@ static const char  *static_camera_list[] =
 "Pentax K200D",
 "Pentax K2000/K-m",
 "Pentax K-x",
+"Pentax K-r",
+"Pentax K-5",
 "Pentax K-7",
 "Pentax Optio S",
 "Pentax Optio S4",
 "Pentax Optio 33WR",
 "Pentax Optio 750Z",
+"Pentax 645D",
 "Phase One LightPhase",
 "Phase One H 10",
 "Phase One H 20",
@@ -1939,9 +2072,11 @@ static const char  *static_camera_list[] =
 "RoverShot 3320af",
 "Samsung EX1",
 "Samsung GX-1S",
-"Samsung GX-10",
-"Samsung NX-10",
+"Samsung GX10",
+"Samsung GX20",
+"Samsung NX10",
 "Samsung WB550",
+"Samsung WB2000",
 "Samsung S85 (hacked)",
 "Samsung S850 (hacked)",
 "Sarnoff 4096x5440",
@@ -1969,6 +2104,8 @@ static const char  *static_camera_list[] =
 "Sony DSLR-A900",
 "Sony NEX-3",
 "Sony NEX-5",
+"Sony SLT-A33",
+"Sony SLT-A55V",
 "Sony XCD-SX910CR",
 "STV680 VGA",
    NULL
@@ -2026,3 +2163,8 @@ const char * LibRaw::strprogress(enum LibRaw_progress p)
             return "Some strange things";
         }
 }
+
+
+
+
+

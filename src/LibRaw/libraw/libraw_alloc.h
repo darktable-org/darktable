@@ -29,7 +29,7 @@ it under the terms of the one of three licenses as you choose:
 
 #define MSIZE 32
 
-class libraw_memmgr
+class DllDef libraw_memmgr
 {
   public:
     libraw_memmgr()
@@ -48,6 +48,13 @@ class libraw_memmgr
             void *ptr =  ::calloc(n,sz);
             mem_ptr(ptr);
             return ptr;
+        }
+    void *realloc(void *ptr,size_t newsz)
+        {
+            void *ret = ::realloc(ptr,newsz);
+            forget_ptr(ptr);
+            mem_ptr(ret);
+            return ret;
         }
     void  free(void *ptr)
     {

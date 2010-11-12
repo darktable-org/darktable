@@ -28,10 +28,18 @@ it under the terms of the one of three licenses as you choose:
 #include <sys/time.h>
 #endif
 #include <stdio.h>
-#ifdef _OPENMP
-#ifdef _MSC_VER
-#error OpenMP is not supported under MS Visual Studio
+
+#if defined (_OPENMP) 
+# if defined(_MSC_VER)
+#  undef LIBRAW_USE_OPENMP
+# elif (defined(__APPLE__) || defined(__MACOSX__)) && defined(_REENTRANT)
+#   undef LIBRAW_USE_OPENMP
+# else /* OpenMP defined but not Mac/pthreads and not Windows */
+#   define LIBRAW_USE_OPENMP
+# endif
 #endif
+
+#ifdef LIBRAW_USE_OPENMP
 #include <omp.h>
 #endif
 
@@ -206,6 +214,7 @@ typedef struct
 typedef struct
 {
     unsigned    greybox[4];     /* -A  x1 y1 x2 y2 */
+    unsigned    cropbox[4];     /* -B x1 y1 x2 y2 */
     double      aber[4];        /* -C */
     double      gamm[6];        /* -g */
     float       user_mul[4];    /* -r mul0 mul1 mul2 mul3 */

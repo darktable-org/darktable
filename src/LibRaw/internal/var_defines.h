@@ -89,6 +89,7 @@ it under the terms of the one of three licenses as you choose:
 
 //imgdata.output
 #define greybox         (imgdata.params.greybox)
+#define cropbox         (imgdata.params.cropbox)
 #define aber            (imgdata.params.aber)
 #define gamm            (imgdata.params.gamm)
 #define user_mul        (imgdata.params.user_mul)
@@ -183,6 +184,7 @@ it under the terms of the one of three licenses as you choose:
 #endif
 #define getc(stream)		 stream->get_char()
 #define fgetc(stream)		 stream->get_char()
+#define fgetcb(stream)		 stream->get_char_buf()
 #define fgets(str,n,stream)	 stream->gets(str,n)
 #define fscanf(stream,fmt,ptr)	 stream->scanf_one(fmt,ptr)
 #endif

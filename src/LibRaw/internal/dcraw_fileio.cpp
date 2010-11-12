@@ -14,18 +14,19 @@ it under the terms of the one of three licenses as you choose:
    (See file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
 
    This file is generated from Dave Coffin's dcraw.c
-   Look into original file (probably http://cybercom.net/~dcoffin/dcraw/dcraw.c)
-   for copyright information.
+   dcraw.c -- Dave Coffin's raw photo decoder
+   Copyright 1997-2010 by Dave Coffin, dcoffin a cybercom o net
+
+   Look into dcraw homepage (probably http://cybercom.net/~dcoffin/dcraw/)
+   for more information
 */
 
-#line 3954 "dcraw/dcraw.c"
 #define CLASS LibRaw::
 #include "libraw/libraw_types.h"
 #define LIBRAW_LIBRARY_BUILD
 #include "libraw/libraw.h"
 #include "internal/defines.h"
 #include "internal/var_defines.h"
-#line 3964 "dcraw/dcraw.c"
 
 /*
    Seach from the current directory up to the root looking for
@@ -34,8 +35,16 @@ it under the terms of the one of three licenses as you choose:
 void CLASS bad_pixels (const char *cfname)
 {
   FILE *fp=0;
+#ifndef LIBRAW_LIBRARY_BUILD
   char *fname, *cp, line[128];
   int len, time, row, col, r, c, rad, tot, n, fixed=0;
+#else
+  char *cp, line[128];
+  int time, row, col, r, c, rad, tot, n;
+#ifdef DCRAW_VERBOSE
+  int fixed = 0;
+#endif
+#endif
 
   if (!filters) return;
 #ifdef LIBRAW_LIBRARY_BUILD
@@ -43,7 +52,6 @@ void CLASS bad_pixels (const char *cfname)
 #endif
   if (cfname)
     fp = fopen (cfname, "r");
-#line 4007 "dcraw/dcraw.c"
   if (!fp) 
       {
 #ifdef LIBRAW_LIBRARY_BUILD
@@ -141,7 +149,6 @@ void CLASS subtract (const char *fname)
   RUN_CALLBACK(LIBRAW_PROGRESS_DARK_FRAME,1,2);
 #endif
 }
-#line 9708 "dcraw/dcraw.c"
 
 #ifndef NO_LCMS
 void CLASS apply_profile (const char *input, const char *output)
