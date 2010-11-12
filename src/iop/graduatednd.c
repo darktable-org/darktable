@@ -392,7 +392,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label6), 0,1,5,6,GTK_FILL,0,0,0);
   
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, 0.1, p->density, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compression, 0));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compression, 0));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-180, 180,0.5, p->rotation, 2));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->offset, 0));
