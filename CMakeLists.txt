@@ -1,4 +1,5 @@
 project(darktable CXX C)
+project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
@@ -92,7 +93,7 @@ if(Gettext_FOUND)
 		elseif(APPLE)
 			SET(LOCALE_DIR "share/locale")
 		else()#other os
-			SET(LOCALE_DIR "share/locale")
+			SET(LOCALE_DIR ${CMAKE_INSTALL_PREFIX}"/share/locale")
 		endif(WIN32)
 	endif(NOT LOCALE_DIR)
 	
