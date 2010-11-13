@@ -65,7 +65,7 @@ int dt_init(int argc, char *argv[])
     {
       if(!strcmp(argv[k], "--help"))
       {
-        printf("usage: %s [-d {cache,control,dev,fswatch,camctl,pwstorage}] [IMG_1234.{RAW,..}]\n", argv[0]);
+        printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,pwstorage}] [IMG_1234.{RAW,..}]\n", argv[0]);
         return 1;
       }
       else if(!strcmp(argv[k], "--version"))
@@ -75,6 +75,7 @@ int dt_init(int argc, char *argv[])
       }
       if(argv[k][1] == 'd' && argc > k+1)
       {
+        if(!strcmp(argv[k+1], "all"))   darktable.unmuted = 0xffffffff;   // enable all debug information
         if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
         if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
@@ -98,9 +99,10 @@ int dt_init(int argc, char *argv[])
   // thread-safe init:
   dt_exif_init();
   (void)cmsErrorAction(LCMS_ERROR_IGNORE);
-  char *homedir = getenv("HOME");
-  char filename[512];
-  snprintf(filename, 512, "%s/.darktablerc", homedir);
+  char datadir[1024];
+  dt_get_user_config_dir (datadir,1024);
+  char filename[1024];
+  snprintf(filename, 1024, "%s/darktablerc", datadir);
 
   // Initialize the filesystem watcher  
   darktable.fswatch=dt_fswatch_new();	
@@ -119,10 +121,10 @@ int dt_init(int argc, char *argv[])
   darktable.pwstorage=dt_pwstorage_new();	
 
   char dbfilename[1024];
-  gchar *dbname = dt_conf_get_string("database");
-  if(!dbname)               snprintf(dbfilename, 512, "%s/.darktabledb", homedir);
-  else if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
-  else                      snprintf(dbfilename, 512, "%s", dbname);
+  gchar *dbname = dt_conf_get_string ("database");
+  if(!dbname)               snprintf(dbfilename, 1024, "%s/library.db", datadir);
+  else if(dbname[0] != '/') snprintf(dbfilename, 1024, "%s/%s", datadir, dbname);
+  else                      snprintf(dbfilename, 1024, "%s", dbname);
 
   int load_cached = 1;
   // if db file does not exist, also don't load the cache.
@@ -133,9 +135,9 @@ int dt_init(int argc, char *argv[])
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
     else       fprintf(stderr, "\n");
 #ifndef HAVE_GCONF
-    fprintf(stderr, "[init] maybe your ~/.darktablerc is corrupt?\n");
+    fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
     dt_get_datadir(dbfilename, 512);
-    fprintf(stderr, "[init] try `cp %s/darktablerc ~/.darktablerc'\n", dbfilename);
+    fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
 #else
     fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
 #endif

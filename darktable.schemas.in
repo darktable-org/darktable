@@ -5,7 +5,7 @@
       <applyto>/apps/darktable/database</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>.darktabledb</default>
+      <default>library.db</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>database file</short>
@@ -18,7 +18,7 @@
       <applyto>/apps/darktable/cachefile</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>.darktablecache</default>
+      <default>mipmaps</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>image cache file</short>

@@ -46,7 +46,7 @@
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
-  dt_conf_set_string ("database", ".darktabledb");
+  dt_conf_set_string ("database", "library.db");
 
   dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
   dt_conf_set_bool ("write_sidecar_files", TRUE);

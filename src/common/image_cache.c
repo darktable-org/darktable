@@ -33,6 +33,7 @@
 #include <assert.h>
 
 #define DT_IMAGE_CACHE_FILE_VERSION 1
+#define DT_IMAGE_CACHE_FILE_NAME "mipmaps"
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
 {
@@ -82,11 +83,14 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     pthread_mutex_unlock(&(cache->mutex));
     return;
   }
+  
+  char datadir[1024];
   char dbfilename[1024];
-  char *homedir = getenv("HOME");
+  dt_get_user_config_dir(datadir,1024);
   gchar *filename = dt_conf_get_string("cachefile");
-  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
-  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
+  
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/%s", datadir,DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", datadir, filename);
   else                                 snprintf(dbfilename, 512, "%s", filename);
   g_free(filename);
 
@@ -181,12 +185,13 @@ write_error:
 int dt_image_cache_read(dt_image_cache_t *cache)
 {
   pthread_mutex_lock(&(cache->mutex));
-  char *homedir = getenv("HOME");
+  char datadir[1024];
   char dbfilename[1024];
-  gchar *filename = dt_conf_get_string("cachefile");
-  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
-  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
-  else                                 snprintf(dbfilename, 512, "%s", filename);
+  dt_get_user_config_dir (datadir,1024);
+  gchar *filename = dt_conf_get_string ("cachefile");
+  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", datadir, DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", datadir, filename);
+  else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
 
   FILE *f = fopen(dbfilename, "rb");
@@ -309,32 +314,36 @@ static void _image_cache_copy_file (gchar *src,gchar *dest)
 
 static void _image_cache_backup()
 {
-  char *homedir = getenv("HOME");
+  char datadir[1024];
   char dbfilename[1024];
-  gchar *filename = dt_conf_get_string("cachefile");
-  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
-  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
-  else                                 snprintf(dbfilename, 512, "%s", filename);
+  dt_get_user_config_dir (datadir,1024);
+  gchar *filename = dt_conf_get_string ("cachefile");
+  
+  if(!filename || filename[0] == '\0') snprintf (dbfilename, 1024, "%s/%s", datadir, DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", datadir, filename);
+  else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
   
   char *src = g_strdup (dbfilename);
-  strcat(dbfilename,".backup");
+  strcat(dbfilename,".fallback");
   _image_cache_copy_file (src,dbfilename);
   g_free (src);
 }
 
 static void _image_cache_restore()
 {
-  char *homedir = getenv("HOME");
+  char datadir[1024];
   char dbfilename[1024];
-  gchar *filename = dt_conf_get_string("cachefile");
-  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/.darktablecache", homedir);
-  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", homedir, filename);
-  else                                 snprintf(dbfilename, 512, "%s", filename);
+  dt_get_user_config_dir(datadir,1024);
+  gchar *filename = dt_conf_get_string ("cachefile");
+  
+  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", datadir,DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", datadir, filename);
+  else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
   
   char *dest = g_strdup (dbfilename);
-  strcat(dbfilename,".backup");
+  strcat(dbfilename,".fallback");
   _image_cache_copy_file (dbfilename,dest);
   g_free (dest);
 }
