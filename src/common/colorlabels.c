@@ -144,10 +144,10 @@ void dt_colorlabels_key_accel_callback(void *user_data)
   {
     switch(mode)
     {
-      case 0: case 1: case 2: // colors red, yellow, green
+      case 0: case 1: case 2: case 3: case 4: // colors red, yellow, green, blue, purple
         dt_colorlabels_toggle_label_selection(mode);
         break;
-      case 3: default: // remove all selected
+      case 5: default: // remove all selected
         dt_colorlabels_remove_labels_selection();
         break;
     }
@@ -156,10 +156,10 @@ void dt_colorlabels_key_accel_callback(void *user_data)
   {
     switch(mode)
     {
-      case 0: case 1: case 2: // colors red, yellow, green
+      case 0: case 1: case 2: case 3: case 4: // colors red, yellow, green, blue, purple
         dt_colorlabels_toggle_label(selected, mode);
         break;
-      case 3: default: // remove all selected
+      case 5: default: // remove all selected
         dt_colorlabels_remove_labels(selected);
         break;
     }
@@ -174,6 +174,8 @@ void dt_colorlabels_register_key_accels()
   dt_gui_key_accel_register(0, GDK_F1, dt_colorlabels_key_accel_callback, (void *)0);
   dt_gui_key_accel_register(0, GDK_F2, dt_colorlabels_key_accel_callback, (void *)1);
   dt_gui_key_accel_register(0, GDK_F3, dt_colorlabels_key_accel_callback, (void *)2);
+  dt_gui_key_accel_register(0, GDK_F4, dt_colorlabels_key_accel_callback, (void *)3);
+  dt_gui_key_accel_register(0, GDK_F5, dt_colorlabels_key_accel_callback, (void *)4);
 }
 
 void dt_colorlabels_unregister_key_accels()

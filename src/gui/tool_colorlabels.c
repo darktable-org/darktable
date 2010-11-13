@@ -32,7 +32,8 @@ color_label_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_draw_all();
 }
 
-void dt_create_color_label_buttons(GtkBox *toolbox){
+void dt_create_color_label_buttons(GtkBox *toolbox)
+{
 	GtkBox *hbox;
 	GtkWidget *button;
 	hbox = GTK_BOX(gtk_hbox_new(FALSE, 2));
@@ -53,9 +54,19 @@ void dt_create_color_label_buttons(GtkBox *toolbox){
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(color_label_button_clicked), (gpointer)2);
 
 	button = dtgtk_button_new(dtgtk_cairo_paint_label, (3|8|CPF_STYLE_FLAT));
-	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear all labels of selected images"), (char *)NULL);
+	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("toggle blue label\nof selected images (f4)"), (char *)NULL);
 	gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(color_label_button_clicked), (gpointer)3);
+
+	button = dtgtk_button_new(dtgtk_cairo_paint_label, (4|8|CPF_STYLE_FLAT));
+	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("toggle purple label\nof selected images (f5)"), (char *)NULL);
+	gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(color_label_button_clicked), (gpointer)4);
+
+	button = dtgtk_button_new(dtgtk_cairo_paint_label, (5|8|CPF_STYLE_FLAT));
+	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear all labels of selected images"), (char *)NULL);
+	gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(color_label_button_clicked), (gpointer)5);
 
 	gtk_box_pack_start(toolbox,GTK_WIDGET(hbox),FALSE,FALSE,0);
 	gtk_widget_show_all (GTK_WIDGET (toolbox));

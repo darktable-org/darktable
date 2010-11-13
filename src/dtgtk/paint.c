@@ -364,10 +364,11 @@ void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
   switch((flags&7))
   {
     case  0: cairo_set_source_rgba (cr,1,0.0,0.0,alpha); break; // red
-    case  1: cairo_set_source_rgba (cr,1,1,0.0,alpha); break; // yellow
+    case  1: cairo_set_source_rgba (cr,1,1.0,0.0,alpha); break; // yellow
     case  2: cairo_set_source_rgba (cr,0.0,1,0.0,alpha); break; // green
-    case  3: cairo_set_source_rgba (cr,1,1,1,alpha); break; // gray
-    default: cairo_set_source_rgba (cr,1,0.0,1,alpha); break; // gay
+    case  3: cairo_set_source_rgba (cr,0.0,0.0,1,alpha); break; // blue 
+    case  4: cairo_set_source_rgba (cr,1,0.0,1.0,alpha); break; // purple
+    default: cairo_set_source_rgba (cr,1,1,1,alpha); break; // gray
   }
   cairo_fill (cr);
   
