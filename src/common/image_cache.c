@@ -84,13 +84,13 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     return;
   }
   
-  char datadir[1024];
+  char cachedir[1024];
   char dbfilename[1024];
-  dt_get_user_config_dir(datadir,1024);
+  dt_get_user_cache_dir(cachedir,1024);
   gchar *filename = dt_conf_get_string("cachefile");
   
-  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/%s", datadir,DT_IMAGE_CACHE_FILE_NAME);
-  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", datadir, filename);
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/%s", cachedir,DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", cachedir, filename);
   else                                 snprintf(dbfilename, 512, "%s", filename);
   g_free(filename);
 
@@ -185,12 +185,12 @@ write_error:
 int dt_image_cache_read(dt_image_cache_t *cache)
 {
   pthread_mutex_lock(&(cache->mutex));
-  char datadir[1024];
+  char cachedir[1024];
   char dbfilename[1024];
-  dt_get_user_config_dir (datadir,1024);
+  dt_get_user_config_dir (cachedir,1024);
   gchar *filename = dt_conf_get_string ("cachefile");
-  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", datadir, DT_IMAGE_CACHE_FILE_NAME);
-  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", datadir, filename);
+  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", cachedir, DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
   else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
 
@@ -314,13 +314,13 @@ static void _image_cache_copy_file (gchar *src,gchar *dest)
 
 static void _image_cache_backup()
 {
-  char datadir[1024];
+  char cachedir[1024];
   char dbfilename[1024];
-  dt_get_user_config_dir (datadir,1024);
+  dt_get_user_cache_dir (cachedir,1024);
   gchar *filename = dt_conf_get_string ("cachefile");
   
-  if(!filename || filename[0] == '\0') snprintf (dbfilename, 1024, "%s/%s", datadir, DT_IMAGE_CACHE_FILE_NAME);
-  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", datadir, filename);
+  if(!filename || filename[0] == '\0') snprintf (dbfilename, 1024, "%s/%s", cachedir, DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
   else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
   
@@ -332,13 +332,13 @@ static void _image_cache_backup()
 
 static void _image_cache_restore()
 {
-  char datadir[1024];
+  char cachedir[1024];
   char dbfilename[1024];
-  dt_get_user_config_dir(datadir,1024);
+  dt_get_user_config_dir(cachedir,1024);
   gchar *filename = dt_conf_get_string ("cachefile");
   
-  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", datadir,DT_IMAGE_CACHE_FILE_NAME);
-  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", datadir, filename);
+  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", cachedir,DT_IMAGE_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
   else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
   
