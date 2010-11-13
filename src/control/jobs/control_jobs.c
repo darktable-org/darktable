@@ -297,7 +297,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   
   // Get max dimensions...
   uint32_t w,h,fw,fh,sw,sh;
-  w=h=fw=fh=sw=sh=0; // We are all equals!!!
+  w=h=fw=fh=sw=sh=0;
   mstorage->dimension(mstorage, &sw,&sh);
   mformat->dimension(mformat, &fw,&fh);
 
