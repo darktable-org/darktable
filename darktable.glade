@@ -3,8 +3,8 @@
   <!-- interface-requires gtk+ 2.16 -->
   <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="main_window">
-    <property name="default_width">640</property>
-    <property name="default_height">480</property>
+    <property name="default_width">900</property>
+    <property name="default_height">500</property>
     <child>
       <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
