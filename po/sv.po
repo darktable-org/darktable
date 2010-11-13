@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-06 11:48+0100\n"
-"PO-Revision-Date: 2010-11-06 11:54+0100\n"
+"POT-Creation-Date: 2010-11-13 19:26+0100\n"
+"PO-Revision-Date: 2010-11-13 19:26+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: <> <>\n"
 "Language: \n"
@@ -250,10 +250,12 @@ msgid "Default client to use, this overrides detection of default client."
 msgstr "Standard klient att använda, detta överskrider automatisk detectering av klient."
 
 #: ../darktable.schemas.in.h:6
+#: ../src/gui/preferences_gen.h:322
 msgid "always ask the user before any image file is deleted."
 msgstr "fråga alltid användaren innan en bild raderas."
 
 #: ../darktable.schemas.in.h:7
+#: ../src/gui/preferences_gen.h:306
 msgid "always ask the user before any image is removed from db."
 msgstr "fråga alltid användaren innan en bild raderas från databas."
 
@@ -277,6 +279,7 @@ msgid "ask before removing images"
 msgstr "fråga innan en bild raderas"
 
 #: ../darktable.schemas.in.h:12
+#: ../src/gui/preferences_gen.h:436
 msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
 msgstr "skapar en kopia av cachefil för att förhindra att förlora genererade miniatyrbilder vid programkrash. "
 
@@ -306,6 +309,8 @@ msgid "filename of your custom theme in share/darktable/"
 msgstr "filnamn på ditt modifierade tema i share/darktable"
 
 #: ../darktable.schemas.in.h:18
+#: ../src/gui/preferences_gen.h:404
+#: ../src/gui/preferences_gen.h:420
 msgid "filename relative to your home directory, or starting with a slash (needs a restart)."
 msgstr "filnamn relaterad till din hemkatalog eller starta med snedsträck för annan sökväg"
 
@@ -335,6 +340,7 @@ msgid "height of the exported image, or 0 if no scaling should be done."
 msgstr "höjd av exporterad bild, eller 0 för att utesluta skalning"
 
 #: ../darktable.schemas.in.h:25
+#: ../src/gui/preferences_gen.h:470
 msgid "how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode). be warned: every thread will need about 1GB of memory (needs a restart)."
 msgstr "antal full upplösning flyttals buffrar av inlästa raw bilder att spara i huvudminnet som max. sätt detta värde till antal trådar + 1 om du vill ha multitrådad exportering (sparar en för mörkerrum läge). Varning !, varje tråd behöver allokera 1GB minne. "
 
@@ -432,10 +438,12 @@ msgid "the name of backup directory to search for on mounted medias"
 msgstr "ange namnet för backupkatalogen att söka efter på monterade medior"
 
 #: ../darktable.schemas.in.h:48
+#: ../src/gui/preferences_gen.h:503
 msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 msgstr "lagringsmetod att använda för pwstorage: 0 - ingen, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 
 #: ../darktable.schemas.in.h:49
+#: ../src/gui/preferences_gen.h:486
 msgid "these files can later be re-imported into a different database, preserving your changes to the image."
 msgstr "dessa filer kan senare importeras i en annan databas, utan att skapa ändringar i orginalbilden."
 
@@ -444,6 +452,7 @@ msgid "this overrides the per-image settings, if not set to `image'."
 msgstr "detta överskrider inställningen för bilden, om inte `bild' är valt."
 
 #: ../darktable.schemas.in.h:51
+#: ../src/gui/preferences_gen.h:339
 msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
 msgstr "om detta värde är mindre än 1.0 nedsamplingar så kommer förhandsvisningen att vara snabbare."
 
@@ -671,12 +680,12 @@ msgid "xmp sidecar files"
 msgstr "XMP inställningsfil"
 
 #: ../src/libs/copy_history.c:70
-#: ../src/gui/gtk.c:733
+#: ../src/gui/gtk.c:750
 msgid "all files"
 msgstr "alla filer"
 
 #: ../src/libs/copy_history.c:84
-#: ../src/gui/gtk.c:753
+#: ../src/gui/gtk.c:770
 #, c-format
 msgid "error loading file '%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
@@ -2863,12 +2872,12 @@ msgstr ""
 "$(HOME_FOLDER) - hemkatalog\n"
 "$(DESKTOP_FOLDER) - skrivbordet"
 
-#: ../src/imageio/storage/disk.c:174
+#: ../src/imageio/storage/disk.c:177
 #, c-format
-msgid "could not create directory %s!"
+msgid "could not create directory `%s'!"
 msgstr "kan inte skapa katalog %s!"
 
-#: ../src/imageio/storage/disk.c:208
+#: ../src/imageio/storage/disk.c:212
 #: ../src/imageio/storage/email.c:109
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -2976,51 +2985,51 @@ msgstr "* nätverkande, testning, översättnings expert *"
 msgid "* contributors *"
 msgstr "* bidragsgivare *"
 
-#: ../src/gui/gtk.c:426
+#: ../src/gui/gtk.c:441
 msgid "translator-credits"
 msgstr "översättare"
 
-#: ../src/gui/gtk.c:638
+#: ../src/gui/gtk.c:655
 msgid "import film"
 msgstr "importera filmrulle"
 
-#: ../src/gui/gtk.c:657
+#: ../src/gui/gtk.c:674
 msgid "import directories recursively"
 msgstr "rekursiv importering av kataloger"
 
-#: ../src/gui/gtk.c:658
+#: ../src/gui/gtk.c:675
 msgid "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "rekursiv importering av underkataloger. vardera katalog skapar en filmrulle."
 
-#: ../src/gui/gtk.c:665
+#: ../src/gui/gtk.c:682
 msgid "ignore jpeg files"
 msgstr "ignorera jpeg bilder"
 
-#: ../src/gui/gtk.c:666
+#: ../src/gui/gtk.c:683
 msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
 msgstr "importerar inte bilder med filändelse .jpg eller .jpeg. detta är användbart om du har raw+jpeg bilder i katalogerna."
 
-#: ../src/gui/gtk.c:709
+#: ../src/gui/gtk.c:726
 msgid "import image"
 msgstr "importera bild"
 
-#: ../src/gui/gtk.c:728
+#: ../src/gui/gtk.c:745
 msgid "supported images"
 msgstr "supporterade bilder"
 
-#: ../src/gui/gtk.c:1057
+#: ../src/gui/gtk.c:1074
 msgid "show global preferences"
 msgstr "visa globala inställningar"
 
-#: ../src/gui/gtk.c:1185
+#: ../src/gui/gtk.c:1202
 msgid "take snapshot"
 msgstr "skapa avbild"
 
-#: ../src/gui/gtk.c:1214
+#: ../src/gui/gtk.c:1231
 msgid "recently used film rolls"
 msgstr "tidigare använda filmrullar"
 
-#: ../src/gui/gtk.c:1235
+#: ../src/gui/gtk.c:1252
 msgid "all film rolls"
 msgstr "alla filmrullar"
 
@@ -3061,7 +3070,7 @@ msgstr "komprimera historikstack"
 msgid "create a minimal history stack which produces the same image"
 msgstr "skapar en minimal historikstack som producerar samma bildresultat"
 
-#: ../src/gui/iop_history.c:106
+#: ../src/gui/iop_history.c:107
 msgid "create a style from currently developed image and its history stack"
 msgstr "skapa en stil utifrån nuvarande bild och dess historikstack"
 
@@ -3427,6 +3436,15 @@ msgstr "gränssnitt inställningar"
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dubbelklicka för att återställa till `%s'"
+
+#: ../src/gui/preferences_gen.h:257
+#: ../src/gui/preferences_gen.h:453
+msgid " (needs a restart) "
+msgstr "(kräver omstart)"
+
+#: ../src/gui/preferences_gen.h:274
+msgid " (needs a restart)"
+msgstr "(kräver omstart)"
 
 #: ../src/gui/preferences_gen.h:391
 msgid "core options"
