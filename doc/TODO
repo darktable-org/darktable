@@ -1,5 +1,8 @@
 0.7 release:
 
+
+- mipf black bug
+
 - remove bilateral filter (pemutohedral code), as it causes a lot
   of valgrind errors!
 - improve dr mode cache: selected module input has priority
@@ -18,10 +21,7 @@ exposure plugin: indicate over/under exposure?
 
 compress history stack: removes raw import settings.
 
-lt mode flip without redraw doesn't reimport => garbles dr mode
-
 big stuff:
- * libraw process inside dt modules (full 16-bit buf..)
  * auto rate feature (sharpness/colors/user statistics learning)
  * print view?
  * removable media, relocation and image sha1sums

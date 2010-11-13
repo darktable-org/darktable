@@ -206,7 +206,8 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
     {
       const __m128i maski = _mm_set1_epi32(0x80000000u);
       const __m128 *mask = (__m128*)&maski;
-      const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*mask, *pdetail), threshold));
+      const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*mask, *pdetail),
+                            _mm_mul_ps(_mm_set_ps(1.0f, pout[0], pout[0], 1.0f), threshold)));
       const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
       _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, amount)));
       // _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, *pdetail)));
@@ -238,7 +239,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c],  (i+.5f)/(max_scale));
     for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
     thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], (i+.5f)/(max_scale));
-    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], (i+.5f)/(max_scale));
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], (i+.5f)/(max_scale));
     sharp[i]    = 0.001f*dt_draw_curve_calc_value(d->curve[atrous_s],  (i+.5f)/(max_scale));
     //for(int k=0;k<4;k++) boost[i][k] *= 1.0f/(1.0f - thrs[i][k]);
     printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
@@ -450,13 +451,11 @@ void init(dt_iop_module_t *module)
   tmp.octaves = 3;
   for(int k=0;k<BANDS;k++)
   {
-    tmp.y[atrous_L][k] = tmp.y[atrous_c][k] = 0.5f;
+    tmp.y[atrous_L][k] = tmp.y[atrous_s][k] = tmp.y[atrous_c][k] = 0.5f;
     tmp.x[atrous_L][k] = tmp.x[atrous_s][k] = tmp.x[atrous_c][k] = k/(BANDS-1.0f);
     tmp.y[atrous_Lt][k] = tmp.y[atrous_ct][k] = 0.0f;
     tmp.x[atrous_Lt][k] = tmp.x[atrous_ct][k] = k/(BANDS-1.0f);
-    tmp.y[atrous_s][k] = 0.5f + (k-1)*0.5f/(BANDS-2.0f);
   }
-  tmp.y[atrous_s][0] = 0.5f;
   memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
 
@@ -484,6 +483,16 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)params;
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+#if 1
+  printf("---------- atrous preset begin\n");
+  printf("p.octaves = %d;\n", p->octaves);
+  for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
+  {
+    printf("p.x[%d][%d] = %f;\n", ch, k, p->x[ch][k]);
+    printf("p.y[%d][%d] = %f;\n", ch, k, p->y[ch][k]);
+  }
+  printf("---------- atrous preset end\n");
+#endif
   d->octaves = p->octaves;
   for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
     dt_draw_curve_set_point(d->curve[ch], k, p->x[ch][k], p->y[ch][k]);
@@ -518,6 +527,11 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 #if 0
 void init_presets (dt_iop_module_t *self)
 {
+  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  dt_iop_equalizer_params_t p;
+  dt_gui_presets_add_generic(_(" (strong)"), self->op, &p, sizeof(p), 1);
+
+  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 #endif
 
