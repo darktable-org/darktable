@@ -63,8 +63,8 @@ void dt_ctl_settings_default(dt_control_t *c)
 
   dt_conf_set_int  ("ui_last/window_x",      0);
   dt_conf_set_int  ("ui_last/window_y",      0);
-  dt_conf_set_int  ("ui_last/window_w",    640);
-  dt_conf_set_int  ("ui_last/window_h",    480);
+  dt_conf_set_int  ("ui_last/window_w",    900);
+  dt_conf_set_int  ("ui_last/window_h",    500);
 
   dt_conf_set_int  ("ui_last/panel_left",   -1);
   dt_conf_set_int  ("ui_last/panel_right",  -1);

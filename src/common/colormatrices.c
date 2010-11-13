@@ -36,6 +36,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "PENTAX K-7",                   { 738541, 294037,  28061}, { 316025,  984482, -189682}, { 12543, -185852, 1075027}, {812683, 843994, 682587}},
 
+  // Pascal de Bruijn, Homebrew ColorChecker, strobe, well lit (this is not a joke)
+  { "PENTAX 645D",                  { 814209, 295822,  76019}, { 194641, 1101898, -541473}, { 83664, -313370, 1450531}, {740036, 767288, 629959}},
+
   // Sven Lindahl, Wolf Faust IT8, direct sunlight, well lit
   { "Canon EOS-1Ds Mark II",        {1078033, 378601, -31113}, { -15396, 1112045, -245743}, {166794, -252411, 1284531}, {681213, 705048, 590790}},
 
@@ -89,6 +92,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
 
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
+  { "NIKON D40X",                   { 801178, 365555,  13702}, { 276398,  988342,  -84167}, { 21378, -264755, 1052521}, {859116, 893936, 739807}},
+
+  // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D60",                    { 746475, 318924,   9277}, { 254776,  946991, -130447}, { 63171, -166458, 1029190}, {753220, 787949, 652695}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
@@ -120,6 +126,18 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
 
   // Henrik Andersson, Homebrew ColorChecker, camera strobe, well lit
   { "OLYMPUS SP570UZ",              { 780991, 262283,  27969}, { 147522, 1135239, -422974}, {142731, -293610, 1316803}, {769669, 804474, 676895}},
+
+  // Robert Park, ColorChecker Passport, camera strobe, well lit
+  { "Panasonic DMC-FZ40",           { 833542, 259720,  35721}, { 129517, 1239594, -525848}, {117340, -405273, 1440384}, {825226, 863846, 688431}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Panasonic DMC-G1",             { 747467, 300064,  74265}, { 225922, 1028946, -310913}, { 91782, -229019, 1153793}, {846222, 864502, 694458}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Panasonic DMC-G2",             { 753250, 303024,  75287}, { 225540, 1036041, -320923}, { 90927, -233749, 1170151}, {837860, 857056, 687210}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Panasonic DMC-LX3",            { 779907, 298859,  94101}, { 239655, 1167938, -489197}, { 53589, -371368, 1317261}, {796707, 825119, 668030}},
 
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}}

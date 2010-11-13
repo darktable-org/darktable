@@ -37,13 +37,10 @@ int32_t dt_image_load_job_run(dt_job_t *job)
   
   char message[512]={0};
   snprintf(message, 512, _("loading image %s"), img->filename);
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
   
   int ret = dt_image_load(img, t->mip);
   // drop read lock, as this is only speculative async loading.
   if(!ret) dt_image_release(img, t->mip, 'r');
   dt_image_cache_release(img, 'r');
-  dt_gui_background_jobs_set_progress( j, 1.0 );
-  dt_gui_background_jobs_destroy (j);
   return 0;
 }
