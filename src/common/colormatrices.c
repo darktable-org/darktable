@@ -92,6 +92,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
 
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
+  { "NIKON D40X",                   { 801178, 365555,  13702}, { 276398,  988342,  -84167}, { 21378, -264755, 1052521}, {859116, 893936, 739807}},
+
+  // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D60",                    { 746475, 318924,   9277}, { 254776,  946991, -130447}, { 63171, -166458, 1029190}, {753220, 787949, 652695}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
