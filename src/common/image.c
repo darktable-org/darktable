@@ -45,7 +45,7 @@ dt_image_debug_malloc(const void *ptr, const size_t size)
   // dt_image_debug_malloc_size ++;
   pthread_mutex_unlock(&darktable.db_insert);
 #endif
-  return malloc(size);
+  return dt_alloc_align(64, size);
 }
 
 static void

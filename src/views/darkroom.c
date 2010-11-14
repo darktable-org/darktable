@@ -511,8 +511,8 @@ film_strip_key_accel(void *data)
 
 void enter(dt_view_t *self)
 {
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] -1 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
-
   
   select_this_image(dev->image->id);
 
@@ -758,6 +758,7 @@ void leave(dt_view_t *self)
   // release image struct with metadata as well.
   dt_image_cache_flush(dev->image);
   dt_image_cache_release(dev->image, 'r');
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] -1 %f in darkroom mode\n", dt_get_wtime());
 }
 
 void mouse_leave(dt_view_t *self)
