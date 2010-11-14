@@ -235,14 +235,14 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
   for(int i=0;i<max_scale;i++)
   {
-    boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L],  (i+.5f)/(max_scale));
-    boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c],  (i+.5f)/(max_scale));
+    boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], 1.0f - (i+.5f)/(max_scale));
+    boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], 1.0f - (i+.5f)/(max_scale));
     for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
-    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], (i+.5f)/(max_scale));
-    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], (i+.5f)/(max_scale));
-    sharp[i]    = 0.001f*dt_draw_curve_calc_value(d->curve[atrous_s],  (i+.5f)/(max_scale));
+    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], 1.0f - (i+.5f)/(max_scale));
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], 1.0f - (i+.5f)/(max_scale));
+    sharp[i]    = 0.001f*dt_draw_curve_calc_value(d->curve[atrous_s], 1.0f - (i+.5f)/(max_scale));
     //for(int k=0;k<4;k++) boost[i][k] *= 1.0f/(1.0f - thrs[i][k]);
-    printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
+    // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
   }
 
   buf2 = tmp;
