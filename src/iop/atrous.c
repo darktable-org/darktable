@@ -21,7 +21,8 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <xmmintrin.h>
-#include <smmintrin.h>
+// SSE4 actually not used yet.
+// #include <smmintrin.h>
 
 #define INSET 5
 #define INFL .3f
