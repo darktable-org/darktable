@@ -125,7 +125,7 @@ if(NOT USE_SSE_FLAG)
 			else()#other os
 				set(SSE_CHECK_COMMAND grep ${sse_test} /proc/cpuinfo)
 			endif(WIN32)
-			execute_process(COMMAND ${SSE_CHECK_COMMAND} RESULT_VARIABLE ret_var)
+			execute_process(COMMAND ${SSE_CHECK_COMMAND} RESULT_VARIABLE ret_var OUTPUT_VARIABLE out_var)
 			
 			if(ret_var EQUAL 0) # grep returns 0 on success
 				set(SSE_FOUND TRUE)
