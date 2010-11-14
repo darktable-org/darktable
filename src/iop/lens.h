@@ -53,6 +53,7 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkCheckButton *reverse;
   GtkDarktableSlider *tca_r;
   GtkDarktableSlider *tca_b;
+  GtkDarktableSlider *scale;
 }
 dt_iop_lensfun_gui_data_t;
 

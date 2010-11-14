@@ -31,6 +31,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "iop/lens.h"
@@ -317,7 +318,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   lf_free(cam);
   d->modify_flags = p->modify_flags;
   d->inverse      = p->inverse;
-  d->scale        = 1.0;//p->scale;
+  d->scale        = p->scale;
   d->crop         = p->crop;
   d->focal        = p->focal;
   d->aperture     = p->aperture;
@@ -1088,7 +1089,7 @@ static void tca_changed(GtkDarktableSlider *slider, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-#if 0
+#if 1
 static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1118,7 +1119,7 @@ static float get_autoscale(dt_iop_module_t *self)
       (void)lf_modifier_initialize(
           modifier, lenslist[0], LF_PF_F32,
           p->focal, p->aperture,
-          p->distance, p->scale,
+          p->distance, 1.0f,
           p->target_geom, p->modify_flags, p->inverse);
       scale = lf_modifier_get_auto_scale (modifier, p->inverse);
       lf_modifier_destroy(modifier);
@@ -1151,7 +1152,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *button;
   GtkWidget *label;
 
-  self->widget = gtk_table_new(7, 3, FALSE);
+  self->widget = gtk_table_new(8, 3, FALSE);
   gtk_table_set_col_spacings(GTK_TABLE(self->widget), 5);
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
@@ -1221,43 +1222,44 @@ void gui_init(struct dt_iop_module_t *self)
       (gpointer)self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->target_geom), 1, 3, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-#if 0
+#if 1
   // scale
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,0.1, 2.0, 0.005,p->scale,3));
+  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 2.0, 0.005, p->scale, 3));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
-  hbox = gtk_hbox_new(FALSE, 0);
-  button = gtk_button_new_with_label(_("auto"));
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (autoscale_pressed), self);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), hbox, TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), hbox, 1, 3, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
   label = gtk_label_new(_("scale"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(vbox1), label, TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 #endif
 
   // reverse direction
   g->reverse = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reverse")));
   gtk_object_set(GTK_OBJECT(g->reverse), "tooltip-text", _("apply distortions instead of correcting them"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->reverse), 1, 3, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->reverse), 1, 3, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->reverse), "toggled",
                     G_CALLBACK (reverse_toggled), self);
 
   // override linear tca (if not 1.0):
   label = gtk_label_new(_("tca r"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 5, 6, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_FILL, 0, 0, 0);
   label = gtk_label_new(_("tca b"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 7, 8, GTK_FILL, 0, 0, 0);
   g->tca_r = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_r, 5));
   g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 1, 3, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 1, 3, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 1, 3, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 1, 3, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_object_set(GTK_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), (char *)NULL);
@@ -1277,6 +1279,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
   dtgtk_slider_set_value(g->tca_r, p->tca_r);
   dtgtk_slider_set_value(g->tca_b, p->tca_b);
+  dtgtk_slider_set_value(g->scale, p->scale);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])
