@@ -1093,7 +1093,6 @@ static void tca_changed(GtkDarktableSlider *slider, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self);
 }
 
-#if 1
 static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1141,7 +1140,6 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dtgtk_slider_set_value(g->scale, scale);
 }
-#endif
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -1226,7 +1224,6 @@ void gui_init(struct dt_iop_module_t *self)
       (gpointer)self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->target_geom), 1, 3, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-#if 1
   // scale
   g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 2.0, 0.005, p->scale, 3));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
@@ -1236,13 +1233,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (autoscale_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), hbox, 1, 3, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = dtgtk_reset_label_new(_("scale"), self, &p->scale, sizeof(float));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#endif
 
   // reverse direction
   g->reverse = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reverse")));
