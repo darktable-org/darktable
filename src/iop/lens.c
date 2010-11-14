@@ -32,6 +32,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "iop/lens.h"
@@ -1239,8 +1240,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (autoscale_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), hbox, 1, 3, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = gtk_label_new(_("scale"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  label = dtgtk_reset_label_new(_("scale"), self, &p->scale, sizeof(float));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 #endif
 
@@ -1253,11 +1253,9 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (reverse_toggled), self);
 
   // override linear tca (if not 1.0):
-  label = gtk_label_new(_("tca r"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  label = dtgtk_reset_label_new(_("tca r"), self, &p->tca_r, sizeof(float));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_FILL, 0, 0, 0);
-  label = gtk_label_new(_("tca b"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  label = dtgtk_reset_label_new(_("tca b"), self, &p->tca_b, sizeof(float));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 7, 8, GTK_FILL, 0, 0, 0);
   g->tca_r = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_r, 5));
   g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
