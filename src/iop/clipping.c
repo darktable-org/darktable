@@ -71,7 +71,7 @@ typedef struct dt_iop_clipping_gui_data_t
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
   float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
   int cropping, straightening;
-  float aspect_ratios[8];
+  float aspect_ratios[9];
   float current_aspect;
 }
 dt_iop_clipping_gui_data_t;
@@ -497,7 +497,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
       g_free(text);
     }
   }
-  else if (which < 8)
+  else if (which < 9)
   {
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
     if(which > 0 && self->dev->image->height > self->dev->image->width)
@@ -731,9 +731,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("4:3"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("din"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
-  if(act < 0 || act > 7) act = 0;
+  if(act < 0 || act >= 9) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
@@ -830,6 +831,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_ratios[5] = 4.0/3.0;
   g->aspect_ratios[6] = 1.0;
   g->aspect_ratios[7] = sqrtf(2.0);
+  g->aspect_ratios[8] = 16.0f/9.0f;
 
   if(act> 0 && self->dev->image->height > self->dev->image->width)
     g->current_aspect = 1.0/g->aspect_ratios[act];
