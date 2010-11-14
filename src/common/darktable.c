@@ -122,30 +122,33 @@ int dt_init(int argc, char *argv[])
 
   // check and migrate database into new XDG structure
   char dbfilename[2048]={0};
-  char *homedir = getenv ("HOME");
-  snprintf (dbfilename,2048,"%s/%s",homedir,".darktabledb");
-  if (g_file_test (dbfilename,G_FILE_TEST_EXISTS)  && (dt_conf_get_string ("database"))[0]!='/' )
+  if ((dt_conf_get_string ("database"))[0]!='/')
   {
-    fprintf(stderr, "[init] moving database/cache into new XDG directory structure");
-    // move database into place
-    char destdbname[2048]={0};
-    snprintf(destdbname,2048,"%s/%s",datadir,"library.db");
-    if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
+    char *homedir = getenv ("HOME");
+    snprintf (dbfilename,2048,"%s/%s",homedir,dt_conf_get_string("database"));
+    if (g_file_test (dbfilename,G_FILE_TEST_EXISTS))
     {
-      rename(dbfilename,destdbname);
-      dt_conf_set_string("database","library.db");
-    }
-    
-    // move cache into place
-    snprintf (dbfilename,2048,"%s/%s",homedir,".darktablecache");
-    snprintf(destdbname,2048,"%s/%s",datadir,"mipmaps");
-    if(!g_file_test (homedir,G_FILE_TEST_EXISTS))
-    {
-      rename(dbfilename,destdbname);
-      dt_conf_set_string("cachefile","mipmaps");
+      fprintf(stderr, "[init] moving database/cache into new XDG directory structure\n");
+      // move database into place
+      char destdbname[2048]={0};
+      snprintf(destdbname,2048,"%s/%s",datadir,"library.db");
+      if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
+      {
+        rename(dbfilename,destdbname);
+        dt_conf_set_string("database","library.db");
+      }
+      
+      // move cache into place
+      snprintf (dbfilename,2048,"%s/%s",homedir,".darktablecache");
+      snprintf(destdbname,2048,"%s/%s",datadir,"mipmaps");
+      if(!g_file_test (homedir,G_FILE_TEST_EXISTS))
+      {
+        rename(dbfilename,destdbname);
+        dt_conf_set_string("cachefile","mipmaps");
+      }
     }
   }
-
+  
   gchar *dbname = dt_conf_get_string ("database");
   if(!dbname)               snprintf(dbfilename, 1024, "%s/library.db", datadir);
   else if(dbname[0] != '/') snprintf(dbfilename, 1024, "%s/%s", datadir, dbname);
