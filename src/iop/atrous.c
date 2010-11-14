@@ -484,7 +484,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)params;
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
-#if 1
+#if 0
   printf("---------- atrous preset begin\n");
   printf("p.octaves = %d;\n", p->octaves);
   for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
@@ -683,7 +683,8 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // draw dots on knots
   cairo_save(cr);
-  cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+  if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+  else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
   cairo_set_line_width(cr, 1.);
   for(int k=0;k<BANDS;k++)
   {
