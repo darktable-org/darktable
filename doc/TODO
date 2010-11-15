@@ -1,7 +1,8 @@
 0.7 release:
 
 
-- mipf black bug
+- mipf black bug: race condition when mipf is written
+  (see debug control.svg: preview process earlier as load raw?)
 
 - remove bilateral filter (pemutohedral code), as it causes a lot
   of valgrind errors!
