@@ -156,6 +156,7 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "drop table tagged_images", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table styles", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table style_items", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "drop table meta_data", NULL, NULL, NULL);
       goto create_tables;
     }
     else
@@ -178,6 +179,7 @@ int dt_control_load_config(dt_control_t *c)
       
       sqlite3_exec(darktable.db, "create table styles (styleid integer primary key,name varchar,description varchar)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
     
       pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
@@ -208,6 +210,9 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     
     sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
+
+    rc = sqlite3_exec(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
+    HANDLE_SQLITE_ERR(rc);
 
     // add dummy film roll for single images
     char datetime[20];

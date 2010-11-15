@@ -28,6 +28,13 @@
 // this is able to develop images on a 1920 monitor (-2*300 - 20 for the panels).
 #define DT_IMAGE_WINDOW_SIZE 1300
 
+typedef enum dt_image_metadata_t
+{
+  DT_IMAGE_METADATA_CREATOR,   // creator
+  DT_IMAGE_METADATA_PUBLISHER  // publisher
+}
+dt_image_metadata_t;
+
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {
