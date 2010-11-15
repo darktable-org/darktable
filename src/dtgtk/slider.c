@@ -465,13 +465,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
 
-  if (state==GTK_STATE_PRELIGHT)
-  {
-    cairo_rectangle(cr,0,0,width,height);
-    cairo_set_source_rgba(cr,1,1,1,0.1);
-    cairo_fill(cr);
-  }
-
+ 
   // Draw arrows
   cairo_set_source_rgb(cr,
     style->fg[state].red/65535.0, 
