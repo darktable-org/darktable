@@ -191,18 +191,18 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
   
     // Current image
     gchar buffer[1024];
-    dt_image_print_exif(darktable.develop->image,buffer,1024);
+    dt_image_print_exif(self->dev->image,buffer,1024);
     svgdoc = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
 
     // Image exif
-    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",darktable.develop->image->exif_datetime_taken);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",self->dev->image->exif_datetime_taken);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",darktable.develop->image->exif_maker);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",self->dev->image->exif_maker);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",darktable.develop->image->exif_model);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",self->dev->image->exif_model);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",darktable.develop->image->exif_lens);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",self->dev->image->exif_lens);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
 
     svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
