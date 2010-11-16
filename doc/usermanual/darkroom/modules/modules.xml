@@ -94,4 +94,5 @@
 	&darkroom_module_velvia;	
 	&darkroom_module_vignetting;
 	&darkroom_module_splittoning;
+	&darkroom_module_watermark;
 </sect1>
