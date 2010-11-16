@@ -141,7 +141,7 @@ int dt_init(int argc, char *argv[])
       // move cache into place
       snprintf (dbfilename,2048,"%s/%s",homedir,".darktablecache");
       snprintf(destdbname,2048,"%s/%s",datadir,"mipmaps");
-      if(!g_file_test (homedir,G_FILE_TEST_EXISTS))
+      if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
       {
         rename(dbfilename,destdbname);
         dt_conf_set_string("cachefile","mipmaps");
