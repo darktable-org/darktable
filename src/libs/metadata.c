@@ -424,3 +424,66 @@ gui_cleanup (dt_lib_module_t *self)
 	free(self->data);
 	self->data = NULL;
 }
+
+//FIXME: what is this function for? it seems to be never called. i guess some api docs would rock.
+void
+init_presets (dt_lib_module_t *self)
+{
+	g_print("init_presets\n");
+	// TODO: store presets in db:
+	// dt_lib_presets_add(const char *name, const char *plugin_name, const void *params, const int32_t params_size)
+}
+
+void*
+get_params (dt_lib_module_t *self, int *size)
+{
+	dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
+	char *title = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
+	char *subject = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->subject));
+	char *license = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->license));
+	char *creator = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
+	char *publisher = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
+
+	int32_t title_len = strlen(title);
+	int32_t subject_len = strlen(subject);
+	int32_t license_len = strlen(license);
+	int32_t creator_len = strlen(creator);
+	int32_t publisher_len = strlen(publisher);
+
+	*size = title_len + subject_len + license_len + creator_len + publisher_len + 5;
+
+	char *params = (char *)malloc(*size);
+	
+	int pos = 0;
+	memcpy(params+pos, title, title_len+1);         pos += title_len+1;
+	memcpy(params+pos, subject, subject_len+1);     pos += subject_len+1;
+	memcpy(params+pos, license, license_len+1);     pos += license_len+1;
+	memcpy(params+pos, creator, creator_len+1);     pos += creator_len+1;
+	memcpy(params+pos, publisher, publisher_len+1); pos += publisher_len+1;
+
+	g_assert(pos == *size);
+
+	return params;
+}
+
+//TODO: use the values instead of printing them.
+int
+set_params (dt_lib_module_t *self, const void *params, int size)
+{
+	g_print("set_params\n");
+
+// 	dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
+	const char *buf = (const char* )params;
+	const char *title = buf; buf += strlen(title) + 1;
+	const char *subject = buf; buf += strlen(subject) + 1;
+	const char *license = buf; buf += strlen(license) + 1;
+	const char *creator = buf; buf += strlen(creator) + 1;
+	const char *publisher = buf; buf += strlen(publisher) + 1;
+
+	g_print("title: %s\nsubject: %s\nlicense: %s\ncreator: %s\npublisher: %s\n\n", title, subject, license, creator, publisher);
+
+	if(size != strlen(title) + strlen(subject) + strlen(license) + strlen(creator) + strlen(publisher) + 5) return 1;
+	return 0;
+}
