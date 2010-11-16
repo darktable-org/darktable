@@ -85,7 +85,7 @@ fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboo
 static void
 update(dt_lib_module_t *user_data, gboolean early_bark_out)
 {
-	early_bark_out = FALSE; // FIXME: unneeded overhead. but otherwise it will not update on ctrl+a/ctrl+shift+a
+// 	early_bark_out = FALSE; // FIXME: unneeded overhead. but otherwise it will not update on ctrl+a/ctrl+shift+a
 	dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 	dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
 	int imgsel = -1;
@@ -188,6 +188,8 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 static gboolean
 expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
+	if(!dt_control_running())
+		return FALSE;
 	update((dt_lib_module_t*)user_data, TRUE);
 	return FALSE;
 }
