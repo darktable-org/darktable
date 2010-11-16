@@ -64,14 +64,17 @@ fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboo
 		gtk_combo_box_append_text(GTK_COMBO_BOX(*box), "");
 		gtk_combo_box_set_active(GTK_COMBO_BOX(*box), 0);
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(*box), 0);
+		
 		*multi = FALSE;
 		return;
 	}
 
 	if(count>1){
 		gtk_combo_box_append_text(GTK_COMBO_BOX(*box), _("<leave unchanged>")); // FIXME: should be italic!
+		gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(*box), GTK_SENSITIVITY_AUTO);
 		*multi = TRUE;
 	} else {
+		gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(*box), GTK_SENSITIVITY_OFF);
 		*multi = FALSE;
 	}
 	if((iter = g_list_first(*items)) != NULL){
