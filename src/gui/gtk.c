@@ -380,7 +380,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 gboolean
 view_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+  if(event->button == 1)
   {
     dt_ctl_switch_mode();
     return TRUE;
@@ -394,7 +394,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), DT_VERSION_DECORATION);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika 2009-2010");
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, et al. 2009-2010");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
