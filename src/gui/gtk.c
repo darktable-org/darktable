@@ -400,7 +400,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
   const char *authors[] =
       {_("* developers *"),
-      "Hendrik Andersson",
+      "Henrik Andersson",
       "Johannes Hanika",
       "",
       _("* ubuntu packaging, color management, video tutorials *"),
@@ -418,6 +418,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
       "Bernhard Schneider",
       "Christian Fuchs",
       "Christian Himpel",
+      "Daniele Giorgis",
       "David Bremner",
       "Gregor Quade",
       "Jan Rinze",

@@ -121,6 +121,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Stephane Chauveau, Wolf Faust IT8, direct sunlight, well lit
   { "SONY DSLR-A550",               {1031235, 405899,   1572}, { 185623, 1122162, -272659}, {-25528, -329514, 1249969}, {729797, 753586, 633530}},
 
+  // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
+  { "SONY DSLR-A700",               { 895737, 374771, -10330}, { 251389, 1076294, -176910}, {-33203, -356445, 1182465}, {742783, 773407, 637604}},
+
   // Mark Haun, Wolf Faust IT8, direct sunlight, well lit
   { "OLYMPUS E-PL1",                { 824387, 288086,  -7355}, { 299500, 1148865, -308929}, { 91858, -198425, 1346603}, {720139, 750717, 619751}},
 
