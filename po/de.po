@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-08 00:32+0100\n"
+"POT-Creation-Date: 2010-11-17 23:16+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -125,7 +125,7 @@ msgstr "einzelnes Bild importieren"
 msgid "iso"
 msgstr "ISO"
 
-#: ../darktable.glade.h:31 ../src/iop/lens.c:1179 ../src/gui/presets.c:243
+#: ../darktable.glade.h:31 ../src/iop/lens.c:1181 ../src/gui/presets.c:243
 msgid "lens"
 msgstr "Objektiv"
 
@@ -705,11 +705,11 @@ msgstr "Begleitdatei öffnen"
 msgid "xmp sidecar files"
 msgstr "xmp-Begleitdateien"
 
-#: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:750
+#: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:752
 msgid "all files"
 msgstr "alle Dateien"
 
-#: ../src/libs/copy_history.c:84 ../src/gui/gtk.c:770
+#: ../src/libs/copy_history.c:84 ../src/gui/gtk.c:772
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Fehler beim Laden von Datei '%s'"
@@ -1281,7 +1281,7 @@ msgstr ""
 msgid "wb"
 msgstr "Weißabgleich"
 
-#: ../src/libs/camera.c:517 ../src/imageio/format/jpeg.c:634
+#: ../src/libs/camera.c:517 ../src/imageio/format/jpeg.c:638
 msgid "quality"
 msgstr "Qualität"
 
@@ -1345,7 +1345,7 @@ msgid "rotate by 180"
 msgstr "Um 180° drehen"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:684 ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:684 ../src/iop/clipping.c:772
 msgid "flip"
 msgstr "spiegeln"
 
@@ -1416,7 +1416,11 @@ msgstr "quadratisch"
 msgid "din"
 msgstr "DIN"
 
-#: ../src/iop/clipping.c:738
+#: ../src/iop/clipping.c:732
+msgid "16:9"
+msgstr "16:9"
+
+#: ../src/iop/clipping.c:739
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -1424,87 +1428,87 @@ msgstr ""
 "Seitenverhältnis setzen (b:h)\n"
 "drücke Strg-x um die Seiten zu tauschen"
 
-#: ../src/iop/clipping.c:744
+#: ../src/iop/clipping.c:745
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "Seitenverhältnis tauschen (Strg-x)"
 
-#: ../src/iop/clipping.c:751
+#: ../src/iop/clipping.c:752
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/clipping.c:754
+#: ../src/iop/clipping.c:755
 msgid "none"
 msgstr "keine"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:756
 msgid "grid"
 msgstr "Gitter"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:757
 msgid "rules of thirds"
 msgstr "Drittelregel"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:758
 msgid "diagonal method"
 msgstr "Diagonalen"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:759
 msgid "harmonious triangles"
 msgstr "harmonische Dreiecke"
 
-#: ../src/iop/clipping.c:759
+#: ../src/iop/clipping.c:760
 msgid "golden mean"
 msgstr "goldener Schnitt"
 
-#: ../src/iop/clipping.c:761
+#: ../src/iop/clipping.c:762
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
 msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
 
-#: ../src/iop/clipping.c:765
+#: ../src/iop/clipping.c:766
 msgid "type"
 msgstr "Typ"
 
-#: ../src/iop/clipping.c:778
+#: ../src/iop/clipping.c:779
 msgid "flip guides vertically"
 msgstr "Hilfslinien vertikal spiegeln"
 
-#: ../src/iop/clipping.c:779
+#: ../src/iop/clipping.c:780
 msgid "flip guides horizontally"
 msgstr "Hilfslinien horizontal spiegeln"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:782
 msgid "golden sections"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:783
+#: ../src/iop/clipping.c:784
 msgid "enable this option to show golden sections."
 msgstr "diese Option auswählen, um den Goldenen Schnitt anzuzeigen"
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:787
 msgid "spiral sections"
 msgstr "Rechtecke d. Spirale"
 
-#: ../src/iop/clipping.c:787
+#: ../src/iop/clipping.c:788
 msgid "enable this option to show golden spiral sections."
 msgstr ""
 "diese Option auswählen, um die Bereiche der goldenen Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:790
+#: ../src/iop/clipping.c:791
 msgid "golden spiral"
 msgstr "Goldene Spirale"
 
-#: ../src/iop/clipping.c:791
+#: ../src/iop/clipping.c:792
 msgid "enable this option to show a golden spiral guide."
 msgstr "diese Option auswählen, um eine Goldene Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:794
+#: ../src/iop/clipping.c:795
 msgid "golden triangles"
 msgstr "Goldene Dreiecke"
 
-#: ../src/iop/clipping.c:795
+#: ../src/iop/clipping.c:796
 msgid "enable this option to show golden triangles."
 msgstr "diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 
@@ -1635,7 +1639,7 @@ msgstr "Schwarzwert anpassen"
 msgid "adjust the exposure correction [ev]"
 msgstr "Belichtungskorrektur anpassen [ev]"
 
-#: ../src/iop/exposure.c:333 ../src/iop/lens.c:1230
+#: ../src/iop/exposure.c:333
 msgid "auto"
 msgstr "auto"
 
@@ -1810,11 +1814,11 @@ msgstr "mische Buntheit (0 ist identisch mit Abschneiden)"
 msgid "blend hue (0 is same as clipping)"
 msgstr "mische Farbton (0 ist identisch mit Abschneiden)"
 
-#: ../src/iop/lens.c:42
+#: ../src/iop/lens.c:44
 msgid "lens correction"
 msgstr "Linsenkorrektur"
 
-#: ../src/iop/lens.c:674
+#: ../src/iop/lens.c:676
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1827,7 +1831,7 @@ msgstr ""
 "Anschluss:\t%s\n"
 "Crop-Faktor:\t%.1f"
 
-#: ../src/iop/lens.c:914
+#: ../src/iop/lens.c:916
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1846,35 +1850,35 @@ msgstr ""
 "Typ:\t\t\t\t%s\n"
 "Anschlüsse:\t\t%s"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "focal length (mm)"
 msgstr "Brennweite (mm)"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f-number (aperture)"
 msgstr "Blendenzahl"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "distance to subject"
 msgstr "Entfernung"
 
-#: ../src/iop/lens.c:1165
+#: ../src/iop/lens.c:1167
 msgid "cam"
 msgstr "Kamera"
 
-#: ../src/iop/lens.c:1166
+#: ../src/iop/lens.c:1168
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -1882,7 +1886,7 @@ msgstr ""
 "nach Kamera mittels Muster suchen\n"
 "Format: [Hersteller, ][Modell]"
 
-#: ../src/iop/lens.c:1181
+#: ../src/iop/lens.c:1183
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -1891,50 +1895,49 @@ msgstr ""
 "Format: [Hersteller, ][Modell]"
 
 #. target geometry
-#: ../src/iop/lens.c:1207
+#: ../src/iop/lens.c:1209
 msgid "geometry"
 msgstr "Geometrie"
 
-#: ../src/iop/lens.c:1213
+#: ../src/iop/lens.c:1215
 msgid "target geometry"
 msgstr "Zielgeometrie"
 
-#: ../src/iop/lens.c:1214
+#: ../src/iop/lens.c:1216
 msgid "rectilinear"
 msgstr "geradlinig"
 
-#: ../src/iop/lens.c:1215
+#: ../src/iop/lens.c:1217
 msgid "fish-eye"
 msgstr "Fischauge"
 
-#: ../src/iop/lens.c:1216
+#: ../src/iop/lens.c:1218
 msgid "panoramic"
 msgstr "Panorama"
 
-#: ../src/iop/lens.c:1217
+#: ../src/iop/lens.c:1219
 msgid "equirectangular"
 msgstr "Equirectangular"
 
-#. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-#: ../src/iop/lens.c:1237 ../src/iop/vignette.c:352 ../src/iop/watermark.c:563
+#: ../src/iop/lens.c:1240 ../src/iop/vignette.c:352 ../src/iop/watermark.c:563
 msgid "scale"
 msgstr "Skalierung"
 
 #. reverse direction
-#: ../src/iop/lens.c:1243
+#: ../src/iop/lens.c:1245
 msgid "reverse"
 msgstr "umkehren"
 
-#: ../src/iop/lens.c:1244
+#: ../src/iop/lens.c:1246
 msgid "apply distortions instead of correcting them"
 msgstr "füge Verzerrung hinzu statt sie zu korrigieren"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1251
+#: ../src/iop/lens.c:1253
 msgid "tca r"
 msgstr "TCA R"
 
-#: ../src/iop/lens.c:1254
+#: ../src/iop/lens.c:1255
 msgid "tca b"
 msgstr "TCA B"
 
@@ -2163,11 +2166,11 @@ msgstr "neu importieren"
 msgid "trigger re-import of the raw image"
 msgstr "veranlasse einen erneuten Import der RAW-Bilder"
 
-#: ../src/iop/sharpen.c:269 ../src/iop/bilateral.cc:282 ../src/iop/clahe.c:383
+#: ../src/iop/sharpen.c:269 ../src/iop/bilateral.cc:282 ../src/iop/clahe.c:385
 msgid "radius"
 msgstr "Radius"
 
-#: ../src/iop/sharpen.c:271 ../src/iop/clahe.c:385
+#: ../src/iop/sharpen.c:271 ../src/iop/clahe.c:387
 msgid "amount"
 msgstr "Menge"
 
@@ -2627,11 +2630,11 @@ msgstr "Eingabeprofil korrigieren"
 msgid "local contrast (slow)"
 msgstr "lokaler Kontrast (langsam)"
 
-#: ../src/iop/clahe.c:394
+#: ../src/iop/clahe.c:396
 msgid "size of features to preserve"
 msgstr "Größe der Features, die erhalten bleiben sollen"
 
-#: ../src/iop/clahe.c:395
+#: ../src/iop/clahe.c:397
 msgid "strength of the effect"
 msgstr "Stärke des Effekts"
 
@@ -2728,9 +2731,10 @@ msgid "Fill-shadow -0.25EV with 4 zones"
 msgstr "Füllen der Schatten um -0,25EV mit 4 Zonen"
 
 # Soll man da "Relight" als Namen nehmen, oder es übersetzen?
+# hanatos hat "Aufhellen" vorgeschlagen. Gefällt.
 #: ../src/iop/relight.c:79
 msgid "relight"
-msgstr ""
+msgstr "Aufhellen"
 
 #. EV
 #: ../src/iop/relight.c:342
@@ -2743,7 +2747,7 @@ msgstr "Zentrum des Fülllichts wählen"
 
 #: ../src/iop/relight.c:376
 msgid "toggle tool for picking median lightness in image"
-msgstr ""
+msgstr "mittlere Helligkeit im Bild wählen"
 
 #: ../src/iop/relight.c:377
 msgid "the fill-light in EV"
@@ -2789,11 +2793,12 @@ msgstr "Die Deckkraft des Wasserzeichens"
 msgid "the scale of the watermark"
 msgstr "Größe des Wasserzeichens"
 
+# klingt zwar wie "DDR", macht aber nix. mal sehen, ob sich jemand beschwert. ^^
 #: ../src/iop/zonesystem.c:84
 msgid "zone system"
-msgstr ""
+msgstr "Zonensystem"
 
-#: ../src/imageio/format/jpeg.c:614
+#: ../src/imageio/format/jpeg.c:618
 msgid "8-bit jpeg"
 msgstr "8-Bit JPEG"
 
@@ -2868,12 +2873,12 @@ msgstr ""
 "$(HOME_FOLDER) - home-Verzeichnis\n"
 "$(DESKTOP_FOLDER) - Desktop-Verzeichnis"
 
-#: ../src/imageio/storage/disk.c:174
+#: ../src/imageio/storage/disk.c:184
 #, c-format
-msgid "could not create directory %s!"
-msgstr "konnte Verzeichnis %s nicht erstellen!"
+msgid "could not create directory `%s'!"
+msgstr "konnte Verzeichnis ‚%s‘ nicht erstellen!"
 
-#: ../src/imageio/storage/disk.c:208 ../src/imageio/storage/email.c:109
+#: ../src/imageio/storage/disk.c:219 ../src/imageio/storage/email.c:109
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d nach ‚%s%s‘ exportiert"
@@ -2979,30 +2984,30 @@ msgstr "* Netzwerken, Battle-Testen, Übersetzungsexperte *"
 msgid "* contributors *"
 msgstr "* Mitwirkende *"
 
-#: ../src/gui/gtk.c:441
+#: ../src/gui/gtk.c:443
 msgid "translator-credits"
 msgstr "Tobias Ellinghaus"
 
-#: ../src/gui/gtk.c:655
+#: ../src/gui/gtk.c:657
 msgid "import film"
 msgstr "Film importieren"
 
-#: ../src/gui/gtk.c:674
+#: ../src/gui/gtk.c:676
 msgid "import directories recursively"
 msgstr "Verzeichnisse rekursiv importieren"
 
-#: ../src/gui/gtk.c:675
+#: ../src/gui/gtk.c:677
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "Verzeichnisse rekursiv importieren. Jedes Verzeichnis kommt in eine eigene "
 "Filmrolle."
 
-#: ../src/gui/gtk.c:682
+#: ../src/gui/gtk.c:684
 msgid "ignore jpeg files"
 msgstr "JPEG-Dateien ignorieren"
 
-#: ../src/gui/gtk.c:683
+#: ../src/gui/gtk.c:685
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -3010,27 +3015,27 @@ msgstr ""
 "Lade keine Dateien mit der Endung .JPG oder .JPEG. Dies kann nützlich sein, "
 "wenn es RAW+JPEG im gleichen Ordner gibt."
 
-#: ../src/gui/gtk.c:726
+#: ../src/gui/gtk.c:728
 msgid "import image"
 msgstr "Bild importieren"
 
-#: ../src/gui/gtk.c:745
+#: ../src/gui/gtk.c:747
 msgid "supported images"
 msgstr "unterstütze Bilder"
 
-#: ../src/gui/gtk.c:1074
+#: ../src/gui/gtk.c:1076
 msgid "show global preferences"
 msgstr "zeige globale Voreinstellungen"
 
-#: ../src/gui/gtk.c:1202
+#: ../src/gui/gtk.c:1204
 msgid "take snapshot"
 msgstr "Snapshot erstellen"
 
-#: ../src/gui/gtk.c:1231
+#: ../src/gui/gtk.c:1233
 msgid "recently used film rolls"
 msgstr "kürzlich benutzte Filmrollen"
 
-#: ../src/gui/gtk.c:1252
+#: ../src/gui/gtk.c:1254
 msgid "all film rolls"
 msgstr "alle Filmrollen"
 
@@ -3074,7 +3079,7 @@ msgstr "Verlaufsstapel zusammenfassen"
 msgid "create a minimal history stack which produces the same image"
 msgstr "erstelle einen minimalen Verlaufsstapel, der das gleiche Bild erzeugt"
 
-#: ../src/gui/iop_history.c:106
+#: ../src/gui/iop_history.c:107
 msgid "create a style from currently developed image and its history stack"
 msgstr ""
 "Erzeuge einen Stil aus dem derzeit entwickelten Bild und seinem "
