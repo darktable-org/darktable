@@ -416,6 +416,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
       "Andrey Kaminsky",
       "Anton Blanchard",
       "Bernhard Schneider",
+      "Bruce Guenter",
       "Christian Fuchs",
       "Christian Himpel",
       "Daniele Giorgis",
