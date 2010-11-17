@@ -235,7 +235,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 750;
+  module->priority = 525;
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
