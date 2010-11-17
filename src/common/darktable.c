@@ -128,7 +128,7 @@ int dt_init(int argc, char *argv[])
     snprintf (dbfilename,2048,"%s/%s",homedir,dt_conf_get_string("database"));
     if (g_file_test (dbfilename,G_FILE_TEST_EXISTS))
     {
-      fprintf(stderr, "[init] moving database/cache into new XDG directory structure\n");
+      fprintf(stderr, "[init] moving database into new XDG directory structure\n");
       // move database into place
       char destdbname[2048]={0};
       snprintf(destdbname,2048,"%s/%s",datadir,"library.db");
@@ -137,13 +137,24 @@ int dt_init(int argc, char *argv[])
         rename(dbfilename,destdbname);
         dt_conf_set_string("database","library.db");
       }
-      
-      // move cache into place
-      snprintf (dbfilename,2048,"%s/%s",homedir,".darktablecache");
-      snprintf(destdbname,2048,"%s/%s",datadir,"mipmaps");
-      if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
+    }
+  }
+  
+  // check and migrate the cachedir
+  char cachefilename[2048]={0};
+  char cachedir[2048]={0};
+  if ((dt_conf_get_string ("cachefile"))[0]!='/')
+  {
+    char *homedir = getenv ("HOME");
+    snprintf (cachefilename,2048,"%s/%s",homedir,dt_conf_get_string("cachefile"));
+    if (g_file_test (cachefilename,G_FILE_TEST_EXISTS))
+    {
+      fprintf(stderr, "[init] moving cache into new XDG directory structure\n");
+      char destcachename[2048]={0};
+      snprintf(destcachename,2048,"%s/%s",cachedir,"mipmaps");
+      if(!g_file_test (destcachename,G_FILE_TEST_EXISTS))
       {
-        rename(dbfilename,destdbname);
+        rename(cachefilename,destcachename);
         dt_conf_set_string("cachefile","mipmaps");
       }
     }
