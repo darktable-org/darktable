@@ -561,7 +561,7 @@ get_params(dt_iop_atrous_params_t *p, const int ch, const double mouse_x, const 
   for(int k=0;k<BANDS;k++)
   {
     const float f = expf(-(mouse_x - p->x[ch][k])*(mouse_x - p->x[ch][k])/(rad*rad));
-    p->y[ch][k] = (1-f)*p->y[ch][k] + f*mouse_y;
+    p->y[ch][k] = MAX(0.0f, MIN(1.0f, (1-f)*p->y[ch][k] + f*mouse_y));
   }
 }
 

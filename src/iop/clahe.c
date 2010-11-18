@@ -137,7 +137,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0;j<roi_out->height;j++)
   {
-    float *in=(float *)ivoid+j*roi_out->width*3;
+    float *in=(float *)ivoid+j*roi_out->width*ch;
     float *lm=luminance+j*roi_out->width;
     for(int i=0;i<roi_out->width;i++)
     {
@@ -262,8 +262,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     
     // Apply row
-    float *in = ((float *)ivoid) + j*roi_out->width*3;
-    float *out = ((float *)ovoid) + j*roi_out->width*3;
+    float *in = ((float *)ivoid) + j*roi_out->width*ch;
+    float *out = ((float *)ovoid) + j*roi_out->width*ch;
     for(int r=0;r<roi_out->width;r++)
     {
       float H, S, L;
