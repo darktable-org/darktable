@@ -103,6 +103,9 @@
 		<sect2 status="draft"><title>Importing images</title>
 			<para>To begin with Darktable, you first need to import images. You can either import
 					from your filesystem or from your camera if supported.</para>
+			<para>You can add a picture to filmroll by simply cliking again on "import filmroll", then selecting the folder matching your filmroll.
+			Darktable will analyse its content, detect the images already imported and import only the new pictures.
+			</para>
 		</sect2>
 		
 		<sect2 status="draft"><title>Importing from camera</title>

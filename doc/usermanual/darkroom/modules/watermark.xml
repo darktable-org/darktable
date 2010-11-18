@@ -5,13 +5,13 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry><para>The watermark module provides a way to render an vectorbased overlay onto your image.
-									Watermarks are standard SVG documents and can be designed using Inkscape, the SVG 
-									precessor of Darktable does also substitute strings within the SVG document which gives
+						<entry><para>The watermark module provides a way to render an vector-based overlay onto your image.
+									Watermarks are standard SVG documents and can be designed using Inkscape. The SVG 
+									processor of Darktable also substitutes strings within the SVG document which gives
 									the oppurtunity to include image dependent information in the watermark such as aperture, 
-									exposure time and other meta-data.</para>
-								<para>Userdesigned watermarks are placed into the directory ~/.config/darktable/watermarks,
-									once in place use the reload button at the left of the choice of watermark to update the list 
+									exposure time and other metadata.</para>
+								<para>User-designed watermarks are placed into the directory ~/.config/darktable/watermarks;
+									once in place, use the reload button at the right of the watermark file name to update the list 
 									of available watermarks to use.
 								</para>
 						</entry>
@@ -29,22 +29,22 @@
 		<sect4><title>marker</title>
 			<para>Choose the watermark of interest, use the reload button next to the combobox to update list
 				with newly added watermarks.
-			.</para>
+			</para>
 		</sect4>
 		<sect4><title>opacity</title>
-			<para>Sets the opacity of the render of watermark.</para>
+			<para>Set the opacity of the render of watermark.</para>
 		</sect4>
 		<sect4><title>scale</title>
 			<para>Scale the watermark pixelindependent.</para>
 		</sect4>
 		<sect4><title>alignment</title>
-			<para>Use this controls to align the watermark to any edge or center of the image.</para>
+			<para>Use these controls to align the watermark to any edge or center of the image.</para>
 		</sect4>
 		<sect4><title>x offset</title>
-			<para>Pixelindependent offset realtive to the choice of alignment on x-axis.</para>
+			<para>Pixel-independent offset realtive to the choice of alignment on x-axis.</para>
 		</sect4>
 		<sect4><title>y offset</title>
-			<para>Pixelindependent offset relative to the choice of alignment on y-axis.</para>
+			<para>Pixel-independent offset relative to the choice of alignment on y-axis.</para>
 		</sect4>
 	</sect3>
 </sect2>
