@@ -153,10 +153,20 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_image_full_path(img, dirname, 1024);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
-#ifdef _OPENMP
-  #pragma omp critical
-#endif
+  pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
+ 
+  // if filenamepattern is a directory just let att ${FILE_NAME} as default..
+  if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
+    snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
+
+  // avoid braindead export which is bound to overwrite at random:
+  if(total > 1 && !g_strrstr(d->filename, "$"))
+  {
+    snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
+  }
+  
+      
   d->vp->filename = dirname;
   d->vp->jobcode = "export";
   d->vp->img = img;
@@ -167,11 +177,11 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   char *c = dirname + strlen(dirname);
   for(;c>dirname && *c != '/';c--);
-  *c = '\0';
+  if(*c == '/') *c = '\0';
   if(g_mkdir_with_parents(dirname, 0755))
   {
-    fprintf(stderr, "[imageio_storage_disk] could not create directory %s!\n", dirname);
-    dt_control_log(_("could not create directory %s!"), dirname);
+    fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
+    dt_control_log(_("could not create directory `%s'!"), dirname);
     dt_image_cache_release(img, 'r');
     fail = 1;
     goto failed;
@@ -196,6 +206,7 @@ failed:
   }
 
   } // end of critical block
+  pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(fail) return 1;
 
   /* export image to file */

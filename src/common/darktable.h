@@ -140,6 +140,8 @@ void dt_get_datadir(char *datadir, size_t bufsize);
 void dt_get_plugindir(char *datadir, size_t bufsize);
 /** get the user directory of darktable, ~/.config/darktable */
 void dt_get_user_config_dir(char *data, size_t bufsize);
+/** get the user directory of darktable, ~/.cache/darktable */
+void dt_get_user_cache_dir(char *data, size_t bufsize);
 /** get the user local directory , ~/.local */
 void dt_get_user_local_dir(char *data, size_t bufsize);
 

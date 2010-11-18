@@ -68,7 +68,7 @@ int dt_init(int argc, char *argv[])
     {
       if(!strcmp(argv[k], "--help"))
       {
-        printf("usage: %s [-d {cache,control,dev,fswatch,camctl,pwstorage}] [IMG_1234.{RAW,..}]\n", argv[0]);
+        printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,pwstorage}] [IMG_1234.{RAW,..}]\n", argv[0]);
         return 1;
       }
       else if(!strcmp(argv[k], "--version"))
@@ -78,12 +78,13 @@ int dt_init(int argc, char *argv[])
       }
       if(argv[k][1] == 'd' && argc > k+1)
       {
-        if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;     // enable debugging for lib/film/cache module
-        if(!strcmp(argv[k+1], "control"))   darktable.unmuted |= DT_DEBUG_CONTROL;   // enable debugging for scheduler module
-        if(!strcmp(argv[k+1], "dev"))       darktable.unmuted |= DT_DEBUG_DEV;       // develop module
-        if(!strcmp(argv[k+1], "fswatch"))   darktable.unmuted |= DT_DEBUG_FSWATCH;   // fswatch module
-        if(!strcmp(argv[k+1], "camctl"))    darktable.unmuted |= DT_DEBUG_CAMCTL;    // camera control module
-        if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF;      // performance measurements
+        if(!strcmp(argv[k+1], "all"))     darktable.unmuted = 0xffffffff;   // enable all debug information
+        if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
+        if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
+        if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
+        if(!strcmp(argv[k+1], "fswatch")) darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
+        if(!strcmp(argv[k+1], "camctl"))  darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
+        if(!strcmp(argv[k+1], "perf"))    darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
         if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
         if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
         k ++;
@@ -102,9 +103,10 @@ int dt_init(int argc, char *argv[])
   // thread-safe init:
   dt_exif_init();
   (void)cmsErrorAction(LCMS_ERROR_IGNORE);
-  char *homedir = getenv("HOME");
-  char filename[512];
-  snprintf(filename, 512, "%s/.darktablerc", homedir);
+  char datadir[1024];
+  dt_get_user_config_dir (datadir,1024);
+  char filename[1024];
+  snprintf(filename, 1024, "%s/darktablerc", datadir);
 
   // Initialize the filesystem watcher  
   darktable.fswatch=dt_fswatch_new();	
@@ -123,11 +125,50 @@ int dt_init(int argc, char *argv[])
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();	
 
-  char dbfilename[1024];
-  gchar *dbname = dt_conf_get_string("database");
-  if(!dbname)               snprintf(dbfilename, 512, "%s/.darktabledb", homedir);
-  else if(dbname[0] != '/') snprintf(dbfilename, 512, "%s/%s", homedir, dbname);
-  else                      snprintf(dbfilename, 512, "%s", dbname);
+  // check and migrate database into new XDG structure
+  char dbfilename[2048]={0};
+  if ((dt_conf_get_string ("database"))[0]!='/')
+  {
+    char *homedir = getenv ("HOME");
+    snprintf (dbfilename,2048,"%s/%s",homedir,dt_conf_get_string("database"));
+    if (g_file_test (dbfilename,G_FILE_TEST_EXISTS))
+    {
+      fprintf(stderr, "[init] moving database into new XDG directory structure\n");
+      // move database into place
+      char destdbname[2048]={0};
+      snprintf(destdbname,2048,"%s/%s",datadir,"library.db");
+      if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
+      {
+        rename(dbfilename,destdbname);
+        dt_conf_set_string("database","library.db");
+      }
+    }
+  }
+  
+  // check and migrate the cachedir
+  char cachefilename[2048]={0};
+  char cachedir[2048]={0};
+  if ((dt_conf_get_string ("cachefile"))[0]!='/')
+  {
+    char *homedir = getenv ("HOME");
+    snprintf (cachefilename,2048,"%s/%s",homedir,dt_conf_get_string("cachefile"));
+    if (g_file_test (cachefilename,G_FILE_TEST_EXISTS))
+    {
+      fprintf(stderr, "[init] moving cache into new XDG directory structure\n");
+      char destcachename[2048]={0};
+      snprintf(destcachename,2048,"%s/%s",cachedir,"mipmaps");
+      if(!g_file_test (destcachename,G_FILE_TEST_EXISTS))
+      {
+        rename(cachefilename,destcachename);
+        dt_conf_set_string("cachefile","mipmaps");
+      }
+    }
+  }
+  
+  gchar *dbname = dt_conf_get_string ("database");
+  if(!dbname)               snprintf(dbfilename, 1024, "%s/library.db", datadir);
+  else if(dbname[0] != '/') snprintf(dbfilename, 1024, "%s/%s", datadir, dbname);
+  else                      snprintf(dbfilename, 1024, "%s", dbname);
 
   int load_cached = 1;
   // if db file does not exist, also don't load the cache.
@@ -138,9 +179,9 @@ int dt_init(int argc, char *argv[])
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
     else       fprintf(stderr, "\n");
 #ifndef HAVE_GCONF
-    fprintf(stderr, "[init] maybe your ~/.darktablerc is corrupt?\n");
+    fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
     dt_get_datadir(dbfilename, 512);
-    fprintf(stderr, "[init] try `cp %s/darktablerc ~/.darktablerc'\n", dbfilename);
+    fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
 #else
     fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
 #endif
@@ -292,8 +333,16 @@ dt_get_user_config_dir (char *data, size_t bufsize)
   g_snprintf (data,bufsize,"%s/.config/darktable",getenv("HOME"));  
   if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
     g_mkdir_with_parents (data,0700);
-
 }
+
+void 
+dt_get_user_cache_dir (char *data, size_t bufsize)
+{
+  g_snprintf (data,bufsize,"%s/.cache/darktable",getenv("HOME"));  
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+    g_mkdir_with_parents (data,0700);
+}
+
 
 void 
 dt_get_user_local_dir (char *data, size_t bufsize)

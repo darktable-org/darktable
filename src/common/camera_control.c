@@ -644,8 +644,11 @@ int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam
   if (cam==NULL && c->cameras)
     cam = g_list_nth_data(c->cameras,0);
   
-  if( cam && cam->can_tether ) 
-	return 1;
+  if( cam && cam->can_tether )  {
+    dt_camctl_t *camctl=(dt_camctl_t *)c;
+    camctl->wanted_camera = cam;
+    return 1;
+  }
   
   return 0;	
 }

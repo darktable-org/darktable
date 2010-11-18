@@ -127,43 +127,38 @@ void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
   const int ch = piece->colors;
   
   // PASS1: Get a luminance map of image...
   float *luminance=(float *)malloc((roi_out->width*roi_out->height)*sizeof(float));
-  float *lm=luminance;
-  double lsmax=0.0,lsmin=1.0;
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+  //double lsmax=0.0,lsmin=1.0;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid)
+#endif
+  for(int j=0;j<roi_out->height;j++)
   {
-    double pmax=CLIP(fmax(in[0],fmax(in[1],in[2]))); // Max value in RGB set
-    double pmin=CLIP(fmin(in[0],fmin(in[1],in[2]))); // Min value in RGB set
-    *lm=(pmax+pmin)/2.0;        // Pixel luminocity
-    in+=ch; lm++;
-    
-    if( pmax > lsmax ) lsmax=pmax;
-    if( pmin < lsmin ) lsmin=pmin;
+    float *in=(float *)ivoid+j*roi_out->width*3;
+    float *lm=luminance+j*roi_out->width;
+    for(int i=0;i<roi_out->width;i++)
+    {
+      double pmax=CLIP(fmax(in[0],fmax(in[1],in[2]))); // Max value in RGB set
+      double pmin=CLIP(fmin(in[0],fmin(in[1],in[2]))); // Min value in RGB set
+      *lm=(pmax+pmin)/2.0;        // Pixel luminocity
+      in+=ch; lm++;
+    }
   }
   
   
   // Params
-  int rad=data->radius*roi_in->scale/piece->iscale;
+  const int rad=data->radius*roi_in->scale/piece->iscale;
  
-  int bins=256;
-  float slope=data->slope;
+  const int bins=256;
+  const float slope=data->slope;
   
   // CLAHE
-  in  = (float *)ivoid;
-  out = (float *)ovoid;
-  lm = luminance;
-  
-  int *hist = malloc((bins+1)*sizeof(int));
-  int *clippedhist = malloc((bins+1)*sizeof(int));
-  memset(hist,0,(bins+1)*sizeof(int));
-  float *dest=malloc(roi_out->width*sizeof(float));
-
-  float H,S,L;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid,ovoid)
+#endif
   for(int j=0;j<roi_out->height;j++) 
   {
     int yMin = fmax( 0, j - rad );
@@ -173,7 +168,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int xMin0 = fmax( 0, 0-rad );
     int xMax0 = fmin( roi_in->width - 1, rad );
 
-    
+    int hist[bins+1];
+    int clippedhist[bins+1];
+    float dest[roi_out->width];
+
     /* initially fill histogram */
     memset(hist,0,(bins+1)*sizeof(int));
     for ( int yi = yMin; yi < yMax; ++yi ) 
@@ -260,12 +258,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       *ld=( cdf - cdfMin ) / ( float )( cdfMax - cdfMin );      
      
-      lm++,ld++;
+      ld++;
     }
     
     // Apply row
+    float *in = ((float *)ivoid) + j*roi_out->width*3;
+    float *out = ((float *)ovoid) + j*roi_out->width*3;
     for(int r=0;r<roi_out->width;r++)
     {
+      float H, S, L;
       rgb2hsl(in[0],in[1],in[2],&H,&S,&L);
       //hsl2rgb(&out[0],&out[1],&out[2],H,S,( L / dest[r] ) * (L-lsmin) + lsmin );
       hsl2rgb(&out[0],&out[1],&out[2],H,S,dest[r] );
@@ -275,8 +276,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   
   // Cleanup
-  free(hist);
-  free(clippedhist);
   free(luminance);
   
 }

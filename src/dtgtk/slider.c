@@ -435,35 +435,25 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   
   if(slider->is_entry_active)
     state=GTK_STATE_PRELIGHT;
-
-  // Widget bakground
-#if 0
-  gtk_paint_box(style,widget->window, GTK_STATE_NORMAL,
-   // GTK_SHADOW_ETCHED_OUT,
-   GTK_SHADOW_NONE,
-   NULL,
-   widget,
-   "button",
-   0,0,width,height); 
-#endif
   
   // Value background
   GdkRectangle vr;
   _slider_get_value_area(widget,&vr);
-#if 0
-  gtk_paint_box(style,widget->window, state,
-   // GTK_SHADOW_ETCHED_OUT,
-   GTK_SHADOW_NONE,
-   NULL,
-   widget,
-   "button",
-   vr.x,0,vr.width,height);
-#endif
-  
+  if (state==GTK_STATE_PRELIGHT)
+  {
+    gtk_paint_box(style,widget->window, state,
+    // GTK_SHADOW_ETCHED_OUT,
+    GTK_SHADOW_NONE,
+    NULL,
+    widget,
+    "button",
+    vr.x,0,vr.width,height);
+  }
   // Begin cairo drawing 
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
 
+ 
   // Draw arrows
   cairo_set_source_rgb(cr,
     style->fg[state].red/65535.0, 
@@ -525,11 +515,11 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
       break;
       case DARKTABLE_SLIDER_FORMAT_PERCENT:
       {
-   gdouble min=gtk_adjustment_get_lower(slider->adjustment);
-         gdouble max=gtk_adjustment_get_upper(slider->adjustment);
-         gdouble value=gtk_adjustment_get_value(slider->adjustment);
-         double f= (value-min)/(max-min);   
-         sprintf(sv,"%.*f %%",slider->digits,100.0*f);
+        gdouble min=gtk_adjustment_get_lower(slider->adjustment);
+        gdouble max=gtk_adjustment_get_upper(slider->adjustment);
+        gdouble value=gtk_adjustment_get_value(slider->adjustment);
+        double f= (value-min)/(max-min);   
+        sprintf(sv,"%.*f %%",slider->digits,100.0*f);
       }
       break;
       case DARKTABLE_SLIDER_FORMAT_NONE:

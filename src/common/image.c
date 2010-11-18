@@ -609,7 +609,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   rc = sqlite3_finalize(stmt);
 
   // insert dummy image entry in database
-  rc = sqlite3_prepare_v2(darktable.db, "insert into images (id, film_id, filename) values (null, ?1, ?2)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "insert into images (id, film_id, filename, caption, description, license, sha1sum) values (null, ?1, ?2, '', '', '', '')", -1, &stmt, NULL);
   HANDLE_SQLITE_ERR(rc);
   rc = sqlite3_bind_int (stmt, 1, film_id);
   rc = sqlite3_bind_text(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);

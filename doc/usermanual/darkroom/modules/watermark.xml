@@ -1,0 +1,50 @@
+<sect2 status="draft"><title>Watermark</title>
+	<sect3><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='100%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry><para>The watermark module provides a way to render an vectorbased overlay onto your image.
+									Watermarks are standard SVG documents and can be designed using Inkscape, the SVG 
+									precessor of Darktable does also substitute strings within the SVG document which gives
+									the oppurtunity to include image dependent information in the watermark such as aperture, 
+									exposure time and other meta-data.</para>
+								<para>Userdesigned watermarks are placed into the directory ~/.config/darktable/watermarks,
+									once in place use the reload button at the left of the choice of watermark to update the list 
+									of available watermarks to use.
+								</para>
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect3>
+
+	<sect3><title>Usage</title>
+		<para>Watermark module does </para>
+		<sect4><title>marker</title>
+			<para>Choose the watermark of interest, use the reload button next to the combobox to update list
+				with newly added watermarks.
+			.</para>
+		</sect4>
+		<sect4><title>opacity</title>
+			<para>Sets the opacity of the render of watermark.</para>
+		</sect4>
+		<sect4><title>scale</title>
+			<para>Scale the watermark pixelindependent.</para>
+		</sect4>
+		<sect4><title>alignment</title>
+			<para>Use this controls to align the watermark to any edge or center of the image.</para>
+		</sect4>
+		<sect4><title>x offset</title>
+			<para>Pixelindependent offset realtive to the choice of alignment on x-axis.</para>
+		</sect4>
+		<sect4><title>y offset</title>
+			<para>Pixelindependent offset relative to the choice of alignment on y-axis.</para>
+		</sect4>
+	</sect3>
+</sect2>
