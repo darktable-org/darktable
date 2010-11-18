@@ -19,7 +19,7 @@
 /*
 
 TODO:
-	- put writing of the meta data into its own function.
+	- put writing of the metadata into its own function.
 
 */
 
@@ -39,12 +39,12 @@ typedef struct dt_lib_metadata_t
 {
 	int imgsel;
 	GtkComboBoxEntry *title;
-	GtkComboBoxEntry *subject;
+	GtkComboBoxEntry *description;
 	GtkComboBoxEntry *creator;
 	GtkComboBoxEntry *publisher;
 	GtkComboBoxEntry *license;
 	gboolean multi_title;
-	gboolean multi_subject;
+	gboolean multi_description;
 	gboolean multi_creator;
 	gboolean multi_publisher;
 	gboolean multi_license;
@@ -54,7 +54,7 @@ dt_lib_metadata_t;
 const char*
 name ()
 {
-	return _("meta data");
+	return _("metadata");
 }
 
 uint32_t views()
@@ -113,7 +113,7 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	sqlite3_stmt *stmt;
 
 	GList *title = NULL; uint32_t title_count = 0;
-	GList *subject = NULL; uint32_t subject_count = 0;
+	GList *description = NULL; uint32_t description_count = 0;
 	GList *creator = NULL; uint32_t creator_count = 0;
 	GList *publisher = NULL; uint32_t publisher_count = 0;
 	GList *license = NULL; uint32_t license_count = 0;
@@ -158,7 +158,7 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	}
 	rc = sqlite3_finalize(stmt);
 
-	// subject
+	// description
 	if(imgsel < 0){ // selected images
 		rc = sqlite3_prepare_v2(darktable.db, "select distinct description from images where id in (select imgid from selected_images) order by description", -1, &stmt, NULL);
 	} else { // single image under mouse cursor
@@ -169,8 +169,8 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	while(sqlite3_step(stmt) == SQLITE_ROW){
 		char *value = (char*)sqlite3_column_text(stmt, 0);
 		if(value != NULL && value[0] != '\0'){
-			subject_count++;
-			subject = g_list_append(subject, g_strdup(value));
+			description_count++;
+			description = g_list_append(description, g_strdup(value));
 		}
 	}
 	rc = sqlite3_finalize(stmt);
@@ -193,7 +193,7 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	rc = sqlite3_finalize(stmt);
 
 	fill_combo_box_entry(&(d->title), title_count, &title, &(d->multi_title));
-	fill_combo_box_entry(&(d->subject), subject_count, &subject, &(d->multi_subject));
+	fill_combo_box_entry(&(d->description), description_count, &description, &(d->multi_description));
 	fill_combo_box_entry(&(d->license), license_count, &license, &(d->multi_license));
 	fill_combo_box_entry(&(d->creator), creator_count, &creator, &(d->multi_creator));
 	fill_combo_box_entry(&(d->publisher), publisher_count, &publisher, &(d->multi_publisher));
@@ -247,7 +247,7 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 	dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
 
 	gchar *title = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
-	gchar *subject = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->subject));
+	gchar *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
 	gchar *license = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->license));
 	gchar *creator = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
 	gchar *publisher = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
@@ -301,9 +301,9 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
 		}
-		if(d->multi_subject == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->subject)) > 0){
+		if(d->multi_description == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->description)) > 0){
 			inner_rc = sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &inner_stmt, NULL);
-			sqlite3_bind_text(inner_stmt, 1, subject, -1, NULL);
+			sqlite3_bind_text(inner_stmt, 1, description, -1, NULL);
 			sqlite3_bind_int(inner_stmt, 2, id);
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
@@ -321,8 +321,8 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 
 	if(title != NULL)
 		g_free(title);
-	if(subject != NULL)
-		g_free(subject);
+	if(description != NULL)
+		g_free(description);
 	if(license != NULL)
 		g_free(license);
 	if(creator != NULL)
@@ -378,17 +378,17 @@ gui_init (dt_lib_module_t *self)
 	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->title))), completion);
 	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->title), 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-	label = gtk_label_new(_("subject"));
+	label = gtk_label_new(_("description"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 	gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-	d->subject = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
-	dt_gui_key_accel_block_on_focus(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->subject))));
+	d->description = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+	dt_gui_key_accel_block_on_focus(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))));
 	completion = gtk_entry_completion_new();
-	gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->subject)));
+	gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->description)));
 	gtk_entry_completion_set_text_column(completion, 0);
 	gtk_entry_completion_set_inline_completion(completion, TRUE);
-	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->subject))), completion);
-	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->subject), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->description))), completion);
+	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->description), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 	label = gtk_label_new(_("creator"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -432,13 +432,13 @@ gui_init (dt_lib_module_t *self)
 	hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 	
 	button = gtk_button_new_with_label(_("clear"));
-	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("remove meta data from selected images"), (char *)NULL);
+	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("remove metadata from selected images"), (char *)NULL);
 	gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 	g_signal_connect(G_OBJECT (button), "clicked",
 					G_CALLBACK (clear_button_clicked), (gpointer)self);
 
 	button = gtk_button_new_with_label(_("apply"));
-	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write meta data to selected images"), (char *)NULL);
+	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write metadata to selected images"), (char *)NULL);
 	g_signal_connect(G_OBJECT (button), "clicked",
 					G_CALLBACK (apply_button_clicked), (gpointer)self);
 	gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
@@ -471,24 +471,24 @@ get_params (dt_lib_module_t *self, int *size)
 	dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
 	char *title = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
-	char *subject = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->subject));
+	char *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
 	char *license = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->license));
 	char *creator = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
 	char *publisher = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
 
 	int32_t title_len = strlen(title);
-	int32_t subject_len = strlen(subject);
+	int32_t description_len = strlen(description);
 	int32_t license_len = strlen(license);
 	int32_t creator_len = strlen(creator);
 	int32_t publisher_len = strlen(publisher);
 
-	*size = title_len + subject_len + license_len + creator_len + publisher_len + 5;
+	*size = title_len + description_len + license_len + creator_len + publisher_len + 5;
 
 	char *params = (char *)malloc(*size);
 	
 	int pos = 0;
 	memcpy(params+pos, title, title_len+1);         pos += title_len+1;
-	memcpy(params+pos, subject, subject_len+1);     pos += subject_len+1;
+	memcpy(params+pos, description, description_len+1);     pos += description_len+1;
 	memcpy(params+pos, license, license_len+1);     pos += license_len+1;
 	memcpy(params+pos, creator, creator_len+1);     pos += creator_len+1;
 	memcpy(params+pos, publisher, publisher_len+1); pos += publisher_len+1;
@@ -503,12 +503,12 @@ set_params (dt_lib_module_t *self, const void *params, int size)
 {
 	char *buf = (char* )params;
 	char *title = buf; buf += strlen(title) + 1;
-	char *subject = buf; buf += strlen(subject) + 1;
+	char *description = buf; buf += strlen(description) + 1;
 	char *license = buf; buf += strlen(license) + 1;
 	char *creator = buf; buf += strlen(creator) + 1;
 	char *publisher = buf; buf += strlen(publisher) + 1;
 
-	if(size != strlen(title) + strlen(subject) + strlen(license) + strlen(creator) + strlen(publisher) + 5) return 1;
+	if(size != strlen(title) + strlen(description) + strlen(license) + strlen(creator) + strlen(publisher) + 5) return 1;
 
 	int rc;
 	sqlite3_stmt *stmt;
@@ -555,9 +555,9 @@ set_params (dt_lib_module_t *self, const void *params, int size)
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
 		}
-		if(subject != NULL && subject[0] != '\0'){
+		if(description != NULL && description[0] != '\0'){
 			inner_rc = sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &inner_stmt, NULL);
-			sqlite3_bind_text(inner_stmt, 1, subject, -1, NULL);
+			sqlite3_bind_text(inner_stmt, 1, description, -1, NULL);
 			sqlite3_bind_int(inner_stmt, 2, id);
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
