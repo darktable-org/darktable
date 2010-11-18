@@ -409,7 +409,7 @@ msgstr "Speicher in Bytes, der für den MIP-Map-Cache benutzt wird"
 
 #: ../darktable.schemas.in.h:38
 msgid "name of capture job"
-msgstr ""
+msgstr "Name des Aufnahme-Jobs"
 
 #: ../darktable.schemas.in.h:39 ../src/gui/preferences_gen.h:491
 msgid "password storage backend to use"
@@ -1194,7 +1194,7 @@ msgstr "Job-Kode"
 
 #: ../src/libs/capture.c:110
 msgid "create"
-msgstr ""
+msgstr "erzeugen"
 
 #: ../src/libs/camera.c:76
 msgid "camera settings"
@@ -1202,11 +1202,11 @@ msgstr "Kameraeinstellungen"
 
 #: ../src/libs/camera.c:119
 msgid "toggle view property in center view"
-msgstr ""
+msgstr "umschalten, ob Einstellung im Hauptbereich angezeigt werden soll"
 
 #: ../src/libs/camera.c:190
 msgid "Connection with camera lost, exiting tethering mode"
-msgstr ""
+msgstr "Verbindung zur Kamera verloren, beende Tethering-Modus"
 
 #: ../src/libs/camera.c:324
 msgid "battery"
@@ -1219,35 +1219,35 @@ msgstr "n/a"
 #. Camera control
 #: ../src/libs/camera.c:393
 msgid "camera control"
-msgstr ""
+msgstr "Kamerasteuerung"
 
 #: ../src/libs/camera.c:397
 msgid "modes"
-msgstr ""
+msgstr "Modus"
 
 #: ../src/libs/camera.c:398
 msgid "timer (s)"
-msgstr ""
+msgstr "Timer (s)"
 
 #: ../src/libs/camera.c:399
 msgid "count"
-msgstr ""
+msgstr "Anzahl"
 
 #: ../src/libs/camera.c:426
 msgid "capture image(s)"
-msgstr ""
+msgstr "Bild(er) aufnehmen"
 
 #: ../src/libs/camera.c:429
 msgid "toggle delayed capture mode"
-msgstr ""
+msgstr "zeitverzögerte Aufnahme umschalten"
 
 #: ../src/libs/camera.c:430
 msgid "toggle sequenced capture mode"
-msgstr ""
+msgstr "Reihenaufnahme umschalten"
 
 #: ../src/libs/camera.c:431
 msgid "the count of seconds before actually doing a capture"
-msgstr ""
+msgstr "Anzahl Sekunden, bevor eine Aufnahme tatsächlich ausgelöst wird"
 
 #: ../src/libs/camera.c:432
 msgid ""
@@ -1255,18 +1255,23 @@ msgid ""
 "you can use this in conjuction with delayed mode to create stop-motion "
 "sequences."
 msgstr ""
+"Anzahl Bilder, die hintereinander gemacht werden sollen,\n"
+"dies kann zusammen mit verzögerte Aufnahme benutzt werden,\n"
+"um Stop-Motion-Sequenzen zu erstellen."
 
 #: ../src/libs/camera.c:443
 msgid "properties"
-msgstr ""
+msgstr "Eigenschaften"
 
+# keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
 #: ../src/libs/camera.c:447
 msgid "program"
-msgstr ""
+msgstr "Programm"
 
+# keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
 #: ../src/libs/camera.c:457
 msgid "focus mode"
-msgstr ""
+msgstr "Fokussierung"
 
 #. focal length
 #: ../src/libs/camera.c:477 ../src/gui/presets.c:293
@@ -1275,7 +1280,7 @@ msgstr "Brennweite"
 
 #: ../src/libs/camera.c:487
 msgid "shutterspeed2"
-msgstr ""
+msgstr "Verschlusszeit2"
 
 #: ../src/libs/camera.c:507
 msgid "wb"
@@ -1292,19 +1297,19 @@ msgstr "Größe"
 #. user specified properties
 #: ../src/libs/camera.c:574
 msgid "additional properties"
-msgstr ""
+msgstr "zusätzliche Eigenschaften"
 
 #: ../src/libs/camera.c:578
 msgid "label"
-msgstr ""
+msgstr "Bezeichnung"
 
 #: ../src/libs/camera.c:584
 msgid "property"
-msgstr ""
+msgstr "Eigenschaft"
 
 #: ../src/libs/camera.c:596
 msgid "add user property"
-msgstr ""
+msgstr "Benutzereinstellung hinzufügen"
 
 #: ../src/libs/styles.c:44
 msgid "styles"
@@ -2135,7 +2140,7 @@ msgstr "Kanten-Median-Durchläufe"
 #: ../src/iop/rawimport.c:489
 msgid ""
 "number of passes an edge-sensitive median filter to differential color planes"
-msgstr ""
+msgstr "Anzahl Durchläufe eines Kanten-Median-Filters zur Farbglättung"
 
 #. GtkCheckButton *amaze_ca_correct;
 #: ../src/iop/rawimport.c:494
@@ -3160,11 +3165,11 @@ msgstr "keine unterstützten Geräte gefunden"
 
 #: ../src/gui/camera_import_dialog.c:216
 msgid "store value as default"
-msgstr ""
+msgstr "als Standard speichern"
 
 #: ../src/gui/camera_import_dialog.c:223
 msgid "reset value to default"
-msgstr ""
+msgstr "auf Standard zurücksetzen"
 
 #: ../src/gui/camera_import_dialog.c:246
 msgid "import images from camera"
@@ -3195,7 +3200,7 @@ msgstr "Vorschau"
 
 #: ../src/gui/camera_import_dialog.c:284
 msgid "storage file"
-msgstr ""
+msgstr "Dateiname"
 
 #. general settings
 #: ../src/gui/camera_import_dialog.c:303
@@ -3276,6 +3281,13 @@ msgid ""
 "used as basedirectory in the above storage structure and when a image are "
 "downloaded from camera it is replicated to found backup destinations."
 msgstr ""
+"Das externe Backup ist eine Option, um automatisch eine Sicherung der "
+"importierten Bilder an einen anderen physikalischen Ort zu machen. Wenn "
+"aktiviert, wird auf eingehängten Dateisystemen nach dem angegebenen Backup-"
+"Verzeichnisnamen gesucht … Jeder gefundene Ordner wird als Basisverzeichnis "
+"der obigen Speicherstruktur benutzt und wenn ein Bild von der Kamera "
+"heruntergeladen wurde, dann wird es in die gefundenen Sicherungsziele "
+"repliziert."
 
 #: ../src/gui/camera_import_dialog.c:362
 msgid "enable backup"
@@ -3333,14 +3345,16 @@ msgstr ""
 #: ../src/gui/camera_import_dialog.c:577
 msgid "please set the basedirectory settings before importing"
 msgstr ""
+"Die Basisverzeichnis-Einstellungen müssen vor dem Importieren gesetzt werden"
 
 #: ../src/gui/camera_import_dialog.c:584
 msgid "please set the subdirectory settings before importing"
 msgstr ""
+"Die Unterverzeichnis-Einstellungen müssen vor dem Importieren gesetzt werden"
 
 #: ../src/gui/camera_import_dialog.c:591
 msgid "please set the filenamepattern settings before importing"
-msgstr ""
+msgstr "Das Dateinamenformat muss vor dem Importieren gesetzt werden"
 
 #: ../src/gui/presets.c:179
 #, c-format
@@ -3563,7 +3577,7 @@ msgstr "Filmstreifen"
 
 #: ../src/views/capture.c:89
 msgid "capture"
-msgstr ""
+msgstr "Aufnahme"
 
 #: ../src/views/capture.c:237
 #, c-format
@@ -3573,7 +3587,7 @@ msgstr "Fehler beim Erstellen des Sitzungs-Pfades %s."
 #: ../src/views/capture.c:251
 #, c-format
 msgid "new session initiated '%s'"
-msgstr ""
+msgstr "neue Sitzung ‚%s‘ gestartet"
 
 #~ msgid "channel"
 #~ msgstr "Kanal"
