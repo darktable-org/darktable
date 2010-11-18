@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-13 19:26+0100\n"
-"PO-Revision-Date: 2010-11-13 19:26+0100\n"
+"POT-Creation-Date: 2010-11-18 22:00+0100\n"
+"PO-Revision-Date: 2010-11-18 22:02+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: <> <>\n"
 "Language: \n"
@@ -138,7 +138,7 @@ msgid "iso"
 msgstr "iso"
 
 #: ../darktable.glade.h:31
-#: ../src/iop/lens.c:1179
+#: ../src/iop/lens.c:1181
 #: ../src/gui/presets.c:243
 msgid "lens"
 msgstr "objektiv"
@@ -680,12 +680,12 @@ msgid "xmp sidecar files"
 msgstr "XMP inställningsfil"
 
 #: ../src/libs/copy_history.c:70
-#: ../src/gui/gtk.c:750
+#: ../src/gui/gtk.c:752
 msgid "all files"
 msgstr "alla filer"
 
 #: ../src/libs/copy_history.c:84
-#: ../src/gui/gtk.c:770
+#: ../src/gui/gtk.c:772
 #, c-format
 msgid "error loading file '%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
@@ -1293,7 +1293,7 @@ msgid "wb"
 msgstr "vb"
 
 #: ../src/libs/camera.c:517
-#: ../src/imageio/format/jpeg.c:634
+#: ../src/imageio/format/jpeg.c:638
 msgid "quality"
 msgstr "kvalitet"
 
@@ -1357,7 +1357,7 @@ msgstr "rotera med 180"
 
 #. -------------------------------------------
 #: ../src/iop/clipping.c:684
-#: ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:772
 msgid "flip"
 msgstr "vänd"
 
@@ -1425,7 +1425,11 @@ msgstr "square"
 msgid "din"
 msgstr "din"
 
-#: ../src/iop/clipping.c:738
+#: ../src/iop/clipping.c:732
+msgid "16:9"
+msgstr "16:9"
+
+#: ../src/iop/clipping.c:739
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -1433,84 +1437,84 @@ msgstr ""
 "ange aspekt förhållande (b:h)\n"
 "tryck ctrl-x för att byta sida"
 
-#: ../src/iop/clipping.c:744
+#: ../src/iop/clipping.c:745
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "byt sida för aspekt förhållande (ctrl-x)"
 
-#: ../src/iop/clipping.c:751
+#: ../src/iop/clipping.c:752
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/clipping.c:754
+#: ../src/iop/clipping.c:755
 msgid "none"
 msgstr "ingen"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:756
 msgid "grid"
 msgstr "grid"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:757
 msgid "rules of thirds"
 msgstr "tredjedelsregeln"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:758
 msgid "diagonal method"
 msgstr "diagonal metod"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:759
 msgid "harmonious triangles"
 msgstr "harmoniska trianglar"
 
-#: ../src/iop/clipping.c:759
+#: ../src/iop/clipping.c:760
 msgid "golden mean"
 msgstr "gyllene snitt"
 
-#: ../src/iop/clipping.c:761
+#: ../src/iop/clipping.c:762
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "med denna inställning kan du visa guider som hjälper dig med komposera ditt fotografi"
 
-#: ../src/iop/clipping.c:765
+#: ../src/iop/clipping.c:766
 msgid "type"
 msgstr "typ"
 
-#: ../src/iop/clipping.c:778
+#: ../src/iop/clipping.c:779
 msgid "flip guides vertically"
 msgstr "vänd guider vertikalt"
 
-#: ../src/iop/clipping.c:779
+#: ../src/iop/clipping.c:780
 msgid "flip guides horizontally"
 msgstr "vänd guider horisontellt"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:782
 msgid "golden sections"
 msgstr "gyllene sektioner"
 
-#: ../src/iop/clipping.c:783
+#: ../src/iop/clipping.c:784
 msgid "enable this option to show golden sections."
 msgstr "klicka för att visa gyllene sektioner"
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:787
 msgid "spiral sections"
 msgstr "spiralsektioner"
 
-#: ../src/iop/clipping.c:787
+#: ../src/iop/clipping.c:788
 msgid "enable this option to show golden spiral sections."
 msgstr "klicka i för att visa gyllene spiral sektioner"
 
-#: ../src/iop/clipping.c:790
+#: ../src/iop/clipping.c:791
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:791
+#: ../src/iop/clipping.c:792
 msgid "enable this option to show a golden spiral guide."
 msgstr "klicka i för att visa gyllene spiral guider"
 
-#: ../src/iop/clipping.c:794
+#: ../src/iop/clipping.c:795
 msgid "golden triangles"
 msgstr "gyllene trianglar"
 
-#: ../src/iop/clipping.c:795
+#: ../src/iop/clipping.c:796
 msgid "enable this option to show golden triangles."
 msgstr "klicka i för att visa gyllene trianglar"
 
@@ -1521,7 +1525,7 @@ msgstr "färgkorregering"
 #: ../src/iop/colorcorrection.c:186
 #: ../src/iop/graduatednd.c:383
 #: ../src/iop/vignette.c:357
-#: ../src/iop/velvia.c:234
+#: ../src/iop/velvia.c:232
 #: ../src/iop/splittoning.c:467
 #: ../src/iop/splittoning.c:499
 #: ../src/iop/channelmixer.c:362
@@ -1647,7 +1651,6 @@ msgid "adjust the exposure correction [ev]"
 msgstr "justera exponeringskompensation [EV]"
 
 #: ../src/iop/exposure.c:333
-#: ../src/iop/lens.c:1230
 msgid "auto"
 msgstr "automatisk"
 
@@ -1827,11 +1830,11 @@ msgstr "blanda färghet (0 är lika med kapning)"
 msgid "blend hue (0 is same as clipping)"
 msgstr "blanda hue (0 är lika med kapning)"
 
-#: ../src/iop/lens.c:42
+#: ../src/iop/lens.c:44
 msgid "lens correction"
 msgstr "objektivkorregering"
 
-#: ../src/iop/lens.c:674
+#: ../src/iop/lens.c:676
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1844,7 +1847,7 @@ msgstr ""
 "montering:\t\t%s\n"
 "beskärningsfaktor:\t%.1f"
 
-#: ../src/iop/lens.c:914
+#: ../src/iop/lens.c:916
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1863,35 +1866,35 @@ msgstr ""
 "typ:\t\t\t\t%s\n"
 "monteringar:\t\t\t%s"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "focal length (mm)"
 msgstr "brännvidd (mm)"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f-number (aperture)"
 msgstr "bländartal"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "distance to subject"
 msgstr "distans till motivet"
 
-#: ../src/iop/lens.c:1165
+#: ../src/iop/lens.c:1167
 msgid "cam"
 msgstr "mamera"
 
-#: ../src/iop/lens.c:1166
+#: ../src/iop/lens.c:1168
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -1899,7 +1902,7 @@ msgstr ""
 "sök efter kamera, formatering:\n"
 "[tillverkare, ][modell]"
 
-#: ../src/iop/lens.c:1181
+#: ../src/iop/lens.c:1183
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -1908,52 +1911,51 @@ msgstr ""
 "[tillverkare, ][modell]"
 
 #. target geometry
-#: ../src/iop/lens.c:1207
+#: ../src/iop/lens.c:1209
 msgid "geometry"
 msgstr "geometrisk"
 
-#: ../src/iop/lens.c:1213
+#: ../src/iop/lens.c:1215
 msgid "target geometry"
 msgstr "målgeometri"
 
-#: ../src/iop/lens.c:1214
+#: ../src/iop/lens.c:1216
 msgid "rectilinear"
 msgstr "rätlinjig"
 
-#: ../src/iop/lens.c:1215
+#: ../src/iop/lens.c:1217
 msgid "fish-eye"
 msgstr "fisköga"
 
-#: ../src/iop/lens.c:1216
+#: ../src/iop/lens.c:1218
 msgid "panoramic"
 msgstr "panoramisk"
 
-#: ../src/iop/lens.c:1217
+#: ../src/iop/lens.c:1219
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-#: ../src/iop/lens.c:1237
+#: ../src/iop/lens.c:1240
 #: ../src/iop/vignette.c:352
 #: ../src/iop/watermark.c:563
 msgid "scale"
 msgstr "skala"
 
 #. reverse direction
-#: ../src/iop/lens.c:1243
+#: ../src/iop/lens.c:1245
 msgid "reverse"
 msgstr "omvänd"
 
-#: ../src/iop/lens.c:1244
+#: ../src/iop/lens.c:1246
 msgid "apply distortions instead of correcting them"
 msgstr "skapa distortion istället för att rätta till dem"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1251
+#: ../src/iop/lens.c:1253
 msgid "tca r"
 msgstr "tca r"
 
-#: ../src/iop/lens.c:1254
+#: ../src/iop/lens.c:1255
 msgid "tca b"
 msgstr "tca b"
 
@@ -2169,12 +2171,12 @@ msgstr "åtlös återimportering av raw bilder"
 
 #: ../src/iop/sharpen.c:269
 #: ../src/iop/bilateral.cc:282
-#: ../src/iop/clahe.c:383
+#: ../src/iop/clahe.c:385
 msgid "radius"
 msgstr "radie"
 
 #: ../src/iop/sharpen.c:271
-#: ../src/iop/clahe.c:385
+#: ../src/iop/clahe.c:387
 msgid "amount"
 msgstr "mängd"
 
@@ -2394,14 +2396,18 @@ msgid "kodak easyshare like"
 msgstr "kodak easyshare liknande"
 
 #: ../src/iop/basecurve.c:58
+msgid "konica minolta like"
+msgstr "konica minolta liknande"
+
+#: ../src/iop/basecurve.c:59
 msgid "fotogenetic (point & shoot)"
 msgstr "fotogenetic (point & shoot)"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:60
 msgid "fotogenetic (ev3)"
 msgstr "fotogenetic (ev3)"
 
-#: ../src/iop/basecurve.c:120
+#: ../src/iop/basecurve.c:123
 msgid "base curve"
 msgstr "baskurva"
 
@@ -2519,23 +2525,23 @@ msgstr "inverterar effekten av övergång, övergång till svart är standardvä
 msgid "velvia"
 msgstr "velvia"
 
-#: ../src/iop/velvia.c:235
+#: ../src/iop/velvia.c:233
 msgid "vibrance"
 msgstr "lyster"
 
-#: ../src/iop/velvia.c:236
+#: ../src/iop/velvia.c:234
 msgid "mid-tones bias"
 msgstr "mellanton bias"
 
-#: ../src/iop/velvia.c:251
+#: ../src/iop/velvia.c:249
 msgid "the amount of saturation to apply"
 msgstr "mängd av färg att applicera"
 
-#: ../src/iop/velvia.c:252
+#: ../src/iop/velvia.c:250
 msgid "the vibrance amount"
 msgstr "lyster mängd"
 
-#: ../src/iop/velvia.c:253
+#: ../src/iop/velvia.c:251
 msgid "how much to spare highlights and shadows"
 msgstr "färgmängd som ska appliceras på högdagrar och skuggor"
 
@@ -2611,7 +2617,7 @@ msgstr "styrkan av applicerat brus"
 
 #: ../src/iop/bilateral.cc:70
 msgid "denoise (slow)"
-msgstr "reducera brus (mycket)"
+msgstr "reducera brus (långsam)"
 
 #: ../src/iop/bilateral.cc:299
 msgid "spatial extent of the gaussian"
@@ -2636,13 +2642,13 @@ msgstr "korrigera ingående profil"
 
 #: ../src/iop/clahe.c:67
 msgid "local contrast (slow)"
-msgstr "lokal kontrast"
+msgstr "lokal kontrast (långsam)"
 
-#: ../src/iop/clahe.c:394
+#: ../src/iop/clahe.c:396
 msgid "size of features to preserve"
 msgstr "storlek av detaljer att bevara"
 
-#: ../src/iop/clahe.c:395
+#: ../src/iop/clahe.c:397
 msgid "strength of the effect"
 msgstr "sluttningen påverkar effektens styrka"
 
@@ -2797,7 +2803,7 @@ msgstr "skalning av vattenstämpel"
 msgid "zone system"
 msgstr "zon system"
 
-#: ../src/imageio/format/jpeg.c:614
+#: ../src/imageio/format/jpeg.c:618
 msgid "8-bit jpeg"
 msgstr "8-bit jpeg"
 
@@ -2872,12 +2878,12 @@ msgstr ""
 "$(HOME_FOLDER) - hemkatalog\n"
 "$(DESKTOP_FOLDER) - skrivbordet"
 
-#: ../src/imageio/storage/disk.c:177
+#: ../src/imageio/storage/disk.c:184
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "kan inte skapa katalog %s!"
 
-#: ../src/imageio/storage/disk.c:212
+#: ../src/imageio/storage/disk.c:219
 #: ../src/imageio/storage/email.c:109
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -2985,51 +2991,51 @@ msgstr "* nätverkande, testning, översättnings expert *"
 msgid "* contributors *"
 msgstr "* bidragsgivare *"
 
-#: ../src/gui/gtk.c:441
+#: ../src/gui/gtk.c:443
 msgid "translator-credits"
 msgstr "översättare"
 
-#: ../src/gui/gtk.c:655
+#: ../src/gui/gtk.c:657
 msgid "import film"
 msgstr "importera filmrulle"
 
-#: ../src/gui/gtk.c:674
+#: ../src/gui/gtk.c:676
 msgid "import directories recursively"
 msgstr "rekursiv importering av kataloger"
 
-#: ../src/gui/gtk.c:675
+#: ../src/gui/gtk.c:677
 msgid "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "rekursiv importering av underkataloger. vardera katalog skapar en filmrulle."
 
-#: ../src/gui/gtk.c:682
+#: ../src/gui/gtk.c:684
 msgid "ignore jpeg files"
 msgstr "ignorera jpeg bilder"
 
-#: ../src/gui/gtk.c:683
+#: ../src/gui/gtk.c:685
 msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
 msgstr "importerar inte bilder med filändelse .jpg eller .jpeg. detta är användbart om du har raw+jpeg bilder i katalogerna."
 
-#: ../src/gui/gtk.c:726
+#: ../src/gui/gtk.c:728
 msgid "import image"
 msgstr "importera bild"
 
-#: ../src/gui/gtk.c:745
+#: ../src/gui/gtk.c:747
 msgid "supported images"
 msgstr "supporterade bilder"
 
-#: ../src/gui/gtk.c:1074
+#: ../src/gui/gtk.c:1076
 msgid "show global preferences"
 msgstr "visa globala inställningar"
 
-#: ../src/gui/gtk.c:1202
+#: ../src/gui/gtk.c:1204
 msgid "take snapshot"
 msgstr "skapa avbild"
 
-#: ../src/gui/gtk.c:1231
+#: ../src/gui/gtk.c:1233
 msgid "recently used film rolls"
 msgstr "tidigare använda filmrullar"
 
-#: ../src/gui/gtk.c:1252
+#: ../src/gui/gtk.c:1254
 msgid "all film rolls"
 msgstr "alla filmrullar"
 
