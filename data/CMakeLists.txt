@@ -7,7 +7,7 @@ add_subdirectory(kernels)
 #
 # Generate and instal gtkrc
 #
-set(DTGTKRC_FONT_SIZE 8)
+set(GTKRC_FONT_SIZE 8)
 if(APPLE)
 	# 8 is very tiny on mac
 	set(GTKRC_FONT_SIZE 11)
