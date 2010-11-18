@@ -88,7 +88,7 @@ fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboo
 static void
 update(dt_lib_module_t *user_data, gboolean early_bark_out)
 {
-// 	early_bark_out = FALSE; // FIXME: unneeded overhead. but otherwise it will not update on ctrl+a/ctrl+shift+a
+// 	early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but otherwise it's impossible to edit text
 	dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 	dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
 	int imgsel = -1;
@@ -203,7 +203,6 @@ reset_button_clicked (GtkButton *button, gpointer user_data)
 	update(user_data, FALSE);
 }
 
-//TODO
 static void
 apply_button_clicked (GtkButton *button, gpointer user_data)
 {
@@ -226,33 +225,37 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 		int inner_rc;
 		int id = sqlite3_column_int(stmt, 0);
 
-		if(creator != NULL && creator[0] != '\0' && (d->multi_creator == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->creator)) > 0)){
+		if(creator != NULL && (d->multi_creator == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->creator)) > 0)){
 			inner_rc = sqlite3_prepare_v2(darktable.db, "delete from meta_data where id = ?1 and key = ?2", -1, &inner_stmt, NULL);
 			sqlite3_bind_int(inner_stmt, 1, id);
 			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_CREATOR);
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
 
-			inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
-			sqlite3_bind_int(inner_stmt, 1, id);
-			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_CREATOR);
-			sqlite3_bind_text(inner_stmt, 3, creator, -1, NULL);
-			sqlite3_step(inner_stmt);
-			sqlite3_finalize(inner_stmt);
+			if(creator[0] != '\0'){
+				inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
+				sqlite3_bind_int(inner_stmt, 1, id);
+				sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_CREATOR);
+				sqlite3_bind_text(inner_stmt, 3, creator, -1, NULL);
+				sqlite3_step(inner_stmt);
+				sqlite3_finalize(inner_stmt);
+			}
 		}
-		if(publisher != NULL && publisher[0] != '\0' && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) > 0)){
+		if(publisher != NULL && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) > 0)){
 			inner_rc = sqlite3_prepare_v2(darktable.db, "delete from meta_data where id = ?1 and key = ?2", -1, &inner_stmt, NULL);
 			sqlite3_bind_int(inner_stmt, 1, id);
 			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
 
-			inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
-			sqlite3_bind_int(inner_stmt, 1, id);
-			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
-			sqlite3_bind_text(inner_stmt, 3, publisher, -1, NULL);
-			sqlite3_step(inner_stmt);
-			sqlite3_finalize(inner_stmt);
+			if(publisher[0] != '\0'){
+				inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
+				sqlite3_bind_int(inner_stmt, 1, id);
+				sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
+				sqlite3_bind_text(inner_stmt, 3, publisher, -1, NULL);
+				sqlite3_step(inner_stmt);
+				sqlite3_finalize(inner_stmt);
+			}
 		}
 		if(d->multi_title == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->title)) > 0){
 			inner_rc = sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &inner_stmt, NULL);
@@ -467,23 +470,81 @@ get_params (dt_lib_module_t *self, int *size)
 	return params;
 }
 
-//TODO: use the values instead of printing them.
 int
 set_params (dt_lib_module_t *self, const void *params, int size)
 {
-	g_print("set_params\n");
-
-// 	dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
-	const char *buf = (const char* )params;
-	const char *title = buf; buf += strlen(title) + 1;
-	const char *subject = buf; buf += strlen(subject) + 1;
-	const char *license = buf; buf += strlen(license) + 1;
-	const char *creator = buf; buf += strlen(creator) + 1;
-	const char *publisher = buf; buf += strlen(publisher) + 1;
-
-	g_print("title: %s\nsubject: %s\nlicense: %s\ncreator: %s\npublisher: %s\n\n", title, subject, license, creator, publisher);
+	char *buf = (char* )params;
+	char *title = buf; buf += strlen(title) + 1;
+	char *subject = buf; buf += strlen(subject) + 1;
+	char *license = buf; buf += strlen(license) + 1;
+	char *creator = buf; buf += strlen(creator) + 1;
+	char *publisher = buf; buf += strlen(publisher) + 1;
 
 	if(size != strlen(title) + strlen(subject) + strlen(license) + strlen(creator) + strlen(publisher) + 5) return 1;
+
+	int rc;
+	sqlite3_stmt *stmt;
+
+	rc = sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+
+	while(sqlite3_step(stmt) == SQLITE_ROW){
+		sqlite3_stmt *inner_stmt;
+		int inner_rc;
+		int id = sqlite3_column_int(stmt, 0);
+
+		if(creator != NULL && creator[0] != '\0'){
+			inner_rc = sqlite3_prepare_v2(darktable.db, "delete from meta_data where id = ?1 and key = ?2", -1, &inner_stmt, NULL);
+			sqlite3_bind_int(inner_stmt, 1, id);
+			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_CREATOR);
+			sqlite3_step(inner_stmt);
+			sqlite3_finalize(inner_stmt);
+
+			inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
+			sqlite3_bind_int(inner_stmt, 1, id);
+			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_CREATOR);
+			sqlite3_bind_text(inner_stmt, 3, creator, -1, NULL);
+			sqlite3_step(inner_stmt);
+			sqlite3_finalize(inner_stmt);
+		}
+		if(publisher != NULL && publisher[0] != '\0'){
+			inner_rc = sqlite3_prepare_v2(darktable.db, "delete from meta_data where id = ?1 and key = ?2", -1, &inner_stmt, NULL);
+			sqlite3_bind_int(inner_stmt, 1, id);
+			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
+			sqlite3_step(inner_stmt);
+			sqlite3_finalize(inner_stmt);
+
+			inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
+			sqlite3_bind_int(inner_stmt, 1, id);
+			sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
+			sqlite3_bind_text(inner_stmt, 3, publisher, -1, NULL);
+			sqlite3_step(inner_stmt);
+			sqlite3_finalize(inner_stmt);
+		}
+		if(title != NULL && title[0] != '\0'){
+			inner_rc = sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &inner_stmt, NULL);
+			sqlite3_bind_text(inner_stmt, 1, title, -1, NULL);
+			sqlite3_bind_int(inner_stmt, 2, id);
+			sqlite3_step(inner_stmt);
+			sqlite3_finalize(inner_stmt);
+		}
+		if(subject != NULL && subject[0] != '\0'){
+			inner_rc = sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &inner_stmt, NULL);
+			sqlite3_bind_text(inner_stmt, 1, subject, -1, NULL);
+			sqlite3_bind_int(inner_stmt, 2, id);
+			sqlite3_step(inner_stmt);
+			sqlite3_finalize(inner_stmt);
+		}
+		if(license != NULL && license[0] != '\0'){
+			inner_rc = sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &inner_stmt, NULL);
+			sqlite3_bind_text(inner_stmt, 1, license, -1, NULL);
+			sqlite3_bind_int(inner_stmt, 2, id);
+			sqlite3_step(inner_stmt);
+			sqlite3_finalize(inner_stmt);
+		}
+
+	}
+	rc = sqlite3_finalize(stmt);
+
+	update(self, FALSE);
 	return 0;
 }
