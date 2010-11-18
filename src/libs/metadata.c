@@ -15,6 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/*
+
+TODO:
+	- put writing of the meta data into its own function.
+
+*/
+
 #include "common/darktable.h"
 #include "common/tags.h"
 #include "control/control.h"
@@ -57,6 +65,9 @@ uint32_t views()
 static void
 fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboolean *multi){
 	GList *iter;
+
+	// FIXME: use gtk_combo_box_text_remove_all() in future (gtk 3.0)
+	// https://bugzilla.gnome.org/show_bug.cgi?id=324899
 	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(*box))));
 
 	// FIXME: how to make a nice empty combo box without the append/remove?
@@ -197,9 +208,35 @@ expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 	return FALSE;
 }
 
+//TODO
 static void
-reset_button_clicked (GtkButton *button, gpointer user_data)
+clear_button_clicked (GtkButton *button, gpointer user_data)
 {
+	// 	dt_lib_metadata_t *d   = (dt_lib_metadata_t *)self->data;
+
+	int rc;
+	sqlite3_stmt *stmt;
+
+	rc = sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+
+	while(sqlite3_step(stmt) == SQLITE_ROW){
+		sqlite3_stmt *inner_stmt;
+		int inner_rc;
+		int id = sqlite3_column_int(stmt, 0);
+
+		inner_rc = sqlite3_prepare_v2(darktable.db, "delete from meta_data where id = ?1", -1, &inner_stmt, NULL);
+		sqlite3_bind_int(inner_stmt, 1, id);
+		sqlite3_step(inner_stmt);
+		sqlite3_finalize(inner_stmt);
+
+		//FIXME
+		inner_rc = sqlite3_prepare_v2(darktable.db, "update images set caption = \"\", description = \"\", license = \"\" where id = ?1", -1, &inner_stmt, NULL);
+		sqlite3_bind_int(inner_stmt, 1, id);
+		sqlite3_step(inner_stmt);
+		sqlite3_finalize(inner_stmt);
+	}
+	rc = sqlite3_finalize(stmt);
+
 	update(user_data, FALSE);
 }
 
@@ -299,16 +336,7 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 void
 gui_reset (dt_lib_module_t *self)
 {
-	if(!dt_control_running()) return;
-	dt_lib_metadata_t *d   = (dt_lib_metadata_t *)self->data;
-	// clear the combo boxes
-	// FIXME: use gtk_combo_box_text_remove_all() in future (gtk 3.0)
-	// https://bugzilla.gnome.org/show_bug.cgi?id=324899
-	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(d->title))));
-	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(d->subject))));
-	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(d->creator))));
-	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(d->publisher))));
-	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(d->license))));
+	update(self, FALSE);
 }
 
 int
@@ -403,11 +431,11 @@ gui_init (dt_lib_module_t *self)
 	// reset/apply buttons
 	hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 	
-	button = gtk_button_new_with_label(_("reset"));
-	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset this form to current meta data values"), (char *)NULL);
+	button = gtk_button_new_with_label(_("clear"));
+	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("remove meta data from selected images"), (char *)NULL);
 	gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 	g_signal_connect(G_OBJECT (button), "clicked",
-					G_CALLBACK (reset_button_clicked), (gpointer)self);
+					G_CALLBACK (clear_button_clicked), (gpointer)self);
 
 	button = gtk_button_new_with_label(_("apply"));
 	gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write meta data to selected images"), (char *)NULL);
