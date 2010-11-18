@@ -588,7 +588,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     }
     else
     {
-      sqlite3_prepare_v2(darktable.db, "update images set license='' description='' caption='' where id=?1", -1, &stmt, NULL);
+      sqlite3_prepare_v2(darktable.db, "update images set license='', description='', caption='' where id=?1", -1, &stmt, NULL);
       sqlite3_bind_int(stmt, 1, img->id);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
