@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.6+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-06 20:55+0000\n"
-"PO-Revision-Date: 2010-11-06 20:56+0100\n"
+"POT-Creation-Date: 2010-11-18 20:20+0000\n"
+"PO-Revision-Date: 2010-11-18 20:21+0100\n"
 "Last-Translator: Michał Prędotka <mpredotka@gmail.com>\n"
 "Language-Team: Polish < >\n"
 "Language: \n"
@@ -135,7 +135,7 @@ msgid "iso"
 msgstr "iso"
 
 #: ../darktable.glade.h:31
-#: ../src/iop/lens.c:1179
+#: ../src/iop/lens.c:1181
 #: ../src/gui/presets.c:243
 msgid "lens"
 msgstr "obiektyw"
@@ -247,10 +247,12 @@ msgid "Default client to use, this overrides detection of default client."
 msgstr "Używany domyślny klient, nadpisuje to wykrywanie domyślnego klienta."
 
 #: ../darktable.schemas.in.h:6
+#: ../src/gui/preferences_gen.h:322
 msgid "always ask the user before any image file is deleted."
 msgstr "zawsze pytaj użytkownika przed usuwaniem obrazów z dysku."
 
 #: ../darktable.schemas.in.h:7
+#: ../src/gui/preferences_gen.h:306
 msgid "always ask the user before any image is removed from db."
 msgstr "zawsze pytaj użytkownika przed usuwaniem obrazów z bazy danych."
 
@@ -261,48 +263,51 @@ msgstr "dołączanie lub zastępowanie historii po wklejeniu"
 #: ../darktable.schemas.in.h:9
 #: ../src/gui/preferences_gen.h:360
 msgid "ask before deleting a tag"
-msgstr "pytaj przed usunięciem etykiety"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:10
 #: ../src/gui/preferences_gen.h:311
 msgid "ask before deleting images"
-msgstr "pytaj przed usunięciem obrazów z dysku"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:11
 #: ../src/gui/preferences_gen.h:295
 msgid "ask before removing images"
-msgstr "pytaj przed usunięciem obrazów"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:12
+#: ../src/gui/preferences_gen.h:436
 msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
 msgstr "tworzy kopię zapasową plików pamięci podręcznej aby zapobiec utracie miniatur podczas awarii programu itd. (wymagany restart)."
 
 #: ../darktable.schemas.in.h:13
 #: ../src/gui/preferences_gen.h:393
 msgid "database file"
-msgstr "plik bazy danych"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:14
 #: ../src/gui/preferences_gen.h:279
 msgid "don't use embedded preview jpeg, always use half-size raw"
-msgstr "nie używaj wbudowanego podglądu jpeg, zawsze używaj półwymiarowego pliku raw"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:15
 #: ../src/gui/preferences_gen.h:327
 msgid "downsample the preview pixels"
-msgstr "skalowanie pikseli podglądu"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:16
 #: ../src/gui/preferences_gen.h:344
 msgid "enable filmstrip in darkroom mode"
-msgstr "widoczna rolka filmu w trybie ciemnia"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:17
 #: ../src/gui/preferences_gen.h:246
 msgid "filename of your custom theme in share/darktable/"
-msgstr "nazwa pliku osobistego motywu w share/darktable/"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:18
+#: ../src/gui/preferences_gen.h:404
+#: ../src/gui/preferences_gen.h:420
 msgid "filename relative to your home directory, or starting with a slash (needs a restart)."
 msgstr "nazwa pliku związana z katalogiem domowym, lub zaczynająca się od ukośnika (wymagany restart)."
 
@@ -321,7 +326,7 @@ msgstr "oznacz jeśli użytkownik ma być ostrzegany o nieobecności katalogu do
 #: ../darktable.schemas.in.h:22
 #: ../src/gui/preferences_gen.h:458
 msgid "full resolution image buffers to keep in main memory cache"
-msgstr "bufor obrazu o pełnej rozdzielczości przechowywany w pamięci podręcznej"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:23
 msgid "height of the exported image"
@@ -332,6 +337,7 @@ msgid "height of the exported image, or 0 if no scaling should be done."
 msgstr "wysokość eksportowanego obrazu, lub 0 jeśli brak potrzeby skalowania."
 
 #: ../darktable.schemas.in.h:25
+#: ../src/gui/preferences_gen.h:470
 msgid "how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode). be warned: every thread will need about 1GB of memory (needs a restart)."
 msgstr "maksymalna liczba buforów zmiennoprzecinkowych o pełnej rozdzielczości wczytanych obrazów raw przechowywanych w pamięci głównej. ustawienie wartości zmiennej na więcej niż 1 pozwala na skorzystanie z wielowątkowości przy eksportowaniu. uwaga: każdy wątek będzie potrzebował około 1GB pamięci (wymagany restart)."
 
@@ -366,12 +372,12 @@ msgstr "ignorowanie obrazów jpeg podczas importowania rolek filmów."
 #: ../darktable.schemas.in.h:33
 #: ../src/gui/preferences_gen.h:409
 msgid "image cache file"
-msgstr "plik pamięci podręcznej obrazu"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:34
 #: ../src/gui/preferences_gen.h:425
 msgid "image cache file backup"
-msgstr "plik zapasowy pamięci podręcznej obrazu"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:35
 msgid "jobcode of import job"
@@ -384,7 +390,7 @@ msgstr "jakość miniatur jpeg na dysku"
 #: ../darktable.schemas.in.h:37
 #: ../src/gui/preferences_gen.h:441
 msgid "memory in bytes to use for mipmap cache"
-msgstr "liczba bajtów pamięci podręcznej do mipmappingu"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:38
 msgid "name of capture job"
@@ -393,7 +399,7 @@ msgstr "nazwa zadania robienia zdjęć"
 #: ../darktable.schemas.in.h:39
 #: ../src/gui/preferences_gen.h:491
 msgid "password storage backend to use"
-msgstr "używany mechanizm przechowywania haseł"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:40
 msgid "path of storage for captured images"
@@ -414,7 +420,7 @@ msgstr "wybór ustawienia trybu stół podświetlany: 0 - z możliwością powi�
 #: ../darktable.schemas.in.h:44
 #: ../src/gui/preferences_gen.h:262
 msgid "size of the side panels in pixels"
-msgstr "rozmiar bocznych paneli w pikselach"
+msgstr "test"
 
 #: ../darktable.schemas.in.h:45
 msgid "small thumbnails to keep in main memory cache"
@@ -429,10 +435,12 @@ msgid "the name of backup directory to search for on mounted medias"
 msgstr "nazwa katalogu kopii zapasowej, która należy wyszukać na zamontowanych nośnikach"
 
 #: ../darktable.schemas.in.h:48
+#: ../src/gui/preferences_gen.h:503
 msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 msgstr "mechanizm przechowywania haseł: 0 - brak, 1 - gconf (nie zalecane), 2 - kwallet, 3 - gnome keyring"
 
 #: ../darktable.schemas.in.h:49
+#: ../src/gui/preferences_gen.h:486
 msgid "these files can later be re-imported into a different database, preserving your changes to the image."
 msgstr "te pliki mogą być później zaimportowane ponownie do innej bazy danych, pozwoli to na zachowanie zmian w obrazach."
 
@@ -441,6 +449,7 @@ msgid "this overrides the per-image settings, if not set to `image'."
 msgstr "jeśli nie ustawione na `image', nadpisuje ustawienia dla pojedynczych obrazów."
 
 #: ../darktable.schemas.in.h:51
+#: ../src/gui/preferences_gen.h:339
 msgid "this value smaller than 1.0 downsamples the preview pixels for faster feedback."
 msgstr "wartość mniejsza niż 1,0 skaluje podgląd pikseli dla polepszenia szybkości działania."
 
@@ -467,7 +476,7 @@ msgstr "szerokość eksportowanego obrazu, lub 0 jeśli brak potrzeby skalowania
 #: ../darktable.schemas.in.h:57
 #: ../src/gui/preferences_gen.h:475
 msgid "write a redundant sidecar file for each image"
-msgstr "dopisuj nadmiarowy plik dla każdego obrazu"
+msgstr "test"
 
 #. single images
 #: ../src/common/image.c:98
@@ -676,12 +685,12 @@ msgid "xmp sidecar files"
 msgstr "poboczne pliki xmp"
 
 #: ../src/libs/copy_history.c:70
-#: ../src/gui/gtk.c:733
+#: ../src/gui/gtk.c:752
 msgid "all files"
 msgstr "wszystkie pliki"
 
 #: ../src/libs/copy_history.c:84
-#: ../src/gui/gtk.c:753
+#: ../src/gui/gtk.c:772
 #, c-format
 msgid "error loading file '%s'"
 msgstr "błąd przy wczytywaniu pliku '%s'"
@@ -1292,7 +1301,7 @@ msgid "wb"
 msgstr "balans bieli"
 
 #: ../src/libs/camera.c:517
-#: ../src/imageio/format/jpeg.c:634
+#: ../src/imageio/format/jpeg.c:638
 msgid "quality"
 msgstr "jakość"
 
@@ -1356,7 +1365,7 @@ msgstr "obrót o 180"
 
 #. -------------------------------------------
 #: ../src/iop/clipping.c:684
-#: ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:772
 msgid "flip"
 msgstr "odbij"
 
@@ -1424,7 +1433,11 @@ msgstr "kwadrat"
 msgid "din"
 msgstr "din"
 
-#: ../src/iop/clipping.c:738
+#: ../src/iop/clipping.c:732
+msgid "16:9"
+msgstr "16:9"
+
+#: ../src/iop/clipping.c:739
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -1432,84 +1445,84 @@ msgstr ""
 "ustawienie proporcji (szerokość:wysokość)\n"
 "ctrl-x aby zamienić strony"
 
-#: ../src/iop/clipping.c:744
+#: ../src/iop/clipping.c:745
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "zamień stosunek proporcji (ctrl-x)"
 
-#: ../src/iop/clipping.c:751
+#: ../src/iop/clipping.c:752
 msgid "guides"
 msgstr "prowadnice"
 
-#: ../src/iop/clipping.c:754
+#: ../src/iop/clipping.c:755
 msgid "none"
 msgstr "bez prowadnic"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:756
 msgid "grid"
 msgstr "siatka"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:757
 msgid "rules of thirds"
 msgstr "jedna trzecia"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:758
 msgid "diagonal method"
 msgstr "metoda przekątniowa"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:759
 msgid "harmonious triangles"
 msgstr "trójkąty harmoniczne"
 
-#: ../src/iop/clipping.c:759
+#: ../src/iop/clipping.c:760
 msgid "golden mean"
 msgstr "złoty podział"
 
-#: ../src/iop/clipping.c:761
+#: ../src/iop/clipping.c:762
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "linie prowadnic pomagające w kompozycji obrazu"
 
-#: ../src/iop/clipping.c:765
+#: ../src/iop/clipping.c:766
 msgid "type"
 msgstr "rodzaj"
 
-#: ../src/iop/clipping.c:778
+#: ../src/iop/clipping.c:779
 msgid "flip guides vertically"
 msgstr "odbij prowadnice pionowo"
 
-#: ../src/iop/clipping.c:779
+#: ../src/iop/clipping.c:780
 msgid "flip guides horizontally"
 msgstr "odbij prowadnice poziomo"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:782
 msgid "golden sections"
 msgstr "złote części"
 
-#: ../src/iop/clipping.c:783
+#: ../src/iop/clipping.c:784
 msgid "enable this option to show golden sections."
 msgstr "włączenie tej opcji pozwala na wyświetlenie złotych części."
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:787
 msgid "spiral sections"
 msgstr "części spirali"
 
-#: ../src/iop/clipping.c:787
+#: ../src/iop/clipping.c:788
 msgid "enable this option to show golden spiral sections."
 msgstr "włączenie tej opcji pozwala na wyświetlenie części spirali."
 
-#: ../src/iop/clipping.c:790
+#: ../src/iop/clipping.c:791
 msgid "golden spiral"
 msgstr "złota spirala"
 
-#: ../src/iop/clipping.c:791
+#: ../src/iop/clipping.c:792
 msgid "enable this option to show a golden spiral guide."
 msgstr "włączenie tej opcji pozwala na wyświetlenie złotej spirali."
 
-#: ../src/iop/clipping.c:794
+#: ../src/iop/clipping.c:795
 msgid "golden triangles"
 msgstr "złote trójkąty"
 
-#: ../src/iop/clipping.c:795
+#: ../src/iop/clipping.c:796
 msgid "enable this option to show golden triangles."
 msgstr "włączenie tej opcji pozwala na wyświetlenie złotych trójkątów."
 
@@ -1520,7 +1533,7 @@ msgstr "korekcja koloru"
 #: ../src/iop/colorcorrection.c:186
 #: ../src/iop/graduatednd.c:383
 #: ../src/iop/vignette.c:357
-#: ../src/iop/velvia.c:234
+#: ../src/iop/velvia.c:232
 #: ../src/iop/splittoning.c:467
 #: ../src/iop/splittoning.c:499
 #: ../src/iop/channelmixer.c:362
@@ -1646,7 +1659,6 @@ msgid "adjust the exposure correction [ev]"
 msgstr "ustawienie korekcji ekspozycji [ev]"
 
 #: ../src/iop/exposure.c:333
-#: ../src/iop/lens.c:1230
 msgid "auto"
 msgstr "auto"
 
@@ -1824,11 +1836,11 @@ msgstr "mieszanie saturacji (0 równe jest przycinaniu)"
 msgid "blend hue (0 is same as clipping)"
 msgstr "mieszanie odcienia (0 równe jest przycinaniu)"
 
-#: ../src/iop/lens.c:42
+#: ../src/iop/lens.c:44
 msgid "lens correction"
 msgstr "korekcja obiektywu"
 
-#: ../src/iop/lens.c:674
+#: ../src/iop/lens.c:676
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1841,7 +1853,7 @@ msgstr ""
 "mocowanie:\t\t%s\n"
 "mnożnik ogniskowej:\t%.1f"
 
-#: ../src/iop/lens.c:914
+#: ../src/iop/lens.c:916
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1860,35 +1872,35 @@ msgstr ""
 "typ:\t\t%s\n"
 "mocowania:\t\t%s"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "focal length (mm)"
 msgstr "długość ogniskowej (mm)"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f-number (aperture)"
 msgstr "liczba przysłony"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "distance to subject"
 msgstr "odległość do fotografowanego obiektu"
 
-#: ../src/iop/lens.c:1165
+#: ../src/iop/lens.c:1167
 msgid "cam"
 msgstr "aparat"
 
-#: ../src/iop/lens.c:1166
+#: ../src/iop/lens.c:1168
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -1896,7 +1908,7 @@ msgstr ""
 "wyszukaj aparat używając wzoru\n"
 "o formacie: [producent, ][model]"
 
-#: ../src/iop/lens.c:1181
+#: ../src/iop/lens.c:1183
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -1905,52 +1917,51 @@ msgstr ""
 "o formacie: [producent, ][model]"
 
 #. target geometry
-#: ../src/iop/lens.c:1207
+#: ../src/iop/lens.c:1209
 msgid "geometry"
 msgstr "geometria"
 
-#: ../src/iop/lens.c:1213
+#: ../src/iop/lens.c:1215
 msgid "target geometry"
 msgstr "geometria docelowa"
 
-#: ../src/iop/lens.c:1214
+#: ../src/iop/lens.c:1216
 msgid "rectilinear"
 msgstr "prostoliniowa"
 
-#: ../src/iop/lens.c:1215
+#: ../src/iop/lens.c:1217
 msgid "fish-eye"
 msgstr "rybie oko"
 
-#: ../src/iop/lens.c:1216
+#: ../src/iop/lens.c:1218
 msgid "panoramic"
 msgstr "panoramiczna"
 
-#: ../src/iop/lens.c:1217
+#: ../src/iop/lens.c:1219
 msgid "equirectangular"
 msgstr "cylindryczna"
 
-#. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-#: ../src/iop/lens.c:1237
+#: ../src/iop/lens.c:1240
 #: ../src/iop/vignette.c:352
 #: ../src/iop/watermark.c:563
 msgid "scale"
 msgstr "skala"
 
 #. reverse direction
-#: ../src/iop/lens.c:1243
+#: ../src/iop/lens.c:1245
 msgid "reverse"
 msgstr "odwróć"
 
-#: ../src/iop/lens.c:1244
+#: ../src/iop/lens.c:1246
 msgid "apply distortions instead of correcting them"
 msgstr "zastosuj zniekształcenie zamiast korekcji"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1251
+#: ../src/iop/lens.c:1253
 msgid "tca r"
 msgstr "tca r"
 
-#: ../src/iop/lens.c:1254
+#: ../src/iop/lens.c:1255
 msgid "tca b"
 msgstr "tca b"
 
@@ -2166,12 +2177,12 @@ msgstr "uruchamia ponowne zaimportowanie obrazu raw"
 
 #: ../src/iop/sharpen.c:269
 #: ../src/iop/bilateral.cc:282
-#: ../src/iop/clahe.c:383
+#: ../src/iop/clahe.c:385
 msgid "radius"
 msgstr "promień"
 
 #: ../src/iop/sharpen.c:271
-#: ../src/iop/clahe.c:385
+#: ../src/iop/clahe.c:387
 msgid "amount"
 msgstr "ilość"
 
@@ -2391,14 +2402,18 @@ msgid "kodak easyshare like"
 msgstr "jak w kodaku easyshare"
 
 #: ../src/iop/basecurve.c:58
+msgid "konica minolta like"
+msgstr "jak w konica minolta"
+
+#: ../src/iop/basecurve.c:59
 msgid "fotogenetic (point & shoot)"
 msgstr "fotogeniczna (aparaty kompaktowe)"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:60
 msgid "fotogenetic (ev3)"
 msgstr "fotogeniczna (ev3)"
 
-#: ../src/iop/basecurve.c:120
+#: ../src/iop/basecurve.c:123
 msgid "base curve"
 msgstr "krzywa bazowa"
 
@@ -2517,23 +2532,23 @@ msgstr "odwraca efekt zanikania, domyślnie jest ciemne zanikanie..."
 msgid "velvia"
 msgstr "velvia"
 
-#: ../src/iop/velvia.c:235
+#: ../src/iop/velvia.c:233
 msgid "vibrance"
 msgstr "ożywienie"
 
-#: ../src/iop/velvia.c:236
+#: ../src/iop/velvia.c:234
 msgid "mid-tones bias"
 msgstr "przewaga tonów średnich"
 
-#: ../src/iop/velvia.c:251
+#: ../src/iop/velvia.c:249
 msgid "the amount of saturation to apply"
 msgstr "ilość nasycenia do zastosowania"
 
-#: ../src/iop/velvia.c:252
+#: ../src/iop/velvia.c:250
 msgid "the vibrance amount"
 msgstr "ilość ożywienia"
 
-#: ../src/iop/velvia.c:253
+#: ../src/iop/velvia.c:251
 msgid "how much to spare highlights and shadows"
 msgstr "ilość pozostawionych świateł i cieni"
 
@@ -2636,11 +2651,11 @@ msgstr "ustalony profil wejściowy"
 msgid "local contrast (slow)"
 msgstr "kontrast miejscowy (powolny)"
 
-#: ../src/iop/clahe.c:394
+#: ../src/iop/clahe.c:396
 msgid "size of features to preserve"
 msgstr "rozmiar szczegółów do zachowania"
 
-#: ../src/iop/clahe.c:395
+#: ../src/iop/clahe.c:397
 msgid "strength of the effect"
 msgstr "siła efektu"
 
@@ -2795,7 +2810,7 @@ msgstr "skala znaku wodnego"
 msgid "zone system"
 msgstr "system stref"
 
-#: ../src/imageio/format/jpeg.c:614
+#: ../src/imageio/format/jpeg.c:618
 msgid "8-bit jpeg"
 msgstr "8-bit jpeg"
 
@@ -2870,12 +2885,12 @@ msgstr ""
 "$(HOME_FOLDER) - katalog domowy\n"
 "$(DESKTOP_FOLDER) - pulpit"
 
-#: ../src/imageio/storage/disk.c:174
+#: ../src/imageio/storage/disk.c:184
 #, c-format
-msgid "could not create directory %s!"
-msgstr "nie można utworzyć katalogu %s!"
+msgid "could not create directory `%s'!"
+msgstr "nie można utworzyć katalogu `%s'!"
 
-#: ../src/imageio/storage/disk.c:208
+#: ../src/imageio/storage/disk.c:219
 #: ../src/imageio/storage/email.c:109
 #, c-format
 msgid "%d/%d exported to `%s%s'"
@@ -2983,51 +2998,51 @@ msgstr "* sieć, intensywne testy, ekspert tłumaczeń *"
 msgid "* contributors *"
 msgstr "* współpracownicy *"
 
-#: ../src/gui/gtk.c:426
+#: ../src/gui/gtk.c:443
 msgid "translator-credits"
 msgstr "Michał Prędotka <mpredotka@gmail.com>"
 
-#: ../src/gui/gtk.c:638
+#: ../src/gui/gtk.c:657
 msgid "import film"
 msgstr "importuj rolkę filmu"
 
-#: ../src/gui/gtk.c:657
+#: ../src/gui/gtk.c:676
 msgid "import directories recursively"
 msgstr "rekurencyjnie importuj katalogi"
 
-#: ../src/gui/gtk.c:658
+#: ../src/gui/gtk.c:677
 msgid "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "rekurencyjne importowanie podkatalogów. każdy katalog trafia do nowej rolki filmu."
 
-#: ../src/gui/gtk.c:665
+#: ../src/gui/gtk.c:684
 msgid "ignore jpeg files"
 msgstr "pomijaj pliki jpeg"
 
-#: ../src/gui/gtk.c:666
+#: ../src/gui/gtk.c:685
 msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
 msgstr "bez wczytywania plików z rozszerzeniem .jpg lub .jpeg. może być pomocne kiedy w katalogu znajdują się pliki raw+jpeg"
 
-#: ../src/gui/gtk.c:709
+#: ../src/gui/gtk.c:728
 msgid "import image"
 msgstr "importuj obraz"
 
-#: ../src/gui/gtk.c:728
+#: ../src/gui/gtk.c:747
 msgid "supported images"
 msgstr "obsługiwane obrazy"
 
-#: ../src/gui/gtk.c:1057
+#: ../src/gui/gtk.c:1076
 msgid "show global preferences"
 msgstr "wyświetl ustawienia ogólne"
 
-#: ../src/gui/gtk.c:1185
+#: ../src/gui/gtk.c:1204
 msgid "take snapshot"
 msgstr "pobierz migawkę"
 
-#: ../src/gui/gtk.c:1214
+#: ../src/gui/gtk.c:1233
 msgid "recently used film rolls"
 msgstr "ostatnio używane rolki filmu"
 
-#: ../src/gui/gtk.c:1235
+#: ../src/gui/gtk.c:1254
 msgid "all film rolls"
 msgstr "wszystkie rolki filmu"
 
@@ -3068,7 +3083,7 @@ msgstr "skompresuj historię"
 msgid "create a minimal history stack which produces the same image"
 msgstr "minimalizuje historię zachowując ten sam obraz"
 
-#: ../src/gui/iop_history.c:106
+#: ../src/gui/iop_history.c:107
 msgid "create a style from currently developed image and its history stack"
 msgstr "utwórz styl na podstawie historii obecnie przetwarzanego obrazu"
 
@@ -3434,6 +3449,15 @@ msgstr "opcje interfejsu"
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "kliknij dwukrotnie aby zresetować do `%s'"
+
+#: ../src/gui/preferences_gen.h:257
+#: ../src/gui/preferences_gen.h:453
+msgid " (needs a restart) "
+msgstr "(wymagany restart)"
+
+#: ../src/gui/preferences_gen.h:274
+msgid " (needs a restart)"
+msgstr "(wymagany restart)"
 
 #: ../src/gui/preferences_gen.h:391
 msgid "core options"
