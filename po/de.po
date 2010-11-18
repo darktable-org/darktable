@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-17 23:16+0100\n"
+"POT-Creation-Date: 2010-11-18 12:02+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -2107,7 +2107,7 @@ msgstr "keine"
 
 #: ../src/iop/rawimport.c:475
 msgid "luma+chroma"
-msgstr "Luminanz+Chrominanz"
+msgstr "Lum.+Chrom."
 
 #: ../src/iop/rawimport.c:476
 msgid ""
