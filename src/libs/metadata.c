@@ -151,7 +151,7 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	}
 	while(sqlite3_step(stmt) == SQLITE_ROW){
 		char *value = (char*)sqlite3_column_text(stmt, 0);
-		if(value[0] != '\0'){
+		if(value != NULL && value[0] != '\0'){
 			title_count++;
 			title = g_list_append(title, g_strdup(value));
 		}
@@ -168,7 +168,7 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	}
 	while(sqlite3_step(stmt) == SQLITE_ROW){
 		char *value = (char*)sqlite3_column_text(stmt, 0);
-		if(value[0] != '\0'){
+		if(value != NULL && value[0] != '\0'){
 			subject_count++;
 			subject = g_list_append(subject, g_strdup(value));
 		}
@@ -185,7 +185,7 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	}
 	while(sqlite3_step(stmt) == SQLITE_ROW){
 		char *value = (char*)sqlite3_column_text(stmt, 0);
-		if(value[0] != '\0'){
+		if(value != NULL && value[0] != '\0'){
 			license_count++;
 			license = g_list_append(license, g_strdup(value));
 		}
@@ -269,7 +269,7 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
 
-			if(creator[0] != '\0'){
+			if(creator != NULL && creator[0] != '\0'){
 				inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
 				sqlite3_bind_int(inner_stmt, 1, id);
 				sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_CREATOR);
@@ -285,7 +285,7 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 			sqlite3_step(inner_stmt);
 			sqlite3_finalize(inner_stmt);
 
-			if(publisher[0] != '\0'){
+			if(publisher != NULL && publisher[0] != '\0'){
 				inner_rc = sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &inner_stmt, NULL);
 				sqlite3_bind_int(inner_stmt, 1, id);
 				sqlite3_bind_int(inner_stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
