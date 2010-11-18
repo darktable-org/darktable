@@ -518,36 +518,21 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     sqlite3_stmt *stmt;
 
     Exiv2::XmpData::iterator pos;
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
+    int version = 0;
+    if((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.xmp_version"))) != xmpData.end() )
     {
-      // license
-      const char *license = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 2, img->id);
-      sqlite3_bind_text(stmt, 1, license, strlen(license), SQLITE_TRANSIENT);
+      version = pos->toLong();
+    }
+
+    // older darktable version did not write this data correctly:
+    if(version == 0)
+    {
+      sqlite3_prepare_v2(darktable.db, "update images set license='', description='', caption='' where id=?1", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 1, img->id);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
     }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
-    {
-      // description
-      const char *descr = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 2, img->id);
-      sqlite3_bind_text(stmt, 1, descr, strlen(descr), SQLITE_TRANSIENT);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
-    {
-      // caption
-      const char *cap = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 2, img->id);
-      sqlite3_bind_text(stmt, 1, cap, strlen(cap), SQLITE_TRANSIENT);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
+
     int stars = 1;
     int raw_params = -16711632;
     int set = 0;
@@ -727,6 +712,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 // write xmp sidecar file:
 int dt_exif_xmp_write (const int imgid, const char* filename)
 {
+  const int xmp_version = 1;
   // refuse to write sidecar for non-existent image:
   char imgfname[1024];
   snprintf(imgfname, 1024, "%s", filename);
@@ -759,6 +745,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
     pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
+    xmpData["Xmp.darktable.xmp_version"] = xmp_version;
     xmpData["Xmp.darktable.raw_params"] = raw_params;
 
     // get tags from db, store in dublin core
