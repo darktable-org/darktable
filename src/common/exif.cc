@@ -517,6 +517,12 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
     sqlite3_stmt *stmt;
 
+    // get rid of old meta data
+    sqlite3_prepare_v2(darktable.db, "delete from meta_data where imgid = ?1", -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1, img->id);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
     Exiv2::XmpData::iterator pos;
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
     {
@@ -548,6 +554,29 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
     }
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
+    {
+      // creator
+      const char *creator = pos->toString().c_str();
+      sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 1, img->id);
+      sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_CREATOR);
+      sqlite3_bind_text(stmt, 3, creator, strlen(creator), SQLITE_TRANSIENT);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
+    {
+      // publisher
+      const char *publisher = pos->toString().c_str();
+      sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
+      sqlite3_bind_int(stmt, 1, img->id);
+      sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
+      sqlite3_bind_text(stmt, 3, publisher, strlen(publisher), SQLITE_TRANSIENT);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+
     int stars = 1;
     int raw_params = -16711632;
     int set = 0;
@@ -753,6 +782,22 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     sqlite3_finalize(stmt);
     xmpData["Xmp.xmp.Rating"] = (stars & 0x7) - 1; // normally stars go from -1 .. 5 or so.
 
+    // the extra meta data
+    sqlite3_prepare_v2(darktable.db, "select id, key, value from meta_data where id = ?1", -1, &stmt, NULL);
+    sqlite3_bind_int (stmt, 1, imgid);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+		int key = sqlite3_column_int(stmt, 1);
+		switch(key){
+			case DT_IMAGE_METADATA_CREATOR:
+				xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 2);
+				break;
+			case DT_IMAGE_METADATA_PUBLISHER:
+				xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 2);
+				break;
+		}
+    }
+    sqlite3_finalize(stmt);
 
     // exiv2 is not really thread safe:
     pthread_mutex_lock(&darktable.plugin_threadsafe);
