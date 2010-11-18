@@ -228,11 +228,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* create the rsvghandle from parsed svg data */
   GError *error = NULL;
   RsvgHandle *svg = rsvg_handle_new_from_data ((const guint8 *)svgdoc,strlen (svgdoc),&error);
-  if (error) {    
+  g_free (svgdoc);
+  if (!svg || error) {    
     memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
-  g_free (svgdoc);
     
   /* get the dimension of svg */
   RsvgDimensionData dimension;

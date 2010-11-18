@@ -187,7 +187,7 @@ int dt_image_cache_read(dt_image_cache_t *cache)
   pthread_mutex_lock(&(cache->mutex));
   char cachedir[1024];
   char dbfilename[1024];
-  dt_get_user_config_dir (cachedir,1024);
+  dt_get_user_cache_dir (cachedir,1024);
   gchar *filename = dt_conf_get_string ("cachefile");
   if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", cachedir, DT_IMAGE_CACHE_FILE_NAME);
   else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
@@ -334,7 +334,7 @@ static void _image_cache_restore()
 {
   char cachedir[1024];
   char dbfilename[1024];
-  dt_get_user_config_dir(cachedir,1024);
+  dt_get_user_cache_dir(cachedir,1024);
   gchar *filename = dt_conf_get_string ("cachefile");
   
   if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", cachedir,DT_IMAGE_CACHE_FILE_NAME);
