@@ -93,7 +93,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   out = (float *)ovoid;
   if(data->saturation <= 0.0)
   {
-    memcpy(in, out, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
   }
   else
   {
