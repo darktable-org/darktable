@@ -524,55 +524,72 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     sqlite3_finalize(stmt);
 
     Exiv2::XmpData::iterator pos;
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
+    int version = 0;
+    if((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.xmp_version"))) != xmpData.end() )
     {
-      // license
-      const char *license = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 2, img->id);
-      sqlite3_bind_text(stmt, 1, license, strlen(license), SQLITE_TRANSIENT);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      version = pos->toLong();
     }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
+
+    // older darktable version did not write this data correctly:
+    if(version > 0)
     {
-      // description
-      const char *descr = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 2, img->id);
-      sqlite3_bind_text(stmt, 1, descr, strlen(descr), SQLITE_TRANSIENT);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
+      {
+        // license
+        const char *license = pos->toString().c_str();
+        sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &stmt, NULL);
+        sqlite3_bind_int(stmt, 2, img->id);
+        sqlite3_bind_text(stmt, 1, license, strlen(license), SQLITE_TRANSIENT);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
+      {
+        // description
+        const char *descr = pos->toString().c_str();
+        sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &stmt, NULL);
+        sqlite3_bind_int(stmt, 2, img->id);
+        sqlite3_bind_text(stmt, 1, descr, strlen(descr), SQLITE_TRANSIENT);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
+      {
+        // caption
+        const char *cap = pos->toString().c_str();
+        sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
+        sqlite3_bind_int(stmt, 2, img->id);
+        sqlite3_bind_text(stmt, 1, cap, strlen(cap), SQLITE_TRANSIENT);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
+      {
+        // creator
+        const char *creator = pos->toString().c_str();
+        sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
+        sqlite3_bind_int(stmt, 1, img->id);
+        sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_CREATOR);
+        sqlite3_bind_text(stmt, 3, creator, strlen(creator), SQLITE_TRANSIENT);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+      if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
+      {
+        // publisher
+        const char *publisher = pos->toString().c_str();
+        sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
+        sqlite3_bind_int(stmt, 1, img->id);
+        sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
+        sqlite3_bind_text(stmt, 3, publisher, strlen(publisher), SQLITE_TRANSIENT);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
     }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
+    else
     {
-      // caption
-      const char *cap = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 2, img->id);
-      sqlite3_bind_text(stmt, 1, cap, strlen(cap), SQLITE_TRANSIENT);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
-    {
-      // creator
-      const char *creator = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
+      sqlite3_prepare_v2(darktable.db, "update images set license='' description='' caption='' where id=?1", -1, &stmt, NULL);
       sqlite3_bind_int(stmt, 1, img->id);
-      sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_CREATOR);
-      sqlite3_bind_text(stmt, 3, creator, strlen(creator), SQLITE_TRANSIENT);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-    }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
-    {
-      // publisher
-      const char *publisher = pos->toString().c_str();
-      sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 1, img->id);
-      sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
-      sqlite3_bind_text(stmt, 3, publisher, strlen(publisher), SQLITE_TRANSIENT);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
     }
@@ -756,6 +773,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 // write xmp sidecar file:
 int dt_exif_xmp_write (const int imgid, const char* filename)
 {
+  const int xmp_version = 1;
   // refuse to write sidecar for non-existent image:
   char imgfname[1024];
   snprintf(imgfname, 1024, "%s", filename);
@@ -804,6 +822,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
     pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
+    xmpData["Xmp.darktable.xmp_version"] = xmp_version;
     xmpData["Xmp.darktable.raw_params"] = raw_params;
 
     // get tags from db, store in dublin core
