@@ -221,7 +221,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 failure:
 #if 1
   sqlite3_reset(stmt);
-  sqlite3_clear_bindings(stmt);
+  // not actually needed...
+  //sqlite3_clear_bindings(stmt);
   const int prefetchrows = .5*max_rows+1;
   sqlite3_bind_int (stmt, 1, offset + max_rows*iir);
   sqlite3_bind_int (stmt, 2, prefetchrows*iir);
