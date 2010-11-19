@@ -42,6 +42,19 @@ if(UNIX)
 	if(NOT LSB_DISTRIB)
 		set(LSB_DISTRIB "unix")
 	endif(NOT LSB_DISTRIB)
+	
+	
+	
+	
+	if("${LSB_DISTRIB}" MATCHES "Fedora|Mandriva")
+		make_directory(${CMAKE_BINARY_DIR}/packaging/rpm)
+		set(CPACK_GENERATOR "RPM")
+		set(CPACK_RPM_PACKAGE_ARCHITECTURE ${CPACK_PACKAGE_ARCHITECTURE})
+		set(CPACK_RPM_PACKAGE_RELEASE "1")
+		
+	endif("${LSB_DISTRIB}" MATCHES "Fedora|Mandriva")
+	
+	
 	# For Debian-based distros we want to create DEB packages.
 	if("${LSB_DISTRIB}" MATCHES "Ubuntu|Debian")
 		
