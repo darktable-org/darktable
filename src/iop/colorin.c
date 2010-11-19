@@ -174,7 +174,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         cmat[i][k] = raw->color.rgb_cam[i][k];
       }
       d->input = dt_colorspaces_create_cmatrix_profile(cmat);
-      printf("created input profile :%lX\n", (long int)d->input);
     }
     libraw_close(raw);
   }
@@ -207,7 +206,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     for(int t=0;t<num_threads;t++)
     {
       d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-      printf("create xform[%d] %lX \n", t, (long int)d->xform[t]);
     }
   else
   {
