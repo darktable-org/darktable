@@ -1,6 +1,12 @@
 0.7 release:
 
 
+mipf and full pipes:
+- order of plugins to include demosaic?
+- downsample when?
+- mipf just a sideproduct of full pipe?
+- exposure.. highlight in floatx1, branch for mipf?
+
 - mipf black bug: race condition when mipf is written
   (see debug control.svg: preview process earlier as load raw?)
 

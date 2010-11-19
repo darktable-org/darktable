@@ -444,7 +444,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(module->process_cl)
     {
       // TODO: get in/out cl_mem, if available!
-      module->process_cl(module, piece, input, *output, &roi_in, roi_out);
+      module->process_cl(module, piece, input, *output, &roi_in, roi_out, NULL, NULL);
     }
     else
 #endif
