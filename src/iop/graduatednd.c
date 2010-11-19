@@ -184,7 +184,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       
       float length=pv.y/filter_radie;
 #if 1
-      float compression = data->compression/100.0;
+      float compression = (data->compression/100.0)*0.9;
       length/=1.0-(0.5+(compression/2.0));
       float density = ( 1.0 / exp2f (data->density * CLIP( ((1.0+length)/2.0)) ) );
 #else
