@@ -294,7 +294,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   cairo_translate (cr,data->xoffset*iw,data->yoffset*ih);
     
   /* render svg into surface*/
+  pthread_mutex_lock(&darktable.plugin_threadsafe);
   rsvg_handle_render_cairo (svg,cr);
+  pthread_mutex_unlock(&darktable.plugin_threadsafe);
     
   /* ensure that all operations on surface finishing up */
   cairo_surface_flush (surface);
