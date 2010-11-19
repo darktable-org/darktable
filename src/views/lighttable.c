@@ -287,7 +287,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
 
   const gchar *query = dt_collection_get_query (darktable.collection);
-  if(!query && query[0] == '\0') return;
+  if(!query || query[0] == '\0') return;
   
   if     (track == 0);
   else if(track >  1)  zoom_y += ht;
