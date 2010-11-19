@@ -31,6 +31,7 @@
 #include "dtgtk/slider.h"
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
+#include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -560,27 +561,20 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_set_row_spacings(GTK_TABLE(table),2);
   gtk_table_set_col_spacings(GTK_TABLE(table),8);
   
-  g->label1 = GTK_LABEL(gtk_label_new(_("marker")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("opacity")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("scale")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("alignment")));
-  g->label5 = GTK_LABEL(gtk_label_new(_("x offset")));
-  g->label6 = GTK_LABEL(gtk_label_new(_("y offset")));
-  
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label6), 0.0, 0.5);
+  GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char)*64);
+  GtkWidget *label2 = dtgtk_reset_label_new(_("opacity"), self, &p->opacity, sizeof(float));
+  GtkWidget *label3 = dtgtk_reset_label_new(_("scale"), self, &p->scale, sizeof(float));
+  GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
+  GtkWidget *label5 = dtgtk_reset_label_new(_("x offset"), self, &p->xoffset, sizeof(float));
+  GtkWidget *label6 = dtgtk_reset_label_new(_("y offset"), self, &p->yoffset, sizeof(float));
   
   // Add labels to the table
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label1), 0,1,0,1,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label2), 0,1,1,2,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label3), 0,1,2,3,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label4), 0,1,3,4,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label5), 0,1,4,5,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->label6), 0,1,5,6,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label1), 0,1,0,1,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label2), 0,1,1,2,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label3), 0,1,2,3,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label4), 0,1,3,4,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label5), 0,1,4,5,GTK_FILL,0,0,0);
+  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label6), 0,1,5,6,GTK_FILL,0,0,0);
   
   // Add the marker combobox 
   GtkWidget *hbox= GTK_WIDGET(gtk_hbox_new(FALSE, 0));
