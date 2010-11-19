@@ -483,7 +483,6 @@ gui_init (dt_lib_module_t *self)
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
-  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
@@ -493,7 +492,9 @@ gui_init (dt_lib_module_t *self)
       if(tmpprof)
       {
         dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
-        strcpy(prof->name, cmsTakeProductDesc(tmpprof));
+        char name[1024];
+        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
+        strcpy(prof->name, name);
         strcpy(prof->filename, d_name);
         prof->pos = ++pos;
         cmsCloseProfile(tmpprof);

@@ -20,6 +20,7 @@
 #include <tiffio.h>
 #include <inttypes.h>
 #include <strings.h>
+#include <assert.h>
 #include "imageio.h"
 #include "imageio_tiff.h"
 #include "common/darktable.h"

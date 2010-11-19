@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <lcms.h>
+#include <lcms2.h>
 #include "iop/colorout.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -39,7 +39,7 @@ build_srgb_gamma(void)
 cmsHPROFILE
 dt_colorspaces_create_lab_profile()
 {
-  return cmsCreateLabProfile(cmsD50_xyY());
+  return cmsCreateLab4Profile(cmsD50_xyY());
 }
 
 cmsHPROFILE
@@ -54,19 +54,20 @@ dt_colorspaces_create_srgb_profile()
   cmsToneCurve *Gamma22[3];
   cmsHPROFILE  hsRGB;
  
-  cmsWhitePointFromTemp(6504, &D65);
+  cmsWhitePointFromTemp(&D65, 6504.0);
   Gamma22[0] = Gamma22[1] = Gamma22[2] = build_srgb_gamma();
            
   hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma22);
   cmsFreeToneCurve(Gamma22[0]);
   if (hsRGB == NULL) return NULL;
       
-  cmsAddTag(hsRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(hsRGB, icSigDeviceModelDescTag,    (LPVOID) "sRGB");
+  cmsWriteRawTag(hsRGB, cmsSigDeviceMfgDescTag,   "(dt internal)", sizeof("(dt internal"));
+  cmsWriteRawTag(hsRGB, cmsSigDeviceModelDescTag, "sRGB", sizeof("sRGB"));
+
 
   // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsAddTag(hsRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable sRGB");
-        
+  cmsWriteRawTag(hsRGB, cmsSigProfileDescriptionTag,   "Darktable sRGB", sizeof("Darktable sRGB"));
+ 
   return hsRGB;
 }
 
@@ -95,18 +96,18 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsToneCurve *Gamma22[3];
   cmsHPROFILE  hAdobeRGB;
 
-  cmsWhitePointFromTemp(6504, &D65);
+  cmsWhitePointFromTemp(&D65, 6504.0);
   Gamma22[0] = Gamma22[1] = Gamma22[2] = build_adobergb_gamma();
 
   hAdobeRGB = cmsCreateRGBProfile(&D65, &AdobePrimaries, Gamma22);
   cmsFreeToneCurve(Gamma22[0]);
   if (hAdobeRGB == NULL) return NULL;
 
-  cmsAddTag(hAdobeRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(hAdobeRGB, icSigDeviceModelDescTag,    (LPVOID) "AdobeRGB");
+  cmsWriteRawTag(hAdobeRGB, cmsSigDeviceMfgDescTag,   "(dt internal)", sizeof("(dt internal)"));
+  cmsWriteRawTag(hAdobeRGB, cmsSigDeviceModelDescTag, "AdobeRGB", sizeof("AdobeRGB"));
 
   // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsAddTag(hAdobeRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable AdobeRGB");
+  cmsWriteRawTag(hAdobeRGB, cmsSigProfileDescriptionTag, "Darktable AdobeRGB", sizeof("Darktable AdobeRGB"));
 
   return hAdobeRGB;
 }
@@ -157,9 +158,9 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
       
   char name[512];
   snprintf(name, 512, "Darktable profiled %s", makermodel);
-  cmsAddTag(hp, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(hp, icSigDeviceModelDescTag,    (LPVOID) name);
-  cmsAddTag(hp, icSigProfileDescriptionTag, (LPVOID) name);
+  cmsWriteRawTag(hp, cmsSigDeviceMfgDescTag,      "(dt internal)", sizeof("(dt internal)"));
+  cmsWriteRawTag(hp, cmsSigDeviceModelDescTag,    name, strlen(name));
+  cmsWriteRawTag(hp, cmsSigProfileDescriptionTag, name, strlen(name));
 
   return hp;
 }
@@ -169,18 +170,17 @@ dt_colorspaces_create_xyz_profile(void)
 {
   cmsHPROFILE hXYZ = cmsCreateXYZProfile();
   // revert some settings which prevent us from using XYZ as output profile:
-  cmsSetDeviceClass(hXYZ,      icSigDisplayClass);
-  cmsSetColorSpace(hXYZ,       icSigRgbData);
-  cmsSetPCS(hXYZ,              icSigXYZData);
-  cmsSetRenderingIntent(hXYZ,  INTENT_PERCEPTUAL);
+  cmsSetDeviceClass(hXYZ,            cmsSigDisplayClass);
+  cmsSetColorSpace(hXYZ,             cmsSigRgbData);
+  cmsSetPCS(hXYZ,                    cmsSigXYZData);
+  cmsSetHeaderRenderingIntent(hXYZ,  INTENT_PERCEPTUAL);
 
   if (hXYZ == NULL) return NULL;
       
-  cmsAddTag(hXYZ, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(hXYZ, icSigDeviceModelDescTag,    (LPVOID) "linear XYZ");
-
+  cmsWriteRawTag(hXYZ, cmsSigDeviceMfgDescTag,      "(dt internal)", sizeof("(dt internal)"));
+  cmsWriteRawTag(hXYZ, cmsSigDeviceModelDescTag,    "linear XYZ", sizeof("linear XYZ"));
   // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsAddTag(hXYZ, icSigProfileDescriptionTag, (LPVOID) "Darktable linear XYZ");
+  cmsWriteRawTag(hXYZ, cmsSigProfileDescriptionTag, "Darktable linear XYZ", sizeof("Darktable linear XYZ"));
         
   return hXYZ;
 }
@@ -194,21 +194,21 @@ dt_colorspaces_create_linear_rgb_profile(void)
                                    {0.3000, 0.6000, 1.0},
                                    {0.1500, 0.0600, 1.0}
                                    };
-  LPGAMMATABLE Gamma[3];
+  cmsToneCurve *Gamma[3];
   cmsHPROFILE  hsRGB;
  
-  cmsWhitePointFromTemp(6504, &D65);
+  cmsWhitePointFromTemp(&D65, 6504.0);
   Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
            
   hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma);
-  cmsFreeGamma(Gamma[0]);
+  cmsFreeToneCurve(Gamma[0]);
   if (hsRGB == NULL) return NULL;
       
-  cmsAddTag(hsRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(hsRGB, icSigDeviceModelDescTag,    (LPVOID) "linear rgb");
+  cmsWriteRawTag(hsRGB, cmsSigDeviceMfgDescTag,   "(dt internal)", sizeof("(dt internal"));
+  cmsWriteRawTag(hsRGB, cmsSigDeviceModelDescTag, "linear rgb", sizeof("linear rgb"));
 
   // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsAddTag(hsRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable linear RGB");
+  cmsWriteRawTag(hsRGB, cmsSigProfileDescriptionTag, "Darktable linear RGB", sizeof("Darktable linear RGB"));
         
   return hsRGB;
 }
@@ -223,21 +223,21 @@ dt_colorspaces_create_linear_infrared_profile(void)
                                    {0.3000, 0.6000, 1.0},
                                    {0.6400, 0.3300, 1.0}
                                    };
-  LPGAMMATABLE Gamma[3];
+  cmsToneCurve *Gamma[3];
   cmsHPROFILE  hsRGB;
  
-  cmsWhitePointFromTemp(6504, &D65);
+  cmsWhitePointFromTemp(&D65, 6504.0);
   Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
            
   hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma);
-  cmsFreeGamma(Gamma[0]);
+  cmsFreeToneCurve(Gamma[0]);
   if (hsRGB == NULL) return NULL;
-      
-  cmsAddTag(hsRGB, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(hsRGB, icSigDeviceModelDescTag,    (LPVOID) "linear infrared bgr");
+
+  cmsWriteRawTag(hsRGB, cmsSigDeviceMfgDescTag,     "(dt internal)", sizeof("(dt internal)"));
+  cmsWriteRawTag(hsRGB, cmsSigDeviceModelDescTag,   "linear infrared bgr", sizeof("linear infrared bgr"));
 
   // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsAddTag(hsRGB, icSigProfileDescriptionTag, (LPVOID) "Darktable Linear Infrared BGR");
+  cmsWriteRawTag(hsRGB, cmsSigProfileDescriptionTag, "Darktable Linear Infrared BGR", sizeof("Darktable Linear Infrared BGR"));
         
   return hsRGB;
 }
@@ -322,19 +322,19 @@ dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4])
     {x[1], y[1], 1.0},
     {x[2], y[2], 1.0}
     };
-  LPGAMMATABLE linear[3];
   cmsHPROFILE  cmat;
 
-  cmsWhitePointFromTemp(6504, &D65);
-  linear[0] = linear[1] = linear[2] = build_linear_gamma();
+  cmsWhitePointFromTemp(&D65, 6504.0);
 
-  cmat = cmsCreateRGBProfile(&D65, &CameraPrimaries, linear);
-  cmsFreeGamma(linear[0]);
+  cmsToneCurve *Gamma[3];
+  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+  cmat = cmsCreateRGBProfile(&D65, &CameraPrimaries, Gamma);
   if (cmat == NULL) return NULL;
+  cmsFreeToneCurve(Gamma[0]);
 
-  cmsAddTag(cmat, icSigDeviceMfgDescTag,      (LPVOID) "(dt internal)");
-  cmsAddTag(cmat, icSigDeviceModelDescTag,    (LPVOID) "color matrix built-in");
-  cmsAddTag(cmat, icSigProfileDescriptionTag, (LPVOID) "color matrix built-in");
+  cmsWriteRawTag(cmat, cmsSigDeviceMfgDescTag,      "(dt internal)", sizeof("(dt internal)"));
+  cmsWriteRawTag(cmat, cmsSigDeviceModelDescTag,    "color matrix built-in", sizeof("color matrix bulit-in"));
+  cmsWriteRawTag(cmat, cmsSigProfileDescriptionTag, "color matrix built-in", sizeof("color matrix bulit-in"));
 
   return cmat;
 }
@@ -344,3 +344,4 @@ dt_colorspaces_cleanup_profile(cmsHPROFILE p)
 {
   cmsCloseProfile(p);
 }
+

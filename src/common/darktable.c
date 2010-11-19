@@ -101,7 +101,6 @@ int dt_init(int argc, char *argv[])
 #endif
   // thread-safe init:
   dt_exif_init();
-  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
   char datadir[1024];
   dt_get_user_config_dir (datadir,1024);
   char filename[1024];

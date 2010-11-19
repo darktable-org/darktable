@@ -140,13 +140,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     const int t = dt_get_thread_num();
-    double rgb[3];
-    cmsCIELab Lab;
-    Lab.L = in[ch*k+0];
-    Lab.a = in[ch*k+1]*Lab.L*(1.0/100.0);
-    Lab.b = in[ch*k+2]*Lab.L*(1.0/100.0);
+    float rgb[3];
+    float Lab[3];
+    Lab[0] = in[ch*k+0];
+    Lab[1] = in[ch*k+1]*Lab[0]*(1.0/100.0);
+    Lab[2] = in[ch*k+2]*Lab[0]*(1.0/100.0);
     // lcms is not thread safe, so use local copy
-    cmsDoTransform(d->xform[t], &Lab, rgb, 1);
+    cmsDoTransform(d->xform[t], Lab, rgb, 1);
     for(int c=0;c<3;c++) out[ch*k + c] = rgb[c];
   }
 }
@@ -199,8 +199,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
   }
   else
   {
@@ -230,8 +230,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->displayintent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
   }
   // user selected a non-supported output profile, check that:
   if(!d->xform[0])
@@ -239,8 +239,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     if(d->output) dt_colorspaces_cleanup_profile(d->output);
     d->output = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->output, TYPE_RGB_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
   }
 #endif
   g_free(overprofile);
@@ -379,7 +379,6 @@ void gui_init(struct dt_iop_module_t *self)
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
-  (void)cmsErrorAction(LCMS_ERROR_IGNORE);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
@@ -389,7 +388,9 @@ void gui_init(struct dt_iop_module_t *self)
       if(tmpprof)
       {
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-        strcpy(prof->name, cmsTakeProductDesc(tmpprof));
+        char name[1024];
+        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
+        strcpy(prof->name, name);
         strcpy(prof->filename, d_name);
         prof->pos = ++pos;
         cmsCloseProfile(tmpprof);

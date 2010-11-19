@@ -23,7 +23,6 @@
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 
-#include <lcms.h>
 #include <strings.h>
 #include <assert.h>
 #include <math.h>

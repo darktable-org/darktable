@@ -82,14 +82,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
+
   // with the critical section around lcms, this is slower than monothread, even on dual cores.
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    double cam[3] = {0., 0., 0.};
-    cmsCIELab Lab;
+    float cam[3] = {0., 0., 0.};
+    float Lab[3];
     for(int c=0;c<3;c++) cam[c] = in[ch*k + c];
 #if 1
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
@@ -109,17 +110,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     // lcms is not thread safe, so work on one copy for each thread :(
-    cmsDoTransform(d->xform[dt_get_thread_num()], cam, &Lab, 1);
-    out[ch*k + 0] = Lab.L;
-    if(Lab.L > 0)
+    cmsDoTransform(d->xform[dt_get_thread_num()], cam, Lab, 1);
+    out[ch*k + 0] = Lab[0];
+    if(Lab[0] > 0)
     {
-      out[ch*k + 1] = 100.0*Lab.a/Lab.L;
-      out[ch*k + 2] = 100.0*Lab.b/Lab.L;
+      out[ch*k + 1] = 100.0*Lab[1]/Lab[0];
+      out[ch*k + 2] = 100.0*Lab[2]/Lab[0];
     }
     else
     {
-      out[ch*k + 1] = Lab.a;
-      out[ch*k + 2] = Lab.b;
+      out[ch*k + 1] = Lab[1];
+      out[ch*k + 2] = Lab[2];
     }
   }
 }
@@ -173,6 +174,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         cmat[i][k] = raw->color.rgb_cam[i][k];
       }
       d->input = dt_colorspaces_create_cmatrix_profile(cmat);
+      printf("created input profile :%lX\n", (long int)d->input);
     }
     libraw_close(raw);
   }
@@ -202,7 +204,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
   if(d->input)
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++)
+    {
+      d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      printf("create xform[%d] %lX \n", t, (long int)d->xform[t]);
+    }
   else
   {
     if(strcmp(p->iccprofile, "sRGB"))
@@ -210,7 +216,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->input = dt_colorspaces_create_linear_rgb_profile();
     }
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_DBL, d->Lab, TYPE_Lab_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
   }
   // user selected a non-supported output profile, check that:
   if(!d->xform[0])
@@ -218,7 +224,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_DBL, d->input, TYPE_Lab_DBL, p->intent, 0);
+    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
@@ -374,8 +380,6 @@ void gui_init(struct dt_iop_module_t *self)
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
-  // (void)cmsErrorAction(LCMS_ERROR_IGNORE);
-  // (void)cmsErrorAction(LCMS_ERROR_SHOW);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
@@ -386,14 +390,9 @@ void gui_init(struct dt_iop_module_t *self)
       if(tmpprof)
       {
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-        strcpy(prof->name, cmsTakeProductDesc(tmpprof));
-        // FIXME:
-//         cmsUInt32Number cmsGetProfileInfo(cmsHPROFILE hProfile,
-// cmsInfoType Info,
-// const char LanguageCode[3],
-// const char CountryCode[3],
-// wchar_t* Buffer,
-// cmsUInt32Number BufferSize);
+        char name[1024];
+        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
+        strcpy(prof->name, name);
 
         strcpy(prof->filename, d_name);
         cmsCloseProfile(tmpprof);

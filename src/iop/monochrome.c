@@ -22,7 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include <lcms.h>
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif

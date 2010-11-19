@@ -49,15 +49,15 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
 {
   // Fetch colorprofile into buffer if wanted
   uint8_t *profile = NULL;
-  size_t profile_len = 0;
+  uint32_t profile_len = 0;
   if(imgid > 0)
   {
     cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
-    _cmsSaveProfileToMem(out_profile, 0, &profile_len);
+    cmsSaveProfileToMem(out_profile, 0, &profile_len);
     if (profile_len > 0)
     {
       profile=malloc(profile_len);
-      _cmsSaveProfileToMem(out_profile, profile, &profile_len);
+      cmsSaveProfileToMem(out_profile, profile, &profile_len);
     }
     dt_colorspaces_cleanup_profile(out_profile);
   }

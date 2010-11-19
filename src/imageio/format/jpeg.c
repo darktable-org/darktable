@@ -476,12 +476,12 @@ write_image (dt_imageio_jpeg_t *jpg, const char *filename, const uint8_t *in, vo
   if(imgid > 0)
   {
     cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
-    size_t len = 0;
-    _cmsSaveProfileToMem(out_profile, 0, &len);
+    uint32_t len = 0;
+    cmsSaveProfileToMem(out_profile, 0, &len);
     if (len > 0)
     {
       unsigned char buf[len];
-      _cmsSaveProfileToMem(out_profile, buf, &len);
+      cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
     }
     dt_colorspaces_cleanup_profile(out_profile);
