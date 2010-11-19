@@ -74,7 +74,6 @@ dt_iop_watermark_data_t;
 typedef struct dt_iop_watermark_gui_data_t
 {
   GtkVBox   *vbox1, *vbox2;
-  GtkLabel  *label1, *label2,*label3,*label4,*label5,*label6;	 	 // watermark, opacity, scale, alignment, xoffset,yoffset
   GtkComboBox *combobox1;		                                             // watermark
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
