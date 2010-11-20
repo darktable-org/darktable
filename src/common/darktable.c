@@ -122,7 +122,7 @@ int dt_init(int argc, char *argv[])
 
   // check and migrate database into new XDG structure
   char dbfilename[2048]={0};
-  if ((dt_conf_get_string ("database"))[0]!='/')
+  if (dt_conf_get_string ("database") && (dt_conf_get_string ("database"))[0]!='/')
   {
     char *homedir = getenv ("HOME");
     snprintf (dbfilename,2048,"%s/%s",homedir,dt_conf_get_string("database"));
@@ -143,7 +143,7 @@ int dt_init(int argc, char *argv[])
   // check and migrate the cachedir
   char cachefilename[2048]={0};
   char cachedir[2048]={0};
-  if ((dt_conf_get_string ("cachefile"))[0]!='/')
+  if (dt_conf_get_string ("cachefile") && (dt_conf_get_string ("cachefile"))[0]!='/')
   {
     char *homedir = getenv ("HOME");
     snprintf (cachefilename,2048,"%s/%s",homedir,dt_conf_get_string("cachefile"));
