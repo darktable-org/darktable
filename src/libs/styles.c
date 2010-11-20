@@ -203,6 +203,7 @@ gui_init (dt_lib_module_t *self)
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc (sizeof (dt_lib_styles_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new (FALSE, 5);
+  GtkWidget *w;
 
   /* list */
   d->list = GTK_TREE_VIEW (gtk_tree_view_new ());
@@ -221,10 +222,13 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_model (GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
   g_object_unref (liststore);
   
+  gtk_object_set(GTK_OBJECT(d->list), "tooltip-text", _("available styles,\ndoubleclick to apply"), (char *)NULL);
   g_signal_connect (d->list, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
  
   /* filter entry */
-  d->entry=GTK_ENTRY (gtk_entry_new ());
+  w = gtk_entry_new();
+  d->entry=GTK_ENTRY(w);
+  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter style name"), (char *)NULL);
   g_signal_connect (d->entry, "changed", G_CALLBACK(entry_callback),d);
   dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
   
