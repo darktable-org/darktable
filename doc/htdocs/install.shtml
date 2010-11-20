@@ -46,11 +46,12 @@ libdbus-glib-1-dev, libgnome-keyring-dev, fop</li>
     	<div class="listtext">
     	<img src="images/firering.jpg" alt="release" class="img" /><h1>ubuntu packages</h1>
       <ul>
-        <li>get an appropriate <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release">darktable*.deb</a>.</li>
-        <li>or a <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-unstable">nightly git package</a>.</li>
-        <li># dpkg -i darktable*.deb</li>
-        <li>Applications - Graphics - darktable</li>
-        <li>you may also be interested in downloading a few icc profiles from there.</li>
+        <li>for stable releases add the <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release">Darktable Release PPA</a>.</li>
+        <li>for stable releases plus some extra's add the <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-release-plus">Darktable Release Plus PPA</a>.</li>
+        <li>if you are adventurous and are willing to deal with problems from time to time add the <a href="https://launchpad.net/~pmjdebruijn/+archive/darktable-unstable">Darktable Unstable PPA</a>, don't use this PPA if you do time critical work with darktable</li>
+        <li>follow the instructions on the Launchpad PPA page.</li>
+        <li>then search for darktable in Synaptic Package Manager and install it.</li>
+        <li>Applications - Graphics - Darktable Photography Workflow Software</li>
       </ul>
     	</div>
     	<div class="listtext">
