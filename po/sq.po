@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable v0.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-18 10:51+0100\n"
+"POT-Creation-Date: 2010-11-20 12:38+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Besmir Godole <bgodole@gmail.com>\n"
 "Language-Team: \n"
@@ -70,7 +70,7 @@ msgstr "pajisje"
 #: ../darktable.glade.h:15
 #: ../src/iop/exposure.c:39
 #: ../src/iop/exposure.c:321
-#: ../src/iop/relight.c:341
+#: ../src/iop/relight.c:342
 #: ../src/gui/presets.c:263
 msgid "exposure"
 msgstr "ndriçimi"
@@ -214,7 +214,7 @@ msgid "switch to darkroom mode"
 msgstr "kaloj te dhoma e errët"
 
 #: ../darktable.glade.h:50
-#: ../src/iop/relight.c:343
+#: ../src/iop/relight.c:344
 msgid "width"
 msgstr "gjerësia"
 
@@ -470,12 +470,14 @@ msgstr "imazhe njëshe"
 #: ../src/common/history.c:170
 #: ../src/common/styles.c:195
 #: ../src/develop/develop.c:897
+#: ../src/gui/styles_dialog.c:319
 msgid "on"
 msgstr "ndez"
 
 #: ../src/common/history.c:170
 #: ../src/common/styles.c:195
 #: ../src/develop/develop.c:897
+#: ../src/gui/styles_dialog.c:319
 msgid "off"
 msgstr "fik"
 
@@ -1480,9 +1482,9 @@ msgid "color correction"
 msgstr "korrigjimi i ngjyrave"
 
 #: ../src/iop/colorcorrection.c:186
-#: ../src/iop/graduatednd.c:383
+#: ../src/iop/graduatednd.c:382
 #: ../src/iop/vignette.c:357
-#: ../src/iop/velvia.c:234
+#: ../src/iop/velvia.c:232
 #: ../src/iop/splittoning.c:467
 #: ../src/iop/splittoning.c:499
 #: ../src/iop/channelmixer.c:362
@@ -1689,42 +1691,42 @@ msgid "graduated neutral density"
 msgstr "gradimi i dendësisë neutrale"
 
 #. adding the labels
-#: ../src/iop/graduatednd.c:378
+#: ../src/iop/graduatednd.c:377
 msgid "density"
 msgstr "dendësia"
 
-#: ../src/iop/graduatednd.c:379
+#: ../src/iop/graduatednd.c:378
 msgid "compression"
 msgstr "ngjeshja"
 
-#: ../src/iop/graduatednd.c:380
+#: ../src/iop/graduatednd.c:379
 msgid "rotation"
 msgstr "rrotullimi"
 
-#: ../src/iop/graduatednd.c:381
+#: ../src/iop/graduatednd.c:380
 msgid "split"
 msgstr "ndarja"
 
-#: ../src/iop/graduatednd.c:382
+#: ../src/iop/graduatednd.c:381
 #: ../src/iop/splittoning.c:466
 #: ../src/iop/splittoning.c:498
 #: ../src/iop/channelmixer.c:361
 msgid "hue"
 msgstr "boja"
 
-#: ../src/iop/graduatednd.c:413
+#: ../src/iop/graduatednd.c:412
 msgid "select the hue tone of filter"
 msgstr "seleksionon tonin e bojës për filtrin"
 
-#: ../src/iop/graduatednd.c:422
+#: ../src/iop/graduatednd.c:421
 msgid "select the saturation of filter"
 msgstr "seleksionon ngopjen e filtrit"
 
-#: ../src/iop/graduatednd.c:429
+#: ../src/iop/graduatednd.c:428
 msgid "the density in EV for the filter"
 msgstr "dendësia në EV për filtrin"
 
-#: ../src/iop/graduatednd.c:431
+#: ../src/iop/graduatednd.c:430
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -1733,11 +1735,11 @@ msgstr ""
 "ngjeshja e gradimit:\n"
 "0% = e butë, 100% = e fortë"
 
-#: ../src/iop/graduatednd.c:432
+#: ../src/iop/graduatednd.c:431
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "rrotullimi i filtrit -180 në 180 gradë"
 
-#: ../src/iop/graduatednd.c:433
+#: ../src/iop/graduatednd.c:432
 msgid "offset of filter in angle of rotation"
 msgstr "dega e filtrit në këndin e rrotullimit"
 
@@ -1892,7 +1894,7 @@ msgstr "barabrinjëse"
 
 #: ../src/iop/lens.c:1240
 #: ../src/iop/vignette.c:352
-#: ../src/iop/watermark.c:563
+#: ../src/iop/watermark.c:565
 msgid "scale"
 msgstr "shkalla"
 
@@ -2342,14 +2344,18 @@ msgid "kodak easyshare like"
 msgstr "si kodak easyshare"
 
 #: ../src/iop/basecurve.c:58
+msgid "konica minolta like"
+msgstr "si konica minolta"
+
+#: ../src/iop/basecurve.c:59
 msgid "fotogenetic (point & shoot)"
 msgstr "fotozhenike (kamerë e thjeshtë)"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:60
 msgid "fotogenetic (ev3)"
 msgstr "fotozhenike (ev3)"
 
-#: ../src/iop/basecurve.c:120
+#: ../src/iop/basecurve.c:123
 msgid "base curve"
 msgstr "kurba bazë"
 
@@ -2467,23 +2473,23 @@ msgstr "përmbys efektin e rënies, rënia tipike është e errët..."
 msgid "velvia"
 msgstr "velvia"
 
-#: ../src/iop/velvia.c:235
+#: ../src/iop/velvia.c:233
 msgid "vibrance"
 msgstr "dinamika"
 
-#: ../src/iop/velvia.c:236
+#: ../src/iop/velvia.c:234
 msgid "mid-tones bias"
 msgstr "tonet e mesme"
 
-#: ../src/iop/velvia.c:251
+#: ../src/iop/velvia.c:249
 msgid "the amount of saturation to apply"
 msgstr "sasia e ngopjes për të zbatuar"
 
-#: ../src/iop/velvia.c:252
+#: ../src/iop/velvia.c:250
 msgid "the vibrance amount"
 msgstr "sasia e dinamikës"
 
-#: ../src/iop/velvia.c:253
+#: ../src/iop/velvia.c:251
 msgid "how much to spare highlights and shadows"
 msgstr "sa të lirojë dritat e forta dhe hijet"
 
@@ -2672,36 +2678,36 @@ msgstr "lëmoj lëkurën në b/z"
 msgid "b/w blue artifacts reduce"
 msgstr "pakësoj artifaktet blu në b/z"
 
-#: ../src/iop/relight.c:53
+#: ../src/iop/relight.c:54
 msgid "Fill-light 0.25EV with 4 zones"
 msgstr "mbush me dritë 0.25EV me 4 zona"
 
-#: ../src/iop/relight.c:54
+#: ../src/iop/relight.c:55
 msgid "Fill-shadow -0.25EV with 4 zones"
 msgstr "mbush me hije -0.25EV me 4 zona"
 
-#: ../src/iop/relight.c:79
+#: ../src/iop/relight.c:80
 msgid "relight"
 msgstr "rindrit"
 
 #. EV
-#: ../src/iop/relight.c:342
+#: ../src/iop/relight.c:343
 msgid "center"
 msgstr "qendra"
 
-#: ../src/iop/relight.c:364
+#: ../src/iop/relight.c:362
 msgid "select the center of fill-light"
 msgstr "seleksionon qendrën për të mbushur me dritë"
 
-#: ../src/iop/relight.c:376
+#: ../src/iop/relight.c:374
 msgid "toggle tool for picking median lightness in image"
 msgstr "vë mjetin për të zgjedhur lehtësinë mediane te imazhi"
 
-#: ../src/iop/relight.c:377
+#: ../src/iop/relight.c:375
 msgid "the fill-light in EV"
 msgstr "mbush me dritë në EV"
 
-#: ../src/iop/relight.c:379
+#: ../src/iop/relight.c:377
 #, no-c-format
 msgid "width of fill-light area defined in zones"
 msgstr "gjerësia e zonës për të mbushur me dritën e përcaktuar"
@@ -2710,32 +2716,32 @@ msgstr "gjerësia e zonës për të mbushur me dritën e përcaktuar"
 msgid "watermark"
 msgstr "vula e njomë"
 
-#: ../src/iop/watermark.c:561
+#: ../src/iop/watermark.c:563
 msgid "marker"
 msgstr "shënuesi"
 
-#: ../src/iop/watermark.c:562
+#: ../src/iop/watermark.c:564
 msgid "opacity"
 msgstr "tejdukja"
 
-#: ../src/iop/watermark.c:564
+#: ../src/iop/watermark.c:566
 msgid "alignment"
 msgstr "rreshtimi"
 
-#: ../src/iop/watermark.c:565
+#: ../src/iop/watermark.c:567
 msgid "x offset"
 msgstr "dega x"
 
-#: ../src/iop/watermark.c:566
+#: ../src/iop/watermark.c:568
 msgid "y offset"
 msgstr "dega y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:617
+#: ../src/iop/watermark.c:612
 msgid "the opacity of the watermark"
 msgstr "tejdukja e vulës së njomë"
 
-#: ../src/iop/watermark.c:618
+#: ../src/iop/watermark.c:613
 msgid "the scale of the watermark"
 msgstr "shkalla e vulës së njomë"
 
@@ -3389,7 +3395,7 @@ msgstr "përfshij"
 msgid "item"
 msgstr "pika"
 
-#: ../src/gui/styles_dialog.c:330
+#: ../src/gui/styles_dialog.c:336
 msgid "can't create style out of unaltered image"
 msgstr "nuk mund të krijojë stilin nga imazhi i paprekur"
 
