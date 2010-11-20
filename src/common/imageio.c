@@ -261,26 +261,27 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       // BMP: directly to mip4
       if (dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
       dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-      const int p_ht2 = raw->sizes.flip & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-      const int p_wd2 = raw->sizes.flip & 4 ? p_ht : p_wd;
-      const int f_ht2 = MIN(p_ht2, (raw->sizes.flip & 4 ? f_wd : f_ht) + 1.0);
-      const int f_wd2 = MIN(p_wd2, (raw->sizes.flip & 4 ? f_ht : f_wd) + 1.0);
+      const int orientation = dt_image_orientation(img);
+      const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
+      const int p_wd2 = orientation & 4 ? p_ht : p_wd;
+      const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
+      const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
       if(image->width == p_wd2 && image->height == p_ht2)
       { // use 1:1
         for(int j=0;j<image->height;j++) for(int i=0;i<image->width;i++)
         {
           uint8_t *cam = image->data + 3*(j*image->width + i);
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, raw->sizes.flip) + 2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
         }
       }
       else
       { // scale to fit
-        bzero(img->mip[DT_IMAGE_MIP4], 4*p_wd*p_ht*sizeof(uint8_t));
+        memset(img->mip[DT_IMAGE_MIP4], 0, 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
         for(int j=0;j<p_ht2 && scale*j<image->height;j++) for(int i=0;i<p_wd2 && scale*i < image->width;i++)
         {
           uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, raw->sizes.flip) + 2-k] = cam[k];
+          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
         }
       }
       dt_image_release(img, DT_IMAGE_MIP4, 'w');

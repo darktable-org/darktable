@@ -1201,6 +1201,8 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
   {
     if(img->pixels == NULL || img->lock[mip].write) mip = DT_IMAGE_NONE;
   }
+  const int invalid = img->mip_invalid & (1<<mip);
+  if(invalid) mip = DT_IMAGE_NONE;
   // found?
   if(mip == mip_in)
   {
