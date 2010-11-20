@@ -96,18 +96,18 @@ dt_collection_update (const dt_collection_t *collection)
     }
     
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) >= %d", (need_operator)?"and":"", collection->params.rating);
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) >= %d", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) == %d", (need_operator)?"and":"", collection->params.rating);
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s id in (select imgid from history where imgid=id)", (need_operator)?"and":"");
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s id in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
     else if (collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s id not in (select imgid from history where imgid=id)", (need_operator)?"and":"");
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s id not in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
     
     /* add where ext if wanted */
     if ((collection->params.query_flags&COLLECTION_QUERY_USE_WHERE_EXT))
-       g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s %s",(need_operator)?"and":"", collection->where_ext);
+       g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s %s",(need_operator)?"and":((need_operator=1)?"":""), collection->where_ext);
   } 
   else
     g_snprintf (wq,512,"%s",collection->where_ext);
