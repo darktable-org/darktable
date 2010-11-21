@@ -73,7 +73,7 @@ msgstr "pajisje"
 #: ../src/iop/relight.c:342
 #: ../src/gui/presets.c:263
 msgid "exposure"
-msgstr "ndriçimi"
+msgstr "ekspozimi"
 
 #: ../darktable.glade.h:16
 msgid "f-length"
@@ -573,7 +573,7 @@ msgstr[1] "fshin %d imazhe"
 
 #: ../src/control/jobs/control_jobs.c:254
 msgid "do you really want to remove all selected images from the collection?"
-msgstr "vërtet do i hiqni tërë imazhet e seleksionuara nga koleksioni?"
+msgstr "vërtet do i hiqni nga koleksioni tërë imazhet e seleksionuara?"
 
 #: ../src/control/jobs/control_jobs.c:255
 msgid "remove images?"
@@ -581,7 +581,7 @@ msgstr "do i hiqni imazhet?"
 
 #: ../src/control/jobs/control_jobs.c:275
 msgid "do you really want to physically delete all selected images from disk?"
-msgstr "vërtet do i fshini nga disku fizikisht tërë imazhet e seleksionuara?"
+msgstr "vërtet do i fshini fizikisht nga disku tërë imazhet e seleksionuara?"
 
 #: ../src/control/jobs/control_jobs.c:276
 msgid "delete images?"
@@ -975,10 +975,10 @@ msgid_plural ""
 "%d images are assigned this tag!"
 msgstr[0] ""
 "vërtet doni të fshini etiketën `%s'?\n"
-"%d imazh e ka të shënuar këtë etiketën!"
+"me këtë etiketën është shënuar %d imazh!"
 msgstr[1] ""
 "vërtet doni të fshini etiketën `%s'?\n"
-"%d imazhe e kanë të shënuar këtë etiketën!"
+"me këtë etiketën janë shënuar %d imazhe!"
 
 #: ../src/libs/tagging.c:253
 msgid "delete tag?"
@@ -1607,7 +1607,7 @@ msgstr "ndreq nivelin e të zezës"
 
 #: ../src/iop/exposure.c:328
 msgid "adjust the exposure correction [ev]"
-msgstr "ndreq korrigjimin e ndriçimit [ev]"
+msgstr "ndreq korrigjimin e ekspozimit [ev]"
 
 #: ../src/iop/exposure.c:333
 msgid "auto"
@@ -1688,7 +1688,7 @@ msgstr "ND4 kafe (e butë)"
 
 #: ../src/iop/graduatednd.c:95
 msgid "graduated neutral density"
-msgstr "gradimi i dendësisë neutrale"
+msgstr "dendësia neutrale e graduar"
 
 #. adding the labels
 #: ../src/iop/graduatednd.c:377
@@ -1745,7 +1745,7 @@ msgstr "dega e filtrit në këndin e rrotullimit"
 
 #: ../src/iop/highlights.c:72
 msgid "highlight reconstruction"
-msgstr "rindërtimi i dritave të forta"
+msgstr "rindërtimi i dritave të larta"
 
 #: ../src/iop/highlights.c:325
 msgid "method"
@@ -1753,7 +1753,7 @@ msgstr "metoda"
 
 #: ../src/iop/highlights.c:328
 msgid "clip highlights"
-msgstr "shkurtoj dritat e forta"
+msgstr "shkurtoj dritat e larta"
 
 #: ../src/iop/highlights.c:329
 msgid "reconstruct in LCh"
@@ -1761,7 +1761,7 @@ msgstr "rindërtoj në LCh"
 
 #: ../src/iop/highlights.c:330
 msgid "highlight reconstruction method"
-msgstr "metoda e rindërtimit të dritave të forta"
+msgstr "metoda e rindërtimit të dritave të larta"
 
 #: ../src/iop/highlights.c:340
 msgid "blend L"
@@ -1777,7 +1777,7 @@ msgstr "shkrij h"
 
 #: ../src/iop/highlights.c:350
 msgid "blend lightness (0 is same as clipping)"
-msgstr "shkrin lehtësinë (0 është njësoj me shkurtimin)"
+msgstr "shkrin dritësimin (0 është njësoj me shkurtimin)"
 
 #: ../src/iop/highlights.c:351
 msgid "blend colorness (0 is same as clipping)"
@@ -2166,7 +2166,7 @@ msgstr "dalloj balancimin e të bardhës"
 
 #: ../src/iop/temperature.c:395
 msgid "passthrough"
-msgstr "sit"
+msgstr "kalimtar"
 
 #: ../src/iop/temperature.c:418
 msgid "fine tune white balance preset"
@@ -2491,7 +2491,7 @@ msgstr "sasia e dinamikës"
 
 #: ../src/iop/velvia.c:251
 msgid "how much to spare highlights and shadows"
-msgstr "sa të lirojë dritat e forta dhe hijet"
+msgstr "sa të lirohen dritat e larta dhe hijet"
 
 #: ../src/iop/splittoning.c:77
 msgid "split toning"
@@ -2517,15 +2517,15 @@ msgstr "seleksionon tonin e ngopjes për hijet"
 #. Highlights
 #: ../src/iop/splittoning.c:485
 msgid "highlights"
-msgstr "dritat e forta"
+msgstr "dritat e larta"
 
 #: ../src/iop/splittoning.c:511
 msgid "select the hue tone for highlights"
-msgstr "seleksionon tonin e bojës për dritat e forta"
+msgstr "seleksionon tonin e bojës për dritat e larta"
 
 #: ../src/iop/splittoning.c:515
 msgid "select the saturation highlights tone"
-msgstr "seleksionon tonin e ngopjes për dritat e forta"
+msgstr "seleksionon tonin e ngopjes për dritat e larta"
 
 #: ../src/iop/splittoning.c:525
 msgid "balance"
@@ -2543,7 +2543,7 @@ msgstr "balanca për qendrën e tonalitetit të ndarë"
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
-msgstr "ngjesh efektin për dritat e forta/hijet dhe ruan tonet e mesme"
+msgstr "ngjesh efektin për dritat e larta/hijet dhe ruan tonet e mesme"
 
 #: ../src/iop/grain.c:260
 msgid "grain"
@@ -2632,7 +2632,7 @@ msgstr "kanali output"
 
 #: ../src/iop/channelmixer.c:363
 msgid "lightness"
-msgstr "lehtësia"
+msgstr "dritësimi"
 
 #: ../src/iop/channelmixer.c:367
 msgid "gray"
@@ -2688,7 +2688,7 @@ msgstr "mbush me hije -0.25EV me 4 zona"
 
 #: ../src/iop/relight.c:80
 msgid "relight"
-msgstr "rindrit"
+msgstr "rindriçoj"
 
 #. EV
 #: ../src/iop/relight.c:343
@@ -2701,7 +2701,7 @@ msgstr "seleksionon qendrën për të mbushur me dritë"
 
 #: ../src/iop/relight.c:374
 msgid "toggle tool for picking median lightness in image"
-msgstr "vë mjetin për të zgjedhur lehtësinë mediane te imazhi"
+msgstr "vë mjetin për të zgjedhur dritësimin median te imazhi"
 
 #: ../src/iop/relight.c:375
 msgid "the fill-light in EV"
@@ -2747,7 +2747,7 @@ msgstr "shkalla e vulës së njomë"
 
 #: ../src/iop/zonesystem.c:84
 msgid "zone system"
-msgstr "sistemi i zonave"
+msgstr "sistemi zonal"
 
 #: ../src/imageio/format/jpeg.c:618
 msgid "8-bit jpeg"
@@ -2991,7 +2991,7 @@ msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
 msgstr ""
-"shtyn për të ndryshuar ndriçimin,\n"
+"shtyn për të ndryshuar ekspozimin,\n"
 "klikon dy herë për të rivendosur"
 
 #: ../src/gui/histogram.c:182
@@ -3008,7 +3008,7 @@ msgstr "imazhet e vetme ngelin në vend"
 
 #: ../src/gui/filmview.c:145
 msgid "do you really want to remove this film roll and all its images from the collection?"
-msgstr "vërtet do e hiqni këtë filmin dhe tërë imazhet e tij nga koleksioni?"
+msgstr "vërtet do e hiqni nga koleksioni këtë filmin dhe tërë imazhet e tij?"
 
 #: ../src/gui/filmview.c:146
 msgid "remove film roll?"
@@ -3294,11 +3294,11 @@ msgstr "vlera iso maksimale"
 
 #: ../src/gui/presets.c:268
 msgid "minimum exposure time"
-msgstr "koha minimale e ndriçimit"
+msgstr "koha minimale e ekspozimit"
 
 #: ../src/gui/presets.c:269
 msgid "maximum exposure time"
-msgstr "koha maksimale e ndriçimit"
+msgstr "koha maksimale e ekspozimit"
 
 #: ../src/gui/presets.c:283
 msgid "minimum aperture value"
