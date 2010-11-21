@@ -7,7 +7,7 @@ if [ ! -f $dir/version.sh ]; then
 fi
 . $dir/version.sh
 
-sed -e "s/REPLACE_WITH_DT_VERSION/$dt_sha1sum/" < configure.ac.in > configure.ac
+sed -e "s/REPLACE_WITH_DT_VERSION/$dt_decoration/" < configure.ac.in > configure.ac
 autoreconf --install --force
 intltoolize --copy --force --automake
 

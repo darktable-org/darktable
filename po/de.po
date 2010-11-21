@@ -1,8 +1,10 @@
+#: ../src/gui/preferences_gen.h:290 ../src/gui/preferences_gen.h:355
+#: ../src/gui/preferences_gen.h:371
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-18 20:50+0100\n"
+"POT-Creation-Date: 2010-11-20 16:47+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -66,7 +68,7 @@ msgstr "Geräte"
 #. adding the labels
 #. exposure
 #: ../darktable.glade.h:15 ../src/iop/exposure.c:39 ../src/iop/exposure.c:321
-#: ../src/iop/relight.c:341 ../src/gui/presets.c:263
+#: ../src/iop/relight.c:342 ../src/gui/presets.c:263
 msgid "exposure"
 msgstr "Belichtung"
 
@@ -203,7 +205,7 @@ msgstr "Snapshots"
 msgid "switch to darkroom mode"
 msgstr "zum Dunkelkammer-Modus wechseln"
 
-#: ../darktable.glade.h:50 ../src/iop/relight.c:343
+#: ../darktable.glade.h:50 ../src/iop/relight.c:344
 msgid "width"
 msgstr "Breite"
 
@@ -522,12 +524,12 @@ msgid "single images"
 msgstr "Einzelbilder"
 
 #: ../src/common/history.c:170 ../src/common/styles.c:195
-#: ../src/develop/develop.c:897
+#: ../src/develop/develop.c:897 ../src/gui/styles_dialog.c:319
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:170 ../src/common/styles.c:195
-#: ../src/develop/develop.c:897
+#: ../src/develop/develop.c:897 ../src/gui/styles_dialog.c:319
 msgid "off"
 msgstr "aus"
 
@@ -1521,8 +1523,8 @@ msgstr "diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 msgid "color correction"
 msgstr "Farbkorrektur"
 
-#: ../src/iop/colorcorrection.c:186 ../src/iop/graduatednd.c:383
-#: ../src/iop/vignette.c:357 ../src/iop/velvia.c:234
+#: ../src/iop/colorcorrection.c:186 ../src/iop/graduatednd.c:382
+#: ../src/iop/vignette.c:357 ../src/iop/velvia.c:232
 #: ../src/iop/splittoning.c:467 ../src/iop/splittoning.c:499
 #: ../src/iop/channelmixer.c:362
 msgid "saturation"
@@ -1724,41 +1726,41 @@ msgid "graduated neutral density"
 msgstr "Grauverlauf"
 
 #. adding the labels
-#: ../src/iop/graduatednd.c:378
+#: ../src/iop/graduatednd.c:377
 msgid "density"
 msgstr "Dichte"
 
-#: ../src/iop/graduatednd.c:379
+#: ../src/iop/graduatednd.c:378
 msgid "compression"
 msgstr "Kompression"
 
-#: ../src/iop/graduatednd.c:380
+#: ../src/iop/graduatednd.c:379
 msgid "rotation"
 msgstr "Drehung"
 
 # nicht schön
-#: ../src/iop/graduatednd.c:381
+#: ../src/iop/graduatednd.c:380
 msgid "split"
 msgstr "Teilung"
 
-#: ../src/iop/graduatednd.c:382 ../src/iop/splittoning.c:466
+#: ../src/iop/graduatednd.c:381 ../src/iop/splittoning.c:466
 #: ../src/iop/splittoning.c:498 ../src/iop/channelmixer.c:361
 msgid "hue"
 msgstr "Farbton"
 
-#: ../src/iop/graduatednd.c:413
+#: ../src/iop/graduatednd.c:412
 msgid "select the hue tone of filter"
 msgstr "Farbton des Filters wählen"
 
-#: ../src/iop/graduatednd.c:422
+#: ../src/iop/graduatednd.c:421
 msgid "select the saturation of filter"
 msgstr "Sättigung des Filters wählen"
 
-#: ../src/iop/graduatednd.c:429
+#: ../src/iop/graduatednd.c:428
 msgid "the density in EV for the filter"
 msgstr "die Dichte in EV für den Filter"
 
-#: ../src/iop/graduatednd.c:431
+#: ../src/iop/graduatednd.c:430
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -1767,11 +1769,11 @@ msgstr ""
 "Kompression des Verlaufs:\n"
 "0% = weich, 100% = hart"
 
-#: ../src/iop/graduatednd.c:432
+#: ../src/iop/graduatednd.c:431
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "Drehung des Filters -180 bis 180 Grad"
 
-#: ../src/iop/graduatednd.c:433
+#: ../src/iop/graduatednd.c:432
 msgid "offset of filter in angle of rotation"
 msgstr "Versatz des Filters in Drehrichtung"
 
@@ -1924,7 +1926,7 @@ msgstr "Panorama"
 msgid "equirectangular"
 msgstr "Equirectangular"
 
-#: ../src/iop/lens.c:1240 ../src/iop/vignette.c:352 ../src/iop/watermark.c:563
+#: ../src/iop/lens.c:1240 ../src/iop/vignette.c:352 ../src/iop/watermark.c:565
 msgid "scale"
 msgstr "Skalierung"
 
@@ -2520,23 +2522,23 @@ msgstr ""
 msgid "velvia"
 msgstr "Velvia"
 
-#: ../src/iop/velvia.c:235
+#: ../src/iop/velvia.c:233
 msgid "vibrance"
 msgstr "Lebendigkeit"
 
-#: ../src/iop/velvia.c:236
+#: ../src/iop/velvia.c:234
 msgid "mid-tones bias"
 msgstr "Mittenbetonung"
 
-#: ../src/iop/velvia.c:251
+#: ../src/iop/velvia.c:249
 msgid "the amount of saturation to apply"
 msgstr "Menge an Sättigung, die angewendet werden soll"
 
-#: ../src/iop/velvia.c:252
+#: ../src/iop/velvia.c:250
 msgid "the vibrance amount"
 msgstr "Menge an Lebendigkeit"
 
-#: ../src/iop/velvia.c:253
+#: ../src/iop/velvia.c:251
 msgid "how much to spare highlights and shadows"
 msgstr "wie sehr sollen Spitzlichter und Schatten ausgenommen werden"
 
@@ -2731,39 +2733,39 @@ msgstr "s/w weiche Haut"
 msgid "b/w blue artifacts reduce"
 msgstr "s/w blaue Artefakte reduzieren"
 
-#: ../src/iop/relight.c:53
+#: ../src/iop/relight.c:54
 msgid "Fill-light 0.25EV with 4 zones"
 msgstr "Füllen der Lichter um 0,25EV mit 4 Zonen"
 
-#: ../src/iop/relight.c:54
+#: ../src/iop/relight.c:55
 msgid "Fill-shadow -0.25EV with 4 zones"
 msgstr "Füllen der Schatten um -0,25EV mit 4 Zonen"
 
 # Soll man da "Relight" als Namen nehmen, oder es übersetzen?
 # hanatos hat "Aufhellen" vorgeschlagen. Gefällt.
-#: ../src/iop/relight.c:79
+#: ../src/iop/relight.c:80
 msgid "relight"
 msgstr "Aufhellen"
 
 #. EV
-#: ../src/iop/relight.c:342
+#: ../src/iop/relight.c:343
 msgid "center"
 msgstr "Zentrum"
 
-#: ../src/iop/relight.c:364
+#: ../src/iop/relight.c:362
 msgid "select the center of fill-light"
 msgstr "Zentrum des Fülllichts wählen"
 
-#: ../src/iop/relight.c:376
+#: ../src/iop/relight.c:374
 msgid "toggle tool for picking median lightness in image"
 msgstr "mittlere Helligkeit im Bild wählen"
 
-#: ../src/iop/relight.c:377
+#: ../src/iop/relight.c:375
 msgid "the fill-light in EV"
 msgstr "Füllicht in EV"
 
 # Hä?
-#: ../src/iop/relight.c:379
+#: ../src/iop/relight.c:377
 #, no-c-format
 msgid "width of fill-light area defined in zones"
 msgstr "Breite der Füllicht-Fläche, definiert in Zonen."
@@ -2773,32 +2775,32 @@ msgid "watermark"
 msgstr "Wasserzeichen"
 
 # nicht so wirklich schön
-#: ../src/iop/watermark.c:561
+#: ../src/iop/watermark.c:563
 msgid "marker"
 msgstr "Zeichen"
 
-#: ../src/iop/watermark.c:562
+#: ../src/iop/watermark.c:564
 msgid "opacity"
 msgstr "Deckkraft"
 
-#: ../src/iop/watermark.c:564
+#: ../src/iop/watermark.c:566
 msgid "alignment"
 msgstr "Position"
 
-#: ../src/iop/watermark.c:565
+#: ../src/iop/watermark.c:567
 msgid "x offset"
 msgstr "X-Versatz"
 
-#: ../src/iop/watermark.c:566
+#: ../src/iop/watermark.c:568
 msgid "y offset"
 msgstr "Y-Versatz"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:617
+#: ../src/iop/watermark.c:612
 msgid "the opacity of the watermark"
 msgstr "Die Deckkraft des Wasserzeichens"
 
-#: ../src/iop/watermark.c:618
+#: ../src/iop/watermark.c:613
 msgid "the scale of the watermark"
 msgstr "Größe des Wasserzeichens"
 
@@ -3544,7 +3546,7 @@ msgstr "einbeziehen"
 msgid "item"
 msgstr "Einstellung"
 
-#: ../src/gui/styles_dialog.c:330
+#: ../src/gui/styles_dialog.c:336
 msgid "can't create style out of unaltered image"
 msgstr "kann keinen Stil aus unbearbeitetem Bild erzeugen."
 
