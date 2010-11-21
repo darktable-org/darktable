@@ -381,8 +381,8 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   if(cw == 2) orientation = -1; // reset
   img->raw_params.user_flip = orientation;
   img->force_reimport = 1;
-  img->mip_invalid |= 1<<DT_IMAGE_MIPF; 
-  img->mip_invalid |= 1<<DT_IMAGE_FULL;
+  dt_image_invalidate(img, DT_IMAGE_MIPF);
+  dt_image_invalidate(img, DT_IMAGE_FULL);
   dt_image_cache_flush(img);
   dt_image_cache_release(img, 'r');
 }
@@ -855,14 +855,14 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     { // get mipf from half-size raw
       ret = dt_imageio_open_preview(img, filename);
-      img->mip_invalid &= ~(1<<DT_IMAGE_MIPF);
+      dt_image_validate(img, DT_IMAGE_MIPF);
       if(!ret && dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
     }
     else
     { // downscale full buffer
       ret = dt_image_raw_to_preview(img, img->pixels);
-      img->mip_invalid &= ~(1<<DT_IMAGE_MIPF);
+      dt_image_validate(img, DT_IMAGE_MIPF);
       dt_image_release(img, DT_IMAGE_FULL, 'r');
       if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
@@ -873,7 +873,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     // after _open, the full buffer will be 'r' locked.
     ret = dt_imageio_open(img, filename);
     dt_image_raw_to_preview(img, img->pixels);
-    img->mip_invalid &= ~(1<<DT_IMAGE_MIPF);
+    dt_image_validate(img, DT_IMAGE_MIPF);
   }
   else
   {
@@ -887,7 +887,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
       else ret = 0;
     }
   }
-  if(!ret) img->mip_invalid &= ~(1<<mip);
+  if(!ret) dt_image_validate(img, mip);
   // TODO: insert abstract hook here?
   dt_control_queue_draw_all();
   return ret;
@@ -1186,7 +1186,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
 {
   dt_image_buffer_t mip = mip_in;
   if(!img || mip == DT_IMAGE_NONE) return DT_IMAGE_NONE;
-  dt_print(DT_DEBUG_CONTROL, "[run_job+] %ld %f get blocking image %d mip %d\n", (long int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] 10 %f get blocking image %d mip %d\n", dt_get_wtime(), img->id, mip_in);
   pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
   // get image with no write lock set!
   if((int)mip < (int)DT_IMAGE_MIPF)
@@ -1224,14 +1224,14 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
       img->lock[mip].users++;
     }
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %ld %f get blocking image %d mip %d\n", (long int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] 10 %f get blocking image %d mip %d\n", dt_get_wtime(), img->id, mip_in);
     return mip;
   }
   // already loading? 
   if(img->lock[mip_in].write)
   {
     pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %ld %f get blocking image %d mip %d\n", (long int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] 10 %f get blocking image %d mip %d\n", dt_get_wtime(), img->id, mip_in);
     return DT_IMAGE_NONE;
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
@@ -1255,7 +1255,7 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
     // else img->lock[mip].users++; // already incremented by image_load
   }
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-  dt_print(DT_DEBUG_CONTROL, "[run_job-] %ld %f get blocking image %d mip %d\n", (long int)pthread_self(), dt_get_wtime(), img->id, mip_in);
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] 10 %f get blocking image %d mip %d\n", dt_get_wtime(), img->id, mip_in);
   return mip;
 }
 
@@ -1341,5 +1341,19 @@ void dt_image_release(dt_image_t *img, dt_image_buffer_t mip, const char mode)
   else if (mode == 'w') img->lock[mip].write = 0;  // can only be one writing thread at a time.
   pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
   // dt_print(DT_DEBUG_CACHE, "[image_release] released lock %c for buffer %d on image %s locks: %d r %d w\n", mode, mip, img->filename, img->lock[mip].users, img->lock[mip].write);
+}
+
+void dt_image_invalidate(dt_image_t *image, dt_image_buffer_t mip)
+{
+  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  image->mip_invalid |= 1<<mip;
+  pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+}
+
+void dt_image_validate(dt_image_t *image, dt_image_buffer_t mip)
+{
+  pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  image->mip_invalid &= ~(1<<mip);
+  pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
 }
 
