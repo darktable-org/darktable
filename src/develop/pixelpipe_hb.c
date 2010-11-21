@@ -443,6 +443,12 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs processing `%s' [%s]\n", end - start, module->name(),
         pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     pthread_mutex_unlock(&pipe->busy_mutex);
+    if(module == darktable.develop->gui_module)
+    {
+      // give the input buffer to the currently focussed plugin more weight.
+      // the user is likely to change that one soon, so keep it in cache.
+      dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input);
+    }
 #ifdef _DEBUG
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
@@ -513,7 +519,8 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   for(int k=0;k<3;k++) pipe->processed_maximum[k] = dev->image->maximum;
   dt_iop_roi_t roi = (dt_iop_roi_t){x, y, width, height, scale};
   // printf("pixelpipe homebrew process start\n");
-  // dt_dev_pixelpipe_cache_print(&pipe->cache);
+  if(darktable.unmuted & DT_DEBUG_DEV)
+    dt_dev_pixelpipe_cache_print(&pipe->cache);
 
   //  go through list of modules from the end:
   int pos = g_list_length(dev->iop);

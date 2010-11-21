@@ -32,6 +32,7 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
     cache->hash[k] = -1;
     cache->used[k] = 0;
   }
+  cache->queries = cache->misses = 0;
 }
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
@@ -84,6 +85,7 @@ int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t h
 
 int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data, int weight)
 {
+  cache->queries ++;
   *data = NULL;
   int max_used = -1, max = 0;
   for(int k=0;k<cache->entries;k++)
@@ -107,6 +109,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     *data = cache->data[max];
     cache->hash[max] = hash;
     cache->used[max] = weight;
+    cache->misses++;
     return 1;
   }
   else return 0;
@@ -121,6 +124,17 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
   }
 }
 
+void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data)
+{
+  for(int k=0;k<cache->entries;k++)
+  {
+    if(cache->data[k] == data)
+    {
+      cache->used[k] = -cache->entries;
+    }
+  }
+}
+
 void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
 {
   for(int k=0;k<cache->entries;k++)
@@ -129,4 +143,6 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
     printf("used %d by %"PRIu64"", cache->used[k], cache->hash[k]);
     printf("\n");
   }
+  printf("cache hit rate so far: %.3f\n", (cache->queries - cache->misses)/(float)cache->queries);
 }
+
