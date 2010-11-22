@@ -537,6 +537,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       {
         // license
         const char *license = pos->toString().c_str();
+        if(strncmp(license, "lang=", 5) == 0)
+          license = strchrnul(license, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 2, img->id);
         sqlite3_bind_text(stmt, 1, license, strlen(license), SQLITE_TRANSIENT);
@@ -547,6 +549,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       {
         // description
         const char *descr = pos->toString().c_str();
+        if(strncmp(descr, "lang=", 5) == 0)
+          descr = strchrnul(descr, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 2, img->id);
         sqlite3_bind_text(stmt, 1, descr, strlen(descr), SQLITE_TRANSIENT);
@@ -557,6 +561,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       {
         // caption
         const char *cap = pos->toString().c_str();
+        if(strncmp(cap, "lang=", 5) == 0)
+          cap = strchrnul(cap, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 2, img->id);
         sqlite3_bind_text(stmt, 1, cap, strlen(cap), SQLITE_TRANSIENT);
@@ -567,6 +573,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       {
         // creator
         const char *creator = pos->toString().c_str();
+        if(strncmp(creator, "lang=", 5) == 0)
+          creator = strchrnul(creator, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 1, img->id);
         sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_CREATOR);
@@ -578,6 +586,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       {
         // publisher
         const char *publisher = pos->toString().c_str();
+        if(strncmp(publisher, "lang=", 5) == 0)
+          publisher = strchrnul(publisher, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 1, img->id);
         sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
