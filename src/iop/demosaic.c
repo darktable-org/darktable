@@ -319,7 +319,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     roo.height = roi_out->height / global_scale;
     roo.scale = 1.0f;
      
-    float *tmp = (float *)malloc(roo.width*roo.height*4*sizeof(float));
+    float *tmp = (float *)dt_alloc_align(16, roo.width*roo.height*4*sizeof(float));
     demosaic_ppg(tmp, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
     roi = *roi_out;
     roi.x = roi.y = 0;
