@@ -565,26 +565,26 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   pthread_mutex_unlock(&s->queue_mutex);
   if(!j) return -1;
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f ", res, dt_get_wtime());
-  dt_control_job_print(j);
-  dt_print(DT_DEBUG_CONTROL, "\n");
-
   /* change state to running */
+  pthread_mutex_lock (&j->wait_mutex);
   if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
   {
+    dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", res, dt_get_wtime());
+    dt_control_job_print(j);
+    dt_print(DT_DEBUG_CONTROL, "\n");
+
     _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
     
     /* execute job */
-    pthread_mutex_lock (&j->wait_mutex);
     j->result = j->execute (j);
-    pthread_mutex_unlock (&j->wait_mutex);
    
     _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", res, dt_get_wtime());
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", res, dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
   
   }
+  pthread_mutex_unlock (&j->wait_mutex);
   return 0;
 }
 
@@ -603,27 +603,26 @@ int32_t dt_control_run_job(dt_control_t *s)
   j = s->job + i;
   pthread_mutex_unlock(&s->queue_mutex);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job+] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
-  dt_control_job_print(j);
-  dt_print(DT_DEBUG_CONTROL, "\n");
-  
   /* change state to running */
+  pthread_mutex_lock (&j->wait_mutex);
   if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
   {
+    dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
+    dt_control_job_print(j);
+    dt_print(DT_DEBUG_CONTROL, "\n");
+  
     _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
     
     /* execute job */
-    pthread_mutex_lock (&j->wait_mutex);
     j->result = j->execute (j);
-    pthread_mutex_unlock (&j->wait_mutex);
 
     _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
     
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
-    
   }
+  pthread_mutex_unlock (&j->wait_mutex);
   
   pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);

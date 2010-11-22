@@ -21,7 +21,11 @@
 #ifndef _XOPEN_SOURCE
   #define _XOPEN_SOURCE 600 // for localtime_r
 #endif
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
 #include <time.h>
+#include <sys/time.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 #include <pthread.h>
@@ -147,14 +151,9 @@ void dt_get_user_local_dir(char *data, size_t bufsize);
 
 static inline double dt_get_wtime()
 {
-#ifdef _OPENMP
-  return omp_get_wtime();
-#else
-  // FIXME: this assumes 2.4 GHz
-  uint64_t val;
-  __asm__ __volatile__("rdtsc": "=A"(val));
-  return val/2400000000.0f;
-#endif
+  struct timeval time;
+  gettimeofday(&time, NULL);
+  return time.tv_sec + (1.0/1000000.0)*time.tv_usec;
 }
 
 static inline int dt_get_num_threads()
