@@ -29,6 +29,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/togglebutton.h"
+#include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/gtk.h"
@@ -339,16 +340,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_set_row_spacings(GTK_TABLE (self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   
   /* adding the labels */
-  g->label1 = GTK_LABEL (gtk_label_new (_("exposure")));     // EV
-  g->label2 = GTK_LABEL (gtk_label_new (_("center")));
-  g->label3 = GTK_LABEL (gtk_label_new (_("width")));
-  gtk_misc_set_alignment (GTK_MISC (g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment (GTK_MISC (g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment (GTK_MISC (g->label3), 0.0, 0.5);
+  GtkWidget *label1 = dtgtk_reset_label_new (_("exposure"), self, &p->ev, sizeof(float));     // EV
+  GtkWidget *label2 = dtgtk_reset_label_new (_("center"), self, &p->center, sizeof(float));
+  GtkWidget *label3 = dtgtk_reset_label_new (_("width"), self, &p->width, sizeof(float));
   
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label1), 0,1,0,1,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label2), 0,1,1,2,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label3), 0,1,2,3,GTK_FILL,0,0,0);
+  gtk_table_attach (GTK_TABLE (self->widget), label1, 0,1,0,1,GTK_FILL,0,0,0);
+  gtk_table_attach (GTK_TABLE (self->widget), label2, 0,1,1,2,GTK_FILL,0,0,0);
+  gtk_table_attach (GTK_TABLE (self->widget), label3, 0,1,2,3,GTK_FILL,0,0,0);
   
   g->scale1 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,-2.0, 2.0,0.05, p->ev, 2));
   g->scale2 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,2, 10, 0.5, p->width, 1));

@@ -220,6 +220,8 @@ void dt_image_check_buffer(dt_image_t *image, dt_image_buffer_t mip, int32_t siz
 void dt_image_free(dt_image_t *img, dt_image_buffer_t mip);
 
 // locking-related functions:
+void dt_image_invalidate(dt_image_t *image, dt_image_buffer_t mip);
+void dt_image_validate(dt_image_t *image, dt_image_buffer_t mip);
 #ifdef _DEBUG
 // macros wrapping the stack trace information:
 #define dt_image_get(A, B, C)    dt_image_get_with_caller  (A, B, C,  __FILE__, __LINE__, __FUNCTION__)

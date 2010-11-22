@@ -303,21 +303,27 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
  
           /* lookup history item module */
           gboolean enabled = TRUE;
+          dt_iop_module_t *module=NULL;
           GList *modules = g_list_first(darktable.develop->iop);
           if (modules) {
             GList *result = g_list_find_custom (modules, item->name, _g_list_find_module_by_name); // (dt_iop_module_t *)(modules->data);
             if( result )
             {
-              dt_iop_module_t *module = (dt_iop_module_t *)(result->data);
+              module = (dt_iop_module_t *)(result->data);
               enabled  = (module->flags() & IOP_FLAGS_INCLUDE_IN_STYLES)?TRUE:FALSE;
             }
           }
-            
+          
+          gchar name[256]={0};
+          if (module)
+            g_snprintf(name,256,"%s (%s)",module->name(),enabled?_("on"):_("off"));
+          else
+            g_snprintf(name,256,"%s",item->name);
           
           gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
           gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
                             DT_STYLE_ITEMS_COL_ENABLED, enabled,
-                            DT_STYLE_ITEMS_COL_NAME, item->name,
+                            DT_STYLE_ITEMS_COL_NAME, name,
                             DT_STYLE_ITEMS_COL_NUM, (guint)item->num,
                             -1);
 

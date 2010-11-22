@@ -219,10 +219,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     /* remap lightness into zonemap and apply lightness */
     const float lightness=in[ch*k]/100.0;
-    const float rzw = (1.0/(size-1));                                                                                               // real zone width 
-    const int rz = (lightness/rzw);                                                                                                    // real zone for lightness
-    const float zw = (zonemap[rz+1]-zonemap[rz]);                                                              // mapped zone width
-    const float zs = zw/rzw ;                                                                                                    // mapped zone scale
+    const float rzw = (1.0/(size-1));                                       // real zone width 
+    const int rz = CLAMP((lightness/rzw), 0, MAX_ZONE_SYSTEM_SIZE-1);       // real zone for lightness
+    const float zw = (zonemap[rz+1]-zonemap[rz]);                           // mapped zone width
+    const float zs = zw/rzw ;                                               // mapped zone scale
     const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
     
     float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      

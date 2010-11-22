@@ -165,7 +165,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   hsl2rgb(&color[0],&color[1],&color[2],data->hue,data->saturation,0.5);
   
   
-  //fprintf(stderr,"filter_radie: %f\n",filter_radie);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, color, data) schedule(static)
 #endif
@@ -175,17 +174,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int k=(roi_out->width*y+x)*ch;
       
-      /* rotate pixel around center of offset*/
+      /* first rotate and offset */
       dt_iop_vector_2d_t pv={-1,-1};
       float sx=-1.0+((ix+x)/iw)*2.0;
       float sy=-1.0+((iy+y)/ih)*2.0;
-      sy+=-1.0+((data->offset/100.0)*2);
       pv.x=cosv*sx-sinv*sy;
       pv.y=sinv*sx-cosv*sy;
+      pv.y+=-1.0+((data->offset/100.0)*2);
       
       float length=pv.y/filter_radie;
 #if 1
-      float compression = data->compression/100.0;
+      float compression = (data->compression/100.0)*0.9;
       length/=1.0-(0.5+(compression/2.0));
       float density = ( 1.0 / exp2f (data->density * CLIP( ((1.0+length)/2.0)) ) );
 #else

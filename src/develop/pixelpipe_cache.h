@@ -34,6 +34,9 @@ typedef struct dt_dev_pixelpipe_cache_t
 #ifdef HAVE_OPENCL
   void    **gpu_mem;
 #endif
+  // profiling:
+  uint64_t queries;
+  uint64_t misses;
 }
 dt_dev_pixelpipe_cache_t;
 
@@ -57,6 +60,9 @@ int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint
 
 /** invalidates all cachelines. */
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
+
+/** makes this buffer very important after it has been pulled from the cache. */
+void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data);
 
 /** print out cache lines/hashes (debug). */
 void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache);

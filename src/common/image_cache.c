@@ -178,7 +178,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
 write_error:
   if(f) fclose(f);
   fprintf(stderr, "[image_cache_write] failed to dump the cache to `%s'\n", dbfilename);
-  g_unlink(filename);
+  g_unlink(dbfilename);
   pthread_mutex_unlock(&(cache->mutex));
 }
 

@@ -29,6 +29,9 @@
 	top of the right panel.
 	That order can not be changed by user, so modules are always applied following the same order.
 	</para>
+
+	<para>You can use middle-click to zoom 1:1. A double middle-click takes you to 2:1.
+	</para>
 </sect1>
 <sect1 status="draft"><title>Filmstrip</title>
 	<para>The filmstrip is used to quickly switch between image to develop in darkroom view, the images viewed are the same
@@ -83,11 +86,19 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>The historystack lists every change of state (activate/de-activated) for all modules.
-            Here you can select a point in stack to return to that point of development history.
-            If you then activate a new module, all modules above the current point will be discarded.
-            Hitting 'compress historystack' generates the shortest historystack that produces the
-            current image, i.e. suppressing all de-activated modules.
+						<entry>
+						<para>The historystack lists every change of state (activate/de-activated) for all modules.
+            					Here you can select a point in stack to return to that point of development history.
+            					If you then activate a new module, all modules above the current point will be discarded.
+						</para>
+						<para>
+            					Hitting 'compress historystack' generates the shortest historystack that produces the
+            					current image, i.e. suppressing all de-activated modules.
+						</para>
+						<para>The button to the right lets you create a new styles by poping-up a new window.
+						Use the first line to name your style, the second to add a searchable description.
+						The "advanced presets" allows you chose which modules are to be taken into account for the styles.
+						</para>
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />

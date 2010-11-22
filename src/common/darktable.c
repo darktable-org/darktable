@@ -77,13 +77,13 @@ int dt_init(int argc, char *argv[])
       }
       if(argv[k][1] == 'd' && argc > k+1)
       {
-        if(!strcmp(argv[k+1], "all"))     darktable.unmuted = 0xffffffff;   // enable all debug information
-        if(!strcmp(argv[k+1], "cache"))   darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
-        if(!strcmp(argv[k+1], "control")) darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
-        if(!strcmp(argv[k+1], "dev"))     darktable.unmuted |= DT_DEBUG_DEV; // develop module
-        if(!strcmp(argv[k+1], "fswatch")) darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
-        if(!strcmp(argv[k+1], "camctl"))  darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
-        if(!strcmp(argv[k+1], "perf"))    darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
+        if(!strcmp(argv[k+1], "all"))       darktable.unmuted = 0xffffffff;   // enable all debug information
+        if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
+        if(!strcmp(argv[k+1], "control"))   darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
+        if(!strcmp(argv[k+1], "dev"))       darktable.unmuted |= DT_DEBUG_DEV; // develop module
+        if(!strcmp(argv[k+1], "fswatch"))   darktable.unmuted |= DT_DEBUG_FSWATCH; // fswatch module
+        if(!strcmp(argv[k+1], "camctl"))    darktable.unmuted |= DT_DEBUG_CAMCTL; // camera control module
+        if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
         if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
         if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
         k ++;
@@ -125,11 +125,12 @@ int dt_init(int argc, char *argv[])
 
   // check and migrate database into new XDG structure
   char dbfilename[2048]={0};
-  if ((dt_conf_get_string ("database"))[0]!='/')
+  gchar *conf_db = dt_conf_get_string("database");
+  if (conf_db && conf_db[0] != '/')
   {
     char *homedir = getenv ("HOME");
-    snprintf (dbfilename,2048,"%s/%s",homedir,dt_conf_get_string("database"));
-    if (g_file_test (dbfilename,G_FILE_TEST_EXISTS))
+    snprintf (dbfilename,2048,"%s/%s", homedir, conf_db);
+    if (g_file_test (dbfilename, G_FILE_TEST_EXISTS))
     {
       fprintf(stderr, "[init] moving database into new XDG directory structure\n");
       // move database into place
@@ -141,15 +142,17 @@ int dt_init(int argc, char *argv[])
         dt_conf_set_string("database","library.db");
       }
     }
+    g_free(conf_db);
   }
   
   // check and migrate the cachedir
   char cachefilename[2048]={0};
   char cachedir[2048]={0};
-  if ((dt_conf_get_string ("cachefile"))[0]!='/')
+  gchar *conf_cache = dt_conf_get_string("cachefile");
+  if (conf_cache && conf_cache[0] != '/')
   {
     char *homedir = getenv ("HOME");
-    snprintf (cachefilename,2048,"%s/%s",homedir,dt_conf_get_string("cachefile"));
+    snprintf (cachefilename,2048,"%s/%s",homedir, conf_cache);
     if (g_file_test (cachefilename,G_FILE_TEST_EXISTS))
     {
       fprintf(stderr, "[init] moving cache into new XDG directory structure\n");
@@ -161,6 +164,7 @@ int dt_init(int argc, char *argv[])
         dt_conf_set_string("cachefile","mipmaps");
       }
     }
+    g_free(conf_cache);
   }
   
   gchar *dbname = dt_conf_get_string ("database");

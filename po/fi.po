@@ -3,11 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: ../src/gui/preferences_gen.h:290 ../src/gui/preferences_gen.h:355
+#: ../src/gui/preferences_gen.h:371
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-27 23:27+0200\n"
+"POT-Creation-Date: 2010-11-20 16:47+0100\n"
 "PO-Revision-Date: 2010-08-18 19:02+0300\n"
 "Last-Translator: Mikko Ruohola <mikko@ruohola.org>\n"
 "Language-Team: Finnish Translators <mikko@ruohola.org>\n"
@@ -75,7 +77,7 @@ msgstr "laitteet"
 #. adding the labels
 #. exposure
 #: ../darktable.glade.h:15 ../src/iop/exposure.c:39 ../src/iop/exposure.c:321
-#: ../src/iop/relight.c:337 ../src/gui/presets.c:263
+#: ../src/iop/relight.c:342 ../src/gui/presets.c:263
 msgid "exposure"
 msgstr "valotus"
 
@@ -135,7 +137,7 @@ msgstr "tuo yksittäinen kuva"
 msgid "iso"
 msgstr "iso"
 
-#: ../darktable.glade.h:31 ../src/iop/lens.c:1179 ../src/gui/presets.c:243
+#: ../darktable.glade.h:31 ../src/iop/lens.c:1181 ../src/gui/presets.c:243
 msgid "lens"
 msgstr "objektiivi"
 
@@ -209,7 +211,7 @@ msgstr "vedos"
 msgid "switch to darkroom mode"
 msgstr "vaihda pimiötilaan"
 
-#: ../darktable.glade.h:50 ../src/iop/relight.c:339
+#: ../darktable.glade.h:50 ../src/iop/relight.c:344
 msgid "width"
 msgstr "leveys"
 
@@ -241,11 +243,11 @@ msgstr "kaappausnäkymä tila"
 msgid "Default client to use, this overrides detection of default client."
 msgstr ""
 
-#: ../darktable.schemas.in.h:6
+#: ../darktable.schemas.in.h:6 ../src/gui/preferences_gen.h:322
 msgid "always ask the user before any image file is deleted."
 msgstr "kysy aina käyttäjältä ennen kuvatiedoston poistamista."
 
-#: ../darktable.schemas.in.h:7
+#: ../darktable.schemas.in.h:7 ../src/gui/preferences_gen.h:306
 msgid "always ask the user before any image is removed from db."
 msgstr "kysy aina käyttäjältä ennen kuin kuva poistetaan tietokannasta."
 
@@ -266,7 +268,7 @@ msgstr "kysy ennen kuvatiedostojen poistoa"
 msgid "ask before removing images"
 msgstr "kysy ennen kuvien poistoa"
 
-#: ../darktable.schemas.in.h:12
+#: ../darktable.schemas.in.h:12 ../src/gui/preferences_gen.h:436
 msgid ""
 "creates backup of cachefile to prevent loss of thumbnails generated at "
 "crashes etc (needs a restart)."
@@ -294,7 +296,8 @@ msgstr "vaihda pimiötilaan"
 msgid "filename of your custom theme in share/darktable/"
 msgstr "omat teemasi tiedostonimi share/darktable/ hakemistossa"
 
-#: ../darktable.schemas.in.h:18
+#: ../darktable.schemas.in.h:18 ../src/gui/preferences_gen.h:404
+#: ../src/gui/preferences_gen.h:420
 #, fuzzy
 msgid ""
 "filename relative to your home directory, or starting with a slash (needs a "
@@ -329,7 +332,7 @@ msgstr "viedyn kuvan korkeus"
 msgid "height of the exported image, or 0 if no scaling should be done."
 msgstr "vietävän kuvan korkeus tai 0 jos halutaan alkuperäinen koko."
 
-#: ../darktable.schemas.in.h:25
+#: ../darktable.schemas.in.h:25 ../src/gui/preferences_gen.h:470
 #, fuzzy
 msgid ""
 "how many full-resolution floating point buffers of loaded raw images to keep "
@@ -378,71 +381,79 @@ msgstr ""
 "jos tämä on pienempi kuin darktablen sisäinen versionumero, nämä arvot "
 "päivitetään uusiin oletuksiin."
 
-#: ../darktable.schemas.in.h:32 ../src/gui/preferences_gen.h:409
+#: ../darktable.schemas.in.h:32
+msgid "ignore jpeg images when importing film rolls."
+msgstr ""
+
+#: ../darktable.schemas.in.h:33 ../src/gui/preferences_gen.h:409
 msgid "image cache file"
 msgstr "kuvavälimuistin tiedosto"
 
-#: ../darktable.schemas.in.h:33 ../src/gui/preferences_gen.h:425
+#: ../darktable.schemas.in.h:34 ../src/gui/preferences_gen.h:425
 #, fuzzy
 msgid "image cache file backup"
 msgstr "kuvavälimuistin tiedosto"
 
-#: ../darktable.schemas.in.h:34
+#: ../darktable.schemas.in.h:35
 msgid "jobcode of import job"
 msgstr "tuonnin työkoodi"
 
-#: ../darktable.schemas.in.h:35
+#: ../darktable.schemas.in.h:36
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "tallennettavien jpeg esikatselukuvien laatu"
 
-#: ../darktable.schemas.in.h:36 ../src/gui/preferences_gen.h:441
+#: ../darktable.schemas.in.h:37 ../src/gui/preferences_gen.h:441
 msgid "memory in bytes to use for mipmap cache"
 msgstr "mipmap välimuistin käytössä oleva muistin määrä tavuina"
 
-#: ../darktable.schemas.in.h:37
+#: ../darktable.schemas.in.h:38
 msgid "name of capture job"
 msgstr "kaappaustyön nimi"
 
-#: ../darktable.schemas.in.h:38 ../src/gui/preferences_gen.h:491
+#: ../darktable.schemas.in.h:39 ../src/gui/preferences_gen.h:491
 msgid "password storage backend to use"
 msgstr ""
 
-#: ../darktable.schemas.in.h:39
+#: ../darktable.schemas.in.h:40
 msgid "path of storage for captured images"
 msgstr "polku johon kamerasta kaapatut kuvat tallennetaan"
 
-#: ../darktable.schemas.in.h:40
+#: ../darktable.schemas.in.h:41
+msgid "recursive directory traversal when importing filmrolls."
+msgstr ""
+
+#: ../darktable.schemas.in.h:42
 msgid "rename pattern for captured images"
 msgstr "kamerasta kaapattujen tiedostonimien muoto"
 
-#: ../darktable.schemas.in.h:41
+#: ../darktable.schemas.in.h:43
 msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
 msgstr ""
 "valitse asettelu valopöydälle: 0 - zoomattava tai 1 - tiedostohallinta."
 
-#: ../darktable.schemas.in.h:42 ../src/gui/preferences_gen.h:262
+#: ../darktable.schemas.in.h:44 ../src/gui/preferences_gen.h:262
 msgid "size of the side panels in pixels"
 msgstr ""
 
-#: ../darktable.schemas.in.h:43
+#: ../darktable.schemas.in.h:45
 msgid "small thumbnails to keep in main memory cache"
 msgstr "välimuistissa pidettävien pienten näytekuvien määrä "
 
-#: ../darktable.schemas.in.h:44
+#: ../darktable.schemas.in.h:46
 msgid "subpath pattern in storage for captured images"
 msgstr "alihakemistopolun muoto levyllä kamerasta kaapatuille kuville"
 
-#: ../darktable.schemas.in.h:45
+#: ../darktable.schemas.in.h:47
 msgid "the name of backup directory to search for on mounted medias"
 msgstr "varmuuskopiohakemiston nimi josta etsitään liitettyjä laitteita"
 
-#: ../darktable.schemas.in.h:46
+#: ../darktable.schemas.in.h:48 ../src/gui/preferences_gen.h:503
 msgid ""
 "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
 "kwallet, 3 - gnome keyring"
 msgstr ""
 
-#: ../darktable.schemas.in.h:47
+#: ../darktable.schemas.in.h:49 ../src/gui/preferences_gen.h:486
 msgid ""
 "these files can later be re-imported into a different database, preserving "
 "your changes to the image."
@@ -450,13 +461,13 @@ msgstr ""
 "nämä tiedostot voidaan myöhemmin uudelleentuoda eri tietokantaan, säilyttäen "
 "tekemäsi muokkaukset kuviin."
 
-#: ../darktable.schemas.in.h:48
+#: ../darktable.schemas.in.h:50
 msgid "this overrides the per-image settings, if not set to `image'."
 msgstr ""
 "tämä ohittaa kuvakohtaisen asetukset jos tätä ei ole asetettu arvoon \"image"
 "\"."
 
-#: ../darktable.schemas.in.h:49
+#: ../darktable.schemas.in.h:51 ../src/gui/preferences_gen.h:339
 msgid ""
 "this value smaller than 1.0 downsamples the preview pixels for faster "
 "feedback."
@@ -464,46 +475,72 @@ msgstr ""
 "pienempi arvo kuin 1.0 alinäytteistää esikatsellun pikselit nopeampaa "
 "toimintaa varten."
 
-#: ../darktable.schemas.in.h:50
+#: ../darktable.schemas.in.h:52
 msgid "version of these dt-gconf entries"
 msgstr "dt-gconf merkintöjen versio"
 
-#: ../darktable.schemas.in.h:51
+#: ../darktable.schemas.in.h:53
+msgid ""
+"when having raw+jpeg images together in one directory it makes no sense to "
+"import both. with this flag one can ignore all jpegs found."
+msgstr ""
+
+#: ../darktable.schemas.in.h:54
 msgid "which layout should lighttable mode show"
 msgstr "millainen näkymä valopöytätilassa tulisi näyttää"
 
-#: ../darktable.schemas.in.h:52
+#: ../darktable.schemas.in.h:55
 msgid "width of the exported image"
 msgstr "vietävän kuvan leveys"
 
-#: ../darktable.schemas.in.h:53
+#: ../darktable.schemas.in.h:56
 msgid "width of the exported image, or 0 if no scaling should be done."
 msgstr "vietävän kuvan leveys tai 0 jos käytetään alkuperäistä"
 
-#: ../darktable.schemas.in.h:54 ../src/gui/preferences_gen.h:475
+#: ../darktable.schemas.in.h:57 ../src/gui/preferences_gen.h:475
 #, fuzzy
 msgid "write a redundant sidecar file for each image"
 msgstr "kirjoita ylimääräinen tiedosto jokaista kuvaa varten"
 
 #. single images
-#: ../src/common/image.c:98 ../src/control/control.c:1360
-#: ../src/control/control.c:1361 ../src/libs/collect.c:221
+#: ../src/common/image.c:98 ../src/control/control.c:1371
+#: ../src/control/control.c:1372 ../src/libs/collect.c:221
 #: ../src/gui/filmview.c:56 ../src/gui/filmview.c:82 ../src/gui/filmview.c:86
 #: ../src/gui/filmview.c:88
 #, c-format
 msgid "single images"
 msgstr "yksittäiset kuvat"
 
-#: ../src/control/control.c:868 ../src/control/control.c:871
+#: ../src/common/history.c:170 ../src/common/styles.c:195
+#: ../src/develop/develop.c:897 ../src/gui/styles_dialog.c:319
+msgid "on"
+msgstr "päällä"
+
+#: ../src/common/history.c:170 ../src/common/styles.c:195
+#: ../src/develop/develop.c:897 ../src/gui/styles_dialog.c:319
+msgid "off"
+msgstr "pois päältä"
+
+#: ../src/common/styles.c:44
+#, c-format
+msgid "style with name '%s' already exists"
+msgstr ""
+
+#: ../src/common/styles.c:84
+#, c-format
+msgid "style named '%s' successfully created"
+msgstr ""
+
+#: ../src/control/control.c:879 ../src/control/control.c:882
 msgid "working.."
 msgstr "työskentelee.."
 
-#: ../src/control/control.c:948
+#: ../src/control/control.c:959
 #, c-format
 msgid "switch to %s mode"
 msgstr "vaihda %s tilaan"
 
-#: ../src/control/control.c:956
+#: ../src/control/control.c:967
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s-tila</b></big></span>"
@@ -623,29 +660,21 @@ msgstr "lataa kuvaa %s"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: moduulin `%s' versio on eri: %d != %d"
 
-#: ../src/develop/develop.c:897
-msgid "on"
-msgstr "päällä"
-
-#: ../src/develop/develop.c:897
-msgid "off"
-msgstr "pois päältä"
-
-#: ../src/develop/imageop.c:319 ../src/develop/imageop.c:435
+#: ../src/develop/imageop.c:324 ../src/develop/imageop.c:440
 #, c-format
 msgid "%s is switched on"
 msgstr "%s on päällä"
 
-#: ../src/develop/imageop.c:319 ../src/develop/imageop.c:435
+#: ../src/develop/imageop.c:324 ../src/develop/imageop.c:440
 #, c-format
 msgid "%s is switched off"
 msgstr "%s on pois päältä"
 
-#: ../src/develop/imageop.c:454 ../src/libs/lib.c:497
+#: ../src/develop/imageop.c:459 ../src/libs/lib.c:497
 msgid "reset parameters"
 msgstr "palauta arvot"
 
-#: ../src/develop/imageop.c:455 ../src/libs/lib.c:503
+#: ../src/develop/imageop.c:460 ../src/libs/lib.c:503
 msgid "presets"
 msgstr "esiasetukset"
 
@@ -663,11 +692,11 @@ msgstr "avaa dt aputiedosto"
 msgid "xmp sidecar files"
 msgstr "dt aputiedostot"
 
-#: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:700
+#: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:752
 msgid "all files"
 msgstr "kaikki tiedostot"
 
-#: ../src/libs/copy_history.c:84 ../src/gui/gtk.c:720
+#: ../src/libs/copy_history.c:84 ../src/gui/gtk.c:772
 #, c-format
 msgid "error loading file '%s'"
 msgstr "virhe tiedoston '%s' lataamisessa"
@@ -907,7 +936,7 @@ msgstr "valitut kuvat"
 msgid "remove from the collection"
 msgstr "poista kokoelmasta"
 
-#: ../src/libs/image.c:87 ../src/libs/tagging.c:384
+#: ../src/libs/image.c:87 ../src/libs/tagging.c:384 ../src/libs/styles.c:251
 msgid "delete"
 msgstr "tuhoa"
 
@@ -1090,7 +1119,7 @@ msgstr "kerää kuvia"
 
 #: ../src/libs/collect.c:92 ../src/libs/collect.c:193
 #: ../src/iop/temperature.c:375 ../src/iop/bilateral.cc:284
-#: ../src/iop/channelmixer.c:359 ../src/iop/channelmixer.c:376
+#: ../src/iop/channelmixer.c:364 ../src/iop/channelmixer.c:381
 msgid "red"
 msgstr "punainen"
 
@@ -1101,7 +1130,7 @@ msgstr "keltainen"
 
 #: ../src/libs/collect.c:94 ../src/libs/collect.c:203
 #: ../src/iop/temperature.c:379 ../src/iop/bilateral.cc:286
-#: ../src/iop/channelmixer.c:360 ../src/iop/channelmixer.c:377
+#: ../src/iop/channelmixer.c:365 ../src/iop/channelmixer.c:382
 msgid "green"
 msgstr "vihreä"
 
@@ -1244,7 +1273,7 @@ msgstr "suljinnopeus2"
 msgid "wb"
 msgstr "wb"
 
-#: ../src/libs/camera.c:517 ../src/imageio/format/jpeg.c:634
+#: ../src/libs/camera.c:517 ../src/imageio/format/jpeg.c:638
 msgid "quality"
 msgstr "laatu"
 
@@ -1271,6 +1300,30 @@ msgstr "ominaisuudet"
 msgid "add user property"
 msgstr ""
 
+#: ../src/libs/styles.c:44
+msgid "styles"
+msgstr ""
+
+#: ../src/libs/styles.c:238
+#, fuzzy
+msgid "create duplicate"
+msgstr "kahdenna"
+
+#: ../src/libs/styles.c:242
+msgid "creates a duplicate of the image before applying style"
+msgstr ""
+
+#. TODO: Unfinished stuff
+#: ../src/libs/styles.c:246
+#, fuzzy
+msgid "edit"
+msgstr "muokkaa `%s'"
+
+#: ../src/libs/styles.c:253
+#, fuzzy
+msgid "deletes the selected style in list above"
+msgstr "poista valittu merkki"
+
 #: ../src/iop/clipping.c:116
 msgid "crop and rotate"
 msgstr "rajaa ja käännä"
@@ -1288,7 +1341,7 @@ msgid "rotate by 180"
 msgstr "käännä 180-astetta"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:684 ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:684 ../src/iop/clipping.c:772
 msgid "flip"
 msgstr "käännä"
 
@@ -1358,7 +1411,11 @@ msgstr "neliö"
 msgid "din"
 msgstr "din"
 
-#: ../src/iop/clipping.c:738
+#: ../src/iop/clipping.c:732
+msgid "16:9"
+msgstr ""
+
+#: ../src/iop/clipping.c:739
 #, fuzzy
 msgid ""
 "set the aspect ratio (w:h)\n"
@@ -1367,42 +1424,42 @@ msgstr ""
 "määrittele kuvasuhde (k/l)\n"
 "paina ctrl-x kääntääksesi"
 
-#: ../src/iop/clipping.c:744
+#: ../src/iop/clipping.c:745
 #, fuzzy
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr ""
 "määrittele kuvasuhde (k/l)\n"
 "paina ctrl-x kääntääksesi"
 
-#: ../src/iop/clipping.c:751
+#: ../src/iop/clipping.c:752
 msgid "guides"
 msgstr "ohjeet"
 
-#: ../src/iop/clipping.c:754
+#: ../src/iop/clipping.c:755
 msgid "none"
 msgstr "ei mikään"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:756
 msgid "grid"
 msgstr "ruudukko"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:757
 msgid "rules of thirds"
 msgstr "kolmannesten sääntö"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:758
 msgid "diagonal method"
 msgstr "viistometodi"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:759
 msgid "harmonious triangles"
 msgstr "harmoniset kolmiot"
 
-#: ../src/iop/clipping.c:759
+#: ../src/iop/clipping.c:760
 msgid "golden mean"
 msgstr "kultainen suhde"
 
-#: ../src/iop/clipping.c:761
+#: ../src/iop/clipping.c:762
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
@@ -1410,48 +1467,48 @@ msgstr ""
 "tällä valinnalla voit lisätä apuviivoja, jotka auttavat valokuvasi "
 "sommittelussa."
 
-#: ../src/iop/clipping.c:765
+#: ../src/iop/clipping.c:766
 msgid "type"
 msgstr "tyyppi"
 
-#: ../src/iop/clipping.c:778
+#: ../src/iop/clipping.c:779
 msgid "flip guides vertically"
 msgstr "käännä ohjeet pystysuunnassa"
 
-#: ../src/iop/clipping.c:779
+#: ../src/iop/clipping.c:780
 msgid "flip guides horizontally"
 msgstr "käännä ohjeet vaakasuunnassa"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:782
 msgid "golden sections"
 msgstr "kultaiset lohkot"
 
-#: ../src/iop/clipping.c:783
+#: ../src/iop/clipping.c:784
 msgid "enable this option to show golden sections."
 msgstr "kytke tämä valinta näyttääksesi kultaiset lohkot."
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:787
 msgid "spiral sections"
 msgstr "kierre lohkot"
 
-#: ../src/iop/clipping.c:787
+#: ../src/iop/clipping.c:788
 msgid "enable this option to show golden spiral sections."
 msgstr "kytke tämä valinta näyttääksesi kultaisen spiraalin lohkot."
 
-#: ../src/iop/clipping.c:790
+#: ../src/iop/clipping.c:791
 msgid "golden spiral"
 msgstr "kultainen kierre"
 
-#: ../src/iop/clipping.c:791
+#: ../src/iop/clipping.c:792
 msgid "enable this option to show a golden spiral guide."
 msgstr "kytke tämä valinta näyttääksesi kultaisen spiraalin apuviivat."
 
-#: ../src/iop/clipping.c:794
+#: ../src/iop/clipping.c:795
 msgid "golden triangles"
 msgstr "kultaiset kolmiot"
 
-#: ../src/iop/clipping.c:795
+#: ../src/iop/clipping.c:796
 msgid "enable this option to show golden triangles."
 msgstr "kytke tämä valinta näyttääksesi kultaiset kolmiot."
 
@@ -1459,10 +1516,10 @@ msgstr "kytke tämä valinta näyttääksesi kultaiset kolmiot."
 msgid "color correction"
 msgstr "värien korjaus"
 
-#: ../src/iop/colorcorrection.c:181 ../src/iop/graduatednd.c:379
-#: ../src/iop/vignette.c:353 ../src/iop/velvia.c:230
-#: ../src/iop/splittoning.c:463 ../src/iop/splittoning.c:495
-#: ../src/iop/channelmixer.c:357
+#: ../src/iop/colorcorrection.c:186 ../src/iop/graduatednd.c:382
+#: ../src/iop/vignette.c:357 ../src/iop/velvia.c:232
+#: ../src/iop/splittoning.c:467 ../src/iop/splittoning.c:499
+#: ../src/iop/channelmixer.c:362
 msgid "saturation"
 msgstr "kylläisyys"
 
@@ -1581,7 +1638,7 @@ msgstr "säädä mustan tasoa"
 msgid "adjust the exposure correction [ev]"
 msgstr "säädä valotuksen korjausta [EV]"
 
-#: ../src/iop/exposure.c:333 ../src/iop/lens.c:1230
+#: ../src/iop/exposure.c:333
 msgid "auto"
 msgstr "automaattinen"
 
@@ -1661,55 +1718,55 @@ msgid "graduated neutral density"
 msgstr ""
 
 #. adding the labels
-#: ../src/iop/graduatednd.c:374
+#: ../src/iop/graduatednd.c:377
 msgid "density"
 msgstr ""
 
-#: ../src/iop/graduatednd.c:375
+#: ../src/iop/graduatednd.c:378
 #, fuzzy
 msgid "compression"
 msgstr "pakkaa"
 
-#: ../src/iop/graduatednd.c:376
+#: ../src/iop/graduatednd.c:379
 #, fuzzy
 msgid "rotation"
 msgstr "kylläisyys"
 
-#: ../src/iop/graduatednd.c:377
+#: ../src/iop/graduatednd.c:380
 msgid "split"
 msgstr ""
 
-#: ../src/iop/graduatednd.c:378 ../src/iop/splittoning.c:462
-#: ../src/iop/splittoning.c:494 ../src/iop/channelmixer.c:356
+#: ../src/iop/graduatednd.c:381 ../src/iop/splittoning.c:466
+#: ../src/iop/splittoning.c:498 ../src/iop/channelmixer.c:361
 msgid "hue"
 msgstr "värisävy"
 
-#: ../src/iop/graduatednd.c:409
+#: ../src/iop/graduatednd.c:412
 #, fuzzy
 msgid "select the hue tone of filter"
 msgstr "valitse kirkkaiden kohtien sävy"
 
-#: ../src/iop/graduatednd.c:418
+#: ../src/iop/graduatednd.c:421
 #, fuzzy
 msgid "select the saturation of filter"
 msgstr "valitse varjokohtien värikylläisyys"
 
-#: ../src/iop/graduatednd.c:425
+#: ../src/iop/graduatednd.c:428
 msgid "the density in EV for the filter"
 msgstr ""
 
-#: ../src/iop/graduatednd.c:427
+#: ../src/iop/graduatednd.c:430
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
 "0% = soft, 100% = hard"
 msgstr ""
 
-#: ../src/iop/graduatednd.c:428
+#: ../src/iop/graduatednd.c:431
 msgid "rotation of filter -180 to 180 degrees"
 msgstr ""
 
-#: ../src/iop/graduatednd.c:429
+#: ../src/iop/graduatednd.c:432
 msgid "offset of filter in angle of rotation"
 msgstr ""
 
@@ -1757,12 +1814,12 @@ msgstr "sekoita värikkyyttä (0 on sama kuin leikkaus)"
 msgid "blend hue (0 is same as clipping)"
 msgstr "sekoita sävyä (0 on sama kuin leikkaus)"
 
-#: ../src/iop/lens.c:42
+#: ../src/iop/lens.c:44
 #, fuzzy
 msgid "lens correction"
 msgstr "värien korjaus"
 
-#: ../src/iop/lens.c:674
+#: ../src/iop/lens.c:676
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1775,7 +1832,7 @@ msgstr ""
 "kiinnitys:\t\t%s\n"
 "kerroin:\t\t%.1f"
 
-#: ../src/iop/lens.c:914
+#: ../src/iop/lens.c:916
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1794,35 +1851,35 @@ msgstr ""
 "tyyppi:\t\t%s\n"
 "kiinnitys:\t\t%s"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:944
+#: ../src/iop/lens.c:946
 msgid "focal length (mm)"
 msgstr "polttoväli (mm)"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:954
+#: ../src/iop/lens.c:956
 msgid "f-number (aperture)"
 msgstr "f-arvo (aukko)"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:960
+#: ../src/iop/lens.c:962
 msgid "distance to subject"
 msgstr "etäisyys kohteeseen"
 
-#: ../src/iop/lens.c:1165
+#: ../src/iop/lens.c:1167
 msgid "cam"
 msgstr "cam"
 
-#: ../src/iop/lens.c:1166
+#: ../src/iop/lens.c:1168
 msgid ""
 "search for camera using a pattern\n"
 "format: [maker, ][model]"
@@ -1830,7 +1887,7 @@ msgstr ""
 "etsi kameraa muodossa\n"
 "muoto: [valmistaja, ][malli]"
 
-#: ../src/iop/lens.c:1181
+#: ../src/iop/lens.c:1183
 msgid ""
 "search for lens using a pattern\n"
 "format: [maker, ][model]"
@@ -1839,50 +1896,49 @@ msgstr ""
 "muoto: [valmistaja, ][malli]"
 
 #. target geometry
-#: ../src/iop/lens.c:1207
+#: ../src/iop/lens.c:1209
 msgid "geometry"
 msgstr "geometria"
 
-#: ../src/iop/lens.c:1213
+#: ../src/iop/lens.c:1215
 msgid "target geometry"
 msgstr "kohteen geometria"
 
-#: ../src/iop/lens.c:1214
+#: ../src/iop/lens.c:1216
 msgid "rectilinear"
 msgstr "suoraviivainen"
 
-#: ../src/iop/lens.c:1215
+#: ../src/iop/lens.c:1217
 msgid "fish-eye"
 msgstr "kalansilmä"
 
-#: ../src/iop/lens.c:1216
+#: ../src/iop/lens.c:1218
 msgid "panoramic"
 msgstr "panoramic"
 
-#: ../src/iop/lens.c:1217
+#: ../src/iop/lens.c:1219
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#. gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-#: ../src/iop/lens.c:1237 ../src/iop/vignette.c:348
+#: ../src/iop/lens.c:1240 ../src/iop/vignette.c:352 ../src/iop/watermark.c:565
 msgid "scale"
 msgstr "skaalaa"
 
 #. reverse direction
-#: ../src/iop/lens.c:1243
+#: ../src/iop/lens.c:1245
 msgid "reverse"
 msgstr "käänteinen"
 
-#: ../src/iop/lens.c:1244
+#: ../src/iop/lens.c:1246
 msgid "apply distortions instead of correcting them"
 msgstr "käytä vääristymiä niiden korjaamisen sijasta"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1251
+#: ../src/iop/lens.c:1253
 msgid "tca r"
 msgstr "tca r"
 
-#: ../src/iop/lens.c:1254
+#: ../src/iop/lens.c:1255
 msgid "tca b"
 msgstr ""
 
@@ -1902,7 +1958,7 @@ msgstr ""
 msgid "monochrome"
 msgstr "harmaasävy"
 
-#: ../src/iop/monochrome.c:315
+#: ../src/iop/monochrome.c:319
 msgid ""
 "drag and scroll\n"
 "to adjust the virtual\n"
@@ -1912,7 +1968,7 @@ msgstr ""
 "säätääksesi virtuaalista\n"
 "värisuodinta"
 
-#: ../src/iop/monochrome.c:337
+#: ../src/iop/monochrome.c:341
 msgid "filter size"
 msgstr "filtterin koko"
 
@@ -2092,11 +2148,11 @@ msgstr "tuo uudelleen"
 msgid "trigger re-import of the raw image"
 msgstr "käynnistä raw-kuvan uudelleenlataus"
 
-#: ../src/iop/sharpen.c:269 ../src/iop/bilateral.cc:282 ../src/iop/clahe.c:379
+#: ../src/iop/sharpen.c:269 ../src/iop/bilateral.cc:282 ../src/iop/clahe.c:385
 msgid "radius"
 msgstr "säde"
 
-#: ../src/iop/sharpen.c:271 ../src/iop/clahe.c:381
+#: ../src/iop/sharpen.c:271 ../src/iop/clahe.c:387
 msgid "amount"
 msgstr "määrä"
 
@@ -2122,7 +2178,7 @@ msgid "temperature in"
 msgstr "lämpötila (sisään)"
 
 #: ../src/iop/temperature.c:383 ../src/iop/bilateral.cc:288
-#: ../src/iop/channelmixer.c:361 ../src/iop/channelmixer.c:378
+#: ../src/iop/channelmixer.c:366 ../src/iop/channelmixer.c:383
 msgid "blue"
 msgstr "sininen"
 
@@ -2313,14 +2369,18 @@ msgid "kodak easyshare like"
 msgstr ""
 
 #: ../src/iop/basecurve.c:58
+msgid "konica minolta like"
+msgstr ""
+
+#: ../src/iop/basecurve.c:59
 msgid "fotogenetic (point & shoot)"
 msgstr "fotogenetic (point & shoot)"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:60
 msgid "fotogenetic (ev3)"
 msgstr "fotogenetic (ev3)"
 
-#: ../src/iop/basecurve.c:120
+#: ../src/iop/basecurve.c:123
 msgid "base curve"
 msgstr "peruskäyrä"
 
@@ -2328,39 +2388,39 @@ msgstr "peruskäyrä"
 msgid "color zones"
 msgstr "värialueet"
 
-#: ../src/iop/colorzones.c:275
+#: ../src/iop/colorzones.c:280
 msgid "red black white"
 msgstr "punainen ja mustavalkoinen"
 
-#: ../src/iop/colorzones.c:290
+#: ../src/iop/colorzones.c:295
 msgid "black white and skin tones"
 msgstr "mustavalkoinen ja ihonväri"
 
-#: ../src/iop/colorzones.c:306
+#: ../src/iop/colorzones.c:311
 msgid "polarizing filter"
 msgstr "polarisoiva suodin"
 
-#: ../src/iop/colorzones.c:345
+#: ../src/iop/colorzones.c:350
 msgid "natural skin tones"
 msgstr "luonnolliset ihon sävyt"
 
-#: ../src/iop/colorzones.c:803 ../src/iop/colorzones.c:828
+#: ../src/iop/colorzones.c:808 ../src/iop/colorzones.c:833
 msgid "luma (L)"
 msgstr "valo (L)"
 
-#: ../src/iop/colorzones.c:804 ../src/iop/colorzones.c:829
+#: ../src/iop/colorzones.c:809 ../src/iop/colorzones.c:834
 msgid "colorness (C)"
 msgstr "värik (C)"
 
-#: ../src/iop/colorzones.c:805 ../src/iop/colorzones.c:830
+#: ../src/iop/colorzones.c:810 ../src/iop/colorzones.c:835
 msgid "hue (h)"
 msgstr "sävy (h)"
 
-#: ../src/iop/colorzones.c:821
+#: ../src/iop/colorzones.c:826
 msgid "select color by"
 msgstr "valitse väri"
 
-#: ../src/iop/colorzones.c:844
+#: ../src/iop/colorzones.c:849
 msgid "pick gui color from image"
 msgstr "valitse käyttöliittymän väri kuvasta"
 
@@ -2368,47 +2428,47 @@ msgstr "valitse käyttöliittymän väri kuvasta"
 msgid "vignetting"
 msgstr "vinjetointi"
 
-#: ../src/iop/vignette.c:349
+#: ../src/iop/vignette.c:353
 msgid "fall-off strength"
 msgstr ""
 
-#: ../src/iop/vignette.c:350 ../src/iop/grain.c:430
+#: ../src/iop/vignette.c:354 ../src/iop/grain.c:435
 msgid "strength"
 msgstr "vahvuus"
 
-#: ../src/iop/vignette.c:351
+#: ../src/iop/vignette.c:355
 msgid "uniformity"
 msgstr "yhdenmukaisuus"
 
-#: ../src/iop/vignette.c:352
+#: ../src/iop/vignette.c:356
 msgid "b/s ratio"
 msgstr "kirk/kyll suhde"
 
-#: ../src/iop/vignette.c:354
+#: ../src/iop/vignette.c:358
 msgid "fall-off"
 msgstr ""
 
-#: ../src/iop/vignette.c:368 ../src/iop/vignette.c:369
+#: ../src/iop/vignette.c:372 ../src/iop/vignette.c:373
 msgid "invert"
 msgstr "käänteinen"
 
-#: ../src/iop/vignette.c:377
+#: ../src/iop/vignette.c:381
 msgid "the radii scale of vignette for start of fall-off"
 msgstr ""
 
-#: ../src/iop/vignette.c:378
+#: ../src/iop/vignette.c:382
 msgid "the radii scale of vignette for end of fall-off"
 msgstr ""
 
-#: ../src/iop/vignette.c:379
+#: ../src/iop/vignette.c:383
 msgid "strength of effect"
 msgstr "efektin voimakkuus"
 
-#: ../src/iop/vignette.c:380
+#: ../src/iop/vignette.c:384
 msgid "uniformity of vignette"
 msgstr "vinjetöinnin yhdenmuotoisuus"
 
-#: ../src/iop/vignette.c:381
+#: ../src/iop/vignette.c:385
 msgid ""
 "brightness/saturation ratio\n"
 "of the result,\n"
@@ -2421,11 +2481,11 @@ msgstr ""
 "-1 - Vain kirkkaus\n"
 " 0 - 50/50 kirkkaus ja kylläisyys+1 - vain kylläisyys"
 
-#: ../src/iop/vignette.c:382
+#: ../src/iop/vignette.c:386
 msgid "inverts effect of saturation..."
 msgstr "kääntää värikylläisyysvaikutuksen"
 
-#: ../src/iop/vignette.c:383
+#: ../src/iop/vignette.c:387
 msgid "inverts effect of fall-off, default is dark fall-off..."
 msgstr ""
 
@@ -2433,23 +2493,23 @@ msgstr ""
 msgid "velvia"
 msgstr "karkkiväritys"
 
-#: ../src/iop/velvia.c:231
+#: ../src/iop/velvia.c:233
 msgid "vibrance"
 msgstr "kirkkaus"
 
-#: ../src/iop/velvia.c:232
+#: ../src/iop/velvia.c:234
 msgid "mid-tones bias"
 msgstr "keskisävykeskeinen"
 
-#: ../src/iop/velvia.c:247
+#: ../src/iop/velvia.c:249
 msgid "the amount of saturation to apply"
 msgstr "käytettävän värikylläisyyden määrä"
 
-#: ../src/iop/velvia.c:248
+#: ../src/iop/velvia.c:250
 msgid "the vibrance amount"
 msgstr "eloisuuden määrä"
 
-#: ../src/iop/velvia.c:249
+#: ../src/iop/velvia.c:251
 msgid "how much to spare highlights and shadows"
 msgstr "kuinka paljon kirkkaita ja varjoisia kohtia säästetään"
 
@@ -2457,49 +2517,49 @@ msgstr "kuinka paljon kirkkaita ja varjoisia kohtia säästetään"
 msgid "split toning"
 msgstr "jakosävytys"
 
-#: ../src/iop/splittoning.c:311
+#: ../src/iop/splittoning.c:315
 msgid "Select tone color"
 msgstr "valitse sävyväri"
 
 #. Shadows
-#: ../src/iop/splittoning.c:449
+#: ../src/iop/splittoning.c:453
 msgid "shadows"
 msgstr "varjot"
 
-#: ../src/iop/splittoning.c:474
+#: ../src/iop/splittoning.c:478
 msgid "select the hue tone for shadows"
 msgstr "valitse varjokohtien sävy"
 
-#: ../src/iop/splittoning.c:478
+#: ../src/iop/splittoning.c:482
 msgid "select the saturation shadow tone"
 msgstr "valitse varjokohtien värikylläisyys"
 
 #. Highlights
-#: ../src/iop/splittoning.c:481
+#: ../src/iop/splittoning.c:485
 msgid "highlights"
 msgstr "kirkkaat kohdat"
 
-#: ../src/iop/splittoning.c:507
+#: ../src/iop/splittoning.c:511
 msgid "select the hue tone for highlights"
 msgstr "valitse kirkkaiden kohtien sävy"
 
-#: ../src/iop/splittoning.c:511
+#: ../src/iop/splittoning.c:515
 msgid "select the saturation highlights tone"
 msgstr "valitse kirkkaiden kohtien värikylläisyys"
 
-#: ../src/iop/splittoning.c:521
+#: ../src/iop/splittoning.c:525
 msgid "balance"
 msgstr "tasapaino"
 
-#: ../src/iop/splittoning.c:522
+#: ../src/iop/splittoning.c:526
 msgid "compress"
 msgstr "pakkaa"
 
-#: ../src/iop/splittoning.c:535
+#: ../src/iop/splittoning.c:539
 msgid "the balance of center of splittoning"
 msgstr "sävyjaon keskikohta"
 
-#: ../src/iop/splittoning.c:536
+#: ../src/iop/splittoning.c:540
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
@@ -2511,15 +2571,15 @@ msgstr ""
 msgid "grain"
 msgstr "rae"
 
-#: ../src/iop/grain.c:429
+#: ../src/iop/grain.c:434
 msgid "coarseness"
 msgstr "karkeus"
 
-#: ../src/iop/grain.c:441
+#: ../src/iop/grain.c:446
 msgid "the grain size (~iso of the film)"
 msgstr "rakeen koko (~iso arvo filmissä)"
 
-#: ../src/iop/grain.c:442
+#: ../src/iop/grain.c:447
 msgid "the strength of applied grain"
 msgstr "käytettävän rakeen voimakkuus"
 
@@ -2554,11 +2614,11 @@ msgstr "korjaa syötteen profiili"
 msgid "local contrast (slow)"
 msgstr "paikallinen kontrasti"
 
-#: ../src/iop/clahe.c:390
+#: ../src/iop/clahe.c:396
 msgid "size of features to preserve"
 msgstr "säilytettävien ominaisuuksien koko"
 
-#: ../src/iop/clahe.c:391
+#: ../src/iop/clahe.c:397
 msgid "strength of the effect"
 msgstr "efektin vahvuus"
 
@@ -2590,99 +2650,133 @@ msgstr ""
 msgid "channel mixer"
 msgstr "kanavasekoitin"
 
-#: ../src/iop/channelmixer.c:354
+#: ../src/iop/channelmixer.c:359
 msgid "output channel"
 msgstr "ulostulokanava"
 
-#: ../src/iop/channelmixer.c:358
+#: ../src/iop/channelmixer.c:363
 msgid "lightness"
 msgstr "valoisuus"
 
-#: ../src/iop/channelmixer.c:362
+#: ../src/iop/channelmixer.c:367
 msgid "gray"
 msgstr "harmaa"
 
-#: ../src/iop/channelmixer.c:367
+#: ../src/iop/channelmixer.c:372
 msgid "source channels"
 msgstr "lähde kanavat"
 
-#: ../src/iop/channelmixer.c:414
+#: ../src/iop/channelmixer.c:419
 msgid "swap r and b"
 msgstr "vaihda p ja s"
 
-#: ../src/iop/channelmixer.c:415
+#: ../src/iop/channelmixer.c:420
 msgid "swap g and b"
 msgstr "vaihda v ja s"
 
-#: ../src/iop/channelmixer.c:416
+#: ../src/iop/channelmixer.c:421
 msgid "color contrast boost"
 msgstr "värinkontrastin lisäys"
 
-#: ../src/iop/channelmixer.c:417
+#: ../src/iop/channelmixer.c:422
 msgid "color details boost"
 msgstr "värien yksityiskohtien lisäys"
 
-#: ../src/iop/channelmixer.c:418
+#: ../src/iop/channelmixer.c:423
 msgid "color artifacts boost"
 msgstr ""
 
-#: ../src/iop/channelmixer.c:419
+#: ../src/iop/channelmixer.c:424
 msgid "b/w"
 msgstr "mv"
 
-#: ../src/iop/channelmixer.c:420
+#: ../src/iop/channelmixer.c:425
 msgid "b/w artifacts boost"
 msgstr ""
 
-#: ../src/iop/channelmixer.c:421
+#: ../src/iop/channelmixer.c:426
 msgid "b/w smooth skin"
 msgstr "mv pehmeä iho"
 
-#: ../src/iop/channelmixer.c:422
+#: ../src/iop/channelmixer.c:427
 msgid "b/w blue artifacts reduce"
 msgstr ""
 
-#: ../src/iop/relight.c:53
+#: ../src/iop/relight.c:54
 msgid "Fill-light 0.25EV with 4 zones"
 msgstr ""
 
-#: ../src/iop/relight.c:54
+#: ../src/iop/relight.c:55
 msgid "Fill-shadow -0.25EV with 4 zones"
 msgstr ""
 
-#: ../src/iop/relight.c:79
+#: ../src/iop/relight.c:80
 #, fuzzy
 msgid "relight"
 msgstr "oikea"
 
 #. EV
-#: ../src/iop/relight.c:338
+#: ../src/iop/relight.c:343
 msgid "center"
 msgstr ""
 
-#: ../src/iop/relight.c:360
+#: ../src/iop/relight.c:362
 #, fuzzy
 msgid "select the center of fill-light"
 msgstr "valitse kirkkaiden kohtien sävy"
 
-#: ../src/iop/relight.c:372
+#: ../src/iop/relight.c:374
 msgid "toggle tool for picking median lightness in image"
 msgstr ""
 
-#: ../src/iop/relight.c:373
+#: ../src/iop/relight.c:375
 msgid "the fill-light in EV"
 msgstr ""
 
-#: ../src/iop/relight.c:375
+#: ../src/iop/relight.c:377
 #, no-c-format
 msgid "width of fill-light area defined in zones"
 msgstr ""
+
+#: ../src/iop/watermark.c:87
+msgid "watermark"
+msgstr ""
+
+#: ../src/iop/watermark.c:563
+msgid "marker"
+msgstr ""
+
+#: ../src/iop/watermark.c:564
+msgid "opacity"
+msgstr ""
+
+#: ../src/iop/watermark.c:566
+msgid "alignment"
+msgstr ""
+
+#: ../src/iop/watermark.c:567
+msgid "x offset"
+msgstr ""
+
+#: ../src/iop/watermark.c:568
+msgid "y offset"
+msgstr ""
+
+#. Let's add some tooltips and hook up some signals...
+#: ../src/iop/watermark.c:612
+msgid "the opacity of the watermark"
+msgstr ""
+
+#: ../src/iop/watermark.c:613
+#, fuzzy
+msgid "the scale of the watermark"
+msgstr "kohinan koko"
 
 #: ../src/iop/zonesystem.c:84
 msgid "zone system"
 msgstr ""
 
-#: ../src/imageio/format/jpeg.c:614
+#: ../src/imageio/format/jpeg.c:618
 msgid "8-bit jpeg"
 msgstr "8-bittinen jpeg"
 
@@ -2756,12 +2850,12 @@ msgstr ""
 "$(HOME_FOLDER) - kotihakemisto\n"
 "$(DESKTOP_FOLDER) - työpöytähakemisto"
 
-#: ../src/imageio/storage/disk.c:174
-#, c-format
-msgid "could not create directory %s!"
+#: ../src/imageio/storage/disk.c:184
+#, fuzzy, c-format
+msgid "could not create directory `%s'!"
 msgstr "hakemistoa %s ei voitu luoda!"
 
-#: ../src/imageio/storage/disk.c:208 ../src/imageio/storage/email.c:109
+#: ../src/imageio/storage/disk.c:219 ../src/imageio/storage/email.c:109
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d viety `%s%s'"
@@ -2868,34 +2962,58 @@ msgstr ""
 msgid "* contributors *"
 msgstr ""
 
-#: ../src/gui/gtk.c:426
+#: ../src/gui/gtk.c:443
 msgid "translator-credits"
 msgstr ""
 
-#: ../src/gui/gtk.c:638
+#: ../src/gui/gtk.c:657
 msgid "import film"
 msgstr "tuo filmi"
 
 #: ../src/gui/gtk.c:676
+msgid "import directories recursively"
+msgstr ""
+
+#: ../src/gui/gtk.c:677
+msgid ""
+"recursively import subdirectories. each directory goes into a new film roll."
+msgstr ""
+
+#: ../src/gui/gtk.c:684
+#, fuzzy
+msgid "ignore jpeg files"
+msgstr "kuvavälimuistin tiedosto"
+
+#: ../src/gui/gtk.c:685
+msgid ""
+"do not load files with an extension of .jpg or .jpeg. this can be useful "
+"when there are raw+jpeg in a directory."
+msgstr ""
+
+#: ../src/gui/gtk.c:728
 msgid "import image"
 msgstr "tuo kuva"
 
-#: ../src/gui/gtk.c:695
+#: ../src/gui/gtk.c:747
 msgid "supported images"
 msgstr "tuetut kuvat"
 
-#: ../src/gui/gtk.c:1147
+#: ../src/gui/gtk.c:1076
+msgid "show global preferences"
+msgstr ""
+
+#: ../src/gui/gtk.c:1204
 msgid "take snapshot"
 msgstr "ota vedos"
 
-#: ../src/gui/gtk.c:1176
+#: ../src/gui/gtk.c:1233
 #, fuzzy
 msgid "recently used film rolls"
 msgstr ""
 "\n"
 "viimeksi käytetyt filmirullat"
 
-#: ../src/gui/gtk.c:1198
+#: ../src/gui/gtk.c:1254
 #, fuzzy
 msgid "all film rolls"
 msgstr ""
@@ -2933,15 +3051,19 @@ msgstr ""
 msgid "remove film roll?"
 msgstr "poista filmirulla?"
 
-#: ../src/gui/iop_history.c:85
+#: ../src/gui/iop_history.c:98
 msgid "compress history stack"
 msgstr "tiivistä historia"
 
-#: ../src/gui/iop_history.c:86
+#: ../src/gui/iop_history.c:99
 msgid "create a minimal history stack which produces the same image"
 msgstr "luo pienin mahdollinen historia joka tuottaa saman kuvan"
 
-#: ../src/gui/iop_history.c:104 ../src/gui/iop_history.c:195
+#: ../src/gui/iop_history.c:107
+msgid "create a style from currently developed image and its history stack"
+msgstr ""
+
+#: ../src/gui/iop_history.c:130 ../src/gui/iop_history.c:221
 msgid "0 - original"
 msgstr "0 - alkuperäinen"
 
@@ -3326,10 +3448,52 @@ msgstr "yleiset valinnat"
 msgid "double click to reset to `%s'"
 msgstr "tuplaklikkaa valitaksesi"
 
+#: ../src/gui/preferences_gen.h:257 ../src/gui/preferences_gen.h:453
+msgid " (needs a restart) "
+msgstr ""
+
+#: ../src/gui/preferences_gen.h:274
+msgid " (needs a restart)"
+msgstr ""
+
 #: ../src/gui/preferences_gen.h:391
 #, fuzzy
 msgid "core options"
 msgstr "yleiset valinnat"
+
+#: ../src/gui/styles_dialog.c:181
+#, fuzzy, c-format
+msgid "edit style"
+msgstr "muokkaa `%s'"
+
+#: ../src/gui/styles_dialog.c:185
+#, fuzzy
+msgid "create new style"
+msgstr "luo uusi albumi"
+
+#: ../src/gui/styles_dialog.c:205
+msgid "enter a name for the new style"
+msgstr ""
+
+#: ../src/gui/styles_dialog.c:208
+msgid "enter a description for the new style, this description is searchable"
+msgstr ""
+
+#: ../src/gui/styles_dialog.c:227
+msgid "advanced edit of style"
+msgstr ""
+
+#: ../src/gui/styles_dialog.c:247
+msgid "include"
+msgstr ""
+
+#: ../src/gui/styles_dialog.c:258
+msgid "item"
+msgstr ""
+
+#: ../src/gui/styles_dialog.c:336
+msgid "can't create style out of unaltered image"
+msgstr ""
 
 #: ../src/dtgtk/resetlabel.c:61
 #, fuzzy
@@ -3476,9 +3640,6 @@ msgstr "uusi sessio aloitettu '%s'"
 
 #~ msgid "srgb"
 #~ msgstr "srgb"
-
-#~ msgid "the scale of the noise"
-#~ msgstr "kohinan koko"
 
 #~ msgid "8-bit tiff"
 #~ msgstr "8-bit tiff"
