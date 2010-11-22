@@ -516,7 +516,8 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
   pipe->processing = 1;
-  for(int k=0;k<3;k++) pipe->processed_maximum[k] = dev->image->maximum;
+  // should always be fixed at 1.0f as long as we get normalized stuff out of libraw.
+  for(int k=0;k<3;k++) pipe->processed_maximum[k] = 1.0f;//dev->image->maximum;
   dt_iop_roi_t roi = (dt_iop_roi_t){x, y, width, height, scale};
   // printf("pixelpipe homebrew process start\n");
   if(darktable.unmuted & DT_DEBUG_DEV)
