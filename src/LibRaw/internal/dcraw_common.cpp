@@ -3471,6 +3471,7 @@ void CLASS green_matching()
   const float thr = 0.01f;
   if(FC(oj, oi) != 3) oj++;
   if(FC(oj, oi) != 3) oi++;
+  if(FC(oj, oi) != 3) oj--;
 
   img = (ushort (*)[4]) calloc (height*width, sizeof *image);
   merror (img, "green_matching()");
