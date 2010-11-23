@@ -40,7 +40,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR;
 }
 
 
@@ -133,21 +133,40 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  // with the critical section around lcms, this is slower than monothread, even on dual cores.
+  int rowsize=roi_out->width*3;
+  float Lab[rowsize];
+  float rgb[rowsize];
+
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d)
+  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d,Lab,rgb)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for (int k=0;k<roi_out->height;k++)
   {
-    const int t = dt_get_thread_num();
-    float rgb[3];
-    float Lab[3];
-    Lab[0] = in[ch*k+0];
-    Lab[1] = in[ch*k+1]*Lab[0]*(1.0/100.0);
-    Lab[2] = in[ch*k+2]*Lab[0]*(1.0/100.0);
+    const int m=(k*(roi_out->width*ch));
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(Lab)
+#endif
+    for (int l=0;l<roi_out->width;l++)    
+    {    
+      int li=3*l,ii=ch*l;
+      Lab[li+0] = in[m+ii+0];
+      Lab[li+1] = in[m+ii+1]*Lab[li+0]*(1.0/100.0);
+      Lab[li+2] = in[m+ii+2]*Lab[li+0]*(1.0/100.0);
+    }
+    
     // lcms is not thread safe, so use local copy
-    cmsDoTransform(d->xform[t], Lab, rgb, 1);
-    for(int c=0;c<3;c++) out[ch*k + c] = rgb[c];
+    cmsDoTransform (d->xform[dt_get_thread_num()], Lab, rgb, roi_out->width);
+      
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(out)
+#endif
+    for (int l=0;l<roi_out->width;l++) 
+    {
+      int oi=ch*l, ri=3*l;
+      out[m+oi+0] = rgb[ri+0];
+      out[m+oi+1] = rgb[ri+1];
+      out[m+oi+2] = rgb[ri+2];
+    }
   }
 }
 

@@ -41,7 +41,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR;
 }
 
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
@@ -82,17 +82,40 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-
-  // with the critical section around lcms, this is slower than monothread, even on dual cores.
+  
+  int rowsize=roi_out->width*3;
+  float cam[rowsize];
+  float Lab[rowsize];
+  
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0;k<roi_out->height;k++)
   {
-    float cam[3] = {0., 0., 0.};
-    float Lab[3];
-    for(int c=0;c<3;c++) cam[c] = in[ch*k + c];
-#if 1
+    const int m=(k*(roi_out->width*ch));
+    
+#ifdef _OPENMP
+#  pragma omp parallel for default(none) shared(cam) schedule(static) 
+#endif
+    for (int l=0;l<roi_out->width;l++) {
+      int ci=3*l, ii=ch*l;
+      
+      cam[ci+0] = in[m+ii+0];
+      cam[ci+1] = in[m+ii+1];
+      cam[ci+2] = in[m+ii+2];
+      
+      const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
+      const float zz = cam[ci+2]/YY;
+      const float bound_z = 0.5f, bound_Y = 0.5f;
+      const float amount = 0.11f;
+      if (zz > bound_z) {
+        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+        cam[ci+1] += t*amount;
+        cam[ci+2] -= t*amount;
+      }
+    }
+    
+#if 0
     // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
     const float YY = cam[0]+cam[1]+cam[2];
     const float zz = cam[2]/YY;
@@ -101,26 +124,34 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float bound_z = 0.5f, bound_Y = 0.5f;
     const float amount = 0.11f;
     // if(YY > bound_Y && zz > bound_z)
-    if(zz > bound_z)
+    if (zz > bound_z)
     {
       const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
       cam[1] += t*amount;
       cam[2] -= t*amount;
     }
 #endif
+    
     // convert to (L,a/L,b/L) to be able to change L without changing saturation.
     // lcms is not thread safe, so work on one copy for each thread :(
-    cmsDoTransform(d->xform[dt_get_thread_num()], cam, Lab, 1);
-    out[ch*k + 0] = Lab[0];
-    if(Lab[0] > 0)
-    {
-      out[ch*k + 1] = 100.0*Lab[1]/Lab[0];
-      out[ch*k + 2] = 100.0*Lab[2]/Lab[0];
-    }
-    else
-    {
-      out[ch*k + 1] = Lab[1];
-      out[ch*k + 2] = Lab[2];
+    cmsDoTransform (d->xform[dt_get_thread_num()], cam, Lab, roi_out->width);
+  
+#ifdef _OPENMP
+#  pragma omp parallel for default(none) shared(out) schedule(static) 
+#endif 
+    for (int l=0;l<roi_out->width;l++) {
+      int li=3*l, oi=ch*l;
+      out[m+oi+0] = Lab[li+0];
+      if(Lab[li+0] > 0)
+      {
+       out[m+oi+1]  = 100.0*Lab[li+1]/Lab[li+0];
+       out[m+oi+2]  = 100.0*Lab[li+2]/Lab[li+0];
+      }
+      else
+      {
+        out[m+oi+1]  = Lab[li+1];
+        out[m+oi+2] = Lab[li+2];
+      }
     }
   }
 }
