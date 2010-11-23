@@ -1,5 +1,6 @@
-darktable.glade
 darktable.schemas.in
+build/src/preferences_gen.h
+data/darktable.glade
 src/common/darktable.h
 src/common/film.c
 src/common/image.c
@@ -23,6 +24,7 @@ src/libs/collect.c
 src/libs/capture.c
 src/libs/camera.c
 src/libs/styles.c
+src/libs/metadata.c
 src/iop/clipping.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
@@ -75,7 +77,6 @@ src/gui/presets.c
 src/gui/background_jobs.c
 src/gui/tool_colorlabels.c
 src/gui/preferences.c
-src/gui/preferences_gen.h
 src/gui/styles_dialog.c
 src/dtgtk/resetlabel.c
 src/views/darkroom.c
