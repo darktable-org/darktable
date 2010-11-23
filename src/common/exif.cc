@@ -531,69 +531,82 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     }
 
     // older darktable version did not write this data correctly:
+    // the reasoning behind strdup'ing all the strings before passing it to sqlite3 is, that
+    // they are somehow corrupt after the call to sqlite3_prepare_v2() -- don't ask my
+    // why for they don't get passed to that function.
     if(version > 0)
     {
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
       {
         // license
-        const char *license = pos->toString().c_str();
+        char *license = strdup(pos->toString().c_str());
+        char *adr = license;
         if(strncmp(license, "lang=", 5) == 0)
           license = strchrnul(license, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 2, img->id);
-        sqlite3_bind_text(stmt, 1, license, strlen(license), SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 1, license, -1, SQLITE_TRANSIENT);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+        free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
       {
         // description
-        const char *descr = pos->toString().c_str();
+        char *descr = strdup(pos->toString().c_str());
+        char *adr = descr;
         if(strncmp(descr, "lang=", 5) == 0)
           descr = strchrnul(descr, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 2, img->id);
-        sqlite3_bind_text(stmt, 1, descr, strlen(descr), SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 1, descr, -1, SQLITE_TRANSIENT);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+        free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
       {
         // caption
-        const char *cap = pos->toString().c_str();
+        char *cap = strdup(pos->toString().c_str());
+        char *adr = cap;
         if(strncmp(cap, "lang=", 5) == 0)
           cap = strchrnul(cap, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 2, img->id);
-        sqlite3_bind_text(stmt, 1, cap, strlen(cap), SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 1, cap, -1, SQLITE_TRANSIENT);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+        free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
       {
         // creator
-        const char *creator = pos->toString().c_str();
+        char *creator = strdup(pos->toString().c_str());
+        char *adr = creator;
         if(strncmp(creator, "lang=", 5) == 0)
           creator = strchrnul(creator, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 1, img->id);
         sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_CREATOR);
-        sqlite3_bind_text(stmt, 3, creator, strlen(creator), SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, creator, -1, SQLITE_TRANSIENT);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+        free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
       {
         // publisher
-        const char *publisher = pos->toString().c_str();
+        char *publisher = strdup(pos->toString().c_str());
+        char *adr = publisher;
         if(strncmp(publisher, "lang=", 5) == 0)
           publisher = strchrnul(publisher, ' ')+1;
         sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
         sqlite3_bind_int(stmt, 1, img->id);
         sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
-        sqlite3_bind_text(stmt, 3, publisher, strlen(publisher), SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, publisher, -1, SQLITE_TRANSIENT);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+        free(adr);
       }
     }
     else
