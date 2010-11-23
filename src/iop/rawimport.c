@@ -225,11 +225,14 @@ demosaic_callback (GtkComboBox *box, gpointer user_data)
   }
   else if ( active == AMAZE_DEMOSAIC )
   {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->amaze_ca_correct), FALSE);
-    p->fill1 = active;
+    if( (p->fill1 & 0xF) != AMAZE_DEMOSAIC )
+    {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->amaze_ca_correct), FALSE);
+      p->fill1 = active;
 
-    gtk_widget_set_no_show_all(GTK_WIDGET(g->amaze_ca_correct), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(g->amaze_ca_correct));
+      gtk_widget_set_no_show_all(GTK_WIDGET(g->amaze_ca_correct), FALSE);
+      gtk_widget_show_all(GTK_WIDGET(g->amaze_ca_correct));
+    }
   }
   else if ( active == VCD_DEMOSAIC )
   {
