@@ -51,19 +51,15 @@ typedef struct dt_lib_metadata_t
 }
 dt_lib_metadata_t;
 
-const char*
-name ()
-{
+const char* name(){
 	return _("metadata");
 }
 
-uint32_t views()
-{
+uint32_t views(){
 	return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
 }
 
-static void
-fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboolean *multi){
+static void fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboolean *multi){
 	GList *iter;
 
 	// FIXME: use gtk_combo_box_text_remove_all() in future (gtk 3.0)
@@ -90,15 +86,13 @@ fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboo
 	}
 	if((iter = g_list_first(*items)) != NULL){
 		do{
-			gtk_combo_box_append_text(GTK_COMBO_BOX(*box), iter->data);
+			gtk_combo_box_append_text(GTK_COMBO_BOX(*box), iter->data); // FIXME: dt segfaults when there are illegal characters in the string.
 		} while((iter=g_list_next(iter)) != NULL);
 	}
 	gtk_combo_box_set_active(GTK_COMBO_BOX(*box), 0);
 }
 
-static void
-update(dt_lib_module_t *user_data, gboolean early_bark_out)
-{
+static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 // 	early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but otherwise it's impossible to edit text
 	dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 	dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
@@ -199,27 +193,21 @@ update(dt_lib_module_t *user_data, gboolean early_bark_out)
 	fill_combo_box_entry(&(d->publisher), publisher_count, &publisher, &(d->multi_publisher));
 }
 
-static gboolean
-expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
+static gboolean expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data){
 	if(!dt_control_running())
 		return FALSE;
 	update((dt_lib_module_t*)user_data, TRUE);
 	return FALSE;
 }
 
-static void
-clear_button_clicked (GtkButton *button, gpointer user_data)
-{
+static void clear_button_clicked(GtkButton *button, gpointer user_data){
 	sqlite3_exec(darktable.db, "delete from meta_data where id in (select imgid from selected_images)", NULL, NULL, NULL);
 	sqlite3_exec(darktable.db, "update images set caption = \"\", description = \"\", license = \"\" where id in (select imgid from selected_images)", NULL, NULL, NULL);
 
 	update(user_data, FALSE);
 }
 
-static void
-apply_button_clicked (GtkButton *button, gpointer user_data)
-{
+static void apply_button_clicked(GtkButton *button, gpointer user_data){
 	dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 	dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
 
@@ -293,23 +281,17 @@ apply_button_clicked (GtkButton *button, gpointer user_data)
 	update(user_data, FALSE);
 }
 
-void
-gui_reset (dt_lib_module_t *self)
-{
+void gui_reset(dt_lib_module_t *self){
 	update(self, FALSE);
 }
 
-int
-position ()
-{
+int position(){
 	return 510;
 }
 
 
 
-void
-gui_init (dt_lib_module_t *self)
-{
+void gui_init(dt_lib_module_t *self){
 	GtkBox *hbox;
 	GtkWidget *button;
 	GtkWidget *label;
@@ -408,26 +390,39 @@ gui_init (dt_lib_module_t *self)
 	update(self, FALSE);
 }
 
-void
-gui_cleanup (dt_lib_module_t *self)
-{
+void gui_cleanup(dt_lib_module_t *self){
 	darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
 	free(self->data);
 	self->data = NULL;
 }
 
-//FIXME: what is this function for? it seems to be never called. i guess some api docs would rock.
-void
-init_presets (dt_lib_module_t *self)
-{
-	g_print("init_presets\n");
-	// TODO: store presets in db:
-	// dt_lib_presets_add(const char *name, const char *plugin_name, const void *params, const int32_t params_size)
+static void add_license_preset(dt_lib_module_t *self, char *name, char *string){
+	unsigned int params_size = strlen(string)+5;
+
+	char *params = calloc(sizeof(char), params_size);
+	memcpy(params+2, string, params_size-5);
+	dt_lib_presets_add(name, self->plugin_name, params, params_size);
+	free(params);
 }
 
-void*
-get_params (dt_lib_module_t *self, int *size)
-{
+void init_presets(dt_lib_module_t *self){
+
+	// <title>\0<description>\0<license>\0<creator>\0<publisher>
+
+	add_license_preset(self, _("CC-by"), _("Creative Commons Attribution (CC-BY)"));
+	add_license_preset(self, _("CC-by-sa"), _("Creative Commons Attribution-ShareAlike (CC-BY-SA)"));
+	add_license_preset(self, _("CC-by-nd"), _("Creative Commons Attribution-NoDerivs (CC-BY-ND)"));
+	add_license_preset(self, _("CC-by-nc"), _("Creative Commons Attribution-NonCommercial (CC-BY-NC)"));
+	add_license_preset(self, _("CC-by-nc-sa"), _("Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"));
+	add_license_preset(self, _("CC-by-nc-nd"), _("Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"));
+	add_license_preset(self, _("all rights reserved"), _("All rights reserved."));
+}
+
+void init(dt_iop_module_t *module){
+// 	g_print("init\n");
+}
+
+void* get_params(dt_lib_module_t *self, int *size){
 	dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
 	char *title = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
@@ -447,20 +442,18 @@ get_params (dt_lib_module_t *self, int *size)
 	char *params = (char *)malloc(*size);
 	
 	int pos = 0;
-	memcpy(params+pos, title, title_len+1);         pos += title_len+1;
+	memcpy(params+pos, title, title_len+1);                 pos += title_len+1;
 	memcpy(params+pos, description, description_len+1);     pos += description_len+1;
-	memcpy(params+pos, license, license_len+1);     pos += license_len+1;
-	memcpy(params+pos, creator, creator_len+1);     pos += creator_len+1;
-	memcpy(params+pos, publisher, publisher_len+1); pos += publisher_len+1;
+	memcpy(params+pos, license, license_len+1);             pos += license_len+1;
+	memcpy(params+pos, creator, creator_len+1);             pos += creator_len+1;
+	memcpy(params+pos, publisher, publisher_len+1);         pos += publisher_len+1;
 
 	g_assert(pos == *size);
 
 	return params;
 }
 
-int
-set_params (dt_lib_module_t *self, const void *params, int size)
-{
+int set_params(dt_lib_module_t *self, const void *params, int size){
 	char *buf = (char* )params;
 	char *title = buf; buf += strlen(title) + 1;
 	char *description = buf; buf += strlen(description) + 1;
