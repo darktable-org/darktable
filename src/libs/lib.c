@@ -370,6 +370,19 @@ error:
   return 1;
 }
 
+static void
+init_presets(dt_lib_module_t *module)
+{
+  if(module->init_presets)
+  { // only if method exists and no writeprotected (static) preset has been inserted yet.
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, module->name(), -1, SQLITE_TRANSIENT);
+    if(sqlite3_step(stmt) != SQLITE_ROW) module->init_presets(module);
+    sqlite3_finalize(stmt);
+  }
+}
+
 int
 dt_lib_load_modules ()
 {
@@ -398,6 +411,13 @@ dt_lib_load_modules ()
     // TODO: init presets
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_lib_sort_plugins);
+
+//     module->factory_params = malloc(module->params_size);
+//     memcpy(module->factory_params, module->default_params, module->params_size);
+//     module->factory_enabled = module->default_enabled;
+    init_presets(module);
+//     dt_iop_load_default_params(module);
+
   }
   g_dir_close(dir);
 
