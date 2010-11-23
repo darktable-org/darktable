@@ -213,14 +213,14 @@ int dt_init(int argc, char *argv[])
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
 
-  darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
-  dt_lib_init(darktable.lib);
-
   darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
   darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
   if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
+
+  darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
+  dt_lib_init(darktable.lib);
 
   dt_control_load_config(darktable.control);
   strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
