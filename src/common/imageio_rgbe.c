@@ -507,7 +507,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe_preview(dt_image_t *img, const char *fi
     goto error_corrupt;
   }
   // repair nan/inf etc
-  for(int i=0; i < img->width*img->height*3; i++) buf[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
+  for(int i=0; i < img->width*img->height*3; i++) buf[i] = fmaxf(0.0f, fminf(10000.0, buf[i]));
   dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
   free(buf);
   fclose(f);

@@ -91,8 +91,10 @@ dt_imageio_retval_t dt_imageio_open_pfm_preview(dt_image_t *img, const char *fil
   if(head[1] == 'F') cols = 3;
   else if(head[1] == 'f') cols = 1;
   else goto error_corrupt;
-  ret = fscanf(f, "%d %d\n%*[^\n]\n", &img->width, &img->height);
+  ret = fscanf(f, "%d %d\n%*[^\n]", &img->width, &img->height);
   if(ret != 2) goto error_corrupt;
+  ret = fread(&ret, sizeof(char), 1, f);
+  if(ret != 1) goto error_corrupt;
 
   float *buf = (float *)malloc(3*sizeof(float)*img->width*img->height);
   if(!buf) goto error_corrupt;
