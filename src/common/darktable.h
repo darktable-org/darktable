@@ -153,7 +153,7 @@ static inline double dt_get_wtime()
 {
   struct timeval time;
   gettimeofday(&time, NULL);
-  return time.tv_sec + (1.0/1000000.0)*time.tv_usec;
+  return time.tv_sec - 1290608000 + (1.0/1000000.0)*time.tv_usec;
 }
 
 static inline int dt_get_num_threads()

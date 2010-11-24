@@ -175,13 +175,62 @@ static inline int dt_image_orientation(const dt_image_t *img)
 /** returns the (flipped) filter string for the demosaic pattern. */
 static inline uint32_t dt_image_flipped_filter(const dt_image_t *img)
 {
+  // from the dcraw source code documentation:
+  // 
+  //   0x16161616:     0x61616161:     0x49494949:     0x94949494:
+
+	//   0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5
+	// 0 B G B G B G   0 G R G R G R   0 G B G B G B   0 R G R G R G
+	// 1 G R G R G R   1 B G B G B G   1 R G R G R G   1 G B G B G B
+	// 2 B G B G B G   2 G R G R G R   2 G B G B G B   2 R G R G R G
+	// 3 G R G R G R   3 B G B G B G   3 R G R G R G   3 G B G B G B
+  //
+  // orient:     0               5               6               3
+  // orient:     6               0               3               5
+  // orient:     5               3               0               6
+  // orient:     3               6               5               0
+  //
+  // orientation: &1 : flip y    &2 : flip x    &4 : swap x/y
+
   const int orient = dt_image_orientation(img);
-  switch(orient)
+  switch(img->filters)
   {
-    case 6:  return 0x61616161u;
-    case 5:  return 0x49494949u;
-    case 3:  return 0x16161616u;
-    default: return 0x94949494u;
+    case 0x16161616u:
+      switch(orient)
+      {
+        case 5:  return 0x61616161u;
+        case 6:  return 0x49494949u;
+        case 3:  return 0x94949494u;
+        default: return 0x16161616u;
+      }
+      break;
+    case 0x61616161u:
+      switch(orient)
+      {
+        case 6:  return 0x16161616u;
+        case 3:  return 0x49494949u;
+        case 5:  return 0x94949494u;
+        default: return 0x61616161u;
+      }
+      break;
+    case 0x49494949u:
+      switch(orient)
+      {
+        case 3:  return 0x61616161u;
+        case 6:  return 0x94949494u;
+        case 5:  return 0x16161616u;
+        default: return 0x49494949u;
+      }
+      break;
+    default: // case 0x94949494u:
+      switch(orient)
+      {
+        case 6:  return 0x61616161u;
+        case 5:  return 0x49494949u;
+        case 3:  return 0x16161616u;
+        default: return 0x94949494u;
+      }
+      break;
   }
 }
 /** cleanup. */

@@ -70,7 +70,7 @@ groups ()
 static int
 FC(const int row, const int col, const unsigned int filters)
 {
-  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
@@ -296,6 +296,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   roo.scale = roi_out->scale/piece->iscale;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+
+  // printf("filters: %X\n", data->filters);
+  // data->filters = 0x49494949;
 
   dt_image_t *img = self->dev->image;
   dt_image_buffer_t full = dt_image_get(img, DT_IMAGE_FULL, 'r');
