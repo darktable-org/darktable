@@ -477,7 +477,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
   }
   fclose(f);
   // repair nan/inf etc
-  for(int i=img->width*img->height*4-1;i>=0; i++) for(int c=0;c<3;c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0, img->pixels[3*i+c]));
+  for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0, img->pixels[3*i+c]));
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return DT_IMAGEIO_OK;
 
@@ -507,7 +507,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe_preview(dt_image_t *img, const char *fi
     goto error_corrupt;
   }
   // repair nan/inf etc
-  for(int i=img->width*img->height*4-1;i>=0; i++) for(int c=0;c<3;c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0, buf[3*i+c]));
+  for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0f, buf[3*i+c]));
   dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
   free(buf);
   fclose(f);
@@ -517,3 +517,4 @@ error_corrupt:
   fclose(f);
   return DT_IMAGEIO_FILE_CORRUPTED;
 }
+

@@ -50,7 +50,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   if(cols == 3)
   {
     ret = fread(img->pixels, 3*sizeof(float), img->width*img->height, f);
-    for(int i=img->width*img->height*4-1;i>=0; i++) for(int c=0;c<3;c++) img->pixels[4*i+c] = img->pixels[3*i+c];
+    for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0, img->pixels[3*i+c]));
   }
   else for(int j=0; j < img->height; j++)
     for(int i=0; i < img->width; i++)
@@ -60,8 +60,6 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
       img->pixels[4*(img->width*j + i) + 1] =
       img->pixels[4*(img->width*j + i) + 0];
     }
-  // repair nan/inf etc
-  for(int i=0; i < img->width*img->height*4; i++) img->pixels[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
   float *line = (float *)malloc(sizeof(float)*4*img->width);
   for(int j=0; j < img->height/2; j++)
   {
@@ -105,7 +103,7 @@ dt_imageio_retval_t dt_imageio_open_pfm_preview(dt_image_t *img, const char *fil
   if(cols == 3)
   {
     ret = fread(buf, 3*sizeof(float), img->width*img->height, f);
-    for(int i=img->width*img->height*4-1;i>=0; i++) for(int c=0;c<3;c++) img->pixels[4*i+c] = img->pixels[3*i+c];
+    for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0f, img->pixels[3*i+c]));
   }
   else for(int j=0; j < img->height; j++)
     for(int i=0; i < img->width; i++)
@@ -115,8 +113,6 @@ dt_imageio_retval_t dt_imageio_open_pfm_preview(dt_image_t *img, const char *fil
       buf[4*(img->width*j + i) + 1] =
       buf[4*(img->width*j + i) + 0];
     }
-  // repair nan/inf etc
-  for(int i=0; i < img->width*img->height*4; i++) buf[i] = fmaxf(0.0f, fminf(10000.0, buf[i]));
   float *line = (float *)malloc(sizeof(float)*4*img->width);
   for(int j=0; j < img->height/2; j++)
   {
