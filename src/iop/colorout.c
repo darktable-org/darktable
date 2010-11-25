@@ -143,7 +143,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for (int k=0;k<roi_out->height;k++)
   {
     const int m=(k*(roi_out->width*ch));
-#ifdef _OPENMP
+#if 0//def _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(Lab)
 #endif
     for (int l=0;l<roi_out->width;l++)    
@@ -157,7 +157,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // lcms is not thread safe, so use local copy
     cmsDoTransform (d->xform[dt_get_thread_num()], Lab, rgb, roi_out->width);
       
-#ifdef _OPENMP
+#if 0//def _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(out)
 #endif
     for (int l=0;l<roi_out->width;l++) 

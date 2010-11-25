@@ -94,7 +94,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     const int m=(k*(roi_out->width*ch));
     
-#ifdef _OPENMP
+#if 0//def _OPENMP
 #  pragma omp parallel for default(none) shared(cam) schedule(static) 
 #endif
     for (int l=0;l<roi_out->width;l++) {
@@ -136,7 +136,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // lcms is not thread safe, so work on one copy for each thread :(
     cmsDoTransform (d->xform[dt_get_thread_num()], cam, Lab, roi_out->width);
   
-#ifdef _OPENMP
+#if 0//def _OPENMP
 #  pragma omp parallel for default(none) shared(out) schedule(static) 
 #endif 
     for (int l=0;l<roi_out->width;l++) {
