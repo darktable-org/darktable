@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/metadata.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
@@ -81,30 +82,6 @@ static void fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList *
 	gtk_combo_box_set_active(GTK_COMBO_BOX(*box), 0);
 }
 
-static GList* get_metadata_from_images_table(const char* key, int imgsel, uint32_t *count){
-	sqlite3_stmt *stmt;
-	GList *result = NULL;
-
-	if(imgsel < 0){ // selected images
-		char query[1024];
-		snprintf(query, 1024, "select distinct %s from images where id in (select imgid from selected_images) order by %s", key, key);
-		sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-	} else { // single image under mouse cursor
-		char query[1024];
-		snprintf(query, 1024, "select distinct %s from images where id = %d order by %s", key, imgsel, key);
-		sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-	}
-	while(sqlite3_step(stmt) == SQLITE_ROW){
-		char *value = (char*)sqlite3_column_text(stmt, 0);
-		if(value != NULL && value[0] != '\0'){
-			(*count)++;
-			result = g_list_append(result, g_strdup(value));
-		}
-	}
-	sqlite3_finalize(stmt);
-	return result;
-}
-
 static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 // 	early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but otherwise it's impossible to edit text
 	dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -125,7 +102,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 	GList *publisher   = NULL;   uint32_t publisher_count   = 0;
 	GList *license     = NULL;   uint32_t license_count     = 0;
 
-	// creator and publisher -- get it directly in one query
+	// using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else takes ages.
 	if(imgsel < 0){ // selected images
 		rc = sqlite3_prepare_v2(darktable.db, "select key, value from meta_data where id in (select imgid from selected_images) group by key, value order by value", -1, &stmt, NULL);
 	} else { // single image under mouse cursor
@@ -136,22 +113,29 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 	while(sqlite3_step(stmt) == SQLITE_ROW){
 		char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
 		switch(sqlite3_column_int(stmt, 0)){
-			case DT_IMAGE_METADATA_CREATOR:
+			case DT_METADATA_CREATOR:
 				creator_count++;
 				creator = g_list_append(creator, value);
 				break;
-			case DT_IMAGE_METADATA_PUBLISHER:
+			case DT_METADATA_PUBLISHER:
 				publisher_count++;
 				publisher = g_list_append(publisher, value);
+				break;
+			case DT_METADATA_TITLE:
+				title_count++;
+				title = g_list_append(title, value);
+				break;
+			case DT_METADATA_DESCRIPTION:
+				description_count++;
+				description = g_list_append(description, value);
+				break;
+			case DT_METADATA_LICENSE:
+				license_count++;
+				license = g_list_append(license, value);
 				break;
 		}
 	}
 	rc = sqlite3_finalize(stmt);
-
-	// title, description and license -- they have to be fetched in single queries anyways, so these are in a separate function
-	title       = get_metadata_from_images_table("caption", imgsel, &title_count);
-	description = get_metadata_from_images_table("description", imgsel, &description_count);
-	license     = get_metadata_from_images_table("license", imgsel, &license_count);
 
 	fill_combo_box_entry(&(d->title), title_count, &title, &(d->multi_title));
 	fill_combo_box_entry(&(d->description), description_count, &description, &(d->multi_description));
@@ -168,40 +152,8 @@ static gboolean expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_d
 }
 
 static void clear_button_clicked(GtkButton *button, gpointer user_data){
-	sqlite3_exec(darktable.db, "delete from meta_data where id in (select imgid from selected_images)", NULL, NULL, NULL);
-	sqlite3_exec(darktable.db, "update images set caption = \"\", description = \"\", license = \"\" where id in (select imgid from selected_images)", NULL, NULL, NULL);
-
+	dt_metadata_clear(-1);
 	update(user_data, FALSE);
-}
-
-static void apply_button_clicked_helper_1(dt_image_metadata_t key, const gchar* value, gboolean multi, gint active){
-	sqlite3_stmt *stmt;
-	if(value != NULL && (multi == FALSE || active != 0)){
-		sqlite3_prepare_v2(darktable.db, "delete from meta_data where id in (select imgid from selected_images) and key = ?1", -1, &stmt, NULL);
-		sqlite3_bind_int(stmt, 1, key);
-		sqlite3_step(stmt);
-		sqlite3_finalize(stmt);
-
-		if(value != NULL && value[0] != '\0'){
-			sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) select imgid, ?1, ?2 from selected_images", -1, &stmt, NULL);
-			sqlite3_bind_int(stmt, 1, key);
-			sqlite3_bind_text(stmt, 2, value, -1, NULL);
-			sqlite3_step(stmt);
-			sqlite3_finalize(stmt);
-		}
-	}
-}
-
-static void apply_button_clicked_helper_2(const char* key, const gchar* value, gboolean multi, gint active){
-	sqlite3_stmt *stmt;
-	if(multi == FALSE || active != 0){
-		char query[1024];
-		snprintf(query, 1024, "update images set %s = ?1 where id in (select imgid from selected_images)", key);
-		sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-		sqlite3_bind_text(stmt, 1, value, -1, NULL);
-		sqlite3_step(stmt);
-		sqlite3_finalize(stmt);
-	}
 }
 
 static void apply_button_clicked(GtkButton *button, gpointer user_data){
@@ -214,14 +166,16 @@ static void apply_button_clicked(GtkButton *button, gpointer user_data){
 	gchar *creator     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
 	gchar *publisher   = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
 
-	// the metadata stored in table meta_data -- can change in future
-	apply_button_clicked_helper_1(DT_IMAGE_METADATA_CREATOR, creator, d->multi_creator, gtk_combo_box_get_active(GTK_COMBO_BOX(d->creator)));
-	apply_button_clicked_helper_1(DT_IMAGE_METADATA_PUBLISHER, publisher, d->multi_publisher, gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)));
-
-	// the metadata stored in table images -- fixed
-	apply_button_clicked_helper_2("caption", title, d->multi_title, gtk_combo_box_get_active(GTK_COMBO_BOX(d->title)));
-	apply_button_clicked_helper_2("description", description, d->multi_description, gtk_combo_box_get_active(GTK_COMBO_BOX(d->description)));
-	apply_button_clicked_helper_2("license", license, d->multi_license, gtk_combo_box_get_active(GTK_COMBO_BOX(d->license)));
+	if(title != NULL && (d->multi_title == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->title)) != 0))
+		dt_metadata_set(-1, "darktable.title", title);
+	if(description != NULL && (d->multi_description == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->description)) != 0))
+		dt_metadata_set(-1, "darktable.description", description);
+	if(license != NULL && (d->multi_license == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->license)) != 0))
+		dt_metadata_set(-1, "darktable.license", license);
+	if(creator != NULL && (d->multi_creator == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->creator)) != 0))
+		dt_metadata_set(-1, "darktable.creator", creator);
+	if(publisher != NULL && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) != 0))
+		dt_metadata_set(-1, "darktable.publisher", publisher);
 
 	if(title != NULL)
 		g_free(title);
@@ -244,8 +198,6 @@ void gui_reset(dt_lib_module_t *self){
 int position(){
 	return 510;
 }
-
-
 
 void gui_init(dt_lib_module_t *self){
 	GtkBox *hbox;
@@ -410,37 +362,6 @@ void* get_params(dt_lib_module_t *self, int *size){
 	return params;
 }
 
-static void set_params_helper_1(dt_image_metadata_t key, const gchar* value){
-	sqlite3_stmt *stmt;
-
-	if(value != NULL && value[0] != '\0'){
-		sqlite3_prepare_v2(darktable.db, "delete from meta_data where id in (select imgid from selected_images) and key = ?1", -1, &stmt, NULL);
-		sqlite3_bind_int(stmt, 1, key);
-		sqlite3_step(stmt);
-		sqlite3_finalize(stmt);
-
-		sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) select imgid, ?1, ?2 from selected_images", -1, &stmt, NULL);
-		sqlite3_bind_int(stmt, 1, key);
-		sqlite3_bind_text(stmt, 2, value, -1, NULL);
-		sqlite3_step(stmt);
-		sqlite3_finalize(stmt);
-	}
-}
-
-static void set_params_helper_2(const char* key, const gchar* value){
-	sqlite3_stmt *stmt;
-
-	if(value != NULL && value[0] != '\0'){
-		char query[1024];
-		snprintf(query, 1024, "update images set %s = ?1 where id in (select imgid from selected_images)", key);
-		sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-		sqlite3_bind_text(stmt, 1, value, -1, NULL);
-		sqlite3_step(stmt);
-		sqlite3_finalize(stmt);
-	}
-}
-
-
 int set_params(dt_lib_module_t *self, const void *params, int size){
 	char *buf         = (char* )params;
 	char *title       = buf;            buf += strlen(title) + 1;
@@ -451,14 +372,16 @@ int set_params(dt_lib_module_t *self, const void *params, int size){
 
 	if(size != strlen(title) + strlen(description) + strlen(license) + strlen(creator) + strlen(publisher) + 5) return 1;
 
-	// the metadata stored in table meta_data -- can change in future
-	set_params_helper_1(DT_IMAGE_METADATA_CREATOR, creator);
-	set_params_helper_1(DT_IMAGE_METADATA_PUBLISHER, publisher);
-
-	// the metadata stored in table images -- fixed
-	set_params_helper_2("caption", title);
-	set_params_helper_2("description", description);
-	set_params_helper_2("license", license);
+	if(title != NULL && title[0] != '\0')
+		dt_metadata_set(-1, "darktable.title", title);
+	if(description != NULL && description[0] != '\0')
+		dt_metadata_set(-1, "darktable.description", description);
+	if(license != NULL && license[0] != '\0')
+		dt_metadata_set(-1, "darktable.license", license);
+	if(creator != NULL && creator[0] != '\0')
+		dt_metadata_set(-1, "darktable.creator", creator);
+	if(publisher != NULL && publisher[0] != '\0')
+		dt_metadata_set(-1, "darktable.publisher", publisher);
 
 	update(self, FALSE);
 	return 0;
