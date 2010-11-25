@@ -22,6 +22,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_pfm.c" 
   "common/imageio_rgbe.c" 
   "common/imageio_tiff.c" 
+  "common/metadata.c" 
   "common/styles.c" 
   "common/tags.c" 
   "common/variables.c" 
@@ -216,9 +217,17 @@ add_custom_command(
 )
 
 #
+# Generate mapping of key strings to internal metadata id
+#
+add_custom_command(
+   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
+   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+#
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${SOURCES})
+add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)
