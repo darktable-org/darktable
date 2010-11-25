@@ -79,10 +79,80 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
+  const float *const mat = (const float *)d->cmatrix;
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
   
+#if 0
+  // const float rgb_to_xyz[9] = {
+  //   0.6326696,  0.2045558,  0.1269946,
+  //   0.2284569,  0.7373523,  0.0341908,
+  //   0.0000000,  0.0095142,  0.8156958};
+
+  printf("process using matrix m =\n");
+  for(int j=0;j<3;j++)
+  {
+    for(int i=0;i<3;i++)
+    {
+      printf("%f ", mat[3*j+i]);
+    }
+    printf("\n");
+  }
+#endif
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+#endif
+  for(int j=0;j<roi_out->height;j++)
+  {
+    const float *buf_in  = in  + ch*roi_out->width*j;
+    float *buf_out = out + ch*roi_out->width*j;
+    for(int i=0;i<roi_out->width;i++)
+    {
+      float cam[3], XYZ[3], Lab[3];
+      memcpy(cam, buf_in, sizeof(float)*3);
+#if 1
+      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+      const float YY = cam[0]+cam[1]+cam[2];
+      const float zz = cam[2]/YY;
+      // lower amount and higher bound_z make the effect smaller.
+      // the effect is weakened the darker input values are, saturating at bound_Y
+      const float bound_z = 0.5f, bound_Y = 0.5f;
+      const float amount = 0.11f;
+      // if(YY > bound_Y && zz > bound_z)
+      if (zz > bound_z)
+      {
+        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+        cam[1] += t*amount;
+        cam[2] -= t*amount;
+      }
+#endif
+      for(int k=0;k<3;k++)
+      {
+        float x = 0.0f;
+        for(int i=0;i<3;i++) x += mat[3*k+i] * cam[i];
+        // for(int i=0;i<3;i++) x += rgb_to_xyz[3*k+i] * buf_in[i];
+        XYZ[k] = x;
+      }
+      dt_XYZ_to_Lab(XYZ, Lab);
+
+      // and to La*b*
+      if(Lab[0] > 0)
+      {
+        buf_out[1]  = 100.0*Lab[1]/Lab[0];
+        buf_out[2]  = 100.0*Lab[2]/Lab[0];
+      }
+      else
+      {
+        buf_out[1] = Lab[1];
+        buf_out[2] = Lab[2];
+      }
+      buf_out[0] = Lab[0];
+      buf_out += ch;
+      buf_in += ch;
+    }
+  }
+#if 0
   int rowsize=roi_out->width*3;
   float cam[rowsize];
   float Lab[rowsize];
@@ -154,6 +224,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
+#endif
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -185,10 +256,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       snprintf(makermodel, 512, "%s", self->dev->image->exif_model);
     else
       snprintf(makermodel, 512, "%s %s", maker, self->dev->image->exif_model);
+#if 0
     // printf("searching matrix for `%s'\n", makermodel);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
     // if(!d->input) printf("could not find enhanced color matrix for `%s'!\n", makermodel);
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
+#else
+    if(dt_colorspaces_get_darktable_matrix(makermodel, (float *)(d->cmatrix)))
+      fprintf(stderr, "[colorin] matrix creation failed!\n");
+#endif
   }
   if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
   { // color matrix
