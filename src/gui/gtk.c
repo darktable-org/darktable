@@ -1219,7 +1219,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   {
     char wdname[20];
     snprintf (wdname, 20, "snapshot_%ld_togglebutton", k);
-    GtkWidget *button = dtgtk_togglebutton_new_with_label (wdname,NULL,0);
+    GtkWidget *button = dtgtk_togglebutton_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
     gtk_box_pack_start (GTK_BOX (svbox),button,FALSE,FALSE,0);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (snapshot_toggled),
