@@ -200,11 +200,12 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   // draw gui arrows.
   cairo_set_source_rgb (cr, .6, .6, .6);
 
-  int32_t mask = 1<<dt_conf_get_int("ui_last/view");
+  GtkWidget *panel;
   switch(which)
   {
     case 0: // left
-      if(dt_conf_get_int("ui_last/panel_left") & mask)
+      panel = glade_xml_get_widget (darktable.gui->main_window, "left");
+      if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width, height/2-width);
         cairo_rel_line_to (cr, 0.0, 2*width);
@@ -218,7 +219,8 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 1: // right
-      if(dt_conf_get_int("ui_last/panel_right") & mask)
+      panel = glade_xml_get_widget (darktable.gui->main_window, "right");
+      if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, 0.0, height/2-width);
         cairo_rel_line_to (cr, 0.0, 2*width);
@@ -232,7 +234,8 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 2: // top
-      if(dt_conf_get_int("ui_last/panel_top") & mask)
+      panel = glade_xml_get_widget (darktable.gui->main_window, "top");
+      if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width/2-height, height);
         cairo_rel_line_to (cr, 2*height, 0.0);
@@ -246,7 +249,8 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     default: // bottom
-      if(dt_conf_get_int("ui_last/panel_bottom") & mask)
+      panel = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width/2-height, 0.0);
         cairo_rel_line_to (cr, 2*height, 0.0);
