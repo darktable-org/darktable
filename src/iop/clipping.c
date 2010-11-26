@@ -1012,7 +1012,7 @@ drawGoldenMean(struct dt_iop_module_t *self, cairo_t *cr, QRect* R1, QRect* R2, 
 #undef RADIANS
 
 static void
-draw_simple_grid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale)
+drawSimpleGrid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale)
 {
   // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
   cairo_set_line_width(cr, 1.0/zoom_scale);
@@ -1081,9 +1081,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_set_dash(cr, &dashes, 1, 0);
 
   int which = gtk_combo_box_get_active(g->guide_lines);
-  if (GUIDE_GRID == which)
+  if (which == GUIDE_GRID)
   {
-    draw_simple_grid(cr, left, top, right, bottom, zoom_scale);
+    drawSimpleGrid(cr, left, top, right, bottom, zoom_scale);
   }
   else if (which == GUIDE_DIAGONAL)
   {
