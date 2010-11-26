@@ -83,9 +83,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
         != exifData.end() ) {
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(
-
-            Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
+    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
         != exifData.end() ) {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = 1.0/pos->toFloat ();
@@ -539,12 +537,12 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     {
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
       {
-        // license
-        char *license = strdup(pos->toString().c_str());
-        char *adr = license;
-        if(strncmp(license, "lang=", 5) == 0)
-          license = strchrnul(license, ' ')+1;
-        dt_metadata_set(img->id, "darktable.license", license);
+        // rights
+        char *rights = strdup(pos->toString().c_str());
+        char *adr = rights;
+        if(strncmp(rights, "lang=", 5) == 0)
+          rights = strchrnul(rights, ' ')+1;
+        dt_metadata_set(img->id, "Xmp.dc.rights", rights);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
@@ -554,7 +552,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         char *adr = description;
         if(strncmp(description, "lang=", 5) == 0)
           description = strchrnul(description, ' ')+1;
-        dt_metadata_set(img->id, "darktable.description", description);
+        dt_metadata_set(img->id, "Xmp.dc.description", description);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
@@ -564,7 +562,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         char *adr = title;
         if(strncmp(title, "lang=", 5) == 0)
           title = strchrnul(title, ' ')+1;
-        dt_metadata_set(img->id, "darktable.title", title);
+        dt_metadata_set(img->id, "Xmp.dc.title", title);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
@@ -574,7 +572,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         char *adr = creator;
         if(strncmp(creator, "lang=", 5) == 0)
           creator = strchrnul(creator, ' ')+1;
-        dt_metadata_set(img->id, "darktable.creator", creator);
+        dt_metadata_set(img->id, "Xmp.dc.creator", creator);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
@@ -584,7 +582,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         char *adr = publisher;
         if(strncmp(publisher, "lang=", 5) == 0)
           publisher = strchrnul(publisher, ' ')+1;
-        dt_metadata_set(img->id, "darktable.publisher", publisher);
+        dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
         free(adr);
       }
     }
@@ -799,19 +797,19 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     {
 		int key = sqlite3_column_int(stmt, 0);
 		switch(key){
-			case DT_METADATA_CREATOR:
+			case DT_METADATA_XMP_DC_CREATOR:
 				xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
 				break;
-			case DT_METADATA_PUBLISHER:
+			case DT_METADATA_XMP_DC_PUBLISHER:
 				xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
 				break;
-			case DT_METADATA_TITLE:
+			case DT_METADATA_XMP_DC_TITLE:
 				xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
 				break;
-			case DT_METADATA_DESCRIPTION:
+			case DT_METADATA_XMP_DC_DESCRIPTION:
 				xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
 				break;
-			case DT_METADATA_LICENSE:
+			case DT_METADATA_XMP_DC_RIGHTS:
 				xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
 				break;
 

@@ -32,12 +32,12 @@ typedef struct dt_lib_metadata_t
 	GtkComboBoxEntry * description;
 	GtkComboBoxEntry * creator;
 	GtkComboBoxEntry * publisher;
-	GtkComboBoxEntry * license;
+	GtkComboBoxEntry * rights;
 	gboolean           multi_title;
 	gboolean           multi_description;
 	gboolean           multi_creator;
 	gboolean           multi_publisher;
-	gboolean           multi_license;
+	gboolean           multi_rights;
 }
 dt_lib_metadata_t;
 
@@ -100,7 +100,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 	GList *description = NULL;   uint32_t description_count = 0;
 	GList *creator     = NULL;   uint32_t creator_count     = 0;
 	GList *publisher   = NULL;   uint32_t publisher_count   = 0;
-	GList *license     = NULL;   uint32_t license_count     = 0;
+	GList *rights      = NULL;   uint32_t rights_count     = 0;
 
 	// using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else takes ages.
 	if(imgsel < 0){ // selected images
@@ -113,25 +113,25 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 	while(sqlite3_step(stmt) == SQLITE_ROW){
 		char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
 		switch(sqlite3_column_int(stmt, 0)){
-			case DT_METADATA_CREATOR:
+			case DT_METADATA_XMP_DC_CREATOR:
 				creator_count++;
 				creator = g_list_append(creator, value);
 				break;
-			case DT_METADATA_PUBLISHER:
+			case DT_METADATA_XMP_DC_PUBLISHER:
 				publisher_count++;
 				publisher = g_list_append(publisher, value);
 				break;
-			case DT_METADATA_TITLE:
+			case DT_METADATA_XMP_DC_TITLE:
 				title_count++;
 				title = g_list_append(title, value);
 				break;
-			case DT_METADATA_DESCRIPTION:
+			case DT_METADATA_XMP_DC_DESCRIPTION:
 				description_count++;
 				description = g_list_append(description, value);
 				break;
-			case DT_METADATA_LICENSE:
-				license_count++;
-				license = g_list_append(license, value);
+			case DT_METADATA_XMP_DC_RIGHTS:
+				rights_count++;
+				rights = g_list_append(rights, value);
 				break;
 		}
 	}
@@ -139,7 +139,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 
 	fill_combo_box_entry(&(d->title), title_count, &title, &(d->multi_title));
 	fill_combo_box_entry(&(d->description), description_count, &description, &(d->multi_description));
-	fill_combo_box_entry(&(d->license), license_count, &license, &(d->multi_license));
+	fill_combo_box_entry(&(d->rights), rights_count, &rights, &(d->multi_rights));
 	fill_combo_box_entry(&(d->creator), creator_count, &creator, &(d->multi_creator));
 	fill_combo_box_entry(&(d->publisher), publisher_count, &publisher, &(d->multi_publisher));
 }
@@ -162,27 +162,27 @@ static void apply_button_clicked(GtkButton *button, gpointer user_data){
 
 	gchar *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
 	gchar *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
-	gchar *license     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->license));
+	gchar *rights      = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->rights));
 	gchar *creator     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
 	gchar *publisher   = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
 
 	if(title != NULL && (d->multi_title == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->title)) != 0))
-		dt_metadata_set(-1, "darktable.title", title);
+		dt_metadata_set(-1, "Xmp.dc.title", title);
 	if(description != NULL && (d->multi_description == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->description)) != 0))
-		dt_metadata_set(-1, "darktable.description", description);
-	if(license != NULL && (d->multi_license == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->license)) != 0))
-		dt_metadata_set(-1, "darktable.license", license);
+		dt_metadata_set(-1, "Xmp.dc.description", description);
+	if(rights != NULL && (d->multi_rights == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->rights)) != 0))
+		dt_metadata_set(-1, "Xmp.dc.rights", rights);
 	if(creator != NULL && (d->multi_creator == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->creator)) != 0))
-		dt_metadata_set(-1, "darktable.creator", creator);
+		dt_metadata_set(-1, "Xmp.dc.creator", creator);
 	if(publisher != NULL && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) != 0))
-		dt_metadata_set(-1, "darktable.publisher", publisher);
+		dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
 
 	if(title != NULL)
 		g_free(title);
 	if(description != NULL)
 		g_free(description);
-	if(license != NULL)
-		g_free(license);
+	if(rights != NULL)
+		g_free(rights);
 	if(creator != NULL)
 		g_free(creator);
 	if(publisher != NULL)
@@ -264,17 +264,17 @@ void gui_init(dt_lib_module_t *self){
 	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->publisher))), completion);
 	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->publisher), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-	label = gtk_label_new(_("license"));
+	label = gtk_label_new(_("rights"));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 	gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-	d->license = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
-	dt_gui_key_accel_block_on_focus(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->license))));
+	d->rights = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+	dt_gui_key_accel_block_on_focus(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))));
 	completion = gtk_entry_completion_new();
-	gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->license)));
+	gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->rights)));
 	gtk_entry_completion_set_text_column(completion, 0);
 	gtk_entry_completion_set_inline_completion(completion, TRUE);
-	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->license))), completion);
-	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->license), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->rights))), completion);
+	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->rights), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 	
 	g_object_unref(completion);
 
@@ -304,7 +304,7 @@ void gui_cleanup(dt_lib_module_t *self){
 	self->data = NULL;
 }
 
-static void add_license_preset(dt_lib_module_t *self, char *name, char *string){
+static void add_rights_preset(dt_lib_module_t *self, char *name, char *string){
 	unsigned int params_size = strlen(string)+5;
 
 	char *params = calloc(sizeof(char), params_size);
@@ -315,15 +315,15 @@ static void add_license_preset(dt_lib_module_t *self, char *name, char *string){
 
 void init_presets(dt_lib_module_t *self){
 
-	// <title>\0<description>\0<license>\0<creator>\0<publisher>
+	// <title>\0<description>\0<rights>\0<creator>\0<publisher>
 
-	add_license_preset(self, _("CC-by"), _("Creative Commons Attribution (CC-BY)"));
-	add_license_preset(self, _("CC-by-sa"), _("Creative Commons Attribution-ShareAlike (CC-BY-SA)"));
-	add_license_preset(self, _("CC-by-nd"), _("Creative Commons Attribution-NoDerivs (CC-BY-ND)"));
-	add_license_preset(self, _("CC-by-nc"), _("Creative Commons Attribution-NonCommercial (CC-BY-NC)"));
-	add_license_preset(self, _("CC-by-nc-sa"), _("Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"));
-	add_license_preset(self, _("CC-by-nc-nd"), _("Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"));
-	add_license_preset(self, _("all rights reserved"), _("All rights reserved."));
+	add_rights_preset(self, _("CC-by"), _("Creative Commons Attribution (CC-BY)"));
+	add_rights_preset(self, _("CC-by-sa"), _("Creative Commons Attribution-ShareAlike (CC-BY-SA)"));
+	add_rights_preset(self, _("CC-by-nd"), _("Creative Commons Attribution-NoDerivs (CC-BY-ND)"));
+	add_rights_preset(self, _("CC-by-nc"), _("Creative Commons Attribution-NonCommercial (CC-BY-NC)"));
+	add_rights_preset(self, _("CC-by-nc-sa"), _("Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"));
+	add_rights_preset(self, _("CC-by-nc-nd"), _("Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"));
+	add_rights_preset(self, _("all rights reserved"), _("All rights reserved."));
 }
 
 // FIXME: Is this ever called?
@@ -336,24 +336,24 @@ void* get_params(dt_lib_module_t *self, int *size){
 
 	char *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
 	char *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
-	char *license     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->license));
+	char *rights     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->rights));
 	char *creator     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
 	char *publisher   = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
 
 	int32_t title_len       = strlen(title);
 	int32_t description_len = strlen(description);
-	int32_t license_len     = strlen(license);
+	int32_t rights_len      = strlen(rights);
 	int32_t creator_len     = strlen(creator);
 	int32_t publisher_len   = strlen(publisher);
 
-	*size = title_len + description_len + license_len + creator_len + publisher_len + 5;
+	*size = title_len + description_len + rights_len + creator_len + publisher_len + 5;
 
 	char *params = (char *)malloc(*size);
 	
 	int pos = 0;
 	memcpy(params+pos, title, title_len+1);                 pos += title_len+1;
 	memcpy(params+pos, description, description_len+1);     pos += description_len+1;
-	memcpy(params+pos, license, license_len+1);             pos += license_len+1;
+	memcpy(params+pos, rights, rights_len+1);               pos += rights_len+1;
 	memcpy(params+pos, creator, creator_len+1);             pos += creator_len+1;
 	memcpy(params+pos, publisher, publisher_len+1);         pos += publisher_len+1;
 
@@ -366,22 +366,22 @@ int set_params(dt_lib_module_t *self, const void *params, int size){
 	char *buf         = (char* )params;
 	char *title       = buf;            buf += strlen(title) + 1;
 	char *description = buf;            buf += strlen(description) + 1;
-	char *license     = buf;            buf += strlen(license) + 1;
+	char *rights     = buf;             buf += strlen(rights) + 1;
 	char *creator     = buf;            buf += strlen(creator) + 1;
 	char *publisher   = buf;            buf += strlen(publisher) + 1;
 
-	if(size != strlen(title) + strlen(description) + strlen(license) + strlen(creator) + strlen(publisher) + 5) return 1;
+	if(size != strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5) return 1;
 
 	if(title != NULL && title[0] != '\0')
-		dt_metadata_set(-1, "darktable.title", title);
+		dt_metadata_set(-1, "Xmp.dc.title", title);
 	if(description != NULL && description[0] != '\0')
-		dt_metadata_set(-1, "darktable.description", description);
-	if(license != NULL && license[0] != '\0')
-		dt_metadata_set(-1, "darktable.license", license);
+		dt_metadata_set(-1, "Xmp.dc.description", description);
+	if(rights != NULL && rights[0] != '\0')
+		dt_metadata_set(-1, "Xmp.dc.rights", rights);
 	if(creator != NULL && creator[0] != '\0')
-		dt_metadata_set(-1, "darktable.creator", creator);
+		dt_metadata_set(-1, "Xmp.dc.creator", creator);
 	if(publisher != NULL && publisher[0] != '\0')
-		dt_metadata_set(-1, "darktable.publisher", publisher);
+		dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
 
 	update(self, FALSE);
 	return 0;

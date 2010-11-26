@@ -31,9 +31,8 @@ EOF
 # iterate over the input
 first=0
 for line in $(cat $inputfile | grep -v "^#"); do
-    enum=DT_METADATA_$(echo -n $line | tr '[:lower:]' '[:upper:]')
-    key=darktable.$line
-    length=$(echo -n $key | wc -c)
+    enum=DT_METADATA_$(echo -n $line | tr '[:lower:].' '[:upper:]_')
+    length=$(echo -n $line | wc -c)
     if [ "$first" -ne 0 ]; then
         echo "," >> $outputdir/$outputheader
     fi
@@ -41,7 +40,7 @@ for line in $(cat $inputfile | grep -v "^#"); do
     first=1
 
     cat >> $outputdir/$outputbody << EOF
-    if(strncmp(key, "$key", $length) == 0)
+    if(strncmp(key, "$line", $length) == 0)
         return $enum;
 EOF
 
