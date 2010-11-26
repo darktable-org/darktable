@@ -84,147 +84,108 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)o;
   const int ch = piece->colors;
   
-#if 0
-  // const float rgb_to_xyz[9] = {
-  //   0.6326696,  0.2045558,  0.1269946,
-  //   0.2284569,  0.7373523,  0.0341908,
-  //   0.0000000,  0.0095142,  0.8156958};
-
-  printf("process using matrix m =\n");
-  for(int j=0;j<3;j++)
-  {
-    for(int i=0;i<3;i++)
-    {
-      printf("%f ", mat[3*j+i]);
-    }
-    printf("\n");
-  }
-#endif
+  if(mat[0] != -666.0f)
+  { // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
-  for(int j=0;j<roi_out->height;j++)
-  {
-    const float *buf_in  = in  + ch*roi_out->width*j;
-    float *buf_out = out + ch*roi_out->width*j;
-    for(int i=0;i<roi_out->width;i++)
+    for(int j=0;j<roi_out->height;j++)
     {
-      float cam[3], XYZ[3], Lab[3];
-      memcpy(cam, buf_in, sizeof(float)*3);
-#if 1
-      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-      const float YY = cam[0]+cam[1]+cam[2];
-      const float zz = cam[2]/YY;
-      // lower amount and higher bound_z make the effect smaller.
-      // the effect is weakened the darker input values are, saturating at bound_Y
-      const float bound_z = 0.5f, bound_Y = 0.5f;
-      const float amount = 0.11f;
-      // if(YY > bound_Y && zz > bound_z)
-      if (zz > bound_z)
+      const float *buf_in  = in  + ch*roi_out->width*j;
+      float *buf_out = out + ch*roi_out->width*j;
+      for(int i=0;i<roi_out->width;i++)
       {
-        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-        cam[1] += t*amount;
-        cam[2] -= t*amount;
-      }
-#endif
-      for(int k=0;k<3;k++)
-      {
-        float x = 0.0f;
-        for(int i=0;i<3;i++) x += mat[3*k+i] * cam[i];
-        // for(int i=0;i<3;i++) x += rgb_to_xyz[3*k+i] * buf_in[i];
-        XYZ[k] = x;
-      }
-      dt_XYZ_to_Lab(XYZ, Lab);
+        float cam[3], XYZ[3], Lab[3];
+        memcpy(cam, buf_in, sizeof(float)*3);
+        // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+        const float YY = cam[0]+cam[1]+cam[2];
+        const float zz = cam[2]/YY;
+        // lower amount and higher bound_z make the effect smaller.
+        // the effect is weakened the darker input values are, saturating at bound_Y
+        const float bound_z = 0.5f, bound_Y = 0.5f;
+        const float amount = 0.11f;
+        // if(YY > bound_Y && zz > bound_z)
+        if (zz > bound_z)
+        {
+          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+          cam[1] += t*amount;
+          cam[2] -= t*amount;
+        }
+        for(int k=0;k<3;k++)
+        {
+          float x = 0.0f;
+          for(int i=0;i<3;i++) x += mat[3*k+i] * cam[i];
+          XYZ[k] = x;
+        }
+        dt_XYZ_to_Lab(XYZ, Lab);
 
-      // and to La*b*
-      if(Lab[0] > 0)
-      {
-        buf_out[1]  = 100.0*Lab[1]/Lab[0];
-        buf_out[2]  = 100.0*Lab[2]/Lab[0];
+        // and to La*b*
+        if(Lab[0] > 0)
+        {
+          buf_out[1]  = 100.0*Lab[1]/Lab[0];
+          buf_out[2]  = 100.0*Lab[2]/Lab[0];
+        }
+        else
+        {
+          buf_out[1] = Lab[1];
+          buf_out[2] = Lab[2];
+        }
+        buf_out[0] = Lab[0];
+        buf_out += ch;
+        buf_in += ch;
       }
-      else
-      {
-        buf_out[1] = Lab[1];
-        buf_out[2] = Lab[2];
-      }
-      buf_out[0] = Lab[0];
-      buf_out += ch;
-      buf_in += ch;
     }
   }
-#if 0
-  int rowsize=roi_out->width*3;
-  float cam[rowsize];
-  float Lab[rowsize];
-  
+  else
+  { // use general lcms2 fallback
+    int rowsize=roi_out->width*3;
+    float cam[rowsize];
+    float Lab[rowsize];
+    
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
 #endif
-  for(int k=0;k<roi_out->height;k++)
-  {
-    const int m=(k*(roi_out->width*ch));
-    
-#if 0//def _OPENMP
-#  pragma omp parallel for default(none) shared(cam) schedule(static) 
-#endif
-    for (int l=0;l<roi_out->width;l++) {
-      int ci=3*l, ii=ch*l;
-      
-      cam[ci+0] = in[m+ii+0];
-      cam[ci+1] = in[m+ii+1];
-      cam[ci+2] = in[m+ii+2];
-      
-      const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
-      const float zz = cam[ci+2]/YY;
-      const float bound_z = 0.5f, bound_Y = 0.5f;
-      const float amount = 0.11f;
-      if (zz > bound_z) {
-        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-        cam[ci+1] += t*amount;
-        cam[ci+2] -= t*amount;
-      }
-    }
-    
-#if 0
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float YY = cam[0]+cam[1]+cam[2];
-    const float zz = cam[2]/YY;
-    // lower amount and higher bound_z make the effect smaller.
-    // the effect is weakened the darker input values are, saturating at bound_Y
-    const float bound_z = 0.5f, bound_Y = 0.5f;
-    const float amount = 0.11f;
-    // if(YY > bound_Y && zz > bound_z)
-    if (zz > bound_z)
+    for(int k=0;k<roi_out->height;k++)
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-      cam[1] += t*amount;
-      cam[2] -= t*amount;
-    }
-#endif
-    
-    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    // lcms is not thread safe, so work on one copy for each thread :(
-    cmsDoTransform (d->xform[dt_get_thread_num()], cam, Lab, roi_out->width);
-  
-#if 0//def _OPENMP
-#  pragma omp parallel for default(none) shared(out) schedule(static) 
-#endif 
-    for (int l=0;l<roi_out->width;l++) {
-      int li=3*l, oi=ch*l;
-      out[m+oi+0] = Lab[li+0];
-      if(Lab[li+0] > 0)
-      {
-       out[m+oi+1]  = 100.0*Lab[li+1]/Lab[li+0];
-       out[m+oi+2]  = 100.0*Lab[li+2]/Lab[li+0];
+      const int m=(k*(roi_out->width*ch));
+      
+      for (int l=0;l<roi_out->width;l++) {
+        int ci=3*l, ii=ch*l;
+        
+        cam[ci+0] = in[m+ii+0];
+        cam[ci+1] = in[m+ii+1];
+        cam[ci+2] = in[m+ii+2];
+        
+        const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
+        const float zz = cam[ci+2]/YY;
+        const float bound_z = 0.5f, bound_Y = 0.5f;
+        const float amount = 0.11f;
+        if (zz > bound_z) {
+          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+          cam[ci+1] += t*amount;
+          cam[ci+2] -= t*amount;
+        }
       }
-      else
-      {
-        out[m+oi+1]  = Lab[li+1];
-        out[m+oi+2] = Lab[li+2];
+      // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+      // lcms is not thread safe, so work on one copy for each thread :(
+      cmsDoTransform (d->xform[dt_get_thread_num()], cam, Lab, roi_out->width);
+    
+      for (int l=0;l<roi_out->width;l++) {
+        int li=3*l, oi=ch*l;
+        out[m+oi+0] = Lab[li+0];
+        if(Lab[li+0] > 0)
+        {
+         out[m+oi+1]  = 100.0*Lab[li+1]/Lab[li+0];
+         out[m+oi+2]  = 100.0*Lab[li+2]/Lab[li+0];
+        }
+        else
+        {
+          out[m+oi+1]  = Lab[li+1];
+          out[m+oi+2] = Lab[li+2];
+        }
       }
     }
   }
-#endif
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -240,7 +201,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   const int num_threads = dt_get_num_threads();
   d->input = NULL;
   for(int t=0;t<num_threads;t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
-  d->cmatrix[0][0] = -666.0;
+  d->cmatrix[0][0] = -666.0f;
   char datadir[1024];
   char filename[1024];
   dt_get_datadir(datadir, 1024);
@@ -256,15 +217,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       snprintf(makermodel, 512, "%s", self->dev->image->exif_model);
     else
       snprintf(makermodel, 512, "%s %s", maker, self->dev->image->exif_model);
-#if 0
-    // printf("searching matrix for `%s'\n", makermodel);
-    d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    // if(!d->input) printf("could not find enhanced color matrix for `%s'!\n", makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
-#else
     if(dt_colorspaces_get_darktable_matrix(makermodel, (float *)(d->cmatrix)))
-      fprintf(stderr, "[colorin] matrix creation failed!\n");
-#endif
+    {
+      d->cmatrix[0][0] = -666.0f;
+      d->input = dt_colorspaces_create_darktable_profile(makermodel);
+      if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    }
   }
   if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
   { // color matrix
