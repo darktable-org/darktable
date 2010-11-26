@@ -268,22 +268,6 @@ dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   float result[9];
   if(mat3inv(result, primaries)) return -1;
 
-#if 0
-  float invcheck[9];
-  mat3mul(invcheck, result, primaries);
-  printf("invcheck matrix: \n");
-  for(int j=0;j<3;j++)
-  {
-    for(int i=0;i<3;i++)
-    {
-      printf("%f ", invcheck[3*j+i]);
-    }
-    printf("\n");
-  }
-  // passed...
-#endif
-
-
   const float whitepoint[3] = {xn/yn, 1.0f, (1.0f-xn-yn)/yn};
   float coeff[3];
 
@@ -303,11 +287,7 @@ dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   const float d50[3] = { 0.9642, 1.0, 0.8249 };
 
 
-  // printf("whitepoints: %f %f %f\n and %f %f %f\n", whitepoint[0], whitepoint[1], whitepoint[2], dn[0], dn[1], dn[2]);
-
-
   // adapt to d50
-
   float chad_inv[9];
   if(mat3inv(chad_inv, lam_rigg)) return -1;
 
@@ -324,189 +304,8 @@ dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   mat3mul(tmp2, cone, lam_rigg);
   mat3mul(bradford, chad_inv, tmp2);
 
-#if 0
-  printf("bradford matrix: \n");
-  for(int j=0;j<3;j++)
-  {
-    for(int i=0;i<3;i++)
-    {
-      printf("%f ", bradford[3*j+i]);
-    }
-    printf("\n");
-  }
-  printf("tmp2 matrix: \n");
-  for(int j=0;j<3;j++)
-  {
-    for(int i=0;i<3;i++)
-    {
-      printf("%f ", tmp2[3*j+i]);
-    }
-    printf("\n");
-  }
-#endif
-
   mat3mul(matrix, bradford, tmp);
   return 0;
-
-#if 0
-tion(cmsMAT3* Conversion,  // result : bradford
-                                const cmsCIEXYZ* SourceWhitePoint, // dn
-                                const cmsCIEXYZ* DestWhitePoint,   // D50
-                                const cmsMAT3* Chad)               // lam_rigg
-
-{
-      
-    cmsMAT3 Chad_Inv;
-    cmsVEC3 ConeSourceXYZ, ConeSourceRGB;
-    cmsVEC3 ConeDestXYZ, ConeDestRGB;
-    cmsMAT3 Cone, Tmp;
-
-
-    Tmp = *Chad;
-    // if (!_cmsMAT3inverse(&Tmp, &Chad_Inv)) return FALSE;
-
-    // _cmsVEC3init(&ConeSourceXYZ, SourceWhitePoint -> X,
-    //                          SourceWhitePoint -> Y,
-    //                          SourceWhitePoint -> Z);
-
-    // _cmsVEC3init(&ConeDestXYZ,   DestWhitePoint -> X,
-    //                          DestWhitePoint -> Y,
-    //                          DestWhitePoint -> Z);
-
-    // _cmsMAT3eval(&ConeSourceRGB, Chad, &ConeSourceXYZ);
-    // _cmsMAT3eval(&ConeDestRGB,   Chad, &ConeDestXYZ);
-
-    // Build matrix
-    _cmsVEC3init(&Cone.v[0], ConeDestRGB.n[0]/ConeSourceRGB.n[0],    0.0,  0.0);
-    _cmsVEC3init(&Cone.v[1], 0.0,   ConeDestRGB.n[1]/ConeSourceRGB.n[1],   0.0);
-    _cmsVEC3init(&Cone.v[2], 0.0,   0.0,   ConeDestRGB.n[2]/ConeSourceRGB.n[2]);
-
-
-    // Normalize
-    _cmsMAT3per(&Tmp, &Cone, Chad);
-    _cmsMAT3per(Conversion, &Chad_Inv, &Tmp);
-
-  // cmsBool _cmsBuildRGB2XYZtransferMatrix(cmsMAT3* r, const cmsCIExyY* WhitePt, const cmsCIExyYTRIPLE* Primrs)
-#if 0
-	cmsVEC3 WhitePoint, Coef;
-	cmsMAT3 Result, Primaries;
-	cmsFloat64Number xn, yn;
-	cmsFloat64Number xr, yr;
-	cmsFloat64Number xg, yg;
-	cmsFloat64Number xb, yb;
-
-	xn = WhitePt -> x;
-	yn = WhitePt -> y;
-	xr = Primrs -> Red.x;
-	yr = Primrs -> Red.y;
-	xg = Primrs -> Green.x;
-	yg = Primrs -> Green.y;
-	xb = Primrs -> Blue.x;
-	yb = Primrs -> Blue.y;
-#endif
-
-	// Build Primaries matrix
-  // .v[i] accesses the i-th row:
-#if 0
-	_cmsVEC3init(&Primaries.v[0], xr,        xg,         xb);
-	_cmsVEC3init(&Primaries.v[1], yr,        yg,         yb);
-	_cmsVEC3init(&Primaries.v[2], (1-xr-yr), (1-xg-yg),  (1-xb-yb));
-#endif
-
-
-	// Result = Primaries ^ (-1) inverse matrix
-	// if (!_cmsMAT3inverse(&Primaries, &Result))
-		// return FALSE;
-
-
-	// _cmsVEC3init(&WhitePoint, xn/yn, 1.0, (1.0-xn-yn)/yn);
-
-	// Across inverse primaries ...
-	// _cmsMAT3eval(&Coef, &Result, &WhitePoint);
-
-  // VX=0, VY=1, VZ=2
-	// Give us the Coefs, then I build transformation matrix
-	// _cmsVEC3init(&r -> v[0], Coef.n[VX]*xr,          Coef.n[VY]*xg,          Coef.n[VZ]*xb);
-	// _cmsVEC3init(&r -> v[1], Coef.n[VX]*yr,          Coef.n[VY]*yg,          Coef.n[VZ]*yb);
-	// _cmsVEC3init(&r -> v[2], Coef.n[VX]*(1.0-xr-yr), Coef.n[VY]*(1.0-xg-yg), Coef.n[VZ]*(1.0-xb-yb));
-
-
-	// return _cmsAdaptMatrixToD50(r, WhitePt);
-
-// Same as anterior, but assuming D50 destination. White point is given in xyY
-static
-cmsBool _cmsAdaptMatrixToD50(cmsMAT3* r, const cmsCIExyY* SourceWhitePt)
-{
-	// cmsCIEXYZ Dn;      
-	cmsMAT3 Bradford;
-	cmsMAT3 Tmp;
-
-	// cmsxyY2XYZ(&Dn, SourceWhitePt);
-
-	if (!_cmsAdaptationMatrix(&Bradford, NULL, &Dn, cmsD50_XYZ())) return FALSE;
-  // Returns the final chrmatic adaptation from illuminant FromIll to Illuminant ToIll
-// The cone matrix can be specified in ConeMatrix. If NULL, Bradford is assumed
-cmsBool  _cmsAdaptationMatrix(cmsMAT3* r, const cmsMAT3* ConeMatrix, const cmsCIEXYZ* FromIll, const cmsCIEXYZ* ToIll)
-{
-	cmsMAT3 LamRigg   = {{ // Bradford matrix
-		{{  0.8951,  0.2664, -0.1614 }},
-		{{ -0.7502,  1.7135,  0.0367 }},
-		{{  0.0389, -0.0685,  1.0296 }}
-	}};
-
-	if (ConeMatrix == NULL)
-		ConeMatrix = &LamRigg;
-
-	return ComputeChromaticAdaptation(r, FromIll, ToIll, ConeMatrix);	
-}
-
-	Tmp = *r;
-  // mul matrices:
-	_cmsMAT3per(r, &Bradford, &Tmp);
-
-	return TRUE;
-}
-static
-cmsBool ComputeChromaticAdaptation(cmsMAT3* Conversion,  // result : bradford
-                                const cmsCIEXYZ* SourceWhitePoint, // dn
-                                const cmsCIEXYZ* DestWhitePoint,   // D50
-                                const cmsMAT3* Chad)               // lam_rigg
-
-{
-      
-    cmsMAT3 Chad_Inv;
-    cmsVEC3 ConeSourceXYZ, ConeSourceRGB;
-    cmsVEC3 ConeDestXYZ, ConeDestRGB;
-    cmsMAT3 Cone, Tmp;
-
-
-    Tmp = *Chad;
-    if (!_cmsMAT3inverse(&Tmp, &Chad_Inv)) return FALSE;
-
-    _cmsVEC3init(&ConeSourceXYZ, SourceWhitePoint -> X,
-                             SourceWhitePoint -> Y,
-                             SourceWhitePoint -> Z);
-
-    _cmsVEC3init(&ConeDestXYZ,   DestWhitePoint -> X,
-                             DestWhitePoint -> Y,
-                             DestWhitePoint -> Z);
-
-    _cmsMAT3eval(&ConeSourceRGB, Chad, &ConeSourceXYZ);
-    _cmsMAT3eval(&ConeDestRGB,   Chad, &ConeDestXYZ);
-
-    // Build matrix
-    _cmsVEC3init(&Cone.v[0], ConeDestRGB.n[0]/ConeSourceRGB.n[0],    0.0,  0.0);
-    _cmsVEC3init(&Cone.v[1], 0.0,   ConeDestRGB.n[1]/ConeSourceRGB.n[1],   0.0);
-    _cmsVEC3init(&Cone.v[2], 0.0,   0.0,   ConeDestRGB.n[2]/ConeSourceRGB.n[2]);
-
-
-    // Normalize
-    _cmsMAT3per(&Tmp, &Cone, Chad);
-    _cmsMAT3per(Conversion, &Chad_Inv, &Tmp);
-
-	return TRUE;
-}
-#endif
 }
 
 cmsHPROFILE
