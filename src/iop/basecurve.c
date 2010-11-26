@@ -334,7 +334,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  dt_draw_grid(cr, 4, width, height);
+  dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw x positions
   cairo_set_line_width(cr, 1.);
