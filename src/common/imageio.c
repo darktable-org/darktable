@@ -390,13 +390,10 @@ error_raw_corrupted:
 
 dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
 {
-g_print("dt_imageio_open_raw: 1\n");
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-g_print("dt_imageio_open_raw: 2\n");
   int ret;
   libraw_data_t *raw = libraw_init(0);
-g_print("dt_imageio_open_raw: 3\n");
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
   raw->params.use_camera_wb = 1;
@@ -444,7 +441,6 @@ g_print("dt_imageio_open_raw: 3\n");
   }
 #endif
   // end of new demosaicing params
-g_print("dt_imageio_open_raw: 4\n");
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
   raw->params.user_qual = 0;
@@ -453,16 +449,14 @@ g_print("dt_imageio_open_raw: 4\n");
   // this image is raw, if we manage to load it.
   img->flags &= ~DT_IMAGE_LDR;
   img->flags |= DT_IMAGE_RAW;
-g_print("dt_imageio_open_raw: 5\n");
+
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
   HANDLE_ERRORS(ret, 1);
-g_print("dt_imageio_open_raw: 6\n");
   ret = libraw_dcraw_process(raw);
   // ret = libraw_dcraw_document_mode_processing(raw);
   HANDLE_ERRORS(ret, 1);
-g_print("dt_imageio_open_raw: 7\n");
   image = libraw_dcraw_make_mem_image(raw, &ret);
   HANDLE_ERRORS(ret, 1);
 
@@ -480,7 +474,7 @@ g_print("dt_imageio_open_raw: 7\n");
   strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
   img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
-g_print("dt_imageio_open_raw: 8\n");
+
   if(dt_image_alloc(img, DT_IMAGE_FULL))
   {
     libraw_recycle(raw);
@@ -488,19 +482,15 @@ g_print("dt_imageio_open_raw: 8\n");
     free(image);
     return DT_IMAGEIO_CACHE_FULL;
   }
-g_print("dt_imageio_open_raw: 9\n");
   dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
   memcpy(img->pixels, image->data, img->width*img->height*sizeof(uint16_t));
   // clean up raw stuff.
-g_print("dt_imageio_open_raw: 10\n");
   libraw_recycle(raw);
-g_print("dt_imageio_open_raw: 11\n");
   libraw_close(raw);
   free(image);
   raw = NULL;
   image = NULL;
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-g_print("dt_imageio_open_raw: 12\n");
   return DT_IMAGEIO_OK;
 }
 
