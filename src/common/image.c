@@ -837,6 +837,7 @@ void dt_image_cleanup(dt_image_t *img)
 // this should load and return with 'r' lock on mip buffer.
 int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
+g_print("DEBUG: 1\n");
   if(!img) return 1;
   int ret = 0;
   char filename[1024];
@@ -845,6 +846,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   if(mip != DT_IMAGE_FULL &&
     (img->force_reimport || img->width == 0 || img->height == 0))
   {
+g_print("DEBUG: 2\n");
     ret = dt_image_reimport(img, filename, mip);
     if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
     else ret = 0;
@@ -852,9 +854,11 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   // else we might be able to fetch it from the caches.
   else if(mip == DT_IMAGE_MIPF)
   {
+g_print("DEBUG: 3\n");
     ret = 0;
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     { // get mipf from half-size raw
+g_print("DEBUG: 4\n");
       ret = dt_imageio_open_preview(img, filename);
       dt_image_validate(img, DT_IMAGE_MIPF);
       if(!ret && dt_image_lock_if_available(img, mip, 'r')) ret = 1;
@@ -862,6 +866,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     }
     else
     { // downscale full buffer
+g_print("DEBUG: 5\n");
       ret = dt_image_raw_to_preview(img, img->pixels);
       dt_image_validate(img, DT_IMAGE_MIPF);
       dt_image_release(img, DT_IMAGE_FULL, 'r');
@@ -872,6 +877,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   else if(mip == DT_IMAGE_FULL)
   {
     // after _open, the full buffer will be 'r' locked.
+g_print("DEBUG: 6\n");
     ret = dt_imageio_open(img, filename);
     dt_image_raw_to_preview(img, img->pixels);
     dt_image_validate(img, DT_IMAGE_MIPF);
@@ -879,18 +885,22 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   else
   {
     // refuse to load thumbnails for currently developed image.
+g_print("DEBUG: 7\n");
     dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
     if(darktable.develop->image == img && mode == DT_DEVELOP) ret = 1;
     else
     {
+g_print("DEBUG: 8\n");
       ret = dt_image_reimport(img, filename, mip);
       if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
     }
   }
+g_print("DEBUG: 9\n");
   if(!ret) dt_image_validate(img, mip);
   // TODO: insert abstract hook here?
   dt_control_queue_draw_all();
+g_print("DEBUG: 10\n");
   return ret;
 }
 
