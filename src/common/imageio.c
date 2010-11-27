@@ -771,17 +771,12 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
   dt_imageio_retval_t ret;
-g_print("dt_imageio_open 1\n");
   ret = dt_imageio_open_hdr(img, filename);
-g_print("dt_imageio_open 2\n");
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename);
-g_print("dt_imageio_open 3\n");
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr(img, filename);
-g_print("dt_imageio_open 4\n");
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
-g_print("dt_imageio_open 5\n");
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   return ret;
 }
