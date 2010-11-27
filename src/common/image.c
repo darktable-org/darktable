@@ -858,14 +858,11 @@ g_print("DEBUG: 3\n");
     ret = 0;
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     { // get mipf from half-size raw
-g_print("DEBUG: 4.1\n");
+g_print("DEBUG: 4\n");
       ret = dt_imageio_open_preview(img, filename);
-g_print("DEBUG: 4.2\n");
       dt_image_validate(img, DT_IMAGE_MIPF);
-g_print("DEBUG: 4.3\n");
       if(!ret && dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
-g_print("DEBUG: 4.4\n");
     }
     else
     { // downscale full buffer
@@ -880,13 +877,10 @@ g_print("DEBUG: 5\n");
   else if(mip == DT_IMAGE_FULL)
   {
     // after _open, the full buffer will be 'r' locked.
-g_print("DEBUG: 6.1\n");
+g_print("DEBUG: 6\n");
     ret = dt_imageio_open(img, filename);
-g_print("DEBUG: 6.2\n");
-	dt_image_raw_to_preview(img, img->pixels);
-g_print("DEBUG: 6.3\n");
-	dt_image_validate(img, DT_IMAGE_MIPF);
-g_print("DEBUG: 6.4\n");
+    dt_image_raw_to_preview(img, img->pixels);
+    dt_image_validate(img, DT_IMAGE_MIPF);
   }
   else
   {
