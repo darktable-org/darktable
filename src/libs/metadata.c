@@ -156,8 +156,7 @@ static void clear_button_clicked(GtkButton *button, gpointer user_data){
 	update(user_data, FALSE);
 }
 
-static void apply_button_clicked(GtkButton *button, gpointer user_data){
-	dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+static void write_metadata(dt_lib_module_t *self){
 	dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
 
 	gchar *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
@@ -188,7 +187,16 @@ static void apply_button_clicked(GtkButton *button, gpointer user_data){
 	if(publisher != NULL)
 		g_free(publisher);
 
-	update(user_data, FALSE);
+	update(self, FALSE);
+}
+
+static void apply_button_clicked(GtkButton *button, gpointer user_data){
+	write_metadata(user_data);
+}
+
+static void enter_pressed(GtkEntry *entry, gpointer user_data){
+	write_metadata(user_data);
+	gtk_window_set_focus(GTK_WINDOW(glade_xml_get_widget(darktable.gui->main_window, "main_window")), NULL);
 }
 
 void gui_reset(dt_lib_module_t *self){
@@ -226,6 +234,7 @@ void gui_init(dt_lib_module_t *self){
 	gtk_entry_completion_set_text_column(completion, 0);
 	gtk_entry_completion_set_inline_completion(completion, TRUE);
 	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->title))), completion);
+	g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->title))), "activate", G_CALLBACK (enter_pressed), self);
 	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->title), 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 	label = gtk_label_new(_("description"));
@@ -238,6 +247,7 @@ void gui_init(dt_lib_module_t *self){
 	gtk_entry_completion_set_text_column(completion, 0);
 	gtk_entry_completion_set_inline_completion(completion, TRUE);
 	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->description))), completion);
+	g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->description))), "activate", G_CALLBACK (enter_pressed), self);
 	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->description), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 	label = gtk_label_new(_("creator"));
@@ -250,6 +260,7 @@ void gui_init(dt_lib_module_t *self){
 	gtk_entry_completion_set_text_column(completion, 0);
 	gtk_entry_completion_set_inline_completion(completion, TRUE);
 	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->creator))), completion);
+	g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->creator))), "activate", G_CALLBACK (enter_pressed), self);
 	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->creator), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 	label = gtk_label_new(_("publisher"));
@@ -262,6 +273,7 @@ void gui_init(dt_lib_module_t *self){
 	gtk_entry_completion_set_text_column(completion, 0);
 	gtk_entry_completion_set_inline_completion(completion, TRUE);
 	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->publisher))), completion);
+	g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->publisher))), "activate", G_CALLBACK (enter_pressed), self);
 	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->publisher), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 	label = gtk_label_new(_("rights"));
@@ -274,6 +286,7 @@ void gui_init(dt_lib_module_t *self){
 	gtk_entry_completion_set_text_column(completion, 0);
 	gtk_entry_completion_set_inline_completion(completion, TRUE);
 	gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->rights))), completion);
+	g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->rights))), "activate", G_CALLBACK (enter_pressed), self);
 	gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->rights), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 	
 	g_object_unref(completion);
