@@ -341,6 +341,7 @@ try_full_raw:
     if(dt_image_alloc(img, DT_IMAGE_MIPF)) goto error_raw_cache_full;
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
+    printf("+ writing mip5 from preview\n");
     if(raw_wd == p_wd && raw_ht == p_ht)
     { // use 1:1
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
@@ -362,6 +363,7 @@ try_full_raw:
 
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
+    printf("- writing mip5 from preview\n");
     // clean up raw stuff.
     libraw_recycle(raw);
     libraw_close(raw);

@@ -1,5 +1,6 @@
 0.7 release:
 
+- libraw: filters==0 fails.
 
 mipf and full pipes:
 - order of plugins to include demosaic?

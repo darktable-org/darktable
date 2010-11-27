@@ -22,6 +22,38 @@
 #include "control/control.h"
 #include "common/colormatrices.c"
 
+
+#if 0
+// TODO:
+
+create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
+
+check this first:
+cmsBool cmsIsMatrixShaper(cmsHPROFILE hProfile);
+
+cmsToneCurve* = cmsReadTag(profile, cmsSigRedTRCTag)
+cmsToneCurve* = cmsReadTag(profile, cmsSigGreenTRCTag)
+cmsToneCurve* = cmsReadTag(profile, cmsSigBlueTRCTag)
+
+  .. and MColorants is already the matrix were looking for.
+   Colorants.Red.X   = MColorants.v[0].n[0];
+        Colorants.Red.Y   = MColorants.v[1].n[0];
+        Colorants.Red.Z   = MColorants.v[2].n[0];
+
+        Colorants.Green.X = MColorants.v[0].n[1];
+        Colorants.Green.Y = MColorants.v[1].n[1];
+        Colorants.Green.Z = MColorants.v[2].n[1];
+
+        Colorants.Blue.X  = MColorants.v[0].n[2];
+        Colorants.Blue.Y  = MColorants.v[1].n[2];
+        Colorants.Blue.Z  = MColorants.v[2].n[2];
+
+        if (!cmsWriteTag(hICC, cmsSigRedColorantTag,   (void*) &Colorants.Red)) goto Error;
+        if (!cmsWriteTag(hICC, cmsSigBlueColorantTag,  (void*) &Colorants.Blue)) goto Error;
+        if (!cmsWriteTag(hICC, cmsSigGreenColorantTag, (void*) &Colorants.Green)) goto Error;
+
+#endif
+
 static cmsToneCurve*
 build_srgb_gamma(void)
 {
