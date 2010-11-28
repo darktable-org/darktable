@@ -352,7 +352,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
 
   g->exposure = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
-  g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction [ev]"), (char *)NULL);
+  g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction [EV]"), (char *)NULL);
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->black), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);

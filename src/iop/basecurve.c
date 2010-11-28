@@ -59,7 +59,7 @@ static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
 static const char konica_minolta[] = N_("konica minolta like");
 static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
-static const char fotogenetic_v42[] = N_("fotogenetic (ev3)");
+static const char fotogenetic_v42[] = N_("fotogenetic (EV3)");
 
 typedef struct basecurve_preset_t
 {
