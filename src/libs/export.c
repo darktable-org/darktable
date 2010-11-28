@@ -466,14 +466,14 @@ gui_init (dt_lib_module_t *self)
 
   dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, _("srgb (web-safe)"));
+  strcpy(prof->name, _("sRGB (web-safe)"));
   int pos;
   prof->pos = 1;
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "adobergb");
-  strcpy(prof->name, _("adobe rgb"));
+  strcpy(prof->name, _("Adobe RGB"));
   prof->pos = 2;
   d->profiles = g_list_append(d->profiles, prof);
 
@@ -485,7 +485,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "linear_rgb");
-  strcpy(prof->name, _("linear rgb"));
+  strcpy(prof->name, _("linear RGB"));
   pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
