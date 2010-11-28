@@ -103,6 +103,8 @@ typedef struct dt_iop_module_t
   int (*groups)           ();
   /** get the iop module flags. */
   int (*flags)            ();
+  /** how many bytes per pixel in the output. */
+  int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */

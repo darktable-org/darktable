@@ -147,6 +147,12 @@ int _default_groups() { return IOP_GROUP_ALL; }
 /* default flags for modules which does not implement the flags() function */
 int _default_flags() { return 0; }
 
+/* default bytes per pixel: 4*sizeof(float). */
+int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
+{
+  return 4*sizeof(float);
+}
+
 int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *libname, const char *op)
 {
   pthread_mutex_init(&module->params_mutex, NULL);
@@ -183,6 +189,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = _default_groups;
   if(!g_module_symbol(module->module, "flags",                  (gpointer)&(module->flags)))                  module->flags = _default_flags;
+  if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;

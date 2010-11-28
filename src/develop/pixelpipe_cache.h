@@ -29,6 +29,7 @@ typedef struct dt_dev_pixelpipe_cache_t
 {
   int32_t  entries;
   void    **data;
+  size_t   *size;
   uint64_t *hash;
   int32_t  *used;
 #ifdef HAVE_OPENCL

@@ -217,6 +217,18 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 {
 }
 
+static int
+get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  // FIXME: adjust to preview pipe, and non-raw images!
+  if(!module)
+  {
+    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) return 4*sizeof(float);
+    else return sizeof(uint16_t);
+  }
+  return module->output_bpp(module, pipe, piece);
+}
+
 // recursive helper for process:
 int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
@@ -237,6 +249,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       return dt_dev_pixelpipe_process_rec(pipe, dev, output, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1);
     }
   }
+
+  const int bpp = module->output_bpp(module, pipe, piece);
 
   // if available, return data
   pthread_mutex_lock(&pipe->busy_mutex);
