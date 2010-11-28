@@ -99,6 +99,7 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename)
     frameBuffer.insert ("R",Imf::Slice(Imf::FLOAT,(char *)(img->pixels),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("G",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+1),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("B",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+2),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
+    frameBuffer.insert ("A",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+3),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     
     if(isTiled) {
       fileTiled->setFrameBuffer (frameBuffer);
@@ -161,6 +162,7 @@ dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *fil
     frameBuffer.insert ("R",Imf::Slice(Imf::FLOAT,(char *)(buf),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("G",Imf::Slice(Imf::FLOAT,(char *)(buf+1),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("B",Imf::Slice(Imf::FLOAT,(char *)(buf+2),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
+    frameBuffer.insert ("A",Imf::Slice(Imf::FLOAT,(char *)(buf+3),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     
     if(isTiled) {
       fileTiled->setFrameBuffer (frameBuffer);
