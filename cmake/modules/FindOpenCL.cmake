@@ -1,36 +1,60 @@
-# - Try to find OpenCL
-# Once done this will define
-#  
-#  OPENCL_FOUND        - system has OpenCL
-#  OPENCL_INCLUDE_DIR  - the OpenCL include directory
-#  OPENCL_LIBRARIES    - link these to use OpenCL
-#
-# WIN32 should work, but is untested
+set(ENV_OPENCL_DIR $ENV{OPENCL_DIR})
+if(ENV_OPENCL_DIR)
+  find_path(
+        OPENCL_INCLUDE_DIR
+        NAMES CL/cl.h
+        PATHS $ENV{OPENCL_DIR}/include
+        NO_DEFAULT_PATH
+        )
 
-IF (WIN32)
+  if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+        if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+          set(
+                OPENCL_LIB_SEARCH_PATH
+                ${OPENCL_LIB_SEARCH_PATH}
+                $ENV{OPENCL_DIR}/lib/x86_64
+                )
+        elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
+          set(
+                OPENCL_LIB_SEARCH_PATH
+                ${OPENCL_LIB_SEARCH_PATH}
+                $ENV{OPENCL_DIR}/lib/x86
+                )
+        endif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  endif("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+  find_library(
+        OPENCL_LIBRARY
+        NAMES OpenCL
+        PATHS ${OPENCL_LIB_SEARCH_PATH}
+        NO_DEFAULT_PATH
+        )
+else(ENV_OPENCL_DIR)
+  find_path(
+        OPENCL_INCLUDE_DIR
+        NAMES CL/cl.h
+        )
 
-    FIND_PATH(OPENCL_INCLUDE_DIR CL/cl.h )
+  find_library(
+        OPENCL_LIBRARY
+        NAMES OpenCL
+        )
+endif(ENV_OPENCL_DIR)
 
-    # TODO this is only a hack assuming the 64 bit library will
-    # not be found on 32 bit system
-    FIND_LIBRARY(OPENCL_LIBRARIES opencl64 )
-    IF( OPENCL_LIBRARIES )
-        FIND_LIBRARY(OPENCL_LIBRARIES opencl32 )
-    ENDIF( OPENCL_LIBRARIES )
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(
+  OPENCL
+  DEFAULT_MSG
+  OPENCL_LIBRARY OPENCL_INCLUDE_DIR
+  )
 
-ELSE (WIN32)
+if(OPENCL_FOUND)
+  set(OPENCL_LIBRARIES ${OPENCL_LIBRARY})
+else(OPENCL_FOUND)
+  set(OPENCL_LIBRARIES)
+endif(OPENCL_FOUND)
 
-    # Unix style platforms
-    FIND_PATH(OPENCL_INCLUDE_DIR CL/opencl.h )
-    FIND_LIBRARY(OPENCL_LIBRARIES OpenCL ENV LD_LIBRARY_PATH)
-
-ENDIF (WIN32)
-
-SET( OPENCL_FOUND "NO" )
-IF(OPENCL_LIBRARIES AND OPENCL_INCLUDE_DIR)
-    SET( OPENCL_FOUND "YES" )
-ENDIF(OPENCL_LIBRARIES AND OPENCL_INCLUDE_DIR)
-
-MARK_AS_ADVANCED(
+mark_as_advanced(
   OPENCL_INCLUDE_DIR
-)
+  OPENCL_LIBRARY
+  )
+
