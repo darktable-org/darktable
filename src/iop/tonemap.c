@@ -73,16 +73,7 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  dt_iop_tonemap_data_t *data = (dt_iop_tonemap_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
-  
-  const float scale=(data->strength/100.0);
-  in  = (float *)ivoid;
-  out = (float *)ovoid;
+
  #define rgb2yuv(rgb,yuv) { \
     const float Wr=0.299,Wb=0.114,Wg=1-Wr-Wb;\
     const float UMax=0.436, VMax=0.615; \
@@ -94,10 +85,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
  #define yuv2rgb(yuv,rgb) { \
     const float Wr=0.299,Wb=0.114,Wg=1-Wr-Wb;\
     const float UMax=0.436, VMax=0.615; \
-    rgb[0]=yuv[0]+yuv[2]*((1-Wr)/VMax);
-    rgb[1]=yuv[0]-yuv[1]*(Wb*(1-wb)/(Umax*Wg))-yuv[2]*((Wr*(1-Wr))/VMax*Wg) }
-    rgb[2]=VMax*((rgb[0]-yuv[0])/(1-Wr)); \
+    rgb[0]=yuv[0]+yuv[2]*((1-Wr)/VMax); \
+    rgb[1]=yuv[0]-yuv[1]*(Wb*(1-Wb)/(UMax*Wg))-yuv[2]*((Wr*(1-Wr))/VMax*Wg); \
+    rgb[2]=yuv[0]+yuv[1]*(1-Wb/UMax); \
   }
+
+
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_tonemap_data_t *data = (dt_iop_tonemap_data_t *)piece->data;
+  float *in  = (float *)ivoid;
+  float *out = (float *)ovoid;
+  const int ch = piece->colors;
+  
+  const float scale=(data->strength/100.0);
+  in  = (float *)ivoid;
+  out = (float *)ovoid;
   
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
@@ -106,9 +109,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     // Apply a simple tonemap 
     float yuv[3];
-    dt_iop_RGB_to_YCbCr(in+(ch*k),yuv);
+    rgb2yuv((in+(ch*k)),yuv);
     yuv[0] = (yuv[0]/(yuv[0]+scale));
-    dt_iop_YCbCr_to_RGB(yuv,out+(ch*k));
+    yuv2rgb(yuv,(out+(ch*k)));
   }
 
 }
