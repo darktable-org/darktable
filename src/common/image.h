@@ -57,7 +57,9 @@ typedef enum
   // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping etc.
   DT_IMAGE_LDR = 32,
   // set during import if the image is raw data, i.e. it needs demosaicing.
-  DT_IMAGE_RAW = 64
+  DT_IMAGE_RAW = 64,
+  // set during import if images is a high-dynamic range image..
+  DT_IMAGE_HDR = 128
 }
 dt_image_flags_t;
 
@@ -108,7 +110,7 @@ typedef struct dt_image_t
   char exif_lens[52];
   char exif_datetime_taken[20];
   char filename[512];
-	
+  
   // common stuff
   int32_t width, height, output_width, output_height;
   // used by library
@@ -179,11 +181,11 @@ static inline uint32_t dt_image_flipped_filter(const dt_image_t *img)
   // 
   //   0x16161616:     0x61616161:     0x49494949:     0x94949494:
 
-	//   0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5
-	// 0 B G B G B G   0 G R G R G R   0 G B G B G B   0 R G R G R G
-	// 1 G R G R G R   1 B G B G B G   1 R G R G R G   1 G B G B G B
-	// 2 B G B G B G   2 G R G R G R   2 G B G B G B   2 R G R G R G
-	// 3 G R G R G R   3 B G B G B G   3 R G R G R G   3 G B G B G B
+  //   0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5
+  // 0 B G B G B G   0 G R G R G R   0 G B G B G B   0 R G R G R G
+  // 1 G R G R G R   1 B G B G B G   1 R G R G R G   1 G B G B G B
+  // 2 B G B G B G   2 G R G R G R   2 G B G B G B   2 R G R G R G
+  // 3 G R G R G R   3 B G B G B G   3 R G R G R G   3 G B G B G B
   //
   // orient:     0               5               6               3
   // orient:     6               0               3               5
