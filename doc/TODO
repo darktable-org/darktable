@@ -1,4 +1,9 @@
-0.7 release:
+0.7.1 release:
+
+- pfm to use dt_alloc_align!
+
+- mandrivia:
+ftp://bizdelnick.is-a-geek.net/pub/mandriva/2010.1/binary/x86_64/media/main/
 
 - set median passes to zero in defaults etc for raw_import
 

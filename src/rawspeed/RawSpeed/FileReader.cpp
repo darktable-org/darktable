@@ -58,7 +58,11 @@ FileMap* FileReader::readFile() {
     printf("size: %d %d\n", st.st_size, bytes_read);
     dest = (char *) fileData->getDataWrt(bytes_read);
     ssize_t ret = read(fd, dest, st.st_size - bytes_read);
-    if(ret < 0) break;
+    if(ret < 0)
+    {
+      perror("stat read");
+      break;
+    }
     bytes_read += ret;
   }
   close(fd);

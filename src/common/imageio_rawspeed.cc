@@ -24,6 +24,7 @@
 
 extern "C"
 {
+#include "imageio.h"
 #include "common/imageio_rawspeed.h"
 #include "common/exif.h"
 #include "common/darktable.h"
@@ -31,51 +32,55 @@ extern "C"
 
 using namespace RawSpeed;
 
+static CameraMetaData *meta = NULL;
+
 dt_imageio_retval_t
 dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
 
-  char datadir[1024], camfile[1024];
-  snprintf(datadir, 1024, "%s", filename);
-  FileReader f(datadir);
-  dt_get_datadir(datadir, 1024);
-  snprintf(camfile, 1024, "%s/rawspeed/cameras.xml", datadir);
+  char filen[1024];
+  snprintf(filen, 1024, "%s", filename);
+  FileReader f(filen);
 
   RawDecoder *d = NULL;
   FileMap* m = NULL;
   try
   {
-    printf("[rawspeed] getting metadata...\n");
-    CameraMetaData meta(camfile);
+    if(meta == NULL)
+    {
+      pthread_mutex_lock(&darktable.plugin_threadsafe);
+      if(meta == NULL)
+      {
+        char datadir[1024], camfile[1024];
+        dt_get_datadir(datadir, 1024);
+        snprintf(camfile, 1024, "%s/rawspeed/cameras.xml", datadir);
+        // never cleaned up (only when dt closes)
+        meta = new CameraMetaData(camfile);
+      }
+      pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    }
     try
     {
-      printf("[rawspeed] reading file...\n");
       m = f.readFile();
-      printf("[rawspeed] read file.\n");
     }
     catch (FileIOException e)
     {
-      fprintf(stderr, "[rawspeed] could not open image:%s\n", e.what());
       return DT_IMAGEIO_FILE_CORRUPTED;
     }
-    printf("[rawspeed] parsing tiff...\n");
     TiffParser t(m);
     t.parseData();
     d = t.getDecoder();
     try
     {
-      printf("[rawspeed] loading raw...\n");
-      d->checkSupport(&meta);
+      d->checkSupport(meta);
 
       d->decodeRaw();
-      d->decodeMetaData(&meta);
-      printf("[rawspeed] loading raw...\n");
+      d->decodeMetaData(meta);
       RawImage r = d->mRaw;
       r->scaleBlackWhite();
       img->filters = r->cfa.getDcrawFilter();
-      printf("[rawspeed] loading raw...\n");
 
       for (uint32 i = 0; i < d->errors.size(); i++)
       {
@@ -84,6 +89,10 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       // TODO get orientation from exif instead?
       // img->orientation = raw->sizes.flip;
 
+      printf("orient: %d\n", img->orientation);
+      printf("sizes %d x %d\n", r->dim.x, r->dim.y);
+      printf("bytes per pixel: %d\n", r->bpp);
+      printf("stride: %d\n", r->pitch);
       img->width  = (img->orientation & 4) ? r->dim.y : r->dim.x;
       img->height = (img->orientation & 4) ? r->dim.x : r->dim.y;
       // img->exif_iso = raw->other.iso_speed;
@@ -96,7 +105,6 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       // img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
       // dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-      printf("[rawspeed] loaded raw\n");
       if(dt_image_alloc(img, DT_IMAGE_FULL))
       {
         if (d) delete d;
@@ -106,8 +114,19 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       // dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
       // memcpy(img->pixels, image->data, img->width*img->height*sizeof(uint16_t));
       dt_image_check_buffer(img, DT_IMAGE_FULL, r->dim.x*r->dim.y*r->bpp);
-      memcpy(img->pixels, r->getData(), r->dim.x*r->dim.y*r->bpp);
-      printf("[rawspeed] copied raw.\n");
+      double start = dt_get_wtime();
+      dt_imageio_flip_buffers((char *)img->pixels, (char *)r->getData(), r->bpp, r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, img->orientation);
+#if 0
+      uchar8 *data = r->getData();
+      for(int j=0;j<r->dim.y;j++)
+      {
+        memcpy(((char *)img->pixels) + j*r->bpp*r->dim.x, data + j*r->pitch, r->pitch);
+        for(int i=0;i<r->dim.x;i++)
+          memcpy(((char *)img->pixels) + r->bpp*dt_imageio_write_pos(i, j, r->dim.x, r->dim.y, r->dim.x, r->dim.y, img->orientation), data + j*r->pitch + r->bpp*i, r->bpp);
+      }
+#endif
+      double end = dt_get_wtime();
+      printf("buffer flipping took %.3f secs\n", end - start);
     }
     catch (RawDecoderException e)
     {
