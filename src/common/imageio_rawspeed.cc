@@ -82,28 +82,10 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       r->scaleBlackWhite();
       img->filters = r->cfa.getDcrawFilter();
 
-      for (uint32 i = 0; i < d->errors.size(); i++)
-      {
-        printf("Error Encountered:%s", d->errors[i]);
-      }
-      // TODO get orientation from exif instead?
-      // img->orientation = raw->sizes.flip;
-
-      printf("orient: %d\n", img->orientation);
-      printf("sizes %d x %d\n", r->dim.x, r->dim.y);
-      printf("bytes per pixel: %d\n", r->bpp);
-      printf("stride: %d\n", r->pitch);
-      img->width  = (img->orientation & 4) ? r->dim.y : r->dim.x;
-      img->height = (img->orientation & 4) ? r->dim.x : r->dim.y;
-      // img->exif_iso = raw->other.iso_speed;
-      // img->exif_exposure = raw->other.shutter;
-      // img->exif_aperture = raw->other.aperture;
-      // img->exif_focal_length = raw->other.focal_len;
-      // strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
-      // img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
-      // strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
-      // img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
-      // dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
+      // also include used override in orient:
+      const int orientation = dt_image_orientation(img);
+      img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
+      img->height = (orientation & 4) ? r->dim.x : r->dim.y;
 
       if(dt_image_alloc(img, DT_IMAGE_FULL))
       {
@@ -111,29 +93,11 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
         if (m) delete m;
         return DT_IMAGEIO_CACHE_FULL;
       }
-      // dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
-      // memcpy(img->pixels, image->data, img->width*img->height*sizeof(uint16_t));
       dt_image_check_buffer(img, DT_IMAGE_FULL, r->dim.x*r->dim.y*r->bpp);
-      double start = dt_get_wtime();
-      dt_imageio_flip_buffers((char *)img->pixels, (char *)r->getData(), r->bpp, r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, img->orientation);
-#if 0
-      uchar8 *data = r->getData();
-      for(int j=0;j<r->dim.y;j++)
-      {
-        memcpy(((char *)img->pixels) + j*r->bpp*r->dim.x, data + j*r->pitch, r->pitch);
-        for(int i=0;i<r->dim.x;i++)
-          memcpy(((char *)img->pixels) + r->bpp*dt_imageio_write_pos(i, j, r->dim.x, r->dim.y, r->dim.x, r->dim.y, img->orientation), data + j*r->pitch + r->bpp*i, r->bpp);
-      }
-#endif
-      double end = dt_get_wtime();
-      printf("buffer flipping took %.3f secs\n", end - start);
+      dt_imageio_flip_buffers((char *)img->pixels, (char *)r->getData(), r->bpp, r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
     }
     catch (RawDecoderException e)
     {
-      // wchar_t uni[1024];
-      // MultiByteToWideChar(CP_ACP, 0, e.what(), -1, uni, 1024);
-      // //    MessageBox(0,uni, L"RawDecoder Exception",0);
-      // wprintf(L"Raw Decoder Exception:%s\n",uni);
       if (d) delete d;
       if (m) delete m;
       return DT_IMAGEIO_FILE_CORRUPTED;
@@ -147,10 +111,6 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
   }
   catch (TiffParserException e)
   {
-    // wchar_t uni[1024];
-    // MultiByteToWideChar(CP_ACP, 0, e.what(), -1, uni, 1024);
-    // //    MessageBox(0,uni, L"Tiff Parser error",0);
-    // wprintf(L"Tiff Exception:%s\n",uni);
     if (d) delete d;
     if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;

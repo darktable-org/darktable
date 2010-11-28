@@ -86,29 +86,27 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
     for(int j=0;j<ht;j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
     return;
   }
-  int ii = 0, jj = 0, w = wd, h = ht, fw = fwd, fh = fht;
-  int si = 1, sj = 1;
+  int ii = 0, jj = 0, fw = fwd, fh = fht;
+  int si = bpp, sj = wd*bpp;
   if(orientation & 4)
   {
-    w = ht; h = wd;
-    // ii = j; jj = i;
+    sj = bpp; si = ht*bpp;
     fw = fht; fh = fwd;
   }
-  if(orientation & 2) { ii = (int)fw - ii - 1; si = -1; }
-  if(orientation & 1) { jj = (int)fh - jj - 1; sj = -1; }
+  if(orientation & 2) { jj = (int)fht - jj - 1; sj = -sj; }
+  if(orientation & 1) { ii = (int)fwd - ii - 1; si = -si; }
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none)
 #endif
   for(int j=0;j<ht;j++)
   {
-    const int j2 = jj + sj*j;
-    char *out2 = out + bpp*(wd*j2 + ii);
-    const char *in2  = in  + stride*j;
+    char *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
+    const char *in2  = in + stride*j;
     for(int i=0;i<wd;i++)
     {
       memcpy(out2, in2, bpp);
       in2  += bpp;
-      out2 += si*bpp;
+      out2 += si;
     }
   }
 }

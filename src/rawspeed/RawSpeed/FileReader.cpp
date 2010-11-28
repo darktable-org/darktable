@@ -55,13 +55,12 @@ FileMap* FileReader::readFile() {
   FileMap *fileData = new FileMap(st.st_size);
 
   while ((st.st_size > 0) && (bytes_read < st.st_size)) {
-    printf("size: %d %d\n", st.st_size, bytes_read);
     dest = (char *) fileData->getDataWrt(bytes_read);
     ssize_t ret = read(fd, dest, st.st_size - bytes_read);
     if(ret < 0)
     {
-      perror("stat read");
-      break;
+      perror("read");
+      throw FileIOException("Could not open file.");
     }
     bytes_read += ret;
   }
