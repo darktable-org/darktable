@@ -1,5 +1,7 @@
 0.7 release:
 
+- set median passes to zero in defaults etc for raw_import
+
 - libraw: filters==0 fails.
 
 mipf and full pipes:

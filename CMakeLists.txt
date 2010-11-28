@@ -152,3 +152,4 @@ add_subdirectory(data)
 add_subdirectory(doc)
 
 include(cmake/darktable-packaging.cmake)
+

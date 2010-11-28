@@ -26,6 +26,7 @@
 #include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
+#include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -496,6 +497,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   return DT_IMAGEIO_OK;
 }
 
+
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
   dt_imageio_retval_t ret;
@@ -773,7 +775,9 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
   dt_imageio_retval_t ret;
-  ret = dt_imageio_open_hdr(img, filename);
+  ret = dt_imageio_open_rawspeed(img, filename);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_hdr(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)

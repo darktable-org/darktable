@@ -22,6 +22,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_pfm.c" 
   "common/imageio_rgbe.c" 
   "common/imageio_tiff.c" 
+  "common/imageio_rawspeed.cc" 
   "common/styles.c" 
   "common/tags.c" 
   "common/variables.c" 
@@ -236,11 +237,21 @@ add_dependencies(lib_darktable libraw_r)
 add_library(libraw_static STATIC IMPORTED)
 set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/LibRaw/liblibraw_r.a)
 target_link_libraries(lib_darktable ${LIBS} libraw_static)
+
+# same for librawspeed:
+add_dependencies(lib_darktable rawspeed)
+add_library(rawspeed_static STATIC IMPORTED)
+set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rawspeed/librawspeed.a)
+target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
+
 install(TARGETS lib_darktable DESTINATION lib/darktable)
 list(APPEND LIBS lib_darktable)
 
-# Compile views modules
+# Compile libraw modules
 add_subdirectory(LibRaw)
+
+# compile rawspeed
+add_subdirectory(rawspeed)
 
 # Compile views modules
 add_subdirectory(views)
