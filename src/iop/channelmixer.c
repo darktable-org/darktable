@@ -394,13 +394,13 @@ void init_presets (dt_iop_module_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("swap r and b"), self->op, &(dt_iop_channelmixer_params_t)
+  dt_gui_presets_add_generic(_("swap R and B"), self->op, &(dt_iop_channelmixer_params_t)
   {
     {
       0,0,0,0,0,1,0
     }, {0,0,0,0,1,0,0}, {0,0,0,1,0,0,0}
   } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("swap g and b"), self->op, &(dt_iop_channelmixer_params_t)
+  dt_gui_presets_add_generic(_("swap G and B"), self->op, &(dt_iop_channelmixer_params_t)
   {
     {
       0,0,0,1,0,0,0
