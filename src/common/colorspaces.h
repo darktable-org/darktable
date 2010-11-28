@@ -44,10 +44,19 @@ cmsHPROFILE dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4]);
 /** create a ICC virtual profile from the shipped presets in darktable. */
 cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel);
 
+/** just get the associated transformation matrix, for manual application. */
+int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
+
 /** get the icc profile this image would be exported with. */
 cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid);
 
 /** free the resources of a profile created with the functions above. */
 void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
+
+/** uses D50 white point. */
+void dt_XYZ_to_Lab(const float *XYZ, float *Lab);
+
+/** uses D50 white point. */
+void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
 
 #endif

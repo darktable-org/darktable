@@ -123,6 +123,191 @@ build_linear_gamma(void)
   return cmsBuildParametricToneCurve(0, 1, Parameters);
 }
 
+
+/** inverts the given 3x3 matrix */
+static int
+mat3inv (float * const dst, const float *const src)
+{
+#define A(y, x) src[(y - 1) * 3 + (x - 1)]
+#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
+
+  const float det =
+    A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3)) -
+    A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3)) +
+    A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+  const float epsilon = 1e-7f;
+  if (fabsf(det) < epsilon) return 1;
+
+  const float invDet = 1.f / det;
+
+  B(1, 1) =  invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));
+  B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));
+  B(1, 3) =  invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+  B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));
+  B(2, 2) =  invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));
+  B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));
+
+  B(3, 1) =  invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));
+  B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));
+  B(3, 3) =  invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));
+#undef A
+#undef B
+  return 0;
+}
+
+static void
+mat3mulv (float *dst, const float *const mat, const float *const v)
+{
+  for(int k=0;k<3;k++)
+  {
+    float x=0.0f;
+    for(int i=0;i<3;i++) x += mat[3*k+i] * v[i];
+    dst[k] = x;
+  }
+}
+
+static void
+mat3mul (float *dst, const float *const m1, const float *const m2)
+{
+  for(int k=0;k<3;k++)
+  {
+    for(int i=0;i<3;i++)
+    {
+      float x=0.0f;
+      for(int j=0;j<3;j++) x += m1[3*k+j] * m2[3*j+i];
+      dst[3*k+i] = x;
+    }
+  }
+}
+
+static float
+lab_f(const float x)
+{
+  const float epsilon = 216.0f/24389.0f;
+  const float kappa   = 24389.0f/27.0f;
+  if(x > epsilon) return cbrtf(x);
+  else return (kappa*x + 16.0f)/116.0f;
+}
+
+void
+dt_XYZ_to_Lab(const float *XYZ, float *Lab)
+{
+  const float d50[3] = { 0.9642, 1.0, 0.8249 };
+  const float f[3] = { lab_f(XYZ[0]/d50[0]), lab_f(XYZ[1]/d50[1]), lab_f(XYZ[2]/d50[2]) };
+  Lab[0] = 116.0f * f[1] - 16.0f;
+  Lab[1] = 500.0f*(f[0] - f[1]);
+  Lab[2] = 200.0f*(f[1] - f[2]);
+}
+
+static float
+lab_f_inv(const float x)
+{
+  const float epsilon = 0.20689655172413796; // cbrtf(216.0f/24389.0f);
+  const float kappa   = 24389.0f/27.0f;
+  if(x > epsilon) return x*x*x;
+  else return (116.0f*x - 16.0f)/kappa;
+}
+
+void
+dt_Lab_to_XYZ(const float *Lab, float *XYZ)
+{
+  const float d50[3] = { 0.9642, 1.0, 0.8249 };
+  const float fy = (Lab[0] + 16.0f)/116.0f;
+  const float fx = Lab[1]/500.0f + fy;
+  const float fz = fy - Lab[2]/200.0f;
+  float y;
+  const float epsilon = 0.20689655172413796; // cbrtf(216.0f/24389.0f);
+  const float kappa   = 24389.0f/27.0f;
+  if(Lab[0] > kappa*epsilon)
+  {
+    y = (Lab[0] + 16.0f)/116.0f;
+    y *= y*y;
+  }
+  else y = Lab[0]/kappa;
+
+  XYZ[0] = d50[0]*lab_f_inv(fx);
+  XYZ[1] = d50[1]*y;
+  XYZ[2] = d50[2]*lab_f_inv(fz);
+}
+
+
+int
+dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
+{
+  dt_profiled_colormatrix_t *preset = NULL;
+  for(int k=0;k<dt_profiled_colormatrix_cnt;k++)
+  {
+    if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
+    {
+      preset = dt_profiled_colormatrices + k;
+      break;
+    }
+  }
+  if(!preset) return -1;
+
+  const float wxyz = preset->white[0]+ preset->white[1]+ preset->white[2];
+  const float rxyz = preset->rXYZ[0] + preset->rXYZ[1] + preset->rXYZ[2];
+  const float gxyz = preset->gXYZ[0] + preset->gXYZ[1] + preset->gXYZ[2];
+  const float bxyz = preset->bXYZ[0] + preset->bXYZ[1] + preset->bXYZ[2];
+
+  const float xn = preset->white[0]/wxyz;
+  const float yn = preset->white[1]/wxyz;
+  const float xr = preset->rXYZ[0]/rxyz;
+  const float yr = preset->rXYZ[1]/rxyz;
+  const float xg = preset->gXYZ[0]/gxyz;
+  const float yg = preset->gXYZ[1]/gxyz;
+  const float xb = preset->bXYZ[0]/bxyz;
+  const float yb = preset->bXYZ[1]/bxyz;
+
+  const float primaries[9] = {xr,         xg,         xb,
+                              yr,         yg,         yb,
+                              1.0f-xr-yr, 1.0f-xg-yg, 1.0f-xb-yb};
+
+  float result[9];
+  if(mat3inv(result, primaries)) return -1;
+
+  const float whitepoint[3] = {xn/yn, 1.0f, (1.0f-xn-yn)/yn};
+  float coeff[3];
+
+  // get inverse primary whitepoint
+  mat3mulv(coeff, result, whitepoint);
+
+
+  float tmp[9] = { coeff[0]*xr,           coeff[1]*xg,           coeff[2]*xb,
+                   coeff[0]*yr,           coeff[1]*yg,           coeff[2]*yb,
+                   coeff[0]*(1.0f-xr-yr), coeff[1]*(1.0f-xg-yg), coeff[2]*(1.0f-xb-yb) };
+
+  // input whitepoint[] in XYZ with Y normalized to 1.0f
+  const float dn[3] = { preset->white[0]/(float)preset->white[1], 1.0f, preset->white[2]/(float)preset->white[1]};
+  const float lam_rigg[9] = { 0.8951,  0.2664, -0.1614,
+		                         -0.7502,  1.7135,  0.0367,
+		                          0.0389, -0.0685,  1.0296};
+  const float d50[3] = { 0.9642, 1.0, 0.8249 };
+
+
+  // adapt to d50
+  float chad_inv[9];
+  if(mat3inv(chad_inv, lam_rigg)) return -1;
+
+  float cone_src_rgb[3], cone_dst_rgb[3];
+  mat3mulv(cone_src_rgb, lam_rigg, dn);
+  mat3mulv(cone_dst_rgb, lam_rigg, d50);
+
+  const float cone[9] = { cone_dst_rgb[0]/cone_src_rgb[0], 0.0f, 0.0f,
+                          0.0f, cone_dst_rgb[1]/cone_src_rgb[1], 0.0f,
+                          0.0f, 0.0f, cone_dst_rgb[2]/cone_src_rgb[2] };
+
+  float tmp2[9];
+  float bradford[9];
+  mat3mul(tmp2, cone, lam_rigg);
+  mat3mul(bradford, chad_inv, tmp2);
+
+  mat3mul(matrix, bradford, tmp);
+  return 0;
+}
+
 cmsHPROFILE
 dt_colorspaces_create_darktable_profile(const char *makermodel)
 {
