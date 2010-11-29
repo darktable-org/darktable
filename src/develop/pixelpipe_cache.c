@@ -47,6 +47,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
   free(cache->data);
   free(cache->hash);
   free(cache->used);
+  free(cache->size);
 }
 
 uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_pixelpipe_t *pipe, int module)
@@ -111,7 +112,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     }
   }
 
-  if(!*data || sz >= size)
+  if(!*data || sz < size)
   { // kill LRU entry
     // printf("[pixelpipe_cache_get] hash not found, returning slot %d/%d age %d\n", max, cache->entries, weight);
     if(cache->size[max] < size)

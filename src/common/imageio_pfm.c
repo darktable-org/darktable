@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
+#include "common/darktable.h"
 #include "common/imageio_pfm.h"
 
 #include <stdio.h>

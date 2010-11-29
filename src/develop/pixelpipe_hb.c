@@ -218,12 +218,13 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 }
 
 static int
-get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece, dt_develop_t *dev)
 {
-  // FIXME: adjust to preview pipe, and non-raw images!
   if(!module)
   {
-    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) return 4*sizeof(float);
+    // first input.
+    // mipf and non-raw images have 4 floats per pixel
+    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || dev->image->filters == 0) return 4*sizeof(float);
     else return sizeof(uint16_t);
   }
   return module->output_bpp(module, pipe, piece);
@@ -250,7 +251,8 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     }
   }
 
-  const int bpp = module->output_bpp(module, pipe, piece);
+  const int bpp = get_output_bpp(module, pipe, piece, dev);
+  const size_t bufsize = bpp*roi_out->width*roi_out->height;
 
   // if available, return data
   pthread_mutex_lock(&pipe->busy_mutex);
@@ -259,7 +261,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
-    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
     // go to post-collect directly:
@@ -297,7 +299,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     {
       // printf("[process] scale/pan [%s]\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : "");
       // reserve new cache line: output
-      if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output))
+      if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
       {
         memset(*output, 0, pipe->backbuf_size);
         bzero(*output, pipe->backbuf_size);
@@ -371,9 +373,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     if(!strcmp(module->op, "gamma"))
-      (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
+      (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, bufsize, output);
     else
-      (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+      (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     pthread_mutex_unlock(&pipe->busy_mutex);
 
     // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);

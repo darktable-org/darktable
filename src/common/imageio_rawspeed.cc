@@ -15,6 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
 #include "rawspeed/RawSpeed/StdAfx.h"
 #include "rawspeed/RawSpeed/FileReader.h"
 #include "rawspeed/RawSpeed/TiffParser.h"
@@ -28,6 +31,17 @@ extern "C"
 #include "common/imageio_rawspeed.h"
 #include "common/exif.h"
 #include "common/darktable.h"
+}
+
+// define this function, it is only declared in rawspeed:
+int
+rawspeed_get_number_of_processor_cores()
+{
+#ifdef _OPENMP
+  return omp_get_num_procs();
+#else
+  return 1;
+#endif
 }
 
 using namespace RawSpeed;
