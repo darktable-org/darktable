@@ -29,7 +29,6 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
-#include "libraw/libraw.h"
 #include "dtgtk/resetlabel.h"
 
 DT_MODULE(2)
@@ -45,31 +44,55 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+int
+output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(uint16_t);
+  else return 4*sizeof(float);
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-  float *in =  (float *)i;
-  float *out = (float *)o;
-  float black = d->black;
-  float white = exp2f(-d->exposure);
-  const int ch = piece->colors;
-
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (self->dev->image->flags & DT_IMAGE_THUMBNAIL))
-  { // path for already exposed preview buffer
-    white /= d->thumb_corr;
-  }
-  float scale = 1.0/(white - black); 
-  float coeff[3];
-  for(int k=0;k<3;k++) coeff[k] = d->coeffs[k] * scale;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, in, black, coeff) schedule(static)
-#endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && self->dev->image->filters)
   {
-    for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0, (in[ch*k+i]-black)*coeff[i]);
+    // raw image which needs demosaic later on.
+    const uint16_t *const in = (uint16_t *)i;
+    uint16_t *const out = (uint16_t *)o;
+    const float black = 0xffff * d->black;
+    const float white = 0xffff * exp2f(-d->exposure);
+
+    const float scale = 0xffff/(white - black); 
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out) schedule(static)
+#endif
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
+    {
+      out[k] = CLAMP((in[k]-black)*scale, 0, 0xffff);
+    }
+    for(int k=0;k<3;k++)
+      piece->pipe->processed_maximum[k] = scale/0xffff;
   }
-  for(int k=0;k<3;k++)
-    piece->pipe->processed_maximum[k] = scale;
+  else
+  {
+    // std float image:
+    const float *const in = (float *)i;
+    float *const out = (float *)o;
+    const float black = d->black;
+    const float white = exp2f(-d->exposure);
+    const int ch = piece->colors;
+
+    const float scale = 1.0/(white - black); 
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out) schedule(static)
+#endif
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
+    {
+      for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0, (in[ch*k+i]-black)*scale);
+    }
+    for(int k=0;k<3;k++)
+      piece->pipe->processed_maximum[k] = scale;
+  }
 }
 
 
@@ -84,9 +107,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->black = p->black;
   d->gain = 2.0 - p->gain;
   d->exposure = p->exposure;
-
-  for(int k=0;k<3;k++) d->coeffs[k] = ((float *)(self->data))[k];
-  d->thumb_corr = ((float *)(self->data))[3];
 #endif
 }
 
@@ -129,12 +149,13 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_exposure_data_t));
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
-  if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
-  else
+  // if(dt_image_is_ldr(module->dev->image))
+    module->default_enabled = 0;
+  /*else
   {
     module->default_enabled = 1;
-    module->hide_enable_button = 1;
-  }
+    // module->hide_enable_button = 1;
+  }*/
   module->priority = 150;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
@@ -145,42 +166,6 @@ void init(dt_iop_module_t *module)
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
-
-  // get white balance coefficients, as shot
-  float *coeffs = (float *)malloc(4*sizeof(float));
-  module->data = coeffs;
-  coeffs[0] = coeffs[1] = coeffs[2] = 1.0;
-  char filename[1024];
-  int ret;
-  dt_image_full_path(module->dev->image, filename, 1024);
-  libraw_data_t *raw = libraw_init(0);
-  ret = libraw_open_file(raw, filename);
-  if(!ret)
-  {
-    for(int k=0;k<3;k++) coeffs[k] = raw->color.cam_mul[k];
-    if(coeffs[0] < 0.0) for(int k=0;k<3;k++) coeffs[k] = raw->color.pre_mul[k];
-    if(coeffs[0] == 0 || coeffs[1] == 0 || coeffs[2] == 0)
-    { // could not get useful info!
-      coeffs[0] = coeffs[1] = coeffs[2] = 1.0f;
-    }
-    else
-    {
-      coeffs[0] /= coeffs[1];
-      coeffs[2] /= coeffs[1];
-      coeffs[1] = 1.0f;
-    }
-  }
-  libraw_close(raw);
-  float dmin=coeffs[0], dmax=coeffs[0];
-  for (int c=1; c < 3; c++)
-  {
-    if (dmin > coeffs[c])
-      dmin = coeffs[c];
-    if (dmax < coeffs[c])
-      dmax = coeffs[c];
-  }
-  for(int k=0;k<3;k++) coeffs[k] = dmax/(dmin*coeffs[k]);
-  coeffs[3] = dmin/dmax; // correction for thumbnail images.
 }
 
 void cleanup(dt_iop_module_t *module)

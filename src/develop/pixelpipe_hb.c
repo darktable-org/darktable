@@ -291,7 +291,28 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     start = dt_get_wtime();
     if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
     {
-      *output = pipe->input;
+      if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
+      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
+      {
+        memset(*output, 0, pipe->backbuf_size);
+        if(fabsf(roi_in.scale - 1.0f) < 0.001f)
+        {
+          printf("using fast path, copying %d per pixel\n", bpp);
+          // fast branch for 1:1 pixel copies.
+          for(int j=0;j<roi_out->height;j++)
+            memcpy(*output + bpp*j*roi_out->width, pipe->input + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
+        }
+        else
+        {
+          roi_in.x /= roi_out->scale;
+          roi_in.y /= roi_out->scale;
+          roi_in.width = pipe->iwidth;
+          roi_in.height = pipe->iheight;
+          roi_in.scale = 1.0f;
+          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
+        }
+      }
+      // else found in cache.
     }
     // optimized branch (for mipf-preview):
     else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW && roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
@@ -301,8 +322,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       // reserve new cache line: output
       if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
       {
-        memset(*output, 0, pipe->backbuf_size);
-        bzero(*output, pipe->backbuf_size);
+        // memset(*output, 0, pipe->backbuf_size);
         roi_in.x /= roi_out->scale;
         roi_in.y /= roi_out->scale;
         roi_in.width = pipe->iwidth;
