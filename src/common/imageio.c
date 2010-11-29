@@ -22,6 +22,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/imageio_exr.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
@@ -129,6 +130,9 @@ dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *fil
 {
   int p_wd, p_ht;
   dt_imageio_retval_t ret;
+  ret = dt_imageio_open_exr_preview(img, filename);
+  if(ret == DT_IMAGEIO_OK) goto all_good;
+  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
   ret = dt_imageio_open_rgbe_preview(img, filename);
   if(ret == DT_IMAGEIO_OK) goto all_good;
   if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
@@ -162,9 +166,12 @@ all_good:
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
   dt_imageio_retval_t ret;
+  ret = dt_imageio_open_exr(img, filename);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
   ret = dt_imageio_open_rgbe(img, filename);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
   ret = dt_imageio_open_pfm(img, filename);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
   return ret;
 }
 

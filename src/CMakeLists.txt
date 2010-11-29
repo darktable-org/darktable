@@ -17,6 +17,7 @@ FILE(GLOB SOURCE_FILES
   "common/image_cache.c" 
   "common/image_compression.c" 
   "common/imageio.c" 
+  "common/imageio_exr.cc" 
   "common/imageio_jpeg.c" 
   "common/imageio_module.c" 
   "common/imageio_pfm.c" 
@@ -219,7 +220,7 @@ add_custom_command(
 #
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${SOURCES})
+add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${SOURCES})
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)
