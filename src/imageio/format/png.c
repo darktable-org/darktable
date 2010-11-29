@@ -91,7 +91,7 @@ static void PNGwriteRawProfile(png_struct *ping,
   *dp++='\n';
   *dp='\0';
 
-  g_snprintf(dp, allocated_length-strlen(text[0].text), "%8lu ", length);
+  g_snprintf(dp, allocated_length-strlen(text[0].text), "%8lu ", (unsigned long int)length);
 
   dp += 8;
 
