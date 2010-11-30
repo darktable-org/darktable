@@ -87,7 +87,6 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
   const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
   const float i2f = 1.0f/((float)0xffff);
 
-#if 1
   // border interpolate
   float sum[8];
   for (int j=0; j < roi_out->height; j++) for (int i=0; i < roi_out->width; i++)
@@ -115,7 +114,6 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
         out[4*(j*roi_out->width+i)+c] = i2f * in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
     }
   }
-#endif
   // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_in, roi_out, out, in) schedule(static)
@@ -313,31 +311,19 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
     roi_in->width  = self->dev->image->width;
     roi_in->height = self->dev->image->height;
   }
-  printf("[demosaic] requesting roi input: %d %d -- %d %d (%f)\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale);
 }
 
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_roi_t roi, roo;
-  // roi.scale = 1.0f;
-  // roi.x = roi.y = 0;
-  // roi.width  = self->dev->image->width;
-  // roi.height = self->dev->image->height;
   roi = *roi_in;
   roo = *roi_out;
   roo.x = roo.y = 0;
   // global scale: (iscale == 1.0, always when demosaic is on)
-  const float global_scale = roi_out->scale;// / piece->iscale;
-  // roo.scale = roi_out->scale; // /piece->iscale;
+  const float global_scale = roi_out->scale;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-
-  // printf("filters: %X\n", data->filters);
-  // data->filters = 0x49494949;
-  printf("[demosaic] roi in : [%d %d -- %d %d (%f)]\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale);
-  printf("[demosaic] roi out: [%d %d -- %d %d (%f)]\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
-  printf("image size %d %d\n", self->dev->image->width, self->dev->image->height);
 
   const uint16_t *const pixels = (uint16_t *)i;
   if(global_scale > .999f)

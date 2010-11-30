@@ -293,7 +293,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
       {
-        printf("[pixelpipe] using pixels directly as input (%d x %d)\n", pipe->iwidth, pipe->iheight);
+        // printf("[pixelpipe] using pixels directly as input (%d x %d)\n", pipe->iwidth, pipe->iheight);
         *output = pipe->input;
       }
       else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
@@ -301,7 +301,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         memset(*output, 0, pipe->backbuf_size);
         if(fabsf(roi_in.scale - 1.0f) < 0.001f)
         {
-          printf("[pixelpipe] using fast path, copying %d per pixel (%d x %d)\n", bpp, roi_out->width, roi_out->height);
+          // printf("[pixelpipe] using fast path, copying %d per pixel (%d x %d)\n", bpp, roi_out->width, roi_out->height);
           // fast branch for 1:1 pixel copies.
           for(int j=0;j<roi_out->height;j++)
             memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
