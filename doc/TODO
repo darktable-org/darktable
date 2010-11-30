@@ -1,5 +1,7 @@
 0.7.1 release:
 
+- try prophotorgb images as input for rendering intents.
+
 - downsample lt mode more, for faster thumbnails.
 
 - fedora packages, nightly:

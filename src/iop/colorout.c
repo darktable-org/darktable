@@ -108,22 +108,17 @@ static void display_profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorout] display color profile %s seems to have disappeared!\n", p->displayprofile);
 }
 
-#if 0
-static double
-lab_f_1(double t)
+#if 1
+static float
+lerp_lut(const float *const lut, const float v)
 {
-  const double Limit = (24.0/116.0);
-
-  if (t <= Limit)
-  {
-    double tmp;
-
-    tmp = (108.0/841.0) * (t - (16.0/116.0));
-    if (tmp <= 0.0) return 0.0;
-    else return tmp;
-  }
-
-  return t * t * t;
+  // TODO: check if optimization is worthwhile!
+  const float ft = v*LUT_SAMPLES;
+  const int t = CLAMP(ft, 0, LUT_SAMPLES-1);
+  const float f = ft - t;
+  const float l1 = lut[t];
+  const float l2 = lut[t+1];
+  return l1*(1.0f-f) + l2*f;
 }
 #endif
 
@@ -133,39 +128,61 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  int rowsize=roi_out->width*3;
-  float Lab[rowsize];
-  float rgb[rowsize];
+
+  if(d->cmatrix[0] != -0.666f)
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d)
+#endif
+    for (int k=0;k<roi_out->width*roi_out->height;k++)
+    {
+      const float *const in = ((float *)i) + ch*k;
+      float *const out = ((float *)o) + ch*k;
+      float Lab[3], XYZ[3], rgb[3];
+      Lab[0] = in[0];
+      Lab[1] = in[1] * Lab[0] * (1.0f/100.0f);
+      Lab[2] = in[2] * Lab[0] * (1.0f/100.0f);
+      dt_Lab_to_XYZ(Lab, XYZ);
+      for(int i=0;i<3;i++)
+      {
+        rgb[i] = 0.0f;
+        for(int j=0;j<3;j++) rgb[i] += d->cmatrix[3*i+j]*XYZ[j];
+      }
+      for(int i=0;i<3;i++) out[i] = lerp_lut(d->lut[i], rgb[i]);
+      // for(int i=0;i<3;i++) out[i] = rgb[i];
+    }
+  }
+  else
+  {
+    // lcms2 fallback, slow:
+    int rowsize=roi_out->width*3;
+    float Lab[rowsize];
+    float rgb[rowsize];
 
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d,Lab,rgb)
 #endif
-  for (int k=0;k<roi_out->height;k++)
-  {
-    const int m=(k*(roi_out->width*ch));
-#if 0//def _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(Lab)
-#endif
-    for (int l=0;l<roi_out->width;l++)    
-    {    
-      int li=3*l,ii=ch*l;
-      Lab[li+0] = in[m+ii+0];
-      Lab[li+1] = in[m+ii+1]*Lab[li+0]*(1.0/100.0);
-      Lab[li+2] = in[m+ii+2]*Lab[li+0]*(1.0/100.0);
-    }
-    
-    // lcms is not thread safe, so use local copy
-    cmsDoTransform (d->xform[dt_get_thread_num()], Lab, rgb, roi_out->width);
-      
-#if 0//def _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(out)
-#endif
-    for (int l=0;l<roi_out->width;l++) 
+    for (int k=0;k<roi_out->height;k++)
     {
-      int oi=ch*l, ri=3*l;
-      out[m+oi+0] = rgb[ri+0];
-      out[m+oi+1] = rgb[ri+1];
-      out[m+oi+2] = rgb[ri+2];
+      const int m=(k*(roi_out->width*ch));
+      for (int l=0;l<roi_out->width;l++)    
+      {    
+        int li=3*l,ii=ch*l;
+        Lab[li+0] = in[m+ii+0];
+        Lab[li+1] = in[m+ii+1]*Lab[li+0]*(1.0/100.0);
+        Lab[li+2] = in[m+ii+2]*Lab[li+0]*(1.0/100.0);
+      }
+      
+      // lcms is not thread safe, so use local copy
+      cmsDoTransform (d->xform[dt_get_thread_num()], Lab, rgb, roi_out->width);
+
+      for (int l=0;l<roi_out->width;l++) 
+      {
+        int oi=ch*l, ri=3*l;
+        out[m+oi+0] = rgb[ri+0];
+        out[m+oi+1] = rgb[ri+1];
+        out[m+oi+2] = rgb[ri+2];
+      }
     }
   }
 }
@@ -185,7 +202,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   d->output = NULL;
   const int num_threads = dt_get_num_threads();
-  for(int t=0;t<num_threads;t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
+  for(int t=0;t<num_threads;t++) if(d->xform[t])
+  {
+    cmsDeleteTransform(d->xform[t]);
+    d->xform[t] = NULL;
+  }
+  d->cmatrix[0] = -0.666f;
 
   if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
   {
@@ -218,8 +240,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+    if(dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    {
+      d->cmatrix[0] = -0.666f;
+      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+    }
   }
   else
   {
@@ -249,17 +274,23 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
+    if(dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    {
+      d->cmatrix[0] = -0.666f;
+      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
+    }
   }
   // user selected a non-supported output profile, check that:
-  if(!d->xform[0])
+  if(!d->xform[0] && d->cmatrix[0] == -0.666f)
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     if(d->output) dt_colorspaces_cleanup_profile(d->output);
     d->output = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
-    // d->xform = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+    if(dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    {
+      d->cmatrix[0] = -0.666f;
+      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+    }
   }
 #endif
   g_free(overprofile);
