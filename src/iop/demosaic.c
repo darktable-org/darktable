@@ -81,10 +81,10 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
   roi_out->x = 0;//MAX(0, roi_out->x & ~1);
   roi_out->y = 0;//MAX(0, roi_out->y & ~1);
   // offsets only where the buffer ends:
-  const int offx = MAX(0, 3 - roi_out->x);
-  const int offy = MAX(0, 3 - roi_out->y);
-  const int offX = MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
-  const int offY = MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
+  const int offx = 3; //MAX(0, 3 - roi_out->x);
+  const int offy = 3; //MAX(0, 3 - roi_out->y);
+  const int offX = 3; //MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
+  const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
   const float i2f = 1.0f/((float)0xffff);
 
 #if 1
@@ -122,7 +122,7 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
 #endif
   for (int j=offy; j < roi_out->height-offY; j++)
   {
-    float *buf = out + 4*roi_out->width*j;
+    float *buf = out + 4*roi_out->width*j + 4*offx;
     const uint16_t *buf_in = in + roi_in->width*(j + roi_out->y) + offx + roi_out->x;
     for (int i=offx; i < roi_out->width-offX; i++)
     {
@@ -326,6 +326,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   // roi.height = self->dev->image->height;
   roi = *roi_in;
   roo = *roi_out;
+  roo.x = roo.y = 0;
   // global scale: (iscale == 1.0, always when demosaic is on)
   const float global_scale = roi_out->scale;// / piece->iscale;
   // roo.scale = roi_out->scale; // /piece->iscale;
@@ -347,8 +348,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   else if(global_scale > .5f)
   {
     // demosaic and then clip and zoom
-    roo.x = roi_out->x / global_scale;
-    roo.y = roi_out->y / global_scale;
+    // roo.x = roi_out->x / global_scale;
+    // roo.y = roi_out->y / global_scale;
     roo.width  = roi_out->width / global_scale;
     roo.height = roi_out->height / global_scale;
     roo.scale = 1.0f;
