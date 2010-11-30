@@ -143,6 +143,7 @@ dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *fil
   // no hdr file:
   if(ret == DT_IMAGEIO_FILE_CORRUPTED) return ret;
 all_good:
+  img->filters = 0;
   // this updates mipf/mip4..0 from raw pixels.
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
@@ -165,6 +166,7 @@ all_good:
 
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
+  img->filters = 0;
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_exr(img, filename);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
@@ -552,6 +554,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     (void) dt_exif_read(img, filename);
   const int orientation = dt_image_orientation(img);
 
+  img->filters = 0;
+
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
   if(orientation & 4)
@@ -654,6 +658,8 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = dt_image_orientation(img);
+
+  img->filters = 0;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;

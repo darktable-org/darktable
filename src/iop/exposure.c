@@ -71,7 +71,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[k] = CLAMP((in[k]-black)*scale, 0, 0xffff);
     }
     for(int k=0;k<3;k++)
-      piece->pipe->processed_maximum[k] = scale/0xffff;
+      piece->pipe->processed_maximum[k] = scale;
   }
   else
   {
@@ -146,16 +146,9 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_exposure_data_t));
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
-  // if(dt_image_is_ldr(module->dev->image))
-    module->default_enabled = 0;
-  /*else
-  {
-    module->default_enabled = 1;
-    // module->hide_enable_button = 1;
-  }*/
+  module->default_enabled = 0;
   module->priority = 150;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
@@ -174,8 +167,6 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
-  free(module->data);
-  module->data = NULL;
 }
 
 void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
@@ -259,8 +250,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  float *coeff = (float *)(self->data);
-  const float white = fmaxf(fmaxf(self->picked_color_max[0]*coeff[0], self->picked_color_max[1]*coeff[1]), self->picked_color_max[2]*coeff[2])
+  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
     * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
   dt_iop_exposure_set_white(self, white);
   return FALSE;

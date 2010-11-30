@@ -114,7 +114,8 @@ lerp_lut(const float *const lut, const float v)
 {
   // TODO: check if optimization is worthwhile!
   const float ft = v*LUT_SAMPLES;
-  const int t = CLAMP(ft, 0, LUT_SAMPLES-1);
+  // NaN-safe clamping:
+  const int t = ft > 0 ? (ft < LUT_SAMPLES-2 ? ft : LUT_SAMPLES-2) : 0;
   const float f = ft - t;
   const float l1 = lut[t];
   const float l2 = lut[t+1];
@@ -140,8 +141,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *const out = ((float *)o) + ch*k;
       float Lab[3], XYZ[3], rgb[3];
       Lab[0] = in[0];
-      Lab[1] = in[1] * Lab[0] * (1.0f/100.0f);
-      Lab[2] = in[2] * Lab[0] * (1.0f/100.0f);
+      Lab[1] = in[1] * in[0] * (1.0f/100.0f);
+      Lab[2] = in[2] * in[0] * (1.0f/100.0f);
       dt_Lab_to_XYZ(Lab, XYZ);
       for(int i=0;i<3;i++)
       {

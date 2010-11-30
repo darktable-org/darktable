@@ -1,5 +1,9 @@
 0.7.1 release:
 
+- website: videos, docs, backtraces etc.
+
+- eos 40d without cf works for tethering
+
 - try prophotorgb images as input for rendering intents.
 
 - downsample lt mode more, for faster thumbnails.

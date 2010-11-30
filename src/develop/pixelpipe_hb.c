@@ -299,11 +299,11 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
       {
         memset(*output, 0, pipe->backbuf_size);
-        if(fabsf(roi_in.scale - 1.0f) < 0.001f)
+        if(roi_in.scale == 1.0f)
         {
           // printf("[pixelpipe] using fast path, copying %d per pixel (%d x %d)\n", bpp, roi_out->width, roi_out->height);
           // fast branch for 1:1 pixel copies.
-          for(int j=0;j<roi_out->height;j++)
+          for(int j=0;j<MIN(roi_out->height, pipe->iheight-roi_in.y);j++)
             memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
         }
         else
