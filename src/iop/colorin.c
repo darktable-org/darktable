@@ -33,7 +33,8 @@
 
 DT_MODULE(1)
 
-const char *name()
+const char *
+name()
 {
   return _("input color profile");
 }
@@ -44,6 +45,7 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+#if 0
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -52,8 +54,10 @@ static void intent_changed (GtkComboBox *widget, gpointer user_data)
   p->intent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
   dt_dev_add_history_item(darktable.develop, self);
 }
+#endif
 
-static void profile_changed (GtkComboBox *widget, gpointer user_data)
+static void
+profile_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -330,7 +334,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
-  gtk_combo_box_set_active(g->cbox1, (int)p->intent);
+  // gtk_combo_box_set_active(g->cbox1, (int)p->intent);
   GList *prof = g->profiles;
   while(prof)
   {
@@ -471,17 +475,17 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
+  // g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
   g->label2 = GTK_LABEL(gtk_label_new(_("profile")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
+  // gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->cbox1, _("perceptual"));
-  gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox1,C_("rendering intent", "saturation"));
-  gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
+  // g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  // gtk_combo_box_append_text(g->cbox1, _("perceptual"));
+  // gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
+  // gtk_combo_box_append_text(g->cbox1,C_("rendering intent", "saturation"));
+  // gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *l = g->profiles;
   while(l)
@@ -505,19 +509,19 @@ void gui_init(struct dt_iop_module_t *self)
       gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);
   }
-  gtk_combo_box_set_active(g->cbox1, 0);
+  // gtk_combo_box_set_active(g->cbox1, 0);
   gtk_combo_box_set_active(g->cbox2, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
 
   char tooltip[1024];
-  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
+  // gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
   snprintf(tooltip, 1024, _("icc profiles in %s/color/in"), datadir);
   gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->cbox1), "changed",
-                    G_CALLBACK (intent_changed),
-                    (gpointer)self);
+  // g_signal_connect (G_OBJECT (g->cbox1), "changed",
+                    // G_CALLBACK (intent_changed),
+                    // (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox2), "changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);
