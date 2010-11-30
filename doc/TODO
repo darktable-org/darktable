@@ -1,6 +1,8 @@
 0.7.1 release:
 
-- pfm to use dt_alloc_align!
+- downsample lt mode more, for faster thumbnails.
+
+- fedora packages, nightly:
 
 - mandrivia:
 ftp://bizdelnick.is-a-geek.net/pub/mandriva/2010.1/binary/x86_64/media/main/

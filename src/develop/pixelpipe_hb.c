@@ -291,16 +291,20 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     start = dt_get_wtime();
     if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
     {
-      if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
+      if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
+      {
+        printf("[pixelpipe] using pixels directly as input (%d x %d)\n", pipe->iwidth, pipe->iheight);
+        *output = pipe->input;
+      }
       else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
       {
         memset(*output, 0, pipe->backbuf_size);
         if(fabsf(roi_in.scale - 1.0f) < 0.001f)
         {
-          printf("using fast path, copying %d per pixel\n", bpp);
+          printf("[pixelpipe] using fast path, copying %d per pixel (%d x %d)\n", bpp, roi_out->width, roi_out->height);
           // fast branch for 1:1 pixel copies.
           for(int j=0;j<roi_out->height;j++)
-            memcpy(*output + bpp*j*roi_out->width, pipe->input + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
+            memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
         }
         else
         {
@@ -332,7 +336,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       }
     }
     end = dt_get_wtime();
-    dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer\n", end - start);
+    dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer [%s]\n", end - start, pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     pthread_mutex_unlock(&pipe->busy_mutex);
   }
   else
@@ -342,6 +346,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     module->modify_roi_in(module, piece, roi_out, &roi_in);
     pthread_mutex_unlock(&pipe->busy_mutex);
+#if 0 // now we just re-alloc, and don't need this code anymore:
     // check roi_in for sanity and clip to maximum alloc'ed area, downscale
     // input if necessary.
     roi_in.scale = fabsf(roi_in.scale);
@@ -386,6 +391,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         roi_in.height  = maxht;
       }
     }
+#endif
 
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
