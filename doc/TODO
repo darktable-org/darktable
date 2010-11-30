@@ -1,5 +1,10 @@
 0.7.1 release:
 
+- open_raw_preview from rawspeed without jpg?
+  - switch for lt subsampling, default: fit 600x600
+
+- clip_and_zoom_half_size seems broken (garbled colors in top row)
+
 - port other input color profiles to fast path!
 
 - website: videos, docs, backtraces etc.

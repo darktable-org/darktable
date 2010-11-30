@@ -190,7 +190,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = 1;
+  raw->params.use_camera_wb = 0;
   raw->params.use_auto_wb = 0;
   raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
   raw->params.med_passes = 0;//img->raw_params.med_passes;
@@ -446,7 +446,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = 1;
+  raw->params.use_camera_wb = 0;
   raw->params.use_auto_wb = 0;
   raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
   raw->params.med_passes = 0;//img->raw_params.med_passes;
