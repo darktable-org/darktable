@@ -5,9 +5,10 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DI
 set(MODULES tonecurve gamma temperature colorcorrection exposure equalizer
 	colorin colorout clipping sharpen monochrome rawimport basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain clahe bilateral profile_gamma
-	colortransfer channelmixer graduatednd relight zonesystem demosaic atrous tonemap
+	colortransfer channelmixer graduatednd relight zonesystem demosaic atrous tonemap bloom
 )
 
+add_library(bloom MODULE "bloom.c")
 add_library(tonemap MODULE "tonemap.c")
 add_library(tonecurve MODULE "tonecurve.c")
 add_library(gamma MODULE "gamma.c")
