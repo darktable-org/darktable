@@ -190,8 +190,8 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   raw->params.half_size = 0; /* dcraw -h */
   raw->params.use_camera_wb = 1;
   raw->params.use_auto_wb = 0;
-  raw->params.pre_interpolate_median_filter = img->raw_params.pre_median;
-  raw->params.med_passes = img->raw_params.med_passes;
+  raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
+  raw->params.med_passes = 0;//img->raw_params.med_passes;
   raw->params.no_auto_bright = 1;
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
@@ -446,8 +446,8 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.half_size = 0; /* dcraw -h */
   raw->params.use_camera_wb = 1;
   raw->params.use_auto_wb = 0;
-  raw->params.pre_interpolate_median_filter = img->raw_params.pre_median;
-  raw->params.med_passes = img->raw_params.med_passes;
+  raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
+  raw->params.med_passes = 0;//img->raw_params.med_passes;
   raw->params.no_auto_bright = 1;
   // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
   // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
@@ -462,13 +462,13 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   // raw->params.four_color_rgb = img->raw_params.four_color_rgb;
   raw->params.four_color_rgb = 0;
   raw->params.use_camera_matrix = 0;
-  raw->params.green_matching =  img->raw_params.greeneq;
+  raw->params.green_matching = 0;// img->raw_params.greeneq;
   raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
-  raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x10;
-  raw->params.fbdd_noiserd   = (img->raw_params.fill0>>7) & 3;
+  raw->params.amaze_ca_refine = 0;//img->raw_params.fill0 & 0x10;
+  raw->params.fbdd_noiserd    = 0;//(img->raw_params.fill0>>7) & 3;
 #if 0
   // new demosaicing params
   raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x10;

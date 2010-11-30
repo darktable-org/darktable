@@ -1,5 +1,7 @@
 0.7.1 release:
 
+- port other input color profiles to fast path!
+
 - website: videos, docs, backtraces etc.
 
 - eos 40d without cf works for tethering
