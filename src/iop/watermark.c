@@ -39,6 +39,8 @@
 #include <librsvg/rsvg.h>
 #include <librsvg/rsvg-cairo.h>
 
+#include "common/metadata.h"
+
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
 
@@ -207,6 +209,29 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
 
     svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+	// TODO: auto generate that code?
+    GList * res;
+	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.creator", NULL);
+	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.creator)",(res?res->data:""));
+	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.publisher", NULL);
+	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.publisher)",(res?res->data:""));
+	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.title", NULL);
+	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.title)",(res?res->data:""));
+	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.description", NULL);
+	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.description)",(res?res->data:""));
+	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.rights", NULL);
+	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.rights)",(res?res->data:""));
+	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
   }
   return svgdoc;
 }
