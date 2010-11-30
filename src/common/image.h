@@ -197,6 +197,9 @@ static inline uint32_t dt_image_flipped_filter(const dt_image_t *img)
   const int orient = dt_image_orientation(img);
   switch(img->filters)
   {
+    case 0:
+      // no mosaic is no mosaic, even rotated:
+      return 0;
     case 0x16161616u:
       switch(orient)
       {

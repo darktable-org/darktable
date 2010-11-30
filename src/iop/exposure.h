@@ -40,7 +40,6 @@ dt_iop_exposure_gui_data_t;
 typedef struct dt_iop_exposure_data_t
 {
   float black, exposure, gain;
-  float coeffs[3], thumb_corr;
 }
 dt_iop_exposure_data_t;
 

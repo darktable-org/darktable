@@ -22,6 +22,140 @@
 #include "control/control.h"
 #include "common/colormatrices.c"
 
+
+/** inverts the given 3x3 matrix */
+static int
+mat3inv (float * const dst, const float *const src)
+{
+#define A(y, x) src[(y - 1) * 3 + (x - 1)]
+#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
+
+  const float det =
+    A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3)) -
+    A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3)) +
+    A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+  const float epsilon = 1e-7f;
+  if (fabsf(det) < epsilon) return 1;
+
+  const float invDet = 1.f / det;
+
+  B(1, 1) =  invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));
+  B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));
+  B(1, 3) =  invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
+
+  B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));
+  B(2, 2) =  invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));
+  B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));
+
+  B(3, 1) =  invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));
+  B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));
+  B(3, 3) =  invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));
+#undef A
+#undef B
+  return 0;
+}
+
+static void
+mat3mulv (float *dst, const float *const mat, const float *const v)
+{
+  for(int k=0;k<3;k++)
+  {
+    float x=0.0f;
+    for(int i=0;i<3;i++) x += mat[3*k+i] * v[i];
+    dst[k] = x;
+  }
+}
+
+static void
+mat3mul (float *dst, const float *const m1, const float *const m2)
+{
+  for(int k=0;k<3;k++)
+  {
+    for(int i=0;i<3;i++)
+    {
+      float x=0.0f;
+      for(int j=0;j<3;j++) x += m1[3*k+j] * m2[3*j+i];
+      dst[3*k+i] = x;
+    }
+  }
+}
+
+static int
+dt_colorspaces_get_matrix_from_profile (cmsHPROFILE prof, float *matrix, float *lutr, float *lutg, float* lutb, const int lutsize, const int input)
+{
+  // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
+
+  // check this first:
+  if(!cmsIsMatrixShaper(prof)) return 1;
+
+  cmsToneCurve* red_curve   = cmsReadTag(prof, cmsSigRedTRCTag);
+  cmsToneCurve* green_curve = cmsReadTag(prof, cmsSigGreenTRCTag);
+  cmsToneCurve* blue_curve  = cmsReadTag(prof, cmsSigBlueTRCTag);
+
+  cmsCIEXYZ *red_color   = cmsReadTag(prof, cmsSigRedColorantTag);
+  cmsCIEXYZ *green_color = cmsReadTag(prof, cmsSigGreenColorantTag);
+  cmsCIEXYZ *blue_color  = cmsReadTag(prof, cmsSigBlueColorantTag);
+
+  if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color) return 2;
+
+  matrix[0] = red_color->X;
+  matrix[1] = green_color->X;
+  matrix[2] = blue_color->X;
+  matrix[3] = red_color->Y;
+  matrix[4] = green_color->Y;
+  matrix[5] = blue_color->Y;
+  matrix[6] = red_color->Z;
+  matrix[7] = green_color->Z;
+  matrix[8] = blue_color->Z;
+
+  if(input)
+  {
+    // pass on tonecurves, in case lutsize > 0:
+    for(int k=0;k<lutsize;k++)
+    {
+      lutr[k] = cmsEvalToneCurveFloat(red_curve,   k/(lutsize-1.0f));
+      lutg[k] = cmsEvalToneCurveFloat(green_curve, k/(lutsize-1.0f));
+      lutb[k] = cmsEvalToneCurveFloat(blue_curve,  k/(lutsize-1.0f));
+    }
+  }
+  else
+  {
+    // invert profile->XYZ matrix for output profiles
+    float tmp[9];
+    memcpy(tmp, matrix, sizeof(float)*9);
+    if(mat3inv (matrix, tmp)) return 3;
+    // also need to reverse gamma, to apply reverse before matrix multiplication:
+    cmsToneCurve* rev_red   = cmsReverseToneCurveEx(0xffff, red_curve);
+    cmsToneCurve* rev_green = cmsReverseToneCurveEx(0xffff, green_curve);
+    cmsToneCurve* rev_blue  = cmsReverseToneCurveEx(0xffff, blue_curve);
+    // pass on tonecurves, in case lutsize > 0:
+    for(int k=0;k<lutsize;k++)
+    {
+      lutr[k] = cmsEvalToneCurveFloat(rev_red,   k/(lutsize-1.0f));
+      lutg[k] = cmsEvalToneCurveFloat(rev_green, k/(lutsize-1.0f));
+      lutb[k] = cmsEvalToneCurveFloat(rev_blue,  k/(lutsize-1.0f));
+    }
+    cmsFreeToneCurve(rev_red);
+    cmsFreeToneCurve(rev_green);
+    cmsFreeToneCurve(rev_blue);
+  }
+  return 0;
+}
+
+int
+dt_colorspaces_get_matrix_from_input_profile (cmsHPROFILE prof, float *matrix, float *lutr, float *lutg, float* lutb, const int lutsize)
+{
+  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1);
+}
+
+int
+dt_colorspaces_get_matrix_from_output_profile (cmsHPROFILE prof, float *matrix, float *lutr, float *lutg, float* lutb, const int lutsize)
+{
+  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
+}
+
+
 static cmsToneCurve*
 build_srgb_gamma(void)
 {
@@ -123,65 +257,6 @@ build_linear_gamma(void)
   return cmsBuildParametricToneCurve(0, 1, Parameters);
 }
 
-
-/** inverts the given 3x3 matrix */
-static int
-mat3inv (float * const dst, const float *const src)
-{
-#define A(y, x) src[(y - 1) * 3 + (x - 1)]
-#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
-
-  const float det =
-    A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3)) -
-    A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3)) +
-    A(3, 1) * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
-
-  const float epsilon = 1e-7f;
-  if (fabsf(det) < epsilon) return 1;
-
-  const float invDet = 1.f / det;
-
-  B(1, 1) =  invDet * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3));
-  B(1, 2) = -invDet * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3));
-  B(1, 3) =  invDet * (A(2, 3) * A(1, 2) - A(2, 2) * A(1, 3));
-
-  B(2, 1) = -invDet * (A(3, 3) * A(2, 1) - A(3, 1) * A(2, 3));
-  B(2, 2) =  invDet * (A(3, 3) * A(1, 1) - A(3, 1) * A(1, 3));
-  B(2, 3) = -invDet * (A(2, 3) * A(1, 1) - A(2, 1) * A(1, 3));
-
-  B(3, 1) =  invDet * (A(3, 2) * A(2, 1) - A(3, 1) * A(2, 2));
-  B(3, 2) = -invDet * (A(3, 2) * A(1, 1) - A(3, 1) * A(1, 2));
-  B(3, 3) =  invDet * (A(2, 2) * A(1, 1) - A(2, 1) * A(1, 2));
-#undef A
-#undef B
-  return 0;
-}
-
-static void
-mat3mulv (float *dst, const float *const mat, const float *const v)
-{
-  for(int k=0;k<3;k++)
-  {
-    float x=0.0f;
-    for(int i=0;i<3;i++) x += mat[3*k+i] * v[i];
-    dst[k] = x;
-  }
-}
-
-static void
-mat3mul (float *dst, const float *const m1, const float *const m2)
-{
-  for(int k=0;k<3;k++)
-  {
-    for(int i=0;i<3;i++)
-    {
-      float x=0.0f;
-      for(int j=0;j<3;j++) x += m1[3*k+j] * m2[3*j+i];
-      dst[3*k+i] = x;
-    }
-  }
-}
-
 static float
 lab_f(const float x)
 {
@@ -217,18 +292,8 @@ dt_Lab_to_XYZ(const float *Lab, float *XYZ)
   const float fy = (Lab[0] + 16.0f)/116.0f;
   const float fx = Lab[1]/500.0f + fy;
   const float fz = fy - Lab[2]/200.0f;
-  float y;
-  const float epsilon = 0.20689655172413796; // cbrtf(216.0f/24389.0f);
-  const float kappa   = 24389.0f/27.0f;
-  if(Lab[0] > kappa*epsilon)
-  {
-    y = (Lab[0] + 16.0f)/116.0f;
-    y *= y*y;
-  }
-  else y = Lab[0]/kappa;
-
   XYZ[0] = d50[0]*lab_f_inv(fx);
-  XYZ[1] = d50[1]*y;
+  XYZ[1] = d50[1]*lab_f_inv(fy);
   XYZ[2] = d50[2]*lab_f_inv(fz);
 }
 

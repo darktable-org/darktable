@@ -24,6 +24,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+#define LUT_SAMPLES 0xffff
+
 typedef struct dt_iop_colorout_global_data_t
 {
   guint8 *data;
@@ -51,6 +53,8 @@ dt_iop_colorout_gui_data_t;
 
 typedef struct dt_iop_colorout_data_t
 {
+  float lut[3][LUT_SAMPLES];
+  float cmatrix[9];
   cmsHPROFILE output;
   cmsHPROFILE Lab;
   cmsHTRANSFORM *xform;

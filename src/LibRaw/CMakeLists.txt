@@ -9,3 +9,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 add_library(libraw_r STATIC ${LIBRAW_SOURCES})
 target_link_libraries(libraw_r)
+

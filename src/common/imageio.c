@@ -27,6 +27,7 @@
 #include "common/imageio_tiff.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
+#include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -47,11 +48,13 @@
 #include <strings.h>
 #include <glib/gstdio.h>
 
+// NaN-safe clamping (NaN compares false, and will thus result in H)
+#define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 
 void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8_t *p8)
 {
   for(int idx=0;idx < p_wd*p_ht; idx++)
-    for(int k=0;k<3;k++) p8[4*idx+2-k] = dt_dev_default_gamma[(int)CLAMP(0xffff*f[4*idx+k], 0, 0xffff)];
+    for(int k=0;k<3;k++) p8[4*idx+2-k] = dt_dev_default_gamma[(int)CLAMPS(0xffff*f[4*idx+k], 0, 0xffff)];
 }
 
 void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, float *f)
@@ -73,6 +76,42 @@ void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, fl
     raw = NULL; \
     return DT_IMAGEIO_FILE_CORRUPTED;                                   \
   }                                                       \
+}
+
+void
+dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+{
+  if(!orientation)
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none)
+#endif
+    for(int j=0;j<ht;j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
+    return;
+  }
+  int ii = 0, jj = 0, fw = fwd, fh = fht;
+  int si = bpp, sj = wd*bpp;
+  if(orientation & 4)
+  {
+    sj = bpp; si = ht*bpp;
+    fw = fht; fh = fwd;
+  }
+  if(orientation & 2) { jj = (int)fht - jj - 1; sj = -sj; }
+  if(orientation & 1) { ii = (int)fwd - ii - 1; si = -si; }
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none)
+#endif
+  for(int j=0;j<ht;j++)
+  {
+    char *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
+    const char *in2  = in + stride*j;
+    for(int i=0;i<wd;i++)
+    {
+      memcpy(out2, in2, bpp);
+      in2  += bpp;
+      out2 += si;
+    }
+  }
 }
 
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
@@ -106,6 +145,7 @@ dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *fil
   // no hdr file:
   if(ret == DT_IMAGEIO_FILE_CORRUPTED) return ret;
 all_good:
+  img->filters = 0;
   // this updates mipf/mip4..0 from raw pixels.
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
@@ -128,6 +168,7 @@ all_good:
 
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
+  img->filters = 0;
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_exr(img, filename);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
@@ -149,10 +190,10 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = 1;
+  raw->params.use_camera_wb = 0;
   raw->params.use_auto_wb = 0;
-  raw->params.pre_interpolate_median_filter = img->raw_params.pre_median;
-  raw->params.med_passes = img->raw_params.med_passes;
+  raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
+  raw->params.med_passes = 0;//img->raw_params.med_passes;
   raw->params.no_auto_bright = 1;
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
@@ -348,6 +389,7 @@ try_full_raw:
     if(dt_image_alloc(img, DT_IMAGE_MIPF)) goto error_raw_cache_full;
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
+    printf("+ writing mip5 from preview\n");
     if(raw_wd == p_wd && raw_ht == p_ht)
     { // use 1:1
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
@@ -369,6 +411,7 @@ try_full_raw:
 
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
+    printf("- writing mip5 from preview\n");
     // clean up raw stuff.
     libraw_recycle(raw);
     libraw_close(raw);
@@ -403,10 +446,10 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = 1;
+  raw->params.use_camera_wb = 0;
   raw->params.use_auto_wb = 0;
-  raw->params.pre_interpolate_median_filter = img->raw_params.pre_median;
-  raw->params.med_passes = img->raw_params.med_passes;
+  raw->params.pre_interpolate_median_filter = 0;//img->raw_params.pre_median;
+  raw->params.med_passes = 0;//img->raw_params.med_passes;
   raw->params.no_auto_bright = 1;
   // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
   // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
@@ -421,13 +464,13 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   // raw->params.four_color_rgb = img->raw_params.four_color_rgb;
   raw->params.four_color_rgb = 0;
   raw->params.use_camera_matrix = 0;
-  raw->params.green_matching =  img->raw_params.greeneq;
+  raw->params.green_matching = 0;// img->raw_params.greeneq;
   raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
   raw->params.threshold = 0;//img->raw_denoise_threshold;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
-  raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x10;
-  raw->params.fbdd_noiserd   = (img->raw_params.fill0>>7) & 3;
+  raw->params.amaze_ca_refine = 0;//img->raw_params.fill0 & 0x10;
+  raw->params.fbdd_noiserd    = 0;//(img->raw_params.fill0>>7) & 3;
 #if 0
   // new demosaicing params
   raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x10;
@@ -501,6 +544,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   return DT_IMAGEIO_OK;
 }
 
+
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
   dt_imageio_retval_t ret;
@@ -511,6 +555,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = dt_image_orientation(img);
+
+  img->filters = 0;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -614,6 +660,8 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = dt_image_orientation(img);
+
+  img->filters = 0;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -778,7 +826,9 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 { // first try hdr and raw loading
   dt_imageio_retval_t ret;
-  ret = dt_imageio_open_hdr(img, filename);
+  ret = dt_imageio_open_rawspeed(img, filename);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_hdr(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)

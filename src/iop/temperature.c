@@ -85,7 +85,12 @@ groups ()
 	return IOP_GROUP_BASIC;
 }
 
-
+int
+output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(uint16_t);
+  else return 4*sizeof(float);
+}
 
 
 static void
@@ -143,21 +148,38 @@ convert_rgb_to_k(float rgb[3], const float temp_out, float *temp, float *tint)
   *tint =  (rgb[1]/rgb[0]) / (tmp[1]/tmp[0]);
 }
 
+static int
+FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+  const int filters = dt_image_flipped_filter(self->dev->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  float *in  = (float *)i;
-  float *out = (float *)o;
-  const int ch = piece->colors;
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters)
+  {
+    const uint16_t *const in  = (const uint16_t *const)i;
+    uint16_t *const out = (uint16_t *const)o;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, d) schedule(static)
+#endif
+    for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+      out[j*roi_out->width+i] = CLAMP(in[j*roi_out->width+i]*d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)], 0, 0xffff);
+  }
+  else
+  {
+    float *in  = (float *)i;
+    float *out = (float *)o;
+    const int ch = piece->colors;
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
-  {
-    for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*d->coeffs[c];
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
+      for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*d->coeffs[c];
   }
 }
 
@@ -233,9 +255,9 @@ void init (dt_iop_module_t *module)
   else
   {
     module->default_enabled = 1;
-    module->hide_enable_button = 1;
+    // module->hide_enable_button = 1;
   }
-  module->priority = 200;
+  module->priority = 170;
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
   dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t){5000.0, {1.0, 1.0, 1.0}};

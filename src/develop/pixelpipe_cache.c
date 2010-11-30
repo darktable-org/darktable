@@ -25,11 +25,13 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
 {
   cache->entries = entries;
   cache->data = (void **)malloc(sizeof(void *)*entries);
+  cache->size = (size_t *)malloc(sizeof(size_t)*entries);
   cache->hash = (uint64_t *)malloc(sizeof(uint64_t)*entries);
   cache->used = (int32_t *)malloc(sizeof(int32_t)*entries);
   for(int k=0;k<entries;k++)
   {
     cache->data[k] = (void *)dt_alloc_align(16, size);
+    cache->size[k] = size;
 #ifdef _DEBUG
     memset(cache->data[k], 0x5d, size);
 #endif
@@ -45,6 +47,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
   free(cache->data);
   free(cache->hash);
   free(cache->used);
+  free(cache->size);
 }
 
 uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_pixelpipe_t *pipe, int module)
@@ -77,21 +80,22 @@ int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint
   return 0;
 }
 
-int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)
+int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size, void **data)
 {
-  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, -5);
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, size, data, -cache->entries);
 }
 
-int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data)
+int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size, void **data)
 {
-  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, data, 0);
+  return dt_dev_pixelpipe_cache_get_weighted(cache, hash, size, data, 0);
 }
 
-int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, void **data, int weight)
+int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size, void **data, int weight)
 {
   cache->queries ++;
   *data = NULL;
   int max_used = -1, max = 0;
+  size_t sz = 0;
   for(int k=0;k<cache->entries;k++)
   { // search for hash in cache
     if(cache->used[k] > max_used)
@@ -103,13 +107,20 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     if(cache->hash[k] == hash)
     {
       *data = cache->data[k];
+      sz = cache->size[k];
       cache->used[k] = weight; // this is the MRU entry
     }
   }
 
-  if(!*data)
+  if(!*data || sz < size)
   { // kill LRU entry
     // printf("[pixelpipe_cache_get] hash not found, returning slot %d/%d age %d\n", max, cache->entries, weight);
+    if(cache->size[max] < size)
+    {
+      free(cache->data[max]);
+      cache->data[max] = (void *)dt_alloc_align(16, size);
+      cache->size[max] = size;
+    }
     *data = cache->data[max];
     cache->hash[max] = hash;
     cache->used[max] = weight;
