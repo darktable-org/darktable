@@ -243,6 +243,12 @@ static GList* dt_metadata_get_dt(int id, const char* key, uint32_t* count){
 			result = g_list_append(result, g_strdup((char *)sqlite3_column_text(stmt, 0)));
 		}
 		sqlite3_finalize(stmt);
+	} else if(strncmp(key, "darktable.Name", 14) == 0){
+		result = g_list_append(result, g_strdup(PACKAGE_NAME));
+		local_count = 1;
+	} else if(strncmp(key, "darktable.Version", 17) == 0){
+		result = g_list_append(result, g_strdup(PACKAGE_VERSION));
+		local_count = 1;
 	}
 	if(count != NULL)
 		*count = local_count;
