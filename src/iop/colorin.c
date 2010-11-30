@@ -33,7 +33,8 @@
 
 DT_MODULE(1)
 
-const char *name()
+const char *
+name()
 {
   return _("input color profile");
 }
@@ -44,6 +45,7 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+#if 0
 static void intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -52,8 +54,10 @@ static void intent_changed (GtkComboBox *widget, gpointer user_data)
   p->intent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
   dt_dev_add_history_item(darktable.develop, self);
 }
+#endif
 
-static void profile_changed (GtkComboBox *widget, gpointer user_data)
+static void
+profile_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -79,78 +83,110 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
+  const float *const mat = (const float *)d->cmatrix;
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
   
-  int rowsize=roi_out->width*3;
-  float cam[rowsize];
-  float Lab[rowsize];
-  
+  if(mat[0] != -666.0f)
+  { // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
-  for(int k=0;k<roi_out->height;k++)
-  {
-    const int m=(k*(roi_out->width*ch));
-    
-#ifdef _OPENMP
-#  pragma omp parallel for default(none) shared(cam) schedule(static) 
-#endif
-    for (int l=0;l<roi_out->width;l++) {
-      int ci=3*l, ii=ch*l;
-      
-      cam[ci+0] = in[m+ii+0];
-      cam[ci+1] = in[m+ii+1];
-      cam[ci+2] = in[m+ii+2];
-      
-      const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
-      const float zz = cam[ci+2]/YY;
-      const float bound_z = 0.5f, bound_Y = 0.5f;
-      const float amount = 0.11f;
-      if (zz > bound_z) {
-        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-        cam[ci+1] += t*amount;
-        cam[ci+2] -= t*amount;
-      }
-    }
-    
-#if 0
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float YY = cam[0]+cam[1]+cam[2];
-    const float zz = cam[2]/YY;
-    // lower amount and higher bound_z make the effect smaller.
-    // the effect is weakened the darker input values are, saturating at bound_Y
-    const float bound_z = 0.5f, bound_Y = 0.5f;
-    const float amount = 0.11f;
-    // if(YY > bound_Y && zz > bound_z)
-    if (zz > bound_z)
+    for(int j=0;j<roi_out->height;j++)
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-      cam[1] += t*amount;
-      cam[2] -= t*amount;
-    }
-#endif
-    
-    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    // lcms is not thread safe, so work on one copy for each thread :(
-    cmsDoTransform (d->xform[dt_get_thread_num()], cam, Lab, roi_out->width);
-  
-#ifdef _OPENMP
-#  pragma omp parallel for default(none) shared(out) schedule(static) 
-#endif 
-    for (int l=0;l<roi_out->width;l++) {
-      int li=3*l, oi=ch*l;
-      out[m+oi+0] = Lab[li+0];
-      if(Lab[li+0] > 0)
+      const float *buf_in  = in  + ch*roi_out->width*j;
+      float *buf_out = out + ch*roi_out->width*j;
+      for(int i=0;i<roi_out->width;i++)
       {
-       out[m+oi+1]  = 100.0*Lab[li+1]/Lab[li+0];
-       out[m+oi+2]  = 100.0*Lab[li+2]/Lab[li+0];
+        float cam[3], XYZ[3], Lab[3];
+        memcpy(cam, buf_in, sizeof(float)*3);
+        // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+        const float YY = cam[0]+cam[1]+cam[2];
+        const float zz = cam[2]/YY;
+        // lower amount and higher bound_z make the effect smaller.
+        // the effect is weakened the darker input values are, saturating at bound_Y
+        const float bound_z = 0.5f, bound_Y = 0.5f;
+        const float amount = 0.11f;
+        // if(YY > bound_Y && zz > bound_z)
+        if (zz > bound_z)
+        {
+          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+          cam[1] += t*amount;
+          cam[2] -= t*amount;
+        }
+        for(int k=0;k<3;k++)
+        {
+          float x = 0.0f;
+          for(int i=0;i<3;i++) x += mat[3*k+i] * cam[i];
+          XYZ[k] = x;
+        }
+        dt_XYZ_to_Lab(XYZ, Lab);
+
+        // and to La*b*
+        if(Lab[0] > 0)
+        {
+          buf_out[1]  = 100.0*Lab[1]/Lab[0];
+          buf_out[2]  = 100.0*Lab[2]/Lab[0];
+        }
+        else
+        {
+          buf_out[1] = Lab[1];
+          buf_out[2] = Lab[2];
+        }
+        buf_out[0] = Lab[0];
+        buf_out += ch;
+        buf_in += ch;
       }
-      else
-      {
-        out[m+oi+1]  = Lab[li+1];
-        out[m+oi+2] = Lab[li+2];
+    }
+  }
+  else
+  { // use general lcms2 fallback
+    int rowsize=roi_out->width*3;
+    float cam[rowsize];
+    float Lab[rowsize];
+    
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
+#endif
+    for(int k=0;k<roi_out->height;k++)
+    {
+      const int m=(k*(roi_out->width*ch));
+      
+      for (int l=0;l<roi_out->width;l++) {
+        int ci=3*l, ii=ch*l;
+        
+        cam[ci+0] = in[m+ii+0];
+        cam[ci+1] = in[m+ii+1];
+        cam[ci+2] = in[m+ii+2];
+        
+        const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
+        const float zz = cam[ci+2]/YY;
+        const float bound_z = 0.5f, bound_Y = 0.5f;
+        const float amount = 0.11f;
+        if (zz > bound_z) {
+          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+          cam[ci+1] += t*amount;
+          cam[ci+2] -= t*amount;
+        }
+      }
+      // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+      // lcms is not thread safe, so work on one copy for each thread :(
+      cmsDoTransform (d->xform[dt_get_thread_num()], cam, Lab, roi_out->width);
+    
+      for (int l=0;l<roi_out->width;l++) {
+        int li=3*l, oi=ch*l;
+        out[m+oi+0] = Lab[li+0];
+        if(Lab[li+0] > 0)
+        {
+         out[m+oi+1]  = 100.0*Lab[li+1]/Lab[li+0];
+         out[m+oi+2]  = 100.0*Lab[li+2]/Lab[li+0];
+        }
+        else
+        {
+          out[m+oi+1]  = Lab[li+1];
+          out[m+oi+2] = Lab[li+2];
+        }
       }
     }
   }
@@ -169,7 +205,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   const int num_threads = dt_get_num_threads();
   d->input = NULL;
   for(int t=0;t<num_threads;t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
-  d->cmatrix[0][0] = -666.0;
+  d->cmatrix[0][0] = -666.0f;
   char datadir[1024];
   char filename[1024];
   dt_get_datadir(datadir, 1024);
@@ -185,10 +221,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       snprintf(makermodel, 512, "%s", self->dev->image->exif_model);
     else
       snprintf(makermodel, 512, "%s %s", maker, self->dev->image->exif_model);
-    // printf("searching matrix for `%s'\n", makermodel);
-    d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    // if(!d->input) printf("could not find enhanced color matrix for `%s'!\n", makermodel);
-    if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    if(dt_colorspaces_get_darktable_matrix(makermodel, (float *)(d->cmatrix)))
+    {
+      d->cmatrix[0][0] = -666.0f;
+      d->input = dt_colorspaces_create_darktable_profile(makermodel);
+      if(!d->input) sprintf(p->iccprofile, "cmatrix");
+    }
   }
   if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
   { // color matrix
@@ -296,7 +334,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
-  gtk_combo_box_set_active(g->cbox1, (int)p->intent);
+  // gtk_combo_box_set_active(g->cbox1, (int)p->intent);
   GList *prof = g->profiles;
   while(prof)
   {
@@ -437,17 +475,17 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
+  // g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
   g->label2 = GTK_LABEL(gtk_label_new(_("profile")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
+  // gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->cbox1, _("perceptual"));
-  gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
-  gtk_combo_box_append_text(g->cbox1,C_("rendering intent", "saturation"));
-  gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
+  // g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  // gtk_combo_box_append_text(g->cbox1, _("perceptual"));
+  // gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
+  // gtk_combo_box_append_text(g->cbox1,C_("rendering intent", "saturation"));
+  // gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *l = g->profiles;
   while(l)
@@ -471,19 +509,19 @@ void gui_init(struct dt_iop_module_t *self)
       gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);
   }
-  gtk_combo_box_set_active(g->cbox1, 0);
+  // gtk_combo_box_set_active(g->cbox1, 0);
   gtk_combo_box_set_active(g->cbox2, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
 
   char tooltip[1024];
-  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
+  // gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
   snprintf(tooltip, 1024, _("icc profiles in %s/color/in"), datadir);
   gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->cbox1), "changed",
-                    G_CALLBACK (intent_changed),
-                    (gpointer)self);
+  // g_signal_connect (G_OBJECT (g->cbox1), "changed",
+                    // G_CALLBACK (intent_changed),
+                    // (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox2), "changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);

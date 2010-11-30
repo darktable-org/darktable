@@ -78,16 +78,15 @@ static void
 demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters)
 {
   // snap to start of mosaic block:
-  roi_out->x = MAX(0, roi_out->x & ~1);
-  roi_out->y = MAX(0, roi_out->y & ~1);
+  roi_out->x = 0;//MAX(0, roi_out->x & ~1);
+  roi_out->y = 0;//MAX(0, roi_out->y & ~1);
   // offsets only where the buffer ends:
-  const int offx = MAX(0, 3 - roi_out->x);
-  const int offy = MAX(0, 3 - roi_out->y);
-  const int offX = MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
-  const int offY = MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
+  const int offx = 3; //MAX(0, 3 - roi_out->x);
+  const int offy = 3; //MAX(0, 3 - roi_out->y);
+  const int offX = 3; //MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
+  const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
   const float i2f = 1.0f/((float)0xffff);
 
-#if 1
   // border interpolate
   float sum[8];
   for (int j=0; j < roi_out->height; j++) for (int i=0; i < roi_out->width; i++)
@@ -115,14 +114,13 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
         out[4*(j*roi_out->width+i)+c] = i2f * in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
     }
   }
-#endif
   // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_in, roi_out, out, in) schedule(static)
 #endif
   for (int j=offy; j < roi_out->height-offY; j++)
   {
-    float *buf = out + 4*roi_out->width*j;
+    float *buf = out + 4*roi_out->width*j + 4*offx;
     const uint16_t *buf_in = in + roi_in->width*(j + roi_out->y) + offx + roi_out->x;
     for (int i=offx; i < roi_out->width-offX; i++)
     {
@@ -282,48 +280,68 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
 }
 
 
+#if 0
+// full buffer pass-through. no modification should be necessary
+void
+modify_roi_out (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+{
+}
+#endif
+
+// which roi input is needed to process to this output?
+void
+modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+{
+  // this op is disabled for preview pipe/filters == 0
+
+  *roi_in = *roi_out;
+  // need 1:1, demosaic and then sub-sample. or directly sample half-size
+  roi_in->x /= roi_out->scale;
+  roi_in->y /= roi_out->scale;
+  roi_in->width /= roi_out->scale;
+  roi_in->height /= roi_out->scale;
+  roi_in->scale = 1.0f;
+  // clamp to even x/y, to make demosaic pattern still hold..
+  roi_in->x = MAX(0, roi_in->x & ~1);
+  roi_in->y = MAX(0, roi_in->y & ~1);
+
+  // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
+  if(self->dev->image->width - roi_in->width < 10 && self->dev->image->height - roi_in->height < 10)
+  {
+    roi_in->width  = self->dev->image->width;
+    roi_in->height = self->dev->image->height;
+  }
+}
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_roi_t roi, roo;
-  roi.scale = 1.0f;
-  roi.x = roi.y = 0;
-  roi.width  = self->dev->image->width;
-  roi.height = self->dev->image->height;
+  roi = *roi_in;
   roo = *roi_out;
-  // global scale:
-  const float global_scale = roi_out->scale / piece->iscale;
-  roo.scale = roi_out->scale/piece->iscale;
+  roo.x = roo.y = 0;
+  // global scale: (iscale == 1.0, always when demosaic is on)
+  const float global_scale = roi_out->scale;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  // printf("filters: %X\n", data->filters);
-  // data->filters = 0x49494949;
-
-  dt_image_t *img = self->dev->image;
-  dt_image_buffer_t full = dt_image_get(img, DT_IMAGE_FULL, 'r');
-  if(full != DT_IMAGE_FULL) return;
-  if(!self->dev->image->filters)
-  {
-    // no bayer pattern, directly clip and zoom image
-    dt_iop_clip_and_zoom((float *)o, (float *)i, roi_out, &roi, roi_out->width, roi.width);
-  }
-  else if(global_scale > .999f)
+  const uint16_t *const pixels = (uint16_t *)i;
+  if(global_scale > .999f)
   {
     // output 1:1
-    demosaic_ppg((float *)o, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
+    demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters);
   }
   else if(global_scale > .5f)
   {
     // demosaic and then clip and zoom
-    roo.x = roi_out->x / global_scale;
-    roo.y = roi_out->y / global_scale;
+    // roo.x = roi_out->x / global_scale;
+    // roo.y = roi_out->y / global_scale;
     roo.width  = roi_out->width / global_scale;
     roo.height = roi_out->height / global_scale;
     roo.scale = 1.0f;
      
     float *tmp = (float *)dt_alloc_align(16, roo.width*roo.height*4*sizeof(float));
-    demosaic_ppg(tmp, (const uint16_t *)self->dev->image->pixels, &roo, &roi, data->filters);
+    demosaic_ppg(tmp, pixels, &roo, &roi, data->filters);
     roi = *roi_out;
     roi.x = roi.y = 0;
     roi.scale = global_scale;
@@ -333,9 +351,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   else
   {
     // sample half-size raw
-    dt_iop_clip_and_zoom_demosaic_half_size((float *)o, (const uint16_t *)self->dev->image->pixels, &roo, &roi, roo.width, roi.width, data->filters);
+    dt_iop_clip_and_zoom_demosaic_half_size((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters);
   }
-  dt_image_release(img, DT_IMAGE_FULL, 'r');
 }
 
 #ifdef HAVE_OPENCL
@@ -542,7 +559,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 110;
+  module->priority = 240;
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -578,8 +595,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   // dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
-  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
   d->filters = dt_image_flipped_filter(self->dev->image);
+  if(!d->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

@@ -18,12 +18,14 @@
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
+#include "common/darktable.h"
 #include "common/imageio_pfm.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
 {
@@ -44,6 +46,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   if(ret != 2) goto error_corrupt;
   ret = fread(&ret, sizeof(char), 1, f);
   if(ret != 1) goto error_corrupt;
+  ret = 0;
 
   if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
@@ -95,15 +98,18 @@ dt_imageio_retval_t dt_imageio_open_pfm_preview(dt_image_t *img, const char *fil
   if(head[1] == 'F') cols = 3;
   else if(head[1] == 'f') cols = 1;
   else goto error_corrupt;
-  ret = fscanf(f, "%d %d\n%*[^\n]\n", &img->width, &img->height);
+  ret = fscanf(f, "%d %d\n%*[^\n]", &img->width, &img->height);
   if(ret != 2) goto error_corrupt;
+  ret = fread(&ret, sizeof(char), 1, f);
+  if(ret != 1) goto error_corrupt;
+  ret = 0;
 
-  float *buf = (float *)malloc(4*sizeof(float)*img->width*img->height);
+  float *buf = (float *)dt_alloc_align(16, 4*sizeof(float)*img->width*img->height);
   if(!buf) goto error_corrupt;
   if(cols == 3)
   {
     ret = fread(buf, 3*sizeof(float), img->width*img->height, f);
-    for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0f, img->pixels[3*i+c]));
+    for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0f, buf[3*i+c]));
   }
   else for(int j=0; j < img->height; j++)
     for(int i=0; i < img->width; i++)

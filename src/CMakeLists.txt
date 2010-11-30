@@ -17,11 +17,13 @@ FILE(GLOB SOURCE_FILES
   "common/image_cache.c" 
   "common/image_compression.c" 
   "common/imageio.c" 
+  "common/imageio_exr.cc" 
   "common/imageio_jpeg.c" 
   "common/imageio_module.c" 
   "common/imageio_pfm.c" 
   "common/imageio_rgbe.c" 
   "common/imageio_tiff.c" 
+  "common/imageio_rawspeed.cc" 
   "common/metadata.c" 
   "common/styles.c" 
   "common/tags.c" 
@@ -227,7 +229,7 @@ add_custom_command(
 #
 # build libdarktable
 #
-add_library(lib_darktable SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
+add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)
@@ -245,11 +247,21 @@ add_dependencies(lib_darktable libraw_r)
 add_library(libraw_static STATIC IMPORTED)
 set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/LibRaw/liblibraw_r.a)
 target_link_libraries(lib_darktable ${LIBS} libraw_static)
+
+# same for librawspeed:
+add_dependencies(lib_darktable rawspeed)
+add_library(rawspeed_static STATIC IMPORTED)
+set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rawspeed/librawspeed.a)
+target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
+
 install(TARGETS lib_darktable DESTINATION lib/darktable)
 list(APPEND LIBS lib_darktable)
 
-# Compile views modules
+# Compile libraw modules
 add_subdirectory(LibRaw)
+
+# compile rawspeed
+add_subdirectory(rawspeed)
 
 # Compile views modules
 add_subdirectory(views)

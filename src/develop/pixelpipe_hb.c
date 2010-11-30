@@ -217,6 +217,19 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 {
 }
 
+static int
+get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece, dt_develop_t *dev)
+{
+  if(!module)
+  {
+    // first input.
+    // mipf and non-raw images have 4 floats per pixel
+    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || dev->image->filters == 0) return 4*sizeof(float);
+    else return sizeof(uint16_t);
+  }
+  return module->output_bpp(module, pipe, piece);
+}
+
 // recursive helper for process:
 int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
@@ -238,6 +251,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     }
   }
 
+  const int bpp = get_output_bpp(module, pipe, piece, dev);
+  const size_t bufsize = bpp*roi_out->width*roi_out->height;
+
   // if available, return data
   pthread_mutex_lock(&pipe->busy_mutex);
   if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
@@ -245,7 +261,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
-    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+    (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
     // go to post-collect directly:
@@ -275,7 +291,32 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     start = dt_get_wtime();
     if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
     {
-      *output = pipe->input;
+      if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
+      {
+        // printf("[pixelpipe] using pixels directly as input (%d x %d)\n", pipe->iwidth, pipe->iheight);
+        *output = pipe->input;
+      }
+      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
+      {
+        memset(*output, 0, pipe->backbuf_size);
+        if(roi_in.scale == 1.0f)
+        {
+          // printf("[pixelpipe] using fast path, copying %d per pixel (%d x %d)\n", bpp, roi_out->width, roi_out->height);
+          // fast branch for 1:1 pixel copies.
+          for(int j=0;j<MIN(roi_out->height, pipe->iheight-roi_in.y);j++)
+            memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
+        }
+        else
+        {
+          roi_in.x /= roi_out->scale;
+          roi_in.y /= roi_out->scale;
+          roi_in.width = pipe->iwidth;
+          roi_in.height = pipe->iheight;
+          roi_in.scale = 1.0f;
+          dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
+        }
+      }
+      // else found in cache.
     }
     // optimized branch (for mipf-preview):
     else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW && roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
@@ -283,10 +324,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     {
       // printf("[process] scale/pan [%s]\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : "");
       // reserve new cache line: output
-      if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output))
+      if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
       {
-        memset(*output, 0, pipe->backbuf_size);
-        bzero(*output, pipe->backbuf_size);
+        // memset(*output, 0, pipe->backbuf_size);
         roi_in.x /= roi_out->scale;
         roi_in.y /= roi_out->scale;
         roi_in.width = pipe->iwidth;
@@ -296,7 +336,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
       }
     }
     end = dt_get_wtime();
-    dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer\n", end - start);
+    dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer [%s]\n", end - start, pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     pthread_mutex_unlock(&pipe->busy_mutex);
   }
   else
@@ -306,6 +346,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     module->modify_roi_in(module, piece, roi_out, &roi_in);
     pthread_mutex_unlock(&pipe->busy_mutex);
+#if 0 // now we just re-alloc, and don't need this code anymore:
     // check roi_in for sanity and clip to maximum alloc'ed area, downscale
     // input if necessary.
     roi_in.scale = fabsf(roi_in.scale);
@@ -350,6 +391,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         roi_in.height  = maxht;
       }
     }
+#endif
 
     if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
@@ -357,9 +399,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     if(!strcmp(module->op, "gamma"))
-      (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, output);
+      (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, bufsize, output);
     else
-      (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, output);
+      (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     pthread_mutex_unlock(&pipe->busy_mutex);
 
     // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);

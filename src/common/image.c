@@ -110,6 +110,10 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
       if(*c == '/' && c != f) c++;
       snprintf(pathname, len, "%s", c);
     }
+    else
+    {
+      snprintf(pathname, len, "%s", _("orphaned image"));
+    }
     sqlite3_finalize(stmt);
   }
   pathname[len-1] = '\0';
@@ -336,6 +340,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
 
   if(dt_image_alloc(img, DT_IMAGE_MIPF)) return DT_IMAGEIO_CACHE_FULL;
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
+  memset(img->mipf, 0x0, sizeof(float)*4*p_wd*p_ht);
 
   dt_iop_roi_t roi_in, roi_out;
   roi_in.x = roi_in.y = 0;
