@@ -86,8 +86,8 @@ groups ()
     const float Wr=0.299,Wb=0.114,Wg=1-Wr-Wb;\
     const float UMax=0.436, VMax=0.615; \
     rgb[0]=yuv[0]+yuv[2]*((1-Wr)/VMax); \
-    rgb[1]=yuv[0]-yuv[1]*(Wb*(1-Wb)/(UMax*Wg))-yuv[2]*((Wr*(1-Wr))/VMax*Wg); \
-    rgb[2]=yuv[0]+yuv[1]*(1-Wb/UMax); \
+    rgb[1]=yuv[0] - (yuv[1]*((Wb*(1-Wb))/(UMax*Wg))) - (yuv[2]*((Wr*(1-Wr))/(VMax*Wg))); \
+    rgb[2]=yuv[0]+yuv[1]*((1-Wb)/UMax); \
   }
 
 
@@ -98,7 +98,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)ovoid;
   const int ch = piece->colors;
   
-  const float scale=(data->strength/100.0);
+  const float scale=1.0-(data->strength/100.0);
   in  = (float *)ivoid;
   out = (float *)ovoid;
   
@@ -108,10 +108,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
     // Apply a simple tonemap 
-    float yuv[3];
-    rgb2yuv((in+(ch*k)),yuv);
-    yuv[0] = (yuv[0]/(yuv[0]+scale));
-    yuv2rgb(yuv,(out+(ch*k)));
+    float tmp[3];
+    rgb2yuv((in+(ch*k)),tmp);
+    tmp[0] = (tmp[0]/(tmp[0]+scale));
+    yuv2rgb(tmp,(out+(ch*k)));
   }
 
 }
@@ -177,7 +177,7 @@ void init(dt_iop_module_t *module)
   module->priority = 255;
   module->params_size = sizeof(dt_iop_tonemap_params_t);
   module->gui_data = NULL;
-  dt_iop_tonemap_params_t tmp = (dt_iop_tonemap_params_t){50};
+  dt_iop_tonemap_params_t tmp = (dt_iop_tonemap_params_t){25};
   memcpy(module->params, &tmp, sizeof(dt_iop_tonemap_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_tonemap_params_t));
 }
