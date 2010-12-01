@@ -48,9 +48,6 @@
 #include <strings.h>
 #include <glib/gstdio.h>
 
-// NaN-safe clamping (NaN compares false, and will thus result in H)
-#define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
-
 void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8_t *p8)
 {
   for(int idx=0;idx < p_wd*p_ht; idx++)

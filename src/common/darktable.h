@@ -76,6 +76,10 @@ static inline int dt_version()
   #define M_PI 3.14159265358979323846
 #endif
 
+// NaN-safe clamping (NaN compares false, and will thus result in H)
+#define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
+
+
 #define HANDLE_SQLITE_ERR(rc) \
   if(rc != SQLITE_OK) \
   { \
