@@ -258,11 +258,32 @@ build_linear_gamma(void)
 }
 
 static float
+cbrt_5f(float f)
+{
+	uint32_t* p = (uint32_t *) &f;
+	*p = *p/3 + 709921077;
+	return f;
+}
+
+static float
+cbrta_halleyf(const float a, const float R)
+{
+  const float a3 = a*a*a;
+  const float b = a * (a3 + R + R) / (a3 + a3 + R);
+	return b;
+}
+
+static float
 lab_f(const float x)
 {
   const float epsilon = 216.0f/24389.0f;
   const float kappa   = 24389.0f/27.0f;
-  if(x > epsilon) return cbrtf(x);
+  if(x > epsilon)
+  {
+    // approximate cbrtf(x):
+    const float a = cbrt_5f(x);
+    return cbrta_halleyf(a, x);
+  }
   else return (kappa*x + 16.0f)/116.0f;
 }
 
