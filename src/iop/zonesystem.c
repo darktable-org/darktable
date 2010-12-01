@@ -25,6 +25,7 @@
 #ifdef HAVE_GEGL
   #include <gegl.h>
 #endif
+#include "common/darktable.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -36,7 +37,7 @@
 #include "gui/presets.h"
 
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x) (((x)>=0)?((x)<=1.0?(x):1.0):0.0)
 DT_MODULE(1)
 #define MAX_ZONE_SYSTEM_SIZE	24
 
@@ -220,7 +221,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     /* remap lightness into zonemap and apply lightness */
     const float lightness=in[ch*k]/100.0;
     const float rzw = (1.0/(size-1));                                       // real zone width 
-    const int rz = CLAMP((lightness/rzw), 0, MAX_ZONE_SYSTEM_SIZE-1);       // real zone for lightness
+    const int rz = CLAMPS((lightness/rzw), 0, MAX_ZONE_SYSTEM_SIZE-1);       // real zone for lightness
     const float zw = (zonemap[rz+1]-zonemap[rz]);                           // mapped zone width
     const float zs = zw/rzw ;                                               // mapped zone scale
     const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;

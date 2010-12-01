@@ -61,6 +61,7 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  self->dev->gui_module = self;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   int pos = gtk_combo_box_get_active(widget);
@@ -80,10 +81,25 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
+#if 1
+static float
+lerp_lut(const float *const lut, const float v)
+{
+  // TODO: check if optimization is worthwhile!
+  const float ft = v*LUT_SAMPLES;
+  // NaN-safe clamping:
+  const int t = ft > 0 ? (ft < LUT_SAMPLES-2 ? ft : LUT_SAMPLES-2) : 0;
+  const float f = ft - t;
+  const float l1 = lut[t];
+  const float l2 = lut[t+1];
+  return l1*(1.0f-f) + l2*f;
+}
+#endif
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
-  const float *const mat = (const float *)d->cmatrix;
+  const float *const mat = d->cmatrix;
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
@@ -93,51 +109,42 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
-    for(int j=0;j<roi_out->height;j++)
+    for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      const float *buf_in  = in  + ch*roi_out->width*j;
-      float *buf_out = out + ch*roi_out->width*j;
-      for(int i=0;i<roi_out->width;i++)
+      const float *const buf_in  = in  + ch*k;
+      float *const buf_out = out + ch*k;
+      float cam[3], XYZ[3], Lab[3];
+      // memcpy(cam, buf_in, sizeof(float)*3);
+      // TODO: avoid calling this for linear profiles? doesn't seem to impact performance much.
+      for(int i=0;i<3;i++) cam[i] = lerp_lut(d->lut[i], buf_in[i]);
+      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+      const float YY = cam[0]+cam[1]+cam[2];
+      const float zz = cam[2]/YY;
+      // lower amount and higher bound_z make the effect smaller.
+      // the effect is weakened the darker input values are, saturating at bound_Y
+      const float bound_z = 0.5f, bound_Y = 0.5f;
+      const float amount = 0.11f;
+      if (zz > bound_z)
       {
-        float cam[3], XYZ[3], Lab[3];
-        memcpy(cam, buf_in, sizeof(float)*3);
-        // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-        const float YY = cam[0]+cam[1]+cam[2];
-        const float zz = cam[2]/YY;
-        // lower amount and higher bound_z make the effect smaller.
-        // the effect is weakened the darker input values are, saturating at bound_Y
-        const float bound_z = 0.5f, bound_Y = 0.5f;
-        const float amount = 0.11f;
-        // if(YY > bound_Y && zz > bound_z)
-        if (zz > bound_z)
-        {
-          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-          cam[1] += t*amount;
-          cam[2] -= t*amount;
-        }
-        for(int k=0;k<3;k++)
-        {
-          float x = 0.0f;
-          for(int i=0;i<3;i++) x += mat[3*k+i] * cam[i];
-          XYZ[k] = x;
-        }
-        dt_XYZ_to_Lab(XYZ, Lab);
-
-        // and to La*b*
-        if(Lab[0] > 0)
-        {
-          buf_out[1]  = 100.0*Lab[1]/Lab[0];
-          buf_out[2]  = 100.0*Lab[2]/Lab[0];
-        }
-        else
-        {
-          buf_out[1] = Lab[1];
-          buf_out[2] = Lab[2];
-        }
-        buf_out[0] = Lab[0];
-        buf_out += ch;
-        buf_in += ch;
+        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+        cam[1] += t*amount;
+        cam[2] -= t*amount;
       }
+      // now convert camera to XYZ using the color matrix
+      for(int j=0;j<3;j++)
+      {
+        XYZ[j] = 0.0f;
+        for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
+      }
+      dt_XYZ_to_Lab(XYZ, Lab);
+
+      // and to La*b*
+      if(Lab[0] > 0)
+      {
+        Lab[1] *= 100.0/Lab[0];
+        Lab[2] *= 100.0/Lab[0];
+      }
+      memcpy(buf_out, Lab, sizeof(float)*3);
     }
   }
   else
@@ -204,8 +211,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(d->input) cmsCloseProfile(d->input);
   const int num_threads = dt_get_num_threads();
   d->input = NULL;
-  for(int t=0;t<num_threads;t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
-  d->cmatrix[0][0] = -666.0f;
+  for(int t=0;t<num_threads;t++) if(d->xform[t])
+  {
+    cmsDeleteTransform(d->xform[t]);
+    d->xform[t] = NULL;
+  }
+  d->cmatrix[0] = -666.0f;
   char datadir[1024];
   char filename[1024];
   dt_get_datadir(datadir, 1024);
@@ -221,12 +232,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       snprintf(makermodel, 512, "%s", self->dev->image->exif_model);
     else
       snprintf(makermodel, 512, "%s %s", maker, self->dev->image->exif_model);
-    if(dt_colorspaces_get_darktable_matrix(makermodel, (float *)(d->cmatrix)))
-    {
-      d->cmatrix[0][0] = -666.0f;
+    // if(dt_colorspaces_get_darktable_matrix(makermodel, (float *)(d->cmatrix)))
+    // {
+      // d->cmatrix[0][0] = -666.0f;
       d->input = dt_colorspaces_create_darktable_profile(makermodel);
       if(!d->input) sprintf(p->iccprofile, "cmatrix");
-    }
+    // }
   }
   if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
   { // color matrix
@@ -272,10 +283,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
   if(d->input)
-    for(int t=0;t<num_threads;t++)
+  {
+    if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
-      d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      d->cmatrix[0] = -0.666f;
+      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
+  }
   else
   {
     if(strcmp(p->iccprofile, "sRGB"))
@@ -283,15 +297,23 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->input = dt_colorspaces_create_linear_rgb_profile();
     }
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+    if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    {
+      d->cmatrix[0] = -0.666f;
+      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+    }
   }
   // user selected a non-supported output profile, check that:
-  if(!d->xform[0])
+  if(!d->xform[0] && d->cmatrix[0] == -0.666f)
   {
     dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
-    for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
+    if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    {
+      d->cmatrix[0] = -0.666f;
+      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
+    }
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif

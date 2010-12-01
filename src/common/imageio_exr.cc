@@ -51,9 +51,7 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename)
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
   std::auto_ptr<Imf::InputFile> file;
   const Imf::Header *header=NULL;
-  fprintf(stderr,"[imageio_exr]dt_imageio_open_exr \n",img->width,img->height);
  
-
   /* verify openexr image */
   if(!Imf::isOpenExrFile ((const char *)filename,isTiled)) 
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -79,7 +77,6 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename)
   uint32_t height = dw.max.y - dw.min.y + 1;
   img->width = width;
   img->height = height;
-  fprintf(stderr,"[imageio_exr] Generating preview %dx%d\n",img->width,img->height);
  
   
   // Try to allocate image data
@@ -123,7 +120,6 @@ dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *fil
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
   std::auto_ptr<Imf::InputFile> file;
   const Imf::Header *header=NULL;
-    fprintf(stderr,"[imageio_exr]dt_imageio_open_exr \n",img->width,img->height);
 
   /* verify openexr image */
   if(!Imf::isOpenExrFile ((const char *)filename,isTiled)) 
@@ -150,7 +146,6 @@ dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *fil
   uint32_t height = dw.max.y - dw.min.y + 1;
   img->width = width;
   img->height = height;
-  fprintf(stderr,"[imageio_exr] Generating preview %dx%d\n",img->width,img->height);
  
   float *buf = (float*)dt_alloc_align(16,4*sizeof(float)*img->width*img->height);
 
@@ -172,7 +167,6 @@ dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *fil
       file->readPixels(dw.min.y,dw.max.y);
     }
   } 
-  fprintf(stderr,"[imageio_exr] Generating preview %dx%d\n",img->width,img->height);
   dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
   free(buf);
   

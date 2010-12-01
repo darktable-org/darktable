@@ -60,12 +60,15 @@ typedef struct dt_iop_colorin_gui_data_t
 }
 dt_iop_colorin_gui_data_t;
 
+#define LUT_SAMPLES 0xffff
+
 typedef struct dt_iop_colorin_data_t
 {
   cmsHPROFILE input;
   cmsHPROFILE Lab;
   cmsHTRANSFORM *xform;
-  float cmatrix[3][4];
+  float lut[3][LUT_SAMPLES];
+  float cmatrix[9];
 }
 dt_iop_colorin_data_t;
 
