@@ -237,7 +237,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
   dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)module->params;
   dtgtk_slider_set_value(g->scale1, p->size);
-  dtgtk_slider_set_value(g->scale2, p->strength);
+  dtgtk_slider_set_value(g->scale2, p->threshold);
+  dtgtk_slider_set_value(g->scale3, p->strength);
 }
 
 void init(dt_iop_module_t *module)
