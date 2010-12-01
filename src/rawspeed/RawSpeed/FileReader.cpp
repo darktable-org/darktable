@@ -41,10 +41,14 @@ FileMap* FileReader::readFile() {
   int fd;
   char *dest;
 
-  stat(mFilename, &st);
   fd = open(mFilename, O_RDONLY);
   if (fd < 0)
     throw FileIOException("Could not open file.");
+  if (fstat(fd, &st) < 0)
+	throw FileIOException("Could not read size of file (check permissions)");
+  if (st.st_size == 0)
+	throw FileIOException("File is 0 bytes.");
+
 #if 0
   // Not used, as it is slower than sync read
 

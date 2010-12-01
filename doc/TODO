@@ -1,7 +1,21 @@
 0.7.1 release:
 
+
 - open_raw_preview from rawspeed without jpg?
-  - switch for lt subsampling, default: fit 600x600
+
+- opencl buffer handling
+  - copy roi_in to device, or take from input plugin
+  - cached versions? keep cl_mem* somewhere?
+- port to opencl:
+  - bugfree demosaic (equiv to cpu)
+  - bugfree atrous   (equiv to cpu)
+  - exposure
+  - highlights
+  - white balance
+  - base curve
+  - sharpen (boundary on cpu?)
+
+- switch for lt subsampling, default: fit 600x600
 
 - clip_and_zoom_half_size seems broken (garbled colors in top row)
 

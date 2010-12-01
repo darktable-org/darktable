@@ -179,7 +179,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>downsample the preview pixels</short>
-        <long>this value smaller than 1.0 downsamples the preview pixels for faster feedback.</long>
+        <long>this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback.</long>
       </locale>
     </schema>
 
@@ -544,6 +544,19 @@
       <locale name="C">
         <short>enable filmstrip in darkroom mode</short>
         <long></long>
+      </locale>
+    </schema>
+    
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_size</key>
+      <applyto>/apps/darktable/plugins/lighttable/thumbnail_size</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>300</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>maximum resolution of lighttable thumbnails</short>
+        <long>keep this value low for fast thumbnail creation (allowed: 160-1300)\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
     

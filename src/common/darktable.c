@@ -117,6 +117,12 @@ int dt_init(int argc, char *argv[])
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
 
+  // get max lighttable thumbnail size:
+  darktable.thumbnail_size = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_size"), 160, 1300);
+  // and make sure it can be mip-mapped all the way from mip4 to mip0
+  darktable.thumbnail_size /= 16;
+  darktable.thumbnail_size *= 16;
+
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);  
 

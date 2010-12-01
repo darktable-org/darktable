@@ -129,6 +129,13 @@ dt_colorspaces_get_matrix_from_profile (cmsHPROFILE prof, float *matrix, float *
     cmsToneCurve* rev_red   = cmsReverseToneCurveEx(0xffff, red_curve);
     cmsToneCurve* rev_green = cmsReverseToneCurveEx(0xffff, green_curve);
     cmsToneCurve* rev_blue  = cmsReverseToneCurveEx(0xffff, blue_curve);
+    if(!rev_red || !rev_green || !rev_blue)
+    {
+      cmsFreeToneCurve(rev_red);
+      cmsFreeToneCurve(rev_green);
+      cmsFreeToneCurve(rev_blue);
+      return 4;
+    }
     // pass on tonecurves, in case lutsize > 0:
     for(int k=0;k<lutsize;k++)
     {

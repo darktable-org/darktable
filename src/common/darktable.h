@@ -112,6 +112,7 @@ dt_debug_thread_t;
 
 typedef struct darktable_t
 {
+  int32_t thumbnail_size;
   int32_t unmuted;
   struct dt_conf_t               *conf;
   struct dt_develop_t            *develop;
