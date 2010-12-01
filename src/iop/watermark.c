@@ -134,11 +134,65 @@ guint _string_occurence(const gchar *haystack,const gchar *needle)
   return o;
 }
 
-gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace)
+// replace < and > with &lt; and &gt; (any more?)
+static const gchar *_string_escape(const gchar *string)
+{
+  // <
+  gint occurences = _string_occurence(string, "<");
+  if(occurences)
+  {
+    gchar *nstring=g_malloc(strlen(string)+(occurences*strlen("&lt;"))+1);
+    const gchar *pend=string+strlen(string);
+    const gchar *s = string, *p = string;
+    gchar *np = nstring;
+    if( (s=g_strstr_len(s,strlen(s),"<")) != NULL)
+    {
+      do
+      {
+        memcpy(np,p,s-p);
+        np+=(s-p);
+        memcpy(np,"&lt;",strlen("&lt;"));
+        np+=strlen("&lt;");
+        p=s+strlen("<");
+      } while((s=g_strstr_len((s+1),strlen(s+1),"<")) != NULL);
+    }
+    memcpy(np,p,pend-p);
+    np[pend-p]='\0';
+    string=nstring;
+  }
+  // >
+  occurences = _string_occurence(string, ">");
+  if(occurences)
+  {
+    gchar *nstring=g_malloc(strlen(string)+(occurences*strlen("&gt;"))+1);
+    const gchar *pend=string+strlen(string);
+    const gchar *s = string, *p = string;
+    gchar *np = nstring;
+    if( (s=g_strstr_len(s,strlen(s),">")) != NULL)
+    {
+      do
+      {
+        memcpy(np,p,s-p);
+        np+=(s-p);
+        memcpy(np,"&gt;",strlen("&gt;"));
+        np+=strlen("&gt;");
+        p=s+strlen(">");
+      } while((s=g_strstr_len((s+1),strlen(s+1),">")) != NULL);
+    }
+    memcpy(np,p,pend-p);
+    np[pend-p]='\0';
+    string=nstring;
+  }
+
+  return string;
+}
+
+static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *_replace)
 {
   gint occurences = _string_occurence(string,search);
   if( occurences )
   {
+    const gchar* replace = _string_escape(_replace);
     gint sl=-(strlen(search)-strlen(replace));
     gchar *pend=string+strlen(string);
     gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
@@ -180,7 +234,7 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
   else if (g_file_test(datadir,G_FILE_TEST_EXISTS))
     filename=datadir;
   else return NULL;
-  
+
   gchar *svgdata=NULL;
   if( g_file_get_contents( filename, &svgdata, &length, NULL) ) {
     // File is loaded lets substitute strings if found...
