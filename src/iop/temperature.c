@@ -22,9 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-  #include <gegl.h>
-#endif
+#include "common/darktable.h"
 #include "iop/temperature.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -168,7 +166,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   #pragma omp parallel for default(none) shared(roi_out, out, d) schedule(static)
 #endif
     for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-      out[j*roi_out->width+i] = CLAMP(in[j*roi_out->width+i]*d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)], 0, 0xffff);
+      out[j*roi_out->width+i] = CLAMPS(in[j*roi_out->width+i]*d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)], 0, 0xffff);
   }
   else
   {
@@ -186,38 +184,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-  gegl_node_set(piece->input, "original_temperature", 5000.0, "intended_temperature", p->temperature, NULL);
-#else
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0;k<3;k++) d->coeffs[k]  = p->coeffs[k];
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-  dt_iop_temperature_params_t *default_params = (dt_iop_temperature_params_t *)self->default_params;
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:color-temperature", "original_temperature", 5000.0, "intended_temperature", default_params->temperature, NULL);
-#else
   piece->data = malloc(sizeof(dt_iop_temperature_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
-#else
   free(piece->data);
   piece->data = NULL;
-#endif
 }
 
 void gui_update (struct dt_iop_module_t *self)
@@ -486,6 +466,10 @@ temp_changed(dt_iop_module_t *self)
   p->coeffs[0] = fp->coeffs[0] *        intended_temperature_rgb[0] / original_temperature_rgb[0];
   p->coeffs[1] = fp->coeffs[1] * tint * intended_temperature_rgb[1] / original_temperature_rgb[1];
   p->coeffs[2] = fp->coeffs[2] *        intended_temperature_rgb[2] / original_temperature_rgb[2];
+  // normalize:
+  p->coeffs[0] /= p->coeffs[1];
+  p->coeffs[2] /= p->coeffs[1];
+  p->coeffs[1] = 1.0f;
 
   darktable.gui->reset = 1;
   dtgtk_slider_set_value(g->scale_r, p->coeffs[0]);
