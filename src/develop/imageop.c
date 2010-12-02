@@ -565,13 +565,13 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
       // upper left corner:
-      int px = (x + roi_out->x + .5f)/roi_out->scale, py = (y + roi_out->y + .5f)/roi_out->scale;
+      int px = (x + roi_out->x + 0.5f)/roi_out->scale, py = (y + roi_out->y + 0.5f)/roi_out->scale;
       // const float *inc = in + 4*(py*roi_in->width + px);
 
       float num=0.0f;
       // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
-      for(int j=MAX(0, py-samples);j<=MIN(roi_in->height-2, py+samples);j++)
-      for(int i=MAX(0, px-samples);i<=MIN(roi_in->width -2, px+samples);i++)
+      for(int j=MAX(0, py-samples);j<=MIN(roi_in->height-1, py+samples);j++)
+      for(int i=MAX(0, px-samples);i<=MIN(roi_in->width -1, px+samples);i++)
       {
         __m128 p = _mm_load_ps(in + 4*(i + in_stride*j));
 
@@ -641,7 +641,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
       // upper left corner:
-      int px = (x + roi_out->x + .5f)/roi_out->scale, py = (y + roi_out->y + .5f)/roi_out->scale;
+      int px = (x + roi_out->x + 0.5f)/roi_out->scale, py = (y + roi_out->y + 0.5f)/roi_out->scale;
 
       // round down to next even number:
       px = MAX(0, px & ~1);
@@ -655,8 +655,8 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 
       // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
       float num = 0.0f;
-      for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-1, py+2*samples);j+=2)
-      for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-1,  px+2*samples);i+=2)
+      for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-2, py+2*samples);j+=2)
+      for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-2,  px+2*samples);i+=2)
       {
         // get four mosaic pattern uint16:
         float p1 = in[i   + in_stride*j];

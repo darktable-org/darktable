@@ -79,19 +79,6 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/database_cache_quality</key>
-      <applyto>/apps/darktable/database_cache_quality</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>89</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>jpeg quality of on-disk thumbnails</short>
-        <long></long>
-      </locale>
-    </schema>
-
-    <schema>
       <key>/schemas/apps/darktable/mipmap_cache_thumbnails</key>
       <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
       <owner>darktable</owner>
@@ -559,6 +546,20 @@
         <long>keep this value low for fast thumbnail creation (allowed: 160-1300)\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/database_cache_quality</key>
+      <applyto>/apps/darktable/database_cache_quality</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>89</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>jpeg quality of on-disk thumbnails</short>
+        <long>affects only the thumbnail cache used for quick startup.</long>
+      </locale>
+    </schema>
+
     
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/layout</key>

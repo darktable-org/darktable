@@ -124,6 +124,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     line.lock.users = line.lock.write = 0;
     img = &(cache->line[k].image);
     line.image.pixels = NULL;
+    line.image.exif_inited = 0;
     for(int i=0;i<DT_IMAGE_NONE;i++)
     {
       line.image.lock[i].users = line.image.lock[i].write = 0;

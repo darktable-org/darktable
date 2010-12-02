@@ -474,9 +474,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     mip = dt_image_get_matching_mip_size(img, imgwd*width, imgwd*height, &iwd, &iht);
     mip = dt_image_get(img, mip, 'r');
     iwd = img->mip_width[mip]; iht = img->mip_height[mip];
-    fwd = img->mip_width_f[mip]; fht = img->mip_height_f[mip];
-    // dt_image_get_mip_size(img, mip, &iwd, &iht);
-    // dt_image_get_exact_mip_size(img, mip, &fwd, &fht);
+    // don't draw garbage at the borders:
+    fwd = img->mip_width_f[mip]-2; fht = img->mip_height_f[mip]-2;
   }
   cairo_surface_t *surface = NULL;
   if(mip != DT_IMAGE_NONE)
