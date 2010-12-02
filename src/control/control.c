@@ -172,7 +172,7 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL); 
       
-      sqlite3_exec(darktable.db, "create table styles (styleid integer primary key,name varchar,description varchar)", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
     
       pthread_mutex_unlock(&(darktable.control->global_mutex));
@@ -198,7 +198,7 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table styles (styleid integer primary key,name varchar,description varchar)", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
