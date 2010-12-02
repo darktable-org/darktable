@@ -801,10 +801,9 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
     img->black   = sqlite3_column_double(stmt, 20);
     img->maximum = sqlite3_column_double(stmt, 21);
-    img->exif_inited = 1;
+    // doesn't include image orientation!
+    // img->exif_inited = 1;
 
-    dt_image_get_raw_import_preset(img);
-    
     dt_image_get_raw_import_preset(img);
 
     ret = 0;
