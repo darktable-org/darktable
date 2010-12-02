@@ -93,7 +93,7 @@ dt_styles_apply_to_selection(const char *name,gboolean duplicate)
   sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-     int imgid = sqlite3_column_int (stmt, 0);
+    int imgid = sqlite3_column_int (stmt, 0);
     dt_styles_apply_to_image (name,duplicate,imgid);
   }
   sqlite3_finalize(stmt);
@@ -116,9 +116,9 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 #if 1
     { 
       /* apply on top of history stack */
-      rc = sqlite3_prepare_v2 (darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
+      rc = sqlite3_prepare_v2 (darktable.db, "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
       rc = sqlite3_bind_int (stmt, 1, imgid);
-      while (sqlite3_step (stmt) == SQLITE_ROW) offs++;
+      if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
     }
 #else
     { 
