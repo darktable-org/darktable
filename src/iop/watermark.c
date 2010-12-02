@@ -134,11 +134,34 @@ guint _string_occurence(const gchar *haystack,const gchar *needle)
   return o;
 }
 
-// replace < and > with &lt; and &gt; (any more?)
+// replace < and > with &lt; and &gt;. any more? Yes! & -> &amp;
 static const gchar *_string_escape(const gchar *string)
 {
+  // & -- has to come first, else we will replace the ampersands in the inserted sequences.
+  gint occurences = _string_occurence(string, "&");
+  if(occurences)
+  {
+    gchar *nstring=g_malloc(strlen(string)+(occurences*strlen("&amp;;"))+1);
+    const gchar *pend=string+strlen(string);
+    const gchar *s = string, *p = string;
+    gchar *np = nstring;
+    if( (s=g_strstr_len(s,strlen(s),"&")) != NULL)
+    {
+      do
+      {
+        memcpy(np,p,s-p);
+        np+=(s-p);
+        memcpy(np,"&amp;",strlen("&amp;"));
+        np+=strlen("&amp;");
+        p=s+strlen("&");
+      } while((s=g_strstr_len((s+1),strlen(s+1),"&")) != NULL);
+    }
+    memcpy(np,p,pend-p);
+    np[pend-p]='\0';
+    string=nstring;
+  }
   // <
-  gint occurences = _string_occurence(string, "<");
+  occurences = _string_occurence(string, "<");
   if(occurences)
   {
     gchar *nstring=g_malloc(strlen(string)+(occurences*strlen("&lt;"))+1);
