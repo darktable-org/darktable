@@ -32,7 +32,7 @@
 #include <glib/gstdio.h>
 #include <assert.h>
 
-#define DT_IMAGE_CACHE_FILE_VERSION 1
+#define DT_IMAGE_CACHE_FILE_VERSION 2
 #define DT_IMAGE_CACHE_FILE_NAME "mipmaps"
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
@@ -102,6 +102,8 @@ void dt_image_cache_write(dt_image_cache_t *cache)
   const int32_t magic = 0xD71337 + DT_IMAGE_CACHE_FILE_VERSION;
   written = fwrite(&magic, sizeof(int32_t), 1, f);
   if(written != 1) goto write_error;
+  written = fwrite(&darktable.thumbnail_size, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
 
   // dump all cache metadata:
   written = fwrite(&(cache->num_lines), sizeof(int32_t), 1, f);
@@ -115,18 +117,25 @@ void dt_image_cache_write(dt_image_cache_t *cache)
 
   for(int k=0;k<cache->num_lines;k++)
   { // for all images
+    int wd, ht;
     dt_image_cache_line_t line;
     dt_image_t *img;
     line = cache->line[k];
     line.lock.users = line.lock.write = 0;
     img = &(cache->line[k].image);
     line.image.pixels = NULL;
+    line.image.exif_inited = 0;
     for(int i=0;i<DT_IMAGE_NONE;i++)
     {
       line.image.lock[i].users = line.image.lock[i].write = 0;
       line.image.mip_buf_size[i] = 0;
     }
-    for(int mip=0;mip<DT_IMAGE_MIPF;mip++) line.image.mip[mip] = line.image.mip[mip]?(uint8_t*)1:NULL;
+    for(int mip=0;mip<DT_IMAGE_MIPF;mip++)
+    {
+      line.image.mip[mip] = line.image.mip[mip]?(uint8_t*)1:NULL;
+      dt_image_get_mip_size(img, mip, &wd, &ht);
+      if(wd <= 32 || ht <= 32) line.image.mip[mip] = NULL;
+    }
 #ifdef DT_IMAGE_CACHE_WRITE_MIPF
     line.image.mipf = line.image.mipf?(float *)1:NULL;
 #else
@@ -136,10 +145,9 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     written = fwrite(&line, sizeof(dt_image_cache_line_t), 1, f);
     if(written != 1) goto write_error;
 
-    int wd, ht;
     for(int mip=0;mip<DT_IMAGE_MIPF;mip++)
     {
-      if(!img->mip[mip]) continue;
+      if(!line.image.mip[mip]) continue;
       // printf("writing mip %d for image %d\n", mip, img->id);
       // dump all existing mip[..] in jpeg
       dt_image_get_mip_size(img, mip, &wd, &ht);
@@ -204,6 +212,8 @@ int dt_image_cache_read(dt_image_cache_t *cache)
   int32_t magic_file = 0;
   rd = fread(&magic_file, sizeof(int32_t), 1, f);
   if(rd != 1 || magic_file != magic) goto read_error;
+  rd = fread(&magic_file, sizeof(int32_t), 1, f);
+  if(rd != 1 || magic_file != darktable.thumbnail_size) goto read_error;
 
   // read metadata:
   rd = fread(&num, sizeof(int32_t), 1, f);

@@ -25,6 +25,7 @@ extern "C"
 #include "common/image.h"
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename);
 
 #ifdef __cplusplus
 }

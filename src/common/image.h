@@ -168,7 +168,8 @@ static inline int dt_image_orientation(const dt_image_t *img)
   return img->raw_params.user_flip > 0 ? img->raw_params.user_flip : (img->orientation > 0 ?img->orientation : 0);
 }
 /** returns the (flipped) filter string for the demosaic pattern. */
-static inline uint32_t dt_image_flipped_filter(const dt_image_t *img)
+static inline uint32_t
+dt_image_flipped_filter(const dt_image_t *img)
 {
   // from the dcraw source code documentation:
   // 
@@ -229,6 +230,32 @@ static inline uint32_t dt_image_flipped_filter(const dt_image_t *img)
         default: return 0x94949494u;
       }
       break;
+  }
+}
+/** return the raw orientation, from jpg orientation. */
+static inline int
+dt_image_orientation_to_flip_bits(const int orient)
+{
+  switch(orient)
+  {
+    case 1:
+      return 0 | 0 | 0;
+    case 2:
+      return 0 | 2 | 0;
+    case 3:
+      return 0 | 2 | 1;
+    case 4:
+      return 0 | 0 | 1;
+    case 5:
+      return 4 | 0 | 0;
+    case 6:
+      return 4 | 2 | 0;
+    case 7:
+      return 4 | 2 | 1;
+    case 8:
+      return 4 | 0 | 1;
+    default:
+      return 0;
   }
 }
 /** cleanup. */

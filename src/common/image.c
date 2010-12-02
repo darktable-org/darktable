@@ -199,7 +199,7 @@ void dt_image_print_exif(dt_image_t *img, char *line, int len)
 
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
-  const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)(img->width), DT_IMAGE_WINDOW_SIZE/(float)(img->height));
+  const float scale = fminf(darktable.thumbnail_size/(float)(img->width), darktable.thumbnail_size/(float)(img->height));
   int32_t wd = MIN(img->width, (int)(scale*img->width)), ht = MIN(img->height, (int)(scale*img->height));
   if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
   if(ht & 0xf) ht = (ht & ~0xf) + 0x10;
@@ -209,12 +209,8 @@ dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const in
   while((int)mip > (int)DT_IMAGE_MIP0 && wd > wd2 && ht > ht2)
   {
     mip--;
-    if(wd > 32 && ht > 32)
-    { // only if it's not vanishing completely :)
-      wd >>= 1;
-      ht >>= 1;
-    }
-    else mip = DT_IMAGE_MIP0;
+    wd >>= 1;
+    ht >>= 1;
   }
   *w = wd;
   *h = ht;
@@ -236,24 +232,13 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
   { // use input width, mipf is before processing
     wd = img->width;
     ht = img->height;
-    const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height);
+    const float scale = fminf(darktable.thumbnail_size/(float)img->width, darktable.thumbnail_size/(float)img->height);
     wd *= scale; ht *= scale;
-    while((int)mip < (int)DT_IMAGE_MIP4)
-    {
-      mip++;
-      if(wd > 32 && ht > 32)
-      { // only if it's not vanishing completely :)
-        wd *= .5;
-        ht *= .5;
-      }
-    }
   }
   else if((int)mip < (int)DT_IMAGE_FULL)
   { // full image is full size, rest downscaled by output size
     int mwd, mht;
     dt_image_get_mip_size(img, mip, &mwd, &mht);
-    // const int owd = img->output_width  ? img->output_width  : img->width,
-    //           oht = img->output_height ? img->output_height : img->height;
     const int owd = (int)wd, oht = (int)ht;
     const float scale = fminf(mwd/(float)owd, mht/(float)oht);
     wd = owd*scale;
@@ -268,7 +253,7 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
   int32_t wd = img->width, ht = img->height;
   if((int)mip < (int)DT_IMAGE_FULL)
   {
-    const float scale = fminf(DT_IMAGE_WINDOW_SIZE/(float)img->width, DT_IMAGE_WINDOW_SIZE/(float)img->height);
+    const float scale = fminf(darktable.thumbnail_size/(float)img->width, darktable.thumbnail_size/(float)img->height);
     wd *= scale; ht *= scale;
     // make exact mip possible (almost power of two)
     if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
@@ -276,7 +261,7 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
     while((int)mip < (int)DT_IMAGE_MIP4)
     {
       mip++;
-      if(wd > 32 && ht > 32)
+      // if(wd > 32 && ht > 32)
       { // only if it's not vanishing completely :)
         wd >>= 1;
         ht >>= 1;
@@ -340,7 +325,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
 
   if(dt_image_alloc(img, DT_IMAGE_MIPF)) return DT_IMAGEIO_CACHE_FULL;
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
-  memset(img->mipf, 0x0, sizeof(float)*4*p_wd*p_ht);
+  // memset(img->mipf, 0x0, sizeof(float)*4*p_wd*p_ht);
 
   dt_iop_roi_t roi_in, roi_out;
   roi_in.x = roi_in.y = 0;
