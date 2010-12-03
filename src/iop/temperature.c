@@ -86,7 +86,7 @@ groups ()
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(uint16_t);
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
   else return 4*sizeof(float);
 }
 
@@ -161,12 +161,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters)
   {
     const uint16_t *const in  = (const uint16_t *const)i;
-    uint16_t *const out = (uint16_t *const)o;
+    float *const out = (float *const)o;
+    const float coeffs[3] = {d->coeffs[0] * (1.0f/65535.0f), d->coeffs[1] * (1.0f/65535.0f), d->coeffs[2] * (1.0f/65535.0f)};
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, d) schedule(static)
 #endif
     for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-      out[j*roi_out->width+i] = CLAMPS(in[j*roi_out->width+i]*d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)], 0, 0xffff);
+      out[j*roi_out->width+i] = in[j*roi_out->width+i]*coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];
   }
   else
   {
@@ -230,12 +231,12 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  // raw images need wb:
+  // raw images need wb (to convert from uint16_t to float):
   if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
   else
   {
     module->default_enabled = 1;
-    // module->hide_enable_button = 1;
+    module->hide_enable_button = 1;
   }
   module->priority = 150;
   module->params_size = sizeof(dt_iop_temperature_params_t);

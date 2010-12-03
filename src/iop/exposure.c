@@ -47,7 +47,7 @@ groups ()
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(uint16_t);
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
   else return 4*sizeof(float);
 }
 
@@ -57,18 +57,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && self->dev->image->filters)
   {
     // raw image which needs demosaic later on.
-    const uint16_t *const in = (uint16_t *)i;
-    uint16_t *const out = (uint16_t *)o;
-    const float black = 0xffff * d->black;
-    const float white = 0xffff * exp2f(-d->exposure);
+    const float *const in = (float *)i;
+    float *const out = (float *)o;
+    const float black = d->black;
+    const float white = exp2f(-d->exposure);
 
-    const float scale = 0xffff/(white - black); 
+    const float scale = 1.0f/(white - black); 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out) schedule(static)
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      out[k] = CLAMP((in[k]-black)*scale, 0, 0xffff);
+      out[k] = fmaxf(0.0f, (in[k]-black)*scale);
     }
     for(int k=0;k<3;k++)
       piece->pipe->processed_maximum[k] *= scale;
@@ -88,7 +88,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0, (in[ch*k+i]-black)*scale);
+      for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0f, (in[ch*k+i]-black)*scale);
     }
     for(int k=0;k<3;k++)
       piece->pipe->processed_maximum[k] *= scale;

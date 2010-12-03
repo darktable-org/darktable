@@ -87,9 +87,9 @@ FC(const int row, const int col, const unsigned int filters)
 
 #if 1
 static void
-pre_median(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold)
+pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold)
 {
-  const int thrs = 0x10000 * threshold;
+  const int thrs = threshold;
   // colors:
   for (int pass=0; pass < num_passes; pass++)
   {
@@ -106,7 +106,7 @@ pre_median(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, co
         int col = 3;
         if(FC(row,col,filters) != c) col++;
         float *pixo = out + 4*(roi_out->width * row + col);
-        const uint16_t *pixi = in + roi_in->width * row + col;
+        const float *pixi = in + roi_in->width * row + col;
         for(;col<roi_out->width-3;col+=2)
         {
           int cnt = 0;
@@ -119,11 +119,11 @@ pre_median(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, co
                 med[k++] = pixi[j];
                 cnt ++;
               }
-              else med[k++] = 0xffffff+j;
+              else med[k++] = 10000.0f+j;
             }
           }
           for (int i=0;i<8;i++) for(int ii=i;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-          pixo[c] = med[(cnt-1)/2]*(1.0f/65535.0f);
+          pixo[c] = med[(cnt-1)/2];
           pixo += 8;
           pixi += 2;
         }
@@ -143,7 +143,7 @@ pre_median(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, co
       int col = 3;
       if(FC(row,col,filters) != 1 && FC(row,col,filters) != 3) col++;
       float *pixo = out + 4*(roi_out->width * row + col);
-      const uint16_t *pixi = in + roi_in->width * row + col;
+      const float *pixi = in + roi_in->width * row + col;
       for(;col<roi_out->width-3;col+=2)
       {
         int cnt = 0;
@@ -156,11 +156,11 @@ pre_median(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, co
               med[k++] = pixi[roi_in->width*(i-2) + j];
               cnt++;
             }
-            else med[k++] = 0xffffff+j;
+            else med[k++] = 10000.0f+j;
           }
         }
         for (int i=0;i<8;i++) for(int ii=i;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[1] = med[(cnt-1)/2]*(1.0f/65535.0f);
+        pixo[1] = med[(cnt-1)/2];
         pixo += 8;
         pixi += 2;
       }
@@ -266,7 +266,7 @@ fbdd_green(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, co
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void
-demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs)
+demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs)
 {
   // snap to start of mosaic block:
   roi_out->x = 0;//MAX(0, roi_out->x & ~1);
@@ -276,7 +276,7 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
   const int offy = 3; //MAX(0, 3 - roi_out->y);
   const int offX = 3; //MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
   const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
-  const float i2f = 1.0f/((float)0xffff);
+  // const float i2f = 1.0f/((float)0xffff);
 
   // border interpolate
   float sum[8];
@@ -300,9 +300,11 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
     for(int c=0;c<3;c++)
     {
       if (c != f && sum[c+4] > 0.0f)
-        out[4*(j*roi_out->width+i)+c] = i2f * sum[c] / sum[c+4];
+        // out[4*(j*roi_out->width+i)+c] = i2f * sum[c] / sum[c+4];
+        out[4*(j*roi_out->width+i)+c] = sum[c] / sum[c+4];
       else
-        out[4*(j*roi_out->width+i)+c] = i2f * in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
+        // out[4*(j*roi_out->width+i)+c] = i2f * in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
+        out[4*(j*roi_out->width+i)+c] = in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
     }
   }
   const int median = thrs > 0.0f;
@@ -315,7 +317,7 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
   for (int j=offy; j < roi_out->height-offY; j++)
   {
     float *buf = out + 4*roi_out->width*j + 4*offx;
-    const uint16_t *buf_in = in + roi_in->width*(j + roi_out->y) + offx + roi_out->x;
+    const float *buf_in = in + roi_in->width*(j + roi_out->y) + offx + roi_out->x;
     for (int i=offx; i < roi_out->width-offX; i++)
     {
       const int c = FC(j,i,filters);
@@ -333,7 +335,8 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
       // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)
       {
-        if(!median) color[c] = i2f*pc; 
+        // if(!median) color[c] = i2f*pc; 
+        if(!median) color[c] = pc; 
         // get stuff (hopefully from cache)
         const float pym  = buf_in[ - roi_in->width*1];
         const float pym2 = buf_in[ - roi_in->width*2];
@@ -363,16 +366,19 @@ demosaic_ppg(float *out, const uint16_t *in, dt_iop_roi_t *roi_out, const dt_iop
           // use guessy
           const float m = fminf(pym, pyM);
           const float M = fmaxf(pym, pyM);
-          color[1] = i2f*fmaxf(fminf(guessy*.25f, M), m);
+          // color[1] = i2f*fmaxf(fminf(guessy*.25f, M), m);
+          color[1] = fmaxf(fminf(guessy*.25f, M), m);
         }
         else
         {
           const float m = fminf(pxm, pxM);
           const float M = fmaxf(pxm, pxM);
-          color[1] = i2f*fmaxf(fminf(guessx*.25f, M), m);
+          // color[1] = i2f*fmaxf(fminf(guessx*.25f, M), m);
+          color[1] = fmaxf(fminf(guessx*.25f, M), m);
         }
       }
-      else if(!median) color[1] = i2f*pc; 
+      // else if(!median) color[1] = i2f*pc; 
+      else if(!median) color[1] = pc; 
 
       // write using MOVNTPS (write combine omitting caches)
       // _mm_stream_ps(buf, col);
@@ -512,7 +518,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
-  const uint16_t *const pixels = (uint16_t *)i;
+  const float *const pixels = (float *)i;
   if(global_scale > .999f)
   {
     // output 1:1
@@ -538,7 +544,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   else
   {
     // sample half-size raw
-    dt_iop_clip_and_zoom_demosaic_half_size((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters);
+    dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters);
   }
 }
 
