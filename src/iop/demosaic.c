@@ -83,13 +83,12 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
-#define SWAP(a, b) {const int tmp = (b); (b) = (a); (a) = tmp;}
+#define SWAP(a, b) {const float tmp = (b); (b) = (a); (a) = tmp;}
 
-#if 1
 static void
 pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold)
 {
-  const int thrs = threshold;
+  const float thrs = threshold;
   // colors:
   for (int pass=0; pass < num_passes; pass++)
   {
@@ -102,7 +101,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
 #endif
       for (int row=rows;row<roi_out->height-3;row+=2)
       {
-        int med[9];
+        float med[9];
         int col = 3;
         if(FC(row,col,filters) != c) col++;
         float *pixo = out + 4*(roi_out->width * row + col);
@@ -119,7 +118,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
                 med[k++] = pixi[j];
                 cnt ++;
               }
-              else med[k++] = 10000.0f+j;
+              else med[k++] = 1e7f+j;
             }
           }
           for (int i=0;i<8;i++) for(int ii=i;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
@@ -139,7 +138,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
 #endif
     for (int row=3;row<roi_out->height-3;row++)
     {
-      int med[9];
+      float med[9];
       int col = 3;
       if(FC(row,col,filters) != 1 && FC(row,col,filters) != 3) col++;
       float *pixo = out + 4*(roi_out->width * row + col);
@@ -156,7 +155,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
               med[k++] = pixi[roi_in->width*(i-2) + j];
               cnt++;
             }
-            else med[k++] = 10000.0f+j;
+            else med[k++] = 1e7f+j;
           }
         }
         for (int i=0;i<8;i++) for(int ii=i;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
@@ -168,7 +167,6 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
   }
 }
 #undef SWAP
-#endif
 
 #if 0
 static void
@@ -276,7 +274,6 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
   const int offy = 3; //MAX(0, 3 - roi_out->y);
   const int offX = 3; //MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
   const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
-  // const float i2f = 1.0f/((float)0xffff);
 
   // border interpolate
   float sum[8];
@@ -300,10 +297,8 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
     for(int c=0;c<3;c++)
     {
       if (c != f && sum[c+4] > 0.0f)
-        // out[4*(j*roi_out->width+i)+c] = i2f * sum[c] / sum[c+4];
         out[4*(j*roi_out->width+i)+c] = sum[c] / sum[c+4];
       else
-        // out[4*(j*roi_out->width+i)+c] = i2f * in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
         out[4*(j*roi_out->width+i)+c] = in[(j+roi_out->y)*roi_in->width+i+roi_out->x];
     }
   }
@@ -329,13 +324,12 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
       _mm_prefetch((char *)buf_in -   roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 2*roi_in->width + 256, _MM_HINT_NTA);
       _mm_prefetch((char *)buf_in - 3*roi_in->width + 256, _MM_HINT_NTA);
-      __m128 col = _mm_load_ps(buf);// = _mm_set1_ps(100.0f);//_mm_setzero_ps();
+      __m128 col = _mm_load_ps(buf);
       float *color = (float*)&col;
       const float pc = buf_in[0];
       // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)
       {
-        // if(!median) color[c] = i2f*pc; 
         if(!median) color[c] = pc; 
         // get stuff (hopefully from cache)
         const float pym  = buf_in[ - roi_in->width*1];
@@ -366,18 +360,15 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
           // use guessy
           const float m = fminf(pym, pyM);
           const float M = fmaxf(pym, pyM);
-          // color[1] = i2f*fmaxf(fminf(guessy*.25f, M), m);
           color[1] = fmaxf(fminf(guessy*.25f, M), m);
         }
         else
         {
           const float m = fminf(pxm, pxM);
           const float M = fmaxf(pxm, pxM);
-          // color[1] = i2f*fmaxf(fminf(guessx*.25f, M), m);
           color[1] = fmaxf(fminf(guessx*.25f, M), m);
         }
       }
-      // else if(!median) color[1] = i2f*pc; 
       else if(!median) color[1] = pc; 
 
       // write using MOVNTPS (write combine omitting caches)
@@ -389,17 +380,6 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
   }
   // SFENCE (make sure stuff is stored now)
   // _mm_sfence();
-  // return;
-
-#if 0
-  // get offsets in aligned block
-  const int g1x = FC(0, 0, filters) & 1 ? 0 : 1;
-  const int g2x = FC(0, 0, filters) & 1 ? 1 : 0;
-  const int ry = (FC(0, 0, filters) == 1 || FC(0, 0, filters) == 1) ? 0 : 1;
-  const int rx = FC(ry, 0, filters) == 1 ? 0 : 1;
-  const int gy = 1-ry;
-  const int gx = 1-rx;
-#endif
 
   // for all pixels: interpolate colors into float array
 #ifdef _OPENMP
@@ -417,8 +397,6 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
 
       const int c = FC(j, i, filters);
       __m128 col = _mm_load_ps(buf);
-      // __m128 col = _mm_loadr_ps(buf);
-      // __m128 col = _mm_set_ps(buf[0], buf[1], buf[2], buf[3]);
       float *color = (float *)&col;
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b
@@ -454,7 +432,6 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
           const float guess1 = ntl[2] + nbr[2] + 2.0f*color[1] - ntl[1] - nbr[1];
           const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
           const float guess2 = ntr[2] + nbl[2] + 2.0f*color[1] - ntr[1] - nbl[1];
-          // FIXME: valgrind reports cond jump depends on uninited values in the next 3 lines!
           if     (diff1 > diff2) color[2] = guess2 * .5f;
           else if(diff1 < diff2) color[2] = guess1 * .5f;
           else color[2] = (guess1 + guess2)*.25f;
@@ -465,7 +442,6 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
           const float guess1 = ntl[0] + nbr[0] + 2.0f*color[1] - ntl[1] - nbr[1];
           const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
           const float guess2 = ntr[0] + nbl[0] + 2.0f*color[1] - ntr[1] - nbl[1];
-          // FIXME: valgrind reports cond jump depends on uninited values in the next 3 lines!
           if     (diff1 > diff2) color[0] = guess2 * .5f;
           else if(diff1 < diff2) color[0] = guess1 * .5f;
           else color[0] = (guess1 + guess2)*.25f;
@@ -809,7 +785,7 @@ void gui_update   (struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale1, p->median_thrs);
+  dtgtk_slider_set_value(g->scale1, p->median_thrs*100.0f);
 }
 
 static void
@@ -818,7 +794,8 @@ median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->median_thrs = dtgtk_slider_get_value(slider);
+  p->median_thrs = dtgtk_slider_get_value(slider)/100.0f;
+  if(p->median_thrs >= 0.01f) p->median_thrs = 1.0f;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -837,7 +814,7 @@ void gui_init     (struct dt_iop_module_t *self)
   GtkWidget *widget;
   widget = dtgtk_reset_label_new(_("edge threshold"), self, &p->median_thrs, sizeof(float));
   gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.001, p->median_thrs, 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.000, 0.001, p->median_thrs, 3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
   gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
