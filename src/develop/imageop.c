@@ -624,19 +624,13 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   }
   else filter[0] = 1.0f;
 
-  // FIXME: ??
-  const int offx = 0;//MAX(0, samples - roi_out->x);
-  const int offy = 0;//MAX(0, samples - roi_out->y);
-  const int offX = 0;//MAX(0, samples - (roi_in->width  - (roi_out->x + roi_out->width)));
-  const int offY = 0;//MAX(0, samples - (roi_in->height - (roi_out->y + roi_out->height)));
-
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out, filter)
+  #pragma omp parallel for default(none) shared(out, filter) schedule(static)
 #endif
-  for(int y=offy;y<roi_out->height-offY;y++)
+  for(int y=0;y<roi_out->height;y++)
   {
-    float *outc = out + 4*(out_stride*y + offx);
-    for(int x=offx;x<roi_out->width-offX;x++)
+    float *outc = out + 4*out_stride*y;
+    for(int x=0;x<roi_out->width;x++)
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
@@ -651,10 +645,10 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       if(FC(py, px+1, filters) != 1) px ++;
       if(FC(py, px,   filters) != 0) { px ++; py ++; }
 
-      // const uint16_t *inc = in + py*roi_in->width + px;
-
       // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
       float num = 0.0f;
+      // for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-2, py+2*samples);j+=2)
+      // for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-2,  px+2*samples);i+=2)
       for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-2, py+2*samples);j+=2)
       for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-2,  px+2*samples);i+=2)
       {
@@ -704,7 +698,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   else filter[0] = 1.0f;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out, filter)
+  #pragma omp parallel for default(none) shared(out, filter) schedule(static)
 #endif
   for(int y=0;y<roi_out->height;y++)
   {

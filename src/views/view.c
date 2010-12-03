@@ -494,7 +494,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   if(mip != DT_IMAGE_NONE)
   {
     cairo_set_source_surface (cr, surface, 0, 0);
-    cairo_rectangle(cr, 0, 0, fwd, fht);
+    cairo_rectangle(cr, 1, 1, fwd-1, fht-1);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
     dt_image_release(img, mip, 'r');
