@@ -71,7 +71,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[k] = CLAMP((in[k]-black)*scale, 0, 0xffff);
     }
     for(int k=0;k<3;k++)
-      piece->pipe->processed_maximum[k] = scale;
+      piece->pipe->processed_maximum[k] *= scale;
   }
   else
   {
@@ -91,7 +91,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0, (in[ch*k+i]-black)*scale);
     }
     for(int k=0;k<3;k++)
-      piece->pipe->processed_maximum[k] = scale;
+      piece->pipe->processed_maximum[k] *= scale;
   }
 }
 
@@ -149,7 +149,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 150;
+  module->priority = 170;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};

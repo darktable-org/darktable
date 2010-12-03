@@ -237,7 +237,7 @@ void init (dt_iop_module_t *module)
     module->default_enabled = 1;
     // module->hide_enable_button = 1;
   }
-  module->priority = 170;
+  module->priority = 150;
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
   dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t){5000.0, {1.0, 1.0, 1.0}};
