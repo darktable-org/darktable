@@ -182,17 +182,18 @@ LinEqSolve(int nDim, float* pfMatr, float* pfVect, float* pfSolution)
 
 
 static void
-CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in2, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 { 
 	#define PIX_SORT(a,b) { if ((a)>(b)) {temp=(a);(a)=(b);(b)=temp;} }
 	#define SQR(x) ((x)*(x))
 
   const int width  = roi_in->width;
   const int height = roi_in->height;
-  memcpy(out, in, width*height*sizeof(float));
+  memcpy(out, in2, width*height*sizeof(float));
+  const float *const in = out;
   const uint32_t filters = dt_image_flipped_filter(self->dev->image);
   const float clip_pt = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  const int TS = (width > 2024 && height > 2024) ? 256 : 128;
+  const int TS = (width > 2024 && height > 2024) ? 256 : 64;
 		
 	// local variables
 	//temporary array to store simple interpolation of G
