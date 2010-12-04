@@ -246,9 +246,9 @@ _styles_get_id_by_name (const char *name)
 {
   int id=0;
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select rowid from styles where name=?1", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "select rowid from styles where name=?1 order by rowid desc limit 1", -1, &stmt, NULL);
   sqlite3_bind_text (stmt, 1, name,strlen (name),SQLITE_TRANSIENT);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     id = sqlite3_column_int (stmt, 0);
   }
