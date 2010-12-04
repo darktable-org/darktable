@@ -22,8 +22,8 @@
 #include <string.h>
 #include <gtk/gtk.h>
 
-/** replace all occurences of pattern by substitute. the returned value has to be freed after use if it's different from string. */
-const gchar* dt_util_str_escape(const gchar* string, const gchar* pattern, const gchar* substitute);
+/** replace all occurences of pattern by substitute. the returned value has to be freed after use. */
+gchar* dt_util_str_escape(const gchar* string, const gchar* pattern, const gchar* substitute);
 /** count the number of occurences of needle in haystack */
 guint dt_util_str_occurence(const gchar *haystack,const gchar *needle);
 #endif

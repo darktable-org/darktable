@@ -122,12 +122,13 @@ gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
 }
 
 // replace < and > with &lt; and &gt;. any more? Yes! & -> &amp;
-static const gchar *_string_escape(const gchar *string)
+static gchar *_string_escape(const gchar *string)
 {
-  string = dt_util_str_escape(string, "&", "&amp;");
-  string = dt_util_str_escape(string, "<", "&lt;");
-  string = dt_util_str_escape(string, ">", "&gt;");
-  return string;
+  gchar *result;
+  result = dt_util_str_escape(string, "&", "&amp;");
+  result = dt_util_str_escape(result, "<", "&lt;");
+  result = dt_util_str_escape(result, ">", "&gt;");
+  return result;
 }
 
 static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *_replace)
@@ -135,7 +136,7 @@ static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *
   gint occurences = dt_util_str_occurence(string,search);
   if( occurences )
   {
-    const gchar* replace = _string_escape(_replace);
+    gchar* replace = _string_escape(_replace);
     gint sl=-(strlen(search)-strlen(replace));
     gchar *pend=string+strlen(string);
     gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
@@ -155,7 +156,8 @@ static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *
     memcpy(np,p,pend-p);
     np[pend-p]='\0';
     string=nstring;
-  } 
+    g_free(replace);
+  }
   return string;
 }
 

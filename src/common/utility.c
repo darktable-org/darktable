@@ -29,10 +29,11 @@ guint dt_util_str_occurence(const gchar *haystack,const gchar *needle){
 	return o;
 }
 
-const gchar* dt_util_str_escape(const gchar* string, const gchar* pattern, const gchar* substitute){
+gchar* dt_util_str_escape(const gchar* string, const gchar* pattern, const gchar* substitute){
 	gint occurences = dt_util_str_occurence(string, pattern);
+	gchar* nstring;
 	if(occurences){
-		gchar *nstring=g_malloc(strlen(string)+(occurences*strlen(substitute))+1);
+		nstring=g_malloc(strlen(string)+(occurences*strlen(substitute))+1);
 		const gchar *pend=string+strlen(string);
 		const gchar *s = string, *p = string;
 		gchar *np = nstring;
@@ -47,7 +48,7 @@ const gchar* dt_util_str_escape(const gchar* string, const gchar* pattern, const
 		}
 		memcpy(np,p,pend-p);
 		np[pend-p]='\0';
-		string=nstring;
-	}
-	return string;
+	} else
+		nstring = g_strdup(string); // otherwise it's a hell to decide whether to free this string later.
+	return nstring;
 }
