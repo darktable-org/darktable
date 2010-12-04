@@ -287,27 +287,32 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
     svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
 
-	// TODO: auto generate that code?
+    // TODO: auto generate that code?
     GList * res;
-	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.creator", NULL);
-	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.creator)",(res?res->data:""));
-	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.creator", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.creator)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
 
-	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.publisher", NULL);
-	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.publisher)",(res?res->data:""));
-	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.publisher", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.publisher)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
 
-	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.title", NULL);
-	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.title)",(res?res->data:""));
-	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.title", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.title)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
 
-	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.description", NULL);
-	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.description)",(res?res->data:""));
-	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.description", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.description)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
 
-	res = dt_metadata_get(self->dev->image->id, "Xmp.dc.rights", NULL);
-	svgdoc = _string_substitute(svgdata,"$(Xmp.dc.rights)",(res?res->data:""));
-	if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.rights", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.rights)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
 
   }
   return svgdoc;

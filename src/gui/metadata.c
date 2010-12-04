@@ -21,6 +21,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "common/image_cache.h"
+#include "common/metadata.h"
 
 void dt_gui_metadata_update()
 {
@@ -93,6 +94,38 @@ void dt_gui_metadata_update()
     snprintf(lbl, ll, "%d", img->height);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_title");
+    GList *res = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+    if(res != NULL){
+        snprintf(lbl, ll, "%s", (char*)res->data);
+        gtk_label_set_text(GTK_LABEL(widget), lbl);
+        gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+        g_free(res->data);
+        g_list_free(res);
+    } else
+        gtk_label_set_text(GTK_LABEL(widget), "-");
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_creator");
+    res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL);
+    if(res != NULL){
+        snprintf(lbl, ll, "%s", (char*)res->data);
+        gtk_label_set_text(GTK_LABEL(widget), lbl);
+        gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+        g_free(res->data);
+        g_list_free(res);
+    } else
+        gtk_label_set_text(GTK_LABEL(widget), "-");
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_rights");
+    res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL);
+    if(res != NULL){
+        snprintf(lbl, ll, "%s", (char*)res->data);
+        gtk_label_set_text(GTK_LABEL(widget), lbl);
+        gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+        g_free(res->data);
+        g_list_free(res);
+    } else
+        gtk_label_set_text(GTK_LABEL(widget), "-");
+
     dt_image_cache_release(img, 'r');
   }
   return;
