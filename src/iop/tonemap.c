@@ -76,7 +76,7 @@ const char *name()
 int 
 groups () 
 {
-	return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC;
 }
 
 // test if something change during processing in order to abort process immediatly;
@@ -103,7 +103,13 @@ static inline int min( int a, int b )
 
 static inline void gaussianKernel( float *kern, int size, float sigma)
 {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(size) schedule(static)
+#endif
   for( int y = 0; y < size; y++ ) {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(size) schedule(static)
+#endif
     for( int x = 0; x < size; x++ ) {
       float rx = (float)(x - size/2);
       float ry = (float)(y - size/2);
@@ -118,8 +124,8 @@ static inline void gaussiantab(float *gauss, float*maxVal, int len, float sigma)
   float sigma2 = sigma*sigma;
   *maxVal = sqrtf(-logf(0.01)*2.0*sigma2);
   for( int i = 0; i < len; i++ ) {
-	float x = (float)i/(float)(len-1)*(*maxVal);
-	gauss[i] = expf(-x*x/(2.0*sigma2));
+  float x = (float)i/(float)(len-1)*(*maxVal);
+  gauss[i] = expf(-x*x/(2.0*sigma2));
   }
 }
 
@@ -128,7 +134,8 @@ static inline void gaussiantab(float *gauss, float*maxVal, int len, float sigma)
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_tonemapping_data_t *data = (dt_iop_tonemapping_data_t *)piece->data;
-
+ const int ch = piece->colors;
+  
  int width,height,size;
  float *I,*BASE;
  float avgB;
@@ -145,18 +152,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   BASE=(float*)malloc(sizeof(float)*size);
 
   // Build I=log(L)
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
   for(int i=0;i<size;i++) {
-        float L= 0.2126*((float*)ivoid)[3*i] + 0.7152*((float*)ivoid)[3*i+1] + 0.0722*((float*)ivoid)[3*i+2];
-	if(L<=0.0) L=1e-6;
-  	I[i]=logf(L);
+        float L= 0.2126*((float*)ivoid)[ch*i] + 0.7152*((float*)ivoid)[ch*i+1] + 0.0722*((float*)ivoid)[ch*i+2];
+  if(L<=0.0) L=1e-6;
+    I[i]=logf(L);
   }
 
   sigma_s=data->Fsize/100.0*sqrtf(size);
   if(piece->pipe==self->dev->preview_pipe)
-	// minimum kernel size for preview
-  	sKernelSize=3;
+  // minimum kernel size for preview
+    sKernelSize=3;
    else
-  	sKernelSize=1.0+4.0*sigma_s;
+    sKernelSize=1.0+4.0*sigma_s;
   if(sKernelSize<3) sKernelSize=3;
   sKernel=malloc(sKernelSize*sKernelSize*sizeof(float));
   gaussianKernel( sKernel,sKernelSize,sigma_s);
@@ -165,16 +175,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // Bilateral filter
   avgB=0.0;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
   for( int y = 0; y < height; y++ )
   {
     // test if some paramters have changed 
-    if(y%30==0 && aborted_pipe(self,piece)) {
-	// abort processing
-  	free(sKernel);
-  	free(BASE);
-  	free(I);
-	return;
-    }
+    /*if(y%30==0 && aborted_pipe(self,piece)) {
+  // abort processing
+    free(sKernel);
+    free(BASE);
+    free(I);
+  return;
+    }*/
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
     for( int x = 0; x < width; x++ )
     {
       float val = 0;
@@ -183,27 +199,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float l;
 
       for( int py = max( 0, y - sKernelSize/2);
-	   py < min( height, y + sKernelSize/2); py++ )
+     py < min( height, y + sKernelSize/2); py++ )
       {
-	for( int px = max( 0, x - sKernelSize/2);
-	     px < min( width, x + sKernelSize/2); px++ )
-	{
-	  float I_p = I[px+py*width];
-	  float G_s;
+  for( int px = max( 0, x - sKernelSize/2);
+       px < min( width, x + sKernelSize/2); px++ )
+  {
+    float I_p = I[px+py*width];
+    float G_s;
 
-      	  float dt = fabs( I_p - I_s );
-      	  if(dt > data->maxVal)
-		G_s=0.0;
-      	  else 
-		G_s=data->gauss[ (int)(dt*scaleFactor) ];
+          float dt = fabs( I_p - I_s );
+          if(dt > data->maxVal)
+    G_s=0.0;
+          else 
+    G_s=data->gauss[ (int)(dt*scaleFactor) ];
 
-	  float mult = sKernel[(px-x + sKernelSize/2)+(py-y + sKernelSize/2)*sKernelSize] * G_s;
+    float mult = sKernel[(px-x + sKernelSize/2)+(py-y + sKernelSize/2)*sKernelSize] * G_s;
 
-	  float Ixy = I[px+py*width];
-	  
-	  val += Ixy*mult;
-	  k += mult;
-	}
+    float Ixy = I[px+py*width];
+    
+    val += Ixy*mult;
+    k += mult;
+  }
       }
       l = val/k;
       BASE[x+y*width] = l;
@@ -232,6 +248,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   //  variable average intensity when varying compression factor.
   //  after compression we substract 2.0 to have an average intensiy at middle tone.
   //
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#endif
   for( int i=0 ; i<size ; i++ )
   {
     float L;
@@ -239,9 +258,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     L=(BASE[i]-avgB)/data->contrast-2.0;
     L=expf(L-BASE[i]);
 
-   ((float *)ovoid)[3*i]=((float*)ivoid)[3*i]*L;
-   ((float *)ovoid)[3*i+1]=((float*)ivoid)[3*i+1]*L;
-   ((float *)ovoid)[3*i+2]=((float*)ivoid)[3*i+2]*L;
+   ((float *)ovoid)[ch*i]=((float*)ivoid)[ch*i]*L;
+   ((float *)ovoid)[ch*i+1]=((float*)ivoid)[ch*i+1]*L;
+   ((float *)ovoid)[ch*i+2]=((float*)ivoid)[ch*i+2]*L;
 
   }
 
@@ -315,7 +334,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
-  module->priority = 149;
+  module->priority = 147;
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
   dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t){2.5,0.5};
