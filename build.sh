@@ -20,10 +20,4 @@ cd build/
 
 MAKE_TASKS=$(grep -c "^processor" /proc/cpuinfo)
 
-# Should probably be fixed in cmake
-RSVG_DIR=$(find /usr/include/ | grep "librsvg/rsvg.h" | sed "s,librsvg/rsvg.h$,,")
-if [ "$RSVG_DIR" != "" ]; then
-	RSVG_DIR="-DRSVG2_INCLUDE_DIR=$RSVG_DIR"
-fi
-
-cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} $RSVG_DIR .. && make && sudo make install
+cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. && make && sudo make install

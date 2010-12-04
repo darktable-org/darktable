@@ -165,10 +165,10 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "delete from color_labels where imgid=0", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "insert into color_labels values (0, 0)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "insert into color_labels values (0, 1)", NULL, NULL, NULL);
-      sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=0", -1, &stmt, NULL);
+      sqlite3_prepare_v2(darktable.db, "select max(color) from color_labels where imgid=0", -1, &stmt, NULL);
       int col = 0;
       // still the primary key option set?
-      while(sqlite3_step(stmt) == SQLITE_ROW) col = MAX(col, sqlite3_column_int(stmt, 0));
+      if(sqlite3_step(stmt) == SQLITE_ROW) col = MAX(col, sqlite3_column_int(stmt, 0));
       sqlite3_finalize(stmt);
       if(col != 1) sqlite3_exec(darktable.db, "drop table color_labels", NULL, NULL, NULL);
 

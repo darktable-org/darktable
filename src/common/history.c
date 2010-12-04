@@ -111,9 +111,9 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   if (merge)
   { 
     /* apply on top of history stack */
-    rc = sqlite3_prepare_v2 (darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2 (darktable.db, "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
     rc = sqlite3_bind_int (stmt, 1, dest_imgid);
-    while (sqlite3_step (stmt) == SQLITE_ROW) offs++;
+    if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
   }
   else
   { 
@@ -182,7 +182,8 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
   int rc;
   int res=0;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2 (darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2 (darktable.db, "select * from selected_images where imgid != ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
   if (sqlite3_step(stmt) == SQLITE_ROW)
   {
     do
@@ -190,10 +191,7 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
       /* get imgid of selected image */
       int32_t dest_imgid = sqlite3_column_int (stmt, 0);
       
-      /* dont past history into source */
-      if (dest_imgid == imgid) continue;
-      
-      /* past history stack onto image id */
+      /* paste history stack onto image id */
       dt_history_copy_and_paste_on_image(imgid,dest_imgid,merge);
 
     }while (sqlite3_step (stmt) == SQLITE_ROW);
