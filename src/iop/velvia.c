@@ -34,7 +34,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+// NaN-safe clip: NaN compares false and will result in 0.0
+#define CLIP(x) (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
 DT_MODULE(1)
 
 typedef struct dt_iop_velvia_params_t
@@ -106,15 +107,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       double plum = (pmax+pmin)/2.0;					        // pixel luminocity
       double psat =(plum<=0.5) ? (pmax-pmin)/(1e-5 + pmax+pmin): (pmax-pmin)/(1e-5 + MAX(0.0, 2.0-pmax-pmin));
 
-      double pweight=((1.0- (1.5*psat)) + ((1+(fabs(plum-0.5)*2.0))*(1.0-data->luminance))) / (1.0+(1.0-data->luminance));		// The weight of pixel
+      double pweight=CLAMPS(((1.0- (1.5*psat)) + ((1+(fabs(plum-0.5)*2.0))*(1.0-data->luminance))) / (1.0+(1.0-data->luminance)), 0.0, 1.0);		// The weight of pixel
       double saturation = ((data->saturation/100.0)*pweight)*(data->vibrance/100.0);			// So lets calculate the final affection of filter on pixel
 
       // Apply velvia saturation values
       double sba=1.0+saturation;
       double sda=(sba/2.0)-0.5;
-      out[ch*k+0]=(in[ch*k+0]*(sba))-(in[ch*k+1]*(sda))-(in[ch*k+2]*(sda));
-      out[ch*k+1]=(in[ch*k+1]*(sba))-(in[ch*k+0]*(sda))-(in[ch*k+2]*(sda));
-      out[ch*k+2]=(in[ch*k+2]*(sba))-(in[ch*k+0]*(sda))-(in[ch*k+1]*(sda));  
+      out[ch*k+0]=CLAMPS((in[ch*k+0]*(sba))-(in[ch*k+1]*(sda))-(in[ch*k+2]*(sda)), 0, 1);
+      out[ch*k+1]=CLAMPS((in[ch*k+1]*(sba))-(in[ch*k+0]*(sda))-(in[ch*k+2]*(sda)), 0, 1);
+      out[ch*k+2]=CLAMPS((in[ch*k+2]*(sba))-(in[ch*k+0]*(sda))-(in[ch*k+1]*(sda)), 0, 1);  
     }
   }
 }

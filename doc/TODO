@@ -1,9 +1,6 @@
 0.7.1 release:
 
-- orientation is lost on cache write/load
-
 - clip_and_zoom_half_size seems broken (garbled colors in top row)
-  ( last few pixels??)
 
 - opencl buffer handling
   - copy roi_in to device, or take from input plugin

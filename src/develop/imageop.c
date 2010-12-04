@@ -683,6 +683,73 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   _mm_sfence();
 }
 
+void
+dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
+    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = .9f/roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = ((int)px_footprint)/2;
+
+  // init gauss with sigma = samples (half footprint)
+  float filter[2*samples + 1];
+  float sum = 0.0f;
+  if(samples)
+  {
+    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
+    for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
+  }
+  else filter[0] = 1.0f;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out, filter)
+#endif
+  for(int y=0;y<roi_out->height;y++)
+  {
+    float *outc = out + 4*(out_stride*y);
+    for(int x=0;x<roi_out->width;x++)
+    {
+      __m128 col = _mm_setzero_ps();
+      // _mm_prefetch
+      // upper left corner:
+      int px = (x + roi_out->x + 0.5f)/roi_out->scale, py = (y + roi_out->y + 0.5f)/roi_out->scale;
+
+      // round down to next even number:
+      px = MAX(0, px & ~1);
+      py = MAX(0, py & ~1);
+
+      // now move p to point to an rggb block:
+      if(FC(py, px+1, filters) != 1) px ++;
+      if(FC(py, px,   filters) != 0) { px ++; py ++; }
+
+      float num = 0.0f;
+      for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-2, py+2*samples);j+=2)
+      for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-2,  px+2*samples);i+=2)
+      {
+        // get four mosaic pattern uint16:
+        float p1 = in[i   + in_stride*j];
+        float p2 = in[i+1 + in_stride*j];
+        float p3 = in[i   + in_stride*(j + 1)];
+        float p4 = in[i+1 + in_stride*(j + 1)];
+
+        // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));
+        // num ++;
+
+        const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(f)));
+        num += f;
+      }
+      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
+      // memcpy(outc, &col, 4*sizeof(float));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
 
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
