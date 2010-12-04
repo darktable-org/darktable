@@ -27,6 +27,7 @@ FILE(GLOB SOURCE_FILES
   "common/metadata.c" 
   "common/styles.c" 
   "common/tags.c" 
+  "common/utility.c" 
   "common/variables.c" 
   "common/pwstorage/pwstorage.c" 
   "common/pwstorage/backend_gconf.c"

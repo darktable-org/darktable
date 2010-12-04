@@ -40,6 +40,7 @@
 #include <librsvg/rsvg-cairo.h>
 
 #include "common/metadata.h"
+#include "common/utility.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -120,99 +121,18 @@ gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
   return found;
 }
 
-guint _string_occurence(const gchar *haystack,const gchar *needle) 
-{
-  guint o=0;
-  const gchar *p=haystack;
-  if( (p=g_strstr_len(p,strlen(p),needle)) != NULL) 
-  {
-    do
-    {
-      o++;
-    } while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
-  }
-  return o;
-}
-
 // replace < and > with &lt; and &gt;. any more? Yes! & -> &amp;
 static const gchar *_string_escape(const gchar *string)
 {
-  // & -- has to come first, else we will replace the ampersands in the inserted sequences.
-  gint occurences = _string_occurence(string, "&");
-  if(occurences)
-  {
-    gchar *nstring=g_malloc(strlen(string)+(occurences*strlen("&amp;;"))+1);
-    const gchar *pend=string+strlen(string);
-    const gchar *s = string, *p = string;
-    gchar *np = nstring;
-    if( (s=g_strstr_len(s,strlen(s),"&")) != NULL)
-    {
-      do
-      {
-        memcpy(np,p,s-p);
-        np+=(s-p);
-        memcpy(np,"&amp;",strlen("&amp;"));
-        np+=strlen("&amp;");
-        p=s+strlen("&");
-      } while((s=g_strstr_len((s+1),strlen(s+1),"&")) != NULL);
-    }
-    memcpy(np,p,pend-p);
-    np[pend-p]='\0';
-    string=nstring;
-  }
-  // <
-  occurences = _string_occurence(string, "<");
-  if(occurences)
-  {
-    gchar *nstring=g_malloc(strlen(string)+(occurences*strlen("&lt;"))+1);
-    const gchar *pend=string+strlen(string);
-    const gchar *s = string, *p = string;
-    gchar *np = nstring;
-    if( (s=g_strstr_len(s,strlen(s),"<")) != NULL)
-    {
-      do
-      {
-        memcpy(np,p,s-p);
-        np+=(s-p);
-        memcpy(np,"&lt;",strlen("&lt;"));
-        np+=strlen("&lt;");
-        p=s+strlen("<");
-      } while((s=g_strstr_len((s+1),strlen(s+1),"<")) != NULL);
-    }
-    memcpy(np,p,pend-p);
-    np[pend-p]='\0';
-    string=nstring;
-  }
-  // >
-  occurences = _string_occurence(string, ">");
-  if(occurences)
-  {
-    gchar *nstring=g_malloc(strlen(string)+(occurences*strlen("&gt;"))+1);
-    const gchar *pend=string+strlen(string);
-    const gchar *s = string, *p = string;
-    gchar *np = nstring;
-    if( (s=g_strstr_len(s,strlen(s),">")) != NULL)
-    {
-      do
-      {
-        memcpy(np,p,s-p);
-        np+=(s-p);
-        memcpy(np,"&gt;",strlen("&gt;"));
-        np+=strlen("&gt;");
-        p=s+strlen(">");
-      } while((s=g_strstr_len((s+1),strlen(s+1),">")) != NULL);
-    }
-    memcpy(np,p,pend-p);
-    np[pend-p]='\0';
-    string=nstring;
-  }
-
+  string = dt_util_str_escape(string, "&", "&amp;");
+  string = dt_util_str_escape(string, "<", "&lt;");
+  string = dt_util_str_escape(string, ">", "&gt;");
   return string;
 }
 
 static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *_replace)
 {
-  gint occurences = _string_occurence(string,search);
+  gint occurences = dt_util_str_occurence(string,search);
   if( occurences )
   {
     const gchar* replace = _string_escape(_replace);
