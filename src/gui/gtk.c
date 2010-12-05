@@ -36,6 +36,8 @@
 #   include "views/capture.h"
 #endif
 #include "common/collection.h"
+#include "common/image.h"
+#include "common/image_cache.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/label.h"
@@ -729,7 +731,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 void
-import_single_button_clicked (GtkWidget *widget, gpointer user_data)
+import_image_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
@@ -738,6 +740,8 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
               (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
@@ -762,26 +766,42 @@ import_single_button_clicked (GtkWidget *widget, gpointer user_data)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filename;
-    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    int id = dt_image_import(1, filename);
+    dt_film_t film;
+    GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
+    GSList *it = list;
+    int id = 0;
+    int filmid = 0;
+    while(it)
+    {
+      filename = (char *)it->data;
+      gchar *directory = g_path_get_dirname((const gchar *)filename);
+      filmid = dt_film_new(&film, directory);
+      id = dt_image_import(filmid, filename);
+      if(!id) dt_control_log(_("error loading file `%s'"), filename);
+      g_free (filename);
+      g_free (directory);
+      it = g_slist_next(it);
+    }
+
     if(id)
     {
-      dt_film_open(1);
-      DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-      dt_ctl_switch_mode_to(DT_DEVELOP);
+      dt_film_open(filmid);
+      // make sure buffers are loaded (load full for testing)
+      dt_image_t *img = dt_image_cache_get(id, 'r');
+      dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+      if(!buf)
+      {
+        dt_image_cache_release(img, 'r');
+        dt_control_log(_("file `%s' has unknown format!"), filename);
+      }
+      else
+      {
+        dt_image_release(img, DT_IMAGE_FULL, 'r');
+        dt_image_cache_release(img, 'r');
+        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+        dt_ctl_switch_mode_to(DT_DEVELOP);
+      }
     }
-    else
-    {
-      GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
-                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  GTK_MESSAGE_ERROR,
-                                  GTK_BUTTONS_CLOSE,
-                                  _("error loading file '%s'"),
-                                  filename);
-       gtk_dialog_run (GTK_DIALOG (dialog));
-       gtk_widget_destroy (dialog);
-    }
-    g_free (filename);
   }
   gtk_widget_destroy (filechooser);
   win = glade_xml_get_widget (darktable.gui->main_window, "center");
@@ -1105,7 +1125,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "button_import_single");
   g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (import_single_button_clicked),
+                    G_CALLBACK (import_image_button_clicked),
                     NULL);
 
   /* Have the delete event (window close) end the program */

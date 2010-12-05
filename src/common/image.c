@@ -577,6 +577,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   g_strfreev(extensions);
   g_free(ext);
   if(!supported) return 0;
+  printf("passed several sanity checks\n");
   int rc;
   int ret = 0, id = -1;
   // select from images; if found => return

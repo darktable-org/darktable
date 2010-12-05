@@ -53,7 +53,6 @@ count_film_rolls(const char *filter)
   char filterstring[512];
   snprintf(filterstring, 512, "%%%s%%", filter);
   int count = 0;
-  if(g_strrstr(_("single images"), filter)) count++;
   sqlite3_stmt *stmt;
   int rc;
   rc = sqlite3_prepare_v2(darktable.db, "select count(*) from film_rolls where folder like ?1 and id != 1 order by folder", -1, &stmt, NULL);
@@ -78,16 +77,6 @@ dt_gui_filmview_update(const char *filter)
 
   gtk_list_store_clear(GTK_LIST_STORE(model));
 
-  // single images
-  if(g_strrstr(_("single images"), filter))
-  {
-    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-    gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-                        DT_GUI_FILM_COL_FOLDER, _("single images"),
-                        DT_GUI_FILM_COL_ID, (guint)1,
-                        DT_GUI_FILM_COL_TOOLTIP, _("single images"),
-                        -1);
-  }
   // sql query insert
   sqlite3_stmt *stmt;
   int rc;
@@ -129,11 +118,6 @@ button_callback(GtkWidget *button, gpointer user_data)
   switch((long int)user_data)
   {
     case 0: // remove film!
-      if(id == 1) 
-      {
-        dt_control_log(_("single images are persistent"));
-        return;
-      }
       if(dt_conf_get_bool("ask_before_remove"))
       {
         GtkWidget *dialog;

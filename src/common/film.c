@@ -1,19 +1,19 @@
 /*
-		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+   This file is part of darktable,
+   copyright (c) 2009--2010 johannes hanika.
 
-		darktable is free software: you can redistribute it and/or modify
-		it under the terms of the GNU General Public License as published by
-		the Free Software Foundation, either version 3 of the License, or
-		(at your option) any later version.
+   darktable is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-		darktable is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+   darktable is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "control/control.h"
 #include "control/conf.h"
@@ -175,7 +175,7 @@ int dt_film_open_recent(const int num)
 	return 0;
 }
 
-int dt_film_new(dt_film_t *film,const char *directory)
+int dt_film_new(dt_film_t *film, const char *directory)
 {
 	// Try open filmroll for folder if exists
 	film->id = -1;
@@ -201,7 +201,7 @@ int dt_film_new(dt_film_t *film,const char *directory)
 		HANDLE_SQLITE_ERR(rc);
 		pthread_mutex_lock(&(darktable.db_insert));
 		rc = sqlite3_step(stmt);
-		if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
+		if(rc != SQLITE_DONE) fprintf(stderr, "[film_new] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
 		rc = sqlite3_finalize(stmt);
 		sqlite3_prepare_v2(darktable.db, "select id from film_rolls where folder=?1", -1, &stmt, NULL);
     sqlite3_bind_text(stmt, 1, directory, strlen(directory), SQLITE_STATIC);
