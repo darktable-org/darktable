@@ -125,40 +125,19 @@ gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
 static gchar *_string_escape(const gchar *string)
 {
   gchar *result;
-  result = dt_util_str_escape(string, "&", "&amp;");
-  result = dt_util_str_escape(result, "<", "&lt;");
-  result = dt_util_str_escape(result, ">", "&gt;");
+  result = dt_util_str_replace(string, "&", "&amp;");
+  result = dt_util_str_replace(result, "<", "&lt;");
+  result = dt_util_str_replace(result, ">", "&gt;");
   return result;
 }
 
-static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *_replace)
+static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace)
 {
-  gint occurences = dt_util_str_occurence(string,search);
-  if( occurences )
-  {
-    gchar* replace = _string_escape(_replace);
-    gint sl=-(strlen(search)-strlen(replace));
-    gchar *pend=string+strlen(string);
-    gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
-    gchar *np=nstring;
-    gchar *s=string,*p=string;
-    if( (s=g_strstr_len(s,strlen(s),search)) != NULL) 
-    {
-      do
-      {
-        memcpy(np,p,s-p);
-        np+=(s-p);
-        memcpy(np,replace,strlen(replace));
-        np+=strlen(replace);
-        p=s+strlen(search);
-      } while((s=g_strstr_len((s+1),strlen(s+1),search)) != NULL);
-    }
-    memcpy(np,p,pend-p);
-    np[pend-p]='\0';
-    string=nstring;
-    g_free(replace);
-  }
-  return string;
+  gchar* _replace = _string_escape(replace);
+  gchar* result = dt_util_str_replace(string, search, _replace);
+  if(_replace)
+    g_free(_replace);
+  return result;
 }
 
 gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {

@@ -74,7 +74,7 @@ update_query(dt_lib_collect_t *d)
   // film roll, camera, tag, day, history
   int property = gtk_combo_box_get_active(d->combo);
   gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->text));
-  gchar *escaped_text = dt_util_str_escape(text, "'", "''");
+  gchar *escaped_text = dt_util_str_replace(text, "'", "''");
   
   switch(property)
   {
@@ -237,7 +237,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
   char query[1024];
   int property = gtk_combo_box_get_active(d->combo);
   gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->text));
-  gchar *escaped_text = dt_util_str_escape(text, "'", "''");
+  gchar *escaped_text = dt_util_str_replace(text, "'", "''");
   dt_conf_set_string("plugins/lighttable/collect/string", text);
   dt_conf_set_int ("plugins/lighttable/collect/item", property);
   

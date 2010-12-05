@@ -20,16 +20,18 @@
 
 guint dt_util_str_occurence(const gchar *haystack,const gchar *needle){
 	guint o=0;
-	const gchar *p=haystack;
-	if( (p=g_strstr_len(p,strlen(p),needle)) != NULL){
-		do{
-			o++;
-		}while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
+	if( haystack && needle ){
+		const gchar *p=haystack;
+		if( (p=g_strstr_len(p,strlen(p),needle)) != NULL){
+			do{
+				o++;
+			}while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
+		}
 	}
 	return o;
 }
 
-gchar* dt_util_str_escape(const gchar* string, const gchar* pattern, const gchar* substitute){
+gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gchar* substitute){
 	gint occurences = dt_util_str_occurence(string, pattern);
 	gchar* nstring;
 	if(occurences){
