@@ -14,6 +14,13 @@
       on this page, there are a few demonstrations of darktable's tools, as well as hack-level tricks.
       </div>
 
+      <div class="listtext"><h1>screencast tutorials</h1>
+      instead of reading up our <a href="darktable-usermanual-draft-20101022.pdf">manual draft</a>, you 
+      can watch several great 
+      <a href="http://blog.pcode.nl/2010/12/06/darktable-0-7-screencast-library/">videos on how to use darktable</a>.
+      there is also a very <a href="http://blog.pcode.nl/2010/08/31/contributing-backtraces/">helpful video on how to create helpful backtraces with gdb</a>.
+      </div>
+
       <div class="listtext">
     	<h1>cameras with enhanced support</h1>
       </div>
@@ -53,7 +60,7 @@
       additionally, for better color rendition, darktable comes with custom profiled
       color matrices.
       plus, to reproduce the behavior of the camera's chip, we have reverse-engineered some
-      base curves for you. these lists with enhanced support are what you see on the\
+      base curves for you. these lists with enhanced support are what you see on the
       left, so don't worry if you can't find
       your camera, it might still be supported.
       </div>
@@ -83,6 +90,7 @@
         <tr class="odd"><td>Canon EOS 400D</td><td>1.1.1</td><td>Ubuntu 10.04</td><td>2.4.8</td><td>0.5+git20100716</td><td>Pascal de Bruijn</td><td></td></tr>
         <tr class="even"><td>Canon 5D</td><td></td><td>Slackware 13.1</td><td>2.4.8</td><td>0.6</td><td></td><td>stores only to flash card</td></tr>
         <tr class="odd"><td>Panasonix DMC-FZ50</td><td></td><td>ArchLinux x86_64</td><td>2.4.9</td><td>git 2010/07/29</td><td>Aldrik Dunbar</td><td></td></tr>
+        <tr class="even"><td>Canon EOS 40D</td><td></td><td></td><td></td><td></td><td>Tobias Ellinghaus</td><td>remove CF card</td></tr>
       </table>
       </div>
 
