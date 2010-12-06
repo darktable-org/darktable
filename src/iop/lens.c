@@ -92,14 +92,16 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         d->tmpbuf2_len = req2;
         d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2);
       }
-      // TODO: openmp this?
-      float *buf = out;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, o, modifier) schedule(static)
+#endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        if (!lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2)) break;
+        lf_modifier_apply_subpixel_geometry_distortion (
+              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
         // reverse transform the global coords from lf to our buffer
         const float *pi = d->tmpbuf2;
+        float *buf = ((float *)o) + y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++)
         {
           for(int c=0;c<3;c++) 
@@ -160,7 +162,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     memcpy(d->tmpbuf, in, req);
     if (modflags & LF_MODIFY_VIGNETTING)
     {
-#if 0//def _OPENMP
+#ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
 #endif
       for (int y = 0; y < roi_in->height; y++)
@@ -185,15 +187,16 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         d->tmpbuf2_len = req2*dt_get_num_threads();
         d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2*dt_get_num_threads());
       }
-#if 0//def _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, roi_out, d, out, modifier) schedule(static)
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, d, o, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
+        float *pi = (float *)(((char *)d->tmpbuf2) + dt_get_thread_num()*req2);
         lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
+              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
-        const float *pi = d->tmpbuf2 + dt_get_thread_num()*req2;
+        float *out = ((float *)o) + y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++)
         {
           for(int c=0;c<3;c++) 
