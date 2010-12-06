@@ -1,7 +1,5 @@
 0.7.1 release:
 
-- clip_and_zoom_half_size seems broken (garbled colors in top row)
-
 - opencl buffer handling
   - copy roi_in to device, or take from input plugin
   - cached versions? keep cl_mem* somewhere?
@@ -13,11 +11,6 @@
   - white balance
   - base curve
   - sharpen (boundary on cpu?)
-
-
-- website: videos, docs, backtraces etc.
-
-- eos 40d without cf works for tethering
 
 - try prophotorgb images as input for rendering intents.
 
