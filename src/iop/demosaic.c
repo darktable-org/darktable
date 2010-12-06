@@ -97,7 +97,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
       int rows = 3;
       if(FC(rows,3,filters) != c && FC(rows,4,filters) != c) rows++;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(rows) schedule(static)
+  #pragma omp parallel for default(none) shared(rows,c,out) schedule(static)
 #endif
       for (int row=rows;row<roi_out->height-3;row+=2)
       {
@@ -134,7 +134,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
   for (int pass=0; pass < num_passes; pass++)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
     for (int row=3;row<roi_out->height-3;row++)
     {
@@ -307,7 +307,7 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
   if(median) pre_median(out, in, roi_out, roi_in, filters, 1, thrs);
   // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, roi_out, out, in) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
 #endif
   for (int j=offy; j < roi_out->height-offY; j++)
   {
@@ -383,7 +383,7 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
 
   // for all pixels: interpolate colors into float array
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, roi_out, out, in) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
 #endif
   for (int j=1; j < roi_out->height-1; j++)
   {

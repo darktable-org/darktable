@@ -81,7 +81,7 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
   if(!orientation)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none)
+  #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
     for(int j=0;j<ht;j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
     return;
@@ -96,7 +96,7 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
   if(orientation & 2) { jj = (int)fht - jj - 1; sj = -sj; }
   if(orientation & 1) { ii = (int)fwd - ii - 1; si = -si; }
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none)
+  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
 #endif
   for(int j=0;j<ht;j++)
   {

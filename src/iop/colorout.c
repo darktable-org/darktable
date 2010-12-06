@@ -133,7 +133,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(d->cmatrix[0] != -0.666f)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d)
+  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, i, o)
 #endif
     for (int k=0;k<roi_out->width*roi_out->height;k++)
     {

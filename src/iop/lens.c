@@ -39,11 +39,11 @@
 
 DT_MODULE(2)
 
-const char *name()
+const char*
+name()
 {
   return _("lens correction");
 }
-
 
 int 
 groups () 
@@ -51,10 +51,8 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
-
-
-
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   float *in  = (float *)i;
@@ -88,7 +86,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      const size_t req2 = roi_in->width*2*ch*sizeof(float);
+      const size_t req2 = roi_in->width*2*ch*sizeof(float)*dt_get_num_threads();
       if(req2 > 0 && d->tmpbuf2_len < req2)
       {
         d->tmpbuf2_len = req2;
@@ -126,21 +124,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     else
     {
-      memcpy(out, in, ch*sizeof(float)*roi_out->width*roi_out->height);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
+#endif
+      for (int y = 0; y < roi_out->height; y++)
+        memcpy(out+ch*y*roi_out->height, in+ch*y*roi_out->height, ch*sizeof(float)*roi_out->width);
     }
 
     if (modflags & LF_MODIFY_VIGNETTING)
     {
-      // TODO: openmp this? is lf thread-safe?
+#if 0//def _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
+#endif
       for (int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter. but give a buffer pointer
         // offset by -roi_in.x
         float *buf = out - ch*(roi_out->width*roi_out->y + roi_out->x);
-        if(lf_modifier_apply_color_modification (modifier,
+        lf_modifier_apply_color_modification (modifier,
               buf + ch*roi_out->width*y, roi_out->x, roi_out->y + y,
-              roi_out->width, 1, pixelformat, ch*roi_out->width)) break;
+              roi_out->width, 1, pixelformat, ch*roi_out->width);
       }
     }
   }
@@ -156,16 +160,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(d->tmpbuf, in, req);
     if (modflags & LF_MODIFY_VIGNETTING)
     {
-      // TODO: openmp this? is lf thread-safe?
+#if 0//def _OPENMP
+  #pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
+#endif
       for (int y = 0; y < roi_in->height; y++)
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter. but give a buffer pointer
         // offset by -roi_in.x
         float *buf = d->tmpbuf - ch*(roi_in->width*roi_in->y + roi_in->x);
-        if(lf_modifier_apply_color_modification (modifier,
+        lf_modifier_apply_color_modification (modifier,
               buf + ch*roi_in->width*y, roi_in->x, roi_in->y + y,
-              roi_in->width, 1, pixelformat, ch*roi_in->width)) break;
+              roi_in->width, 1, pixelformat, ch*roi_in->width);
       }
     }
 
@@ -174,18 +180,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      if(req2 > 0 && d->tmpbuf2_len < req2)
+      if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
       {
-        d->tmpbuf2_len = req2;
-        d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2);
+        d->tmpbuf2_len = req2*dt_get_num_threads();
+        d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2*dt_get_num_threads());
       }
-      // TODO: openmp this?
+#if 0//def _OPENMP
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, d, out, modifier) schedule(static)
+#endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        if (!lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2)) break;
+        lf_modifier_apply_subpixel_geometry_distortion (
+              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
         // reverse transform the global coords from lf to our buffer
-        const float *pi = d->tmpbuf2;
+        const float *pi = d->tmpbuf2 + dt_get_thread_num()*req2;
         for (int x = 0; x < roi_out->width; x++)
         {
           for(int c=0;c<3;c++) 
@@ -210,10 +218,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     else
     {
-      size_t len = sizeof(float)*ch*roi_out->width*roi_out->height;
-      if (d->tmpbuf_len >= len)
-           memcpy(out, d->tmpbuf, len);
-      else memcpy(out, in, len);
+      const size_t len = sizeof(float)*ch*roi_out->width*roi_out->height;
+      const float *const input = d->tmpbuf_len >= len ? d->tmpbuf : in;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
+#endif
+      for (int y = 0; y < roi_out->height; y++)
+        memcpy(out+ch*y*roi_out->height, input+ch*y*roi_out->height, ch*sizeof(float)*roi_out->width);
     }
   }
   lf_modifier_destroy(modifier);

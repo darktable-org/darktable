@@ -79,8 +79,10 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+#if 0
 // test if something change during processing in order to abort process immediatly;
-int aborted_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
+static int
+aborted_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 *piece)
 {
   struct dt_dev_pixelpipe_t *pipe=piece->pipe;
@@ -94,6 +96,7 @@ int aborted_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 
   return 0;
 }
+#endif
 
 static inline int max( int a, int b )
 { return (a>b) ? a : b; }
@@ -103,13 +106,10 @@ static inline int min( int a, int b )
 
 static inline void gaussianKernel( float *kern, int size, float sigma)
 {
-#ifdef _OPENMP
+#if 0//def _OPENMP
   #pragma omp parallel for default(none) shared(size) schedule(static)
 #endif
   for( int y = 0; y < size; y++ ) {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(size) schedule(static)
-#endif
     for( int x = 0; x < size; x++ ) {
       float rx = (float)(x - size/2);
       float ry = (float)(y - size/2);
@@ -152,7 +152,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   BASE=(float*)malloc(sizeof(float)*size);
 
   // Build I=log(L)
-#ifdef _OPENMP
+#if 0//def _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for(int i=0;i<size;i++) {
@@ -175,7 +175,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // Bilateral filter
   avgB=0.0;
-#ifdef _OPENMP
+#if 0//def _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for( int y = 0; y < height; y++ )
@@ -188,9 +188,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     free(I);
   return;
     }*/
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
-#endif
     for( int x = 0; x < width; x++ )
     {
       float val = 0;
@@ -248,7 +245,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   //  variable average intensity when varying compression factor.
   //  after compression we substract 2.0 to have an average intensiy at middle tone.
   //
-#ifdef _OPENMP
+#if 0//def _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for( int i=0 ; i<size ; i++ )

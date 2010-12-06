@@ -111,10 +111,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   memcpy(out,in,roi_out->width*roi_out->height*ch*sizeof(float));
   const float scale = 1.0 / exp2f ( -0.5*(data->strength/100.0));
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in, data, rad) schedule(static)
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
+    out = ((float *)ovoid) + ch*k;
     out[0] *= scale;
     if (out[0]<data->threshold) 
       out[0]=0.0;
@@ -123,7 +124,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   
 /* apply gaussian pass on gathered light */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in, rad) schedule(static)
 #endif
   for (int j=rad;j<roi_out->height-rad;j++)
   {
@@ -141,7 +142,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   out = (float *)ovoid;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in, out, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) shared(in, out, roi_out, roi_in, rad) schedule(static)
 #endif
   for (int j=rad;j<roi_out->height-rad;j++)
   {
