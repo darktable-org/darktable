@@ -310,7 +310,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d);
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);
   w = gtk_combo_box_entry_new_text();
-  dt_gui_key_accel_block_on_focus (w);
+  dt_gui_key_accel_block_on_focus(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(w))));
   d->text = GTK_COMBO_BOX_ENTRY(w);
 
 /* xgettext:no-c-format */
