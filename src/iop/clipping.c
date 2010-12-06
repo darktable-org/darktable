@@ -498,7 +498,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   else if (which < 9)
   {
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
-    if(which > 0 && self->dev->image->height > self->dev->image->width)
+    if(which > 1 && self->dev->image->height > self->dev->image->width)
       g->current_aspect = 1.0/g->aspect_ratios[which];
     else
       g->current_aspect = g->aspect_ratios[which];
