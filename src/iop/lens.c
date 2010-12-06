@@ -86,21 +86,22 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      const size_t req2 = roi_in->width*2*ch*sizeof(float)*dt_get_num_threads();
-      if(req2 > 0 && d->tmpbuf2_len < req2)
+      const size_t req2 = roi_in->width*2*3*sizeof(float);
+      if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
       {
-        d->tmpbuf2_len = req2;
-        d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2);
+        d->tmpbuf2_len = req2*dt_get_num_threads();
+        free(d->tmpbuf2);
+        d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, o, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
+        float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num());
         lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
+              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
-        const float *pi = d->tmpbuf2;
         float *buf = ((float *)o) + y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++)
         {
@@ -117,7 +118,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                (     fj)*(     fi)*in[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
                (     fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
             }
-            else for(int c=0;c<3;c++) buf[c] = 0.0f;
+            else buf[c] = 0.0f;
             pi+=2;
           }
           buf += ch;
@@ -130,12 +131,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+ch*y*roi_out->height, in+ch*y*roi_out->height, ch*sizeof(float)*roi_out->width);
+        memcpy(out+ch*y*roi_out->width, in+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
     }
 
     if (modflags & LF_MODIFY_VIGNETTING)
     {
-#if 0//def _OPENMP
+#ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
@@ -157,7 +158,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     if(req > 0 && d->tmpbuf_len < req)
     {
       d->tmpbuf_len = req;
-      d->tmpbuf = (float *)realloc(d->tmpbuf, req);
+      free(d->tmpbuf);
+      d->tmpbuf = (float *)dt_alloc_align(16, d->tmpbuf_len);
     }
     memcpy(d->tmpbuf, in, req);
     if (modflags & LF_MODIFY_VIGNETTING)
@@ -177,7 +179,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       }
     }
 
-    const size_t req2 = roi_out->width*2*ch*sizeof(float);
+    const size_t req2 = roi_out->width*2*3*sizeof(float);
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
           LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
@@ -185,7 +187,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
       {
         d->tmpbuf2_len = req2*dt_get_num_threads();
-        d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2*dt_get_num_threads());
+        free(d->tmpbuf2);
+        d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_in, roi_out, d, o, modifier) schedule(static)
@@ -212,7 +215,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                (     fj)*(     fi)*d->tmpbuf[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
                (     fj)*(1.0f-fi)*d->tmpbuf[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
             }
-            else for(int c=0;c<3;c++) out[c] = 0.0f;
+            else out[c] = 0.0f;
             pi+=2;
           }
           out += ch;
@@ -222,12 +225,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     else
     {
       const size_t len = sizeof(float)*ch*roi_out->width*roi_out->height;
-      const float *const input = d->tmpbuf_len >= len ? d->tmpbuf : in;
+      const float *const input = (d->tmpbuf_len >= len) ? d->tmpbuf : in;
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+ch*y*roi_out->height, input+ch*y*roi_out->height, ch*sizeof(float)*roi_out->width);
+        memcpy(out+ch*y*roi_out->width, input+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
     }
   }
   lf_modifier_destroy(modifier);
@@ -266,14 +269,15 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     if(req2 > 0 && d->tmpbuf2_len < req2)
     {
       d->tmpbuf2_len = req2;
-      d->tmpbuf2 = (float *)realloc(d->tmpbuf2, req2);
+      free(d->tmpbuf2);
+      d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
     }
     for (int y = 0; y < roi_out->height; y++)
     {
-      if (!lf_modifier_apply_subpixel_geometry_distortion (
-            modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2)) break;
-      // reverse transform the global coords from lf to our buffer
+      lf_modifier_apply_subpixel_geometry_distortion (
+            modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
       const float *pi = d->tmpbuf2;
+      // reverse transform the global coords from lf to our buffer
       for (int x = 0; x < roi_out->width; x++)
       {
         for(int c=0;c<3;c++) 
