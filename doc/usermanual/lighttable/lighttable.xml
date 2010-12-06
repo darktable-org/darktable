@@ -33,7 +33,7 @@
 				</tgroup>
 			</informaltable>
 
-			<para>In able to locate where you are in your collection, you have read-only sliders at the extreme border of the window : left/right for your vertical position in the collection, 
+			<para>In order to locate where you are in your collection, you have read-only sliders at the extreme border of the window : left/right for your vertical position in the collection, 
 				top/bottom (when in zoomable lighttable mode, see below) for your zoom level.</para>
 							
 			<para>While mouse is over an image frame, you have additional actions accessed from keyboard to apply on image; here
@@ -43,7 +43,7 @@
 					<tbody>
 						<row>
 							<entry><emphasis>1 - 4</emphasis></entry>
-							<entry>set the rating of the image; if an image has 1 star and you hit the 1 key, the image will be unrated
+							<entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated
 							</entry>
 						</row>
 						<row>
@@ -74,7 +74,7 @@
 			Use your mouse wheel to navigate through your collection.
 			</para>
 			<para>While in filemanager, by pressing <emphasis>w/s</emphasis> you can scroll (not select) up and down through your collection. 
-			In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move right/left/up/down through your collection.
+				In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move left/right/up/down through your collection.
 			</para>
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>
