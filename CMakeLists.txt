@@ -1,10 +1,10 @@
 project(darktable CXX C)
-project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
 option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
+option(USE_OPENMP "Use openmp threading support." ON)
 
 
 #
