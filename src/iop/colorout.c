@@ -160,7 +160,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float Lab[rowsize];
     float rgb[rowsize];
 
-#ifdef _OPENMP
+#if 0 //def _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d,Lab,rgb)
 #endif
     for (int k=0;k<roi_out->height;k++)
