@@ -157,14 +157,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     // lcms2 fallback, slow:
     int rowsize=roi_out->width*3;
-    float Lab[rowsize];
-    float rgb[rowsize];
-
-#if 0 //def _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d,Lab,rgb)
+  
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, rowsize)
 #endif
     for (int k=0;k<roi_out->height;k++)
     {
+	float Lab[rowsize];
+	float rgb[rowsize];
+
       const int m=(k*(roi_out->width*ch));
       for (int l=0;l<roi_out->width;l++)    
       {    
