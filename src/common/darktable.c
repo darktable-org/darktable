@@ -237,17 +237,31 @@ int dt_init(int argc, char *argv[])
   int id = 0;
   if(image_to_load)
   {
-    id = dt_image_import(1, image_to_load);
+    gchar *directory = g_path_get_dirname((const gchar *)image_to_load);
+    dt_film_t film;
+    const int filmid = dt_film_new(&film, directory);
+    id = dt_image_import(filmid, image_to_load);
+    if(!id) dt_control_log(_("error loading file `%s'"), image_to_load);
+    g_free (directory);
     if(id)
     {
-      dt_film_open(1);
-      DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-      dt_ctl_switch_mode_to(DT_DEVELOP);
-    }
-    else
-    {
-      // TODO: gtk window!
-      fprintf(stderr, "[dt_init] could not open image file `%s'!\n", image_to_load);
+      dt_film_open(filmid);
+      // make sure buffers are loaded (load full for testing)
+      dt_image_t *img = dt_image_cache_get(id, 'r');
+      dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+      if(!buf)
+      {
+        id = 0;
+        dt_image_cache_release(img, 'r');
+        dt_control_log(_("file `%s' has unknown format!"), image_to_load);
+      }
+      else
+      {
+        dt_image_release(img, DT_IMAGE_FULL, 'r');
+        dt_image_cache_release(img, 'r');
+        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+        dt_ctl_switch_mode_to(DT_DEVELOP);
+      }
     }
   }
   if(!id)

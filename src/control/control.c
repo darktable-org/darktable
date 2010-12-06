@@ -165,10 +165,10 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "delete from color_labels where imgid=0", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "insert into color_labels values (0, 0)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "insert into color_labels values (0, 1)", NULL, NULL, NULL);
-      sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=0", -1, &stmt, NULL);
+      sqlite3_prepare_v2(darktable.db, "select max(color) from color_labels where imgid=0", -1, &stmt, NULL);
       int col = 0;
       // still the primary key option set?
-      while(sqlite3_step(stmt) == SQLITE_ROW) col = MAX(col, sqlite3_column_int(stmt, 0));
+      if(sqlite3_step(stmt) == SQLITE_ROW) col = MAX(col, sqlite3_column_int(stmt, 0));
       sqlite3_finalize(stmt);
       if(col != 1) sqlite3_exec(darktable.db, "drop table color_labels", NULL, NULL, NULL);
 
@@ -213,16 +213,6 @@ create_tables:
 
     rc = sqlite3_exec(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-
-    // add dummy film roll for single images
-    char datetime[20];
-    dt_gettime(datetime);
-    rc = sqlite3_prepare_v2(darktable.db, "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, 'single images')", -1, &stmt, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_bind_text(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
 
     rc = sqlite3_prepare_v2(darktable.db, "insert into settings (settings) values (?1)", -1, &stmt, NULL);
     HANDLE_SQLITE_ERR(rc);
@@ -1374,21 +1364,12 @@ void dt_control_update_recent_films()
   rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int id = sqlite3_column_int(stmt, 1);
-    if(id == 1)
-    {
-      snprintf(label, 256, _("single images"));
-      filename = _("single images");
-    }
-    else
-    {
-      filename = (char *)sqlite3_column_text(stmt, 0);
-      cnt = filename + MIN(512,strlen(filename));
-      int i;
-      for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
-      if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
-      else snprintf(label, label_cnt, "%s", cnt);
-    }
+    filename = (char *)sqlite3_column_text(stmt, 0);
+    cnt = filename + MIN(512,strlen(filename));
+    int i;
+    for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
+    if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
+    else snprintf(label, label_cnt, "%s", cnt);
     GtkWidget *widget = g_list_nth_data (childs,num);
     gtk_button_set_label (GTK_BUTTON (widget), label);
     

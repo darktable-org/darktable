@@ -1,25 +1,26 @@
 /*
-		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+   This file is part of darktable,
+   copyright (c) 2009--2010 johannes hanika.
 
-		darktable is free software: you can redistribute it and/or modify
-		it under the terms of the GNU General Public License as published by
-		the Free Software Foundation, either version 3 of the License, or
-		(at your option) any later version.
+   darktable is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-		darktable is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+   darktable is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "common/film.h"
 #include "common/collection.h"
+#include "common/image_cache.h"
 #include "views/view.h"
 
 #include <stdio.h>
@@ -174,7 +175,7 @@ int dt_film_open_recent(const int num)
 	return 0;
 }
 
-int dt_film_new(dt_film_t *film,const char *directory)
+int dt_film_new(dt_film_t *film, const char *directory)
 {
 	// Try open filmroll for folder if exists
 	film->id = -1;
@@ -200,7 +201,7 @@ int dt_film_new(dt_film_t *film,const char *directory)
 		HANDLE_SQLITE_ERR(rc);
 		pthread_mutex_lock(&(darktable.db_insert));
 		rc = sqlite3_step(stmt);
-		if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
+		if(rc != SQLITE_DONE) fprintf(stderr, "[film_new] failed to insert film roll! %s\n", sqlite3_errmsg(darktable.db));
 		rc = sqlite3_finalize(stmt);
 		sqlite3_prepare_v2(darktable.db, "select id from film_rolls where folder=?1", -1, &stmt, NULL);
     sqlite3_bind_text(stmt, 1, directory, strlen(directory), SQLITE_STATIC);
@@ -352,20 +353,48 @@ int dt_film_is_empty(const int id)
 	return empty;
 }
 
+// This is basically the same as dt_image_remove() from common/image.c. It just does the iteration over all images in the SQL statement
 void dt_film_remove(const int id)
 {
-	int rc;
-	sqlite3_stmt *stmt;
-	sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);
-	sqlite3_bind_int(stmt, 1, id);
-	while(sqlite3_step(stmt) == SQLITE_ROW)
-		dt_image_remove(sqlite3_column_int(stmt, 0));
-	rc = sqlite3_finalize(stmt);
+  int rc;
+  sqlite3_stmt *stmt;
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from mipmap_timestamps where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "update tagxtag set count = count - 1 where "
+      "(id2 in (select tagid from tagged_images where imgid in (select id from images where film_id = ?1))) or "
+      "(id1 in (select tagid from tagged_images where imgid in (select id from images where film_id = ?1)))", -1, &stmt, NULL);
+  rc = sqlite3_bind_int(stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from tagged_images where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
-	rc = sqlite3_prepare_v2(darktable.db, "delete from film_rolls where id = ?1", -1, &stmt, NULL);
-	rc = sqlite3_bind_int(stmt, 1, id);
-	rc = sqlite3_step(stmt);
-	rc = sqlite3_finalize(stmt);
-	dt_control_update_recent_films();
+  sqlite3_prepare_v2(darktable.db, "select id from images where film_id = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, id);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+    dt_image_cache_clear(sqlite3_column_int(stmt, 0));
+  rc = sqlite3_finalize(stmt);
+
+  rc = sqlite3_prepare_v2(darktable.db, "delete from images where id in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  rc = sqlite3_prepare_v2(darktable.db, "delete from film_rolls where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int(stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  rc = sqlite3_finalize(stmt);
+  dt_control_update_recent_films();
 }
-

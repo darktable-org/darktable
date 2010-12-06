@@ -12,7 +12,7 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
-find_path(RSVG2_INCLUDE_DIR librsvg/rsvg.h PATH_SUFFIXES librsvg-2.0 )
+find_path(RSVG2_INCLUDE_DIR librsvg/rsvg.h PATH_SUFFIXES librsvg-2.0 librsvg-2 )
 mark_as_advanced(RSVG2_INCLUDE_DIR)
 
 set(RSVG2_NAMES ${RSVG2_NAMES} rsvg-2 librsvg-2)
