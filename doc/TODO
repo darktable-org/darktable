@@ -2,8 +2,6 @@
 
 - import with lock contention?
 
-- import color management sometimes fails to find the correct matrix?
-
 - opencl buffer handling
   - copy roi_in to device, or take from input plugin
   - cached versions? keep cl_mem* somewhere?
