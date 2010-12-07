@@ -36,39 +36,38 @@ FileReader::FileReader(LPCWSTR _filename) : mFilename(_filename) {
 
 FileMap* FileReader::readFile() {
 #ifdef __unix__
-  struct stat st;
   int bytes_read = 0;
-  int fd;
+  FILE *file;
   char *dest;
+  long size;
 
-  fd = open(mFilename, O_RDONLY);
-  if (fd < 0)
+  file = fopen(mFilename, "rb");
+  if (file == NULL)
     throw FileIOException("Could not open file.");
-  if (fstat(fd, &st) < 0)
-	throw FileIOException("Could not read size of file (check permissions)");
-  if (st.st_size == 0)
-	throw FileIOException("File is 0 bytes.");
+  fseek(file, 0, SEEK_END);
+  size = ftell(file);
+  if (size <= 0) {
+    fclose(file);
+    throw FileIOException("File is 0 bytes.");
+  }
+  fseek(file, 0, SEEK_SET);
 
 #if 0
   // Not used, as it is slower than sync read
 
-  uchar8* pa = (uchar8*)mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-  FileMap *fileData = new FileMap(pa, st.st_size);
+  uchar8* pa = (uchar8*)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+  FileMap *fileData = new FileMap(pa, size);
 
 #else
-  FileMap *fileData = new FileMap(st.st_size);
+  FileMap *fileData = new FileMap(size);
 
-  while ((st.st_size > 0) && (bytes_read < st.st_size)) {
-    dest = (char *) fileData->getDataWrt(bytes_read);
-    ssize_t ret = read(fd, dest, st.st_size - bytes_read);
-    if(ret < 0)
-    {
-      perror("read");
-      throw FileIOException("Could not open file.");
-    }
-    bytes_read += ret;
+  dest = (char *)fileData->getDataWrt(0);
+  bytes_read = fread(dest, 1, size, file);
+  fclose(file);
+  if (size != bytes_read) {
+    delete fileData;
+    throw FileIOException("Could not read file.");
   }
-  close(fd);
 #endif
 
 #else // __unix__

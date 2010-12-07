@@ -40,8 +40,8 @@ TiffParserOlympus::~TiffParserOlympus(void) {
 #undef CHECKPTR
 #endif
 
-#define CHECKSIZE(A) if (A >= mInput->getSize()) throw TiffParserException("Error reading TIFF structure. File Corrupt")
-#define CHECKPTR(A) if ((int)A >= ((int)(mInput->data) + size))) throw TiffParserException("Error reading TIFF structure. File Corrupt")
+#define CHECKSIZE(A) if (A >= mInput->getSize()) throw TiffParserException("Error reading Olympus Metadata TIFF structure. File Corrupt")
+#define CHECKPTR(A) if ((int)A >= ((int)(mInput->data) + size))) throw TiffParserException("Error reading Olympus Metadata TIFF structure. File Corrupt")
 
 
 void TiffParserOlympus::parseData() {
