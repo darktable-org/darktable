@@ -36,7 +36,6 @@ src/iop/graduatednd.c
 src/iop/highlights.c
 src/iop/lens.c
 src/iop/monochrome.c
-src/iop/rawimport.c
 src/iop/sharpen.c
 src/iop/temperature.c
 src/iop/wb_presets.c
