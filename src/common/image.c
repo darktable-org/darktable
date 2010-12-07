@@ -483,10 +483,11 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   }
   else if(ret != DT_IMAGEIO_OK)
   {
-    fprintf(stderr, "[image_reimport] could not open %s\n", filename);
+    // fprintf(stderr, "[image_reimport] could not open %s\n", filename);
     // dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
+    dt_control_log(_("image `%s' is not available"));
     dt_image_import_unlock(img);
-    dt_image_remove(img->id);
+    // dt_image_remove(img->id);
     return 1;
   }
 

@@ -355,8 +355,9 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       dt_image_cache_release(image, 'r');
       if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
       {
-        dt_control_log(_("image does no longer exist"));
-        dt_image_remove(imgid);
+        dt_control_log(_("image `%s' is currently unavailable"), image->filename);
+        fprintf(stderr, _("image `%s is currently unavailable"), imgfilename);
+        // dt_image_remove(imgid);
       }
       else
       {

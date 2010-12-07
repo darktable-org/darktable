@@ -1,4 +1,8 @@
-0.7.1 release:
+0.8 release:
+
+- import with lock contention?
+
+- import color management sometimes fails to find the correct matrix?
 
 - opencl buffer handling
   - copy roi_in to device, or take from input plugin
