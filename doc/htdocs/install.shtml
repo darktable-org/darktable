@@ -64,9 +64,6 @@ libdbus-glib-1-dev libgnome-keyring-dev fop</li>
         <li>and put it in /etc/yum.repos.d/.</li>
         <li>then just install or upgrade darktable and you 
  should be fine.</li>
-        <li>please let me know if you find any problems with the packaging:
-            Karl Mikaelsson &lt;derfian@hamsterkollektivet.se&gt;</li>
-
       </ul>
     	</div>
     	<div class="listtext">
