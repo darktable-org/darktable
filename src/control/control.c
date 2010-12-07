@@ -379,7 +379,7 @@ void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
 
-  s->last_expose_time = dt_get_wtime();
+  // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
@@ -1053,40 +1053,40 @@ void dt_control_log_busy_leave()
 
 void dt_control_gui_queue_draw()
 {
-  double time = dt_get_wtime();
-  if(time - darktable.control->last_expose_time < 0.1f) return;
+  // double time = dt_get_wtime();
+  // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
   {
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_queue_draw(widget);
-    darktable.control->last_expose_time = time;
+    // darktable.control->last_expose_time = time;
   }
 }
 
 void dt_control_queue_draw_all()
 {
-  double time = dt_get_wtime();
-  if(time - darktable.control->last_expose_time < 0.1f) return;
+  // double time = dt_get_wtime();
+  // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
   {
     int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
     if(needlock) gdk_threads_enter();
     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_queue_draw(widget);
-    darktable.control->last_expose_time = time;
+    // darktable.control->last_expose_time = time;
     if(needlock) gdk_threads_leave();
   }
 }
 
 void dt_control_queue_draw(GtkWidget *widget)
 {
-  double time = dt_get_wtime();
-  if(time - darktable.control->last_expose_time < 0.1f) return;
+  // double time = dt_get_wtime();
+  // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
   {
     if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
     gtk_widget_queue_draw(widget);
-    darktable.control->last_expose_time = time;
+    // darktable.control->last_expose_time = time;
     if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
   }
 }
