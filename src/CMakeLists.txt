@@ -58,6 +58,7 @@ FILE(GLOB HEADER_FILES "*.h" "common/*.h" "control/*.h" "iop/*.h" "libs/*.h", "v
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/LibRaw)
 
@@ -72,6 +73,11 @@ if(OPENMP_FOUND AND USE_OPENMP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   add_definitions("-DHAVE_OPENMP")
 endif(OPENMP_FOUND AND USE_OPENMP)
+
+if(USE_DARKTABLE_PROFILING)
+	add_definitions(-DUSE_DARKTABLE_PROFILING)
+	set(SOURCES ${SOURCES} "common/profiling.c")
+endif()
 
 #
 # Find all other required libraries for building
