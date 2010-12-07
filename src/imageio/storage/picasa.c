@@ -155,7 +155,11 @@ _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char 
   g_strlcat(data,password,4096);
   g_strlcat(data,"&service=lh2&source="PACKAGE_NAME"-"PACKAGE_VERSION,4096);
   
+#ifdef _DEBUG
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+#else
   curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+#endif
   curl_easy_setopt(ctx->curl_handle, CURLOPT_FOLLOWLOCATION, 1);
 
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "https://www.google.com/accounts/ClientLogin");
@@ -225,7 +229,11 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
   
   sprintf(uri,"http://picasaweb.google.com/data/feed/api/user/default/albumid/%s", ctx->current_album->id);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, uri);
+#ifdef _DEBUG
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+#else
   curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+#endif
   curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,0);   // A post request !
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POST,1);
@@ -318,7 +326,11 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
       writebuffer.offset=0;
       
       curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, updateUri);
+#ifdef _DEBUG
+      curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+#else
       curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+#endif
       curl_easy_setopt(ctx->curl_handle, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_handle, CURLOPT_UPLOAD,1);   // A put request
       curl_easy_setopt(ctx->curl_handle, CURLOPT_READDATA,&writebuffer);
@@ -363,7 +375,11 @@ int _picasa_api_create_album(_picasa_api_context_t *ctx ) {
   ctx->curl_headers = curl_slist_append(ctx->curl_headers,"Content-Type: application/atom+xml");
   curl_easy_setopt(ctx->curl_handle,CURLOPT_HTTPHEADER, ctx->curl_headers);
     
+#ifdef _DEBUG
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+#else
   curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+#endif
   curl_easy_setopt(ctx->curl_handle, CURLOPT_HEADER , 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "http://picasaweb.google.com/data/feed/api/user/default");
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POST, 1);
@@ -426,7 +442,11 @@ int _picasa_api_create_album(_picasa_api_context_t *ctx ) {
 int _picasa_api_get_feed(_picasa_api_context_t *ctx) {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
+#ifdef _DEBUG
+  curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 1);
+#else
   curl_easy_setopt(ctx->curl_handle, CURLOPT_VERBOSE, 0);
+#endif
   curl_easy_setopt(ctx->curl_handle, CURLOPT_URL, "http://picasaweb.google.com/data/feed/api/user/default");
   curl_easy_setopt(ctx->curl_handle, CURLOPT_POST, 0);
   curl_easy_setopt(ctx->curl_handle, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);

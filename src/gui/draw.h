@@ -53,13 +53,16 @@ typedef struct dt_draw_curve_t
 }
 dt_draw_curve_t;
 
-static inline void dt_draw_grid(cairo_t *cr, const int num, const int width, const int height)
+static inline void dt_draw_grid(cairo_t *cr, const int num, const int left, const int top, const int right, const int bottom)
 {
+  float width = right - left;
+  float height = bottom - top;
+
   for(int k=1;k<num;k++)
   {
-    cairo_move_to(cr, k/(float)num*width, 0); cairo_line_to(cr, k/(float)num*width, height);
+    cairo_move_to(cr, left + k/(float)num*width, top); cairo_line_to(cr, left +  k/(float)num*width, bottom);
     cairo_stroke(cr);
-    cairo_move_to(cr, 0, k/(float)num*height); cairo_line_to(cr, width, k/(float)num*height);
+    cairo_move_to(cr, left, top + k/(float)num*height); cairo_line_to(cr, right, top + k/(float)num*height);
     cairo_stroke(cr);
   }
 }

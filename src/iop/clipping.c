@@ -500,7 +500,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   else if (which < 9)
   {
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
-    if(which > 0 && self->dev->image->height > self->dev->image->width)
+    if(which > 1 && self->dev->image->height > self->dev->image->width)
       g->current_aspect = 1.0/g->aspect_ratios[which];
     else
       g->current_aspect = g->aspect_ratios[which];
@@ -1014,19 +1014,19 @@ drawGoldenMean(struct dt_iop_module_t *self, cairo_t *cr, QRect* R1, QRect* R2, 
 #undef RADIANS
 
 static void
-draw_simple_grid(cairo_t *cr, float wd, float ht, float zoom_scale)
+drawSimpleGrid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale)
 {
   // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
   cairo_set_line_width(cr, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .2, .2, .2);
-  dt_draw_grid(cr, 3, wd, ht);
+  dt_draw_grid(cr, 3, left, top, right, bottom);
   cairo_translate(cr, 1.0/zoom_scale, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
-  dt_draw_grid(cr, 3, wd, ht);
+  dt_draw_grid(cr, 3, left, top, right, bottom);
   cairo_set_source_rgba(cr, .8, .8, .8, 0.5);
   double dashes = 5.0/zoom_scale;
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_grid(cr, 9, wd, ht);
+  dt_draw_grid(cr, 9, left, top, right, bottom);
 }
 
 // draw guides and handles over the image
@@ -1048,8 +1048,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
 
-  int which = gtk_combo_box_get_active(g->guide_lines);
-  if (GUIDE_GRID == which) draw_simple_grid(cr, wd, ht, zoom_scale);
   double dashes = 5.0/zoom_scale;
 
   // draw cropping window handles:
@@ -1083,7 +1081,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_set_line_width(cr, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
   cairo_set_dash(cr, &dashes, 1, 0);
-  if (which == GUIDE_DIAGONAL)
+
+  int which = gtk_combo_box_get_active(g->guide_lines);
+  if (which == GUIDE_GRID)
+  {
+    drawSimpleGrid(cr, left, top, right, bottom, zoom_scale);
+  }
+  else if (which == GUIDE_DIAGONAL)
   {
     drawDiagonalMethod(cr, left, top, cwidth, cheight);
     cairo_stroke (cr);
