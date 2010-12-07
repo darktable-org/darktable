@@ -12,6 +12,19 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
+    	<img src="images/rocks.jpg" class="img" alt="dreggn" /><h1>released 0.7.1</h1>
+      <em>(2010-12-07)</em> we released version 0.7.1, a small bugfix release to fix up some nuisances in 0.7:
+      <ul>
+        <li>some more white balance presets</li>
+        <li>layout fixes for overlong profile names</li>
+        <li>styles now actually work</li>
+        <li>extensive documentation in form of <a href="http://blog.pcode.nl/2010/12/06/darktable-0-7-screencast-library/">screencasts</a></li>
+      </ul>
+      enjoy the release, but be aware that you'll be missing out on a lot of significant speed improvements and cool new features
+      when using the release instead of git :)
+      </div>
+
+      <div class="listtext">
     	<img src="images/lagocoffee.jpg" class="img" alt="dreggn" /><h1>released 0.7</h1>
       <em>(2010-11-21)</em> we released version 0.7 this weekend. some of the changes:
       <ul>

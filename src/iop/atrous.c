@@ -613,7 +613,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  dt_draw_grid(cr, 8, width, height);
+  dt_draw_grid(cr, 8, 0, 0, width, height);
 
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
