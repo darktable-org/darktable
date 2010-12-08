@@ -786,7 +786,7 @@ void gui_update   (struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale1, p->median_thrs*100.0f);
+  dtgtk_slider_set_value(g->scale1, p->median_thrs*1.0f);
 }
 
 static void
@@ -795,8 +795,8 @@ median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->median_thrs = dtgtk_slider_get_value(slider)/100.0f;
-  if(p->median_thrs >= 0.01f) p->median_thrs = 1.0f;
+  p->median_thrs = dtgtk_slider_get_value(slider)/1.0f;
+  // if(p->median_thrs >= 0.01f) p->median_thrs = 1.0f;
   dt_dev_add_history_item(darktable.develop, self);
 }
 
