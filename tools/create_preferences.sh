@@ -65,7 +65,11 @@ function key_end {
   snprintf(tooltip, 1024, _("double click to reset to \`%s'"), $4);
   gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-  if(strlen("$2")) gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("$2"), (char *)NULL);
+EOF
+  if [ -n "$2" ]; then
+    echo "  gtk_object_set(GTK_OBJECT(widget), \"tooltip-text\", _(\"$2\"), (char *)NULL);" >> $initfile
+  fi
+  cat >> $initfile << EOF
   gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_$num), (gpointer)widget);
