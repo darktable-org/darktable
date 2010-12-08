@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-07 20:18+0100\n"
+"POT-Creation-Date: 2010-12-08 12:19+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -732,14 +732,10 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "%d Bild nach %s exportieren"
 msgstr[1] "%d Bilder nach %s exportieren"
 
-#: ../src/control/jobs/control_jobs.c:358 ../src/views/darkroom.c:309
+#: ../src/control/jobs/control_jobs.c:358
+#: ../src/control/jobs/control_jobs.c:359 ../src/views/darkroom.c:309
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
-
-#: ../src/control/jobs/control_jobs.c:359
-#, c-format
-msgid "image `%s is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 
 #: ../src/control/jobs/image_jobs.c:39
@@ -2984,15 +2980,15 @@ msgstr "Organisiere und entwickle Bilder von Digitalkameras"
 msgid "* developers *"
 msgstr "* Entwickler *"
 
-#: ../src/gui/gtk.c:415
+#: ../src/gui/gtk.c:416
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "* Ubuntu-Paketierung, Farbmanagement, Video-Anleitungen *"
 
-#: ../src/gui/gtk.c:418
+#: ../src/gui/gtk.c:419
 msgid "* networking, battle testing, translation expert *"
 msgstr "* Netzwerken, Battle-Testen, Übersetzungsexperte *"
 
-#: ../src/gui/gtk.c:421
+#: ../src/gui/gtk.c:422
 msgid "* contributors *"
 msgstr "* Mitwirkende *"
 
@@ -3584,6 +3580,9 @@ msgstr "Fehler beim Erstellen des Sitzungs-Pfades %s."
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "neue Sitzung ‚%s‘ gestartet"
+
+#~ msgid "image `%s is currently unavailable"
+#~ msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 
 #~ msgid "image does no longer exist"
 #~ msgstr "Bild existiert nicht mehr"
