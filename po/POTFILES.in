@@ -66,6 +66,7 @@ src/iop/sharpen.c
 src/iop/splittoning.c
 src/iop/temperature.c
 src/iop/tonecurve.c
+src/iop/tonemap.cc
 src/iop/velvia.c
 src/iop/vignette.c
 src/iop/watermark.c
