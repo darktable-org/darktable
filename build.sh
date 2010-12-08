@@ -1,5 +1,10 @@
 #!/bin/sh
 
+DT_SRC_DIR=`dirname "$0"`
+DT_SRC_DIR=`cd "$DT_SRC_DIR"; pwd`
+
+cd $DT_SRC_DIR;
+
 INSTALL_PREFIX=$1
 if [ "$INSTALL_PREFIX" =  "" ]; then
 	INSTALL_PREFIX=/usr/
