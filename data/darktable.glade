@@ -338,7 +338,7 @@ file manager</property>
                                                     </child>
                                                     <child>
                                                       <widget class="GtkButton" id="button_import_single">
-                                                        <property name="label" translatable="yes">import single image</property>
+                                                        <property name="label" translatable="yes">import image</property>
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">True</property>
                                                         <property name="receives_default">True</property>

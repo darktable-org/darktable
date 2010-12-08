@@ -21,9 +21,10 @@
 #include "common/darktable.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
+#include "dtgtk/togglebutton.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
-#include "dtgtk/togglebutton.h"
+#include <sched.h>
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
@@ -165,6 +166,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 void dt_iop_request_focus(dt_iop_module_t *module);
 /** loads default settings from database. */
 void dt_iop_load_default_params(dt_iop_module_t *module);
+
+/** let plugins have breakpoints: */
+int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
 
 
 /** for homebrew pixel pipe: zoom pixel array. */

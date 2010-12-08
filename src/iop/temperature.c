@@ -164,7 +164,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *const out = (float *const)o;
     const float coeffs[3] = {d->coeffs[0] * (1.0f/65535.0f), d->coeffs[1] * (1.0f/65535.0f), d->coeffs[2] * (1.0f/65535.0f)};
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, d) schedule(static)
 #endif
     for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
       out[j*roi_out->width+i] = in[j*roi_out->width+i]*coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];

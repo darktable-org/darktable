@@ -474,8 +474,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     mip = dt_image_get_matching_mip_size(img, imgwd*width, imgwd*height, &iwd, &iht);
     mip = dt_image_get(img, mip, 'r');
     iwd = img->mip_width[mip]; iht = img->mip_height[mip];
-    // don't draw garbage at the borders:
-    fwd = img->mip_width_f[mip]-2; fht = img->mip_height_f[mip]-2;
+    fwd = img->mip_width_f[mip]-3; fht = img->mip_height_f[mip]-3;
   }
   cairo_surface_t *surface = NULL;
   if(mip != DT_IMAGE_NONE)
@@ -489,11 +488,11 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   cairo_save(cr);
   cairo_translate(cr, width/2.0, height/2.0f);
   cairo_scale(cr, scale, scale);
-  cairo_translate(cr, -.5f*fwd, -.5f*fht);
+  cairo_translate(cr, -.5f*(fwd), -.5f*(fht));
 
   if(mip != DT_IMAGE_NONE)
   {
-    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_set_source_surface (cr, surface, -1, -1);
     cairo_rectangle(cr, 0, 0, fwd, fht);
     cairo_fill(cr);
     cairo_surface_destroy (surface);

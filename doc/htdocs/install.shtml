@@ -58,14 +58,19 @@ libdbus-glib-1-dev libgnome-keyring-dev fop</li>
     	<img src="images/foehr.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
       <ul>
         <li># yum install darktable</li>
-        <li>:)</li>
+        <li>or, for more up-to-date nightly builds:</li>
+        <li>download the repository definition file 
+            from <a href="http://dt-nightly.hamsterkollektivet.se/dt-nightly.repo">http://dt-nightly.hamsterkollektivet.se/dt-nightly.repo</a></li>
+        <li>and put it in /etc/yum.repos.d/.</li>
+        <li>then just install or upgrade darktable and you 
+ should be fine.</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.7/darktable-0.7.tar.gz/download">0.7 source .gz</a></li>
-        <li>$ tar xvjf darktable-0.7.tar.bz2 &amp;&amp; cd darktable-0.7</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.7/darktable-0.7.1.tar.gz/download">0.7.1 source .gz</a></li>
+        <li>$ tar xvjf darktable-0.7.1.tar.bz2 &amp;&amp; cd darktable-0.7.1</li>
         <li>$ ./configure --prefix=/usr</li>
         <li>$ make</li>
         <li># make install</li>
@@ -112,10 +117,8 @@ libdbus-glib-1-dev libgnome-keyring-dev fop</li>
       <ul>
         <li>git clone git://darktable.git.sf.net/gitroot/darktable/darktable or<br/>
             git pull</li>
-        <li>$ ./autogen.sh</li>
-        <li>$ ./configure --prefix=/usr</li>
-        <li>$ make</li>
-        <li># make install</li>
+        <li>$ ./build.sh</li>
+        <li>or manually: mkdir ./build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr; make; sudo make install</li> 
         <li>$ darktable</li>
         <li>let's rock!</li>
       </ul>

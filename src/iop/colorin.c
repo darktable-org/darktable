@@ -22,7 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-// TODO: if using GEGL, this needs to be wrapped in color conversion routines of gegl?
 #include "iop/colorin.h"
 #include "develop/develop.h"
 #include "control/control.h"

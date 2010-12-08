@@ -787,11 +787,6 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     }
     sqlite3_finalize(stmt);
 
-    // exiv2 is not really thread safe:
-    pthread_mutex_lock(&darktable.plugin_threadsafe);
-    Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
-    pthread_mutex_unlock(&darktable.plugin_threadsafe);
-
     xmpData["Xmp.darktable.xmp_version"] = xmp_version;
     xmpData["Xmp.darktable.raw_params"] = raw_params;
 
@@ -877,10 +872,6 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
       fout << xmpPacket;
       fout.close();
     }
-
-    // cleanup
-    Exiv2::XmpParser::terminate();
-
     return 0;
   }
   catch (Exiv2::AnyError& e)
@@ -903,3 +894,4 @@ void dt_exif_cleanup()
 {
   Exiv2::XmpParser::terminate();
 }
+

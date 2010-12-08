@@ -333,8 +333,8 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   roi_in.height = raw_ht;
   roi_in.scale = 1.0f;
   roi_out.x = roi_out.y = 0;
-  roi_out.width = f_wd;
-  roi_out.height = f_ht;
+  roi_out.width = p_wd;//f_wd;
+  roi_out.height = p_ht;//f_ht;
   roi_out.scale = fminf(f_wd/(float)raw_wd, f_ht/(float)raw_ht);
   if(img->flags & DT_IMAGE_RAW)
   { // demosaic during downsample
@@ -483,10 +483,11 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   }
   else if(ret != DT_IMAGEIO_OK)
   {
-    fprintf(stderr, "[image_reimport] could not open %s\n", filename);
+    // fprintf(stderr, "[image_reimport] could not open %s\n", filename);
     // dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
+    dt_control_log(_("image `%s' is not available"), img->filename);
     dt_image_import_unlock(img);
-    dt_image_remove(img->id);
+    // dt_image_remove(img->id);
     return 1;
   }
 
@@ -523,40 +524,6 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   }
   dt_image_import_unlock(img);
   return 0;
-}
-
-static void
-dt_image_get_raw_import_preset(dt_image_t *image)
-{
-  int user_flip = image->raw_params.user_flip;
-  sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params from presets where operation = 'rawimport' and "
-      "autoapply=1 and "
-      "?1 like model and ?2 like maker and ?3 like lens and "
-      "?4 between iso_min and iso_max and "
-      "?5 between exposure_min and exposure_max and "
-      "?6 between aperture_min and aperture_max and "
-      "?7 between focal_length_min and focal_length_max and "
-      "(isldr = 0 or isldr=?8) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
-  sqlite3_bind_text(stmt, 1, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 2, image->exif_maker, strlen(image->exif_maker), SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 3, image->exif_lens,  strlen(image->exif_lens),  SQLITE_TRANSIENT);
-  sqlite3_bind_double(stmt, 4, fmaxf(0.0f, fminf(1000000, image->exif_iso)));
-  sqlite3_bind_double(stmt, 5, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
-  sqlite3_bind_double(stmt, 6, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
-  sqlite3_bind_double(stmt, 7, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
-  // 0: dontcare, 1: ldr, 2: raw
-  sqlite3_bind_double(stmt, 8, 2-dt_image_is_ldr(image));
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const void *blob = sqlite3_column_blob(stmt, 0);
-    int length = sqlite3_column_bytes(stmt, 0);
-    if(length == sizeof(dt_image_raw_parameters_t) + 2*sizeof(float))
-      memcpy(&(image->raw_denoise_threshold), blob, length);
-  }
-  sqlite3_finalize(stmt);
-  image->raw_params.user_flip = user_flip;
 }
 
 int dt_image_import(const int32_t film_id, const char *filename)
@@ -633,8 +600,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
   (void)dt_exif_xmp_read(img, dtfilename, 0);
 
   dt_image_cache_flush_no_sidecars(img);
-
-  dt_image_get_raw_import_preset(img);
 
   g_free(imgfname);
 
@@ -717,7 +682,7 @@ void dt_image_init(dt_image_t *img)
   img->raw_params.demosaic_method = 2;
   img->raw_params.med_passes = 0;
   img->raw_params.four_color_rgb = 0;
-  img->raw_params.fill0 = 0;
+  img->raw_params.fill0 = 2;
   img->raw_denoise_threshold = 0.f;
   img->raw_auto_bright_threshold = 0.01f;
   img->filters = 0;
@@ -803,8 +768,6 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->maximum = sqlite3_column_double(stmt, 21);
     // doesn't include image orientation!
     // img->exif_inited = 1;
-
-    dt_image_get_raw_import_preset(img);
 
     ret = 0;
   }

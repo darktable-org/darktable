@@ -1,11 +1,11 @@
 project(darktable CXX C)
-project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
 option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
-
+option(USE_OPENMP "Use openmp threading support." ON)
+option(USE_DARKTABLE_PROFILING OFF)
 
 #
 # Set platform defaults...
@@ -31,8 +31,8 @@ endif(WIN32)
 #
 # Auto create version
 #
-exec_program(git ARGS describe --tags HEAD | "sed 's,^release-,,;s,-,+,;s,-,~,;'" OUTPUT_VARIABLE _dt_decoration)
-exec_program(git ARGS rev-parse --short HEAD OUTPUT_VARIABLE _dt_sha1sum)
+exec_program(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS describe --tags HEAD | "sed 's,^release-,,;s,-,+,;s,-,~,;'" OUTPUT_VARIABLE _dt_decoration)
+exec_program(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS rev-parse --short HEAD OUTPUT_VARIABLE _dt_sha1sum)
 execute_process(COMMAND echo "#ifndef DT_VERSION_H\n#define DT_VERSION_H\n#define DT_VERSION_SHA1SUM \"${_dt_sha1sum}\"\n#define DT_VERSION_DECORATION \"${_dt_decoration}\"\n#endif" OUTPUT_VARIABLE _version_h)
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/version.h "${_version_h}")
 
@@ -78,7 +78,7 @@ if(WIN32)
 	set(LIB_INSTALL "." CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 else(WIN32)
 	if(NOT LIB_INSTALL)
-		set( LIB_INSTALL "lib" CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
+		set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 	endif(NOT LIB_INSTALL)
 endif(WIN32)
 

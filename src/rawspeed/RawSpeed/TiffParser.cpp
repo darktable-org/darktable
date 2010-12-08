@@ -44,8 +44,8 @@ TiffParser::~TiffParser(void) {
 #undef CHECKPTR
 #endif
 
-#define CHECKSIZE(A) if (A >= mInput->getSize()) throw TiffParserException("Error reading TIFF structure. File Corrupt")
-#define CHECKPTR(A) if ((int)A >= ((int)(mInput->data) + size))) throw TiffParserException("Error reading TIFF structure. File Corrupt")
+#define CHECKSIZE(A) if (A >= mInput->getSize()) throw TiffParserException("Error reading TIFF structure (size out of bounds). File Corrupt")
+#define CHECKPTR(A) if ((int)A >= ((int)(mInput->data) + size))) throw TiffParserException("Error reading TIFF structure (size out of bounds). File Corrupt")
 
 void TiffParser::parseData() {
   const unsigned char* data = mInput->getData(0);

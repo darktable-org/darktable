@@ -306,8 +306,8 @@ int try_enter(dt_view_t *self)
   dt_image_full_path(dev->image, imgfilename, 1024);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("image does no longer exist"));
-    dt_image_remove(selected);
+    dt_control_log(_("image `%s' is currently unavailable"), dev->image->filename);
+    // dt_image_remove(selected);
     dt_image_cache_release(dev->image, 'r');
     dev->image = NULL;
     return 1;

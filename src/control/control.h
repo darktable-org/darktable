@@ -234,10 +234,7 @@ typedef struct dt_control_t
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
   pthread_mutex_t global_mutex, image_mutex;
-  /* deprecated
-	int tab_shortcut_on;
-	int esc_shortcut_on;
-  */
+  double last_expose_time;
   int key_accelerators_on;
 
   // xatom color profile:

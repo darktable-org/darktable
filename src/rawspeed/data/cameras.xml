@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/xsl" href="showcameras.xsl" ?>
-<!DOCTYPE Cameras SYSTEM "http://rawspeed.klauspost.com/dtd/cameras/1.2/cameras.dtd">
 <!--
     License: CC-BY-SA 3.0
 
@@ -10,6 +9,56 @@
     See more at:
     http://creativecommons.org/licenses/by-sa/3.0/
 -->
+
+<!DOCTYPE Cameras [
+<!ELEMENT BlackAreas ( Vertical?, Horizontal? ) >
+
+<!ELEMENT Camera ( CFA?, Crop, Sensor+, BlackAreas?, Aliases?, Hints? ) >
+<!ATTLIST Camera make CDATA #REQUIRED >
+<!ATTLIST Camera model CDATA #REQUIRED >
+<!ATTLIST Camera supported CDATA #IMPLIED >
+<!ATTLIST Camera mode CDATA #IMPLIED >
+<!ATTLIST Camera decoder_version CDATA #IMPLIED >
+
+<!ELEMENT Cameras ( Camera+ ) >
+<!ATTLIST Cameras version CDATA #IMPLIED >
+
+<!ELEMENT CFA ( Color+ ) >
+<!ATTLIST CFA height NMTOKEN #REQUIRED >
+<!ATTLIST CFA width NMTOKEN #REQUIRED >
+
+<!ELEMENT Color ( #PCDATA ) >
+<!ATTLIST Color x NMTOKEN #REQUIRED >
+<!ATTLIST Color y NMTOKEN #REQUIRED >
+
+<!ELEMENT Crop EMPTY >
+<!ATTLIST Crop height NMTOKEN #REQUIRED >
+<!ATTLIST Crop width NMTOKEN #REQUIRED >
+<!ATTLIST Crop x NMTOKEN #REQUIRED >
+<!ATTLIST Crop y NMTOKEN #REQUIRED >
+
+<!ELEMENT Horizontal EMPTY >
+<!ATTLIST Horizontal height NMTOKEN #REQUIRED >
+<!ATTLIST Horizontal y NMTOKEN #REQUIRED >
+
+<!ELEMENT Sensor EMPTY >
+<!ATTLIST Sensor white NMTOKEN #REQUIRED >
+<!ATTLIST Sensor black NMTOKEN #REQUIRED >
+<!ATTLIST Sensor iso_min NMTOKEN #IMPLIED >
+<!ATTLIST Sensor iso_max NMTOKEN #IMPLIED >
+
+<!ELEMENT Vertical EMPTY >
+<!ATTLIST Vertical width NMTOKEN #REQUIRED >
+<!ATTLIST Vertical x NMTOKEN #REQUIRED >
+
+<!ELEMENT Hints ( Hint+ ) >
+<!ELEMENT Hint EMPTY >
+<!ATTLIST Hint name CDATA #REQUIRED >
+<!ATTLIST Hint value CDATA #REQUIRED >
+
+<!ELEMENT Aliases ( Alias+ ) >
+<!ELEMENT Alias (#PCDATA) >
+]>
 
 <Cameras>
   <Camera make="Canon" model="Canon EOS 20D">

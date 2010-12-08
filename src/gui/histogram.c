@@ -108,7 +108,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  dt_draw_grid(cr, 4, width, height);
+  dt_draw_grid(cr, 4, 0, 0, width, height);
   
   if(hist_max > 0)
   {

@@ -102,7 +102,6 @@ dt_imageio_retval_t dt_imageio_open_pfm_preview(dt_image_t *img, const char *fil
   if(ret != 2) goto error_corrupt;
   ret = fread(&ret, sizeof(char), 1, f);
   if(ret != 1) goto error_corrupt;
-  ret = 0;
 
   float *buf = (float *)dt_alloc_align(16, 4*sizeof(float)*img->width*img->height);
   if(!buf) goto error_corrupt;
