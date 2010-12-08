@@ -79,25 +79,6 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
-#if 0
-// test if something change during processing in order to abort process immediatly;
-static int
-aborted_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
-*piece)
-{
-  struct dt_dev_pixelpipe_t *pipe=piece->pipe;
-  struct dt_develop_t *dev=self->dev;
-
-  if(pipe != dev->preview_pipe)
-   {
-     if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
-     if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
-   }
-
-  return 0;
-}
-#endif
-
 static inline int max( int a, int b )
 { return (a>b) ? a : b; }
 
