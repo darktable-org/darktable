@@ -18,6 +18,6 @@ foreach(module ${MODULES})
 endforeach(module)
 
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION lib/darktable/views)
+	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/views)
 endforeach(module)
 

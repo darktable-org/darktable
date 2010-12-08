@@ -55,6 +55,6 @@ foreach(module ${MODULES})
 endforeach(module)
 
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION lib/darktable/plugins)
+	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
 endforeach(module)
 

@@ -251,7 +251,7 @@ add_library(rawspeed_static STATIC IMPORTED)
 set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rawspeed/librawspeed.a)
 target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
 
-install(TARGETS lib_darktable DESTINATION lib/darktable)
+install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
 # Compile libraw modules
