@@ -58,7 +58,7 @@ libdbus-glib-1-dev libgnome-keyring-dev fop</li>
     	<img src="images/foehr.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
       <ul>
         <li># yum install darktable</li>
-        <li>or, for more up-to-date nightly builds:</li>
+        <li>or, for more up-to-date nightly builds (<b>fedora 14</b> only):</li>
         <li>download the repository definition file 
             from <a href="http://dt-nightly.hamsterkollektivet.se/dt-nightly.repo">http://dt-nightly.hamsterkollektivet.se/dt-nightly.repo</a></li>
         <li>and put it in /etc/yum.repos.d/.</li>
