@@ -121,7 +121,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
               else med[k++] = 1e7f+j;
             }
           }
-          for (int i=0;i<8;i++) for(int ii=i;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
+          for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
           pixo[c] = med[(cnt-1)/2];
           pixo += 8;
           pixi += 2;
@@ -129,6 +129,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
       }
     }
   }
+
   // now green:
   const int lim[5] = {0, 1, 2, 1, 0};
   for (int pass=0; pass < num_passes; pass++)
@@ -158,7 +159,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
             else med[k++] = 1e7f+j;
           }
         }
-        for (int i=0;i<8;i++) for(int ii=i;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
+        for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
         pixo[1] = med[(cnt-1)/2];
         pixo += 8;
         pixi += 2;

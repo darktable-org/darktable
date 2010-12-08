@@ -295,13 +295,29 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
     return;
   }
 #endif
-  dt_iop_atrous_data_t *data = (dt_iop_atrous_data_t *)piece->data;
+  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
   // global scale is roi scale and pipe input prescale
   const float global_scale = roi_in->scale / piece->iscale;
   float *in  = (float *)i;
   float *out = (float *)o;
 
+  const int max_scale = 5;//d->octaves;
+  float thrs [max_scale][4];
+  float boost[max_scale][4];
+  float sharp[max_scale];
+
+  for(int i=0;i<max_scale;i++)
+  {
+    boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], 1.0f - (i+.5f)/(max_scale));
+    boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], 1.0f - (i+.5f)/(max_scale));
+    for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
+    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], 1.0f - (i+.5f)/(max_scale));
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], 1.0f - (i+.5f)/(max_scale));
+    sharp[i]    = 0.001f*dt_draw_curve_calc_value(d->curve[atrous_s], 1.0f - (i+.5f)/(max_scale));
+    //for(int k=0;k<4;k++) boost[i][k] *= 1.0f/(1.0f - thrs[i][k]);
+    // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
+  }
 
   const int devid = piece->pipe->devid;
   cl_int err;
@@ -328,7 +344,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy coarse buffer on device: %d\n", err);
 
 
-  const int max_scale = MIN(7, data->octaves);
   const int max_filter_radius = global_scale*(1<<max_scale); // 2 * 2^max_scale
   const int tile_wd = sizes[0] - 2*max_filter_radius, tile_ht = sizes[1] - 2*max_filter_radius;
 
@@ -374,8 +389,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
       const int scale = global_scale * s;
       // FIXME: don't do 0x0 filtering!
       // if((int)(global_scale * (s+1)) == 0) continue;
-      // expected noise level on this scale:
-      const float sharp = data->sharpen[s];
       err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
       if(s & 1)
       {
@@ -388,7 +401,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
         err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
       }
       err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
-      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(unsigned int), (void *)&sharp);
+      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(unsigned int), (void *)&sharp[s]);
       if(err != CL_SUCCESS) fprintf(stderr, "param setting failed! %d\n", err);
 
       // printf("equeueing kernel with %lu %lu threads\n", local[0], global[0]);
@@ -401,11 +414,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
     // now synthesize again:
     for(int scale=max_scale-1;scale>=0;scale--)
     {
-      const float boost = data->boost[scale];
-      const float thrs  = data->thrs [scale];
       err  = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 2, sizeof(cl_mem), (void *)&dev_detail[scale]);
-      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 3, sizeof(float), (void *)&thrs);
-      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 4, sizeof(float), (void *)&boost);
+      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 3, sizeof(float), (void *)&thrs[scale][0]);
+      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 4, sizeof(float), (void *)&boost[scale][0]);
       if(scale & 1)
       {
         err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_coarse);
