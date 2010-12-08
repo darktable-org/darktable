@@ -113,7 +113,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
           {
             for (int j = i-2; j <= i+2; j+=2)
             {
-              if(labs(pixi[j] - pixi[0]) < thrs)
+              if(fabsf(pixi[j] - pixi[0]) < thrs)
               {
                 med[k++] = pixi[j];
                 cnt ++;
@@ -151,7 +151,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
         {
           for (int j = -lim[i]; j <= lim[i]; j+=2)
           {
-            if(labs(pixi[roi_in->width*(i-2) + j] - pixi[0]) < thrs)
+            if(fabsf(pixi[roi_in->width*(i-2) + j] - pixi[0]) < thrs)
             {
               med[k++] = pixi[roi_in->width*(i-2) + j];
               cnt++;
