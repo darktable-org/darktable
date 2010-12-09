@@ -15,12 +15,14 @@
       <br />
       or, better, irc.freenode.net <em>#darktable</em>,
       <br />
-      subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>,
+      subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">developer's mailing list</a> (can be about 30 mails per day),
+      <br />
+      to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-announcements">announcements only list</a> (low traffic),
       <br />
       or try your luck at the <a href="http://sourceforge.net/apps/phpbb/darktable/">phpBB forums</a>.
     	</div>
     	<div class="listtext">
-    	<img src="images/clouds.jpg" alt="contributing" class="img" /><h1>contributing</h1>
+    	<img src="images/mushroom.jpg" alt="contributing" class="img" /><h1>contributing</h1>
       <ul>
         <li>use it! and then discuss your <em>bugreports, feature requests, suggestions, translations, patches</em> ..
             on the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>.</li>
@@ -29,7 +31,7 @@
         <li><em>translate</em> dt into your language (in case it didn't already happen):<br/>
             read the short instructions in the file <a href="http://darktable.git.sourceforge.net/git/gitweb.cgi?p=darktable/darktable;a=blob;f=TRANSLATORS;h=8b55a4f319d2a255eedd17b596f3fa4171ab58ff;hb=HEAD">TRANSLATORS</a> in git.
         </li>
-        <li>produce <em>helpful stacktraces</em> for bugreports (minimal steps):<br/>
+        <li>produce <a href="http://blog.pcode.nl/2010/08/31/contributing-backtraces/">helpful stacktraces</a> for bugreports (minimal steps):<br/>
             $ ./configure --prefix=/usr --enable-debug<br/>
             $ make &amp;&amp; sudo make install<br/>
             $ gdb darktable<br/>
@@ -62,6 +64,7 @@
         </li>
       </ul>
     	</div>
+      <!-- outdated
     	<div class="listtext">
     	<img src="images/mushroom.jpg" alt="imprint" class="img" /><h1>imprint</h1>
       <ul>
@@ -71,7 +74,7 @@
         <li><em>alexander rabtchevich, alexandre prokoudine, andrey kaminsky, christian himpel, ger siemerink, gregor quade, pascal de bruijn, richard hughes, sebastien delcoigne, thomas costis</em>
         contributors of ideas, ethusiasm, translations, aur ubuntu macintosh packaging, git support, feature and bugfix patches, as well as excessive battle-testing :)</li>
       </ul>
-    	</div>
+    	</div>-->
 
     	<div class="listtext">
     	<img src="images/sails.jpg" alt="people" class="img" /><h1><a name="people">people</a></h1>
