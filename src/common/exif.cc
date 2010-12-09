@@ -28,6 +28,7 @@ extern "C"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/metadata.h"
+#include "common/tags.h"
 }
 // #include <libexif/exif-data.h>
 #include <exiv2/xmp.hpp>
@@ -197,6 +198,38 @@ int dt_exif_read(dt_image_t *img, const char* path)
         != exifData.end() ) {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
+
+	// FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
+    }
+
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
+    }
+
+// Now read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
+    Exiv2::IptcData &iptcData = image->iptcData();
+    Exiv2::IptcData::iterator iptcPos;
+
+    if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
+        != iptcData.end() ) {
+		while(iptcPos != iptcData.end()){
+			std::string str = iptcPos->print(&exifData);
+			guint tagid = 0;
+			dt_tag_new(str.c_str(),&tagid);
+			dt_tag_attach(tagid, img->id);
+			iptcPos++;
+		}
     }
 
     img->exif_inited = 1;
