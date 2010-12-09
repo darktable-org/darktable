@@ -31,3 +31,11 @@ install(FILES darktable.desktop DESTINATION ./share/applications)
 #
 FILE(GLOB WATERMARKS "watermarks/*.svg")
 install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
+
+#
+# Install gconf schema.
+#
+
+if(USE_GCONF_BACKEND)
+  install(FILES darktable.schemas DESTINATION ${DT_GCONF_SCHEMA_DIR})
+endif()
