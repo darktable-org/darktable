@@ -193,6 +193,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
 
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
+
     img->exif_inited = 1;
     return 0;
   }
