@@ -80,26 +80,32 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+static inline float
+fastexp(const float x)
+{
+  return fmaxf(0.0f, (6+x*(6+x*(3+x)))*0.16666666f);
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_tonemapping_data_t *data = (dt_iop_tonemapping_data_t *)piece->data;
- const int ch = piece->colors;
-  
- int width,height,size;
- float *B;
- float sigma_s;
- const float sigma_r=0.4;
- float avgB;
- float *in  = (float *)ivoid;
- float *out = (float *)ovoid;
+  const int ch = piece->colors;
+   
+  int width,height,size;
+  float *B;
+  float sigma_s;
+  const float sigma_r=0.4;
+  float avgB;
+  float *in  = (float *)ivoid;
+  float *out = (float *)ovoid;
 
   width=roi_in->width; 
   height=roi_in->height;
   size=width*height;
+  const float iw=piece->buf_in.width*roi_out->scale;
+  const float ih=piece->buf_in.height*roi_out->scale;
 
-  sigma_s=data->Fsize/100.0*sqrtf(size);
-  if(self->dev->image->flags & DT_IMAGE_THUMBNAIL) sigma_s=3.0;
+  sigma_s=(data->Fsize/100.0)*fminf(iw,ih);
   if(sigma_s<3.0) sigma_s=3.0;
 
   PermutohedralLattice lattice(3, 2, size);
@@ -157,15 +163,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for( int i=0 ; i<size ; i++ )
   {
     float L;
-    
-   L=expf((B[i]-avgB)/data->contrast-2.0-B[i]);
 
-   out[0]=in[0]*L;
-   out[1]=in[1]*L;
-   out[2]=in[2]*L;
+    L = fastexp((B[i]-avgB)/data->contrast-2.0-B[i]);
 
-   out += ch;
-   in += ch;
+    out[0]=in[0]*L;
+    out[1]=in[1]*L;
+    out[2]=in[2]*L;
+
+    out += ch;
+    in += ch;
   }
   free(B);
 }
@@ -196,15 +202,9 @@ Fsize_callback (GtkDarktableSlider *slider, gpointer user_data)
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)p1;
-#ifdef HAVE_GEGL
-  fprintf(stderr, "[tonemapping] TODO: implement gegl version!\n");
-  // pull in new params to gegl
-#else
   dt_iop_tonemapping_data_t *d = (dt_iop_tonemapping_data_t *)piece->data;
   d->contrast = p->contrast;
   d->Fsize = p->Fsize;
-
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -233,7 +233,7 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
-  module->priority = 147;
+  module->priority = 255;
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
   dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t){2.5,2.0};
@@ -251,31 +251,29 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  GtkWidget *widget;
-  GtkHBox *box;
-
   self->gui_data = malloc(sizeof(dt_iop_tonemapping_gui_data_t));
   dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
   dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  GtkWidget *widget;
+  self->widget = gtk_hbox_new(FALSE, 0);
+  GtkWidget *vbox1 = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  GtkWidget *vbox2 = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  gtk_box_pack_start(GTK_BOX(self->widget), vbox1, FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), vbox2, TRUE, TRUE, 5);
 
-  box = GTK_HBOX(gtk_hbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), FALSE, FALSE, 5);
-  widget = dtgtk_reset_label_new(_("Contrast compression"), self, &p->contrast, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new(_("contrast compression"), self, &p->contrast, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(vbox1), widget, TRUE, TRUE, 0);
   g->contrast = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 5.0000, 0.1, p->contrast, 3));
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
-  box = GTK_HBOX(gtk_hbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), FALSE, FALSE, 5);
-  widget = dtgtk_reset_label_new(_("Sigma s %"), self, &p->Fsize, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
-  g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,10.0, 0.2, p->Fsize, 3));
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new(_("spatial extent"), self, &p->Fsize, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(vbox1), widget, TRUE, TRUE, 0);
+  g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,10.0, 0.2, p->Fsize, 1));
+  dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
+  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
