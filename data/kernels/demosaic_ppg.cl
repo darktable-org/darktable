@@ -38,27 +38,44 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
   return (float2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
 }
 
+constant int goffx[18] = { 0, -1,  1, -2,  0,  2, -1,  1,  0,  // green
+                          -2,  0,  2, -2,  0,  2, -2,  0,  2}; // r, b
+constant int goffy[18] = {-2, -1, -1,  0,  0,  0,  1,  1,  2,  // green
+                          -2, -2, -2,  0,  0,  0,  2,  2,  2}; // r, b
 
-#if 0
-/**
- * convert gpu float4 format to cpu float*3 representation
- */
 __kernel void
-convert_float4_to_float3(__read_only image2d_t in, __global float *out, const int width, const int height)
+pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters, const float thrs)
 {
-  // TODO: so we really need 3 texture accesses per pixel??
-  // TODO: read into shared mem and coalesce out?
-  // TODO: fuck it, fast enough?
+  constant int (*offx)[9] = (constant int (*)[9])goffx;
+  constant int (*offy)[9] = (constant int (*)[9])goffy;
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int z = get_global_id(2);
-  if(y < width && z < height)
+  const int c = FC(y, x, filters);
+  const int c1 = c & 1;
+  const float pix = read_imagef(in, sampleri, (int2)(x, y)).x;
+  float med[9];
+
+  // avoid branch divergence, use constant memory to bake mem accesses, use data-based fetches:
+  int cnt = 9;
+  for(int k=0;k<9;k++) med[k] = read_imagef(in, sampleri, (int2)(x+offx[c1][k], y+offy[c1][k])).x;
+  for(int k=0;k<9;k++) if(fabs(med[k] - pix) > thrs)
   {
-    float4 color = read_imagef(in, sampleri, (int2)(y, z));
-    out[3*(width*z + y) + x] = color.x
+    med[k] = 1e7f+k;
+    cnt --;
   }
+
+  // sort:
+  for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii])
+  {
+    const float tmp = med[i];
+    med[i] = med[ii];
+    med[ii] = tmp;
+  }
+  float4 color = (float4)(0.0f);
+  ((float *)&color)[c] = med[(cnt-1)/2];
+  write_imagef (out, (int2)(x, y), color);
 }
-#endif
+
 
 /**
  * downscale and clip a buffer (in) to the given roi (r_*) and write it to out.
@@ -151,7 +168,7 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
   const int row = y;
   const int col = x;
   const int c = FC(row, col, filters);
-  float4 color = (float4)(100.0f, 100.0f, 100.0f, 10000.0f); // output color
+  float4 color;// = (float4)(100.0f, 100.0f, 100.0f, 10000.0f); // output color
 
   const float4 pc   = read_imagef(in, sampleri, (int2)(col, row));
 
@@ -201,6 +218,63 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
     }
   }
   write_imagef (out, (int2)(x, y), color);
+}
+
+__kernel void
+ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  // process all non-green pixels
+  const int row = y;
+  const int col = x;
+  const int c = FC(row, col, filters);
+
+  const float4 pc = read_imagef(in, sampleri, (int2)(col, row));
+
+  // fill green layer for red and blue pixels:
+  if(c == 0 || c == 2)
+  {
+    // look up horizontal and vertical neighbours, sharpened weight:
+    const float4 pym  = read_imagef(in, sampleri, (int2)(col, row-1));  // g
+    const float4 pym2 = read_imagef(in, sampleri, (int2)(col, row-2));
+    const float4 pym3 = read_imagef(in, sampleri, (int2)(col, row-3));  // g
+    const float4 pyM  = read_imagef(in, sampleri, (int2)(col, row+1));  // g
+    const float4 pyM2 = read_imagef(in, sampleri, (int2)(col, row+2));
+    const float4 pyM3 = read_imagef(in, sampleri, (int2)(col, row+3));  // g
+    const float4 pxm  = read_imagef(in, sampleri, (int2)(col-1, row));  // g
+    const float4 pxm2 = read_imagef(in, sampleri, (int2)(col-2, row));
+    const float4 pxm3 = read_imagef(in, sampleri, (int2)(col-3, row));  // g
+    const float4 pxM  = read_imagef(in, sampleri, (int2)(col+1, row));  // g
+    const float4 pxM2 = read_imagef(in, sampleri, (int2)(col+2, row));
+    const float4 pxM3 = read_imagef(in, sampleri, (int2)(col+3, row));  // g
+    // FIXME: now we need the xyz mess again!
+    const float guessx = (pxm.y + ((float *)&pc)[c] + pxM.y) * 2.0f - ((float *)&pxM2)[c] - ((float *)&pxm2)[c];
+    const float diffx  = (fabs(((float *)&pxm2)[c] - ((float *)&pc)[c]) +
+                          fabs(((float *)&pxM2)[c] - ((float *)&pc)[c]) + 
+                          fabs(pxm.y  - pxM.y)) * 3.0f +
+                         (fabs(pxM3.y - pxM.y) + fabs(pxm3.y - pxm.y)) * 2.0f;
+    const float guessy = (pym.y + ((float *)&pc)[c] + pyM.y) * 2.0f - ((float *)&pyM2)[c] - ((float *)&pym2)[c];
+    const float diffy  = (fabs(((float *)&pym2)[c] - ((float *)&pc)[c]) +
+                          fabs(((float *)&pyM2)[c] - ((float *)&pc)[c]) + 
+                          fabs(pym.y  - pyM.y)) * 3.0f +
+                         (fabs(pyM3.y - pyM.y) + fabs(pym3.y - pym.y)) * 2.0f;
+    if(diffx > diffy)
+    {
+      // use guessy
+      const float m = fmin(pym.y, pyM.y);
+      const float M = fmax(pym.y, pyM.y);
+      pc.y = fmax(fmin(guessy*.25f, M), m);
+    }
+    else
+    {
+      const float m = fmin(pxm.y, pxM.y);
+      const float M = fmax(pxm.y, pxM.y);
+      pc.y = fmax(fmin(guessx*.25f, M), m);
+    }
+  }
+  write_imagef (out, (int2)(x, y), pc);
 }
 
 /**
