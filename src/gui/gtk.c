@@ -743,6 +743,10 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
+  char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
+  if(last_directory != NULL)
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
+
   char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -765,6 +769,8 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
+    dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
+
     char *filename;
     dt_film_t film;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
