@@ -220,3 +220,10 @@ proceed: ; // Let's build up uri / command
     res = system( uri );
 }
 
+int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format) {
+  const char *mime = format->mime(NULL);
+  if(mime[0] == '\0') // this seems to be the copy format
+    return 0;
+
+  return 1;
+}
