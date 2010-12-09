@@ -97,7 +97,8 @@ big stuff:
 
 
 - eos-movrec.sf.net ? :)
-- tagging to include description/title/licence and presets
+- tagging to include description/title/licence and presets -- kind of DONE in 'houz' branch
+- hierarchical tags
 - translatable darkroom mode plugin template
 - mac dreggn?
 - spot brushes?
@@ -119,11 +120,11 @@ big stuff:
 - libchamplain geotagging?
 - steal gegl tonemapping operators?
 - port input imageio to plugins?
-- color labels: more colors
+- color labels: more colors -- DONE
 - stars: possibility to filter by exact number, not >=
 - filmstrip h/v/match/off
 - backup tables: presets, color labels
-- gtkentrycompletion for tagging and collect
+- gtkentrycompletion for tagging and collect -- DONE
 - clean-up-gui mode for darkroom: collapse all and hide unused ops
   when entering darkroom mode
 - image flag: history changed but not exported
