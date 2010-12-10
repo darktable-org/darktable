@@ -283,17 +283,15 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   free(tmp);
 }
 
-#ifdef HAVE_OPENCL
+// FIXME: port to new buffer on gpu pipe!
+#if 0//def HAVE_OPENCL
 void
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-    void *cl_mem_in, void **cl_mem_out)
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
   // global scale is roi scale and pipe input prescale
   const float global_scale = roi_in->scale / piece->iscale;
-  float *in  = (float *)i;
-  float *out = (float *)o;
 
   // TODO: use cl_mem_in and out!
   const int max_scale = 5;//d->octaves;
@@ -320,10 +318,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   if(err != CL_SUCCESS) fprintf(stderr, "could not get max size! %d\n", err);
   // printf("max work item sizes = %lu %lu %lu\n", sizes[0], sizes[1], sizes[2]);
 
+  // TODO: use dev mem directly, if small enough to fit details!
+  // TODO: use DT_WINDOW_SIZE instead of max threads! (in, out, 7 detail = 232 MB GPU mem)
   // allocate device memory
+  cl_image_format fmt = {CL_RGBA, CL_FLOAT};
+#if 0
   cl_mem dev_in, dev_coarse;
   // as images (texture memory)
-  cl_image_format fmt = {CL_RGBA, CL_FLOAT};
   dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
       CL_MEM_READ_WRITE,
       &fmt,
@@ -336,6 +337,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
       sizes[0], sizes[1], 0,
       NULL, &err);
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy coarse buffer on device: %d\n", err);
+#endif
 
 
   const int max_filter_radius = global_scale*(1<<max_scale); // 2 * 2^max_scale
@@ -367,7 +369,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
 
     // TODO: directly read cl_mem_in!
     // TODO: one more buffer and interleaved write/process
-    clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, in + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
+    // clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, in + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
     if(tx > 0) { origin[0] += max_filter_radius; orig0[0] += max_filter_radius; region[0] -= max_filter_radius; }
     if(ty > 0) { origin[1] += max_filter_radius; orig0[1] += max_filter_radius; region[1] -= max_filter_radius; }
 

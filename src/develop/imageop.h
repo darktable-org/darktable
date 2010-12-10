@@ -148,7 +148,7 @@ typedef struct dt_iop_module_t
     * formats may be filled by this callback, if the pipeline can handle it. */
   void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** the opencl equivalent of process(). */
-  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, void *cl_mem_in, void **cl_mem_out);
+  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 }
 dt_iop_module_t;
 

@@ -528,41 +528,21 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
 #ifdef HAVE_OPENCL
 void
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-    void *cl_mem_in, void **cl_mem_out)
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+            const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
-  float *out = (float *)o;
-  float *in = (float *)i;
 
   const int devid = piece->pipe->devid;
   size_t sizes[2] = {roi_out->width, roi_out->height};
-  size_t origin[] = {0, 0, 0};
-  size_t region[] = {roi_in->width, roi_in->height, 1};
-  size_t region_out[] = {roi_out->width, roi_out->height, 1};
   cl_int err;
-  cl_mem dev_in, dev_out, dev_tmp = NULL;
-  // as images (texture memory)
-  cl_image_format fmt1 = {CL_LUMINANCE, CL_FLOAT};
+  cl_mem dev_tmp = NULL;
   cl_image_format fmt4 = {CL_RGBA, CL_FLOAT};
-  dev_out = clCreateImage2D (darktable.opencl->dev[devid].context,
-      CL_MEM_READ_WRITE,
-      &fmt4,
-      sizes[0], sizes[1], 0,
-      NULL, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy out buffer on device: %d\n", err);
   
   if(roi_out->scale > .999f)
   {
     // 1:1 demosaic
-    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
-        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-        &fmt1,
-        region_out[0], region_out[1], sizeof(float)*region[0],
-        in, &err);
-    if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
-
     if(data->median_thrs > 0.0f)
     {
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
@@ -592,20 +572,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   else if(roi_out->scale > .5f)
   {
     // need to scale to right res
-    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
-        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-        &fmt1,
-        region[0], region[1], sizeof(float)*region[0],
-        in, &err);
-    if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
     dev_tmp = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE,
         &fmt4,
-        region[0], region[1], 0,
+        roi_in->width, roi_in->height, 0,
         NULL, &err);
     if(err != CL_SUCCESS) fprintf(stderr, "could not alloc tmp buffer on device: %d\n", err);
 
-    sizes[0] = region[0]; sizes[1] = region[1];
+    sizes[0] = roi_in->width; sizes[1] = roi_in->height;
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
@@ -631,13 +605,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   else
   {
     // sample half-size image:
-    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
-        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-        &fmt1,
-        region[0], region[1], 0,
-        in, &err);
-    if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
-    // clEnqueueWriteImage(darktable.opencl->cmd_queue, dev_in, CL_FALSE, origin, region, region[0]*sizeof(uint16_t), 0, (uint16_t *)self->dev->image->pixels, 0, NULL, NULL);
     int zero = 0;
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);
@@ -650,17 +617,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
     dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_zoom_half_size, sizes);
   }
 
-  // double start = dt_get_wtime();
-  // clEnqueueReadImage(cmd_queue, dev_out, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
-  // blocking:
-  clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_out, CL_TRUE, origin, region_out, 4*region_out[0]*sizeof(float), 0, out, 0, NULL, NULL);
-  // double end = dt_get_wtime();
-  // dt_print(DT_DEBUG_PERF, "[demosaic] took %.3f secs\n", end - start);
-
-  // for(int k=0;k<roi_out->width*roi_out->height;k++) for(int c=0;c<3;c++) out[3*k+c] = out[4*k+c];
-
-  clReleaseMemObject(dev_in);
-  clReleaseMemObject(dev_out);
   if(dev_tmp) clReleaseMemObject(dev_tmp);
 }
 #endif

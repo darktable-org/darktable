@@ -230,13 +230,73 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   return module->output_bpp(module, pipe, piece);
 }
 
+#ifdef HAVE_OPENCL
+static void
+copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp)
+{
+  size_t origin[] = {0, 0, 0};
+  size_t region[] = {width, height, 1};
+  // blocking.
+  clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, NULL);
+}
+
+static void*
+copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp)
+{
+  cl_int err;
+  cl_image_format fmt;
+  // guess pixel format from bytes per pixel
+  if(bpp == 4*sizeof(float))
+    fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
+  else if(bpp == sizeof(float))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
+  else if(bpp == sizeof(uint16_t))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
+  else return NULL;
+
+  cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,
+      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+      &fmt,
+      width, height, 0,
+      host, &err);
+  if(err != CL_SUCCESS) fprintf(stderr, "[pixelpipe copy_host_to_device] could not alloc/copy img buffer onto device %d: %d\n", devid, err);
+  return dev;
+}
+
+static void*
+alloc_device(const int width, const int height, const int devid, const int bpp)
+{
+  cl_int err;
+  cl_image_format fmt;
+  // guess pixel format from bytes per pixel
+  if(bpp == 4*sizeof(float))
+    fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
+  else if(bpp == sizeof(float))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
+  else if(bpp == sizeof(uint16_t))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
+  else return NULL;
+
+  cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,
+      CL_MEM_READ_WRITE,
+      &fmt,
+      width, height, 0,
+      NULL, &err);
+  if(err != CL_SUCCESS) fprintf(stderr, "[pixelpipe alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
+  return dev;
+}
+#endif
+
 // recursive helper for process:
-int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
+static int
+dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, void **cl_mem_output,
+                             const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
   dt_iop_roi_t roi_in = *roi_out;
   double start, end;
 
   void *input = NULL;
+  void *cl_mem_input = NULL;
   dt_iop_module_t *module = NULL;
   dt_dev_pixelpipe_iop_t *piece = NULL;
   if(modules)
@@ -245,16 +305,14 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
     if(!piece->enabled)
-    {
-      // printf("skipping disabled module %s\n", module->op);
-      return dt_dev_pixelpipe_process_rec(pipe, dev, output, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1);
-    }
+      return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1);
   }
 
   const int bpp = get_output_bpp(module, pipe, piece, dev);
   const size_t bufsize = bpp*roi_out->width*roi_out->height;
 
-  // if available, return data
+
+  // 1) if cached buffer is still available, return data
   pthread_mutex_lock(&pipe->busy_mutex);
   if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
   uint64_t hash = dt_dev_pixelpipe_cache_hash(dev->image->id, roi_out, pipe, pos);
@@ -269,28 +327,28 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   }
   else pthread_mutex_unlock(&pipe->busy_mutex);
 
-  // if history changed or exit event, abort processing?
+
+  // 2) if history changed or exit event, abort processing?
   // preview pipe: abort on all but zoom events (same buffer anyways)
   if(dt_iop_breakpoint(dev, pipe)) return 1;
-
   // if image has changed, stop now.
   if(pipe == dev->pipe && dev->image_force_reload) return 1;
   if(pipe == dev->preview_pipe && dev->preview_loading) return 1;
   if(pipe == dev->preview_pipe && pipe->input != dev->image->mipf) return 1;
   if(dev->gui_leaving) return 1;
 
-  // input -> output
+
+  // 3) input -> output
   if(!modules)
-  { // import input array with given scale and roi
+  {
+    // 3a) import input array with given scale and roi
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    // printf("[process] loading source image buffer\n");
     start = dt_get_wtime();
     if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
       {
-        // printf("[pixelpipe] using pixels directly as input (%d x %d)\n", pipe->iwidth, pipe->iheight);
         *output = pipe->input;
       }
       else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
@@ -298,7 +356,6 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
         memset(*output, 0, pipe->backbuf_size);
         if(roi_in.scale == 1.0f)
         {
-          // printf("[pixelpipe] using fast path, copying %d per pixel (%d x %d)\n", bpp, roi_out->width, roi_out->height);
           // fast branch for 1:1 pixel copies.
           for(int j=0;j<MIN(roi_out->height, pipe->iheight-roi_in.y);j++)
             memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
@@ -319,11 +376,9 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW && roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
     {
-      // printf("[process] scale/pan [%s]\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : "");
       // reserve new cache line: output
       if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
       {
-        // memset(*output, 0, pipe->backbuf_size);
         roi_in.x /= roi_out->scale;
         roi_in.y /= roi_out->scale;
         roi_in.width = pipe->iwidth;
@@ -338,60 +393,18 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
   }
   else
   {
-    // recurse and obtain output array in &input
+    // 3b) recurse and obtain output array in &input
+
+    // get region of interest which is needed in input
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     module->modify_roi_in(module, piece, roi_out, &roi_in);
     pthread_mutex_unlock(&pipe->busy_mutex);
-#if 0 // now we just re-alloc, and don't need this code anymore:
-    // check roi_in for sanity and clip to maximum alloc'ed area, downscale
-    // input if necessary.
-    roi_in.scale = fabsf(roi_in.scale);
-    if(roi_in.x < 0) roi_in.x = 0;
-    if(roi_in.y < 0) roi_in.y = 0;
-    if(roi_in.width  < 1) roi_in.width  = 1;
-    if(roi_in.height < 1) roi_in.height = 1;
 
-#if 0 // zoom 2:1 actually breaks this check:
-    // clamp max width:
-    if(roi_in.width +roi_in.x > pipe->iwidth *roi_in.scale) roi_in.width  = pipe->iwidth *roi_in.scale - roi_in.x;
-    if(roi_in.height+roi_in.y > pipe->iheight*roi_in.scale) roi_in.height = pipe->iheight*roi_in.scale - roi_in.y;
-#endif
-
-    int maxwd = DT_DEV_PIXELPIPE_CACHE_SIZE;
-    int maxht = DT_DEV_PIXELPIPE_CACHE_SIZE;
-    // downscale request to cache buffer:
-    if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-    {
-      maxwd = pipe->iwidth;
-      maxht = pipe->iheight;
-    }
-    // only necessary if mem area would overflow:
-    if(roi_in.width*roi_in.height > maxwd*maxht)
-    {
-      if(roi_in.width  > maxwd)
-      {
-        const float f = maxwd/(float)roi_in.width;
-        roi_in.scale  *= f;
-        roi_in.height *= f;
-        roi_in.x      *= f;
-        roi_in.y      *= f;
-        roi_in.width   = maxwd;
-      }
-      if(roi_in.height > maxht)
-      {
-        const float f  = maxht/(float)roi_in.height;
-        roi_in.scale  *= f;
-        roi_in.x      *= f;
-        roi_in.y      *= f;
-        roi_in.width  *= f;
-        roi_in.height  = maxht;
-      }
-    }
-#endif
-
-    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
+    // recurse to get actual data of input buffer
+    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &cl_mem_input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+
     // reserve new cache line: output
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
@@ -474,7 +487,6 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
     }
     else pthread_mutex_unlock(&pipe->busy_mutex);
 
-    // printf("%s processing %s\n", pipe == dev->preview_pipe ? "[preview]" : "", module->op);
     // actual pixel processing done by module
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
@@ -482,12 +494,28 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 #ifdef HAVE_OPENCL
     if(module->process_cl)
     {
-      // TODO: get in/out cl_mem, if available!
-      module->process_cl(module, piece, input, *output, &roi_in, roi_out, NULL, NULL);
+      // if input is not on the gpu, copy it there.
+      // else, if input is on the gpu only, invalidate cpu cache line.
+      if(!cl_mem_input) cl_mem_input = copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, bpp);
+      else dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
+      *cl_mem_output = alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
+      module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+      clReleaseMemObject(cl_mem_input);
+      // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
+      // so we're not just yet invalidating the (empty) output cache line.
     }
     else
-#endif
     {
+      // cleanup unneeded opencl buffers, and copy back to CPU buffer
+      if(cl_mem_input)
+      {
+        copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, bpp);
+        clReleaseMemObject(cl_mem_input);
+      }
+      *cl_mem_output = NULL;
+#else
+    {
+#endif
       module->process(module, piece, input, *output, &roi_in, roi_out);
     }
     end = dt_get_wtime();
@@ -515,7 +543,7 @@ int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, vo
 #endif
 
 post_process_collect_info:
-    // final histogram:
+    // 4) final histogram:
     pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
@@ -581,7 +609,8 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
   void *buf = NULL;
-  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &roi, modules, pieces, pos))
+  void *cl_mem_out = NULL;
+  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &cl_mem_out, &roi, modules, pieces, pos))
   {
     pipe->processing = 0;
     dt_opencl_unlock_device(darktable.opencl, pipe->devid);

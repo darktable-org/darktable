@@ -150,6 +150,17 @@ void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data
   }
 }
 
+void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *data)
+{
+  for(int k=0;k<cache->entries;k++)
+  {
+    if(cache->data[k] == data)
+    {
+      cache->hash[k] = -1;
+    }
+  }
+}
+
 void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
 {
   for(int k=0;k<cache->entries;k++)
