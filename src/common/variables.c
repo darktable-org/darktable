@@ -21,6 +21,7 @@
 
 #include "common/image.h"
 #include "common/variables.h"
+#include "common/utility.h"
 
 typedef struct dt_variables_data_t 
 {	
@@ -32,57 +33,6 @@ typedef struct dt_variables_data_t
   guint sequence;
 }
 dt_variables_data_t;
-
-/** Find occurence of string*/
-guint _string_occurence(const gchar *haystack,const gchar *needle);
-/** search and replace, returns new allocated string */
-gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace);
-
-guint _string_occurence(const gchar *haystack,const gchar *needle) 
-{
-  guint o=0;
-  if( haystack && needle )
-  {
-    const gchar *p=haystack;
-    if( (p=g_strstr_len(p,strlen(p),needle)) != NULL) 
-    {
-      do
-      {
-        o++;
-      } while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
-    }
-  }
-  return o;
-}
-
-gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace) 
-{
-  gint occurences = _string_occurence(string,search);
-  if( occurences )
-  {
-    gint sl=-(strlen(search)-strlen(replace));
-    gchar *pend=string+strlen(string);
-    gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
-    gchar *np=nstring;
-    gchar *s=string,*p=string;
-    //fprintf(stderr,"replace %s with %s strdiff %d, occurences %d, oldstring %d, newstring %d\n",search,replace,sl,occurences,strlen(string),strlen(string)+(sl*occurences)+1);
-    if( (s=g_strstr_len(s,strlen(s),search)) != NULL) 
-    {
-      do
-      {
-        memcpy(np,p,s-p);
-        np+=(s-p);
-        memcpy(np,replace,strlen(replace));
-        np+=strlen(replace);
-        p=s+strlen(search);
-      } while((s=g_strstr_len((s+1),strlen(s+1),search)) != NULL);
-    }
-    memcpy(np,p,pend-p);
-    np[pend-p]='\0';
-    string=nstring;
-  } 
-  return string;
-}
 
 gchar *_string_get_first_variable(gchar *string,gchar *variable)
 {
@@ -273,7 +223,7 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
       if( _variable_get_value(params,variable,value) )
       {
         //fprintf(stderr,"Substitute variable '%s' with value '%s'\n",variable,value);
-        if( (result=_string_substitute(params->data->result,variable,value)) != params->data->result && result != params->data->source)
+        if( (result=dt_util_str_replace(params->data->result,variable,value)) != params->data->result && result != params->data->source)
         { // we got a result 
           if( params->data->result != params->data->source)
             g_free(params->data->result);

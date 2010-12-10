@@ -555,7 +555,7 @@ file manager</property>
                                             <property name="visible">True</property>
                                             <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                             <property name="border_width">5</property>
-                                            <property name="n_rows">12</property>
+                                            <property name="n_rows">15</property>
                                             <property name="n_columns">2</property>
                                             <child>
                                               <widget class="GtkLabel" id="label20">
@@ -864,6 +864,87 @@ file manager</property>
                                                 <property name="right_attach">2</property>
                                                 <property name="top_attach">11</property>
                                                 <property name="bottom_attach">12</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="label15">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="xpad">5</property>
+                                                <property name="label" translatable="yes">title</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="top_attach">12</property>
+                                                <property name="bottom_attach">13</property>
+                                                <property name="x_options">GTK_FILL</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="metadata_label_title">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes">-</property>
+                                                <property name="ellipsize">middle</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="left_attach">1</property>
+                                                <property name="right_attach">2</property>
+                                                <property name="top_attach">12</property>
+                                                <property name="bottom_attach">13</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="label16">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="xpad">5</property>
+                                                <property name="label" translatable="yes">creator</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="top_attach">13</property>
+                                                <property name="bottom_attach">14</property>
+                                                <property name="x_options">GTK_FILL</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="metadata_label_creator">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes">-</property>
+                                                <property name="ellipsize">middle</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="left_attach">1</property>
+                                                <property name="right_attach">2</property>
+                                                <property name="top_attach">13</property>
+                                                <property name="bottom_attach">14</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="label28">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="xpad">5</property>
+                                                <property name="label" translatable="yes">rights</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="top_attach">14</property>
+                                                <property name="bottom_attach">15</property>
+                                                <property name="x_options">GTK_FILL</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="metadata_label_rights">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes">-</property>
+                                                <property name="ellipsize">middle</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="left_attach">1</property>
+                                                <property name="right_attach">2</property>
+                                                <property name="top_attach">14</property>
+                                                <property name="bottom_attach">15</property>
                                               </packing>
                                             </child>
                                           </widget>
