@@ -324,13 +324,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   cl_mem dev_in, dev_coarse;
   // as images (texture memory)
   cl_image_format fmt = {CL_RGBA, CL_FLOAT};
-  dev_in = clCreateImage2D (darktable.opencl->context,
+  dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
       CL_MEM_READ_WRITE,
       &fmt,
       sizes[0], sizes[1], 0,
       NULL, &err);
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
-  dev_coarse = clCreateImage2D (darktable.opencl->context,
+  dev_coarse = clCreateImage2D (darktable.opencl->dev[devid].context,
       CL_MEM_READ_WRITE,
       &fmt,
       sizes[0], sizes[1], 0,
@@ -345,7 +345,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   cl_mem dev_detail[max_scale];
   for(int k=0;k<max_scale;k++)
   {
-    dev_detail[k] = clCreateImage2D (darktable.opencl->context,
+    dev_detail[k] = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE,
         &fmt,
         sizes[0], sizes[1], 0,
@@ -366,6 +366,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
     size_t region[3] = {wd, ht, 1};
 
     // TODO: directly read cl_mem_in!
+    // TODO: one more buffer and interleaved write/process
     clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, in + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
     if(tx > 0) { origin[0] += max_filter_radius; orig0[0] += max_filter_radius; region[0] -= max_filter_radius; }
     if(ty > 0) { origin[1] += max_filter_radius; orig0[1] += max_filter_radius; region[1] -= max_filter_radius; }

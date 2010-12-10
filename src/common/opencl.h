@@ -41,8 +41,11 @@ typedef struct dt_opencl_device_t
 {
   pthread_mutex_t lock;
   cl_device_id devid;
+  cl_context context;
   cl_command_queue cmd_queue;
+  cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel  kernel [DT_OPENCL_MAX_KERNELS];
+  int program_used[DT_OPENCL_MAX_PROGRAMS];
   int kernel_used [DT_OPENCL_MAX_KERNELS];
 }
 dt_opencl_device_t;
@@ -55,9 +58,6 @@ typedef struct dt_opencl_t
 {
   pthread_mutex_t lock;
   int inited;
-  cl_program program[DT_OPENCL_MAX_PROGRAMS];
-  int program_used[DT_OPENCL_MAX_PROGRAMS];
-  cl_context context;
   int num_devs;
   dt_opencl_device_t *dev;
 }
@@ -77,7 +77,7 @@ int dt_opencl_lock_device(dt_opencl_t *cl, const int dev);
 void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev);
 
 /** loads the given .cl file and returns a reference to an internal program. */
-int dt_opencl_load_program(dt_opencl_t *cl, const char *filename);
+int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename);
 
 /** builds the given program. */
 int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int program);
@@ -104,7 +104,7 @@ static inline void dt_opencl_init(dt_opencl_t *cl) { cl->inited = 0; }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
 static inline int dt_opencl_lock_device(dt_opencl_t *cl, const int dev) {return -1;}
 static inline void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev) {}
-static inline int dt_opencl_load_program(dt_opencl_t *cl, const char *filename) {return -1;}
+static inline int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename) {return -1;}
 static inline int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int program) {return -1;}
 static inline int dt_opencl_create_kernel(dt_opencl_t *cl, const int program, const char *name) {return -1;}
 static inline void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel) {}

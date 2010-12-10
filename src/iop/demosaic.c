@@ -546,7 +546,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   // as images (texture memory)
   cl_image_format fmt1 = {CL_LUMINANCE, CL_FLOAT};
   cl_image_format fmt4 = {CL_RGBA, CL_FLOAT};
-  dev_out = clCreateImage2D (darktable.opencl->context,
+  dev_out = clCreateImage2D (darktable.opencl->dev[devid].context,
       CL_MEM_READ_WRITE,
       &fmt4,
       sizes[0], sizes[1], 0,
@@ -556,7 +556,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   if(roi_out->scale > .999f)
   {
     // 1:1 demosaic
-    dev_in = clCreateImage2D (darktable.opencl->context,
+    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
         &fmt1,
         region_out[0], region_out[1], sizeof(float)*region[0],
@@ -592,13 +592,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   else if(roi_out->scale > .5f)
   {
     // need to scale to right res
-    dev_in = clCreateImage2D (darktable.opencl->context,
+    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
         &fmt1,
         region[0], region[1], sizeof(float)*region[0],
         in, &err);
     if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
-    dev_tmp = clCreateImage2D (darktable.opencl->context,
+    dev_tmp = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE,
         &fmt4,
         region[0], region[1], 0,
@@ -631,7 +631,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   else
   {
     // sample half-size image:
-    dev_in = clCreateImage2D (darktable.opencl->context,
+    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
         &fmt1,
         region[0], region[1], 0,

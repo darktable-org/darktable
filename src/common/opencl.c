@@ -58,10 +58,10 @@ void dt_opencl_init(dt_opencl_t *cl)
     return;
   }
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d devices\n", num_devices);
-  memset(cl->program_used, 0x0, sizeof(int)*DT_OPENCL_MAX_PROGRAMS);
   for(int k=0;k<num_devices;k++)
   {
-    memset(cl->dev[k].kernel_used, 0x0, sizeof(int)*DT_OPENCL_MAX_KERNELS);
+    bzero(cl->dev[k].program_used, sizeof(int)*DT_OPENCL_MAX_PROGRAMS);
+    bzero(cl->dev[k].kernel_used,  sizeof(int)*DT_OPENCL_MAX_KERNELS);
     pthread_mutex_init(&cl->dev[k].lock, NULL);
     cl->dev[k].devid = devices[k];
     if(darktable.unmuted & DT_DEBUG_OPENCL)
@@ -80,65 +80,54 @@ void dt_opencl_init(dt_opencl_t *cl)
       for (int i=0;i<infoint;i++) printf("%ld ", infointtab[i]);
       printf("]\n");
     }
-  }
 
-  cl->context = clCreateContext(0, num_devices, devices, NULL, NULL, &err);
-  if(err != CL_SUCCESS)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context: %d\n", err);
-    return;
-  }
-
-  for(int k=0;k<num_devices;k++)
-  {
+    cl->dev[k].context = clCreateContext(0, 1, &cl->dev[k].devid, NULL, NULL, &err);
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %d\n", k, err);
+      return;
+    }
     // create a command queue for first device the context reported
-    cl->dev[k].cmd_queue = clCreateCommandQueue(cl->context, cl->dev[k].devid, 0, &err);
+    cl->dev[k].cmd_queue = clCreateCommandQueue(cl->dev[k].context, cl->dev[k].devid, 0, &err);
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
       return;
     }
-  }
-
-  char dtpath[1024], filename[1024], programname[1024];
-  dt_get_datadir(dtpath, 1024);
-  snprintf(filename, 1024, "%s/kernels/programs.conf", dtpath);
-  // now load all darktable cl kernels.
-  // TODO: compile as a job?
-  FILE *f = fopen(filename, "rb");
-  if(f)
-  {
-    while(!feof(f))
+    char dtpath[1024], filename[1024], programname[1024];
+    dt_get_datadir(dtpath, 1024);
+    snprintf(filename, 1024, "%s/kernels/programs.conf", dtpath);
+    // now load all darktable cl kernels.
+    // TODO: compile as a job?
+    FILE *f = fopen(filename, "rb");
+    if(f)
     {
-      int rd = fscanf(f, "%[^\n]\n", programname);
-      if(rd != 1) continue;
-      // remove comments:
-      for(int k=0;k<strlen(programname);k++) if(programname[k] == '#')
+      while(!feof(f))
       {
-        programname[k] = '\0';
-        while(programname[--k] == ' ') programname[k] = '\0';
-        break;
+        int rd = fscanf(f, "%[^\n]\n", programname);
+        if(rd != 1) continue;
+        // remove comments:
+        for(int k=0;k<strlen(programname);k++) if(programname[k] == '#')
+        {
+          programname[k] = '\0';
+          while(programname[--k] == ' ') programname[k] = '\0';
+          break;
+        }
+        if(programname[0] == '\0') continue;
+        snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
+        const int prog = dt_opencl_load_program(cl, k, filename);
+        if(dt_opencl_build_program(cl, k, prog))
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
       }
-      if(programname[0] == '\0') continue;
-      snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
-      (void)dt_opencl_load_program(cl, filename);
+      fclose(f);
     }
-    fclose(f);
+    else
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
+      return;
+    }
   }
-  else
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
-    return;
-  }
-
-  for(int prog=0;prog<DT_OPENCL_MAX_PROGRAMS;prog++) if(cl->program_used[prog])
-  for(int k=0;k<num_devices;k++)
-  {
-    if(dt_opencl_build_program(cl, k, prog))
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
-  }
-
   free(devices);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
   cl->inited = 1;
@@ -151,10 +140,10 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   {
     pthread_mutex_destroy(&cl->dev[i].lock);
     for(int k=0;k<DT_OPENCL_MAX_KERNELS; k++) if(cl->dev[i].kernel_used [k]) clReleaseKernel (cl->dev[i].kernel [k]);
+    for(int k=0;k<DT_OPENCL_MAX_PROGRAMS;k++) if(cl->dev[i].program_used[k]) clReleaseProgram(cl->dev[i].program[k]);
     clReleaseCommandQueue(cl->dev[i].cmd_queue);
+    clReleaseContext(cl->dev[i].context);
   }
-  for(int k=0;k<DT_OPENCL_MAX_PROGRAMS;k++) if(cl->program_used[k]) clReleaseProgram(cl->program[k]);
-  clReleaseContext(cl->context);
   pthread_mutex_destroy(&cl->lock);
 }
 
@@ -179,7 +168,7 @@ void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev)
   pthread_mutex_unlock(&cl->dev[dev].lock);
 }
 
-int dt_opencl_load_program(dt_opencl_t *cl, const char *filename)
+int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename)
 {
   cl_int err;
   FILE *f = fopen(filename, "rb");
@@ -220,14 +209,14 @@ int dt_opencl_load_program(dt_opencl_t *cl, const char *filename)
   lengths[lines-1] = file + filesize - sptr[lines-1];
   sptr[lines] = NULL;
   int k = 0;
-  for(;k<DT_OPENCL_MAX_PROGRAMS;k++) if(!cl->program_used[k])
+  for(;k<DT_OPENCL_MAX_PROGRAMS;k++) if(!cl->dev[dev].program_used[k])
   {
-    cl->program_used[k] = 1;
-    cl->program[k] = clCreateProgramWithSource(cl->context, lines, sptr, lengths, &err);
+    cl->dev[dev].program_used[k] = 1;
+    cl->dev[dev].program[k] = clCreateProgramWithSource(cl->dev[dev].context, lines, sptr, lengths, &err);
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not create program from file `%s'! (%d)\n", filename, err);
-      cl->program_used[k] = 0;
+      cl->dev[dev].program_used[k] = 0;
       return -1;
     }
     else break;
@@ -247,8 +236,9 @@ int dt_opencl_load_program(dt_opencl_t *cl, const char *filename)
 int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int prog)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
-  cl_program program = cl->program[prog];
+  cl_program program = cl->dev[dev].program[prog];
   cl_int err;
+  // TODO: how to pass sm_23 for fermi?
   err = clBuildProgram(program, 1, &cl->dev[dev].devid, "-cl-fast-relaxed-math -cl-strict-aliasing", 0, 0);
   if(err != CL_SUCCESS)
   {
@@ -286,7 +276,7 @@ int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
     for(;k<DT_OPENCL_MAX_KERNELS;k++) if(!cl->dev[dev].kernel_used[k])
     {
       cl->dev[dev].kernel_used[k] = 1;
-      cl->dev[dev].kernel[k] = clCreateKernel(cl->program[prog], name, &err);
+      cl->dev[dev].kernel[k] = clCreateKernel(cl->dev[dev].program[prog], name, &err);
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_create_kernel] could not create kernel `%s'! (%d)\n", name, err);
