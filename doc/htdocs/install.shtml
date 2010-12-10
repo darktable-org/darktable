@@ -81,10 +81,9 @@ libdbus-glib-1-dev libgnome-keyring-dev fop</li>
     	<img src="images/sun.jpg" alt="release" class="img" /><h1>funtoo/gentoo linux</h1>
       <ul>
         <li>unfortunately darktable is not in portage, so you have to:</li>
-        <li>download this <a href="darktable-9999.ebuild">ebuild for the git version</a></li>
-        <li>or this <a href="https://sourceforge.net/projects/darktable/files/darktable/0.5/darktable-0.5.ebuild/download">ebuild for the 0.5 release</a></li>
-	<li>create a local portage overlay, if you don't have one already:</li>
-	<li># echo 'PORTDIR_OVERLAY="${PORTDIR_OVERLAY} /usr/local/portage"' &gt;&gt; /etc/make.conf</li> 
+        <li>download (for example) this <a href="https://github.com/ichernetsky/gentoo-overlay/raw/master/media-gfx/darktable/darktable-9999.ebuild">ebuild for the git version</a></li>
+        <li>create a local portage overlay, if you don't have one already:</li>
+        <li># echo 'PORTDIR_OVERLAY="${PORTDIR_OVERLAY} /usr/local/portage"' &gt;&gt; /etc/make.conf</li> 
         <li># mkdir -p /usr/local/portage/media-gfx/darktable/</li>
         <li># cp darktable-*.ebuild /usr/local/portage/media-gfx/darktable/</li>
         <li># ebuild /usr/local/portage/media-gfx/darktable/darktable-*.ebuild digest</li>
