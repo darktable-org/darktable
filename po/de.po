@@ -3264,6 +3264,7 @@ msgstr ""
 "maximale Ausgabehöhe\n"
 "auf 0 setzen für keine Skalierung"
 
+# "maximale Größe" sprengt leider das Layout. :-(
 #.
 #. gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
 #. g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
@@ -3274,11 +3275,11 @@ msgstr ""
 #.
 #: ../src/libs/export.c:432
 msgid "max size"
-msgstr "maximale Größe"
+msgstr "max. Größe"
 
 #: ../src/libs/export.c:437
 msgid "x"
-msgstr "x"
+msgstr "×"
 
 #: ../src/libs/export.c:441
 msgid "intent"
