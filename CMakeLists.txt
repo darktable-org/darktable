@@ -142,6 +142,11 @@ endif(Gettext_FOUND)
 # 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")
 # endif(USE_SSE_SET)
 
+# Path to install gconf schemas into.
+if(NOT DT_GCONF_SCHEMA_DIR)
+  set(DT_GCONF_SCHEMA_DIR "etc/gconf/schemas/")
+endif()
+
 # setup some theme specific variables
 set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})

@@ -50,6 +50,8 @@ typedef struct dt_iop_demosaic_global_data_t
 {
   // demosaic pattern
   int kernel_ppg_green;
+  int kernel_pre_median;
+  int kernel_ppg_green_median;
   int kernel_ppg_redblue;
   int kernel_zoom_half_size;
   int kernel_downsample;
@@ -490,31 +492,30 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   roi = *roi_in;
   roo = *roi_out;
   roo.x = roo.y = 0;
-  // global scale: (iscale == 1.0, always when demosaic is on)
-  const float global_scale = roi_out->scale;
+  // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
   const float *const pixels = (float *)i;
-  if(global_scale > .999f)
+  if(roi_out->scale > .999f)
   {
     // output 1:1
     demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
   }
-  else if(global_scale > .5f)
+  else if(roi_out->scale > .5f)
   {
     // demosaic and then clip and zoom
     // roo.x = roi_out->x / global_scale;
     // roo.y = roi_out->y / global_scale;
-    roo.width  = roi_out->width / global_scale;
-    roo.height = roi_out->height / global_scale;
+    roo.width  = roi_out->width / roi_out->scale;
+    roo.height = roi_out->height / roi_out->scale;
     roo.scale = 1.0f;
      
     float *tmp = (float *)dt_alloc_align(16, roo.width*roo.height*4*sizeof(float));
     demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
     roi = *roi_out;
     roi.x = roi.y = 0;
-    roi.scale = global_scale;
+    roi.scale = roi_out->scale;
     dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo, roi.width, roo.width);
     free(tmp);
   }
@@ -532,23 +533,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
-  // const int ch = piece->colors;
-  // assert(ch == 4);
-  // global scale is roi scale and pipe input prescale
-  const float global_scale = roi_in->scale / piece->iscale;
-  // const uint16_t *in = (const uint16_t *)i;
   float *out = (float *)o;
+  float *in = (float *)i;
 
   const int devid = piece->pipe->devid;
   size_t sizes[2] = {roi_out->width, roi_out->height};
   size_t origin[] = {0, 0, 0};
-  // TODO: input image region!
-  size_t region[] = {self->dev->image->width, self->dev->image->height, 1};
+  size_t region[] = {roi_in->width, roi_in->height, 1};
   size_t region_out[] = {roi_out->width, roi_out->height, 1};
   cl_int err;
   cl_mem dev_in, dev_out, dev_tmp = NULL;
   // as images (texture memory)
-  cl_image_format fmt1 = {CL_LUMINANCE, CL_UNSIGNED_INT16};
+  cl_image_format fmt1 = {CL_LUMINANCE, CL_FLOAT};
   cl_image_format fmt4 = {CL_RGBA, CL_FLOAT};
   dev_out = clCreateImage2D (darktable.opencl->dev[devid].context,
       CL_MEM_READ_WRITE,
@@ -557,127 +553,80 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
       NULL, &err);
   if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy out buffer on device: %d\n", err);
   
-  if(!data->filters)
-  {
-    dt_iop_roi_t roi;
-    roi.scale = 1.0f;
-    roi.x = roi.y = 0;
-    roi.width  = self->dev->image->width;
-    roi.height = self->dev->image->height;
-    dt_iop_clip_and_zoom((float *)o, (float *)i, roi_out, &roi, roi_out->width, roi.width);
-    // TODO:
-#if 0
-    // actually no demosaic is needed at all
-    dt_iop_roi_t roi;
-    roi.x = ((int)(roi_in->x/global_scale)) & ~0x1; roi.y = ((int)(roi_in->y/global_scale)) & ~0x1;
-    roi.width = roi_in->width/global_scale; roi.height = roi_in->height/global_scale;
-    dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
-        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-        &fmt4,
-        roi.width, roi.height, sizeof(uint16_t)*region[0],
-        ((uint16_t *)self->dev->image->pixels) + roi.y*region[0] + roi.x, &err);
-    // scale temp buffer to output buffer
-    int zero = 0;
-    sizes[0] = roi_out->width; sizes[1] = roi_out->height;
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_in);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 2, sizeof(int), (void*)&zero);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 3, sizeof(int), (void*)&zero);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 4 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 4, sizeof(int), (void*)&roi_out->width);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 5 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 5, sizeof(int), (void*)&roi_out->height);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 6 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 6, sizeof(float), (void*)&global_scale);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 7 setting failed: %d\n", err);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_downsample, sizes);
-#endif
-  }
-  else if(global_scale > .999f)
+  if(roi_out->scale > .999f)
   {
     // 1:1 demosaic
-    size_t origin_in[] = {((size_t)roi_out->x)&~0x1, ((size_t)roi_out->y)&~0x1, 0};
     dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
         &fmt1,
-        region_out[0], region_out[1], sizeof(uint16_t)*region[0],
-        ((uint16_t *)self->dev->image->pixels) + origin_in[1]*region[0] + origin_in[0], &err);
+        region_out[0], region_out[1], sizeof(float)*region[0],
+        in, &err);
     if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
-    // clEnqueueWriteImage(darktable.opencl->cmd_queue, dev_in, CL_FALSE, origin_in, region_out, region[0]*sizeof(uint16_t), 0, ((uint16_t *)self->dev->image->pixels) + origin_in[1]*region[0] + origin_in[0], 0, NULL, NULL);
-    // demosaic!
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_out);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green, sizes);
 
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_out);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_out);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_redblue, sizes);
+    if(data->median_thrs > 0.0f)
+    {
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_out);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 3, sizeof(float), (void*)&data->median_thrs);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
+
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green_median, 0, sizeof(cl_mem), &dev_out);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green_median, 1, sizeof(cl_mem), &dev_out);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green_median, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green_median, sizes);
+    }
+    else
+    {
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_out);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green, sizes);
+    }
+
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_out);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_out);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
+    dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_redblue, sizes);
   }
-  else if(global_scale > .5f)
+  else if(roi_out->scale > .5f)
   {
     // need to scale to right res
-    dt_iop_roi_t roi;
-    roi.x = ((int)(roi_in->x/global_scale)) & ~0x1; roi.y = ((int)(roi_in->y/global_scale)) & ~0x1;
-    roi.width = roi_in->width/global_scale; roi.height = roi_in->height/global_scale;
     dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
         &fmt1,
-        roi.width, roi.height, sizeof(uint16_t)*region[0],
-        ((uint16_t *)self->dev->image->pixels) + roi.y*region[0] + roi.x, &err);
+        region[0], region[1], sizeof(float)*region[0],
+        in, &err);
     if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
     dev_tmp = clCreateImage2D (darktable.opencl->dev[devid].context,
         CL_MEM_READ_WRITE,
         &fmt4,
-        roi.width, roi.height, 0,
+        region[0], region[1], 0,
         NULL, &err);
     if(err != CL_SUCCESS) fprintf(stderr, "could not alloc tmp buffer on device: %d\n", err);
 
-    sizes[0] = roi.width; sizes[1] = roi.height;
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_tmp);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green, sizes);
+    sizes[0] = region[0]; sizes[1] = region[1];
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
+    dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green, sizes);
 
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_tmp);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_tmp);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_redblue, sizes);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
+    dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_redblue, sizes);
 
     // scale temp buffer to output buffer
     int zero = 0;
     sizes[0] = roi_out->width; sizes[1] = roi_out->height;
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_tmp);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 2, sizeof(int), (void*)&zero);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 3, sizeof(int), (void*)&zero);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 4 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 4, sizeof(int), (void*)&roi_out->width);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 5 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 5, sizeof(int), (void*)&roi_out->height);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 6 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 6, sizeof(float), (void*)&global_scale);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 7 setting failed: %d\n", err);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_downsample, sizes);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 2, sizeof(int), (void*)&zero);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 3, sizeof(int), (void*)&zero);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 4, sizeof(int), (void*)&roi_out->width);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 5, sizeof(int), (void*)&roi_out->height);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_downsample, 6, sizeof(float), (void*)&roi_out->scale);
+    dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_downsample, sizes);
   }
   else
   {
@@ -686,27 +635,19 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
         &fmt1,
         region[0], region[1], 0,
-        self->dev->image->pixels, &err);
+        in, &err);
     if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
     // clEnqueueWriteImage(darktable.opencl->cmd_queue, dev_in, CL_FALSE, origin, region, region[0]*sizeof(uint16_t), 0, (uint16_t *)self->dev->image->pixels, 0, NULL, NULL);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_in);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 1 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 2 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 2, sizeof(int), (void*)&roi_out->x);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 3 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 3, sizeof(int), (void*)&roi_out->y);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 4 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 4, sizeof(int), (void*)&roi_out->width);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 5 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 5, sizeof(int), (void*)&roi_out->height);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 6 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 6, sizeof(float), (void*)&global_scale);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 7 setting failed: %d\n", err);
-    err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 7, sizeof(uint32_t), (void*)&data->filters);
-    if(err != CL_SUCCESS) fprintf(stderr, "param 8 setting failed: %d\n", err);
-
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_zoom_half_size, sizes);
+    int zero = 0;
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_in);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 2, sizeof(int), (void*)&zero);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 3, sizeof(int), (void*)&zero);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 4, sizeof(int), (void*)&roi_out->width);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 5, sizeof(int), (void*)&roi_out->height);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 6, sizeof(float), (void*)&roi_out->scale);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 7, sizeof(uint32_t), (void*)&data->filters);
+    dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_zoom_half_size, sizes);
   }
 
   // double start = dt_get_wtime();
@@ -740,10 +681,12 @@ void init(dt_iop_module_t *module)
   const int program = 0; // from programs.conf
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)malloc(sizeof(dt_iop_demosaic_global_data_t));
   module->data = gd;
-  gd->kernel_zoom_half_size = dt_opencl_create_kernel(darktable.opencl, program, "clip_and_zoom_demosaic_half_size");
-  gd->kernel_ppg_green      = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_green");
-  gd->kernel_ppg_redblue    = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_redblue");
-  gd->kernel_downsample     = dt_opencl_create_kernel(darktable.opencl, program, "clip_and_zoom");
+  gd->kernel_zoom_half_size   = dt_opencl_create_kernel(darktable.opencl, program, "clip_and_zoom_demosaic_half_size");
+  gd->kernel_ppg_green        = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_green");
+  gd->kernel_pre_median       = dt_opencl_create_kernel(darktable.opencl, program, "pre_median");
+  gd->kernel_ppg_green_median = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_green_median");
+  gd->kernel_ppg_redblue      = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_redblue");
+  gd->kernel_downsample       = dt_opencl_create_kernel(darktable.opencl, program, "clip_and_zoom");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -755,6 +698,8 @@ void cleanup(dt_iop_module_t *module)
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)module->data;
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_zoom_half_size);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_green);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_pre_median);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_green_median);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_redblue);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_downsample);
   free(module->data);
@@ -786,7 +731,7 @@ void gui_update   (struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale1, p->median_thrs*100.0f);
+  dtgtk_slider_set_value(g->scale1, p->median_thrs*1.0f);
 }
 
 static void
@@ -795,8 +740,8 @@ median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->median_thrs = dtgtk_slider_get_value(slider)/100.0f;
-  if(p->median_thrs >= 0.01f) p->median_thrs = 1.0f;
+  p->median_thrs = dtgtk_slider_get_value(slider)/1.0f;
+  // if(p->median_thrs >= 0.01f) p->median_thrs = 1.0f;
   dt_dev_add_history_item(darktable.develop, self);
 }
 

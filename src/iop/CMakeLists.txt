@@ -9,7 +9,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure equalizer
 )
 
 add_library(bloom MODULE "bloom.c")
-add_library(tonemap MODULE "tonemap.c")
+add_library(tonemap MODULE "tonemap.cc")
 add_library(tonecurve MODULE "tonecurve.c")
 add_library(gamma MODULE "gamma.c")
 add_library(temperature MODULE "temperature.c")
@@ -55,6 +55,6 @@ foreach(module ${MODULES})
 endforeach(module)
 
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION lib/darktable/plugins)
+	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
 endforeach(module)
 

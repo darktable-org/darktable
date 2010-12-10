@@ -105,7 +105,14 @@ update (dt_lib_module_t *self, int which)
 static void
 set_keyword(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
-  sprintf(d->keyword,"%s",gtk_entry_get_text(d->entry));
+  const gchar *beg = g_strrstr(gtk_entry_get_text(d->entry), ",");
+  if(!beg) beg = gtk_entry_get_text(d->entry);
+  else
+  {
+    if(*beg == ',') beg++;
+    if(*beg == ' ') beg++;
+  }
+  sprintf(d->keyword,"%s", beg);
   update (self, 1);
 }
 
@@ -127,7 +134,8 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   GtkTreeModel *model = NULL;
   GtkTreeView *view = d->related;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter) &&
+     !gtk_tree_model_get_iter_first(model, &iter)) return;
   guint tagid;
   gtk_tree_model_get (model, &iter, 
                       DT_LIB_TAGGING_COL_ID, &tagid,
@@ -208,6 +216,18 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   const gchar *tag = gtk_entry_get_text(d->entry);
   dt_tag_new(tag,NULL);
   update(self, 1);
+}
+
+static void
+entry_activated (GtkButton *button, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+  const gchar *tag = gtk_entry_get_text(d->entry);
+  dt_tag_new(tag,NULL);
+  attach_selected_tag(self, d);
+  update(self, 1);
+  update(self, 0);
 }
 
 static void
@@ -350,7 +370,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(w), "changed",
                    G_CALLBACK(tag_name_changed), (gpointer)self);
   g_signal_connect(G_OBJECT (w), "activate",
-                   G_CALLBACK (new_button_clicked), (gpointer)self);
+                   G_CALLBACK (entry_activated), (gpointer)self);
   d->entry = GTK_ENTRY(w);
 
   // related tree view
@@ -388,6 +408,14 @@ gui_init (dt_lib_module_t *self)
                    G_CALLBACK (delete_button_clicked), (gpointer)self);
 
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
+
+  // add entry completion
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->related)));
+  gtk_entry_completion_set_text_column(completion, 0);
+  gtk_entry_completion_set_inline_completion(completion, TRUE);
+  gtk_entry_set_completion(d->entry, completion);
+
 
   set_keyword(self, d);
 }

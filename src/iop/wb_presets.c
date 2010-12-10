@@ -514,6 +514,13 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS 50D", "5000K", 0,		{ 2.056641, 1, 1.438477, 0 } },
   { "Canon", "EOS 50D", "6500K", 0,		{ 2.311523, 1, 1.239258, 0 } },
 
+  { "Canon", "EOS 60D", Daylight, 0,		{ 2.1514, 1, 1.5420, 0 } },
+  { "Canon", "EOS 60D", Shade, 0,		{ 2.5039, 1, 1.3057, 0 } },
+  { "Canon", "EOS 60D", Cloudy, 0,		{ 2.3223, 1, 1.4160, 0 } },
+  { "Canon", "EOS 60D", Tungsten, 0,		{ 1.5215, 1, 2.3486, 0 } },
+  { "Canon", "EOS 60D", Fluorescent, 0,		{ 1.9248, 1, 2.1836, 0 } },
+  { "Canon", "EOS 60D", Flash, 0,		{ 2.1514, 1, 1.5420, 0 } },
+
   { "Canon", "EOS 300D DIGITAL", Daylight, 0,	{ 2.072115, 1, 1.217548, 0 } },
   { "Canon", "EOS 300D DIGITAL", Shade, 0,	{ 2.455529, 1, 1.026442, 0 } },
   { "Canon", "EOS 300D DIGITAL", Cloudy, 0,	{ 2.254808, 1, 1.108173, 0 } },
@@ -3575,6 +3582,12 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-G1", Shade, 0,		{ 2.323194, 1, 1.224335, 0 } },
   { "Panasonic", "DMC-G1", Incandescent, 0,	{ 1.319392, 1, 2.148289, 0 } },
   { "Panasonic", "DMC-G1", Flash, 0,		{ 1.528517, 1, 1.277567, 0 } },
+
+  { "Panasonic", "DMC-GF1", Daylight, 0,	{ 2.007605, 1, 1.418251, 0 } },
+  { "Panasonic", "DMC-GF1", Cloudy, 0,		{ 2.174905, 1, 1.296578, 0 } },
+  { "Panasonic", "DMC-GF1", Shade, 0,		{ 2.395437, 1, 1.193916, 0 } },
+  { "Panasonic", "DMC-GF1", Incandescent, 0,	{ 1.365019, 1, 2.117871, 0 } },
+  { "Panasonic", "DMC-GF1", Flash, 0,		{ 2.353612, 1, 1.231939, 0 } },
 
   { "Panasonic", "DMC-L1", Daylight, 0,		{ 1.980989, 1, 1.444867, 0 } },
   { "Panasonic", "DMC-L1", Cloudy, 0,		{ 2.129278, 1, 1.300380, 0 } },

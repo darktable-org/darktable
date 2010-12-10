@@ -1,5 +1,5 @@
 build/src/preferences_gen.h
-darktable.schemas.in
+data/darktable.schemas
 data/darktable.glade
 src/common/darktable.h
 src/common/film.c

@@ -288,13 +288,6 @@ void
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
     void *cl_mem_in, void **cl_mem_out)
 {
-#if 0
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    memcpy(o, i, sizeof(float)*3*roi_in->width*roi_in->height);
-    return;
-  }
-#endif
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
   // global scale is roi scale and pipe input prescale
@@ -302,6 +295,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
   float *in  = (float *)i;
   float *out = (float *)o;
 
+  // TODO: use cl_mem_in and out!
   const int max_scale = 5;//d->octaves;
   float thrs [max_scale][4];
   float boost[max_scale][4];
@@ -361,28 +355,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
 
   const int width = roi_out->width, height = roi_out->height;
 
-  // float *in4 = (float *)malloc(4*sizeof(float)*sizes[0]*sizes[1]);
-
   // for all tiles:
   for(int tx=0;tx<ceilf(width/(float)tile_wd);tx++)
   for(int ty=0;ty<ceilf(height/(float)tile_ht);ty++)
-    // const int tx=0,ty=0;
   {
     size_t orig0[3] = {0, 0, 0};
     size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
     size_t wd = origin[0] + sizes[0] > width  ? width  - origin[0] : sizes[0];
     size_t ht = origin[1] + sizes[1] > height ? height - origin[1] : sizes[1];
     size_t region[3] = {wd, ht, 1};
-    // printf("origin %lu %lu and size: %lu %lu\n", origin[0], origin[1], wd, ht);
 
+    // TODO: directly read cl_mem_in!
     // TODO: one more buffer and interleaved write/process
-    // for(int j=0;j<ht;j++) for(int i=0;i<wd;i++) for(int c=0;c<3;c++) in4[4*(sizes[0]*j+i)+c] = in[3*((origin[1]+j)*width + (origin[0]+i))+c];
-    // clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*sizes[0]*sizeof(float), 0, in4, 0, NULL, NULL);
     clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, in + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
     if(tx > 0) { origin[0] += max_filter_radius; orig0[0] += max_filter_radius; region[0] -= max_filter_radius; }
     if(ty > 0) { origin[1] += max_filter_radius; orig0[1] += max_filter_radius; region[1] -= max_filter_radius; }
-    // total number of work-items (threads*blocks):
-    // size_t global[] = {local[0]*((512+local[0])/local[0]), local[1]*((512+local[1])/local[1])};//64*((height+64)/64)};//{width, height};
 
     for(int s=0;s<max_scale;s++)
     {
@@ -392,17 +379,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
       err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
       if(s & 1)
       {
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_coarse);
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
       }
       else
       {
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_coarse);
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
       }
-      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
-      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(unsigned int), (void *)&sharp[s]);
-      if(err != CL_SUCCESS) fprintf(stderr, "param setting failed! %d\n", err);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(unsigned int), (void *)&sharp[s]);
 
       // printf("equeueing kernel with %lu %lu threads\n", local[0], global[0]);
       err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_decompose, sizes);
@@ -414,20 +400,25 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i
     // now synthesize again:
     for(int scale=max_scale-1;scale>=0;scale--)
     {
-      err  = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 2, sizeof(cl_mem), (void *)&dev_detail[scale]);
-      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 3, sizeof(float), (void *)&thrs[scale][0]);
-      err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 4, sizeof(float), (void *)&boost[scale][0]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  3, sizeof(float), (void *)&thrs[scale][0]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  4, sizeof(float), (void *)&thrs[scale][1]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][2]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][3]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&boost[scale][0]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&boost[scale][1]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][2]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
       if(scale & 1)
       {
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_coarse);
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
       }
       else
       {
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_coarse);
-        err |= dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
       }
-      if(err != CL_SUCCESS) fprintf(stderr, "param setting failed! %d\n", err);
 
       err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_synthesize, sizes);
       if(err != CL_SUCCESS) fprintf(stderr, "enqueueing failed! %d\n", err);

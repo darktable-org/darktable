@@ -222,7 +222,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 #
 add_custom_command(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/..//darktable.schemas.in > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
 )
 
 #
@@ -261,7 +261,7 @@ add_library(rawspeed_static STATIC IMPORTED)
 set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rawspeed/librawspeed.a)
 target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
 
-install(TARGETS lib_darktable DESTINATION lib/darktable)
+install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
 # Compile libraw modules

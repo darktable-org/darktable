@@ -190,6 +190,17 @@ entry_callback (GtkEntry *entry, gpointer user_data)
 }
 
 static gboolean
+entry_activated (GtkEntry *entry, gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+  const gchar *name = gtk_entry_get_text(d->entry);
+  if (name)
+    dt_styles_apply_to_selection (name,gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (d->duplicate)));
+
+  return FALSE;
+}
+
+static gboolean
 duplicate_callback (GtkEntry *entry, gpointer user_data)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
@@ -230,6 +241,8 @@ gui_init (dt_lib_module_t *self)
   d->entry=GTK_ENTRY(w);
   gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter style name"), (char *)NULL);
   g_signal_connect (d->entry, "changed", G_CALLBACK(entry_callback),d);
+  g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
+
   dt_gui_key_accel_block_on_focus ( GTK_WIDGET (d->entry));
   
   gtk_box_pack_start(GTK_BOX (self->widget),GTK_WIDGET (d->entry),TRUE,FALSE,0);
@@ -257,8 +270,14 @@ gui_init (dt_lib_module_t *self)
   g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
- 
-  
+
+  // add entry completion
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->list)));
+  gtk_entry_completion_set_text_column(completion, 0);
+  gtk_entry_completion_set_inline_completion(completion, TRUE);
+  gtk_entry_set_completion(d->entry, completion);
+
   /* update filtered list */
   _gui_styles_update_view(d);
   

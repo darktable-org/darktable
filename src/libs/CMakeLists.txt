@@ -26,6 +26,6 @@ endforeach(module)
 
 # Add installation target for each module
 foreach(module ${MODULES})
-	install(TARGETS  ${module} DESTINATION lib/darktable/plugins/lighttable)
+	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/lighttable)
 endforeach(module)
 

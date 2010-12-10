@@ -20,11 +20,12 @@ const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
 
-float
+float4
 weight(const float4 c1, const float4 c2, const float sharpen)
 {
-  // return exp((-(c1.x-c2.x)*(c1.x-c2.x)-(c1.y-c2.y)*(c1.y-c2.y)-(c1.z-c2.z)*(c1.z-c2.z)) * sharpen);
-  return exp(-(c1.x-c2.x)*(c1.x-c2.x) * sharpen);
+  const float wc = native_exp(-((c1.y - c2.y)*(c1.y - c2.y) + (c1.z - c2.z)*(c1.z - c2.z)) * sharpen);
+  const float wl = native_exp(- (c1.x - c2.x)*(c1.x - c2.x) * sharpen);
+  return (float4)(wl, wc, wc, 1.0f);
 }
 
 
@@ -43,9 +44,8 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   float4 wgt = (float4)(0.0f);
   for(int j=0;j<5;j++) for(int i=0;i<5;i++)
   {
-    // samplerf?
     float4 px = read_imagef(in, sampleri, (float2)(x+mult*(i - 2), y+mult*(j - 2)));
-    const float w = filter[i]*filter[j]*weight(pixel, px, sharpen);
+    const float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
     sum += w*px;
     wgt += w;
   }
@@ -58,11 +58,14 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
 
 __kernel void
 eaw_synthesize (__write_only image2d_t out, __read_only image2d_t coarse, __read_only image2d_t detail,
-     const float threshold, const float boost)
+     const float t0, const float t1, const float t2, const float t3,
+     const float b0, const float b1, const float b2, const float b3)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
+  const float4 threshold = (float4)(t0, t1, t2, t3);
+  const float4 boost     = (float4)(b0, b1, b2, b3);
   float4 c = read_imagef(coarse, sampleri, (int2)(x, y));
   float4 d = read_imagef(detail, sampleri, (int2)(x, y));
   float4 mul = (float4)(1.0f, c.x, c.x, 1.0f);

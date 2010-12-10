@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../" "${CMAKE_CURRENT_SOURCE_DIR}")
-set(MODULES jpeg png ppm pfm tiff )
+set(MODULES copy jpeg png ppm pfm tiff )
 
-
+add_library(copy MODULE "copy.c")
 add_library(jpeg MODULE "jpeg.c")
 add_library(png MODULE "png.c")
 add_library(ppm MODULE "ppm.c")
@@ -18,6 +18,6 @@ endif(OPENEXR_FOUND)
 
 foreach(module ${MODULES})
 	target_link_libraries(${module} ${LIBS})
-	install(TARGETS  ${module} DESTINATION lib/darktable/plugins/imageio/format)
+	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/imageio/format)
 endforeach(module)
 

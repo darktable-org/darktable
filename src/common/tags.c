@@ -251,7 +251,8 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   sqlite3_exec(darktable.db, "insert into tagquery2 select distinct tagid, name, "
       "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
       NULL, NULL, NULL);
-  sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc", -1, &stmt, NULL);
+  sqlite3_exec(darktable.db, "update tagquery2 set count = count + 100 - length(name)", NULL, NULL, NULL);
+  sqlite3_prepare_v2(darktable.db, "select tagid, name from tagquery2 order by count desc, length(name)", -1, &stmt, NULL);
   
   // Create result
   uint32_t count=0;
