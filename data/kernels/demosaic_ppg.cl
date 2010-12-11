@@ -38,6 +38,47 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
   return (float2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
 }
 
+#if 0
+__kernel void
+green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
+{
+  const float thr = 0.01f;
+  const float maximum = 1.0f;
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int c = FC(y, x, filters);
+
+  const float o    = read_imagef(in, sampleri, (int2)(x, y)).x;
+  if(c == 1 && (y & 1))
+  {
+    const float o1_1 = read_imagef(in, sampleri, (int2)(x-1, y-1)).x;
+    const float o1_2 = read_imagef(in, sampleri, (int2)(x+1, y-1)).x;
+    const float o1_3 = read_imagef(in, sampleri, (int2)(x-1, y+1)).x;
+    const float o1_4 = read_imagef(in, sampleri, (int2)(x+1, y+1)).x;
+    const float o2_1 = read_imagef(in, sampleri, (int2)(x, y-2)).x;
+    const float o2_2 = read_imagef(in, sampleri, (int2)(x, y+2)).x;
+    const float o2_3 = read_imagef(in, sampleri, (int2)(x-2, y)).x;
+    const float o2_4 = read_imagef(in, sampleri, (int2)(x+2, y)).x;
+
+    const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
+    const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
+    if (m2 > 0.0f)
+    {
+      const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
+      const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
+      if((in[j*width+i]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
+      {
+        out[j*width+i] = out[j*width+i]*m1/m2;
+        write_imagef (out, (int2)(x, y), o*m1/m2);
+      }
+      else write_imagef (out, (int2)(x, y), o);
+    }
+    else write_imagef (out, (int2)(x, y), o);
+  }
+  else write_imagef (out, (int2)(x, y), o);
+}
+#endif
+
 constant int goffx[18] = { 0, -1,  1, -2,  0,  2, -1,  1,  0,  // green
                           -2,  0,  2, -2,  0,  2, -2,  0,  2}; // r, b
 constant int goffy[18] = {-2, -1, -1,  0,  0,  0,  1,  1,  2,  // green

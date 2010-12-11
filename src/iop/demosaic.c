@@ -43,6 +43,7 @@ dt_iop_demosaic_params_t;
 typedef struct dt_iop_demosaic_gui_data_t
 {
   GtkDarktableSlider *scale1;
+  GtkToggleButton *greeneq;
 }
 dt_iop_demosaic_gui_data_t;
 
@@ -171,53 +172,48 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
 }
 #undef SWAP
 
-#if 0
 static void
-green_equilibration(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters)
+green_equilibration(float *out, const float *const in, const int width, const int height, const uint32_t filters)
 {
-  int i,j;
-  double m1,m2,c1,c2;
-  int o1_1,o1_2,o1_3,o1_4;
-  int o2_1,o2_2,o2_3,o2_4;
-  ushort (*img)[4];
-  const int margin = 3;
   int oj = 2, oi = 2;
-  float f;
   const float thr = 0.01f;
-  if(FC(oj, oi) != 3) oj++;
-  if(FC(oj, oi) != 3) oi++;
-  if(FC(oj, oi) != 3) oj--;
+  const float maximum = 1.0f;
+  if(FC(oj, oi, filters) != 1) oj++;
+  if(FC(oj, oi, filters) != 1) oi++;
+  if(FC(oj, oi, filters) != 1) oj--;
 
-  img = (ushort (*)[4]) calloc (height*width, sizeof *image);
-  merror (img, "green_matching()");
-  memcpy(img,image,height*width*sizeof *image);
+  memcpy(out,in,height*width*sizeof(float));
 
-  for(j=oj;j<height-margin;j+=2)
-    for(i=oi;i<width-margin;i+=2){
-      o1_1=img[(j-1)*width+i-1][1];
-      o1_2=img[(j-1)*width+i+1][1];
-      o1_3=img[(j+1)*width+i-1][1];
-      o1_4=img[(j+1)*width+i+1][1];
-      o2_1=img[(j-2)*width+i][3];
-      o2_2=img[(j+2)*width+i][3];
-      o2_3=img[j*width+i-2][3];
-      o2_4=img[j*width+i+2][3];
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(out,oi,oj)
+#endif
+  for(int j=oj;j<height-2;j+=2)
+  {
+    for(int i=oi;i<width-2;i+=2)
+    {
+      const float o1_1 = in[(j-1)*width+i-1];
+      const float o1_2 = in[(j-1)*width+i+1];
+      const float o1_3 = in[(j+1)*width+i-1];
+      const float o1_4 = in[(j+1)*width+i+1];
+      const float o2_1 = in[(j-2)*width+i];
+      const float o2_2 = in[(j+2)*width+i];
+      const float o2_3 = in[j*width+i-2];
+      const float o2_4 = in[j*width+i+2];
 
-      m1=(o1_1+o1_2+o1_3+o1_4)/4.0;
-      m2=(o2_1+o2_2+o2_3+o2_4)/4.0;
-      if (m2 > .0) {
-        c1=(abs(o1_1-o1_2)+abs(o1_1-o1_3)+abs(o1_1-o1_4)+abs(o1_2-o1_3)+abs(o1_3-o1_4)+abs(o1_2-o1_4))/6.0;
-        c2=(abs(o2_1-o2_2)+abs(o2_1-o2_3)+abs(o2_1-o2_4)+abs(o2_2-o2_3)+abs(o2_3-o2_4)+abs(o2_2-o2_4))/6.0;
-        if((img[j*width+i][3]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
+      const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
+      const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
+      if (m2 > 0.0f)
+      {
+        const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
+        const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
+        if((in[j*width+i]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
         {
-          f = image[j*width+i][3]*m1/m2;
-          image[j*width+i][3]=f>0xffff?0xffff:f;
+          out[j*width+i] = out[j*width+i]*m1/m2;
         }
       }
     }
-  free(img);
+  }
 }
-#endif
 
 
 #if 0
@@ -500,7 +496,15 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   if(roi_out->scale > .999f)
   {
     // output 1:1
-    demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
+    // green eq:
+    if(data->flags)
+    {
+      float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
+      green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
+      demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
+      free(in);
+    }
+    else demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
   }
   else if(roi_out->scale > .5f)
   {
@@ -512,7 +516,14 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     roo.scale = 1.0f;
      
     float *tmp = (float *)dt_alloc_align(16, roo.width*roo.height*4*sizeof(float));
-    demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
+    if(data->flags)
+    {
+      float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
+      green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
+      demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
+      free(in);
+    }
+    else demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
     roi = *roi_out;
     roi.x = roi.y = 0;
     roi.scale = roi_out->scale;
@@ -630,7 +641,7 @@ void init(dt_iop_module_t *module)
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
-  dt_iop_demosaic_params_t tmp = (dt_iop_demosaic_params_t){0};
+  dt_iop_demosaic_params_t tmp = (dt_iop_demosaic_params_t){0, 0.0f};
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_demosaic_params_t));
 
@@ -687,7 +698,8 @@ void gui_update   (struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale1, p->median_thrs*1.0f);
+  dtgtk_slider_set_value(g->scale1, p->median_thrs);
+  gtk_toggle_button_set_active(g->greeneq, p->flags);
 }
 
 static void
@@ -696,8 +708,17 @@ median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->median_thrs = dtgtk_slider_get_value(slider)/1.0f;
-  // if(p->median_thrs >= 0.01f) p->median_thrs = 1.0f;
+  p->median_thrs = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self);
+}
+
+static void
+greeneq_callback (GtkToggleButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
+  p->flags = gtk_toggle_button_get_active(button);
   dt_dev_add_history_item(darktable.develop, self);
 }
 
@@ -720,8 +741,17 @@ void gui_init     (struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
   gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
+  widget = dtgtk_reset_label_new(_("match greens"), self, &p->flags, sizeof(uint32_t));
+  gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
+  g->greeneq = GTK_TOGGLE_BUTTON(gtk_check_button_new());
+  gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->greeneq), TRUE, TRUE, 0);
+
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (median_thrs_callback), self);
+
+  g_signal_connect (G_OBJECT (g->greeneq), "toggled",
+                    G_CALLBACK (greeneq_callback), self);
 }
 
 void gui_cleanup  (struct dt_iop_module_t *self)
