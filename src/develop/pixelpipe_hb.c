@@ -289,7 +289,7 @@ alloc_device(const int width, const int height, const int devid, const int bpp)
 
 // recursive helper for process:
 static int
-dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, void **cl_mem_output,
+dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, void **cl_mem_output, int *out_bpp,
                              const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
   dt_iop_roi_t roi_in = *roi_out;
@@ -305,10 +305,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
     if(!piece->enabled)
-      return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1);
+      return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_bpp, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1);
   }
 
   const int bpp = get_output_bpp(module, pipe, piece, dev);
+  *out_bpp = bpp;
   const size_t bufsize = bpp*roi_out->width*roi_out->height;
 
 
@@ -402,7 +403,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     pthread_mutex_unlock(&pipe->busy_mutex);
 
     // recurse to get actual data of input buffer
-    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &cl_mem_input, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
+    int in_bpp;
+    if(dt_dev_pixelpipe_process_rec(pipe, dev, &input, &cl_mem_input, &in_bpp, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1)) return 1;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
 
     // reserve new cache line: output
@@ -496,7 +498,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
       // if input is not on the gpu, copy it there.
       // else, if input is on the gpu only, invalidate cpu cache line.
-      if(!cl_mem_input) cl_mem_input = copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, bpp);
+      if(!cl_mem_input) cl_mem_input = copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
       else dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
       *cl_mem_output = alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
       module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
@@ -610,7 +612,8 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   GList *pieces = g_list_last(pipe->nodes);
   void *buf = NULL;
   void *cl_mem_out = NULL;
-  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &cl_mem_out, &roi, modules, pieces, pos))
+  int out_bpp;
+  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos))
   {
     pipe->processing = 0;
     dt_opencl_unlock_device(darktable.opencl, pipe->devid);
