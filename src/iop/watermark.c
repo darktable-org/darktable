@@ -39,6 +39,9 @@
 #include <librsvg/rsvg.h>
 #include <librsvg/rsvg-cairo.h>
 
+#include "common/metadata.h"
+#include "common/utility.h"
+
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
 
@@ -118,46 +121,23 @@ gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
   return found;
 }
 
-guint _string_occurence(const gchar *haystack,const gchar *needle) 
+// replace < and > with &lt; and &gt;. any more? Yes! & -> &amp;
+static gchar *_string_escape(const gchar *string)
 {
-  guint o=0;
-  const gchar *p=haystack;
-  if( (p=g_strstr_len(p,strlen(p),needle)) != NULL) 
-  {
-    do
-    {
-      o++;
-    } while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
-  }
-  return o;
+  gchar *result;
+  result = dt_util_str_replace(string, "&", "&amp;");
+  result = dt_util_str_replace(result, "<", "&lt;");
+  result = dt_util_str_replace(result, ">", "&gt;");
+  return result;
 }
 
-gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace)
+static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *replace)
 {
-  gint occurences = _string_occurence(string,search);
-  if( occurences )
-  {
-    gint sl=-(strlen(search)-strlen(replace));
-    gchar *pend=string+strlen(string);
-    gchar *nstring=g_malloc(strlen(string)+(sl*occurences)+1);
-    gchar *np=nstring;
-    gchar *s=string,*p=string;
-    if( (s=g_strstr_len(s,strlen(s),search)) != NULL) 
-    {
-      do
-      {
-        memcpy(np,p,s-p);
-        np+=(s-p);
-        memcpy(np,replace,strlen(replace));
-        np+=strlen(replace);
-        p=s+strlen(search);
-      } while((s=g_strstr_len((s+1),strlen(s+1),search)) != NULL);
-    }
-    memcpy(np,p,pend-p);
-    np[pend-p]='\0';
-    string=nstring;
-  } 
-  return string;
+  gchar* _replace = _string_escape(replace);
+  gchar* result = dt_util_str_replace(string, search, _replace);
+  if(_replace)
+    g_free(_replace);
+  return result;
 }
 
 gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
@@ -178,7 +158,7 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
   else if (g_file_test(datadir,G_FILE_TEST_EXISTS))
     filename=datadir;
   else return NULL;
-  
+
   gchar *svgdata=NULL;
   if( g_file_get_contents( filename, &svgdata, &length, NULL) ) {
     // File is loaded lets substitute strings if found...
@@ -207,6 +187,34 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
 
     svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
     if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+
+    // TODO: auto generate that code?
+    GList * res;
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.creator", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.creator)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
+
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.publisher", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.publisher)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
+
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.title", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.title)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
+
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.description", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.description)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
+
+    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.rights", NULL);
+    svgdoc = _string_substitute(svgdata,"$(Xmp.dc.rights)",(res?res->data:""));
+    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( res ) { g_free(res->data); g_list_free(res); }
+
   }
   return svgdoc;
 }

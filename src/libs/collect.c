@@ -22,6 +22,8 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
+#include "common/metadata.h"
+#include "common/utility.h"
 
 DT_MODULE(1)
 
@@ -72,12 +74,13 @@ update_query(dt_lib_collect_t *d)
   // film roll, camera, tag, day, history
   int property = gtk_combo_box_get_active(d->combo);
   gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->text));
+  gchar *escaped_text = dt_util_str_replace(text, "'", "''");
   
   switch(property)
   {
     case 0: // film roll
       if(imgsel == -666)
-        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%%%s%%'))", text);
+        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%%%s%%'))", escaped_text);
       else if(imgsel > 0)
         snprintf(query, 1024, "(film_id in (select id from film_rolls where folder in "
                               "(select folder from film_rolls where id = (select film_id from images where id = %d))))", imgsel);
@@ -101,7 +104,7 @@ update_query(dt_lib_collect_t *d)
       
     case 1: // camera
       if(imgsel == -666)
-        snprintf(query, 1024, "(maker || ' ' || model like '%%%s%%')", text);
+        snprintf(query, 1024, "(maker || ' ' || model like '%%%s%%')", escaped_text);
       else if(imgsel > 0)
         snprintf(query, 1024, "(maker || ' ' || model in "
                               "(select maker || ' ' || model from images where id = %d))", imgsel);
@@ -112,7 +115,7 @@ update_query(dt_lib_collect_t *d)
     case 2: // tag
       if(imgsel == -666)
         snprintf(query, 1024, "(id in (select imgid from tagged_images as a join "
-                              "tags as b on a.tagid = b.id where name like '%%%s%%'))", text);
+                              "tags as b on a.tagid = b.id where name like '%%%s%%'))", escaped_text);
       else if(imgsel > 0)
         snprintf(query, 1024, "(id in "
                               "(select imgid from tagged_images as a join tags as b on a.tagid = b.id where "
@@ -122,17 +125,91 @@ update_query(dt_lib_collect_t *d)
                               "(select imgid from tagged_images as a join tags as b on a.tagid = b.id where "
                               "b.id in (select tagid from tagged_images as c join selected_images as d on c.imgid = d.imgid)))");
       break;
- 
+
+    // TODO: How to handle images without metadata? In the moment they are not shown.
+    // TODO: Autogenerate this code?
+    case 6: // title
+        if(imgsel == -666)
+            snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                                  DT_METADATA_XMP_DC_TITLE, escaped_text);
+        else if(imgsel > 0)
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data where key = %d and"
+                                  "value in (select value from meta_data where id = %d and key = %d)))",
+                                  DT_METADATA_XMP_DC_TITLE, imgsel, DT_METADATA_XMP_DC_TITLE);
+        else
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data as a join selected_images as b on a.id = b.imgid where a.key = %d))",
+                                  DT_METADATA_XMP_DC_TITLE);
+        break;
+    case 7: // description
+        if(imgsel == -666)
+            snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                                  DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
+        else if(imgsel > 0)
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data where key = %d and"
+                                  "value in (select value from meta_data where id = %d and key = %d)))",
+                                  DT_METADATA_XMP_DC_DESCRIPTION, imgsel, DT_METADATA_XMP_DC_DESCRIPTION);
+        else
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data as a join selected_images as b on a.id = b.imgid where a.key = %d))",
+                                  DT_METADATA_XMP_DC_DESCRIPTION);
+        break;
+    case 8: // creator
+        if(imgsel == -666)
+            snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                                  DT_METADATA_XMP_DC_CREATOR, escaped_text);
+        else if(imgsel > 0)
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data where key = %d and"
+                                  "value in (select value from meta_data where id = %d and key = %d)))",
+                                  DT_METADATA_XMP_DC_CREATOR, imgsel, DT_METADATA_XMP_DC_CREATOR);
+        else
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data as a join selected_images as b on a.id = b.imgid where a.key = %d))",
+                                  DT_METADATA_XMP_DC_CREATOR);
+        break;
+    case 9: // publisher
+        if(imgsel == -666)
+            snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                                  DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
+        else if(imgsel > 0)
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data where key = %d and"
+                                  "value in (select value from meta_data where id = %d and key = %d)))",
+                                  DT_METADATA_XMP_DC_PUBLISHER, imgsel, DT_METADATA_XMP_DC_PUBLISHER);
+        else
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data as a join selected_images as b on a.id = b.imgid where a.key = %d))",
+                                  DT_METADATA_XMP_DC_PUBLISHER);
+        break;
+    case 10: // rights
+        if(imgsel == -666)
+            snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                                  DT_METADATA_XMP_DC_RIGHTS, escaped_text);
+        else if(imgsel > 0)
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data where key = %d and"
+                                  "value in (select value from meta_data where id = %d and key = %d)))",
+                                  DT_METADATA_XMP_DC_RIGHTS, imgsel, DT_METADATA_XMP_DC_RIGHTS);
+        else
+            snprintf(query, 1024, "(id in"
+                                  "(select id from meta_data as a join selected_images as b on a.id = b.imgid where a.key = %d))",
+                                  DT_METADATA_XMP_DC_RIGHTS);
+        break;
 
     default: // case 3: // day
       if(imgsel == -666)
-        snprintf(query, 1024, "(datetime_taken like '%%%s%%')", text);
+        snprintf(query, 1024, "(datetime_taken like '%%%s%%')", escaped_text);
       else if(imgsel > 0)
         snprintf(query, 1024, "(datetime_taken in (select datetime_taken from images where id = %d))", imgsel);
       else
         snprintf(query, 1024, "(datetime_taken in (select datetime_taken from images as a join selected_images as b on a.id = b.imgid)");
       break;
   }
+  g_free(text);
+  g_free(escaped_text);
   
   /* set the extended where and the use of it in the query */
   dt_collection_set_extended_where (darktable.collection,query);
@@ -160,18 +237,20 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
   char query[1024];
   int property = gtk_combo_box_get_active(d->combo);
   gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->text));
+  gchar *escaped_text = dt_util_str_replace(text, "'", "''");
   dt_conf_set_string("plugins/lighttable/collect/string", text);
   dt_conf_set_int ("plugins/lighttable/collect/item", property);
+  
   switch(property)
   {
     case 0: // film roll
-      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'", text);
+      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'", escaped_text);
       break;
     case 1: // camera
-      snprintf(query, 1024, "select distinct maker || ' ' || model, 1 from images where maker || ' ' || model like '%%%s%%'", text);
+      snprintf(query, 1024, "select distinct maker || ' ' || model, 1 from images where maker || ' ' || model like '%%%s%%'", escaped_text);
       break;
     case 2: // tag
-      snprintf(query, 1024, "select distinct name, id from tags where name like '%%%s%%'", text);
+      snprintf(query, 1024, "select distinct name, id from tags where name like '%%%s%%'", escaped_text);
       break;
     case 4: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
@@ -206,11 +285,35 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
       goto entry_key_press_exit;
     break;
     
+    // TODO: Add empty string for metadata?
+    // TODO: Autogenerate this code?
+    case 6: // title
+        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+        DT_METADATA_XMP_DC_TITLE, escaped_text);
+        break;
+    case 7: // description
+        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+        DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
+        break;
+    case 8: // creator
+        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+        DT_METADATA_XMP_DC_CREATOR, escaped_text);
+        break;
+    case 9: // publisher
+        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+        DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
+        break;
+    case 10: // rights
+        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+        DT_METADATA_XMP_DC_RIGHTS, escaped_text);
+        break;
+
     default: // case 3: // day
-      snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", text);
+      snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", escaped_text);
       break;
   }
   g_free(text);
+  g_free(escaped_text);
   sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -306,6 +409,11 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("date"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("history"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("colorlabel"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("title"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("description"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("creator"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("publisher"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("rights"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), dt_conf_get_int("plugins/lighttable/collect/item"));
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d);
   gtk_box_pack_start(box, w, FALSE, FALSE, 0);

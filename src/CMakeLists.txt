@@ -24,8 +24,10 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_rgbe.c" 
   "common/imageio_tiff.c" 
   "common/imageio_rawspeed.cc" 
+  "common/metadata.c" 
   "common/styles.c" 
   "common/tags.c" 
+  "common/utility.c" 
   "common/variables.c" 
   "common/pwstorage/pwstorage.c" 
   "common/pwstorage/backend_gconf.c"
@@ -224,9 +226,17 @@ add_custom_command(
 )
 
 #
+# Generate mapping of key strings to internal metadata id
+#
+add_custom_command(
+   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
+   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+#
 # build libdarktable
 #
-add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${SOURCES})
+add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)
@@ -279,7 +289,7 @@ add_subdirectory(imageio)
 # build darktable executable
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
-set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib/darktable)
+set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL}/darktable)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)

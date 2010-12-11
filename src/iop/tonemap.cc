@@ -80,12 +80,6 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
-static inline float
-fastexp(const float x)
-{
-  return fmaxf(0.0f, (6+x*(6+x*(3+x)))*0.16666666f);
-}
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_tonemapping_data_t *data = (dt_iop_tonemapping_data_t *)piece->data;
@@ -162,9 +156,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   in  = (float *)ivoid;
   for( int i=0 ; i<size ; i++ )
   {
-    float L;
-
-    L = fastexp((B[i]-avgB)/data->contrast-2.0-B[i]);
+    const float L = expf((B[i]-avgB)/data->contrast-2.0-B[i]);
 
     out[0]=in[0]*L;
     out[1]=in[1]*L;
@@ -233,10 +225,10 @@ void init(dt_iop_module_t *module)
   module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
-  module->priority = 255;
+  module->priority = 250;
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
-  dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t){2.5,2.0};
+  dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t){2.5,0.1};
   memcpy(module->params, &tmp, sizeof(dt_iop_tonemapping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_tonemapping_params_t));
 }
@@ -270,7 +262,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   widget = dtgtk_reset_label_new(_("spatial extent"), self, &p->Fsize, sizeof(float));
   gtk_box_pack_start(GTK_BOX(vbox1), widget, TRUE, TRUE, 0);
-  g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,10.0, 0.2, p->Fsize, 1));
+  g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,1.0, 0.2, p->Fsize, 1));
   dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);

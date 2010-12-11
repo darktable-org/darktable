@@ -289,6 +289,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
     g_snprintf(query,512, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
   
   rc = sqlite3_prepare_v2 (darktable.db,query, -1, &stmt, NULL);
+
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
     long int imgid = sqlite3_column_int(stmt, 0);

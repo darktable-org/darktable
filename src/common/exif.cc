@@ -27,6 +27,8 @@ extern "C"
 #include "common/colorlabels.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/metadata.h"
+#include "common/tags.h"
 }
 // #include <libexif/exif-data.h>
 #include <exiv2/xmp.hpp>
@@ -82,9 +84,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
         != exifData.end() ) {
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(
-
-            Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
+    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
         != exifData.end() ) {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = 1.0/pos->toFloat ();
@@ -192,6 +192,44 @@ int dt_exif_read(dt_image_t *img, const char* path)
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
         != exifData.end() ) {
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
+    }
+
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    }
+
+	// FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
+    }
+
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
+        != exifData.end() ) {
+      std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
+    }
+
+// Now read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
+    Exiv2::IptcData &iptcData = image->iptcData();
+    Exiv2::IptcData::iterator iptcPos;
+
+    if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
+        != iptcData.end() ) {
+		while(iptcPos != iptcData.end()){
+			std::string str = iptcPos->print(&exifData);
+			guint tagid = 0;
+			dt_tag_new(str.c_str(),&tagid);
+			dt_tag_attach(tagid, img->id);
+			iptcPos++;
+		}
     }
 
     img->exif_inited = 1;
@@ -508,44 +546,32 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     {
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.rights"))) != xmpData.end() )
       {
-        // license
-        char *license = strdup(pos->toString().c_str());
-        char *adr = license;
-        if(strncmp(license, "lang=", 5) == 0)
-          license = strchrnul(license, ' ')+1;
-        sqlite3_prepare_v2(darktable.db, "update images set license = ?1 where id = ?2", -1, &stmt, NULL);
-        sqlite3_bind_int(stmt, 2, img->id);
-        sqlite3_bind_text(stmt, 1, license, -1, SQLITE_TRANSIENT);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        // rights
+        char *rights = strdup(pos->toString().c_str());
+        char *adr = rights;
+        if(strncmp(rights, "lang=", 5) == 0)
+          rights = strchrnul(rights, ' ')+1;
+        dt_metadata_set(img->id, "Xmp.dc.rights", rights);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.description"))) != xmpData.end() )
       {
         // description
-        char *descr = strdup(pos->toString().c_str());
-        char *adr = descr;
-        if(strncmp(descr, "lang=", 5) == 0)
-          descr = strchrnul(descr, ' ')+1;
-        sqlite3_prepare_v2(darktable.db, "update images set description = ?1 where id = ?2", -1, &stmt, NULL);
-        sqlite3_bind_int(stmt, 2, img->id);
-        sqlite3_bind_text(stmt, 1, descr, -1, SQLITE_TRANSIENT);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        char *description = strdup(pos->toString().c_str());
+        char *adr = description;
+        if(strncmp(description, "lang=", 5) == 0)
+          description = strchrnul(description, ' ')+1;
+        dt_metadata_set(img->id, "Xmp.dc.description", description);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.title"))) != xmpData.end() )
       {
-        // caption
-        char *cap = strdup(pos->toString().c_str());
-        char *adr = cap;
-        if(strncmp(cap, "lang=", 5) == 0)
-          cap = strchrnul(cap, ' ')+1;
-        sqlite3_prepare_v2(darktable.db, "update images set caption = ?1 where id = ?2", -1, &stmt, NULL);
-        sqlite3_bind_int(stmt, 2, img->id);
-        sqlite3_bind_text(stmt, 1, cap, -1, SQLITE_TRANSIENT);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        // title
+        char *title = strdup(pos->toString().c_str());
+        char *adr = title;
+        if(strncmp(title, "lang=", 5) == 0)
+          title = strchrnul(title, ' ')+1;
+        dt_metadata_set(img->id, "Xmp.dc.title", title);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.creator"))) != xmpData.end() )
@@ -555,12 +581,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         char *adr = creator;
         if(strncmp(creator, "lang=", 5) == 0)
           creator = strchrnul(creator, ' ')+1;
-        sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
-        sqlite3_bind_int(stmt, 1, img->id);
-        sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_CREATOR);
-        sqlite3_bind_text(stmt, 3, creator, -1, SQLITE_TRANSIENT);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        dt_metadata_set(img->id, "Xmp.dc.creator", creator);
         free(adr);
       }
       if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.publisher"))) != xmpData.end() )
@@ -570,21 +591,9 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         char *adr = publisher;
         if(strncmp(publisher, "lang=", 5) == 0)
           publisher = strchrnul(publisher, ' ')+1;
-        sqlite3_prepare_v2(darktable.db, "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
-        sqlite3_bind_int(stmt, 1, img->id);
-        sqlite3_bind_int(stmt, 2, DT_IMAGE_METADATA_PUBLISHER);
-        sqlite3_bind_text(stmt, 3, publisher, -1, SQLITE_TRANSIENT);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
         free(adr);
       }
-    }
-    else
-    {
-      sqlite3_prepare_v2(darktable.db, "update images set license='', description='', caption='' where id=?1", -1, &stmt, NULL);
-      sqlite3_bind_int(stmt, 1, img->id);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
     }
 
     int stars = 1;
@@ -780,32 +789,39 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     int stars = 1, raw_params = 0;
     // get stars and raw params from db
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select flags, raw_parameters, license, description, caption from images where id = ?1", -1, &stmt, NULL);
+    sqlite3_prepare_v2(darktable.db, "select flags, raw_parameters from images where id = ?1", -1, &stmt, NULL);
     sqlite3_bind_int (stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       stars      = sqlite3_column_int(stmt, 0);
       raw_params = sqlite3_column_int(stmt, 1);
-      xmpData["Xmp.dc.rights"]      = sqlite3_column_text(stmt, 2);
-      xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 3);
-      xmpData["Xmp.dc.title"]       = sqlite3_column_text(stmt, 4);
     }
     sqlite3_finalize(stmt);
     xmpData["Xmp.xmp.Rating"] = (stars & 0x7) - 1; // normally stars go from -1 .. 5 or so.
 
-    // the extra meta data
-    sqlite3_prepare_v2(darktable.db, "select id, key, value from meta_data where id = ?1", -1, &stmt, NULL);
+    // the meta data
+    sqlite3_prepare_v2(darktable.db, "select key, value from meta_data where id = ?1", -1, &stmt, NULL);
     sqlite3_bind_int (stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-		int key = sqlite3_column_int(stmt, 1);
+		int key = sqlite3_column_int(stmt, 0);
 		switch(key){
-			case DT_IMAGE_METADATA_CREATOR:
-				xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 2);
+			case DT_METADATA_XMP_DC_CREATOR:
+				xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
 				break;
-			case DT_IMAGE_METADATA_PUBLISHER:
-				xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 2);
+			case DT_METADATA_XMP_DC_PUBLISHER:
+				xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
 				break;
+			case DT_METADATA_XMP_DC_TITLE:
+				xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
+				break;
+			case DT_METADATA_XMP_DC_DESCRIPTION:
+				xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
+				break;
+			case DT_METADATA_XMP_DC_RIGHTS:
+				xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
+				break;
+
 		}
     }
     sqlite3_finalize(stmt);

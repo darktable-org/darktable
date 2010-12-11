@@ -1,5 +1,7 @@
 0.8 release:
 
+- Pentax k-5: black point 513?
+
 - trying to open exif for non-existent image crashes.
 
 - import with lock contention?
