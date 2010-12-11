@@ -461,33 +461,14 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   // raw->params.four_color_rgb = img->raw_params.four_color_rgb;
   raw->params.four_color_rgb = 0;
   raw->params.use_camera_matrix = 0;
-  raw->params.green_matching = 0;// img->raw_params.greeneq;
-  raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
-  raw->params.threshold = 0;//img->raw_denoise_threshold;
+  raw->params.green_matching = 0;
+  raw->params.highlight = 1;
+  raw->params.threshold = 0;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
-  raw->params.amaze_ca_refine = 0;//img->raw_params.fill0 & 0x10;
-  raw->params.fbdd_noiserd    = 0;//(img->raw_params.fill0>>7) & 3;
-#if 0
-  // new demosaicing params
-  raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x10;
-  if ((img->raw_params.fill0 & 0x0F) == 6 ) {
-    raw->params.user_qual = 4;
-    raw->params.dcb_enhance_fl = img->raw_params.fill0 & 0x010;
-    raw->params.dcb_iterations = (img->raw_params.fill0 & 0x060)>>5;
-    raw->params.fbdd_noiserd = (img->raw_params.fill0 & 0x180)>>7;
-  }
-  if ((img->raw_params.fill0 & 0x0F) == 7 ) {
-    raw->params.user_qual = 5;
-    raw->params.amaze_ca_refine = img->raw_params.fill0 & 0x010;
-  }
-  if ((img->raw_params.fill0 & 0x0F) == 8 ) {
-    raw->params.user_qual = 6;
-    raw->params.eeci_refine = img->raw_params.fill0 & 0x010;
-    raw->params.es_med_passes = (img->raw_params.fill0 & 0x1E0)>>5;
-  }
-#endif
-  // end of new demosaicing params
+  raw->params.amaze_ca_refine = 0;
+  raw->params.fbdd_noiserd    = 0;
+
   ret = libraw_open_file(raw, filename);
   HANDLE_ERRORS(ret, 0);
   raw->params.user_qual = 0;

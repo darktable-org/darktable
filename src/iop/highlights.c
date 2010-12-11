@@ -295,9 +295,16 @@ void init(dt_iop_module_t *module)
 	// module->data = malloc(sizeof(dt_iop_highlights_data_t));
 	module->params = malloc(sizeof(dt_iop_highlights_params_t));
 	module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-	if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
-	else                                    module->default_enabled = 1;
-	module->priority = 250;
+	if(module->dev->image->flags & DT_IMAGE_RAW)
+  {
+    module->default_enabled = 1;
+  }
+	else
+  {
+    module->default_enabled = 0;
+    module->hide_enable_button = 1;
+  }
+	module->priority = 255;
 	module->params_size = sizeof(dt_iop_highlights_params_t);
 	module->gui_data = NULL;
 	dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t){0, 1.0, 0.0, 0.0};

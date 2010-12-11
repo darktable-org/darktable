@@ -232,12 +232,12 @@ void init (dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
   // raw images need wb (to convert from uint16_t to float):
-  if(dt_image_is_ldr(module->dev->image)) module->default_enabled = 0;
-  else
+	if(module->dev->image->flags & DT_IMAGE_RAW)
   {
     module->default_enabled = 1;
     module->hide_enable_button = 1;
   }
+  else module->default_enabled = 0;
   module->priority = 150;
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
