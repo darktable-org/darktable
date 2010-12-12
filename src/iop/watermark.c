@@ -140,9 +140,9 @@ static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *
   return result;
 }
 
-gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
+gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_data_t *data)
+{
   gsize length;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
   gchar *svgdoc=NULL;
   gchar configdir[1024],datadir[1024], *filename;
@@ -150,8 +150,8 @@ gchar * _watermark_get_svgdoc( dt_iop_module_t *self ) {
   dt_get_user_config_dir(configdir, 1024);
   strcat(datadir,"/watermarks/");
   strcat(configdir,"/watermarks/");
-  strcat(datadir,p->filename);
-  strcat(configdir,p->filename);
+  strcat(datadir,data->filename);
+  strcat(configdir,data->filename);
   
   if (g_file_test(configdir,G_FILE_TEST_EXISTS))
     filename=configdir;
@@ -228,7 +228,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   
   /* Load svg if not loaded */
-  gchar *svgdoc = _watermark_get_svgdoc (self);
+  gchar *svgdoc = _watermark_get_svgdoc (self, data);
   if (!svgdoc) {
     memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
