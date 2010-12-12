@@ -535,6 +535,8 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   const int orientation = dt_image_orientation(img);
 
   img->filters = 0;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags |= DT_IMAGE_LDR;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -640,6 +642,8 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   const int orientation = dt_image_orientation(img);
 
   img->filters = 0;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags |= DT_IMAGE_LDR;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
