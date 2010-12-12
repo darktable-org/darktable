@@ -144,7 +144,7 @@ endif(Gettext_FOUND)
 
 # Path to install gconf schemas into.
 if(NOT DT_GCONF_SCHEMA_DIR)
-  set(DT_GCONF_SCHEMA_DIR ${CMAKE_INSTALL_PREFIX}"/etc/gconf/schemas/")
+  set(DT_GCONF_SCHEMA_DIR "/etc/gconf/schemas/")
 endif()
 
 # setup some theme specific variables
