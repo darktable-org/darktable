@@ -47,7 +47,7 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
   const int y = get_global_id(1);
   const int c = FC(y, x, filters);
 
-  const float o    = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float o = read_imagef(in, sampleri, (int2)(x, y)).x;
   if(c == 1 && (y & 1))
   {
     const float o1_1 = read_imagef(in, sampleri, (int2)(x-1, y-1)).x;
@@ -63,11 +63,10 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
     const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
     if (m2 > 0.0f)
     {
-      const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
-      const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
-      if((in[j*width+i]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
+      const float c1 = (fabs(o1_1-o1_2)+fabs(o1_1-o1_3)+fabs(o1_1-o1_4)+fabs(o1_2-o1_3)+fabs(o1_3-o1_4)+fabs(o1_2-o1_4))/6.0f;
+      const float c2 = (fabs(o2_1-o2_2)+fabs(o2_1-o2_3)+fabs(o2_1-o2_4)+fabs(o2_2-o2_3)+fabs(o2_3-o2_4)+fabs(o2_2-o2_4))/6.0f;
+      if((o<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
       {
-        out[j*width+i] = out[j*width+i]*m1/m2;
         write_imagef (out, (int2)(x, y), o*m1/m2);
       }
       else write_imagef (out, (int2)(x, y), o);

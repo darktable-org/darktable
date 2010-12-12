@@ -548,23 +548,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int devid = piece->pipe->devid;
   size_t sizes[2] = {roi_out->width, roi_out->height};
-  cl_int err;
   cl_mem dev_tmp = NULL;
-  cl_image_format fmt4 = {CL_RGBA, CL_FLOAT};
   
   if(roi_out->scale > .99999f)
   {
     // 1:1 demosaic
-    cl_mem dev_greeneq = NULL;
+    cl_mem dev_green_eq = NULL;
     if(data->flags)
     {
       // green equilibration
-      dev_greeneq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
+      dev_green_eq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 2, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
-      dev_in = dev_greeneq;
+      dev_in = dev_green_eq;
     }
     if(data->median_thrs > 0.0f)
     {
@@ -598,16 +596,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
-    cl_mem dev_greeneq = NULL;
+    cl_mem dev_green_eq = NULL;
     if(data->flags)
     {
       // green equilibration
-      dev_greeneq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
+      dev_green_eq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 2, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
-      dev_in = dev_greeneq;
+      dev_in = dev_green_eq;
     }
 
     sizes[0] = roi_in->width; sizes[1] = roi_in->height;
