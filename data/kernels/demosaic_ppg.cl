@@ -38,7 +38,6 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
   return (float2)((p.x + r_x)/r_scale, (p.y + r_y)/r_scale);
 }
 
-#if 0
 __kernel void
 green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
 {
@@ -77,7 +76,6 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
   }
   else write_imagef (out, (int2)(x, y), o);
 }
-#endif
 
 constant int goffx[18] = { 0, -1,  1, -2,  0,  2, -1,  1,  0,  // green
                           -2,  0,  2, -2,  0,  2, -2,  0,  2}; // r, b

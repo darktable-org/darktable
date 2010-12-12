@@ -97,6 +97,13 @@ int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, c
 /** launch kernel! */
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes);
 
+/** HAVE_OPENCL mode only: copy and alloc buffers. */
+void dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp);
+
+void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp);
+
+void* dt_opencl_alloc_device(const int width, const int height, const int devid, const int bpp);
+
 #else
 #include <stdlib.h>
 typedef struct dt_opencl_t {int inited;} dt_opencl_t;

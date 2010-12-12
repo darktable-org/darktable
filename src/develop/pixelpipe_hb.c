@@ -230,62 +230,6 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   return module->output_bpp(module, pipe, piece);
 }
 
-#ifdef HAVE_OPENCL
-static void
-copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp)
-{
-  size_t origin[] = {0, 0, 0};
-  size_t region[] = {width, height, 1};
-  // blocking.
-  clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, NULL);
-}
-
-static void*
-copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp)
-{
-  cl_int err;
-  cl_image_format fmt;
-  // guess pixel format from bytes per pixel
-  if(bpp == 4*sizeof(float))
-    fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
-  else if(bpp == sizeof(float))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
-  else if(bpp == sizeof(uint16_t))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
-  else return NULL;
-
-  cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,
-      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-      &fmt,
-      width, height, 0,
-      host, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "[pixelpipe copy_host_to_device] could not alloc/copy img buffer onto device %d: %d\n", devid, err);
-  return dev;
-}
-
-static void*
-alloc_device(const int width, const int height, const int devid, const int bpp)
-{
-  cl_int err;
-  cl_image_format fmt;
-  // guess pixel format from bytes per pixel
-  if(bpp == 4*sizeof(float))
-    fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
-  else if(bpp == sizeof(float))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
-  else if(bpp == sizeof(uint16_t))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
-  else return NULL;
-
-  cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,
-      CL_MEM_READ_WRITE,
-      &fmt,
-      width, height, 0,
-      NULL, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "[pixelpipe alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
-  return dev;
-}
-#endif
 
 // recursive helper for process:
 static int
@@ -358,6 +302,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         if(roi_in.scale == 1.0f)
         {
           // fast branch for 1:1 pixel copies.
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(pipe,roi_out,roi_in,output)
+#endif
           for(int j=0;j<MIN(roi_out->height, pipe->iheight-roi_in.y);j++)
             memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
         }
@@ -498,9 +445,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
       // if input is not on the gpu, copy it there.
       // else, if input is on the gpu only, invalidate cpu cache line.
-      if(!cl_mem_input) cl_mem_input = copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+      if(!cl_mem_input) cl_mem_input = dt_opencl_copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
       else dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
-      *cl_mem_output = alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
+      *cl_mem_output = dt_opencl_alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
       module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
       clReleaseMemObject(cl_mem_input);
       // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
@@ -511,7 +458,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       // cleanup unneeded opencl buffers, and copy back to CPU buffer
       if(cl_mem_input)
       {
-        copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, bpp);
+        dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, bpp);
         clReleaseMemObject(cl_mem_input);
       }
       *cl_mem_output = NULL;

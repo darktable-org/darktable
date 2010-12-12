@@ -334,4 +334,56 @@ int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel
   return clEnqueueNDRangeKernel(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel], 2, NULL, sizes, local, 0, NULL, NULL);
 }
 
+void dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp)
+{
+  size_t origin[] = {0, 0, 0};
+  size_t region[] = {width, height, 1};
+  // blocking.
+  clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, NULL);
+}
+
+void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp)
+{
+  cl_int err;
+  cl_image_format fmt;
+  // guess pixel format from bytes per pixel
+  if(bpp == 4*sizeof(float))
+    fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
+  else if(bpp == sizeof(float))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
+  else if(bpp == sizeof(uint16_t))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
+  else return NULL;
+
+  cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,
+      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+      &fmt,
+      width, height, 0,
+      host, &err);
+  if(err != CL_SUCCESS) fprintf(stderr, "[opencl copy_host_to_device] could not alloc/copy img buffer onto device %d: %d\n", devid, err);
+  return dev;
+}
+
+void* dt_opencl_alloc_device(const int width, const int height, const int devid, const int bpp)
+{
+  cl_int err;
+  cl_image_format fmt;
+  // guess pixel format from bytes per pixel
+  if(bpp == 4*sizeof(float))
+    fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
+  else if(bpp == sizeof(float))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
+  else if(bpp == sizeof(uint16_t))
+    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
+  else return NULL;
+
+  cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,
+      CL_MEM_READ_WRITE,
+      &fmt,
+      width, height, 0,
+      NULL, &err);
+  if(err != CL_SUCCESS) fprintf(stderr, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
+  return dev;
+}
+
 

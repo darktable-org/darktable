@@ -50,8 +50,9 @@ dt_iop_demosaic_gui_data_t;
 typedef struct dt_iop_demosaic_global_data_t
 {
   // demosaic pattern
-  int kernel_ppg_green;
+  int kernel_green_eq;
   int kernel_pre_median;
+  int kernel_ppg_green;
   int kernel_ppg_green_median;
   int kernel_ppg_redblue;
   int kernel_zoom_half_size;
@@ -551,9 +552,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_tmp = NULL;
   cl_image_format fmt4 = {CL_RGBA, CL_FLOAT};
   
-  if(roi_out->scale > .999f)
+  if(roi_out->scale > .99999f)
   {
     // 1:1 demosaic
+    cl_mem dev_greeneq = NULL;
+    if(data->flags)
+    {
+      // green equilibration
+      dev_greeneq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
+      dev_in = dev_greeneq;
+    }
     if(data->median_thrs > 0.0f)
     {
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
@@ -579,22 +591,47 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_out);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
     dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_redblue, sizes);
+
+    if(dev_green_eq) clReleaseMemObject(dev_green_eq);
   }
   else if(roi_out->scale > .5f)
   {
     // need to scale to right res
-    dev_tmp = clCreateImage2D (darktable.opencl->dev[devid].context,
-        CL_MEM_READ_WRITE,
-        &fmt4,
-        roi_in->width, roi_in->height, 0,
-        NULL, &err);
-    if(err != CL_SUCCESS) fprintf(stderr, "could not alloc tmp buffer on device: %d\n", err);
+    dev_tmp = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
+    cl_mem dev_greeneq = NULL;
+    if(data->flags)
+    {
+      // green equilibration
+      dev_greeneq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
+      dev_in = dev_greeneq;
+    }
 
     sizes[0] = roi_in->width; sizes[1] = roi_in->height;
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_tmp);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
-    dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green, sizes);
+    if(data->median_thrs > 0.0f)
+    {
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 3, sizeof(float), (void*)&data->median_thrs);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
+
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green_median, 0, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green_median, 1, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green_median, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green_median, sizes);
+    }
+    else
+    {
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green, sizes);
+    }
+    if(dev_green_eq) clReleaseMemObject(dev_green_eq);
 
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_tmp);
@@ -650,6 +687,7 @@ void init(dt_iop_module_t *module)
   module->data = gd;
   gd->kernel_zoom_half_size   = dt_opencl_create_kernel(darktable.opencl, program, "clip_and_zoom_demosaic_half_size");
   gd->kernel_ppg_green        = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_green");
+  gd->kernel_green_eq         = dt_opencl_create_kernel(darktable.opencl, program, "green_equilibration");
   gd->kernel_pre_median       = dt_opencl_create_kernel(darktable.opencl, program, "pre_median");
   gd->kernel_ppg_green_median = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_green_median");
   gd->kernel_ppg_redblue      = dt_opencl_create_kernel(darktable.opencl, program, "ppg_demosaic_redblue");
@@ -666,6 +704,7 @@ void cleanup(dt_iop_module_t *module)
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_zoom_half_size);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_green);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_pre_median);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_green_eq);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_green_median);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_ppg_redblue);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_downsample);
