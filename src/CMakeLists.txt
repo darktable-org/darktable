@@ -289,7 +289,9 @@ add_subdirectory(imageio)
 # build darktable executable
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
-set_target_properties(darktable PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL}/darktable)
+set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
