@@ -170,6 +170,19 @@
       </locale>
     </schema>
 
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/show_folder_levels</key>
+      <applyto>/apps/darktable/show_folder_levels</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>show a number of folder levels in lists</short>
+        <long>The number of folder levels to show in lists of film roll names, counting from the</long>
+      </locale>
+    </schema>
+
     <schema>
       <key>/schemas/apps/darktable/config_version</key>
       <applyto>/apps/darktable/config_version</applyto>

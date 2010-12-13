@@ -86,9 +86,7 @@ dt_gui_filmview_update(const char *filter)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *path = (const char *)sqlite3_column_text(stmt, 1);
-    const char *folder = path + strlen(path);
-    while(folder > path && *folder != '/') folder--;
-    if(*folder == '/' && folder != path) folder++;
+    const char *folder = dt_image_film_roll_name(path);
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                         DT_GUI_FILM_COL_FOLDER, folder,
