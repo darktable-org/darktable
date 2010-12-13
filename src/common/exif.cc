@@ -604,6 +604,20 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       stars = pos->toLong() + 1;
       set = 1;
     }
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Label"))) != xmpData.end() )
+    {
+      std::string label = pos->toString();
+      if(label == "Red")                       // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 0);
+      else if(label == "Yellow")               // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 1);
+      else if(label == "Green")
+        dt_colorlabels_set_label(img->id, 2);
+      else if(label == "Blue")                 // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 3);
+      else if(label == "Purple")               // Is it really called like that in XMP files?
+        dt_colorlabels_set_label(img->id, 4);
+    }
     if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.raw_params"))) != xmpData.end() )
     {
       raw_params = pos->toLong();
