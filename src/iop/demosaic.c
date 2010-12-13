@@ -34,7 +34,6 @@ DT_MODULE(2)
 
 typedef struct dt_iop_demosaic_params_t
 {
-  // TODO: hot pixels removal/denoise/green eq/whatever
   uint32_t flags;
   float median_thrs;
 }
@@ -215,51 +214,6 @@ green_equilibration(float *out, const float *const in, const int width, const in
     }
   }
 }
-
-
-#if 0
-// Cubic Spline Interpolation by Li and Randhawa, modified by Jacek Gozdz and Luis Sanz Rodríguez
-// fake before demosaicing denoising, adjusted to dt.
-static void
-fbdd_green(float *out, const uint16_t *in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters)
-{
-  const int u = roi_in->width;
-  const int v = 2*u;
-  const int w = 3*u;
-  const int x = 4*u;
-  const int y = 5*u;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(in, out)
-#endif
-  for(int j=5;j<roi_out->height-5;j++)
-  {
-    const uint16_t *buf = in + j*roi_in->width + 5 + (FC(j,1,filters)&1);
-    float *buf_out = out + 4*(j*roi_out->width + 5 + (FC(j,1,filters)&1));
-    for(int i=5+(FC(j,1,filters)&1);i<roi_out->width-5;i+=2)
-    {
-      const float f0 = 1.0f/(1.0f+fabsf((float)buf[-u]-(float)buf[-w])+fabsf((float)buf[-w]-(float)buf[+y]));
-      const float f1 = 1.0f/(1.0f+fabsf((float)buf[+1]-(float)buf[+3])+fabsf((float)buf[+3]-(float)buf[-5]));
-      const float f2 = 1.0f/(1.0f+fabsf((float)buf[-1]-(float)buf[-3])+fabsf((float)buf[-3]-(float)buf[+5]));
-      const float f3 = 1.0f/(1.0f+fabsf((float)buf[+u]-(float)buf[+w])+fabsf((float)buf[+w]-(float)buf[-y]));
-
-      const float g0 = CLAMPS((23.0f*buf[-u]+23.0f*buf[-w]+2.0f*buf[-y] + 8.0f*((float)buf[-v]-(float)buf[-x]) + 40.0f*((float)buf[0]-(float)buf[-v]))/48.0f, 0.0f, 65535.0f);
-      const float g1 = CLAMPS((23.0f*buf[+1]+23.0f*buf[+3]+2.0f*buf[+5] + 8.0f*((float)buf[+2]-(float)buf[+4]) + 40.0f*((float)buf[0]-(float)buf[+2]))/48.0f, 0.0f, 65535.0f);
-      const float g2 = CLAMPS((23.0f*buf[-1]+23.0f*buf[-3]+2.0f*buf[-5] + 8.0f*((float)buf[-2]-(float)buf[-4]) + 40.0f*((float)buf[0]-(float)buf[-2]))/48.0f, 0.0f, 65535.0f);
-      const float g3 = CLAMPS((23.0f*buf[+u]+23.0f*buf[+w]+2.0f*buf[+y] + 8.0f*((float)buf[+v]-(float)buf[+x]) + 40.0f*((float)buf[0]-(float)buf[+v]))/48.0f, 0.0f, 65535.0f);
-
-      const float green = (f0*g0+f1*g1+f2*g2+f3*g3)/(f0+f1+f2+f3);
-      const float min = fminf(fminf(fminf(buf[1+u], buf[1-u]), fminf(buf[-1+u], buf[-1-u])), fminf(fminf(buf[-1], buf[1]), fminf(buf[-u], buf[u])));
-      const float max = fmaxf(fmaxf(fmaxf(buf[1+u], buf[1-u]), fmaxf(buf[-1+u], buf[-1-u])), fmaxf(fmaxf(buf[-1], buf[1]), fmaxf(buf[-u], buf[u])));
-      const float clipped = CLAMPS(green, min, max)*(1.0f/65535.0f);
-
-      buf_out[1] = clipped;
-
-      buf += 2;
-      buf_out += 8;
-    }
-  }
-}
-#endif
 
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
@@ -561,7 +515,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 2, sizeof(uint32_t), (void*)&data->filters);
-      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_green_eq, sizes);
       dev_in = dev_green_eq;
     }
     if(data->median_thrs > 0.0f)
@@ -604,7 +558,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_green_eq, 2, sizeof(uint32_t), (void*)&data->filters);
-      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_green_eq, sizes);
       dev_in = dev_green_eq;
     }
 
