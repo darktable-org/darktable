@@ -26,7 +26,7 @@ namespace RawSpeed {
 
 PefDecoder::PefDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-      decoderVersion = 1;
+      decoderVersion = 2;
 }
 
 PefDecoder::~PefDecoder(void) {
@@ -96,24 +96,24 @@ void PefDecoder::decodeMetaData(CameraMetaData *meta) {
   if (data.empty())
     ThrowRDE("ARW Meta Decoder: Model name found");
 
-  string make = data[0]->getEntry(MAKE)->getString();
-  string model = data[0]->getEntry(MODEL)->getString();
+  TiffIFD* raw = data[0];
+
+  string make = raw->getEntry(MAKE)->getString();
+  string model = raw->getEntry(MODEL)->getString();
 
   setMetaData(meta, make, model, "");
 
-  /*  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
+  /* It appears that RAW files from K-5 firmware 1.01 and onwards doesn't compensate for blacklevel */
+  if (raw->hasEntry(MODEL) && raw->hasEntry(SOFTWARE)) {
+    string model = raw->getEntry(MODEL)->getString();
+    string software = raw->getEntry(SOFTWARE)->getString();
+    TrimSpaces(model);
+    TrimSpaces(software);
 
-    if (data.empty())
-      ThrowRDE("PEF Decoder: Model name found");
-
-    string model(data[0]->getEntry(MODEL)->getString());
-    //printf("Model:\"%s\"\n",model.c_str());
-
-    if (!model.compare("PENTAX K20D        "))
-    {
-      mRaw->cfa.setCFA(CFA_BLUE, CFA_GREEN, CFA_GREEN2, CFA_RED);
+    if (model.compare("PENTAX K-5") == 0 && software.compare("K-5 Ver 1.00") == 0 ) {
+      mRaw->blackLevel = 0;
     }
-  */
+  }
 }
 
 } // namespace RawSpeed

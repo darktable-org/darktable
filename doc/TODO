@@ -1,5 +1,9 @@
 0.8 release:
 
+- preview pipeline highlight clipping broken?
+
+- don't clear tag text on reset in tagging!
+
 - Pentax k-5: black point 513?
 
 - trying to open exif for non-existent image crashes.
