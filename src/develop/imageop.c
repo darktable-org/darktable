@@ -667,6 +667,9 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       if(FC(py, px+1, filters) != 1) px ++;
       if(FC(py, px,   filters) != 0) { px ++; py ++; }
 
+      px = MIN(roi_in->width-2,  px);
+      py = MIN(roi_in->height-2, py);
+
       const float pc1 = in[px   + in_stride*py];
       const float pc2 = in[px+1 + in_stride*py];
       const float pc3 = in[px   + in_stride*(py + 1)];
