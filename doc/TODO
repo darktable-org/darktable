@@ -1,20 +1,16 @@
 0.8 release:
 
-- preview pipeline highlight clipping broken?
+- check image support in cl implementation.
+
+- processed maximum has to go to the cache in pixelpipe?
+  - preview pipe still pink in high freq places:
+  - edge aware gaussian downsampling?
 
 - don't clear tag text on reset in tagging!
 
-- Pentax k-5: black point 513?
-
-- trying to open exif for non-existent image crashes.
-
 - import with lock contention?
 
-- opencl buffer handling
-  - copy roi_in to device, or take from input plugin
-  - cached versions? keep cl_mem* somewhere?
 - port to opencl:
-  - bugfree demosaic (equiv to cpu)
   - bugfree atrous   (equiv to cpu)
   - exposure
   - highlights

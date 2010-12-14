@@ -54,45 +54,29 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  const float black = d->black;
+  const float white = exp2f(-d->exposure);
+  const int ch = piece->colors;
+  const float scale = 1.0/(white - black); 
+  const float *const in = (float *)i;
+  float *const out = (float *)o;
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && self->dev->image->filters)
-  {
-    // raw image which needs demosaic later on.
-    const float *const in = (float *)i;
-    float *const out = (float *)o;
-    const float black = d->black;
-    const float white = exp2f(-d->exposure);
-
-    const float scale = 1.0f/(white - black); 
+  { // raw image which needs demosaic later on.
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out) schedule(static)
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
-    {
       out[k] = fmaxf(0.0f, (in[k]-black)*scale);
-    }
-    for(int k=0;k<3;k++)
-      piece->pipe->processed_maximum[k] *= scale;
   }
   else
-  {
-    // std float image:
-    const float *const in = (float *)i;
-    float *const out = (float *)o;
-    const float black = d->black;
-    const float white = exp2f(-d->exposure);
-    const int ch = piece->colors;
-
-    const float scale = 1.0/(white - black); 
+  { // std float image:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out) schedule(static)
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
-    {
       for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0f, (in[ch*k+i]-black)*scale);
-    }
-    for(int k=0;k<3;k++)
-      piece->pipe->processed_maximum[k] *= scale;
   }
+  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] *= scale;
 }
 
 
