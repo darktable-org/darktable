@@ -606,6 +606,20 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
+static inline float
+fastexp(const float x)
+{
+  return fmaxf(0.0001f, (6+x*(6+x*(3+x)))*0.16666666f);
+}
+
+static float
+weight (const float c1, const float c2)
+{
+  const float d = c1-c2;
+  // return fastexp(-d*d*0.1f);
+  //return expf(-d*d*(0.01f/(65535.0f*65335.0f)));
+  return fastexp(-d*d*(10.0f/(65535.0f*65335.0f)));
+}
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -653,29 +667,39 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       if(FC(py, px+1, filters) != 1) px ++;
       if(FC(py, px,   filters) != 0) { px ++; py ++; }
 
-      // for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
-      float num = 0.0f;
-      // for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-2, py+2*samples);j+=2)
-      // for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-2,  px+2*samples);i+=2)
+      const float pc1 = in[px   + in_stride*py];
+      const float pc2 = in[px+1 + in_stride*py];
+      const float pc3 = in[px   + in_stride*(py + 1)];
+      const float pc4 = in[px+1 + in_stride*(py + 1)];
+
+      // float num = 0.0f;
+      __m128 num = _mm_setzero_ps();
       for(int j=MAX(0, py-2*samples);j<=MIN(roi_in->height-2, py+2*samples);j+=2)
       for(int i=MAX(0, px-2*samples);i<=MIN(roi_in->width-2,  px+2*samples);i+=2)
       {
         // get four mosaic pattern uint16:
-        float p1 = in[i   + in_stride*j];
-        float p2 = in[i+1 + in_stride*j];
-        float p3 = in[i   + in_stride*(j + 1)];
-        float p4 = in[i+1 + in_stride*(j + 1)];
+        const float p1 = in[i   + in_stride*j];
+        const float p2 = in[i+1 + in_stride*j];
+        const float p3 = in[i   + in_stride*(j + 1)];
+        const float p4 = in[i+1 + in_stride*(j + 1)];
         // color += filter[j+samples]*filter[i+samples]*(float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
         // color += (float4)(p1.x/65535.0f, (p2.x+p3.x)/(2.0f*65535.0f), p4.x/65535.0f, 0.0f);
 
         // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));
         // num ++;
+        const float wr = weight(pc1, p1);
+        const float wg = weight(pc2+pc3, p2+pc3);
+        const float wb = weight(pc4, p4);
 
         const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
-        col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(f/65535.0f)));
-        num += f;
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), _mm_set1_ps(f/65535.0f)));
+        num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), _mm_set1_ps(f)));
+        // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(f/65535.0f)));
+        // num += f;
       }
-      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      col = _mm_div_ps(col, num);
+      // col = _mm_mul_ps(col, _mm_rcp_ps(num));
+      // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
       // memcpy(outc, &col, 4*sizeof(float));
       _mm_stream_ps(outc, col);
