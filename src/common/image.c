@@ -95,7 +95,7 @@ const char *
 dt_image_film_roll_name(const char *path)
 {
   const char *folder = path + strlen(path);
-  int numparts = dt_conf_get_int("show_folder_levels");
+  int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
   int count = 0;
   if (numparts < 1)
     numparts = 1;

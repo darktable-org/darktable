@@ -178,8 +178,8 @@
       <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>show a number of folder levels in lists</short>
-        <long>The number of folder levels to show in lists of film roll names, counting from the</long>
+        <short>number of folder levels to show in lists</short>
+        <long>the number of folder levels to show in film roll names, starting from the right</long>
       </locale>
     </schema>
 
