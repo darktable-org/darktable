@@ -93,29 +93,22 @@ int dt_image_is_ldr(const dt_image_t *img)
 
 void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 {
-  if(img->film_id == 1)
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, img->film_id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    snprintf(pathname, len, "%s", _("single images"));
+    char *f = (char *)sqlite3_column_text(stmt, 0);
+    char *c = f + strlen(f);
+    while(c > f && *c  != '/') c--;
+    if(*c == '/' && c != f) c++;
+    snprintf(pathname, len, "%s", c);
   }
   else
   {
-    sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, img->film_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      char *f = (char *)sqlite3_column_text(stmt, 0);
-      char *c = f + strlen(f);
-      while(c > f && *c  != '/') c--;
-      if(*c == '/' && c != f) c++;
-      snprintf(pathname, len, "%s", c);
-    }
-    else
-    {
-      snprintf(pathname, len, "%s", _("orphaned image"));
-    }
-    sqlite3_finalize(stmt);
+    snprintf(pathname, len, "%s", _("orphaned image"));
   }
+  sqlite3_finalize(stmt);
   pathname[len-1] = '\0';
 }
 
@@ -602,9 +595,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
   dt_image_cache_flush_no_sidecars(img);
 
   g_free(imgfname);
-
-  // single images will probably want to load immediately.
-  if(img->film_id == 1) (void)dt_image_reimport(img, filename, DT_IMAGE_MIPF);
 
   dt_image_cache_release(img, 'w');
   return id;

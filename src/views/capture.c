@@ -137,12 +137,13 @@ void cleanup(dt_view_t *self)
 	free(self->data);
 }
 
-uint32_t dt_capture_view_get_film_id(const dt_view_t *view) {
+uint32_t dt_capture_view_get_film_id(const dt_view_t *view)
+{
 	g_assert( view != NULL );
 	dt_capture_t *cv=(dt_capture_t *)view->data;
 	if(cv->film) 
 		return cv->film->id;
-	// else return standard "single images"
+	// else return first film roll.
 	/// @todo maybe return 0 and check error in caller...
 	return 1;
 }
