@@ -91,6 +91,27 @@ int dt_image_is_ldr(const dt_image_t *img)
   else return 0;
 }
 
+const char *
+dt_image_film_roll_name(const char *path)
+{
+  const char *folder = path + strlen(path);
+  int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
+  int count = 0;
+  if (numparts < 1)
+    numparts = 1;
+  while (folder > path)
+  {
+    if (*folder == '/')
+      if (++count >= numparts)
+      {
+        ++folder;
+        break;
+      }
+    --folder;
+  }
+  return folder;
+}
+
 void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 {
   sqlite3_stmt *stmt;
@@ -99,9 +120,7 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char *f = (char *)sqlite3_column_text(stmt, 0);
-    char *c = f + strlen(f);
-    while(c > f && *c  != '/') c--;
-    if(*c == '/' && c != f) c++;
+    const char *c = dt_image_film_roll_name(f);
     snprintf(pathname, len, "%s", c);
   }
   else

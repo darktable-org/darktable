@@ -141,6 +141,8 @@ int dt_image_is_ldr(const dt_image_t *img);
 void dt_image_full_path(dt_image_t *img, char *pathname, int len);
 /** returns the full path where to export the image (file ending remains original). */
 void dt_image_export_path(dt_image_t *img, char *pathname, int len);
+/** returns the portion of the path used for the film roll name. */
+const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
 void dt_image_film_roll(dt_image_t *img, char *pathname, int len);
 /** appends version numbering for duplicated images. */

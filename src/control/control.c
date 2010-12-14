@@ -1379,11 +1379,8 @@ void dt_control_update_recent_films()
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     filename = (char *)sqlite3_column_text(stmt, 0);
-    cnt = filename + MIN(512,strlen(filename));
-    int i;
-    for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
-    if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
-    else snprintf(label, label_cnt, "%s", cnt);
+    cnt = dt_image_film_roll_name(filename);
+    snprintf(label, label_cnt, "%s", cnt);
     GtkWidget *widget = g_list_nth_data (childs,num);
     gtk_button_set_label (GTK_BUTTON (widget), label);
     
