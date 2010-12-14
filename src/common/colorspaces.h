@@ -65,4 +65,8 @@ int dt_colorspaces_get_matrix_from_input_profile (cmsHPROFILE prof, float *matri
 /** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
 int dt_colorspaces_get_matrix_from_output_profile (cmsHPROFILE prof, float *matrix, float *lutr, float *lutg, float* lutb, const int lutsize);
 
+/** get normalized exif name. */
+void dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *const maker, const char *const model);
+void dt_colorspaces_get_makermodel_split(char *makermodel, const int size, char **modelo, const char *const maker, const char *const model);
+
 #endif

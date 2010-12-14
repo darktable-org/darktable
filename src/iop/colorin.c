@@ -222,21 +222,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   int preview_thumb = self->dev->image->flags & DT_IMAGE_THUMBNAIL;
   if(!strcmp(p->iccprofile, "darktable") && !preview_thumb)
   {
-    char maker[512];
-    snprintf(maker, 512, "%s", self->dev->image->exif_maker);
-    char makermodel[512];
-    char *c = g_strstr_len(maker, 512, "CORPORATION");
-    if(c) *(c-1) = '\0';
-    if(!strncmp(maker, self->dev->image->exif_model, strlen(maker)))
-      snprintf(makermodel, 512, "%s", self->dev->image->exif_model);
-    else
-      snprintf(makermodel, 512, "%s %s", maker, self->dev->image->exif_model);
-    // if(dt_colorspaces_get_darktable_matrix(makermodel, (float *)(d->cmatrix)))
-    // {
-      // d->cmatrix[0][0] = -666.0f;
-      d->input = dt_colorspaces_create_darktable_profile(makermodel);
-      if(!d->input) sprintf(p->iccprofile, "cmatrix");
-    // }
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+    d->input = dt_colorspaces_create_darktable_profile(makermodel);
+    if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
   if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
   { // color matrix
@@ -410,9 +399,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = g_list_append(g->profiles, prof);
   int pos = prof->pos = 0;
 
+  char makermodel[1024];
+  dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
   // darktable built-in, if applicable
-  char makermodel[512];
-  snprintf(makermodel, 512, "%s %s", self->dev->image->exif_maker, self->dev->image->exif_model);
   for(int k=0;k<dt_profiled_colormatrix_cnt;k++)
   {
     if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))

@@ -623,3 +623,37 @@ dt_colorspaces_cleanup_profile(cmsHPROFILE p)
   cmsCloseProfile(p);
 }
 
+void
+dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *const maker, const char *const model)
+{
+  // if first word in maker == first word in model, use just model.
+  const char *c, *d;
+  char *e;
+  c = maker; d = model;
+  int match = 1;
+  while(*c != ' ' && c < maker + strlen(maker)) if(*(c++) != *(d++)) { match = 0; break; }
+  if(match)
+  {
+    snprintf(makermodel, size, "%s", model);
+  }
+  else
+  {
+    // else need to append first word of the maker:
+    c = maker; d = model;
+    for(e=makermodel;c<maker+strlen(maker) && *c != ' ';c++,e++) *e = *c;
+    // separate with space
+    *(e++) = ' ';
+    // and continue with model:
+    snprintf(e, size - (d-maker), "%s", model);
+  }
+}
+
+void
+dt_colorspaces_get_makermodel_split(char *makermodel, const int size, char **modelo, const char *const maker, const char *const model)
+{
+  dt_colorspaces_get_makermodel(makermodel, size, maker, model);
+  *modelo = makermodel;
+  for(;**modelo != ' ' && *modelo < makermodel + strlen(makermodel);(*modelo)++);
+  **modelo = '\0'; (*modelo)++;
+}
+
