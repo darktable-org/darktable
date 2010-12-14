@@ -387,7 +387,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
       "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum) "
       "select null, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
       "focal_length, datetime_taken, flags, width, height, crop, "
-      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum "
+      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
       "from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, imgid);
   rc = sqlite3_step(stmt);
@@ -732,7 +732,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   int rc, ret = 1;
   char *str;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -766,8 +766,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
     img->black   = sqlite3_column_double(stmt, 20);
     img->maximum = sqlite3_column_double(stmt, 21);
-    // doesn't include image orientation!
-    // img->exif_inited = 1;
+    img->orientation = sqlite3_column_int(stmt, 22);
+    img->exif_inited = 1;
 
     ret = 0;
   }
