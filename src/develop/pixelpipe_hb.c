@@ -546,6 +546,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->processing = 1;
   pipe->devid = dt_opencl_lock_device(darktable.opencl, -1);
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
+  // this is normalized in imageio:
   for(int k=0;k<3;k++) pipe->processed_maximum[k] = dev->image->maximum;
   dt_iop_roi_t roi = (dt_iop_roi_t){x, y, width, height, scale};
   // printf("pixelpipe homebrew process start\n");
