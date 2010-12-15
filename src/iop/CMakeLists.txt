@@ -5,7 +5,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DI
 set(MODULES tonecurve gamma temperature colorcorrection exposure equalizer
 	colorin colorout clipping sharpen monochrome basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain clahe bilateral profile_gamma
-	colortransfer channelmixer graduatednd relight zonesystem demosaic atrous tonemap bloom cacorrect
+	colortransfer channelmixer graduatednd relight zonesystem demosaic atrous tonemap bloom cacorrect overexposed
 )
 
 add_library(bloom MODULE "bloom.c")
@@ -39,6 +39,7 @@ add_library(zonesystem MODULE "zonesystem.c")
 add_library(demosaic MODULE "demosaic.c")
 add_library(atrous MODULE "atrous.c")
 add_library(cacorrect MODULE "cacorrect.c")
+add_library(overexposed MODULE "overexposed.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")
