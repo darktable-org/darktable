@@ -158,11 +158,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int filters = dt_image_flipped_filter(self->dev->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   float *const out = (float *const)o;
-  const float coeffs[3] = {d->coeffs[0] / piece->pipe->processed_maximum[0], d->coeffs[1] / piece->pipe->processed_maximum[1], d->coeffs[2] / piece->pipe->processed_maximum[2]};
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters)
   {
     const uint16_t *const in  = (const uint16_t *const)i;
-    const float coeffsi[3] = {coeffs[0]/65535.0f, coeffs[1]/65535.0f, coeffs[2]/65535.0f};
+    const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, d) schedule(static)
 #endif
@@ -177,10 +176,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   #pragma omp parallel for default(none) shared(roi_out, in, d) schedule(static)
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
-      for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*coeffs[c];
+      for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*d->coeffs[c];
   }
   for(int k=0;k<3;k++)
-    piece->pipe->processed_maximum[k] = coeffs[k] * piece->pipe->processed_maximum[k];
+    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
