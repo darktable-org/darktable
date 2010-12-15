@@ -381,7 +381,7 @@ try_full_raw:
     img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-    const float m = img->maximum/0xffff;
+    const float m = 1.0f/0xffff;
     const uint16_t (*rawpx)[3] = (const uint16_t (*)[3])image->data;
     const int raw_wd = img->width;
     const int raw_ht = img->height;

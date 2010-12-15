@@ -189,9 +189,40 @@ dt_image_flipped_filter(const dt_image_t *img)
   // orient:     3               6               5               0
   //
   // orientation: &1 : flip y    &2 : flip x    &4 : swap x/y
+  //
+  // if image height is odd (and flip y), need to switch pattern by one row:
+  // 0x16161616 <-> 0x61616161
+  // 0x49494949 <-> 0x94949494
+  // 
+  // if image width is odd (and flip x), need to switch pattern by one column:
+  // 0x16161616 <-> 0x49494949
+  // 0x61616161 <-> 0x94949494
 
   const int orient = dt_image_orientation(img);
-  switch(img->filters)
+  int filters = img->filters;
+  if((orient & 1) && (img->height & 1))
+  {
+    switch(filters)
+    {
+      case 0x16161616u: filters = 0x49494949u; break;
+      case 0x49494949u: filters = 0x16161616u; break;
+      case 0x61616161u: filters = 0x94949494u; break;
+      case 0x94949494u: filters = 0x61616161u; break;
+      default:          filters = 0;           break;
+    }
+  }
+  if((orient & 2) && (img->width & 1))
+  {
+    switch(filters)
+    {
+      case 0x16161616u: filters = 0x61616161u; break;
+      case 0x49494949u: filters = 0x94949494u; break;
+      case 0x61616161u: filters = 0x16161616u; break;
+      case 0x94949494u: filters = 0x49494949u; break;
+      default:          filters = 0;           break;
+    }
+  }
+  switch(filters)
   {
     case 0:
       // no mosaic is no mosaic, even rotated:
