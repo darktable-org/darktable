@@ -143,6 +143,10 @@ dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *fil
   if(ret == DT_IMAGEIO_FILE_CORRUPTED) return ret;
 all_good:
   img->filters = 0;
+  img->flags &= ~DT_IMAGE_LDR;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags |=  DT_IMAGE_HDR;
+
   // this updates mipf/mip4..0 from raw pixels.
   dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
   if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
@@ -166,6 +170,9 @@ all_good:
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
   img->filters = 0;
+  img->flags &= ~DT_IMAGE_LDR;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags |=  DT_IMAGE_HDR;
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_exr(img, filename);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
@@ -208,10 +215,6 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
   // are we going to need the image as input for a pixel pipe?
   dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
   const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
-
-  // this image is raw, if we manage to load it.
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags |= DT_IMAGE_RAW;
 
   // if we have a history stack, don't load preview buffer!
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
@@ -300,6 +303,9 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       free(image);
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
+      img->flags &= ~DT_IMAGE_LDR;
+      img->flags &= ~DT_IMAGE_HDR;
+      img->flags |= DT_IMAGE_RAW;
       return retval;
     }
     else
@@ -339,6 +345,9 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       free(image);
       dt_image_release(img, DT_IMAGE_MIP4, 'r');
       // dt_image_cache_release(img, 'r');
+      img->flags &= ~DT_IMAGE_LDR;
+      img->flags &= ~DT_IMAGE_HDR;
+      img->flags |= DT_IMAGE_RAW;
       return retval;
     }
   }
@@ -372,7 +381,7 @@ try_full_raw:
     img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-    const float m = 1./0xffff;
+    const float m = img->maximum/0xffff;
     const uint16_t (*rawpx)[3] = (const uint16_t (*)[3])image->data;
     const int raw_wd = img->width;
     const int raw_ht = img->height;
@@ -386,7 +395,6 @@ try_full_raw:
     if(dt_image_alloc(img, DT_IMAGE_MIPF)) goto error_raw_cache_full;
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
-    printf("+ writing mip5 from preview\n");
     if(raw_wd == p_wd && raw_ht == p_ht)
     { // use 1:1
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
@@ -408,7 +416,6 @@ try_full_raw:
 
     dt_image_release(img, DT_IMAGE_MIPF, 'w');
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
-    printf("- writing mip5 from preview\n");
     // clean up raw stuff.
     libraw_recycle(raw);
     libraw_close(raw);
@@ -417,6 +424,9 @@ try_full_raw:
     image = NULL;
     // not a thumbnail!
     img->flags &= ~DT_IMAGE_THUMBNAIL;
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_RAW;
     return DT_IMAGEIO_OK;
   }
 
@@ -474,13 +484,10 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.user_qual = 0;
   raw->params.half_size = 0;
 
-  // this image is raw, if we manage to load it.
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags |= DT_IMAGE_RAW;
-
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
+  // printf("black, max: %d %d %f %f\n", raw->color.black, raw->color.maximum, img->black, img->maximum);
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
   // ret = libraw_dcraw_document_mode_processing(raw);
@@ -519,6 +526,10 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw = NULL;
   image = NULL;
   dt_image_release(img, DT_IMAGE_FULL, 'w');
+
+  img->flags &= ~DT_IMAGE_LDR;
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_RAW;
   return DT_IMAGEIO_OK;
 }
 
@@ -527,16 +538,13 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
 {
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_tiff_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  if(ret == DT_IMAGEIO_OK) goto all_good;
+  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
   // jpeg stuff here:
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = dt_image_orientation(img);
-
-  img->filters = 0;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags |= DT_IMAGE_LDR;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -626,6 +634,11 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     dt_image_preview_to_raw(img);
   }
   dt_image_release(img, mip, 'r');
+all_good:
+  img->filters = 0;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_LDR;
   return DT_IMAGEIO_OK;
 }
 
@@ -640,10 +653,6 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
   const int orientation = dt_image_orientation(img);
-
-  img->filters = 0;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags |= DT_IMAGE_LDR;
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -681,6 +690,11 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   // try to fill mipf
   dt_image_raw_to_preview(img, img->pixels);
+
+  img->filters = 0;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_LDR;
   return DT_IMAGEIO_OK;
 }
 
@@ -810,9 +824,9 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_rawspeed(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_hdr(img, filename);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_hdr(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr(img, filename);
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
@@ -825,9 +839,9 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_rawspeed_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_hdr_preview(img, filename);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw_preview(img, filename);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_hdr_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr_preview(img, filename);
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);

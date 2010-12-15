@@ -180,6 +180,10 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
+
+      // add columns where needed. will just fail otherwise:
+      sqlite3_exec(darktable.db, "alter table images add column orientation integer", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "update images set orientation = 0 where orientation is NULL", NULL, NULL, NULL);
     
       pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
@@ -193,7 +197,7 @@ create_tables:
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40))", NULL, NULL, NULL);
+    rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
     rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
     HANDLE_SQLITE_ERR(rc);
@@ -1375,11 +1379,8 @@ void dt_control_update_recent_films()
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     filename = (char *)sqlite3_column_text(stmt, 0);
-    cnt = filename + MIN(512,strlen(filename));
-    int i;
-    for(i=0;i<label_cnt-4;i++) if(cnt > filename && *cnt != '/') cnt--;
-    if(cnt > filename) snprintf(label, label_cnt, "%s", cnt+1);
-    else snprintf(label, label_cnt, "%s", cnt);
+    cnt = dt_image_film_roll_name(filename);
+    snprintf(label, label_cnt, "%s", cnt);
     GtkWidget *widget = g_list_nth_data (childs,num);
     gtk_button_set_label (GTK_BUTTON (widget), label);
     

@@ -26,6 +26,7 @@
 #include "common/imageio.h"
 #include "common/tags.h"
 #include "common/pwstorage/pwstorage.h"
+#include "common/metadata.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <stdio.h>
@@ -859,6 +860,11 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
   
+  GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+  if(desc != NULL){
+    description = desc->data;
+  }
+  
   dt_imageio_export(img, fname, format, fdata);
   dt_image_cache_release(img, 'r');
   
@@ -880,6 +886,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   // And remove from filesystem..
   unlink( fname );
   g_free( caption );
+  if(desc){
+    g_free(desc->data);
+    g_list_free(desc);
+  }
   
   dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
   return result;

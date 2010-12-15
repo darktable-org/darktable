@@ -26,6 +26,7 @@
 #include "iop/temperature.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "common/colorspaces.h"
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
@@ -156,30 +157,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   const int filters = dt_image_flipped_filter(self->dev->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  for(int k=0;k<3;k++)
-    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+  float *const out = (float *const)o;
+  const float coeffs[3] = {d->coeffs[0] / piece->pipe->processed_maximum[0], d->coeffs[1] / piece->pipe->processed_maximum[1], d->coeffs[2] / piece->pipe->processed_maximum[2]};
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters)
   {
     const uint16_t *const in  = (const uint16_t *const)i;
-    float *const out = (float *const)o;
-    const float coeffs[3] = {d->coeffs[0] * (1.0f/65535.0f), d->coeffs[1] * (1.0f/65535.0f), d->coeffs[2] * (1.0f/65535.0f)};
+    const float coeffsi[3] = {coeffs[0]/65535.0f, coeffs[1]/65535.0f, coeffs[2]/65535.0f};
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, d) schedule(static)
 #endif
     for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-      out[j*roi_out->width+i] = in[j*roi_out->width+i]*coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];
+      out[j*roi_out->width+i] = in[j*roi_out->width+i]*coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
   }
   else
   {
     float *in  = (float *)i;
-    float *out = (float *)o;
     const int ch = piece->colors;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, d) schedule(static)
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
-      for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*d->coeffs[c];
+      for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*coeffs[c];
   }
+  for(int k=0;k<3;k++)
+    piece->pipe->processed_maximum[k] = coeffs[k] * piece->pipe->processed_maximum[k];
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -399,11 +400,14 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->presets, _("passthrough"));
   g->preset_cnt = 3;
   const char *wb_name = NULL;
+  char makermodel[1024];
+  char *model = makermodel;
+  dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image->exif_maker, self->dev->image->exif_model);
   if(!dt_image_is_ldr(self->dev->image)) for(int i=0;i<wb_preset_count;i++)
   {
     if(g->preset_cnt >= 50) break;
-    if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&
-       !strcmp(wb_preset[i].model, self->dev->image->exif_model))
+    if(!strcmp(wb_preset[i].make,  makermodel) &&
+       !strcmp(wb_preset[i].model, model))
     {
       if(!wb_name || strcmp(wb_name, wb_preset[i].name))
       {
@@ -555,8 +559,11 @@ apply_preset(dt_iop_module_t *self)
     default:
       for(int i=g->preset_num[pos];i<wb_preset_count;i++)
       {
-        if(!strcmp(wb_preset[i].make,  self->dev->image->exif_maker) &&
-           !strcmp(wb_preset[i].model, self->dev->image->exif_model) && wb_preset[i].tuning == tune)
+        char makermodel[1024];
+        char *model = makermodel;
+        dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image->exif_maker, self->dev->image->exif_model);
+        if(!strcmp(wb_preset[i].make,  makermodel) &&
+           !strcmp(wb_preset[i].model, model) && wb_preset[i].tuning == tune)
         {
           for(int k=0;k<3;k++) p->coeffs[k] = wb_preset[i].channel[k];
           break;

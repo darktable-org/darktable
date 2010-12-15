@@ -321,14 +321,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
     const char *folder = (const char*)sqlite3_column_text(stmt, 0);
     if(property == 0) // film roll
     {
-      if(!strcmp("single images", folder)) folder = _("single images");
-      else
-      {
-        const char *trunc = folder + strlen(folder);
-        for(;*trunc != '/' && trunc > folder;trunc--);
-        if(trunc != folder) trunc++;
-        folder = trunc;
-      }
+      folder = dt_image_film_roll_name(folder);
     }
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                         DT_LIB_COLLECT_COL_TEXT, folder,

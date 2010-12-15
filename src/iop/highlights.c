@@ -143,8 +143,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-	const float clip = self->dev->image->flags & DT_IMAGE_THUMBNAIL ? 1.0 :
-		fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+	const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
 	float inc[3], lch[3], lchc[3], lchi[3];
 
 	switch(data->mode)
@@ -295,7 +294,7 @@ void init(dt_iop_module_t *module)
 	// module->data = malloc(sizeof(dt_iop_highlights_data_t));
 	module->params = malloc(sizeof(dt_iop_highlights_params_t));
 	module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-	if(module->dev->image->flags & DT_IMAGE_RAW)
+  if(module->dev->image->filters)
   {
     module->default_enabled = 1;
   }
@@ -304,7 +303,7 @@ void init(dt_iop_module_t *module)
     module->default_enabled = 0;
     module->hide_enable_button = 1;
   }
-	module->priority = 255;
+	module->priority = 245;
 	module->params_size = sizeof(dt_iop_highlights_params_t);
 	module->gui_data = NULL;
 	dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t){0, 1.0, 0.0, 0.0};

@@ -91,31 +91,43 @@ int dt_image_is_ldr(const dt_image_t *img)
   else return 0;
 }
 
+const char *
+dt_image_film_roll_name(const char *path)
+{
+  const char *folder = path + strlen(path);
+  int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
+  int count = 0;
+  if (numparts < 1)
+    numparts = 1;
+  while (folder > path)
+  {
+    if (*folder == '/')
+      if (++count >= numparts)
+      {
+        ++folder;
+        break;
+      }
+    --folder;
+  }
+  return folder;
+}
+
 void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 {
-  if(img->film_id == 1)
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+  sqlite3_bind_int(stmt, 1, img->film_id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    snprintf(pathname, len, "%s", _("single images"));
+    char *f = (char *)sqlite3_column_text(stmt, 0);
+    const char *c = dt_image_film_roll_name(f);
+    snprintf(pathname, len, "%s", c);
   }
   else
   {
-    sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, img->film_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      char *f = (char *)sqlite3_column_text(stmt, 0);
-      char *c = f + strlen(f);
-      while(c > f && *c  != '/') c--;
-      if(*c == '/' && c != f) c++;
-      snprintf(pathname, len, "%s", c);
-    }
-    else
-    {
-      snprintf(pathname, len, "%s", _("orphaned image"));
-    }
-    sqlite3_finalize(stmt);
+    snprintf(pathname, len, "%s", _("orphaned image"));
   }
+  sqlite3_finalize(stmt);
   pathname[len-1] = '\0';
 }
 
@@ -387,7 +399,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
       "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum) "
       "select null, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
       "focal_length, datetime_taken, flags, width, height, crop, "
-      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum "
+      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
       "from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int(stmt, 1, imgid);
   rc = sqlite3_step(stmt);
@@ -603,9 +615,6 @@ int dt_image_import(const int32_t film_id, const char *filename)
 
   g_free(imgfname);
 
-  // single images will probably want to load immediately.
-  if(img->film_id == 1) (void)dt_image_reimport(img, filename, DT_IMAGE_MIPF);
-
   dt_image_cache_release(img, 'w');
   return id;
 }
@@ -732,7 +741,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   int rc, ret = 1;
   char *str;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum from images where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation from images where id = ?1", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   // rc = sqlite3_bind_text(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -766,8 +775,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
     img->black   = sqlite3_column_double(stmt, 20);
     img->maximum = sqlite3_column_double(stmt, 21);
-    // doesn't include image orientation!
-    // img->exif_inited = 1;
+    img->orientation = sqlite3_column_int(stmt, 22);
+    img->exif_inited = 1;
 
     ret = 0;
   }

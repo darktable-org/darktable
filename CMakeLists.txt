@@ -145,7 +145,7 @@ endif(Gettext_FOUND)
 # Path to install gconf schemas into.
 if(NOT DT_GCONF_SCHEMA_DIR)
   set(DT_GCONF_SCHEMA_DIR "/etc/gconf/schemas/")
-endif()
+endif(NOT DT_GCONF_SCHEMA_DIR)
 
 # setup some theme specific variables
 set(THEME hicolor)

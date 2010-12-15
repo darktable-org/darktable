@@ -124,7 +124,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     line.lock.users = line.lock.write = 0;
     img = &(cache->line[k].image);
     line.image.pixels = NULL;
-    line.image.exif_inited = 0;
+    // line.image.exif_inited = 0;
     for(int i=0;i<DT_IMAGE_NONE;i++)
     {
       line.image.lock[i].users = line.image.lock[i].write = 0;
@@ -573,7 +573,7 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
   if(img->id <= 0) return;
   int rc;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18, raw_black = ?19, raw_maximum = ?20 where id = ?21", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18, raw_black = ?19, raw_maximum = ?20, orientation = ?21 where id = ?22", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, img->width);
   rc = sqlite3_bind_int (stmt, 2, img->height);
   rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -594,7 +594,8 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
   rc = sqlite3_bind_double(stmt, 18, img->raw_auto_bright_threshold);
   rc = sqlite3_bind_double(stmt, 19, img->black);
   rc = sqlite3_bind_double(stmt, 20, img->maximum);
-  rc = sqlite3_bind_int (stmt, 21, img->id);
+  rc = sqlite3_bind_int (stmt, 21, img->orientation);
+  rc = sqlite3_bind_int (stmt, 22, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);
