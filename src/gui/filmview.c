@@ -55,7 +55,7 @@ count_film_rolls(const char *filter)
   int count = 0;
   sqlite3_stmt *stmt;
   int rc;
-  rc = sqlite3_prepare_v2(darktable.db, "select count(*) from film_rolls where folder like ?1 and id != 1 order by folder", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select count(*) from film_rolls where folder like ?1 order by folder", -1, &stmt, NULL);
   rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count += sqlite3_column_int(stmt, 0);
@@ -81,7 +81,7 @@ dt_gui_filmview_update(const char *filter)
   sqlite3_stmt *stmt;
   int rc;
   // TODO: datetime_created?
-  rc = sqlite3_prepare_v2(darktable.db, "select id, folder from film_rolls where folder like ?1 and id != 1 order by folder", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(darktable.db, "select id, folder from film_rolls where folder like ?1 order by folder", -1, &stmt, NULL);
   rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
