@@ -606,25 +606,17 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
-static inline float
-fastexp(const float x)
-{
-  return fmaxf(0.0001f, (6+x*(6+x*(3+x)))*0.16666666f);
-}
-
 static float
 weight (const float c1, const float c2)
 {
-  const float d = c1-c2;
-  // return fastexp(-d*d*0.1f);
-  //return expf(-d*d*(0.01f/(65535.0f*65335.0f)));
-  return fastexp(-d*d*(10.0f/(65535.0f*65335.0f)));
+  const float d = -fabsf(c1-c2)*(6.f/65535.0f) + 2.0f;
+  return fmaxf(0.0f, d*d*0.25f);
 }
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
- * filters is the dcraw supplied int encoding the bayer pattern.
- * resamping is done via rank-1 lattices and demosaicing using half-size interpolation.
+ * filters is the dcraw supplied int encoding of the bayer pattern, flipped with the buffer.
+ * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
 void
 dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
@@ -691,7 +683,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
         // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4, .5f*(p2+p3), p1), _mm_set1_ps(1.0/65535.0f)));
         // num ++;
         const float wr = weight(pc1, p1);
-        const float wg = weight(pc2+pc3, p2+pc3);
+        const float wg = weight(.5f*(pc2+pc3), .5f*(p2+p3));
         const float wb = weight(pc4, p4);
 
         const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
