@@ -791,8 +791,8 @@ gui_init (dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(album_changed), (gpointer)ui);  
 
   // If username and password is stored, let's populate the combo
-  if( _username && _password )
-    refresh_albums(ui);
+//   if( _username && _password )
+//     refresh_albums(ui);
   
   gtk_combo_box_set_active( ui->comboBox1, 0);
 }
