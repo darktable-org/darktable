@@ -177,6 +177,7 @@ class DllDef LibRaw
 
     void        kodak_thumb_loader();
     void        write_thumb_ppm_tiff(FILE *); 
+    void        foveon_thumb_loader (void);
     
     void init_masked_ptrs();
     ushort *get_masked_pointer(int row, int col); 
@@ -198,12 +199,18 @@ class DllDef LibRaw
     void        vng_interpolate();
     void        ppg_interpolate();
     void        ahd_interpolate();
-    /*new interpolation algos*/
+
+    /* from demosaic pack */
+    void        ahd_interpolate_mod();
+    void        afd_interpolate_pl(int afd_passes, int clip_on);
+    void        afd_noise_filter_pl();
+    void	lmmse_interpolate(int gamma_apply);
     void        dcb(int iterations, int dcb_enhance);
     void        fbdd(int noiserd);
     void        vcd_interpolate(int ahd_cutoff);
     void        amaze_demosaic_RT();
     void        CA_correct_RT();
+    /* demosaic pack end */
 
     void        bad_pixels(const char*);
     void        subtract(const char*);
@@ -214,11 +221,11 @@ class DllDef LibRaw
     void        blend_highlights();
     void        recover_highlights();
     void        green_matching();
-    void        pre_interpolate_median_filter();
 
     void        fuji_rotate();
     void        stretch();
 
+    void        foveon_thumb ();
     void        jpeg_thumb_writer (FILE *tfp,char *thumb,int thumb_length);
     void        jpeg_thumb ();
     void        ppm_thumb ();
@@ -226,6 +233,7 @@ class DllDef LibRaw
     void        rollei_thumb ();
     void        kodak_thumb_load_raw();
 
+    void        foveon_decoder (unsigned size, unsigned code);
     unsigned    get4();
 
     int         flip_index (int row, int col);

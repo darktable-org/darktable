@@ -201,7 +201,6 @@ LibRaw:: LibRaw(unsigned int flags)
     imgdata.params.auto_bright_thr = LIBRAW_DEFAULT_AUTO_BRIGHTNESS_THRESHOLD;
     imgdata.params.adjust_maximum_thr= LIBRAW_DEFAULT_ADJUST_MAXIMUM_THRESHOLD;
     imgdata.params.green_matching = 0;
-    imgdata.params.pre_interpolate_median_filter = 0;
     imgdata.parent_class = this;
     imgdata.progress_flags = 0;
     tls = new LibRaw_TLS;
@@ -299,6 +298,7 @@ const char * LibRaw::unpack_function_name()
     if (load_raw == &LibRaw::canon_sraw_load_raw)       return "canon_sraw_load_raw()"; //+
 
     if (load_raw == &LibRaw::eight_bit_load_raw )       return "eight_bit_load_raw()"; //+
+    if (load_raw == &LibRaw::foveon_load_raw )          return "foveon_load_raw()";
     if (load_raw == &LibRaw::fuji_load_raw )            return "fuji_load_raw()"; //+
     // 10
     if (load_raw == &LibRaw::hasselblad_load_raw )      return "hasselblad_load_raw()"; //+
@@ -485,7 +485,7 @@ int LibRaw::add_masked_borders_to_bitmap()
     if(S.width != S.iwidth || S.height!=S.iheight)
         return LIBRAW_CANNOT_ADDMASK;
 
-    if(!P1.filters)
+    if(P1.is_foveon || !P1.filters)
         return LIBRAW_CANNOT_ADDMASK;
         
     if(!imgdata.image)
@@ -524,7 +524,7 @@ int LibRaw::add_masked_borders_to_bitmap()
             for(c=S.left_margin; c<S.left_margin+S.iwidth;c++)
                 {
                     int col = c - S.left_margin;
-                    newimage[r*S.raw_width+c][COLOR(r,c)] = imgdata.image[row*S.iwidth+col][COLOR(r,c)];
+                    newimage[r*S.raw_width+c][COLOR(r,c)] = imgdata.image[row*S.iwidth+col][COLOR(row,col)];
 //                    for(int cc=0;cc<4;cc++)
 //                        newimage[r*S.raw_width+c][cc] = imgdata.image[row*S.iwidth+col][cc];
                 }
@@ -824,6 +824,18 @@ int LibRaw::dcraw_document_mode_processing(void)
             rotate_fuji_raw();
 
         O.document_mode = 2;
+        
+        if(P1.is_foveon)
+            {
+                // filter image data for foveon document mode
+                short *iptr = (short *)imgdata.image;
+                for (int i=0; i < S.height*S.width*4; i++)
+                    {
+                        if ((short) iptr[i] < 0) 
+                            iptr[i] = 0;
+                    }
+                SET_PROC_FLAG(LIBRAW_PROGRESS_FOVEON_INTERPOLATE);
+            }
 
         O.use_fuji_rotate = 0;
 
@@ -856,14 +868,14 @@ int LibRaw::dcraw_document_mode_processing(void)
             }
         SET_PROC_FLAG(LIBRAW_PROGRESS_MIX_GREEN);
 
-        if ( P1.colors == 3) 
+        if (!P1.is_foveon && P1.colors == 3) 
             median_filter();
         SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
 
-        if ( O.highlight == 2) 
+        if (!P1.is_foveon && O.highlight == 2) 
             blend_highlights();
 
-        if ( O.highlight > 2) 
+        if (!P1.is_foveon && O.highlight > 2) 
             recover_highlights();
         SET_PROC_FLAG(LIBRAW_PROGRESS_HIGHLIGHTS);
 
@@ -1337,6 +1349,14 @@ int LibRaw::unpack_thumb(void)
                         return 0;
 
                     }
+                else if (write_thumb == &LibRaw::foveon_thumb)
+                    {
+                        foveon_thumb_loader();
+                        // may return with error, so format is set in
+                        // foveon thumb loader itself
+                        SET_PROC_FLAG(LIBRAW_PROGRESS_THUMB_LOAD);
+                        return 0;
+                    }
                 // else if -- all other write_thumb cases!
                 else
                     {
@@ -1550,9 +1570,9 @@ void LibRaw::subtract_black()
 int LibRaw::dcraw_process(void)
 {
     int quality,i;
-    int iterations=-1, dcb_enhance=1;
-    int eeci_refine_fl=0, es_med_passes_fl=0;
 
+    int iterations=-1, dcb_enhance=1, noiserd=0;
+    int eeci_refine_fl=0, es_med_passes_fl=0;
 
     CHECK_ORDER_LOW(LIBRAW_PROGRESS_LOAD_RAW);
     CHECK_ORDER_HIGH(LIBRAW_PROGRESS_PRE_INTERPOLATE);
@@ -1602,48 +1622,72 @@ int LibRaw::dcraw_process(void)
 
         if (O.user_sat > 0) C.maximum = O.user_sat;
 
-	if (O.dcb_iterations >= 0) iterations = O.dcb_iterations;
-	if (O.dcb_enhance_fl >=0 ) dcb_enhance = O.dcb_enhance_fl;
-	if (O.eeci_refine >=0 ) eeci_refine_fl = O.eeci_refine;
-	if (O.es_med_passes >0 ) es_med_passes_fl = O.es_med_passes;
+        if (P1.is_foveon && !O.document_mode) 
+            {
+                foveon_interpolate();
+                SET_PROC_FLAG(LIBRAW_PROGRESS_FOVEON_INTERPOLATE);
+            }
 
         if (O.green_matching)
             {
                 green_matching();
             }
-        if (O.pre_interpolate_median_filter)
-            {
-                pre_interpolate_median_filter();
-            }
 
-        if ( O.document_mode < 2)
+        if (!P1.is_foveon &&  O.document_mode < 2)
             {
                 scale_colors();
                 SET_PROC_FLAG(LIBRAW_PROGRESS_SCALE_COLORS);
             }
 
         pre_interpolate();
+
         SET_PROC_FLAG(LIBRAW_PROGRESS_PRE_INTERPOLATE);
 
-        if (O.amaze_ca_refine)
-            {
-                CA_correct_RT();
-            }
-        if (O.fbdd_noiserd)
-            {
-                fbdd(O.fbdd_noiserd);	
-            }
+        if (O.dcb_iterations >= 0) iterations = O.dcb_iterations;
+        if (O.dcb_enhance_fl >=0 ) dcb_enhance = O.dcb_enhance_fl;
+        if (O.fbdd_noiserd >=0 ) noiserd = O.fbdd_noiserd;
+        if (O.eeci_refine >=0 ) eeci_refine_fl = O.eeci_refine;
+        if (O.es_med_passes >0 ) es_med_passes_fl = O.es_med_passes;
+
+// LIBRAW_DEMOSAIC_PACK_GPL3
+        if (quality == 10 && O.amaze_ca_refine >0 ) {CA_correct_RT();}
 
         if (P1.filters && !O.document_mode) 
             {
+                if (noiserd>0) fbdd(noiserd);
+
                 if (quality == 0)
                     lin_interpolate();
                 else if (quality == 1 || P1.colors > 3)
                     vng_interpolate();
                 else if (quality == 2)
                     ppg_interpolate();
-                else 
+
+                else if (quality == 3) 
+                    ahd_interpolate(); // really don't need it here due to fallback op
+
+                else if (quality == 4)
+                    dcb(iterations, dcb_enhance);
+
+//  LIBRAW_DEMOSAIC_PACK_GPL2                
+                else if (quality == 5)
+                    ahd_interpolate_mod();
+                else if (quality == 6)
+                    afd_interpolate_pl(2,1);
+                else if (quality == 7)
+                    vcd_interpolate(0);
+                else if (quality == 8)
+                    vcd_interpolate(12);
+                else if (quality == 9)
+                    lmmse_interpolate(1);
+
+// LIBRAW_DEMOSAIC_PACK_GPL3
+                else if (quality == 10)
+                    amaze_demosaic_RT();
+ // fallback to AHD
+                else
                     ahd_interpolate();
+                
                 SET_PROC_FLAG(LIBRAW_PROGRESS_INTERPOLATE);
             }
         if (IO.mix_green)
@@ -1653,10 +1697,22 @@ int LibRaw::dcraw_process(void)
                 SET_PROC_FLAG(LIBRAW_PROGRESS_MIX_GREEN);
             }
 
-        if (P1.colors == 3) 
+        if(!P1.is_foveon)
             {
-                median_filter();
-                SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
+                if (P1.colors == 3) 
+                    {
+                        
+                        if (quality == 8) 
+                            {
+                                if (eeci_refine_fl == 1) refinement();
+                                if (O.med_passes > 0)    median_filter_new();
+                                if (es_med_passes_fl > 0) es_median_filter();
+                            } 
+                        else {
+                            median_filter();
+                        }
+                        SET_PROC_FLAG(LIBRAW_PROGRESS_MEDIAN_FILTER);
+                    }
             }
         
         if (O.highlight == 2) 
@@ -2068,6 +2124,9 @@ static const char  *static_camera_list[] =
 "Phase One P 45+",
 "Phase One P 65",
 "Pixelink A782",
+#ifdef LIBRAW_DEMOSAIC_PACK_GPL2
+"Polaroid x530",
+#endif
 "Rollei d530flex",
 "RoverShot 3320af",
 "Samsung EX1",
@@ -2080,6 +2139,11 @@ static const char  *static_camera_list[] =
 "Samsung S85 (hacked)",
 "Samsung S850 (hacked)",
 "Sarnoff 4096x5440",
+#ifdef LIBRAW_DEMOSAIC_PACK_GPL2
+"Sigma SD9",
+"Sigma SD10",
+"Sigma SD14",
+#endif
 "Sinar 3072x2048",
 "Sinar 4080x4080",
 "Sinar 4080x5440",
@@ -2135,6 +2199,8 @@ const char * LibRaw::strprogress(enum LibRaw_progress p)
             return "Removing dead pixels";
         case LIBRAW_PROGRESS_DARK_FRAME:
             return "Subtracting dark frame data";
+        case LIBRAW_PROGRESS_FOVEON_INTERPOLATE:
+            return "Interpolating Foveon sensor data";
         case LIBRAW_PROGRESS_SCALE_COLORS:
             return "Scaling colors";
         case LIBRAW_PROGRESS_PRE_INTERPOLATE:

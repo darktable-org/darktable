@@ -26,6 +26,7 @@ it under the terms of the one of three licenses as you choose:
 #define model           (imgdata.idata.model)
 #define is_raw          (imgdata.idata.raw_count)
 #define dng_version     (imgdata.idata.dng_version)
+#define is_foveon       (imgdata.idata.is_foveon)
 #define colors          (imgdata.idata.colors)
 #define cdesc           (imgdata.idata.cdesc)
 #define filters         (imgdata.idata.filters)
@@ -112,6 +113,14 @@ it under the terms of the one of three licenses as you choose:
 #define no_auto_bright  (imgdata.params.no_auto_bright)
 #define use_fuji_rotate (imgdata.params.use_fuji_rotate)
 #define filtering_mode (imgdata.params.filtering_mode)
+
+// Demosaic packs
+//AFD
+//#define afd_noise_att				(imgdata.params.afd_noise_att)
+//#define afd_noise_thres				(imgdata.params.afd_noise_thres)
+//#define afd_luminance_passes		(imgdata.params.afd_luminance_passes)
+//#define afd_chrominance_method		(imgdata.params.afd_chrominance_method)
+//#define afd_luminance_only			(imgdata.params.afd_luminance_only)
 // DCB
 #define dcb_iterations   (imgdata.params.iterations)
 #define dcb_enhance_fl   (imgdata.params.dcb_enhance)
@@ -119,6 +128,8 @@ it under the terms of the one of three licenses as you choose:
 // VCD
 #define eeci_refine    (imgdata.params.eeci_refine)
 #define es_med_passes  (imgdata.params.es_med_passes)
+
+
 
 //rgb_constants
 #define xyz_rgb         (rgb_constants.xyz_rgb)

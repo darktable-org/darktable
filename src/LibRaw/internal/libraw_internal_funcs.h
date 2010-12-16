@@ -143,6 +143,20 @@ void        crw_init_tables (unsigned table, ushort *huff[2]);
     void        sony_arw2_load_raw();
     void        parse_minolta (int base);
 
+// Foveon/Sigma
+    void        foveon_load_camf();
+    void        foveon_load_raw();
+    const char* foveon_camf_param (const char *block, const char *param);
+    void *      foveon_camf_matrix (unsigned dim[3], const char *name);
+    int         foveon_fixed (void *ptr, int size, const char *name);
+    float       foveon_avg (short *pix, int range[2], float cfilt);
+    short *     foveon_make_curve (double max, double mul, double filt);
+    void        foveon_make_curves(short **curvep, float dq[3], float div[3], float filt);
+    int         foveon_apply_curve (short *curve, int i);
+    void        foveon_interpolate();
+    char *      foveon_gets (int offset, char *str, int len);
+    void        parse_foveon();
+
 // CAM/RGB
     void        pseudoinverse (double (*in)[3], double (*out)[3], int size);
     void        cam_xyz_coeff (double cam_xyz[4][3]);
@@ -174,25 +188,46 @@ void        crw_init_tables (unsigned table, ushort *huff[2]);
 // Tiff writer
     void        tiff_set (ushort *ntag, ushort tag, ushort type, int count, int val);
     void        tiff_head (struct tiff_hdr *th, int full);
-// dcb interpolation
-#include "internal/libraw_internal_funcs_dcb.h"
-// vcd interpolation
-#include "internal/libraw_internal_funcs_vcd.h"
-// AMaZE interpolation
-#include "internal/libraw_internal_funcs_amaze.h"
 
 // splitted AHD code
 #define TS 256
     void        ahd_interpolate_green_h_and_v(int top, int left, ushort (*out_rgb)[TS][TS][3]);
     void ahd_interpolate_r_and_b_in_rgb_and_convert_to_cielab(int top, int left, ushort (*inout_rgb)[TS][3], short (*out_lab)[TS][3], const float (&xyz_cam)[3][4]);
-void ahd_interpolate_r_and_b_and_convert_to_cielab(int top, int left, ushort (*inout_rgb)[TS][TS][3], short (*out_lab)[TS][TS][3], const float (&xyz_cam)[3][4]);
-void ahd_interpolate_build_homogeneity_map(int top, int left, short (*lab)[TS][TS][3], char (*out_homogeneity_map)[TS][2]);
-void ahd_interpolate_combine_homogeneous_pixels(int top, int left, ushort (*rgb)[TS][TS][3], char (*homogeneity_map)[TS][2]);
+    void ahd_interpolate_r_and_b_and_convert_to_cielab(int top, int left, ushort (*inout_rgb)[TS][TS][3], short (*out_lab)[TS][TS][3], const float (&xyz_cam)[3][4]);
+    void ahd_interpolate_build_homogeneity_map(int top, int left, short (*lab)[TS][TS][3], char (*out_homogeneity_map)[TS][2]);
+    void ahd_interpolate_combine_homogeneous_pixels(int top, int left, ushort (*rgb)[TS][TS][3], char (*homogeneity_map)[TS][2]);
 
 #undef TS
 
-
-
+// LibRaw demosaic packs  functions
+// AMaZe
+    int         LinEqSolve(int,  float*, float*, float*);
+// DCB
+    void        dcb_pp();
+    void        dcb_copy_to_buffer(float (*image2)[3]);
+    void        dcb_restore_from_buffer(float (*image2)[3]);
+    void        dcb_color();
+    void        dcb_color_full();
+    void        dcb_map();
+    void        dcb_correction();
+    void        dcb_correction2();
+    void        dcb_refinement();
+    void        rgb_to_lch(double (*image3)[3]);
+    void        lch_to_rgb(double (*image3)[3]);
+    void        fbdd_correction();
+    void        fbdd_correction2(double (*image3)[3]);
+    void        fbdd_green();
+    void  	dcb_ver(float (*image3)[3]);
+    void 	dcb_hor(float (*image2)[3]);
+    void 	dcb_color2(float (*image2)[3]);
+    void 	dcb_color3(float (*image3)[3]);
+    void 	dcb_decide(float (*image2)[3], float (*image3)[3]);
+    void 	dcb_nyquist();
+// VCD/modified dcraw
+    void        refinement();
+    void        ahd_partial_interpolate(int threshold_value);
+    void        es_median_filter();
+    void        median_filter_new();
 #endif
 
 #endif

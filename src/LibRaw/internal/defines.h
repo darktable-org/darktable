@@ -48,9 +48,6 @@ it under the terms of the one of three licenses as you choose:
 #ifndef NO_JPEG
 #include <jpeglib.h>
 #endif
-#ifndef NO_LCMS
-#include <lcms.h>
-#endif
 #ifdef LOCALEDIR
 #include <libintl.h>
 #define _(String) gettext(String)

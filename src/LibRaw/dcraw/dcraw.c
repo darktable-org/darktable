@@ -20,7 +20,7 @@
    homepage qualifies as "full source code".
 
    $Revision: 1.439 $
-   $Date: 2010/11/10 16:33:44 $
+   $Date: 2010/11/11 12:43:11 $
  */
 
 #define VERSION "9.05"
@@ -4853,9 +4853,6 @@ int CLASS parse_tiff_ifd (int base)
       case 6:   height = get2();  break;
       case 7:   width += get2();  break;
       case 9:  filters = get2();  break;
-      case 14: case 15: case 16:
-	maximum = get2();
-	break;
       case 17: case 18:
 	if (type == 3 && len == 1)
 	  cam_mul[(tag-17)*2] = get2() / 256.0;
@@ -6490,13 +6487,13 @@ void CLASS adobe_coeff (const char *make, const char *model)
 	{ 9142,-2947,-678,-8648,16967,1663,-2224,2898,8615 } },
     { "PENTAX 645D", 0, 0x3e00,
 	{ 10646,-3593,-1158,-3329,11699,1831,-667,2874,6287 } },
-    { "Panasonic DMC-FZ8", 0, 0,
+    { "Panasonic DMC-FZ8", 0, 0xf7f,
 	{ 8986,-2755,-802,-6341,13575,3077,-1476,2144,6379 } },
     { "Panasonic DMC-FZ18", 0, 0,
 	{ 9932,-3060,-935,-5809,13331,2753,-1267,2155,5575 } },
-    { "Panasonic DMC-FZ28", 15, 0,
+    { "Panasonic DMC-FZ28", 15, 0xf96,
 	{ 10109,-3488,-993,-5412,12812,2916,-1305,2140,5543 } },
-    { "Panasonic DMC-FZ30", 0, 0,
+    { "Panasonic DMC-FZ30", 0, 0xf94,
 	{ 10976,-4029,-1141,-7918,15491,2600,-1670,2071,8246 } },
     { "Panasonic DMC-FZ3", 143, 0,
 	{ 9938,-2780,-890,-4604,12393,2480,-1117,2304,4620 } },
@@ -6506,19 +6503,19 @@ void CLASS adobe_coeff (const char *make, const char *model)
 	{ 7906,-2709,-594,-6231,13351,3220,-1922,2631,6537 } },
     { "LEICA V-LUX1", 0, 0,
 	{ 7906,-2709,-594,-6231,13351,3220,-1922,2631,6537 } },
-    { "Panasonic DMC-L10", 15, 0,
+    { "Panasonic DMC-L10", 15, 0xf96,
 	{ 8025,-1942,-1050,-7920,15904,2100,-2456,3005,7039 } },
-    { "Panasonic DMC-L1", 0, 0,
+    { "Panasonic DMC-L1", 0, 0xf7f,
 	{ 8054,-1885,-1025,-8349,16367,2040,-2805,3542,7629 } },
-    { "LEICA DIGILUX 3", 0, 0,
+    { "LEICA DIGILUX 3", 0, 0xf7f,
 	{ 8054,-1885,-1025,-8349,16367,2040,-2805,3542,7629 } },
     { "Panasonic DMC-LC1", 0, 0,
 	{ 11340,-4069,-1275,-7555,15266,2448,-2960,3426,7685 } },
     { "LEICA DIGILUX 2", 0, 0,
 	{ 11340,-4069,-1275,-7555,15266,2448,-2960,3426,7685 } },
-    { "Panasonic DMC-LX1", 0, 0,
+    { "Panasonic DMC-LX1", 0, 0xf7f,
 	{ 10704,-4187,-1230,-8314,15952,2501,-920,945,8927 } },
-    { "LEICA D-LUX2", 0, 0,
+    { "LEICA D-LUX2", 0, 0xf7f,
 	{ 10704,-4187,-1230,-8314,15952,2501,-920,945,8927 } },
     { "Panasonic DMC-LX2", 0, 0,
 	{ 8048,-2810,-623,-6450,13519,3272,-1700,2146,7049 } },
@@ -6530,19 +6527,19 @@ void CLASS adobe_coeff (const char *make, const char *model)
 	{ 8128,-2668,-655,-6134,13307,3161,-1782,2568,6083 } },
     { "Panasonic DMC-LX5", 143, 0,
 	{ 10909,-4295,-948,-1333,9306,2399,22,1738,4582 } },
-    { "Panasonic DMC-FZ100", 143, 0,
+    { "Panasonic DMC-FZ100", 143, 0xfff,
 	{ 16197,-6146,-1761,-2393,10765,1869,366,2238,5248 } },
-    { "Panasonic DMC-FX150", 15, 0,
+    { "Panasonic DMC-FX150", 15, 0xfff,
 	{ 9082,-2907,-925,-6119,13377,3058,-1797,2641,5609 } },
     { "Panasonic DMC-G10", 0, 0,
 	{ 10113,-3400,-1114,-4765,12683,2317,-377,1437,6710 } },
-    { "Panasonic DMC-G1", 15, 0,
+    { "Panasonic DMC-G1", 15, 0xf94,
 	{ 8199,-2065,-1056,-8124,16156,2033,-2458,3022,7220 } },
-    { "Panasonic DMC-G2", 15, 0,
+    { "Panasonic DMC-G2", 15, 0xf3c,
 	{ 10113,-3400,-1114,-4765,12683,2317,-377,1437,6710 } },
-    { "Panasonic DMC-GF1", 15, 0,
+    { "Panasonic DMC-GF1", 15, 0xf92,
 	{ 7888,-1902,-1011,-8106,16085,2099,-2353,2866,7330 } },
-    { "Panasonic DMC-GH1", 15, 0,
+    { "Panasonic DMC-GH1", 15, 0xf92,
 	{ 6299,-1466,-532,-6535,13852,2969,-2331,3112,5984 } },
     { "Phase One H 20", 0, 0,		/* DJC */
 	{ 1313,1855,-109,-6715,15908,808,-327,1840,6020 } },
@@ -6974,7 +6971,7 @@ void CLASS identify()
     { height  = 2616;   width  = 3896; }
   if (height == 3136 && width == 4864)  /* Pentax K20D and Samsung GX20 */
     { height  = 3124;   width  = 4688; filters = 0x16161616; }
-  if (!strcmp(model,"K-r"))
+  if (!strcmp(model,"K-r") || !strcmp(model,"K-x"))
     {			width  = 4309; filters = 0x16161616; }
   if (!strcmp(model,"K-5"))
     { left_margin = 10; width  = 4950; filters = 0x16161616; }
@@ -7547,9 +7544,6 @@ konica_400z:
     data_error = -1;
   } else if (!strcmp(model,"*ist DS")) {
     height -= 2;
-  } else if (!strcmp(model,"K-x")) {
-    width = 4309;
-    filters = 0x16161616;
   } else if (!strcmp(model,"Optio S")) {
     if (fsize == 3178560) {
       height = 1540;

@@ -582,8 +582,9 @@ void CLASS fbdd(int noiserd)
 
 if (noiserd>1)
 {
-	if (verbose) fprintf (stderr,_("FBDD full noise reduction...\n"));	
-
+#ifdef DCRAW_VERBOSE
+	if (verbose) fprintf (stderr,_("FBDD full noise reduction...\n"));
+#endif
 	fbdd_green();
 	//dcb_color_full(image2);
 	dcb_color_full();
@@ -599,8 +600,9 @@ if (noiserd>1)
 }
 else
 {
-	if (verbose) fprintf (stderr,_("FBDD noise reduction...\n"));	
-
+#ifdef DCRAW_VERBOSE
+	if (verbose) fprintf (stderr,_("FBDD noise reduction...\n"));
+#endif
 
 	fbdd_green();
 	//dcb_color_full(image2);
@@ -628,7 +630,9 @@ void CLASS dcb(int iterations, int dcb_enhance)
 	float (*image3)[3];
 	image3 = (float (*)[3]) calloc(width*height, sizeof *image3);
 	
-	if (verbose) fprintf (stderr,_("DCB demosaicing...\n"));	
+#ifdef DCRAW_VERBOSE
+	if (verbose) fprintf (stderr,_("DCB demosaicing...\n"));
+#endif
 
  		border_interpolate(6);
 
@@ -646,7 +650,9 @@ void CLASS dcb(int iterations, int dcb_enhance)
 
 		while (i<=iterations)
 		{
+#ifdef DCRAW_VERBOSE
 			if (verbose) fprintf (stderr,_("DCB correction pass %d...\n"), i);
+#endif                        
 			dcb_nyquist();
 			dcb_nyquist();
 			dcb_nyquist();
@@ -658,8 +664,9 @@ void CLASS dcb(int iterations, int dcb_enhance)
 		dcb_color();
 		dcb_pp();	
 		
+#ifdef DCRAW_VERBOSE
 	if (verbose) fprintf (stderr,_("finishing DCB...\n"));
-		
+#endif		
 		dcb_map();
 		dcb_correction2();
 
@@ -678,8 +685,9 @@ void CLASS dcb(int iterations, int dcb_enhance)
 
 	if (dcb_enhance)
 	{	
-		if (verbose) fprintf (stderr,_("optional DCB refinement...\n"));					
-
+#ifdef DCRAW_VERBOSE
+		if (verbose) fprintf (stderr,_("optional DCB refinement...\n"));
+#endif
 		dcb_refinement();
  		//dcb_color_full(image2);		
  		dcb_color_full();		

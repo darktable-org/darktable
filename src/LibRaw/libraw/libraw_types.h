@@ -48,7 +48,11 @@ it under the terms of the one of three licenses as you choose:
 extern "C" {
 #endif
 
-#ifndef USE_LCMS
+#if defined(USE_LCMS)
+#include <lcms.h>
+#elif defined(USE_LCMS2)
+#include <lcms2.h>
+#else
 #define NO_LCMS
 #endif
 
@@ -124,6 +128,7 @@ typedef struct
 
     unsigned    raw_count;
     unsigned    dng_version;
+    unsigned    is_foveon;
     int         colors;
 
     unsigned    filters; 
@@ -246,17 +251,26 @@ typedef struct
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
     int         green_matching;
-    int         pre_interpolate_median_filter;
     enum LibRaw_filtering    filtering_mode; 
-    /*DCB*/
-    int dcb_iterations;
-    int dcb_enhance_fl;
-    int fbdd_noiserd;
-    /* VCD*/
-    int eeci_refine;
-    int es_med_passes;
+#if 0
+    /* AFD noise suppression parameters, disabled for now */
+    int         afd_noise_att;
+    int         afd_noise_thres;
+    int         afd_luminance_passes;
+    int         afd_chrominance_method;
+    int         afd_luminance_only; 
+#endif
+    /* DCB parameters */
+    int         dcb_iterations;
+    int         dcb_enhance_fl;
+    int         fbdd_noiserd;
+    /* VCD parameters */
+    int         eeci_refine;
+    int         es_med_passes;
     /* AMaZE*/
-    int amaze_ca_refine;
+    int         amaze_ca_refine;
+
+
 }libraw_output_params_t;
 
 typedef struct
