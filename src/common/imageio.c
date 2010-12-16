@@ -355,6 +355,7 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
 try_full_raw:
     raw->params.half_size = 1; /* dcraw -h */
     // raw->params.user_qual = 2;
+    raw->params.document_mode = 2;
     ret = libraw_open_file(raw, filename);
     HANDLE_ERRORS(ret, 0);
     ret = libraw_unpack(raw);
@@ -380,7 +381,7 @@ try_full_raw:
     img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-    const float m = 1.0f/0xffff;
+    const float m = 1.0f/(raw->color.maximum - raw->color.black);
     const uint16_t (*rawpx)[3] = (const uint16_t (*)[3])image->data;
     const int raw_wd = img->width;
     const int raw_ht = img->height;
@@ -396,9 +397,12 @@ try_full_raw:
 
     if(raw_wd == p_wd && raw_ht == p_ht)
     { // use 1:1
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(img, rawpx, raw, p_wd)
+#endif
       for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[j*raw_wd + i][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[j*raw_wd + i][k] - raw->color.black)*m);
       }
     }
     else
@@ -407,7 +411,7 @@ try_full_raw:
       const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
       for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
       {
-        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k]*m;
+        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k] - raw->color.black)*m);
       }
     }
 
@@ -458,7 +462,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.no_auto_bright = 1;
   // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
   // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
-  raw->params.document_mode = 1; // color scaling (clip,wb,max) and black point, but no demosaic
+  raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
   raw->params.user_flip = img->raw_params.user_flip;
@@ -516,7 +520,11 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     return DT_IMAGEIO_CACHE_FULL;
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
-  memcpy(img->pixels, image->data, img->width*img->height*sizeof(uint16_t));
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
+#endif
+  for(int k=0;k<img->width*img->height;k++)
+    ((uint16_t *)img->pixels)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
