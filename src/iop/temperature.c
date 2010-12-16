@@ -252,7 +252,19 @@ void init (dt_iop_module_t *module)
   if(!ret)
   {
     for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.cam_mul[k];
-    if(tmp.coeffs[0] < 0.0) for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.pre_mul[k];
+    if(tmp.coeffs[0] <= 0.0)
+    {
+      for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.pre_mul[k];
+#if 0 // ufraw does some more magic here (but results in same wb coeffs for sony cam)
+      for (int c=0; c<3; c++)
+      {
+        float chanMulInv = 0;
+        for (int cc=0; cc<3; cc++)
+          chanMulInv += 1.0f/raw->color.pre_mul[c] * raw->color.rgb_cam[c][cc];
+        tmp.coeffs[c] = 1.0f/chanMulInv;
+      }
+#endif
+    }
     if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
     { // could not get useful info!
       tmp.coeffs[0] = tmp.coeffs[1] = tmp.coeffs[2] = 1.0f;
