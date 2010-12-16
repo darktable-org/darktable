@@ -19,6 +19,7 @@
   #include "config.h"
 #endif
 #include <stdlib.h>
+#include <cairo.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -40,6 +41,9 @@ typedef struct dt_iop_overexposed_gui_data_t{
 	GtkWidget           *label2;
 	GtkDarktableSlider  *lower;
 	GtkDarktableSlider  *upper;
+// 	int                  width;
+// 	int                  height;
+// 	unsigned char       *mask;
 }dt_iop_overexposed_gui_data_t;
 
 typedef struct dt_iop_overexposed_data_t{
@@ -60,40 +64,91 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 	dt_iop_overexposed_data_t *data = (dt_iop_overexposed_data_t *)piece->data;
 	float lower  = data->lower / 100.0;
 	float upper  = data->upper / 100.0;
+
 	float *in    = (float *)i;
 	float *out   = (float *)o;
 	const int ch = piece->colors;
 
-	if(self->dev->gui_attached){
+// 	int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, roi_out->width);
+
+// 	if(((dt_iop_overexposed_gui_data_t*)self->gui_data)->mask != NULL)
+// 		free(((dt_iop_overexposed_gui_data_t*)self->gui_data)->mask);
+// 	((dt_iop_overexposed_gui_data_t*)self->gui_data)->mask = calloc(sizeof(char), 2*stride*roi_out->height);
+
+// 	((dt_iop_overexposed_gui_data_t*)self->gui_data)->width  = roi_out->width;
+// 	((dt_iop_overexposed_gui_data_t*)self->gui_data)->height = roi_out->height;
+// 	char *mask = (char*)((dt_iop_overexposed_gui_data_t*)self->gui_data)->mask;
+
 #ifdef _OPENMP
-	#pragma omp parallel for default(none) shared(roi_out, in, out, data, lower, upper) schedule(static)
+	#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower) schedule(static)
+// 	#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower, mask, stride) schedule(static)
 #endif
-		for(int k=0;k<roi_out->width*roi_out->height;k++){
-			if(in[ch*k+0] >= upper && in[ch*k+1] >= upper && in[ch*k+2] >= upper){
-				out[ch*k+0] = 1;
-				out[ch*k+1] = 0;
-				out[ch*k+2] = 0;
-			} else if(in[ch*k+0] <= lower && in[ch*k+1] <= lower && in[ch*k+2] <= lower){
-				out[ch*k+0] = 0;
-				out[ch*k+1] = 0;
-				out[ch*k+2] = 1;
-			} else {
-				out[ch*k+0] = in[ch*k+0];
-				out[ch*k+1] = in[ch*k+1];
-				out[ch*k+2] = in[ch*k+2];
-			}
-		}
-	} else {
-#ifdef _OPENMP
-	#pragma omp parallel for default(none) shared(roi_out, in, out) schedule(static)
-#endif
-		for(int k=0;k<roi_out->width*roi_out->height;k++){
+	for(int k=0;k<roi_out->width*roi_out->height;k++){
+// 		int x=k%roi_out->width;
+// 		int y=k/roi_out->width;
+		if(in[ch*k+0] >= upper && in[ch*k+1] >= upper && in[ch*k+2] >= upper){
+// 			mask[y*stride+x] = 255;
+			out[ch*k+0] = 1;
+			out[ch*k+1] = 0;
+			out[ch*k+2] = 0;
+		} else if(in[ch*k+0] <= lower && in[ch*k+1] <= lower && in[ch*k+2] <= lower){
+// 			mask[(y*stride+x)+(stride*roi_out->height)] = 255;
+			out[ch*k+0] = 0;
+			out[ch*k+1] = 0;
+			out[ch*k+2] = 1;
+		} else {
+			// TODO: memcpy()?
 			out[ch*k+0] = in[ch*k+0];
 			out[ch*k+1] = in[ch*k+1];
 			out[ch*k+2] = in[ch*k+2];
-		}  
+		}
 	}
 }
+
+// void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery){
+// 	dt_iop_overexposed_gui_data_t *data = (dt_iop_overexposed_gui_data_t*)self->gui_data;
+// 	if(data->mask == NULL)
+// 		return;
+
+// 	int w = data->width;
+// 	int h = data->height;
+// 	unsigned char* mask = data->mask;
+// 	g_print("P2\n%d %d\n255\n", w, h);
+// 	for(int i=0; i<w*h; ++i)
+// 		g_print("%d ", mask[i]);
+// 	g_print("\n");
+/*
+	int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, w);
+	cairo_surface_t *m1 = cairo_image_surface_create_for_data(data->mask, CAIRO_FORMAT_A8, w, h, stride);
+	cairo_surface_t *m2 = cairo_image_surface_create_for_data(data->mask+stride*h, CAIRO_FORMAT_A8, w, h, stride);
+
+	cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
+	cairo_mask_surface(cr, m1, 0, 0);
+	cairo_fill(cr);
+
+	cairo_set_source_rgb(cr, 0.0, 0.0, 1.0);
+	cairo_mask_surface(cr, m2, 0, 0);
+	cairo_fill(cr);
+*/
+// 	unsigned char lower  = 255.0 * dtgtk_slider_get_value(data->lower) / 100.0;
+// 	unsigned char upper; upper  = 255.0 * dtgtk_slider_get_value(data->upper) / 100.0;
+
+// 	cairo_surface_t *surface = cairo_get_target(cr);
+// 	unsigned char* s = cairo_image_surface_get_data(surface);
+// 	int stride       = cairo_image_surface_get_stride(surface);
+// #ifdef _OPENMP
+// 	#pragma omp parallel for default(none) shared(stride, s, height, width, upper) schedule(static)
+// #endif
+// 	for(int y = 7; y<height+9; ++y){
+// 		for(int x=7; x<width+9; ++x){
+// 			if(s[4*x+0+stride*y] >= upper && s[4*x+1+stride*y] >= upper && s[4*x+2+stride*y] >= upper){ //FIXME: is the order the same on MAC?
+// 				s[4*x+0+stride*y] = 0;   //B
+// 				s[4*x+1+stride*y] = 0;   //G
+// 				s[4*x+2+stride*y] = 255; //R
+// 			}
+// 		}
+// 	}
+// }
 
 static void lower_callback (GtkDarktableSlider *slider, gpointer user_data){
 	dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -117,6 +172,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 	dt_iop_overexposed_data_t *d   = (dt_iop_overexposed_data_t *)piece->data;
 	d->lower = p->lower;
 	d->upper = p->upper;
+	if(pipe->type != DT_DEV_PIXELPIPE_FULL) piece->enabled = 0;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece){
@@ -127,6 +183,9 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece){
 	free(piece->data);
+// 	if(((dt_iop_overexposed_gui_data_t*)(self->gui_data))->mask != NULL)
+// 		free(((dt_iop_overexposed_gui_data_t*)(self->gui_data))->mask);
+// 	((dt_iop_overexposed_gui_data_t*)(self->gui_data))->mask = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self){
@@ -150,6 +209,9 @@ void init(dt_iop_module_t *module){
 }
 
 void cleanup(dt_iop_module_t *module){
+// 	if(((dt_iop_overexposed_gui_data_t*)(module->gui_data))->mask != NULL)
+// 		free(((dt_iop_overexposed_gui_data_t*)(module->gui_data))->mask);
+// 	((dt_iop_overexposed_gui_data_t*)(module->gui_data))->mask = NULL;
 	if(module->gui_data != NULL)
 		free(module->gui_data);
 	module->gui_data = NULL;
@@ -162,6 +224,8 @@ void gui_init(struct dt_iop_module_t *self){
 	self->gui_data                   = malloc(sizeof(dt_iop_overexposed_gui_data_t));
 	dt_iop_overexposed_gui_data_t *g = (dt_iop_overexposed_gui_data_t *)self->gui_data;
 	dt_iop_overexposed_params_t *p   = (dt_iop_overexposed_params_t *)self->params;
+
+// 	g->mask = NULL;
 
 	self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
 	g->vbox1     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
