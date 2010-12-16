@@ -1396,8 +1396,6 @@ void dt_control_update_recent_films()
     num++;
   }
   
-  GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-  dt_gui_filmview_update(gtk_entry_get_text(entry));
   if(needlock) gdk_threads_leave();
 }
 
