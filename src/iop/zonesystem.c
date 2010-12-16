@@ -200,7 +200,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     in  = (float *)ivoid;
     out = (float *)ovoid;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out,buffer,g,zonemap,stderr) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out,buffer,g,zonemap) schedule(static)
 #endif
     for (int k=0;k<roi_out->width*roi_out->height;k++)
     {
@@ -220,10 +220,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     /* remap lightness into zonemap and apply lightness */
     const float lightness=in[ch*k]/100.0;
-    const float rzw = (1.0/(size-1));                                       // real zone width 
-    const int rz = CLAMPS((lightness/rzw), 0, MAX_ZONE_SYSTEM_SIZE-1);       // real zone for lightness
-    const float zw = (zonemap[rz+1]-zonemap[rz]);                           // mapped zone width
-    const float zs = zw/rzw ;                                               // mapped zone scale
+    const float rzw = (1.0/(size-1));                       // real zone width 
+    const int rz = CLAMPS((lightness/rzw), 0, size-2);      // real zone for lightness
+    const float zw = (zonemap[rz+1]-zonemap[rz]);           // mapped zone width
+    const float zs = zw/rzw ;                               // mapped zone scale
     const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
     
     float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      
