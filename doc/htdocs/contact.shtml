@@ -19,15 +19,16 @@
       <br />
       to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-announcements">announcements only list</a> (low traffic),
       <br />
-      or try your luck at the <a href="http://sourceforge.net/apps/phpbb/darktable/">phpBB forums</a>.
+      have a look at <a href="http://sourceforge.net/apps/trac/darktable/">our wiki</a>,
+      <br />
+      or feed your issue <a href="http://sourceforge.net/apps/trac/darktable/report">into trac</a>.
     	</div>
     	<div class="listtext">
     	<img src="images/mushroom.jpg" alt="contributing" class="img" /><h1>contributing</h1>
       <ul>
         <li>use it! and then discuss your <em>bugreports, feature requests, suggestions, translations, patches</em> ..
             on the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">mailing list</a>.</li>
-        <li>post <em>documentation</em>, tutorials, your experiences at <a href="http://sourceforge.net/apps/phpbb/darktable/">the forums</a>.</li>
-        <li>post beta: write image operation <em>plug-ins</em>.</li>
+        <li>write image operation <em>plug-ins</em>.</li>
         <li><em>translate</em> dt into your language (in case it didn't already happen):<br/>
             read the short instructions in the file <a href="http://darktable.git.sourceforge.net/git/gitweb.cgi?p=darktable/darktable;a=blob;f=TRANSLATORS;h=8b55a4f319d2a255eedd17b596f3fa4171ab58ff;hb=HEAD">TRANSLATORS</a> in git.
         </li>
