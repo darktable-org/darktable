@@ -181,9 +181,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
      
       hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
       
-      out[ch*k+0]=in[ch*k+0]*la + mixrgb[0]*ra;
-      out[ch*k+1]=in[ch*k+1]*la + mixrgb[1]*ra;
-      out[ch*k+2]=in[ch*k+2]*la + mixrgb[2]*ra;
+      out[ch*k+0]=CLIP(in[ch*k+0]*la + mixrgb[0]*ra);
+      out[ch*k+1]=CLIP(in[ch*k+1]*la + mixrgb[1]*ra);
+      out[ch*k+2]=CLIP(in[ch*k+2]*la + mixrgb[2]*ra);
     } 
     else 
     {
