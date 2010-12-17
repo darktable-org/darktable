@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-13 15:14+0100\n"
+"POT-Creation-Date: 2010-12-17 11:05+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -14,67 +14,67 @@ msgstr ""
 "X-Poedit-Country: GERMANY\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: ../build/src/preferences_gen.h:272
+#: ../build/src/preferences_gen.h:286
 msgid "gui options"
 msgstr "GUI-Optionen"
 
-#: ../build/src/preferences_gen.h:274
+#: ../build/src/preferences_gen.h:288
 msgid "filename of your custom theme in share/darktable/"
 msgstr "Dateiname des eigenen Themes in share/darktable/"
 
-#: ../build/src/preferences_gen.h:282 ../build/src/preferences_gen.h:299
-#: ../build/src/preferences_gen.h:315 ../build/src/preferences_gen.h:330
-#: ../build/src/preferences_gen.h:346 ../build/src/preferences_gen.h:363
-#: ../build/src/preferences_gen.h:379 ../build/src/preferences_gen.h:395
-#: ../build/src/preferences_gen.h:412 ../build/src/preferences_gen.h:428
-#: ../build/src/preferences_gen.h:460 ../build/src/preferences_gen.h:476
-#: ../build/src/preferences_gen.h:492 ../build/src/preferences_gen.h:509
-#: ../build/src/preferences_gen.h:526 ../build/src/preferences_gen.h:542
-#: ../build/src/preferences_gen.h:559
+#: ../build/src/preferences_gen.h:296 ../build/src/preferences_gen.h:313
+#: ../build/src/preferences_gen.h:329 ../build/src/preferences_gen.h:344
+#: ../build/src/preferences_gen.h:360 ../build/src/preferences_gen.h:377
+#: ../build/src/preferences_gen.h:394 ../build/src/preferences_gen.h:410
+#: ../build/src/preferences_gen.h:426 ../build/src/preferences_gen.h:443
+#: ../build/src/preferences_gen.h:459 ../build/src/preferences_gen.h:491
+#: ../build/src/preferences_gen.h:507 ../build/src/preferences_gen.h:523
+#: ../build/src/preferences_gen.h:540 ../build/src/preferences_gen.h:557
+#: ../build/src/preferences_gen.h:573 ../build/src/preferences_gen.h:590
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "Doppelklick, um auf ‚%s‘ zurückzusetzen"
 
-#: ../build/src/preferences_gen.h:285 ../build/src/preferences_gen.h:512
+#: ../build/src/preferences_gen.h:299 ../build/src/preferences_gen.h:543
 msgid " (needs a restart) "
 msgstr " (erfordert einen Neustart) "
 
-#: ../build/src/preferences_gen.h:290
+#: ../build/src/preferences_gen.h:304
 msgid "size of the side panels in pixels"
 msgstr "Größe der Seitenleiste in Pixeln"
 
-#: ../build/src/preferences_gen.h:302
+#: ../build/src/preferences_gen.h:316
 msgid " (needs a restart)"
 msgstr " (erfordert einen Neustart)"
 
-#: ../build/src/preferences_gen.h:307
+#: ../build/src/preferences_gen.h:321
 msgid "don't use embedded preview jpeg, always use half-size raw"
 msgstr ""
 "eingebettetes JPEG nicht benutzen, statt dessen immer RAW halber Größe "
 "benutzen"
 
-#: ../build/src/preferences_gen.h:322
+#: ../build/src/preferences_gen.h:336
 msgid "ask before removing images"
 msgstr "frage vor dem Entfernen von Bildern"
 
-#: ../build/src/preferences_gen.h:333
+#: ../build/src/preferences_gen.h:347
 msgid "always ask the user before any image is removed from db."
 msgstr "immer den Benutzer fragen, bevor ein Bild aus der DB gelöscht wird."
 
-#: ../build/src/preferences_gen.h:338
+#: ../build/src/preferences_gen.h:352
 msgid "ask before deleting images"
 msgstr "frage vor dem Löschen von Bildern"
 
-#: ../build/src/preferences_gen.h:349
+#: ../build/src/preferences_gen.h:363
 msgid "always ask the user before any image file is deleted."
 msgstr "immer den Benutzer fragen, bevor eine Bilddatei gelöscht wird."
 
 # Hä?
-#: ../build/src/preferences_gen.h:354
+#: ../build/src/preferences_gen.h:368
 msgid "downsample the preview pixels"
 msgstr "Vorschaupixel runterrechnen"
 
-#: ../build/src/preferences_gen.h:366
+#: ../build/src/preferences_gen.h:380
 msgid ""
 "this value smaller than 1.0 downsamples the preview pixels in darkroom mode "
 "for faster feedback."
@@ -82,15 +82,28 @@ msgstr ""
 "wenn dieser Wert kleiner 1.0 ist, dann werden die Vorschau-Pixel im "
 "Dunkelkammer-Modus für eine schnellere Rückmeldung runtergerechnet."
 
-#: ../build/src/preferences_gen.h:371
+#: ../build/src/preferences_gen.h:385
+msgid "number of folder levels to show in lists"
+msgstr "Anzahl Verzeichnis-Ebenen, die in der Liste angezeigt werden sollen"
+
+#: ../build/src/preferences_gen.h:397
+msgid ""
+"the number of folder levels to show in film roll names, starting from the "
+"right"
+msgstr ""
+"Die Anzahl an Verzeichnis-Ebenen, die im\n"
+"Filmrollennamen angezeigt werden sollen,\n"
+"beginnend von rechts."
+
+#: ../build/src/preferences_gen.h:402
 msgid "enable filmstrip in darkroom mode"
 msgstr "Filmstreifen im Dunkelkammer-Modus aktivieren"
 
-#: ../build/src/preferences_gen.h:386
+#: ../build/src/preferences_gen.h:417
 msgid "maximum resolution of lighttable thumbnails"
 msgstr "Höchste Auflösung von Leuchttisch-Vorschaubildern"
 
-#: ../build/src/preferences_gen.h:398
+#: ../build/src/preferences_gen.h:429
 msgid ""
 "keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
 "(needs a restart and will invalidate current thumbnail caches)."
@@ -100,30 +113,30 @@ msgstr ""
 "(erfordert einen Neustart und macht den momentanen Vorschau-Cache "
 "unbrauchbar)."
 
-#: ../build/src/preferences_gen.h:403
+#: ../build/src/preferences_gen.h:434
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "JPEG-Qualität der Vorschaubilder auf der Festplatte"
 
-#: ../build/src/preferences_gen.h:415
+#: ../build/src/preferences_gen.h:446
 msgid "affects only the thumbnail cache used for quick startup."
 msgstr ""
 "betrifft nur den Vorschaubild-Cache, der für einen schnellen Start genutzt "
 "wird"
 
-#: ../build/src/preferences_gen.h:420
+#: ../build/src/preferences_gen.h:451
 msgid "ask before deleting a tag"
 msgstr "frage vor dem Löschen eines Tags"
 
 # zu frei?
-#: ../build/src/preferences_gen.h:450
+#: ../build/src/preferences_gen.h:481
 msgid "core options"
 msgstr "zentrale Optionen"
 
-#: ../build/src/preferences_gen.h:452
+#: ../build/src/preferences_gen.h:483
 msgid "database file"
 msgstr "Datenbankdatei"
 
-#: ../build/src/preferences_gen.h:463 ../build/src/preferences_gen.h:479
+#: ../build/src/preferences_gen.h:494 ../build/src/preferences_gen.h:510
 msgid ""
 "filename relative to your home directory, or starting with a slash (needs a "
 "restart)."
@@ -131,15 +144,15 @@ msgstr ""
 "Dateiname relativ zum home-Verzeichnis, sonst mit Schrägstrich beginnen "
 "(erfordert einen Neustart)."
 
-#: ../build/src/preferences_gen.h:468
+#: ../build/src/preferences_gen.h:499
 msgid "image cache file"
 msgstr "Bilder-Cache-Datei"
 
-#: ../build/src/preferences_gen.h:484
+#: ../build/src/preferences_gen.h:515
 msgid "image cache file backup"
 msgstr "Bilder-Cache-Datei-Backup"
 
-#: ../build/src/preferences_gen.h:495
+#: ../build/src/preferences_gen.h:526
 msgid ""
 "creates backup of cachefile to prevent loss of thumbnails generated at "
 "crashes etc (needs a restart)."
@@ -147,16 +160,16 @@ msgstr ""
 "lege Sicherung der Cache-Datei an, um einen Verlust der Vorschaubilder bei "
 "Abstürzen usw. zu verhindern (erfordert einen Neustart)."
 
-#: ../build/src/preferences_gen.h:500
+#: ../build/src/preferences_gen.h:531
 msgid "memory in bytes to use for mipmap cache"
 msgstr "Speicher in Bytes, der für den MIP-Map-Cache benutzt wird"
 
-#: ../build/src/preferences_gen.h:517
+#: ../build/src/preferences_gen.h:548
 msgid "full resolution image buffers to keep in main memory cache"
 msgstr ""
 "Bild-Puffer mit voller Auflösung, die im Hauptspeicher gehalten werden sollen"
 
-#: ../build/src/preferences_gen.h:529
+#: ../build/src/preferences_gen.h:560
 msgid ""
 "how many full-resolution floating point buffers of loaded raw images to keep "
 "in main memory at maximum. set this variable to num_threads + 1 if you want "
@@ -168,11 +181,11 @@ msgstr ""
 "Export auf num_threads + 1 setzen (ein Thread für Dunkelkammer-Modus). "
 "Warnung: Jeder Thread benötigt rund 1 GB Speicher (erfordert einen Neustart)."
 
-#: ../build/src/preferences_gen.h:534
+#: ../build/src/preferences_gen.h:565
 msgid "write a redundant sidecar file for each image"
 msgstr "schreibe eine redundante Begleitdatei für jedes Bild"
 
-#: ../build/src/preferences_gen.h:545
+#: ../build/src/preferences_gen.h:576
 msgid ""
 "these files can later be re-imported into a different database, preserving "
 "your changes to the image."
@@ -180,11 +193,11 @@ msgstr ""
 "diese Dateien können später in eine andere Datenbank neu importiert werden, "
 "wobei die Änderungen am Bild erhalten bleiben."
 
-#: ../build/src/preferences_gen.h:550
+#: ../build/src/preferences_gen.h:581
 msgid "password storage backend to use"
 msgstr "Passwort-Speicher-Backend, das benutzt werden soll"
 
-#: ../build/src/preferences_gen.h:562
+#: ../build/src/preferences_gen.h:593
 msgid ""
 "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
 "kwallet, 3 - gnome keyring"
@@ -234,7 +247,7 @@ msgstr ""
 msgid "aperture"
 msgstr "Blende"
 
-#: ../data/darktable.glade.h:13 ../src/libs/collect.c:414
+#: ../data/darktable.glade.h:13 ../src/libs/collect.c:407
 #: ../src/libs/metadata.c:253
 msgid "creator"
 msgstr "Urheber"
@@ -250,7 +263,7 @@ msgstr "Geräte"
 #. exposure
 #. adding the labels
 #: ../data/darktable.glade.h:16 ../src/gui/presets.c:263
-#: ../src/iop/exposure.c:38 ../src/iop/exposure.c:284 ../src/iop/relight.c:343
+#: ../src/iop/exposure.c:38 ../src/iop/exposure.c:268 ../src/iop/relight.c:343
 msgid "exposure"
 msgstr "Belichtung"
 
@@ -276,7 +289,7 @@ msgstr ""
 "ID\n"
 "Farbmarkierung"
 
-#: ../data/darktable.glade.h:24 ../src/libs/collect.c:406
+#: ../data/darktable.glade.h:24 ../src/libs/collect.c:399
 msgid "film roll"
 msgstr "Filmrolle"
 
@@ -288,7 +301,7 @@ msgstr "Höhe"
 msgid "histogram"
 msgstr "Histogramm"
 
-#: ../data/darktable.glade.h:27 ../src/libs/collect.c:410
+#: ../data/darktable.glade.h:27 ../src/libs/collect.c:403
 msgid "history"
 msgstr "Verlauf"
 
@@ -377,8 +390,8 @@ msgstr ""
 "ausgewählte Filmrolle aus\n"
 "der Kollektion entfernen"
 
-#: ../data/darktable.glade.h:48 ../src/imageio/storage/picasa.c:683
-#: ../src/libs/collect.c:416 ../src/libs/metadata.c:279
+#: ../data/darktable.glade.h:48 ../src/imageio/storage/picasa.c:684
+#: ../src/libs/collect.c:409 ../src/libs/metadata.c:279
 msgid "rights"
 msgstr "Rechte"
 
@@ -394,8 +407,8 @@ msgstr "Snapshots"
 msgid "switch to darkroom mode"
 msgstr "zum Dunkelkammer-Modus wechseln"
 
-#: ../data/darktable.glade.h:52 ../src/imageio/storage/picasa.c:681
-#: ../src/libs/collect.c:412 ../src/libs/metadata.c:227
+#: ../data/darktable.glade.h:52 ../src/imageio/storage/picasa.c:682
+#: ../src/libs/collect.c:405 ../src/libs/metadata.c:227
 msgid "title"
 msgstr "Titel"
 
@@ -421,17 +434,13 @@ msgstr "ein"
 msgid "off"
 msgstr "aus"
 
-#: ../src/common/image.c:98 ../src/libs/collect.c:324
-msgid "single images"
-msgstr "Einzelbilder"
-
-#: ../src/common/image.c:115
+#: ../src/common/image.c:128
 msgid "orphaned image"
 msgstr "verwaistes Bild"
 
 #. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
 #. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
-#: ../src/common/image.c:488
+#: ../src/common/image.c:500
 #, c-format
 msgid "image `%s' is not available"
 msgstr "Bild ‚%s‘ ist nicht verfügbar"
@@ -446,16 +455,16 @@ msgstr "Stil mit dem Namen ‚%s‘ existiert bereits"
 msgid "style named '%s' successfully created"
 msgstr "Stil mit dem Namen ‚%s‘ erfolgreich angelegt"
 
-#: ../src/control/control.c:879 ../src/control/control.c:882
+#: ../src/control/control.c:883 ../src/control/control.c:886
 msgid "working.."
 msgstr "Arbeite …"
 
-#: ../src/control/control.c:959
+#: ../src/control/control.c:963
 #, c-format
 msgid "switch to %s mode"
 msgstr "in den %s-Modus wechseln"
 
-#: ../src/control/control.c:967
+#: ../src/control/control.c:971
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s-Modus</b></big></span>"
@@ -835,7 +844,7 @@ msgstr "Tethering-Aufnahme"
 msgid "no supported devices found"
 msgstr "keine unterstützten Geräte gefunden"
 
-#: ../src/gui/filmview.c:129
+#: ../src/gui/filmview.c:127
 msgid ""
 "do you really want to remove this film roll and all its images from the "
 "collection?"
@@ -843,7 +852,7 @@ msgstr ""
 "soll diese Filmrolle und alle enthaltenen Bilder wirklich aus der Kollektion "
 "entfernt werden?"
 
-#: ../src/gui/filmview.c:130
+#: ../src/gui/filmview.c:128
 msgid "remove film roll?"
 msgstr "Filmrolle entfernen?"
 
@@ -1316,61 +1325,61 @@ msgstr "%d/%d nach ‚%s%s‘ exportiert"
 msgid "send as email"
 msgstr "Email senden"
 
-#: ../src/imageio/storage/picasa.c:538
+#: ../src/imageio/storage/picasa.c:539
 msgid "picasa webalbum"
 msgstr "Picassa Webalbum"
 
-#: ../src/imageio/storage/picasa.c:572
+#: ../src/imageio/storage/picasa.c:573
 msgid "authenticated"
 msgstr "authentifiziert"
 
 #. Add standard action
-#: ../src/imageio/storage/picasa.c:593 ../src/imageio/storage/picasa.c:626
+#: ../src/imageio/storage/picasa.c:594 ../src/imageio/storage/picasa.c:627
 msgid "create new album"
 msgstr "neues Album erstellen"
 
 #. Failed to authenticated, let's notify somehow...
-#: ../src/imageio/storage/picasa.c:616
+#: ../src/imageio/storage/picasa.c:617
 msgid "authentication failed"
 msgstr "Authentifizierung fehlgeschlagen"
 
-#: ../src/imageio/storage/picasa.c:677
+#: ../src/imageio/storage/picasa.c:678
 msgid "user"
 msgstr "Benutzer"
 
-#: ../src/imageio/storage/picasa.c:678
+#: ../src/imageio/storage/picasa.c:679
 msgid "password"
 msgstr "Passwort"
 
-#: ../src/imageio/storage/picasa.c:679
+#: ../src/imageio/storage/picasa.c:680
 msgid "albums"
 msgstr "Alben"
 
-#: ../src/imageio/storage/picasa.c:682
+#: ../src/imageio/storage/picasa.c:683
 msgid "summary"
 msgstr "Zusammenfassung"
 
-#: ../src/imageio/storage/picasa.c:722
+#: ../src/imageio/storage/picasa.c:723
 msgid "my new album"
 msgstr "mein neues Album"
 
-#: ../src/imageio/storage/picasa.c:723
+#: ../src/imageio/storage/picasa.c:724
 msgid "exported from darktable"
 msgstr "aus darktable exportiert"
 
-#: ../src/imageio/storage/picasa.c:741
+#: ../src/imageio/storage/picasa.c:742
 msgid "refresh album list"
 msgstr "Albenliste aktualisieren"
 
-#: ../src/imageio/storage/picasa.c:747
+#: ../src/imageio/storage/picasa.c:748
 msgid "public album"
 msgstr "öffentliches Album"
 
-#: ../src/imageio/storage/picasa.c:748
+#: ../src/imageio/storage/picasa.c:749
 msgid "export tags"
 msgstr "Tags exportieren"
 
-#: ../src/imageio/storage/picasa.c:884
+#: ../src/imageio/storage/picasa.c:894
 #, c-format
 msgid "%d/%d exported to picasa webalbum"
 msgstr "%d/%d ins Picasa-Webalbum exportiert"
@@ -1476,19 +1485,19 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:285 ../src/iop/channelmixer.c:365
-#: ../src/iop/channelmixer.c:382 ../src/iop/temperature.c:379
+#: ../src/iop/channelmixer.c:382 ../src/iop/temperature.c:391
 #: ../src/libs/collect.c:95 ../src/libs/collect.c:272
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:287 ../src/iop/channelmixer.c:366
-#: ../src/iop/channelmixer.c:383 ../src/iop/temperature.c:383
+#: ../src/iop/channelmixer.c:383 ../src/iop/temperature.c:395
 #: ../src/libs/collect.c:97 ../src/libs/collect.c:282
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:289 ../src/iop/channelmixer.c:367
-#: ../src/iop/channelmixer.c:384 ../src/iop/temperature.c:387
+#: ../src/iop/channelmixer.c:384 ../src/iop/temperature.c:399
 msgid "blue"
 msgstr "Blau"
 
@@ -1836,47 +1845,47 @@ msgstr "Farbkorrektur"
 msgid "input color profile"
 msgstr "Eingabefarbprofil"
 
-#: ../src/iop/colorin.c:308
+#: ../src/iop/colorin.c:297
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "nicht unterstütztes Eingabeprofil wurde durch lineares RGB ersetzt!"
 
 #. g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
-#: ../src/iop/colorin.c:500 ../src/libs/export.c:507
+#: ../src/iop/colorin.c:489 ../src/libs/export.c:507
 msgid "profile"
 msgstr "Profil"
 
-#: ../src/iop/colorin.c:516
+#: ../src/iop/colorin.c:505
 msgid "standard color matrix"
 msgstr "Standard-Farb-Matrix"
 
-#: ../src/iop/colorin.c:518
+#: ../src/iop/colorin.c:507
 msgid "enhanced color matrix"
 msgstr "erweiterte Farb-Matrix"
 
-#: ../src/iop/colorin.c:520
+#: ../src/iop/colorin.c:509
 msgid "srgb (e.g. jpg)"
 msgstr "sRGB (z.B. JPEG)"
 
-#: ../src/iop/colorin.c:522 ../src/iop/colorout.c:505
+#: ../src/iop/colorin.c:511 ../src/iop/colorout.c:505
 #: ../src/iop/colorout.c:506 ../src/libs/export.c:463
 msgid "adobe rgb"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:524 ../src/iop/colorout.c:495
+#: ../src/iop/colorin.c:513 ../src/iop/colorout.c:495
 #: ../src/iop/colorout.c:496 ../src/libs/export.c:475
 msgid "linear rgb"
 msgstr "lineares RGB"
 
-#: ../src/iop/colorin.c:526
+#: ../src/iop/colorin.c:515
 msgid "linear infrared bgr"
 msgstr "linears Infrarot BGR"
 
-#: ../src/iop/colorin.c:528
+#: ../src/iop/colorin.c:517
 msgid "linear xyz"
 msgstr "lineares XYZ"
 
 #. gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
-#: ../src/iop/colorin.c:540
+#: ../src/iop/colorin.c:529
 #, c-format
 msgid "icc profiles in %s/color/in"
 msgstr "ICC-Profile in %s/color/in"
@@ -2072,23 +2081,23 @@ msgstr "entrauschen"
 msgid "denoise (strong)"
 msgstr "entrauschen (stark)"
 
-#: ../src/iop/exposure.c:281
+#: ../src/iop/exposure.c:265
 msgid "black"
 msgstr "Schwarz"
 
-#: ../src/iop/exposure.c:288
+#: ../src/iop/exposure.c:272
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
 
-#: ../src/iop/exposure.c:291
+#: ../src/iop/exposure.c:275
 msgid "adjust the exposure correction [ev]"
 msgstr "Belichtungskorrektur anpassen [ev]"
 
-#: ../src/iop/exposure.c:296
+#: ../src/iop/exposure.c:280
 msgid "auto"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:299
+#: ../src/iop/exposure.c:283
 msgid "percentage of bright values clipped out"
 msgstr "Prozentsatz der hellen Werte, die abgeschnitten werden"
 
@@ -2230,43 +2239,43 @@ msgstr "Stärke der hinzugefügten Körnung"
 msgid "highlight reconstruction"
 msgstr "Spitzlicht-Rekonstruktion"
 
-#: ../src/iop/highlights.c:333
+#: ../src/iop/highlights.c:332
 msgid "method"
 msgstr "Methode"
 
-#: ../src/iop/highlights.c:336
+#: ../src/iop/highlights.c:335
 msgid "clip highlights"
 msgstr "Spitzlichter abschneiden"
 
-#: ../src/iop/highlights.c:337
+#: ../src/iop/highlights.c:336
 msgid "reconstruct in LCh"
 msgstr "in LCh rekonstruieren"
 
-#: ../src/iop/highlights.c:338
+#: ../src/iop/highlights.c:337
 msgid "highlight reconstruction method"
 msgstr "Methode zur Rekonstruktion der Spitzlichter"
 
-#: ../src/iop/highlights.c:348
+#: ../src/iop/highlights.c:347
 msgid "blend L"
 msgstr "mische L"
 
-#: ../src/iop/highlights.c:350
+#: ../src/iop/highlights.c:349
 msgid "blend C"
 msgstr "mische C"
 
-#: ../src/iop/highlights.c:352
+#: ../src/iop/highlights.c:351
 msgid "blend h"
 msgstr "mische h"
 
-#: ../src/iop/highlights.c:358
+#: ../src/iop/highlights.c:357
 msgid "blend lightness (0 is same as clipping)"
 msgstr "mische Helligkeit (0 ist identisch mit Abschneiden)"
 
-#: ../src/iop/highlights.c:359
+#: ../src/iop/highlights.c:358
 msgid "blend colorness (0 is same as clipping)"
 msgstr "mische Buntheit (0 ist identisch mit Abschneiden)"
 
-#: ../src/iop/highlights.c:360
+#: ../src/iop/highlights.c:359
 msgid "blend hue (0 is same as clipping)"
 msgstr "mische Farbton (0 ist identisch mit Abschneiden)"
 
@@ -2532,36 +2541,36 @@ msgstr ""
 "komprimiere den Effekt in den\n"
 "Schatten/Spitzlichtern und erhalte die Mitten"
 
-#: ../src/iop/temperature.c:76
+#: ../src/iop/temperature.c:77
 msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:342
+#: ../src/iop/temperature.c:354
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:343
+#: ../src/iop/temperature.c:355
 msgid "temperature out"
 msgstr "Farbtemperatur aus"
 
-#: ../src/iop/temperature.c:364
+#: ../src/iop/temperature.c:376
 msgid "temperature in"
 msgstr "Farbtemperatur ein"
 
-#: ../src/iop/temperature.c:397
+#: ../src/iop/temperature.c:409
 msgid "camera white balance"
 msgstr "Weißabgleich der Kamera"
 
-#: ../src/iop/temperature.c:398
+#: ../src/iop/temperature.c:410
 msgid "spot white balance"
 msgstr "Weißabgleich manuell setzen"
 
-#: ../src/iop/temperature.c:399
+#: ../src/iop/temperature.c:411
 msgid "passthrough"
 msgstr "Durchschleifen"
 
-#: ../src/iop/temperature.c:422
+#: ../src/iop/temperature.c:437
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -2962,41 +2971,41 @@ msgstr "geändert"
 msgid "not altered"
 msgstr "ungeändert"
 
-#: ../src/libs/collect.c:407
+#: ../src/libs/collect.c:400
 msgid "camera"
 msgstr "Kamera"
 
-#: ../src/libs/collect.c:408
+#: ../src/libs/collect.c:401
 msgid "tag"
 msgstr "Tag"
 
-#: ../src/libs/collect.c:409
+#: ../src/libs/collect.c:402
 msgid "date"
 msgstr "Datum"
 
-#: ../src/libs/collect.c:411
+#: ../src/libs/collect.c:404
 msgid "colorlabel"
 msgstr "Farbmarkierung"
 
-#: ../src/libs/collect.c:413 ../src/libs/metadata.c:240
+#: ../src/libs/collect.c:406 ../src/libs/metadata.c:240
 msgid "description"
 msgstr "Beschreibung"
 
 # Herausgeber? Verlag? oder noch was anderes?
-#: ../src/libs/collect.c:415 ../src/libs/metadata.c:266
+#: ../src/libs/collect.c:408 ../src/libs/metadata.c:266
 msgid "publisher"
 msgstr "Herausgeber"
 
-#: ../src/libs/collect.c:425
+#: ../src/libs/collect.c:418
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "Anfrage eingeben, ‚%‘ als Paltzhalter benutzen"
 
-#: ../src/libs/collect.c:433
+#: ../src/libs/collect.c:426
 msgid "matches selected images"
 msgstr "passt auf ausgewählte Bilder"
 
-#: ../src/libs/collect.c:452
+#: ../src/libs/collect.c:445
 msgid "doubleclick to select"
 msgstr "Doppelklick zum Auswählen"
 
@@ -3471,12 +3480,12 @@ msgstr "ausgewählten Tag löschen"
 msgid "capture"
 msgstr "Aufnahme"
 
-#: ../src/views/capture.c:237
+#: ../src/views/capture.c:238
 #, c-format
 msgid "failed to create session path %s."
 msgstr "Fehler beim Erstellen des Sitzungs-Pfades %s."
 
-#: ../src/views/capture.c:251
+#: ../src/views/capture.c:252
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "neue Sitzung ‚%s‘ gestartet"
@@ -3507,6 +3516,9 @@ msgstr "Filmstreifen"
 #: ../src/views/lighttable.c:74
 msgid "lighttable"
 msgstr "Leuchttisch"
+
+#~ msgid "single images"
+#~ msgstr "Einzelbilder"
 
 #~ msgid "(needs a restart)"
 #~ msgstr "(erfordert einen Neustart)"
