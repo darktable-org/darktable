@@ -18,6 +18,7 @@
 #include "develop/imageop.h"
 #include "common/opencl.h"
 #include "gui/draw.h"
+#include "gui/presets.h"
 #include <memory.h>
 #include <stdlib.h>
 #include <xmmintrin.h>
@@ -30,7 +31,7 @@
 DT_MODULE(1)
 
 #define BANDS 6
-#define MAX_LEVEL 6
+#define MAX_LEVEL 7
 #define RES 64
 
 typedef enum atrous_channel_t
@@ -99,33 +100,17 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
-#if 0
-/* x in -1 .. 1 */
-static const __m128
-fast_exp_ps(const __m128 exponent)
-{
-  const __m128 x2 = _mm_mul_ps( exponent, exponent);
-  const __m128 term1 =  _mm_add_ps( _mm_set1_ps( 0.496879224f), _mm_mul_ps( _mm_set1_ps(0.190809553f), exponent));
-  const __m128 term2 = _mm_add_ps( _mm_set1_ps(1.0f), exponent);
-  return  _mm_add_ps( term2,  _mm_mul_ps( x2, term1));
-}
-#endif
-
-#if 1
 static inline float
 fastexp(const float x)
 {
-  return fmaxf(0.0f, (6+x*(6+x*(3+x)))*0.16666666f);
-}
-#endif
+  return expf(x);
+  /*
+  if(x < -2.0f) return 1.0f/9.0f + (x+2.0f)/100.0f;
 
-#if 0
-static inline float
-fastexp(const float x)
-{
-  return fmaxf(0.0f, (120+x*(120+x*(60+x*(20+x*(5+x)))))*0.0083333333f);
+  const float d = -x - 3.0f;
+  return fmaxf(0.001f, d*d/9.0f);
+  */
 }
-#endif
 
 static const __m128
 weight (const float *c1, const float *c2, const float sharpen)
@@ -160,8 +145,9 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
       __m128 sum = _mm_setzero_ps(), wgt = _mm_setzero_ps();
       for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
       {
-        if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width || j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height) continue;
         const __m128 *px2 = px + mult*(ii-2) + width*mult*(jj-2);
+        if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width) px2 -= mult*(ii-2);
+        if(j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height)  px2 -= width*mult*(jj-2);
         const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
         // const __m128 w = _mm_set1_ps(filter[ii]*filter[jj]*weight((float *)px, (float *)px2, sharpen));
         sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
@@ -220,46 +206,58 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
   _mm_sfence();
 }
 
+static int 
+get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atrous_data_t *const d, const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *const piece)
+{
+  // we want coeffs to span max 20% of the image
+  // finest is 5x5 filter
+  // 
+  // 1:1 : w=20% buf_in.width                     w=5x5
+  //     : ^ ...            ....            ....  ^
+  // buf :  17x17  9x9  5x5     2*2^k+1
+  // .....
+  // . . . . .
+  // .   .   .   .   .
+  // cut off too fine ones, if image is not detailed enough (due to roi_in->scale)
+  const float scale = roi_in->scale;
+  // largest desired filter on input buffer (20% of input dim)
+  const float supp0 = MAX(piece->buf_in.height, piece->buf_in.width) * 0.2f;
+  int max_scale = 0;
+  for(;max_scale<MAX_LEVEL;max_scale++)
+    if(2*(2<<max_scale) + 1 > supp0) break;
+  for(int i=0;i<max_scale;i++)
+  {
+    // actual filter support on scaled buffer
+    const float supp  = 2*(2<<i) + 1;
+    // approximates this filter size on unscaled input image:
+    const float supp_in = supp * (1.0f/scale);
+    const float i_in = dt_log2f((supp_in - 1)*.5f) - 1.0f;
+    // i_in = max_scale .. .. .. 0
+    const float t = 1.0f - (i_in+.5f)/max_scale;
+    boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], t);
+    boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], t);
+    for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
+    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
+    sharp[i]    = 0.1f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
+    // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
+  }
+  return max_scale;
+}
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  // TODO:
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
-  float *detail = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height*d->octaves);
+  float thrs [MAX_LEVEL][4];
+  float boost[MAX_LEVEL][4];
+  float sharp[MAX_LEVEL];
+  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+
+  float *detail = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height*max_scale);
   float *tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height);
-  float *buf1 = (float *)i, *buf2;
-  const int max_scale = 5;//d->octaves;
-
-  float thrs [max_scale][4];
-  float boost[max_scale][4];
-  float sharp[max_scale];
-
-  for(int i=0;i<max_scale;i++)
-  {
-    boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], 1.0f - (i+.5f)/(max_scale));
-    boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], 1.0f - (i+.5f)/(max_scale));
-    for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
-    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], 1.0f - (i+.5f)/(max_scale));
-    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], 1.0f - (i+.5f)/(max_scale));
-    sharp[i]    = 0.001f*dt_draw_curve_calc_value(d->curve[atrous_s], 1.0f - (i+.5f)/(max_scale));
-    //for(int k=0;k<4;k++) boost[i][k] *= 1.0f/(1.0f - thrs[i][k]);
-    // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
-  }
-
-  buf2 = tmp;
-
-  /*
-  in -> tmp
-  tmp->out
-  out->tmp
-  tmp->out
-
-  in ->out
-  out->tmp
-  tmp->out
-  out->tmp
-  tmp->out
-  */
+  float *buf1 = (float *)i;
+  float *buf2 = tmp;
 
   for(int scale=0;scale<max_scale;scale++)
   {
@@ -530,16 +528,69 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
   free(piece->data);
 }
 
-#if 0
 void init_presets (dt_iop_module_t *self)
 {
   sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
-  dt_iop_equalizer_params_t p;
-  dt_gui_presets_add_generic(_(" (strong)"), self->op, &p, sizeof(p), 1);
-
+  dt_iop_atrous_params_t p;
+  
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .5f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = 0.0f;
+    p.y[atrous_ct][k] = 0.0f;
+  }
+  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f+.25f*k/(float)BANDS;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .5f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = 0.0f;
+    p.y[atrous_ct][k] = 0.0f;
+  }
+  dt_gui_presets_add_generic(_("sharpen"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f;//-.2f*k/(float)BANDS;
+    p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.3f*k/(float)BANDS);
+    p.y[atrous_s][k] = .5f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
+    p.y[atrous_ct][k] = .3f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("denoise"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f;//-.4f*k/(float)BANDS;
+    p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.6f*k/(float)BANDS);
+    p.y[atrous_s][k] = .5f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
+    p.y[atrous_ct][k] = .6f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
   sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
-#endif
 
 void gui_update   (struct dt_iop_module_t *self)
 {
