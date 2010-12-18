@@ -181,6 +181,22 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 #endif
 
+// Also read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
+// FIXME: We should pick a few more from http://www.exiv2.org/iptc.html
+    Exiv2::IptcData &iptcData = image->iptcData();
+    Exiv2::IptcData::iterator iptcPos;
+
+    if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
+        != iptcData.end() ) {
+      while(iptcPos != iptcData.end()){
+        std::string str = iptcPos->print(&exifData);
+        guint tagid = 0;
+        dt_tag_new(str.c_str(),&tagid);
+        dt_tag_attach(tagid, img->id);
+        iptcPos++;
+      }
+    }
+
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Make")))
         != exifData.end() ) {
       dt_strlcpy_to_utf8(img->exif_maker, 32, pos, exifData);
@@ -197,6 +213,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
         != exifData.end() ) {
       std::string str = pos->print(&exifData);
+      dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
+    } else if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
+        != iptcData.end() ) {
+      std::string str = iptcPos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName")))
         != exifData.end() ) {
@@ -215,21 +235,6 @@ int dt_exif_read(dt_image_t *img, const char* path)
         != exifData.end() ) {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
-    }
-
-// Now read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
-    Exiv2::IptcData &iptcData = image->iptcData();
-    Exiv2::IptcData::iterator iptcPos;
-
-    if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
-        != iptcData.end() ) {
-		while(iptcPos != iptcData.end()){
-			std::string str = iptcPos->print(&exifData);
-			guint tagid = 0;
-			dt_tag_new(str.c_str(),&tagid);
-			dt_tag_attach(tagid, img->id);
-			iptcPos++;
-		}
     }
 
     img->exif_inited = 1;
