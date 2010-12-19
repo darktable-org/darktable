@@ -72,12 +72,12 @@ void dt_opencl_init(dt_opencl_t *cl)
       clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
       printf("[opencl_init] device %d: %s \n", k, infostr);
       clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
-      printf("     MAX_WORK_GROUP_SIZE:      %ld\n", infoint);
+      printf("     MAX_WORK_GROUP_SIZE:      %zd\n", infoint);
       clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint), &infoint, NULL);
-      printf("     MAX_WORK_ITEM_DIMENSIONS: %ld\n", infoint);
+      printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
       printf("     MAX_WORK_ITEM_SIZES:      [ ");
       clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(infointtab), infointtab, NULL);
-      for (int i=0;i<infoint;i++) printf("%ld ", infointtab[i]);
+      for (int i=0;i<infoint;i++) printf("%zd ", infointtab[i]);
       printf("]\n");
     }
 
