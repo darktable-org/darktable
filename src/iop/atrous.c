@@ -100,28 +100,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
-static inline float
-fastexp(const float x)
-{
-  return expf(x);
-  /*
-  if(x < -2.0f) return 1.0f/9.0f + (x+2.0f)/100.0f;
-
-  const float d = -x - 3.0f;
-  return fmaxf(0.001f, d*d/9.0f);
-  */
-}
-
 static const __m128
 weight (const float *c1, const float *c2, const float sharpen)
 {
-  // const __m128 dot = _mm_dp_ps(c1, c2, 0xff);
-  // float w = expf((*(float *)&dot)*sharpen);
-  const float wc = fastexp(-((c1[1] - c2[1])*(c1[1] - c2[1]) + (c1[2] - c2[2])*(c1[2] - c2[2])) * sharpen);
-  const float wl = fastexp(-(c1[0] - c2[0])*(c1[0] - c2[0]) * sharpen);
-  // printf("w = %f | %f %f %f -- %f %f %f\n", w, c1[0], c1[1], c1[2], c2[0], c2[1], c2[2]);
+  const float wc = dt_fast_expf(-((c1[1] - c2[1])*(c1[1] - c2[1]) + (c1[2] - c2[2])*(c1[2] - c2[2])) * sharpen);
+  const float wl = dt_fast_expf(-(c1[0] - c2[0])*(c1[0] - c2[0]) * sharpen);
   return _mm_set_ps(1.0f, wc, wc, wl);
-  // return fast_exp_ps(_mm_mul_ps(_mm_dp_ps(c1, c2), sharpen));
 }
 
 static void
@@ -146,20 +130,18 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
       for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
       {
         const __m128 *px2 = px + mult*(ii-2) + width*mult*(jj-2);
-        if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width) px2 -= mult*(ii-2);
-        if(j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height)  px2 -= width*mult*(jj-2);
+        // continue is faster than clamp to edge:
+        if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width || j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height) continue;
+        // if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width) px2 -= mult*(ii-2);
+        // if(j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height)  px2 -= width*mult*(jj-2);
         const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
-        // const __m128 w = _mm_set1_ps(filter[ii]*filter[jj]*weight((float *)px, (float *)px2, sharpen));
         sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
         wgt = _mm_add_ps(wgt, w);
       }
       // sum = _mm_div_ps(sum, wgt);
       sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); // less precise, but faster
 
-      // write back
-
-      // TODO: check which one's faster:
-      // memcpy?
+      // memcpy is a tad slower than writing without updating caches:
       // const __m128 d = _mm_sub_ps(*px, sum);
       // memcpy(pdetail, &d, sizeof(float)*4);
       // memcpy(pcoarse, &sum, sizeof(float)*4);
@@ -239,7 +221,7 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
     for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
     thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
     thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
-    sharp[i]    = 0.1f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
+    sharp[i]    = 0.0025f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
     // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
   }
   return max_scale;
@@ -538,6 +520,48 @@ void init_presets (dt_iop_module_t *self)
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = fmaxf(.5f, .75f-.5f*k/(BANDS-1.0));
+    p.y[atrous_c][k] = fmaxf(.5f, .55f-.5f*k/(BANDS-1.0));
+    p.y[atrous_s][k] = fminf(.5f, .2f + .35f * k/(BANDS-1.0));
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = 0.0f;
+    p.y[atrous_ct][k] = 0.0f;
+  }
+  dt_gui_presets_add_generic(_("enhance coarse"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .5f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
+    p.y[atrous_ct][k] = .6f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f+.25f*k/(float)BANDS;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .5f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
+    p.y[atrous_ct][k] = .3f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .5f;
@@ -589,6 +613,21 @@ void init_presets (dt_iop_module_t *self)
     p.y[atrous_ct][k] = .6f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = fminf(.5f, .3f + .35f * k/(BANDS-1.0));
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .0f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = 0.0f;
+    p.y[atrous_ct][k] = 0.0f;
+  }
+  p.y[atrous_L][0] = .5f;
+  dt_gui_presets_add_generic(_("bloom"), self->op, &p, sizeof(p), 1);
   sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
 }
 
