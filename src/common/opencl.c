@@ -342,6 +342,17 @@ void dt_opencl_copy_device_to_host(void *host, void *device, const int width, co
   clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, NULL);
 }
 
+void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, void *host)
+{
+  cl_int err;
+  cl_mem dev = clCreateBuffer (darktable.opencl->dev[devid].context,
+      CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
+      size,
+      host, &err);
+  if(err != CL_SUCCESS) fprintf(stderr, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
+  return dev;
+}
+
 void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp)
 {
   cl_int err;
@@ -385,5 +396,4 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
   if(err != CL_SUCCESS) fprintf(stderr, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
 }
-
 

@@ -102,6 +102,8 @@ void dt_opencl_copy_device_to_host(void *host, void *device, const int width, co
 
 void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp);
 
+void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, void *host);
+
 void* dt_opencl_alloc_device(const int width, const int height, const int devid, const int bpp);
 
 #else
