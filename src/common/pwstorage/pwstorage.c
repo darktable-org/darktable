@@ -140,7 +140,7 @@ gboolean dt_pwstorage_set(const gchar* slot, GHashTable* table){
 #endif
 			break;
 		case PW_STORAGE_BACKEND_GNOME_KEYRING:
-#ifdef HAVE_KWALLET
+#ifdef HAVE_GKEYRING
 			return dt_pwstorage_gkeyring_set(slot, table);
 #else
 			dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_set] no gkeyring backend support on this system. not storing anything.\n");
