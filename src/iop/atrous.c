@@ -263,83 +263,57 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   free(tmp);
 }
 
-// FIXME: port to new buffer on gpu pipe!
-#if 0//def HAVE_OPENCL
+#ifdef HAVE_OPENCL
 void
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem _dev_in, cl_mem _dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  float thrs [MAX_LEVEL][4];
+  float boost[MAX_LEVEL][4];
+  float sharp[MAX_LEVEL];
+  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
   // global scale is roi scale and pipe input prescale
-  const float global_scale = roi_in->scale / piece->iscale;
-
-  // TODO: use cl_mem_in and out!
-  const int max_scale = 5;//d->octaves;
-  float thrs [max_scale][4];
-  float boost[max_scale][4];
-  float sharp[max_scale];
-
-  for(int i=0;i<max_scale;i++)
-  {
-    boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], 1.0f - (i+.5f)/(max_scale));
-    boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], 1.0f - (i+.5f)/(max_scale));
-    for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
-    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], 1.0f - (i+.5f)/(max_scale));
-    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], 1.0f - (i+.5f)/(max_scale));
-    sharp[i]    = 0.001f*dt_draw_curve_calc_value(d->curve[atrous_s], 1.0f - (i+.5f)/(max_scale));
-    //for(int k=0;k<4;k++) boost[i][k] *= 1.0f/(1.0f - thrs[i][k]);
-    // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
-  }
 
   const int devid = piece->pipe->devid;
   cl_int err;
   size_t sizes[3];
-  err = dt_opencl_get_max_work_item_sizes(darktable.opencl, devid, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "could not get max size! %d\n", err);
-  // printf("max work item sizes = %lu %lu %lu\n", sizes[0], sizes[1], sizes[2]);
+  // err = dt_opencl_get_max_work_item_sizes(darktable.opencl, devid, sizes);
+  // if(err != CL_SUCCESS) fprintf(stderr, "could not get max size! %d\n", err);
+  // use WINDOW_SIZE instead of max threads (in, out, 7 detail = 232 MB GPU mem)
+  sizes[0] = sizes[1] = DT_IMAGE_WINDOW_SIZE;
+  sizes[2] = 1;
 
-  // TODO: use dev mem directly, if small enough to fit details!
-  // TODO: use DT_WINDOW_SIZE instead of max threads! (in, out, 7 detail = 232 MB GPU mem)
-  // allocate device memory
-  cl_image_format fmt = {CL_RGBA, CL_FLOAT};
-#if 0
-  cl_mem dev_in, dev_coarse;
-  // as images (texture memory)
-  dev_in = clCreateImage2D (darktable.opencl->dev[devid].context,
-      CL_MEM_READ_WRITE,
-      &fmt,
-      sizes[0], sizes[1], 0,
-      NULL, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy img buffer on device: %d\n", err);
-  dev_coarse = clCreateImage2D (darktable.opencl->dev[devid].context,
-      CL_MEM_READ_WRITE,
-      &fmt,
-      sizes[0], sizes[1], 0,
-      NULL, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy coarse buffer on device: %d\n", err);
-#endif
+  // allocate device memory, if needed. else use input from pipe directly.
+  const int need_tiles = roi_in->width > sizes[0] || roi_out->height > sizes[1];
+  cl_mem dev_in = _dev_in, dev_out = _dev_out;
+  if(need_tiles)
+  {
+    dev_in  = dt_opencl_alloc_device(sizes[0], sizes[1], devid, 4*sizeof(float));
+    dev_out = dt_opencl_alloc_device(sizes[0], sizes[1], devid, 4*sizeof(float));
+  }
+  else
+  {
+    sizes[0] = roi_in->width;
+    sizes[1] = roi_in->height;
+  }
 
-
-  const int max_filter_radius = global_scale*(1<<max_scale); // 2 * 2^max_scale
+  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
+  const int width = roi_out->width, height = roi_out->height;
   const int tile_wd = sizes[0] - 2*max_filter_radius, tile_ht = sizes[1] - 2*max_filter_radius;
+  const int tiles_x = need_tiles ? ceilf(width /(float)tile_wd) : 1;
+  const int tiles_y = need_tiles ? ceilf(height/(float)tile_ht) : 1;
 
   // details for local contrast enhancement:
   cl_mem dev_detail[max_scale];
   for(int k=0;k<max_scale;k++)
-  {
-    dev_detail[k] = clCreateImage2D (darktable.opencl->dev[devid].context,
-        CL_MEM_READ_WRITE,
-        &fmt,
-        sizes[0], sizes[1], 0,
-        NULL, &err);
-    if(err != CL_SUCCESS) fprintf(stderr, "could not alloc/copy detail buffer on device: %d\n", err);
-  }
+    dev_detail[k] = dt_opencl_alloc_device(sizes[0], sizes[1], devid, 4*sizeof(float));
 
-  const int width = roi_out->width, height = roi_out->height;
-
+  // FIXME: boundary handling inside tiles!
+  // FIXME: tiles > 1x1 => infinite loop (dim: 7x1024)
   // for all tiles:
-  for(int tx=0;tx<ceilf(width/(float)tile_wd);tx++)
-  for(int ty=0;ty<ceilf(height/(float)tile_ht);ty++)
+  for(int tx=0;tx<tiles_x;tx++)
+  for(int ty=0;ty<tiles_y;ty++)
   {
     size_t orig0[3] = {0, 0, 0};
     size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
@@ -347,38 +321,42 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     size_t ht = origin[1] + sizes[1] > height ? height - origin[1] : sizes[1];
     size_t region[3] = {wd, ht, 1};
 
-    // TODO: directly read cl_mem_in!
-    // TODO: one more buffer and interleaved write/process
-    // clEnqueueWriteImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, in + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
+    // printf("tile extents: %zd %zd -- %zd %zd\n", origin[0], origin[1], region[0], region[1]);
+
+    err = CL_SUCCESS;
+    if(need_tiles) err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, _dev_in, dev_in, origin, orig0, region, 0, NULL, NULL);
+    if(err != CL_SUCCESS) fprintf(stderr, "trouble copying image: %d\n", err);
+    clFinish(darktable.opencl->dev[devid].cmd_queue);
+
+
     if(tx > 0) { origin[0] += max_filter_radius; orig0[0] += max_filter_radius; region[0] -= max_filter_radius; }
     if(ty > 0) { origin[1] += max_filter_radius; orig0[1] += max_filter_radius; region[1] -= max_filter_radius; }
 
     for(int s=0;s<max_scale;s++)
     {
-      const int scale = global_scale * s;
-      // FIXME: don't do 0x0 filtering!
-      // if((int)(global_scale * (s+1)) == 0) continue;
+      const int scale = s;
       err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
+      if(err != CL_SUCCESS) fprintf(stderr, "couldn't set kernel arg! %d\n", err);
       if(s & 1)
       {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
         dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
       }
       else
       {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
         dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
       }
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(unsigned int), (void *)&sharp[s]);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(float), (void *)&sharp[s]);
 
       // printf("equeueing kernel with %lu %lu threads\n", local[0], global[0]);
       err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_decompose, sizes);
-      if(err != CL_SUCCESS) fprintf(stderr, "enqueueing failed! %d\n", err);
-      // clFinish(darktable.opencl->cmd_queue);
+      if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue analysis kernel! %d\n", err);
+      // else fprintf(stderr, "successfully enqueued analysis kernel!\n");
+      clFinish(darktable.opencl->dev[devid].cmd_queue);
     }
 
-    // clFinish(darktable.opencl->cmd_queue);
     // now synthesize again:
     for(int scale=max_scale-1;scale>=0;scale--)
     {
@@ -393,34 +371,34 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
       if(scale & 1)
       {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
         dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
       }
       else
       {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_coarse);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
         dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
       }
 
       err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_synthesize, sizes);
-      if(err != CL_SUCCESS) fprintf(stderr, "enqueueing failed! %d\n", err);
-      // clFinish(darktable.opencl->cmd_queue);
-      // if((int)(global_scale * scale) == 0) break;
+      if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue synth kernel! %d\n", err);
+      clFinish(darktable.opencl->dev[devid].cmd_queue);
     }
-    clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
+    if(need_tiles)
+    {
+      err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_in, orig0, origin, region, 0, NULL, NULL);
+      if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
+    }
+    // clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
+    clFinish(darktable.opencl->dev[devid].cmd_queue);
   }
 
-  // wait for async read
-  clFinish(darktable.opencl->dev[devid].cmd_queue);
-
-  // free(in4);
-
-  // write output images:
-  // for(int k=0;k<width*height;k++) for(int c=0;c<3;c++) out[3*k+c] = out[4*k+c];
-
   // free device mem
-  clReleaseMemObject(dev_in);
-  clReleaseMemObject(dev_coarse);
+  if(need_tiles)
+  {
+    clReleaseMemObject(dev_in);
+    clReleaseMemObject(dev_out);
+  }
   for(int k=0;k<max_scale;k++) clReleaseMemObject(dev_detail[k]);
 }
 #endif

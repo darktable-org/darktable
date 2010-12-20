@@ -241,6 +241,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
   void *input = NULL;
   void *cl_mem_input = NULL;
+  *cl_mem_output = NULL;
   dt_iop_module_t *module = NULL;
   dt_dev_pixelpipe_iop_t *piece = NULL;
   if(modules)
@@ -458,7 +459,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       // cleanup unneeded opencl buffers, and copy back to CPU buffer
       if(cl_mem_input)
       {
-        dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, bpp);
+        dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
         clReleaseMemObject(cl_mem_input);
       }
       *cl_mem_output = NULL;
