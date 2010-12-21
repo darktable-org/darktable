@@ -117,7 +117,8 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev</li>
         <li>git clone git://darktable.git.sf.net/gitroot/darktable/darktable or<br/>
             git pull</li>
         <li>$ ./build.sh</li>
-        <li>or manually: mkdir ./build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr; make; sudo make install</li> 
+        <li>or manually: mkdir ./build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DDT_GCONF_SCHEMA_DIR=~/.gconf ..; make; sudo make install</li> 
+        <li>where the gconf part is only needed for non-root installs with local schemas in your home.</li>
         <li>$ darktable</li>
         <li>let's rock!</li>
       </ul>
