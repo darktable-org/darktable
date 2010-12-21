@@ -89,7 +89,7 @@ FC(const int row, const int col, const unsigned int filters)
 #define SWAP(a, b) {const float tmp = (b); (b) = (a); (a) = tmp;}
 
 static void
-pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold)
+pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold, const int f4)
 {
   const float thrs = threshold;
   // colors:
@@ -107,7 +107,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
         float med[9];
         int col = 3;
         if(FC(row,col,filters) != c) col++;
-        float *pixo = out + 4*(roi_out->width * row + col);
+        float *pixo = out + (f4?4:1)*(roi_out->width * row + col);
         const float *pixi = in + roi_in->width * row + col;
         for(;col<roi_out->width-3;col+=2)
         {
@@ -125,8 +125,8 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
             }
           }
           for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-          pixo[c] = med[(cnt-1)/2];
-          pixo += 8;
+          pixo[f4?c:0] = med[(cnt-1)/2];
+          pixo += f4?8:2;
           pixi += 2;
         }
       }
@@ -145,7 +145,7 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
       float med[9];
       int col = 3;
       if(FC(row,col,filters) != 1 && FC(row,col,filters) != 3) col++;
-      float *pixo = out + 4*(roi_out->width * row + col);
+      float *pixo = out + (f4?4:1)*(roi_out->width * row + col);
       const float *pixi = in + roi_in->width * row + col;
       for(;col<roi_out->width-3;col+=2)
       {
@@ -163,14 +163,19 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
           }
         }
         for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[1] = med[(cnt-1)/2];
-        pixo += 8;
+        pixo[f4?1:0] = med[(cnt-1)/2];
+        pixo += f4?8:2;
         pixi += 2;
       }
     }
   }
 }
 #undef SWAP
+static void
+pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold)
+{
+  pre_median_b(out, in, roi_out, roi_in, filters, num_passes, threshold, 1);
+}
 
 static void
 green_equilibration(float *out, const float *const in, const int width, const int height, const uint32_t filters)
@@ -488,7 +493,15 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   else
   {
     // sample half-size raw
-    dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters);
+    if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
+    {
+      float *tmp = (float *)malloc(sizeof(float)*roi_in->width*roi_in->height);
+      pre_median_b(tmp, pixels, roi_in, roi_in, data->filters, 1, data->median_thrs, 0);
+      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters);
+      free(tmp);
+    }
+    else
+      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters);
   }
 }
 
@@ -520,10 +533,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     }
     if(data->median_thrs > 0.0f)
     {
+      const int one = 1;
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_out);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 2, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 3, sizeof(float), (void*)&data->median_thrs);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&one);
       dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
 
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green_median, 0, sizeof(cl_mem), &dev_out);
@@ -606,7 +621,22 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     // sample half-size image:
     int zero = 0;
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_in);
+    cl_mem dev_pix = dev_in;
+    if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
+    {
+      sizes[0] = roi_in->width; sizes[1] = roi_in->height;
+      dev_tmp = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_tmp);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 2, sizeof(uint32_t), (void*)&data->filters);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 3, sizeof(float), (void*)&data->median_thrs);
+      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void*)&zero);
+      dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_pre_median, sizes);
+      dev_pix = dev_tmp;
+      sizes[0] = roi_out->width; sizes[1] = roi_out->height;
+    }
+
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 0, sizeof(cl_mem), &dev_pix);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 1, sizeof(cl_mem), &dev_out);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 2, sizeof(int), (void*)&zero);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_zoom_half_size, 3, sizeof(int), (void*)&zero);

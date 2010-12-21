@@ -82,7 +82,7 @@ constant int goffy[18] = {-2, -1, -1,  0,  0,  0,  1,  1,  2,  // green
                           -2, -2, -2,  0,  0,  0,  2,  2,  2}; // r, b
 
 __kernel void
-pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters, const float thrs)
+pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters, const float thrs, const int f4)
 {
   constant int (*offx)[9] = (constant int (*)[9])goffx;
   constant int (*offy)[9] = (constant int (*)[9])goffy;
@@ -110,7 +110,8 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  ((float *)&color)[c] = med[(cnt-1)/2];
+  if(f4) ((float *)&color)[c] = med[(cnt-1)/2];
+  else   color.x              = med[(cnt-1)/2];
   write_imagef (out, (int2)(x, y), color);
 }
 
