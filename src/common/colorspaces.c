@@ -646,6 +646,10 @@ dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *cons
     // and continue with model:
     snprintf(e, size - (d-maker), "%s", model);
   }
+  // strip trailing spaces
+  e = makermodel + strlen(makermodel) - 1;
+  while (e > makermodel && *e == ' ') e--;
+  e[1] = '\0';
 }
 
 void
