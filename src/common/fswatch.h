@@ -19,12 +19,13 @@
 #define DT_FSWATCH_H
 
 #include "common/darktable.h"
+#include "common/dtpthread.h"
 
 
 /** fswatch context */
 typedef struct dt_fswatch_t {
   uint32_t inotify_fd;
-  pthread_mutex_t mutex;
+  dt_pthread_mutex_t mutex;
   pthread_t thread;
   GList *items;
 }

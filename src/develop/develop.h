@@ -20,9 +20,9 @@
 
 #include <inttypes.h>
 #include <cairo.h>
-#include <pthread.h>
 #include <glib.h>
 
+#include "common/dtpthread.h"
 #include "control/settings.h"
 #include "develop/imageop.h"
 #include "common/image.h"
@@ -67,7 +67,7 @@ typedef struct dt_develop_t
   float   *mipf, mipf_exact_width, mipf_exact_height;
 
   // history stack
-  pthread_mutex_t history_mutex;
+  dt_pthread_mutex_t history_mutex;
   int32_t history_end;
   GList *history;
   // operations pipeline

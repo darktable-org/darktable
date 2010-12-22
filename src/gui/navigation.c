@@ -61,8 +61,8 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     width -= 2*inset; height -= 2*inset;
     cairo_translate(cr, inset, inset);
 
-    pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-    pthread_mutex_lock(mutex);
+    dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+    dt_pthread_mutex_lock(mutex);
     const int wd = dev->preview_pipe->backbuf_width;
     const int ht = dev->preview_pipe->backbuf_height;
     const float scale = fminf(width/(float)wd, height/(float)ht);
@@ -89,7 +89,7 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     cairo_fill(cr);
     cairo_surface_destroy (surface);
 
-    pthread_mutex_unlock(mutex);
+    dt_pthread_mutex_unlock(mutex);
 
     // draw box where we are
     dt_dev_zoom_t zoom;

@@ -20,7 +20,7 @@
 
 #include <inttypes.h>
 #include <glib.h>
-#include <pthread.h>
+#include "common/dtpthread.h"
 
 /**
  * film roll.
@@ -31,7 +31,7 @@ typedef struct dt_film_t
 {
   int32_t id;
   char dirname[512];
-  pthread_mutex_t images_mutex;
+  dt_pthread_mutex_t images_mutex;
   GDir *dir;
   int32_t num_images, last_loaded;
   int32_t ref;

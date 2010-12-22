@@ -198,8 +198,8 @@ int dt_init(int argc, char *argv[])
     return 1;
   }
   g_free(dbname);
-  pthread_mutex_init(&(darktable.db_insert), NULL);
-  pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.db_insert), NULL);
+  dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl);
@@ -306,8 +306,8 @@ void dt_cleanup()
   dt_fswatch_destroy(darktable.fswatch);
 
   sqlite3_close(darktable.db);
-  pthread_mutex_destroy(&(darktable.db_insert));
-  pthread_mutex_destroy(&(darktable.plugin_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.db_insert));
+  dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 
   dt_exif_cleanup();
 #ifdef HAVE_GEGL

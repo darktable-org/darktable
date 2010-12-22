@@ -153,7 +153,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_image_full_path(img, dirname, 1024);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
-  pthread_mutex_lock(&darktable.plugin_threadsafe);
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
  
   // if filenamepattern is a directory just let att ${FILE_NAME} as default..
@@ -206,7 +206,7 @@ failed:
   }
 
   } // end of critical block
-  pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(fail) return 1;
 
   /* export image to file */

@@ -38,7 +38,7 @@ typedef struct dt_camera_t {
   /** Camera configuration cache */
   CameraWidget *configuration;
   gboolean config_changed;
-  pthread_mutex_t config_lock;
+  dt_pthread_mutex_t config_lock;
   /** This camera/device can import images. */
   gboolean can_import;
   /** This camera/device can do tethered shoots. */
@@ -50,7 +50,7 @@ typedef struct dt_camera_t {
   gboolean is_tethering;  
 
   /** A mutex lock for jobqueue */
-  pthread_mutex_t jobqueue_lock;
+  dt_pthread_mutex_t jobqueue_lock;
   /** The jobqueue */
   GList *jobqueue;
     
@@ -95,7 +95,7 @@ dt_camera_error_t;
 /** Context of camera control */
 typedef struct dt_camctl_t 
 {
-  pthread_mutex_t lock;
+  dt_pthread_mutex_t lock;
   /** Camera event thread. */
   pthread_t camera_event_thread;
   /** List of registered listeners of camera control. \see dt_camctl_register_listener() , dt_camctl_unregister_listener() */

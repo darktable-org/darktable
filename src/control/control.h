@@ -19,11 +19,11 @@
 #define DT_CONTROL_H
 
 #include <inttypes.h>
-#include <pthread.h>
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
 
+#include "common/dtpthread.h"
 #include "control/settings.h"
 #include <gtk/gtk.h>
 #include "gui/background_jobs.h"
@@ -180,8 +180,8 @@ typedef struct dt_job_t
   int32_t (*execute) (struct dt_job_t *job);
   int32_t result;
   
-  pthread_mutex_t state_mutex;  
-  pthread_mutex_t wait_mutex;
+  dt_pthread_mutex_t state_mutex;  
+  dt_pthread_mutex_t wait_mutex;
   
   int32_t state;
   dt_job_state_change_callback state_changed_cb;
@@ -229,11 +229,11 @@ typedef struct dt_control_t
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
   guint log_message_timeout_id;
   int  log_busy;
-  pthread_mutex_t log_mutex;
+  dt_pthread_mutex_t log_mutex;
   
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
-  pthread_mutex_t global_mutex, image_mutex;
+  dt_pthread_mutex_t global_mutex, image_mutex;
   double last_expose_time;
   int key_accelerators_on;
 
@@ -243,7 +243,7 @@ typedef struct dt_control_t
 
   // job management
   int32_t running;
-  pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
+  dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
   pthread_t *thread;

@@ -269,9 +269,9 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_variables_expand( t->vp, t->path, FALSE );
   sprintf(t->film->dirname,"%s",dt_variables_get_result(t->vp));
   
-  pthread_mutex_lock(&t->film->images_mutex);
+  dt_pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref++;
-  pthread_mutex_unlock(&t->film->images_mutex);
+  dt_pthread_mutex_unlock(&t->film->images_mutex);
   
   // Create recursive directories, abort if no access
   if( g_mkdir_with_parents(t->film->dirname,0755) == -1 )
@@ -310,8 +310,8 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   else
     dt_control_log(_("failed to create filmroll for camera import, import of images aborted."));
   
-  pthread_mutex_lock(&t->film->images_mutex);
+  dt_pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref--;
-  pthread_mutex_unlock(&t->film->images_mutex);
+  dt_pthread_mutex_unlock(&t->film->images_mutex);
   return 0;
 }

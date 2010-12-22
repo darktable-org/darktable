@@ -94,7 +94,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
   if(dev->preview_dirty) dt_dev_process_preview(dev);
 
-  pthread_mutex_t *mutex = NULL;
+  dt_pthread_mutex_t *mutex = NULL;
   int wd, ht, stride, closeup;
   int32_t zoom;
   float zoom_x, zoom_y;
@@ -124,7 +124,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   { // draw image
     mutex = &dev->pipe->backbuf_mutex;
-    pthread_mutex_lock(mutex);
+    dt_pthread_mutex_lock(mutex);
     wd = dev->pipe->backbuf_width;
     ht = dev->pipe->backbuf_height;
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
@@ -151,14 +151,14 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_set_source_rgb (cr, .3, .3, .3);
     cairo_stroke(cr);
     cairo_surface_destroy (surface);
-    pthread_mutex_unlock(mutex);
+    dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image->id;
   }
   else if(!dev->preview_dirty)
   // else if(!dev->preview_loading)
   { // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
-    pthread_mutex_lock(mutex);
+    dt_pthread_mutex_lock(mutex);
 
     wd = dev->preview_pipe->backbuf_width;
     ht = dev->preview_pipe->backbuf_height;
@@ -177,7 +177,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
-    pthread_mutex_unlock(mutex);
+    dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image->id;
   }
   cairo_restore(cri);
@@ -723,7 +723,7 @@ void leave(dt_view_t *self)
 
   // clear gui.
   dev->gui_leaving = 1;
-  pthread_mutex_lock(&dev->history_mutex);
+  dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
@@ -749,7 +749,7 @@ void leave(dt_view_t *self)
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);
-  pthread_mutex_unlock(&dev->history_mutex);
+  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   // release full buffer
   if(dev->image->pixels)

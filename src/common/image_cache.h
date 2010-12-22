@@ -19,9 +19,9 @@
 #define DT_IMAGE_CACHE_H
 
 #include "common/image.h"
+#include "common/dtpthread.h"
 
 #include <inttypes.h>
-#include <pthread.h>
 
 /**
  * image cache to hold temporary representations
@@ -42,7 +42,7 @@ dt_image_cache_line_t;
 
 typedef struct dt_image_cache_t
 {
-  pthread_mutex_t mutex;
+  dt_pthread_mutex_t mutex;
   int32_t num_lines;
   dt_image_cache_line_t *line;
   int16_t *by_id;

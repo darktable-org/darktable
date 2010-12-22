@@ -31,7 +31,7 @@
 // #pragma GCC diagnostic ignored "-Wcomment"
 #include <CL/cl.h>
 // #pragma GCC diagnostic
-#include <pthread.h>
+#include "common/dtpthread.h"
  
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -39,7 +39,7 @@
  */
 typedef struct dt_opencl_device_t
 {
-  pthread_mutex_t lock;
+  dt_pthread_mutex_t lock;
   cl_device_id devid;
   cl_context context;
   cl_command_queue cmd_queue;
@@ -56,7 +56,7 @@ dt_opencl_device_t;
  */
 typedef struct dt_opencl_t
 {
-  pthread_mutex_t lock;
+  dt_pthread_mutex_t lock;
   int inited;
   int num_devs;
   dt_opencl_device_t *dev;

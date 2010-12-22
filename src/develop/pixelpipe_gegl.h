@@ -72,7 +72,7 @@ typedef struct dt_dev_pixelpipe_t
   dt_dev_pixelpipe_change_t changed;
   // backbuffer
   uint8_t *backbuf;
-  pthread_mutex_t backbuf_mutex;
+  dt_pthread_mutex_t backbuf_mutex;
   int backbuf_size;
   // working?
   int processing;

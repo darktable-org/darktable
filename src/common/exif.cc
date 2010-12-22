@@ -656,7 +656,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       for(int i=0;i<cnt;i++)
       {
         int tagid = -1;
-        pthread_mutex_lock(&darktable.db_insert);
         // check if tag is available, get its id:
         for(int k=0;k<2;k++)
         {
@@ -687,7 +686,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);
         }
-        pthread_mutex_unlock(&darktable.db_insert);
         // associate image and tag.
         sqlite3_prepare_v2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
         sqlite3_bind_int (stmt, 1, tagid);

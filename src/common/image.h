@@ -22,7 +22,7 @@
 #endif
 
 #include <inttypes.h>
-#include <pthread.h>
+#include "common/dtpthread.h"
 
 // how large would the average screen be (largest mip map size) ?
 // this is able to develop images on a 1920 monitor (-2*300 - 20 for the panels).
@@ -309,7 +309,7 @@ void dt_image_write_sidecar_file(dt_image_t *img);
 // memory management interface
 typedef struct dt_mipmap_cache_t
 {
-  pthread_mutex_t mutex;
+  dt_pthread_mutex_t mutex;
   int32_t num_entries[DT_IMAGE_NONE];
   dt_image_t **mip_lru[DT_IMAGE_NONE];
   size_t total_size[DT_IMAGE_NONE];

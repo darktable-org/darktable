@@ -76,7 +76,7 @@ typedef struct dt_iop_module_t
   /** parameters for the operation. will be replaced by history revert. */
   dt_iop_params_t *params, *default_params, *factory_params;
   /** exclusive access to params is needed, as gui and gegl processing is async. */
-  pthread_mutex_t params_mutex;
+  dt_pthread_mutex_t params_mutex;
   /** size of individual params struct. */
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */

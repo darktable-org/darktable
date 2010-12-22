@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/opencl.h"
+#include "common/dtpthread.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
@@ -29,7 +30,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gmodule.h>
-#include <pthread.h>
 #include <xmmintrin.h>
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
@@ -155,7 +155,7 @@ int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t 
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *libname, const char *op)
 {
-  pthread_mutex_init(&module->params_mutex, NULL);
+  dt_pthread_mutex_init(&module->params_mutex, NULL);
   module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
@@ -292,7 +292,7 @@ void dt_iop_unload_module(dt_iop_module_t *module)
   free(module->factory_params);
   module->cleanup(module);
   free(module->default_params);
-  pthread_mutex_destroy(&module->params_mutex);
+  dt_pthread_mutex_destroy(&module->params_mutex);
   if(module->module) g_module_close(module->module);
 }
 

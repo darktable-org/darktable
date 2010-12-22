@@ -70,7 +70,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->timestamp = 0;
   dev->gui_leaving = 0;
   dev->gui_synch = 0;
-  pthread_mutex_init(&dev->history_mutex, NULL);
+  dt_pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
 
@@ -161,7 +161,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
     free(dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
-  pthread_mutex_destroy(&dev->history_mutex);
+  dt_pthread_mutex_destroy(&dev->history_mutex);
   free(dev->histogram);
   free(dev->histogram_pre);
 }
@@ -329,7 +329,7 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
   }
 
   dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
-  pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
+  dt_pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
 
   // don't if processing failed and backbuf's not there.
   if(dev->preview_pipe->backbuf)
@@ -340,7 +340,7 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
 
   }
   dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
-  pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
+  dt_pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
 
   dt_image_update_mipmaps(dev->image);
 
@@ -594,7 +594,7 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
-  pthread_mutex_lock(&dev->history_mutex);
+  dt_pthread_mutex_lock(&dev->history_mutex);
   if(dev->gui_attached)
   {
     // if gui_attached pop all operations down to dev->history_end
@@ -667,7 +667,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
-  pthread_mutex_unlock(&dev->history_mutex);
+  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   if(dev->gui_attached)
   {
@@ -699,7 +699,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
   // printf("dev popping all history items >= %d\n", cnt);
-  pthread_mutex_lock(&dev->history_mutex);
+  dt_pthread_mutex_lock(&dev->history_mutex);
   darktable.gui->reset = 1;
   dev->history_end = cnt;
   // reset gui params for all modules
@@ -732,7 +732,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
   darktable.gui->reset = 0;
   dt_dev_invalidate_all(dev);
-  pthread_mutex_unlock(&dev->history_mutex);
+  dt_pthread_mutex_unlock(&dev->history_mutex);
   dt_control_queue_draw_all();
 }
 

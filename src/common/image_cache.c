@@ -76,11 +76,11 @@ int dt_image_cache_check_consistency(dt_image_cache_t *cache)
 
 void dt_image_cache_write(dt_image_cache_t *cache)
 {
-  pthread_mutex_lock(&(cache->mutex));
+  dt_pthread_mutex_lock(&(cache->mutex));
   if(dt_image_cache_check_consistency(cache))
   { // consistency check. if failed, don't write!
     fprintf(stderr, "[image_cache_write] refusing to write corrupted cache.\n");
-    pthread_mutex_unlock(&(cache->mutex));
+    dt_pthread_mutex_unlock(&(cache->mutex));
     return;
   }
   
@@ -180,19 +180,19 @@ void dt_image_cache_write(dt_image_cache_t *cache)
   written = fwrite(&endmarker, sizeof(int32_t), 1, f);
   if(written != 1) goto write_error;
   fclose(f);
-  pthread_mutex_unlock(&(cache->mutex));
+  dt_pthread_mutex_unlock(&(cache->mutex));
   return;
 
 write_error:
   if(f) fclose(f);
   fprintf(stderr, "[image_cache_write] failed to dump the cache to `%s'\n", dbfilename);
   g_unlink(dbfilename);
-  pthread_mutex_unlock(&(cache->mutex));
+  dt_pthread_mutex_unlock(&(cache->mutex));
 }
 
 int dt_image_cache_read(dt_image_cache_t *cache)
 {
-  pthread_mutex_lock(&(cache->mutex));
+  dt_pthread_mutex_lock(&(cache->mutex));
   char cachedir[1024];
   char dbfilename[1024];
   dt_get_user_cache_dir (cachedir,1024);
@@ -292,14 +292,14 @@ int dt_image_cache_read(dt_image_cache_t *cache)
   rd = fread(&readmarker, sizeof(uint32_t), 1, f);
   if(rd != 1 || readmarker != endmarker) goto read_error;
   fclose(f);
-  pthread_mutex_unlock(&(cache->mutex));
+  dt_pthread_mutex_unlock(&(cache->mutex));
   return 0;
 
 read_error:
   if(f) fclose(f);
   g_unlink(dbfilename);
   fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
-  pthread_mutex_unlock(&(cache->mutex));
+  dt_pthread_mutex_unlock(&(cache->mutex));
   return 1;
 }
 
@@ -361,7 +361,7 @@ static void _image_cache_restore()
 
 void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t load_cached)
 {
-  pthread_mutex_init(&(cache->mutex), NULL);
+  dt_pthread_mutex_init(&(cache->mutex), NULL);
   cache->num_lines = entries;
   cache->line = (dt_image_cache_line_t *)malloc(sizeof(dt_image_cache_line_t)*cache->num_lines);
   memset(cache->line,0,sizeof(dt_image_cache_line_t)*cache->num_lines);
@@ -420,7 +420,7 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
   cache->line = NULL;
   free(cache->by_id);
   cache->by_id = NULL;
-  pthread_mutex_destroy(&(cache->mutex));
+  dt_pthread_mutex_destroy(&(cache->mutex));
 }
 
 int32_t dt_image_cache_bsearch(const int32_t id)
@@ -459,18 +459,18 @@ dt_image_t *dt_image_cache_get(int32_t id, const char mode)
 void dt_image_cache_clear(int32_t id)
 {
   dt_image_cache_t *cache = darktable.image_cache;
-  pthread_mutex_lock(&(cache->mutex));
+  dt_pthread_mutex_lock(&(cache->mutex));
   int32_t res = dt_image_cache_bsearch(id);
   if(res >= 0 && !cache->line[res].lock.write && !cache->line[res].lock.users++)
     dt_image_cleanup(&(cache->line[res].image));
-  pthread_mutex_unlock(&(cache->mutex));
+  dt_pthread_mutex_unlock(&(cache->mutex));
 }
 
 dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
 {
   // printf("[image_cache_get_uninited] locking image %d %s\n", id, mode == 'w' ? "for writing" : "");
   dt_image_cache_t *cache = darktable.image_cache;
-  pthread_mutex_lock(&(cache->mutex));
+  dt_pthread_mutex_lock(&(cache->mutex));
 #ifdef _DEBUG
   if(dt_image_cache_check_consistency(cache))
     fprintf(stderr, "[image_cache_get_uninited] cache is corrupted!\n");
@@ -495,7 +495,7 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
     if(k == cache->num_lines)
     {
       fprintf(stderr, "[image_cache_get_uninited] all %d slots are in use!\n", cache->num_lines);
-      pthread_mutex_unlock(&(cache->mutex));
+      dt_pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }
     // data/sidecar is flushed at each change for data safety. this is not necessary:
@@ -541,7 +541,7 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
   if(dt_image_cache_check_consistency(cache))
     fprintf(stderr, "[image_cache_get_uninited] cache is corrupted!\n");
 #endif
-  pthread_mutex_unlock(&(cache->mutex));
+  dt_pthread_mutex_unlock(&(cache->mutex));
   return ret;
 }
 
@@ -549,10 +549,10 @@ void dt_image_cache_release(dt_image_t *img, const char mode)
 {
   if(!img) return;
   dt_image_cache_t *cache = darktable.image_cache;
-  pthread_mutex_lock(&(cache->mutex));
+  dt_pthread_mutex_lock(&(cache->mutex));
   cache->line[img->cacheline].lock.users--;
   if(mode == 'w') cache->line[img->cacheline].lock.write = 0;
-  pthread_mutex_unlock(&(cache->mutex));
+  dt_pthread_mutex_unlock(&(cache->mutex));
 }
 
 void dt_image_cache_print(dt_image_cache_t *cache)

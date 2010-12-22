@@ -25,18 +25,18 @@ void dt_film_import1_init(dt_job_t *job, dt_film_t *film)
   job->execute = &dt_film_import1_run;
   dt_film_import1_t *t = (dt_film_import1_t *)job->param;
   t->film = film;
-  pthread_mutex_lock(&film->images_mutex);
+  dt_pthread_mutex_lock(&film->images_mutex);
   film->ref++;
-  pthread_mutex_unlock(&film->images_mutex);
+  dt_pthread_mutex_unlock(&film->images_mutex);
 }
 
 int32_t dt_film_import1_run(dt_job_t *job)
 {
   dt_film_import1_t *t = (dt_film_import1_t *)job->param;
   dt_film_import1(t->film);
-  pthread_mutex_lock(&t->film->images_mutex);
+  dt_pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref--;
-  pthread_mutex_unlock(&t->film->images_mutex);
+  dt_pthread_mutex_unlock(&t->film->images_mutex);
   if(t->film->ref <= 0)
   {
     dt_film_cleanup(t->film);

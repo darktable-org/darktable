@@ -75,7 +75,7 @@ typedef struct dt_iop_zonesystem_gui_data_t
   gboolean is_dragging;
   int current_zone;
   int zone_under_mouse;
-  pthread_mutex_t lock;
+  dt_pthread_mutex_t lock;
 }
 dt_iop_zonesystem_gui_data_t;
 
@@ -147,7 +147,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if( self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW )
   {
     g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
-    pthread_mutex_lock(&g->lock);
+    dt_pthread_mutex_lock(&g->lock);
     if(g->preview_buffer) 
       g_free (g->preview_buffer);
     
@@ -207,7 +207,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[ch*k]/100.0), zonemap, size);
     }
     
-    pthread_mutex_unlock(&g->lock);
+    dt_pthread_mutex_unlock(&g->lock);
   }
 
   /* proces the image */
@@ -332,7 +332,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hilite_zone = FALSE;
   g->preview_width=g->preview_height=0;
   
-  pthread_mutex_init(&g->lock, NULL);
+  dt_pthread_mutex_init(&g->lock, NULL);
   
   self->widget = gtk_vbox_new (FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
@@ -365,7 +365,7 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
-  pthread_mutex_destroy(&g->lock);
+  dt_pthread_mutex_destroy(&g->lock);
   self->request_color_pick = 0;
   free(self->gui_data);
   self->gui_data = NULL;
@@ -601,7 +601,7 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
   width -= 2*inset; height -= 2*inset;
   cairo_translate(cr, inset, inset);
 
-  pthread_mutex_lock(&g->lock);
+  dt_pthread_mutex_lock(&g->lock);
   if( g->preview_buffer )
   {
     /* calculate the zonemap */
@@ -617,7 +617,7 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
       image[4*k+1] = (g->hilite_zone && g->preview_buffer[k]==g->zone_under_mouse)?255:zone;
       image[4*k+0] = (g->hilite_zone && g->preview_buffer[k]==g->zone_under_mouse)?0:zone;
     }
-    pthread_mutex_unlock(&g->lock);
+    dt_pthread_mutex_unlock(&g->lock);
 
     const int wd = g->preview_width, ht = g->preview_height;
     const float scale = fminf(width/(float)wd, height/(float)ht);
@@ -640,7 +640,7 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
     g_free(image);
   }
   else 
-    pthread_mutex_unlock(&g->lock);
+    dt_pthread_mutex_unlock(&g->lock);
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));

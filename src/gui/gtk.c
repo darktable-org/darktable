@@ -20,7 +20,6 @@
 #endif
 #include <stdlib.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <string.h>
 #include <math.h>
 #include <gtk/gtk.h>
@@ -852,11 +851,11 @@ void quit()
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)3);
 
-  pthread_mutex_lock(&darktable.control->cond_mutex);
-  pthread_mutex_lock(&darktable.control->run_mutex);
+  dt_pthread_mutex_lock(&darktable.control->cond_mutex);
+  dt_pthread_mutex_lock(&darktable.control->run_mutex);
   darktable.control->running = 0;
-  pthread_mutex_unlock(&darktable.control->run_mutex);
-  pthread_mutex_unlock(&darktable.control->cond_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->run_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw(widget);
 }

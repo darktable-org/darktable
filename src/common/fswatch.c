@@ -28,6 +28,7 @@
 #include <sys/inotify.h>
 #endif
 
+#include "common/dtpthread.h"
 #include "common/image.h"
 #include "common/fswatch.h"
 #include "develop/develop.h"
@@ -85,7 +86,7 @@ static void *_fswatch_thread(void *data) {
       name[res]='\0';
     }
 
-    pthread_mutex_lock(&fswatch->mutex);
+    dt_pthread_mutex_lock(&fswatch->mutex);
     GList *gitem=g_list_find_custom(fswatch->items,&event_hdr->wd,&_fswatch_items_by_descriptor);
     if( gitem ) {
       _watch_t *item = gitem->data;
@@ -119,7 +120,7 @@ static void *_fswatch_thread(void *data) {
     } else
       dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Failed to found watch item for descriptor %ld\n", event_hdr->wd );
 
-    pthread_mutex_unlock(&fswatch->mutex);
+    dt_pthread_mutex_unlock(&fswatch->mutex);
   }
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] terminating.\n");
   g_free(event_hdr);
@@ -138,7 +139,7 @@ const dt_fswatch_t* dt_fswatch_new()
   if((fswatch->inotify_fd=inotify_init())==-1)
     return NULL;
   fswatch->items=NULL;
-  pthread_mutex_init(&fswatch->mutex, NULL);
+  dt_pthread_mutex_init(&fswatch->mutex, NULL);
   pthread_create(&fswatch->thread, NULL, &_fswatch_thread, fswatch);
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_new] Creating new context %lx\n",(unsigned long int)fswatch);
 
@@ -149,7 +150,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 {
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_destroy] Destroying context %lx\n",(unsigned long int)fswatch);
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
-  pthread_mutex_destroy(&ctx->mutex);
+  dt_pthread_mutex_destroy(&ctx->mutex);
   GList *item=g_list_first(fswatch->items);
   while(item) {
     g_free( item->data );
@@ -181,13 +182,13 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
 
   if(filename[0] != '\0')
   {
-    pthread_mutex_lock(&ctx->mutex);
+    dt_pthread_mutex_lock(&ctx->mutex);
     _watch_t *item = g_malloc(sizeof(_watch_t));
     item->type=type;
     item->data=data;
     ctx->items=g_list_append(fswatch->items, item);
     item->descriptor=inotify_add_watch(fswatch->inotify_fd,filename,mask);
-    pthread_mutex_unlock(&ctx->mutex);
+    dt_pthread_mutex_unlock(&ctx->mutex);
     dt_print(DT_DEBUG_FSWATCH,"[fswatch_add] Watch on object %lx added on file %s\n",(unsigned long int)data,filename);
   } else 
     dt_print(DT_DEBUG_FSWATCH,"[fswatch_add] No watch added, failed to get related filename of object type %d\n",type);
@@ -197,7 +198,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
 void dt_fswatch_remove(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
-  pthread_mutex_lock(&ctx->mutex);
+  dt_pthread_mutex_lock(&ctx->mutex);
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_remove] removing watch on object %lx\n",(unsigned long int)data);
   GList *gitem=g_list_find_custom(fswatch->items,data,&_fswatch_items_by_data);
   if( gitem ) {
@@ -208,7 +209,7 @@ void dt_fswatch_remove(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void
   } else
     dt_print(DT_DEBUG_FSWATCH,"[fswatch_remove] Didn't find watch on object %lx type %d\n",(unsigned long int)data,type);
 
-  pthread_mutex_unlock(&ctx->mutex);
+  dt_pthread_mutex_unlock(&ctx->mutex);
 }
 
 #else	// HAVE_INOTIFY

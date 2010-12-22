@@ -64,7 +64,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
   {
     if(meta == NULL)
     {
-      pthread_mutex_lock(&darktable.plugin_threadsafe);
+      dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
       if(meta == NULL)
       {
         char datadir[1024], camfile[1024];
@@ -73,7 +73,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
         // never cleaned up (only when dt closes)
         meta = new CameraMetaData(camfile);
       }
-      pthread_mutex_unlock(&darktable.plugin_threadsafe);
+      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }
     try
     {
@@ -159,7 +159,7 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
   {
     if(meta == NULL)
     {
-      pthread_mutex_lock(&darktable.plugin_threadsafe);
+      dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
       if(meta == NULL)
       {
         char datadir[1024], camfile[1024];
@@ -168,7 +168,7 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
         // never cleaned up (only when dt closes)
         meta = new CameraMetaData(camfile);
       }
-      pthread_mutex_unlock(&darktable.plugin_threadsafe);
+      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }
     try
     {

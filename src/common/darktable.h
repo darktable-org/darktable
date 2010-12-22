@@ -24,11 +24,11 @@
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
+#include "common/dtpthread.h"
 #include <time.h>
 #include <sys/time.h>
 #include <inttypes.h>
 #include <sqlite3.h>
-#include <pthread.h>
 #include <glib/gi18n.h>
 #include <math.h>
 #ifdef _OPENMP
@@ -130,8 +130,8 @@ typedef struct darktable_t
   struct dt_points_t             *points;
   struct dt_imageio_t            *imageio;
   struct dt_opencl_t             *opencl;
-  pthread_mutex_t db_insert;
-  pthread_mutex_t plugin_threadsafe;
+  dt_pthread_mutex_t db_insert;
+  dt_pthread_mutex_t plugin_threadsafe;
   char *progname;
 }
 darktable_t;

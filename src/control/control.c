@@ -99,8 +99,8 @@ void dt_ctl_settings_init(dt_control_t *s)
   // same thread as init
   s->gui_thread = pthread_self();
   // init global defaults.
-  pthread_mutex_init(&(s->global_mutex), NULL);
-  pthread_mutex_init(&(s->image_mutex), NULL);
+  dt_pthread_mutex_init(&(s->global_mutex), NULL);
+  dt_pthread_mutex_init(&(s->image_mutex), NULL);
 
   s->global_settings.version = DT_VERSION;
 
@@ -129,7 +129,7 @@ int dt_control_load_config(dt_control_t *c)
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
 #if 1 // global settings not needed anymore
-    pthread_mutex_lock(&(darktable.control->global_mutex));
+    dt_pthread_mutex_lock(&(darktable.control->global_mutex));
     darktable.control->global_settings.version = -1;
     const void *set = sqlite3_column_blob(stmt, 0);
     int len = sqlite3_column_bytes(stmt, 0);
@@ -142,7 +142,7 @@ int dt_control_load_config(dt_control_t *c)
     {
       fprintf(stderr, "[load_config] wrong version %d (should be %d), substituting defaults.\n", darktable.control->global_settings.version, DT_VERSION);
       memcpy(&(darktable.control->global_settings), &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t));
-      pthread_mutex_unlock(&(darktable.control->global_mutex));
+      dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
       // drop all, restart. TODO: freeze this version or have update facility!
       sqlite3_exec(darktable.db, "drop table settings", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table film_rolls", NULL, NULL, NULL);
@@ -185,7 +185,7 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "alter table images add column orientation integer", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "update images set orientation = 0 where orientation is NULL", NULL, NULL, NULL);
     
-      pthread_mutex_unlock(&(darktable.control->global_mutex));
+      dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
 #endif
   }
@@ -256,12 +256,12 @@ int dt_control_write_config(dt_control_t *c)
 
   int rc;
   sqlite3_stmt *stmt;
-  pthread_mutex_lock(&(darktable.control->global_mutex));
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   rc = sqlite3_prepare_v2(darktable.db, "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
   rc = sqlite3_bind_blob(stmt, 1, &(darktable.control->global_settings), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
-  pthread_mutex_unlock(&(darktable.control->global_mutex));
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return 0;
 }
 
@@ -388,7 +388,7 @@ void dt_control_init(dt_control_t *s)
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
-  pthread_mutex_init(&(s->log_mutex), NULL);
+  dt_pthread_mutex_init(&(s->log_mutex), NULL);
   s->progress = 200.0f;
 
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
@@ -398,9 +398,9 @@ void dt_control_init(dt_control_t *s)
     dt_ctl_settings_default(s);
 
   pthread_cond_init(&s->cond, NULL);
-  pthread_mutex_init(&s->cond_mutex, NULL);
-  pthread_mutex_init(&s->queue_mutex, NULL);
-  pthread_mutex_init(&s->run_mutex, NULL);
+  dt_pthread_mutex_init(&s->cond_mutex, NULL);
+  dt_pthread_mutex_init(&s->queue_mutex, NULL);
+  dt_pthread_mutex_init(&s->run_mutex, NULL);
 
   int k; for(k=0;k<DT_CONTROL_MAX_JOBS;k++) s->idle[k] = k;
   s->idle_top = DT_CONTROL_MAX_JOBS;
@@ -408,9 +408,9 @@ void dt_control_init(dt_control_t *s)
   // start threads
   s->num_threads = dt_ctl_get_num_procs()+1;
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
-  pthread_mutex_lock(&s->run_mutex);
+  dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
-  pthread_mutex_unlock(&s->run_mutex);
+  dt_pthread_mutex_unlock(&s->run_mutex);
   for(k=0;k<s->num_threads;k++)
     pthread_create(&s->thread[k], NULL, dt_control_work, s);
   for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
@@ -450,19 +450,19 @@ int dt_control_running()
 {
   // FIXME: when shutdown, run_mutex is not inited anymore!
   dt_control_t *s = darktable.control;
-  pthread_mutex_lock(&s->run_mutex);
+  dt_pthread_mutex_lock(&s->run_mutex);
   int running = s->running;
-  pthread_mutex_unlock(&s->run_mutex);
+  dt_pthread_mutex_unlock(&s->run_mutex);
   return running;
 }
 
 void dt_control_shutdown(dt_control_t *s)
 {
-  pthread_mutex_lock(&s->cond_mutex);
-  pthread_mutex_lock(&s->run_mutex);
+  dt_pthread_mutex_lock(&s->cond_mutex);
+  dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 0;
-  pthread_mutex_unlock(&s->run_mutex);
-  pthread_mutex_unlock(&s->cond_mutex);
+  dt_pthread_mutex_unlock(&s->run_mutex);
+  dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   // gdk_threads_leave();
   int k; for(k=0;k<s->num_threads;k++) 
@@ -479,10 +479,10 @@ void dt_control_cleanup(dt_control_t *s)
   // vacuum TODO: optional?
   // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   // rc = sqlite3_exec(darktable.db, "vacuum", NULL, NULL, NULL);
-  pthread_mutex_destroy(&s->queue_mutex);
-  pthread_mutex_destroy(&s->cond_mutex);
-  pthread_mutex_destroy(&s->log_mutex);
-  pthread_mutex_destroy(&s->run_mutex);
+  dt_pthread_mutex_destroy(&s->queue_mutex);
+  dt_pthread_mutex_destroy(&s->cond_mutex);
+  dt_pthread_mutex_destroy(&s->log_mutex);
+  dt_pthread_mutex_destroy(&s->run_mutex);
 }
 
 void dt_control_job_init(dt_job_t *j, const char *msg, ...)
@@ -495,8 +495,8 @@ void dt_control_job_init(dt_job_t *j, const char *msg, ...)
   va_end(ap);
 #endif
   j->state = DT_JOB_STATE_INITIALIZED;
-  pthread_mutex_init (&j->state_mutex,NULL);
-  pthread_mutex_init (&j->wait_mutex,NULL);
+  dt_pthread_mutex_init (&j->state_mutex,NULL);
+  dt_pthread_mutex_init (&j->wait_mutex,NULL);
 }
 
 void dt_control_job_set_state_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data)
@@ -515,20 +515,20 @@ void dt_control_job_print(dt_job_t *j)
 
 void _control_job_set_state(dt_job_t *j,int state)
 {
-  pthread_mutex_lock (&j->state_mutex);
+  dt_pthread_mutex_lock (&j->state_mutex);
   j->state = state;
   /* pass state change to callback */
   if (j->state_changed_cb)
       j->state_changed_cb (j,state);
-  pthread_mutex_unlock (&j->state_mutex);
+  dt_pthread_mutex_unlock (&j->state_mutex);
 
 }
 
 int dt_control_job_get_state(dt_job_t *j)
 {
-  pthread_mutex_lock (&j->state_mutex);
+  dt_pthread_mutex_lock (&j->state_mutex);
   int state = j->state;
-  pthread_mutex_unlock (&j->state_mutex);
+  dt_pthread_mutex_unlock (&j->state_mutex);
   return state;
 }
 
@@ -544,8 +544,8 @@ void dt_control_job_wait(dt_job_t *j)
   /* if job execution not is finished let's wait for signal */
   if (state==DT_JOB_STATE_RUNNING || state==DT_JOB_STATE_CANCELLED)
   {
-    pthread_mutex_lock (&j->wait_mutex);
-    pthread_mutex_unlock (&j->wait_mutex);
+    dt_pthread_mutex_lock (&j->wait_mutex);
+    dt_pthread_mutex_unlock (&j->wait_mutex);
   }
  
 }
@@ -554,14 +554,14 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
 {
   assert(res < DT_CTL_WORKER_RESERVED && res >= 0);
   dt_job_t *j = NULL;
-  pthread_mutex_lock(&s->queue_mutex);
+  dt_pthread_mutex_lock(&s->queue_mutex);
   if(s->new_res[res]) j = s->job_res + res;
   s->new_res[res] = 0;
-  pthread_mutex_unlock(&s->queue_mutex);
+  dt_pthread_mutex_unlock(&s->queue_mutex);
   if(!j) return -1;
 
   /* change state to running */
-  pthread_mutex_lock (&j->wait_mutex);
+  dt_pthread_mutex_lock (&j->wait_mutex);
   if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
   {
     dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", res, dt_get_wtime());
@@ -579,7 +579,7 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
     dt_print(DT_DEBUG_CONTROL, "\n");
   
   }
-  pthread_mutex_unlock (&j->wait_mutex);
+  dt_pthread_mutex_unlock (&j->wait_mutex);
   return 0;
 }
 
@@ -587,19 +587,19 @@ int32_t dt_control_run_job(dt_control_t *s)
 {
   dt_job_t *j;
   int32_t i;
-  pthread_mutex_lock(&s->queue_mutex);
+  dt_pthread_mutex_lock(&s->queue_mutex);
   // dt_print(DT_DEBUG_CONTROL, "[run_job] %d\n", s->queued_top);
   if(s->queued_top == 0)
   {
-    pthread_mutex_unlock(&s->queue_mutex);
+    dt_pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
   i = s->queued[--s->queued_top];
   j = s->job + i;
-  pthread_mutex_unlock(&s->queue_mutex);
+  dt_pthread_mutex_unlock(&s->queue_mutex);
 
   /* change state to running */
-  pthread_mutex_lock (&j->wait_mutex);
+  dt_pthread_mutex_lock (&j->wait_mutex);
   if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
   {
     dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
@@ -617,43 +617,43 @@ int32_t dt_control_run_job(dt_control_t *s)
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
   }
-  pthread_mutex_unlock (&j->wait_mutex);
+  dt_pthread_mutex_unlock (&j->wait_mutex);
   
-  pthread_mutex_lock(&s->queue_mutex);
+  dt_pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);
   s->idle[s->idle_top++] = i;
-  pthread_mutex_unlock(&s->queue_mutex);
+  dt_pthread_mutex_unlock(&s->queue_mutex);
   return 0;
 }
 
 int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
 {
   // TODO: pthread cancel and restart in tough cases?
-  pthread_mutex_lock(&s->queue_mutex);
+  dt_pthread_mutex_lock(&s->queue_mutex);
   dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d ", res);
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
   _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
   s->job_res[res] = *job;
   s->new_res[res] = 1;
-  pthread_mutex_unlock(&s->queue_mutex);
-  pthread_mutex_lock(&s->cond_mutex);
+  dt_pthread_mutex_unlock(&s->queue_mutex);
+  dt_pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
-  pthread_mutex_unlock(&s->cond_mutex);
+  dt_pthread_mutex_unlock(&s->cond_mutex);
   return 0;
 }
 
 int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
   int32_t i;
-  pthread_mutex_lock(&s->queue_mutex);
+  dt_pthread_mutex_lock(&s->queue_mutex);
   for(i=0;i<s->queued_top;i++)
   { // find equivalent job and quit if already there
     const int j = s->queued[i];
     if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
     {
       dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
-      pthread_mutex_unlock(&s->queue_mutex);
+      dt_pthread_mutex_unlock(&s->queue_mutex);
       return -1;
     }
   }
@@ -666,27 +666,27 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
     _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
     s->job[s->idle[i]] = *job;
     s->queued[s->queued_top++] = s->idle[i];
-    pthread_mutex_unlock(&s->queue_mutex);
+    dt_pthread_mutex_unlock(&s->queue_mutex);
   }
   else
   {
     dt_print(DT_DEBUG_CONTROL, "[add_job] too many jobs in queue!\n");
     _control_job_set_state (job,DT_JOB_STATE_DISCARDED); 
-    pthread_mutex_unlock(&s->queue_mutex);
+    dt_pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
 
   // notify workers
-  pthread_mutex_lock(&s->cond_mutex);
+  dt_pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
-  pthread_mutex_unlock(&s->cond_mutex);
+  dt_pthread_mutex_unlock(&s->cond_mutex);
   return 0;
 }
 
 int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 {
   int32_t found_j = -1;
-  pthread_mutex_lock(&s->queue_mutex);
+  dt_pthread_mutex_lock(&s->queue_mutex);
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
@@ -701,12 +701,12 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
       s->queued[s->queued_top-1] = j;
     }
   }
-  pthread_mutex_unlock(&s->queue_mutex);
+  dt_pthread_mutex_unlock(&s->queue_mutex);
 
   // notify workers
-  pthread_mutex_lock(&s->cond_mutex);
+  dt_pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
-  pthread_mutex_unlock(&s->cond_mutex);
+  dt_pthread_mutex_unlock(&s->cond_mutex);
   return found_j;
 }
 
@@ -740,9 +740,9 @@ void *dt_control_work_res(void *ptr)
       // wait for a new job.
       int old;
       pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old);
-      pthread_mutex_lock(&s->cond_mutex);
-      pthread_cond_wait(&s->cond, &s->cond_mutex);
-      pthread_mutex_unlock(&s->cond_mutex);
+      dt_pthread_mutex_lock(&s->cond_mutex);
+      dt_pthread_cond_wait(&s->cond, &s->cond_mutex);
+      dt_pthread_mutex_unlock(&s->cond_mutex);
       pthread_setcancelstate(old, NULL);
     }
   }
@@ -759,9 +759,9 @@ void *dt_control_work(void *ptr)
     if(dt_control_run_job(s) < 0)
     {
       // wait for a new job.
-      pthread_mutex_lock(&s->cond_mutex);
-      pthread_cond_wait(&s->cond, &s->cond_mutex);
-      pthread_mutex_unlock(&s->cond_mutex);
+      dt_pthread_mutex_lock(&s->cond_mutex);
+      dt_pthread_cond_wait(&s->cond, &s->cond_mutex);
+      dt_pthread_mutex_unlock(&s->cond_mutex);
     }
   }
   return NULL;
@@ -842,7 +842,7 @@ void *dt_control_expose(void *voidptr)
     cairo_show_text (cr, num);
   }
   // draw log message, if any
-  pthread_mutex_lock(&darktable.control->log_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
@@ -890,7 +890,7 @@ void *dt_control_expose(void *voidptr)
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
   }
-  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
   cairo_destroy(cr);
 
@@ -983,11 +983,11 @@ void dt_ctl_switch_mode()
 
 static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
 {
-  pthread_mutex_lock(&darktable.control->log_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
     darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=0;
-  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_draw_all();
   return FALSE;
 }
@@ -1005,17 +1005,17 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   float ht = darktable.control->height;
 
   // ack log message:
-  pthread_mutex_lock(&darktable.control->log_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   const float /*xc = wd/4.0-20,*/ yc = ht*0.85+10;
   if(darktable.control->log_ack != darktable.control->log_pos)
   if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
   {
     if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
     darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
-    pthread_mutex_unlock(&darktable.control->log_mutex);
+    dt_pthread_mutex_unlock(&darktable.control->log_mutex);
     return;
   }
-  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
   {
@@ -1026,7 +1026,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
 
 void dt_control_log(const char* msg, ...)
 {
-  pthread_mutex_lock(&darktable.control->log_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   va_list ap;
   va_start(ap, msg);
   vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
@@ -1035,23 +1035,23 @@ void dt_control_log(const char* msg, ...)
   darktable.control->log_ack = darktable.control->log_pos;
   darktable.control->log_pos = (darktable.control->log_pos+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=g_timeout_add(DT_CTL_LOG_TIMEOUT,_dt_ctl_log_message_timeout_callback,NULL);
-  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_draw_all();
 }
 
 void dt_control_log_busy_enter()
 {
-  pthread_mutex_lock(&darktable.control->log_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_busy++;
-  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_draw_all();
 }
 
 void dt_control_log_busy_leave()
 {
-  pthread_mutex_lock(&darktable.control->log_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_busy--;
-  pthread_mutex_unlock(&darktable.control->log_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_draw_all();
 }
 

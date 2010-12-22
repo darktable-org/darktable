@@ -24,7 +24,7 @@
 void dt_opencl_init(dt_opencl_t *cl)
 {
   cl->inited = 0;
-  pthread_mutex_init(&cl->lock, NULL);
+  dt_pthread_mutex_init(&cl->lock, NULL);
   cl_int err;
   cl_platform_id all_platforms[5];
   cl_platform_id platform = NULL;
@@ -62,7 +62,7 @@ void dt_opencl_init(dt_opencl_t *cl)
   {
     bzero(cl->dev[k].program_used, sizeof(int)*DT_OPENCL_MAX_PROGRAMS);
     bzero(cl->dev[k].kernel_used,  sizeof(int)*DT_OPENCL_MAX_KERNELS);
-    pthread_mutex_init(&cl->dev[k].lock, NULL);
+    dt_pthread_mutex_init(&cl->dev[k].lock, NULL);
     cl->dev[k].devid = devices[k];
     if(darktable.unmuted & DT_DEBUG_OPENCL)
     {
@@ -138,13 +138,13 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 {
   for(int i=0;i<cl->num_devs;i++)
   {
-    pthread_mutex_destroy(&cl->dev[i].lock);
+    dt_pthread_mutex_destroy(&cl->dev[i].lock);
     for(int k=0;k<DT_OPENCL_MAX_KERNELS; k++) if(cl->dev[i].kernel_used [k]) clReleaseKernel (cl->dev[i].kernel [k]);
     for(int k=0;k<DT_OPENCL_MAX_PROGRAMS;k++) if(cl->dev[i].program_used[k]) clReleaseProgram(cl->dev[i].program[k]);
     clReleaseCommandQueue(cl->dev[i].cmd_queue);
     clReleaseContext(cl->dev[i].context);
   }
-  pthread_mutex_destroy(&cl->lock);
+  dt_pthread_mutex_destroy(&cl->lock);
 }
 
 int dt_opencl_lock_device(dt_opencl_t *cl, const int _dev)
@@ -155,17 +155,17 @@ int dt_opencl_lock_device(dt_opencl_t *cl, const int _dev)
   {
     // start at argument and get first currently unused processor
     const int try_dev = (dev + i) % cl->num_devs;
-    if(!pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
+    if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
   }
   // no free GPU :( lock the requested one, after blocking.
-  pthread_mutex_lock(&cl->dev[dev].lock);
+  dt_pthread_mutex_lock(&cl->dev[dev].lock);
   return dev;
 }
 
 void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev)
 {
   if(dev < 0 || dev >= cl->num_devs) return;
-  pthread_mutex_unlock(&cl->dev[dev].lock);
+  dt_pthread_mutex_unlock(&cl->dev[dev].lock);
 }
 
 int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename)
@@ -268,7 +268,7 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int prog)
 int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
-  pthread_mutex_lock(&cl->lock);
+  dt_pthread_mutex_lock(&cl->lock);
   int k = 0;
   for(int dev=0;dev<cl->num_devs;dev++)
   {
@@ -295,23 +295,23 @@ int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
       goto error;
     }
   }
-  pthread_mutex_unlock(&cl->lock);
+  dt_pthread_mutex_unlock(&cl->lock);
   return k;
 error:
-  pthread_mutex_unlock(&cl->lock);
+  dt_pthread_mutex_unlock(&cl->lock);
   return -1;
 }
 
 void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel)
 {
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return;
-  pthread_mutex_lock(&cl->lock);
+  dt_pthread_mutex_lock(&cl->lock);
   for(int dev=0;dev<cl->num_devs;dev++)
   {
     cl->dev[dev].kernel_used [kernel] = 0;
     clReleaseKernel (cl->dev[dev].kernel [kernel]);
   }
-  pthread_mutex_unlock(&cl->lock);
+  dt_pthread_mutex_unlock(&cl->lock);
 }
 
 int dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, const int dev, size_t *sizes)
