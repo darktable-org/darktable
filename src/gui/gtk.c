@@ -28,7 +28,7 @@
 #include <pthread.h>
 
 #include "common/darktable.h"
-#include "version.h"
+#include "common/version.h"
 #ifdef HAVE_GPHOTO2
 #   include "common/camera_control.h"
 #   include "gui/devices.h"
