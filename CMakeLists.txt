@@ -28,13 +28,21 @@ if(WIN32)
   set(USE_CAMERA_SUPPORT OFF)
 endif(WIN32)
 
+# Check if this is source package build
+if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+	set(SOURCE_PACKAGE 1)
+endif()
+
 #
 # Auto create version
 #
-exec_program(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS describe --tags HEAD | "sed 's,^release-,,;s,-,+,;s,-,~,;'" OUTPUT_VARIABLE _dt_decoration)
-exec_program(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS rev-parse --short HEAD OUTPUT_VARIABLE _dt_sha1sum)
-execute_process(COMMAND echo "#ifndef DT_VERSION_H\n#define DT_VERSION_H\n#define DT_VERSION_SHA1SUM \"${_dt_sha1sum}\"\n#define DT_VERSION_DECORATION \"${_dt_decoration}\"\n#endif" OUTPUT_VARIABLE _version_h)
-file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h "${_version_h}")
+if(NOT SOURCE_PACKAGE)
+	message("-- Generating version.h")
+	exec_program(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS describe --tags HEAD | "sed 's,^release-,,;s,-,+,;s,-,~,;'" OUTPUT_VARIABLE _dt_decoration)
+	exec_program(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS rev-parse --short HEAD OUTPUT_VARIABLE _dt_sha1sum)
+	execute_process(COMMAND echo "#ifndef DT_VERSION_H\n#define DT_VERSION_H\n#define DT_VERSION_SHA1SUM \"${_dt_sha1sum}\"\n#define DT_VERSION_DECORATION \"${_dt_decoration}\"\n#endif" OUTPUT_VARIABLE _version_h)
+	file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h "${_version_h}")
+endif()
 
 #
 # Initial cmake/debian/postinst and prerm script for debian package
