@@ -12,15 +12,12 @@
     	<span class="number"><img src="style/6.png" alt="6" width="142px" /></span><div class="headline"><img src="contact.png" alt="contact" width="157px"/></div>
     	<div class="starterText">
       fastest contact via email: &#104;&#97;&#110;&#97;&#116;&#111;&#115;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;,
-      <br />
       or, better, irc.freenode.net <em>#darktable</em>,
-      <br />
-      subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">developer's mailing list</a> (can be about 30 mails per day),
-      <br />
-      to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-announcements">announcements only list</a> (low traffic),
-      <br />
-      have a look at <a href="http://sourceforge.net/apps/trac/darktable/">our wiki</a>,
-      <br />
+      subscribe to the new <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">users' mailing list</a> for usage questions and
+      experience reports.
+      if you want to help developing and are interested in technical details, subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">developer's mailing list</a> (can be about 30 mails per day). for release announcements and similar only, choose
+      the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-announcements">announcements only list</a> (low traffic).
+      also have a look at <a href="http://sourceforge.net/apps/trac/darktable/">our wiki</a>,
       or feed your issue <a href="http://sourceforge.net/apps/trac/darktable/report">into trac</a>.
     	</div>
     	<div class="listtext">
