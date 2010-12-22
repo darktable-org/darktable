@@ -709,7 +709,7 @@ static void camera_menu_select (
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   camera_set (self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem), "lfCamera"));
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self);
+  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void camera_menu_fill (dt_iop_module_t *self, const lfCamera *const *camlist)
@@ -849,21 +849,21 @@ static void lens_comboentry_focal_update (GtkComboBox *widget, dt_iop_module_t *
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   (void)sscanf (gtk_combo_box_get_active_text (widget), "%f", &p->focal);
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self);
+  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void lens_comboentry_aperture_update (GtkComboBox *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   (void)sscanf (gtk_combo_box_get_active_text (widget), "%f", &p->aperture);
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self);
+  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void lens_comboentry_distance_update (GtkComboBox *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   (void)sscanf (gtk_combo_box_get_active_text (widget), "%f", &p->distance);
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self);
+  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void delete_children (GtkWidget *widget, gpointer data)
@@ -993,7 +993,7 @@ static void lens_menu_select (
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   lens_set (self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
-  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self);
+  if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void lens_menu_fill (
@@ -1086,7 +1086,7 @@ static void target_geometry_changed (GtkComboBox *widget, gpointer user_data)
 
   int pos = gtk_combo_box_get_active(widget);
   p->target_geom = pos + LF_UNKNOWN + 1;
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void reverse_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -1096,7 +1096,7 @@ static void reverse_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   if(gtk_toggle_button_get_active(togglebutton)) p->inverse = 1;
   else p->inverse = 0;
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void tca_changed(GtkDarktableSlider *slider, dt_iop_module_t *self)
@@ -1108,7 +1108,7 @@ static void tca_changed(GtkDarktableSlider *slider, dt_iop_module_t *self)
   if(slider == g->tca_r) p->tca_r = val;
   else                   p->tca_b = val;
   if(p->tca_r != 1.0 || p->tca_b != 1.0) p->tca_override = 1;
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
@@ -1117,7 +1117,7 @@ static void scale_changed(GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   if(darktable.gui->reset) return;
   p->scale = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static float get_autoscale(dt_iop_module_t *self)

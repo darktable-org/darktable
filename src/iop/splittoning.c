@@ -155,7 +155,7 @@ balance_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   p->balance= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -165,7 +165,7 @@ compress_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   p->compress= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -208,7 +208,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   gtk_widget_draw(GTK_WIDGET(sslider),NULL);
   
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self);
+  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -248,7 +248,7 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // Update color preview
   
   if(self->dt->gui->reset) return;
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self);
+  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -299,7 +299,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
     dtgtk_gradient_slider_set_value( (button==g->colorpick1)? g->gslider2: g->gslider4 ,s );
   }
   gtk_widget_destroy(GTK_WIDGET(csd));
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 

@@ -646,7 +646,7 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
     {
       dt_iop_colorzones_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else if(event->y > height)
   {
@@ -762,7 +762,7 @@ colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
     {
       memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
       p->channel = (dt_iop_colorzones_channel_t)k;
-      dt_dev_add_history_item(darktable.develop, self);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
       gtk_widget_queue_draw(self->widget);
       return;
     }

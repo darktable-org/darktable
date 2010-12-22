@@ -591,7 +591,7 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
   return 0;
 }
 
-void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
+void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
@@ -619,6 +619,11 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module)
       // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1, ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+      if (enable)
+      {
+        module->enabled = TRUE;
+        darktable.gui->reset = 1; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled); darktable.gui->reset = 0;
+      }
       hist->enabled = module->enabled;
       hist->module = module;
       hist->params = malloc(module->params_size);

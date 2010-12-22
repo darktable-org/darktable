@@ -418,7 +418,7 @@ menuitem_pick_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_finalize(stmt);
   g_free(name);
   dt_iop_gui_update(module);
-  dt_dev_add_history_item(darktable.develop, module);
+  dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
 }
 

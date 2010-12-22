@@ -199,7 +199,7 @@ scale_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->scale= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -209,7 +209,7 @@ falloff_scale_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->falloff_scale= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -219,7 +219,7 @@ strength_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->strength= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -229,7 +229,7 @@ uniformity_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->uniformity = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -239,7 +239,7 @@ bsratio_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->bsratio = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void 
@@ -249,7 +249,7 @@ invert_saturation_callback (GtkToggleButton *button, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->invert_saturation = gtk_toggle_button_get_active(button);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void 
@@ -259,7 +259,7 @@ invert_falloff_callback (GtkToggleButton *button, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->invert_falloff = gtk_toggle_button_get_active(button);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

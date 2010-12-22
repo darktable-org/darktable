@@ -98,7 +98,7 @@ void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
 void dt_dev_load_preview(dt_develop_t *dev, struct dt_image_t *image);
 /** checks if provided imgid is the image currently in develop */
 int dt_dev_is_current_image(dt_develop_t *dev, int imgid);
-void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module);
+void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history(dt_develop_t *dev);

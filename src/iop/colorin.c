@@ -51,7 +51,7 @@ static void intent_changed (GtkComboBox *widget, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)gtk_combo_box_get_active(widget);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 #endif
 
@@ -71,7 +71,7 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
     if(pp->pos == pos)
     {
       strcpy(p->iccprofile, pp->filename);
-      dt_dev_add_history_item(darktable.develop, self);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
       return;
     }
     prof = g_list_next(prof);

@@ -201,7 +201,7 @@ ev_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   p->ev = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -211,7 +211,7 @@ width_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   p->width = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -222,7 +222,7 @@ center_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   
   {
     p->center = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 }
 
@@ -319,7 +319,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   p->center = Lab[0];
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   darktable.gui->reset = 1;
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dtgtk_gradient_slider_set_value(DTGTK_GRADIENT_SLIDER(g->gslider1),p->center);

@@ -202,7 +202,7 @@ static void gamma_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_profile_gamma_params_t *p = (dt_iop_profile_gamma_params_t *)self->params;
   p->gamma = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void linear_callback (GtkDarktableSlider *slider, gpointer user_data)
@@ -211,5 +211,5 @@ static void linear_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_profile_gamma_params_t *p = (dt_iop_profile_gamma_params_t *)self->params;
   p->linear = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }

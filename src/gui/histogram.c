@@ -200,7 +200,7 @@ gboolean dt_gui_histogram_button_press(GtkWidget *widget, GdkEventButton *event,
   {
     memcpy(n->exposure->params, n->exposure->default_params, n->exposure->params_size);
     n->exposure->gui_update(n->exposure);
-    dt_dev_add_history_item(n->exposure->dev, n->exposure);
+    dt_dev_add_history_item(n->exposure->dev, n->exposure, TRUE);
   }
   else
   {

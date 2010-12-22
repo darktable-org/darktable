@@ -173,7 +173,7 @@ static void size_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   p->size = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -219,7 +219,7 @@ static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *even
   cairo_arc(cr, x, y, width*fmaxf(0.1, .5f*p->size), 0, 2.0*M_PI);
   cairo_stroke(cr);
 
-  if(g->dragging) dt_dev_add_history_item(darktable.develop, self);
+  if(g->dragging) dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));

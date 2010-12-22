@@ -155,7 +155,7 @@ static void lower_callback (GtkDarktableSlider *slider, gpointer user_data){
 	if(self->dt->gui->reset) return;
 	dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
 	p->lower = dtgtk_slider_get_value(slider);
-	dt_dev_add_history_item(darktable.develop, self);
+	dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void upper_callback (GtkDarktableSlider *slider, gpointer user_data){
@@ -163,7 +163,7 @@ static void upper_callback (GtkDarktableSlider *slider, gpointer user_data){
 	if(self->dt->gui->reset) return;
 	dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
 	p->upper = dtgtk_slider_get_value(slider);
-	dt_dev_add_history_item(darktable.develop, self);
+	dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 

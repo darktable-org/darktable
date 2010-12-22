@@ -394,7 +394,7 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   p->flag = ACQUIRE;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE); // FIXME: Why do we need to add this to the history?
 }
 
 static void
@@ -407,7 +407,7 @@ apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
   memcpy(p, &(g->flowback), self->params_size);
   p->flag = APPLY;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static gboolean
@@ -420,13 +420,13 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   { // clear the color picking request if we got the cluster data
     self->request_color_pick = 0;
     p->flag = NEUTRAL;
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else if(p->flag == ACQUIRE2)
   { // color pick is still on, so the data has to be still in the pipe,
     // toggle a commit_params
     p->flag = ACQUIRE3;
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
     self->request_color_pick = 0;
   }
   return FALSE;
@@ -557,7 +557,7 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
     memcpy(self->params, &g->flowback, self->params_size);
     g->flowback_set = 0;
     p->flag = APPLY;
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 #endif
 

@@ -740,7 +740,7 @@ median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   p->median_thrs = dtgtk_slider_get_value(slider);
   if(p->median_thrs < 0.001f) p->median_thrs = 0.0f;
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -750,7 +750,7 @@ greeneq_callback (GtkToggleButton *button, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   p->flags = gtk_toggle_button_get_active(button);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_init     (struct dt_iop_module_t *self)

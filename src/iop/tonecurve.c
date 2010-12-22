@@ -405,7 +405,7 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
       if(c->selected == 5) p->tonecurve_y[4] = fminf(f, p->tonecurve_y[4]);
       p->tonecurve_y[c->selected] = f;
     }
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else
   {

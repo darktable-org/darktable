@@ -517,7 +517,7 @@ angle_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
   if(self->dt->gui->reset) return;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   p->angle = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -531,7 +531,7 @@ keystone_callback (GtkWidget *widget, dt_iop_module_t *self)
   uint32_t intk = *(uint32_t *)&k;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->keystone_x))) intk |= 0x40000000u;
   p->k = *(float *)&intk;
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -591,7 +591,7 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
     else                                     p->ch = copysignf(p->ch,  1.0);
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -1324,7 +1324,7 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   self->gui_update(self);
   darktable.gui->reset = 0;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   // loose focus, continue with other plugins?
   darktable.develop->gui_module = NULL;
 }
@@ -1388,7 +1388,7 @@ int key_pressed (struct dt_iop_module_t *self, uint16_t which)
       g->clip_y = g->old_clip_y;
       g->clip_w = g->old_clip_w;
       g->clip_h = g->old_clip_h;
-      dt_dev_add_history_item(darktable.develop, self);
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
       dt_control_queue_draw_all();
       return TRUE;
     default:

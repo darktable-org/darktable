@@ -209,7 +209,7 @@ density_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   p->density = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -219,7 +219,7 @@ compression_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   p->compression = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -229,7 +229,7 @@ rotation_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   p->rotation= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -240,7 +240,7 @@ offset_callback (GtkDarktableSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   p->offset= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -346,7 +346,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) 
   {
     p->hue = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 }
 
@@ -359,7 +359,7 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) 
   {
     p->saturation = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self);
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 }
 

@@ -328,7 +328,7 @@ void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   {
     if(gtk_toggle_button_get_active(togglebutton)) module->enabled = 1;
     else module->enabled = 0;
-    dt_dev_add_history_item(module->dev, module);
+    dt_dev_add_history_item(module->dev, module, FALSE);
     // close parent expander.
     gtk_expander_set_expanded(module->expander, module->enabled);
   }
@@ -380,7 +380,7 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   // module->enabled = module->default_enabled; // will not propagate correctly anyways ;)
   memcpy(module->params, module->default_params, module->params_size);
   module->gui_update(module);
-  if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module);
+  if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
 static void 

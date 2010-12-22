@@ -193,7 +193,7 @@ slider_callback(GtkRange *range, dt_iop_module_t *self)
   dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
   p->checker_scale = dtgtk_slider_get_value(g->scale);
   // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 /** gui callbacks, these are needed. */

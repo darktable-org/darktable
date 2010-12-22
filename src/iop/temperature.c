@@ -335,7 +335,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   p->coeffs[1] = 1.0;
   for(int k=0;k<3;k++) p->coeffs[k] = fmaxf(0.0f, fminf(5.0, p->coeffs[k]));
   gui_update_from_coeffs(self);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
 }
 
@@ -492,7 +492,7 @@ temp_changed(dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale_g, p->coeffs[1]);
   dtgtk_slider_set_value(g->scale_b, p->coeffs[2]);
   darktable.gui->reset = 0;
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -538,7 +538,7 @@ rgb_callback (GtkDarktableSlider *slider, gpointer user_data)
   else if(slider == DTGTK_SLIDER(g->scale_b)) p->coeffs[2] = value;
  
   gui_update_from_coeffs(self);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_combo_box_set_active(g->presets, -1);
 }
 
@@ -584,7 +584,7 @@ apply_preset(dt_iop_module_t *self)
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   gui_update_from_coeffs(self);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void

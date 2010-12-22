@@ -216,7 +216,7 @@ alpha_callback(GtkRange *range, dt_iop_module_t *self)
   dt_iop_anlfyeni_params_t *p = (dt_iop_anlfyeni_params_t *)self->params;
   p->alpha = dtgtk_slider_get_value(g->scale1);
   // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -228,7 +228,7 @@ scale_callback(GtkRange *range, dt_iop_module_t *self)
   dt_iop_anlfyeni_params_t *p = (dt_iop_anlfyeni_params_t *)self->params;
   p->strength = dtgtk_slider_get_value(g->scale2);
   // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -240,7 +240,7 @@ strength_callback(GtkRange *range, dt_iop_module_t *self)
   dt_iop_anlfyeni_params_t *p = (dt_iop_anlfyeni_params_t *)self->params;
   p->strength = dtgtk_slider_get_value(g->scale3);
   // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
  
 /** gui callbacks, these are needed. */

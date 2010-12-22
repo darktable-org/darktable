@@ -192,7 +192,7 @@ red_callback(GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   p->red[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -203,7 +203,7 @@ green_callback(GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   p->green[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -215,7 +215,7 @@ blue_callback(GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   p->blue[ gtk_combo_box_get_active( g->combo1 ) ]= dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -230,7 +230,7 @@ output_callback(GtkComboBox *combo, gpointer user_data)
   dtgtk_slider_set_value( g->scale1, p->red[ gtk_combo_box_get_active( g->combo1 ) ] );
   dtgtk_slider_set_value( g->scale2, p->green[ gtk_combo_box_get_active( g->combo1 ) ] );
   dtgtk_slider_set_value( g->scale3, p->blue[ gtk_combo_box_get_active( g->combo1 ) ] );
-  //dt_dev_add_history_item(darktable.develop, self);
+  //dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

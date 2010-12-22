@@ -199,7 +199,7 @@ white_callback (GtkDarktableSlider *slider, gpointer user_data)
   // const float white = exp2f(-p->exposure);
   // float black = dtgtk_slider_get_value(g->scale1);
   // if(white < black) dtgtk_slider_set_value(g->scale1, white);
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -212,7 +212,7 @@ black_callback (GtkDarktableSlider *slider, gpointer user_data)
   p->black = dtgtk_slider_get_value(slider);
   float white = exp2f(-dtgtk_slider_get_value(g->scale2));
   if(white < p->black) dtgtk_slider_set_value(g->scale2, - dt_log2f(p->black));
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 #if 0
@@ -223,7 +223,7 @@ gain_callback (GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   p->gain = dtgtk_slider_get_value(DTGTK_SLIDER(slider));
-  dt_dev_add_history_item(darktable.develop, self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 #endif
 
