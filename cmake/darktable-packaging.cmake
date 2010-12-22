@@ -6,10 +6,12 @@ set(CPACK_SOURCE_IGNORE_FILES
    "/.gitignore"
    "/build/"
    "/.git/"
+   "/.deps/"
+   "/.build/"
 )
 set(CPACK_PACKAGE_EXECUTABLES darktable)
-set(CPACK_SOURCE_GENERATOR "TBZ2")
-set(CPACK_GENERATOR "TBZ2")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_GENERATOR "TGZ")
 
 if("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 	set(CPACK_STRIP_FILES TRUE)
@@ -42,9 +44,6 @@ if(UNIX)
 	if(NOT LSB_DISTRIB)
 		set(LSB_DISTRIB "unix")
 	endif(NOT LSB_DISTRIB)
-	
-	
-	
 	
 	if("${LSB_DISTRIB}" MATCHES "Fedora|Mandriva")
 		make_directory(${CMAKE_BINARY_DIR}/packaging/rpm)
