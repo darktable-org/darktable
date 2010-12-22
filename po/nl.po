@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-09 16:41+0100\n"
-"PO-Revision-Date: 2010-12-09 18:33+0100\n"
+"POT-Creation-Date: 2010-12-22 16:26+0100\n"
+"PO-Revision-Date: 2010-12-22 19:15+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: \n"
@@ -14,96 +14,94 @@ msgstr ""
 "X-Poedit-Country: NETHERLANDS\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: ../build/src/preferences_gen.h:272
+#: ../build/src/preferences_gen.h:286
 msgid "gui options"
-msgstr "gui (grafische gebruikersomgeving) instellingen"
+msgstr "gui (grafische gebruikersomgeving) opties"
 
-#: ../build/src/preferences_gen.h:274
-#: ../darktable.schemas.in.h:18
+#: ../build/src/preferences_gen.h:288
 msgid "filename of your custom theme in share/darktable/"
-msgstr "bestandsnaam van uw eigen thema in share/darktable"
+msgstr "bestandsnaam van uw eigen thema te vinden in de map share/darktable"
 
-#: ../build/src/preferences_gen.h:282
-#: ../build/src/preferences_gen.h:299
-#: ../build/src/preferences_gen.h:315
-#: ../build/src/preferences_gen.h:330
-#: ../build/src/preferences_gen.h:346
-#: ../build/src/preferences_gen.h:363
-#: ../build/src/preferences_gen.h:379
-#: ../build/src/preferences_gen.h:395
-#: ../build/src/preferences_gen.h:412
-#: ../build/src/preferences_gen.h:428
-#: ../build/src/preferences_gen.h:460
-#: ../build/src/preferences_gen.h:476
-#: ../build/src/preferences_gen.h:492
-#: ../build/src/preferences_gen.h:509
-#: ../build/src/preferences_gen.h:526
-#: ../build/src/preferences_gen.h:542
-#: ../build/src/preferences_gen.h:559
+#: ../build/src/preferences_gen.h:296
+#: ../build/src/preferences_gen.h:313
+#: ../build/src/preferences_gen.h:329
+#: ../build/src/preferences_gen.h:344
+#: ../build/src/preferences_gen.h:360
+#: ../build/src/preferences_gen.h:377
+#: ../build/src/preferences_gen.h:394
+#: ../build/src/preferences_gen.h:410
+#: ../build/src/preferences_gen.h:426
+#: ../build/src/preferences_gen.h:443
+#: ../build/src/preferences_gen.h:459
+#: ../build/src/preferences_gen.h:491
+#: ../build/src/preferences_gen.h:507
+#: ../build/src/preferences_gen.h:523
+#: ../build/src/preferences_gen.h:540
+#: ../build/src/preferences_gen.h:557
+#: ../build/src/preferences_gen.h:573
+#: ../build/src/preferences_gen.h:590
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dubbelklik om te resetten naar `%s'"
 
-#: ../build/src/preferences_gen.h:285
-#: ../build/src/preferences_gen.h:512
+#: ../build/src/preferences_gen.h:299
+#: ../build/src/preferences_gen.h:543
 msgid " (needs a restart) "
 msgstr "(opnieuw opstarten vereist)"
 
-#: ../build/src/preferences_gen.h:290
-#: ../darktable.schemas.in.h:47
+#: ../build/src/preferences_gen.h:304
 msgid "size of the side panels in pixels"
-msgstr "de maat van de zijpanelen in pixels."
+msgstr "de breedte van de zijpanelen uitgedrukt in pixels."
 
-#: ../build/src/preferences_gen.h:302
+#: ../build/src/preferences_gen.h:316
 msgid " (needs a restart)"
 msgstr "(opnieuw opstarten vereist)"
 
-#: ../build/src/preferences_gen.h:307
-#: ../darktable.schemas.in.h:15
+#: ../build/src/preferences_gen.h:321
 msgid "don't use embedded preview jpeg, always use half-size raw"
-msgstr "gebruik niet het ingesloten JPEG voorbeeld, gebruik altijd een gehalveerde RAW afbeelding"
+msgstr "gebruik niet het ingesloten JPEG voorbeeld maar gebruik altijd een gehalveerde RAW afbeelding"
 
-#: ../build/src/preferences_gen.h:322
-#: ../darktable.schemas.in.h:12
+#: ../build/src/preferences_gen.h:336
 msgid "ask before removing images"
 msgstr "vraag eerst voordat afbeeldingen worden verplaatst"
 
-#: ../build/src/preferences_gen.h:333
-#: ../darktable.schemas.in.h:8
+#: ../build/src/preferences_gen.h:347
 msgid "always ask the user before any image is removed from db."
 msgstr "Vraag altijd eerst de gebruiker voordat een afbeelding wordt verplaatst uit de database."
 
-#: ../build/src/preferences_gen.h:338
-#: ../darktable.schemas.in.h:11
+#: ../build/src/preferences_gen.h:352
 msgid "ask before deleting images"
 msgstr "vraag eerst voordat afbeeldingen worden verwijderd"
 
-#: ../build/src/preferences_gen.h:349
-#: ../darktable.schemas.in.h:7
+#: ../build/src/preferences_gen.h:363
 msgid "always ask the user before any image file is deleted."
 msgstr "Vraag altijd eerst aan de gebruiker voordat een afbeelding wordt verwijderd."
 
-#: ../build/src/preferences_gen.h:354
-#: ../darktable.schemas.in.h:16
+#: ../build/src/preferences_gen.h:368
 msgid "downsample the preview pixels"
 msgstr "subsampling de voorbeeld pixels"
 
-#: ../build/src/preferences_gen.h:366
-#: ../darktable.schemas.in.h:54
+#: ../build/src/preferences_gen.h:380
 msgid "this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback."
 msgstr "deze waarde, kleiner dan 1.0, geeft een grovere voorbeschouwing voor een snellere feedback"
 
-#: ../build/src/preferences_gen.h:371
-#: ../darktable.schemas.in.h:17
-msgid "enable filmstrip in darkroom mode"
-msgstr "toon de fotomap in de darkroom modus"
+#: ../build/src/preferences_gen.h:385
+msgid "number of folder levels to show in lists"
+msgstr "aantal te vertonen mappen niveaus in de lijst"
 
-#: ../build/src/preferences_gen.h:386
-#: ../darktable.schemas.in.h:39
+#: ../build/src/preferences_gen.h:397
+msgid "the number of folder levels to show in film roll names, starting from the right"
+msgstr "het aantal te vertonen mappen niveaus, te beginnen vanaf rechts"
+
+#: ../build/src/preferences_gen.h:402
+msgid "enable filmstrip in darkroom mode"
+msgstr "vertoon de fotomap in de darkroom modus"
+
+#: ../build/src/preferences_gen.h:417
 msgid "maximum resolution of lighttable thumbnails"
 msgstr "maximale resolutie van de lighttable miniaturen"
 
-#: ../build/src/preferences_gen.h:398
+#: ../build/src/preferences_gen.h:429
 msgid ""
 "keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
 "(needs a restart and will invalidate current thumbnail caches)."
@@ -111,58 +109,48 @@ msgstr ""
 "houd deze waarde laag voor een vlugge aanmaak van miniaturen (toegestaan: 160-1300)\n"
 "(opnieuw opstarten is vereist en hierdoor vervalt de huidige cache van miniaturen)"
 
-#: ../build/src/preferences_gen.h:403
-#: ../darktable.schemas.in.h:37
+#: ../build/src/preferences_gen.h:434
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "JPEG kwaliteit van de miniaturen op de schijf"
 
-#: ../build/src/preferences_gen.h:415
-#: ../darktable.schemas.in.h:6
+#: ../build/src/preferences_gen.h:446
 msgid "affects only the thumbnail cache used for quick startup."
 msgstr "dit heeft alleen invloed op de cache met miniaturen en is bedoeld om sneller te kunnen opstarten"
 
-#: ../build/src/preferences_gen.h:420
-#: ../darktable.schemas.in.h:10
+#: ../build/src/preferences_gen.h:451
 msgid "ask before deleting a tag"
 msgstr "vraag eerst voordat een label wordt verwijderd"
 
-#: ../build/src/preferences_gen.h:450
+#: ../build/src/preferences_gen.h:481
 msgid "core options"
 msgstr "algemene instellingen"
 
-#: ../build/src/preferences_gen.h:452
-#: ../darktable.schemas.in.h:14
+#: ../build/src/preferences_gen.h:483
 msgid "database file"
 msgstr "database bestand"
 
-#: ../build/src/preferences_gen.h:463
-#: ../build/src/preferences_gen.h:479
-#: ../darktable.schemas.in.h:19
+#: ../build/src/preferences_gen.h:494
+#: ../build/src/preferences_gen.h:510
 msgid "filename relative to your home directory, or starting with a slash (needs a restart)."
 msgstr "bestandsnaam verwant aan uw home directory, of start met een slash (opnieuw opstarten vereist)"
 
-#: ../build/src/preferences_gen.h:468
-#: ../darktable.schemas.in.h:34
+#: ../build/src/preferences_gen.h:499
 msgid "image cache file"
 msgstr "bufferbestand van de afbeelding"
 
-#: ../build/src/preferences_gen.h:484
-#: ../darktable.schemas.in.h:35
+#: ../build/src/preferences_gen.h:515
 msgid "image cache file backup"
 msgstr "afbeeldings bufferbestand backup"
 
-#: ../build/src/preferences_gen.h:495
-#: ../darktable.schemas.in.h:13
+#: ../build/src/preferences_gen.h:526
 msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
 msgstr "maakt een back-up van het cachebestand om het verlies van miniaturen bij crashes o.i.d. te voorkomen (opnieuw opstart vereist)"
 
-#: ../build/src/preferences_gen.h:500
-#: ../darktable.schemas.in.h:40
+#: ../build/src/preferences_gen.h:531
 msgid "memory in bytes to use for mipmap cache"
 msgstr "geheugen in bytes te gebruiken voor het mipmap cache"
 
-#: ../build/src/preferences_gen.h:517
-#: ../darktable.schemas.in.h:23
+#: ../build/src/preferences_gen.h:548
 msgid "full resolution image buffers to keep in main memory cache"
 msgstr "volledige resolutie afbeeldingen worden gebufferd om ze te behouden in het hoofd cache geheugen"
 
@@ -170,8 +158,7 @@ msgstr "volledige resolutie afbeeldingen worden gebufferd om ze te behouden in h
 # and
 # some translations were deleted
 # after updating from pot
-#: ../build/src/preferences_gen.h:529
-#: ../darktable.schemas.in.h:26
+#: ../build/src/preferences_gen.h:560
 msgid "how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum. set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode). be warned: every thread will need about 1GB of memory (needs a restart)."
 msgstr ""
 "Hoeveel moet worden opgeslagen in het hoofdgeheugen\n"
@@ -179,165 +166,21 @@ msgstr ""
 " van de ingeladen RAW afbeelding.\n"
 "Allen inlezen bij het opstarten."
 
-#: ../build/src/preferences_gen.h:534
-#: ../darktable.schemas.in.h:60
+#: ../build/src/preferences_gen.h:565
 msgid "write a redundant sidecar file for each image"
-msgstr "maak xmp sidecar bestanden van elke afbeelding"
+msgstr "creëer een xmp bestand van elke afbeelding"
 
-#: ../build/src/preferences_gen.h:545
-#: ../darktable.schemas.in.h:52
+#: ../build/src/preferences_gen.h:576
 msgid "these files can later be re-imported into a different database, preserving your changes to the image."
 msgstr "deze bestanden kunnen later opnieuw worden geïmporteerd in aan andere database, veranderingen van de afbeelding blijven zo bewaard"
 
-#: ../build/src/preferences_gen.h:550
-#: ../darktable.schemas.in.h:42
+#: ../build/src/preferences_gen.h:581
 msgid "password storage backend to use"
 msgstr "te gebruiken wachtwoord voor backend opslag"
 
-#: ../build/src/preferences_gen.h:562
-#: ../darktable.schemas.in.h:51
+#: ../build/src/preferences_gen.h:593
 msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 msgstr "de opslag voor pwstorage: 0 - geen, 1 - gconf(gebruik die niet), 2 - kwallet, 3 - gnome keyring "
-
-#: ../darktable.schemas.in.h:1
-msgid "(needs a restart)"
-msgstr "(opnieuw opstarten is vereist)"
-
-#: ../darktable.schemas.in.h:2
-msgid "0 -- append on top of stack, 1 -- replace it."
-msgstr "0 -- verschijnt aan de top van de stapel, 1 -- vervangt het"
-
-#: ../darktable.schemas.in.h:3
-msgid "0: mean, 1: min, 2: max"
-msgstr "0: nihil, 1: min, 2:max"
-
-#: ../darktable.schemas.in.h:4
-msgid "Capture view mode"
-msgstr "opname weergavemodus"
-
-#: ../darktable.schemas.in.h:5
-msgid "Default client to use, this overrides detection of default client."
-msgstr "Te gebruiken standaard cliënt, dit overschrijft de detectie van de standaard cliënt."
-
-#: ../darktable.schemas.in.h:9
-msgid "append or replace history stack if pasted"
-msgstr "toevoegen of vervangen van de bewerkingsgeschiedenis bij het plakken"
-
-#: ../darktable.schemas.in.h:20
-msgid "flag if backup of imported images should be performed"
-msgstr "markeer als reservekopieën van geïmporteerde afbeeldingen moeten worden gemaakt"
-
-#: ../darktable.schemas.in.h:21
-msgid "flag if originals on camera should be deleted"
-msgstr "markeer als originelen van de camera moeten worden verwijderd"
-
-#: ../darktable.schemas.in.h:22
-msgid "flag if user should be interactivly warned about non present backup destinations"
-msgstr "markeer als de gebruiker interactief moeten worden gewaarschuwd over niet aanwezige reservekopie  bestemmingen"
-
-#: ../darktable.schemas.in.h:24
-msgid "height of the exported image"
-msgstr "hoogte van de geëxporteerde file"
-
-#: ../darktable.schemas.in.h:25
-msgid "height of the exported image, or 0 if no scaling should be done."
-msgstr "hoogte van de geëxporteerde afbeelding, of 0 als herschalen niet nodig is"
-
-#: ../darktable.schemas.in.h:27
-msgid "how many images are in one row"
-msgstr "hoeveel afbeeldingen per rij"
-
-#: ../darktable.schemas.in.h:28
-msgid "how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts, these get fewer by size. only read at startup."
-msgstr "hoeveel van de kleinst mogelijke miniaturen te behouden in het hoofd geheugen tot aan het maximum. Dit geeft ook grotere mipmap tellingen, die worden minder in omvang. Wordt alleen bij het opstarten gelezen.  "
-
-#: ../darktable.schemas.in.h:29
-msgid "icc profile to use for export"
-msgstr "icc profiel te gebruiken bij exporteren"
-
-#: ../darktable.schemas.in.h:30
-msgid "icc rendering intent"
-msgstr "icc rendeer methode"
-
-#: ../darktable.schemas.in.h:31
-msgid "if non-negative, this overrides the per-image output color profile rendering intent on export."
-msgstr "bij een akkoord, wordt voor elke afbeelding een uitgaand kleurpatroon rendeer methode overschrevem met als doel exporteren."
-
-#: ../darktable.schemas.in.h:32
-msgid "if this number is smaller than the darktable internal version number, the values here will be synched with the new defaults."
-msgstr "als het nummer lager is dan het Darktable interne versie nummer, dan zullen de waarden worden gesynchroniseerd naar de nieuw standaard waarden"
-
-#: ../darktable.schemas.in.h:33
-msgid "ignore jpeg images when importing film rolls."
-msgstr "negeer jpeg afbeelding zodra een fotomap wordt geïmporteerd"
-
-#: ../darktable.schemas.in.h:36
-msgid "jobcode of import job"
-msgstr "de werkcode van de importeer taak"
-
-#: ../darktable.schemas.in.h:38
-msgid ""
-"keep this value low for fast thumbnail creation (allowed: 160-1300)\\n"
-"(needs a restart and will invalidate current thumbnail caches)."
-msgstr ""
-"houd deze waarde laag voor een vlugge aanmaak van miniaturen (toegestaan: 160-1300)\n"
-"(opnieuw opstarten is vereist en hierdoor vervalt de huidige cache van miniaturen)"
-
-#: ../darktable.schemas.in.h:41
-msgid "name of capture job"
-msgstr "name van opname opdracht"
-
-#: ../darktable.schemas.in.h:43
-msgid "path of storage for captured images"
-msgstr "opslagplaats voor opgenomen afbeeldingen"
-
-#: ../darktable.schemas.in.h:44
-msgid "recursive directory traversal when importing filmrolls."
-msgstr "controleer mappen recursief bij het importeren van mappen"
-
-#: ../darktable.schemas.in.h:45
-msgid "rename pattern for captured images"
-msgstr "hernoem patroon voor opgenomen afbeeldingen"
-
-#: ../darktable.schemas.in.h:46
-msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
-msgstr "selecteer een layout voor de lighttable: 0 - zoomen of 1 - bestands manager"
-
-#: ../darktable.schemas.in.h:48
-msgid "small thumbnails to keep in main memory cache"
-msgstr "kleine miniaturen om in het hoofd cache geheugen te bewaren"
-
-#: ../darktable.schemas.in.h:49
-msgid "subpath pattern in storage for captured images"
-msgstr "opgeslagen subpad patroon voor opgenomen afbeeldingen"
-
-#: ../darktable.schemas.in.h:50
-msgid "the name of backup directory to search for on mounted medias"
-msgstr "de naam van de reservekopieën map waarnaar gezocht moet worden op aangekoppelde media"
-
-#: ../darktable.schemas.in.h:53
-msgid "this overrides the per-image settings, if not set to `image'."
-msgstr "dit overschrijft de persoonlijke afbeeldingsinstellingen, als niet is ingesteld op `afbeelding'."
-
-#: ../darktable.schemas.in.h:55
-msgid "version of these dt-gconf entries"
-msgstr "versie van deze DT-gconf ingangen"
-
-#: ../darktable.schemas.in.h:56
-msgid "when having raw+jpeg images together in one directory it makes no sense to import both. with this flag one can ignore all jpegs found."
-msgstr "Als de RAW en JPG afbeeldingen in eenzelfde map staan heeft het geen zin beide bestanden te importeren. Met hulp van deze markering worden alle gevonden JPG bestanden genegeerd."
-
-#: ../darktable.schemas.in.h:57
-msgid "which layout should lighttable mode show"
-msgstr "kies de layout voor lighttable"
-
-#: ../darktable.schemas.in.h:58
-msgid "width of the exported image"
-msgstr "breedte van de geëxporteerde afbeelding"
-
-#: ../darktable.schemas.in.h:59
-msgid "width of the exported image, or 0 if no scaling should be done."
-msgstr "breedte van de geëxporteerde afbeelding, of 0 indien geen herschaling uitgevoerd moet worden"
 
 #: ../data/darktable.glade.h:1
 msgid "( --- )"
@@ -383,32 +226,38 @@ msgid "aperture"
 msgstr "diafragma"
 
 #: ../data/darktable.glade.h:13
+#: ../src/libs/collect.c:407
+#: ../src/libs/metadata.c:253
+msgid "creator"
+msgstr "maker"
+
+#: ../data/darktable.glade.h:14
 msgid "date/time"
 msgstr "datum/tijd"
 
-#: ../data/darktable.glade.h:14
+#: ../data/darktable.glade.h:15
 msgid "devices"
 msgstr "media"
 
 #. exposure
 #. adding the labels
-#: ../data/darktable.glade.h:15
+#: ../data/darktable.glade.h:16
 #: ../src/gui/presets.c:263
 #: ../src/iop/exposure.c:38
-#: ../src/iop/exposure.c:284
+#: ../src/iop/exposure.c:268
 #: ../src/iop/relight.c:343
 msgid "exposure"
 msgstr "belichting"
 
-#: ../data/darktable.glade.h:16
+#: ../data/darktable.glade.h:17
 msgid "f-length"
 msgstr "brandpunt"
 
-#: ../data/darktable.glade.h:17
+#: ../data/darktable.glade.h:18
 msgid "filename"
 msgstr "bestandsnaam"
 
-#: ../data/darktable.glade.h:18
+#: ../data/darktable.glade.h:19
 msgid ""
 "filename\n"
 "time\n"
@@ -422,64 +271,64 @@ msgstr ""
 "id\n"
 "kleur label"
 
-#: ../data/darktable.glade.h:23
-#: ../src/libs/collect.c:303
+#: ../data/darktable.glade.h:24
+#: ../src/libs/collect.c:399
 msgid "film roll"
 msgstr "een map met afbeeldingen"
 
-#: ../data/darktable.glade.h:24
+#: ../data/darktable.glade.h:25
 msgid "height"
 msgstr "hoogte"
 
-#: ../data/darktable.glade.h:25
+#: ../data/darktable.glade.h:26
 msgid "histogram"
 msgstr "histogram"
 
-#: ../data/darktable.glade.h:26
-#: ../src/libs/collect.c:307
+#: ../data/darktable.glade.h:27
+#: ../src/libs/collect.c:403
 msgid "history"
 msgstr "geschiedenis"
 
-#: ../data/darktable.glade.h:27
+#: ../data/darktable.glade.h:28
 msgid "images sorted by"
 msgstr "afbeeldingen gesorteerd op"
 
-#: ../data/darktable.glade.h:28
+#: ../data/darktable.glade.h:29
 msgid "import film roll"
 msgstr "importeer een map"
 
-#: ../data/darktable.glade.h:29
+#: ../data/darktable.glade.h:30
 #: ../src/gui/gtk.c:737
 msgid "import image"
 msgstr "importeer afbeelding"
 
 #. iso
-#: ../data/darktable.glade.h:30
+#: ../data/darktable.glade.h:31
 #: ../src/gui/presets.c:250
 #: ../src/libs/camera.c:497
 msgid "iso"
 msgstr "ISO"
 
-#: ../data/darktable.glade.h:31
+#: ../data/darktable.glade.h:32
 #: ../src/gui/presets.c:243
 #: ../src/iop/lens.c:1200
 msgid "lens"
 msgstr "lens"
 
-#: ../data/darktable.glade.h:32
+#: ../data/darktable.glade.h:33
 msgid "library"
 msgstr "bibliotheek"
 
-#: ../data/darktable.glade.h:33
+#: ../data/darktable.glade.h:34
 msgid "list"
 msgstr "lijst"
 
-#: ../data/darktable.glade.h:34
+#: ../data/darktable.glade.h:35
 #: ../src/gui/presets.c:236
 msgid "maker"
 msgstr "fabrikant"
 
-#: ../data/darktable.glade.h:35
+#: ../data/darktable.glade.h:36
 msgid ""
 "mean\n"
 "min\n"
@@ -489,63 +338,77 @@ msgstr ""
 "min\n"
 "max"
 
-#: ../data/darktable.glade.h:38
-#: ../src/libs/metadata.c:44
+#: ../data/darktable.glade.h:39
+#: ../src/libs/metadata.c:45
 msgid "metadata"
 msgstr "metadata"
 
-#: ../data/darktable.glade.h:39
+#: ../data/darktable.glade.h:40
 #: ../src/gui/presets.c:229
 msgid "model"
 msgstr "type"
 
-#: ../data/darktable.glade.h:40
+#: ../data/darktable.glade.h:41
 msgid "more plugins"
 msgstr "meer plugins"
 
-#: ../data/darktable.glade.h:41
+#: ../data/darktable.glade.h:42
 msgid "navigation"
 msgstr "navigeer"
 
-#: ../data/darktable.glade.h:42
+#: ../data/darktable.glade.h:43
 msgid "open"
 msgstr "open"
 
-#: ../data/darktable.glade.h:43
+#: ../data/darktable.glade.h:44
 msgid "open selected film roll in light table"
 msgstr "open de geselecteerde map in lighttable"
 
-#: ../data/darktable.glade.h:44
+#: ../data/darktable.glade.h:45
 msgid "pick"
 msgstr "kies"
 
-#: ../data/darktable.glade.h:45
+#: ../data/darktable.glade.h:46
 #: ../src/libs/image.c:82
 msgid "remove"
 msgstr "uitschrijven"
 
-#: ../data/darktable.glade.h:46
+#: ../data/darktable.glade.h:47
 msgid "remove selected film roll from collection"
 msgstr "de geselecteerde map niet meer vermelden"
 
-#: ../data/darktable.glade.h:47
+#: ../data/darktable.glade.h:48
+#: ../src/imageio/storage/picasa.c:684
+#: ../src/libs/collect.c:409
+#: ../src/libs/metadata.c:279
+msgid "rights"
+msgstr "rechten"
+
+#: ../data/darktable.glade.h:49
 msgid "search film rolls by folder"
 msgstr "zoek een map "
 
-#: ../data/darktable.glade.h:48
+#: ../data/darktable.glade.h:50
 msgid "snapshots"
 msgstr "momentopnamen"
 
-#: ../data/darktable.glade.h:49
+#: ../data/darktable.glade.h:51
 msgid "switch to darkroom mode"
-msgstr "schakel over op de darkroom modus"
+msgstr "schakel over op de darkroom modus (dubbelklikken)"
 
-#: ../data/darktable.glade.h:50
+#: ../data/darktable.glade.h:52
+#: ../src/imageio/storage/picasa.c:682
+#: ../src/libs/collect.c:405
+#: ../src/libs/metadata.c:227
+msgid "title"
+msgstr "titel"
+
+#: ../data/darktable.glade.h:53
 #: ../src/iop/relight.c:345
 msgid "width"
-msgstr "breedte"
+msgstr "omvang"
 
-#: ../data/darktable.glade.h:51
+#: ../data/darktable.glade.h:54
 msgid ""
 "zoomable light table\n"
 "file manager"
@@ -567,18 +430,13 @@ msgstr "aan"
 msgid "off"
 msgstr "uit"
 
-#: ../src/common/image.c:98
-#: ../src/libs/collect.c:221
-msgid "single images"
-msgstr "afbeeldingen"
-
-#: ../src/common/image.c:115
+#: ../src/common/image.c:128
 msgid "orphaned image"
 msgstr "verweesde afbeelding"
 
 #. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
 #. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
-#: ../src/common/image.c:488
+#: ../src/common/image.c:500
 #, c-format
 msgid "image `%s' is not available"
 msgstr "afbeelding `%s' is niet beschikbaar"
@@ -593,17 +451,17 @@ msgstr "profielnaam '%s' bestaat al"
 msgid "style named '%s' successfully created"
 msgstr "aanmaak profielnaam '%s' is gelukt"
 
-#: ../src/control/control.c:879
-#: ../src/control/control.c:882
+#: ../src/control/control.c:883
+#: ../src/control/control.c:886
 msgid "working.."
 msgstr "bezig..."
 
-#: ../src/control/control.c:959
+#: ../src/control/control.c:963
 #, c-format
 msgid "switch to %s mode"
 msgstr "schakel over op %s mode"
 
-#: ../src/control/control.c:967
+#: ../src/control/control.c:971
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
@@ -776,7 +634,7 @@ msgstr "importeer "
 
 #: ../src/gui/camera_import_dialog.c:254
 msgid "My jobcode"
-msgstr "mijn werkcode"
+msgstr "mijn kenmerk"
 
 #. Top info
 #: ../src/gui/camera_import_dialog.c:262
@@ -787,7 +645,7 @@ msgstr "een moment alstublieft, miniaturen van afbeeldingen op de camera worden 
 #: ../src/gui/camera_import_dialog.c:268
 #: ../src/libs/capture.c:102
 msgid "jobcode"
-msgstr "werkcode"
+msgstr "kenmerk"
 
 #: ../src/gui/camera_import_dialog.c:280
 msgid "thumbnail"
@@ -804,7 +662,7 @@ msgstr "algemeen"
 
 #: ../src/gui/camera_import_dialog.c:305
 msgid "delete originals after import"
-msgstr "verwijder originelen na het importeren"
+msgstr "verwijder de originelen na het importeren"
 
 #: ../src/gui/camera_import_dialog.c:309
 msgid "check this option if you want to delete images on camera after download to computer"
@@ -831,24 +689,26 @@ msgstr "opslag struktuur"
 
 #: ../src/gui/camera_import_dialog.c:327
 msgid "the following three settings describe the directory structure and file renaming for import storage and images; if you dont know how to use this, keep the default settings."
-msgstr "de volgende drie instellingen beschrijven de map structuur en bestandsnaam wijzigingen voor import opslag en afbeeldingen; als u niet weet hoe die te gebruiken, behoud dan de standaard waarden."
+msgstr ""
+"De volgende drie instellingen bepalen map structuren en bestandsnaam wijzigingen.\n"
+"Weet u niet hoe die te gebruiken, behoud dan de standaard waarden!"
 
 #: ../src/gui/camera_import_dialog.c:333
 msgid "storage directory"
-msgstr "opslag map"
+msgstr "doelmap"
 
 #: ../src/gui/camera_import_dialog.c:336
 msgid "directory structure"
-msgstr "mappen structuur"
+msgstr "structuur voor de map naam"
 
 #: ../src/gui/camera_import_dialog.c:340
 msgid "filename structure"
-msgstr "structuur bestandsnaam "
+msgstr "structuur van de bestandsnaam "
 
 #. Add example
 #: ../src/gui/camera_import_dialog.c:344
 msgid "above settings expands to:"
-msgstr "bovenstaande instellingen wordt omgezet naar"
+msgstr "bovenstaande instellingen geeft de volgende benaming"
 
 #. External backup
 #: ../src/gui/camera_import_dialog.c:355
@@ -857,7 +717,7 @@ msgstr "externe backup"
 
 #: ../src/gui/camera_import_dialog.c:356
 msgid "external backup is an option to automatic do a backup of the imported image(s) to another physical location, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."
-msgstr "Externe reservekopieën geeft de mogelijkheid om automatisch een back-up te maken van geïmporteerde afbeeldingen. Als het is geactiveerd dan wordt er gekeken naar door u gespecificeerde mappen op de aan uw systeem gekoppelde media. Elke gevonden map wordt gebruikt als basis map in de bovenstaande opslag structuur. Wanneer er een afbeelding wordt opgehaald vanuit uw camera dan wordt deze gekopieerd naar de gevonden reservekopie mappen."
+msgstr "Met externe reservekopieën kunt u automatisch backups van geïmporteerde afbeeldingen maken. Na activering wordt gekeken naar gespecificeerde mappen op de aan uw systeem gekoppelde media. Elke gevonden map wordt gebruikt een basis map in de bovenstaande opslag structuur. Wanneer er een afbeelding van uw camera wordt gehaald dan wordt deze gekopieerd naar de gevonden backup mappen."
 
 #: ../src/gui/camera_import_dialog.c:362
 msgid "enable backup"
@@ -898,7 +758,7 @@ msgstr "instellingen"
 #. Lets run dialog
 #: ../src/gui/camera_import_dialog.c:537
 msgid "select the images from the list below that you want to import into a new filmroll"
-msgstr "selecteer de afbeeldingen van onderstaande lijst die u wilt importeren in een nieuwe map"
+msgstr "selecteer afbeeldingen van onderstaande lijst die u wilt importeren in een nieuwe map"
 
 #: ../src/gui/camera_import_dialog.c:577
 msgid "please set the basedirectory settings before importing"
@@ -932,20 +792,20 @@ msgstr "importeer vanaf camera"
 
 #: ../src/gui/devices.c:174
 msgid "tethered shoot"
-msgstr "tethered shoot (draadloos communicatie tussen camera en computer)"
+msgstr "tethered shoot (communiceer direct met camera)"
 
 #. No supported devices is detected lets notice user..
 #. gtk_widget_set_sensitive(expander,FALSE);
 #: ../src/gui/devices.c:189
 #: ../src/gui/devices.c:191
 msgid "no supported devices found"
-msgstr "geen ondersteunde media gevonden"
+msgstr "geen nieuwe media gevonden"
 
-#: ../src/gui/filmview.c:129
+#: ../src/gui/filmview.c:127
 msgid "do you really want to remove this film roll and all its images from the collection?"
 msgstr "Wilt u echt deze map en afbeeldingen uitschrijven?"
 
-#: ../src/gui/filmview.c:130
+#: ../src/gui/filmview.c:128
 msgid "remove film roll?"
 msgstr "map verwijderen?"
 
@@ -1018,29 +878,29 @@ msgstr "ondersteunde afbeeldingen"
 msgid "all files"
 msgstr "alle bestanden"
 
-#: ../src/gui/gtk.c:786
+#: ../src/gui/gtk.c:790
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van het bestand `%s'"
 
-#: ../src/gui/gtk.c:801
+#: ../src/gui/gtk.c:805
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/gui/gtk.c:1113
+#: ../src/gui/gtk.c:1119
 msgid "show global preferences"
 msgstr "toon algemene voorkeuren"
 
-#: ../src/gui/gtk.c:1242
+#: ../src/gui/gtk.c:1248
 msgid "take snapshot"
 msgstr "neem een momentopname"
 
-#: ../src/gui/gtk.c:1271
+#: ../src/gui/gtk.c:1277
 msgid "recently used film rolls"
 msgstr "recent gebruikte mappen"
 
-#: ../src/gui/gtk.c:1292
+#: ../src/gui/gtk.c:1298
 msgid "all film rolls"
 msgstr "alle mappen"
 
@@ -1064,15 +924,15 @@ msgstr ""
 
 #: ../src/gui/iop_history.c:98
 msgid "compress history stack"
-msgstr "de geschiedenis stapel comprimeren"
+msgstr "comprimeer bewerkingsstappen"
 
 #: ../src/gui/iop_history.c:99
 msgid "create a minimal history stack which produces the same image"
-msgstr "creëer een minimale stapel waarmee eenzelfde afbeelding wordt gemaakt"
+msgstr "minimaliseer het aantal bewerkingstappen voor het huidige eindresultaat"
 
 #: ../src/gui/iop_history.c:107
 msgid "create a style from currently developed image and its history stack"
-msgstr "maak een profiel van de nu ontwikkelde afbeelding"
+msgstr "creëer een profiel van de nu ontwikkelde afbeelding"
 
 #: ../src/gui/iop_history.c:130
 #: ../src/gui/iop_history.c:221
@@ -1155,7 +1015,7 @@ msgstr "pas deze voorkeur automatisch toe op gekoppelde afbeeldingen "
 
 #: ../src/gui/presets.c:212
 msgid "only show this preset for matching images"
-msgstr "vertoon deze voorkeur alleen deze voorkeur bij overeenkomstige foto's"
+msgstr "vertoon deze voorkeur alleen bij overeenkomstige foto's"
 
 #: ../src/gui/presets.c:213
 msgid "be very careful with this option. this might be the last time you see your preset."
@@ -1425,98 +1285,123 @@ msgstr "%d/%d geëxporteerd naar `%s%s'"
 msgid "send as email"
 msgstr "verstuur als email"
 
-#: ../src/imageio/storage/picasa.c:538
+#: ../src/imageio/storage/picasa.c:539
 msgid "picasa webalbum"
 msgstr "picasa webalbum"
 
-#: ../src/imageio/storage/picasa.c:572
+#: ../src/imageio/storage/picasa.c:573
 msgid "authenticated"
 msgstr "authentificatie"
 
 #. Add standard action
-#: ../src/imageio/storage/picasa.c:593
-#: ../src/imageio/storage/picasa.c:626
+#: ../src/imageio/storage/picasa.c:594
+#: ../src/imageio/storage/picasa.c:627
 msgid "create new album"
 msgstr "creëer nieuwe map"
 
 #. Failed to authenticated, let's notify somehow...
-#: ../src/imageio/storage/picasa.c:616
+#: ../src/imageio/storage/picasa.c:617
 msgid "authentication failed"
 msgstr "aanmelden mislukt"
 
-#: ../src/imageio/storage/picasa.c:677
+#: ../src/imageio/storage/picasa.c:678
 msgid "user"
 msgstr "gebruiker"
 
-#: ../src/imageio/storage/picasa.c:678
+#: ../src/imageio/storage/picasa.c:679
 msgid "password"
 msgstr "wachtwoord"
 
-#: ../src/imageio/storage/picasa.c:679
+#: ../src/imageio/storage/picasa.c:680
 msgid "albums"
 msgstr "albums"
 
-#: ../src/imageio/storage/picasa.c:681
-#: ../src/libs/metadata.c:267
-msgid "title"
-msgstr "titel"
-
-#: ../src/imageio/storage/picasa.c:682
+#: ../src/imageio/storage/picasa.c:683
 msgid "summary"
 msgstr "samenvatting"
 
-#: ../src/imageio/storage/picasa.c:683
-msgid "rights"
-msgstr "rechten"
-
-#: ../src/imageio/storage/picasa.c:722
+#: ../src/imageio/storage/picasa.c:723
 msgid "my new album"
 msgstr "mijn nieuwe album"
 
-#: ../src/imageio/storage/picasa.c:723
+#: ../src/imageio/storage/picasa.c:724
 msgid "exported from darktable"
 msgstr "geëxporteerd van darktable"
 
-#: ../src/imageio/storage/picasa.c:741
+#: ../src/imageio/storage/picasa.c:742
 msgid "refresh album list"
 msgstr "actualiseer album lijst"
 
-#: ../src/imageio/storage/picasa.c:747
+#: ../src/imageio/storage/picasa.c:748
 msgid "public album"
 msgstr "openbaar album"
 
-#: ../src/imageio/storage/picasa.c:748
+#: ../src/imageio/storage/picasa.c:749
 msgid "export tags"
 msgstr "exporteer labels"
 
-#: ../src/imageio/storage/picasa.c:884
+#: ../src/imageio/storage/picasa.c:894
 #, c-format
 msgid "%d/%d exported to picasa webalbum"
 msgstr "%d/%d geëxporteerd naar picasa webalbum"
 
-#: ../src/iop/atrous.c:93
+#: ../src/iop/atrous.c:94
 msgid "equalizer II"
 msgstr "equalizer II"
 
-#: ../src/iop/atrous.c:536
-msgid " (strong)"
-msgstr " (sterk)"
+#: ../src/iop/atrous.c:509
+msgid "enhance coarse"
+msgstr "verbeteren korrel"
 
-#: ../src/iop/atrous.c:915
+#: ../src/iop/atrous.c:523
+msgid "sharpen and denoise (strong)"
+msgstr "verscherpen en ruisonderdrukking (sterk)"
+
+#: ../src/iop/atrous.c:537
+msgid "sharpen and denoise"
+msgstr "verscherpen en ruisonderdrukking"
+
+#: ../src/iop/atrous.c:551
+#: ../src/iop/equalizer.c:247
+msgid "sharpen (strong)"
+msgstr "verscherpen (sterk)"
+
+#: ../src/iop/atrous.c:565
+#: ../src/iop/equalizer.c:257
+#: ../src/iop/sharpen.c:67
+msgid "sharpen"
+msgstr "verscherpen"
+
+#: ../src/iop/atrous.c:579
+#: ../src/iop/equalizer.c:273
+msgid "denoise"
+msgstr "ruisonderdrukking"
+
+#: ../src/iop/atrous.c:593
+#: ../src/iop/equalizer.c:283
+msgid "denoise (strong)"
+msgstr "ruisonderdrukking (sterk)"
+
+#: ../src/iop/atrous.c:608
+#: ../src/iop/bloom.c:66
+msgid "bloom"
+msgstr "glans"
+
+#: ../src/iop/atrous.c:985
 #: ../src/iop/equalizer.c:324
 msgid "luma"
 msgstr "luminicentie"
 
-#: ../src/iop/atrous.c:916
+#: ../src/iop/atrous.c:986
 msgid "change lightness at each frequency"
 msgstr "wijzig de helderheid voor elke frequentie"
 
-#: ../src/iop/atrous.c:917
+#: ../src/iop/atrous.c:987
 #: ../src/iop/equalizer.c:325
 msgid "chroma"
 msgstr "chrominantie"
 
-#: ../src/iop/atrous.c:918
+#: ../src/iop/atrous.c:988
 msgid "change color saturation at each frequency"
 msgstr "wijzig de kleur verzadiging voor elke frequentie"
 
@@ -1524,11 +1409,11 @@ msgstr "wijzig de kleur verzadiging voor elke frequentie"
 #. gtk_object_set(GTK_OBJECT(c->channel_button[atrous_Lt]), "tooltip-text", _("denoise lightness at each frequency"), NULL);
 #. c->channel_button[atrous_ct] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("ct")));
 #. gtk_object_set(GTK_OBJECT(c->channel_button[atrous_ct]), "tooltip-text", _("denoise color at each frequency"), NULL);
-#: ../src/iop/atrous.c:923
+#: ../src/iop/atrous.c:993
 msgid "sharpness"
 msgstr "scherpte"
 
-#: ../src/iop/atrous.c:924
+#: ../src/iop/atrous.c:994
 msgid "sharpness of edges at each frequency"
 msgstr "randverscherping voor elke frequentie"
 
@@ -1591,36 +1476,36 @@ msgstr "basis curve"
 
 #: ../src/iop/bilateral.cc:70
 msgid "denoise (slow)"
-msgstr "ruisreductie "
+msgstr "ruisonderdrukking (langzaam)"
 
 #: ../src/iop/bilateral.cc:283
 #: ../src/iop/clahe.c:383
-#: ../src/iop/sharpen.c:267
+#: ../src/iop/sharpen.c:321
 msgid "radius"
 msgstr "straal"
 
 #: ../src/iop/bilateral.cc:285
 #: ../src/iop/channelmixer.c:365
 #: ../src/iop/channelmixer.c:382
-#: ../src/iop/temperature.c:379
-#: ../src/libs/collect.c:92
-#: ../src/libs/collect.c:193
+#: ../src/iop/temperature.c:391
+#: ../src/libs/collect.c:95
+#: ../src/libs/collect.c:272
 msgid "red"
 msgstr "rood"
 
 #: ../src/iop/bilateral.cc:287
 #: ../src/iop/channelmixer.c:366
 #: ../src/iop/channelmixer.c:383
-#: ../src/iop/temperature.c:383
-#: ../src/libs/collect.c:94
-#: ../src/libs/collect.c:203
+#: ../src/iop/temperature.c:395
+#: ../src/libs/collect.c:97
+#: ../src/libs/collect.c:282
 msgid "green"
 msgstr "groen"
 
 #: ../src/iop/bilateral.cc:289
 #: ../src/iop/channelmixer.c:367
 #: ../src/iop/channelmixer.c:384
-#: ../src/iop/temperature.c:387
+#: ../src/iop/temperature.c:399
 msgid "blue"
 msgstr "blauw"
 
@@ -1641,17 +1526,13 @@ msgstr "hoeveel vervaging voor groen"
 msgid "how much to blur blue"
 msgstr "hoeveel vervaging voor blauw"
 
-#: ../src/iop/bloom.c:66
-msgid "bloom"
-msgstr "glans"
-
 #: ../src/iop/bloom.c:278
 #: ../src/libs/camera.c:527
 msgid "size"
 msgstr "afmeting"
 
 #: ../src/iop/bloom.c:279
-#: ../src/iop/sharpen.c:271
+#: ../src/iop/sharpen.c:325
 msgid "threshold"
 msgstr "drempel"
 
@@ -1659,7 +1540,7 @@ msgstr "drempel"
 #: ../src/iop/grain.c:436
 #: ../src/iop/vignette.c:355
 msgid "strength"
-msgstr "sterkte"
+msgstr "kracht"
 
 #: ../src/iop/bloom.c:294
 msgid "the size of bloom"
@@ -1768,7 +1649,7 @@ msgid "local contrast (slow)"
 msgstr "lokaal contrast "
 
 #: ../src/iop/clahe.c:385
-#: ../src/iop/sharpen.c:269
+#: ../src/iop/sharpen.c:323
 msgid "amount"
 msgstr "hoeveelheid"
 
@@ -1979,52 +1860,52 @@ msgstr "kleur correctie"
 msgid "input color profile"
 msgstr "ingaand kleur profiel"
 
-#: ../src/iop/colorin.c:308
+#: ../src/iop/colorin.c:297
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "een niet ondersteund kleurprofiel is vervangen door een lineair RGB!"
 
 #. g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
-#: ../src/iop/colorin.c:500
+#: ../src/iop/colorin.c:489
 #: ../src/libs/export.c:507
 msgid "profile"
 msgstr "profiel"
 
-#: ../src/iop/colorin.c:516
+#: ../src/iop/colorin.c:505
 msgid "standard color matrix"
 msgstr "standaard kleuren matrix"
 
-#: ../src/iop/colorin.c:518
+#: ../src/iop/colorin.c:507
 msgid "enhanced color matrix"
 msgstr "verbeterde kleuren matrix"
 
-#: ../src/iop/colorin.c:520
+#: ../src/iop/colorin.c:509
 msgid "srgb (e.g. jpg)"
 msgstr "sRGB (b.v. jpg)"
 
-#: ../src/iop/colorin.c:522
+#: ../src/iop/colorin.c:511
 #: ../src/iop/colorout.c:505
 #: ../src/iop/colorout.c:506
 #: ../src/libs/export.c:463
 msgid "adobe rgb"
 msgstr "adobe RGB"
 
-#: ../src/iop/colorin.c:524
+#: ../src/iop/colorin.c:513
 #: ../src/iop/colorout.c:495
 #: ../src/iop/colorout.c:496
 #: ../src/libs/export.c:475
 msgid "linear rgb"
 msgstr "linear RGB"
 
-#: ../src/iop/colorin.c:526
+#: ../src/iop/colorin.c:515
 msgid "linear infrared bgr"
 msgstr "lineair infrarood bgr"
 
-#: ../src/iop/colorin.c:528
+#: ../src/iop/colorin.c:517
 msgid "linear xyz"
 msgstr "lineair xyz"
 
 #. gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
-#: ../src/iop/colorin.c:540
+#: ../src/iop/colorin.c:529
 #, c-format
 msgid "icc profiles in %s/color/in"
 msgstr "icc profielen in %s/color/in"
@@ -2121,7 +2002,7 @@ msgid "analyze this image"
 msgstr "analyseer deze afbeelding"
 
 #: ../src/iop/colortransfer.c:628
-#: ../src/libs/metadata.c:338
+#: ../src/libs/metadata.c:303
 msgid "apply"
 msgstr "toepassen"
 
@@ -2173,17 +2054,17 @@ msgstr "selecteer kleur op"
 
 #: ../src/iop/colorzones.c:850
 msgid "pick gui color from image"
-msgstr "neem gui kleur van de afbeelding"
+msgstr "kies een kleursectie in de afbeelding"
 
-#: ../src/iop/demosaic.c:73
+#: ../src/iop/demosaic.c:74
 msgid "demosaic"
 msgstr "mozaïek wegwerken"
 
-#: ../src/iop/demosaic.c:761
+#: ../src/iop/demosaic.c:759
 msgid "edge threshold"
 msgstr "rand drempelwaarde"
 
-#: ../src/iop/demosaic.c:764
+#: ../src/iop/demosaic.c:762
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -2193,48 +2074,43 @@ msgstr ""
 "schakel uit met 0.0\n"
 "kies 1.0 om de randen te negeren"
 
+#: ../src/iop/demosaic.c:765
+msgid "match greens"
+msgstr "overeenkomst groen"
+
+#: ../src/iop/demosaic.c:768
+msgid ""
+"switch on green equilibration before demosaicing.\n"
+"necessary for some mid-range cameras such as the EOS 400D."
+msgstr ""
+"schakel over op groen egalisering voordat het mozaïek wordt weggewerkt\n"
+"dit is nodig voor sommige camera instapmodellen zoals de EOS 400D"
+
 #: ../src/iop/equalizer.c:42
 msgid "equalizer"
 msgstr "equalizer"
-
-#: ../src/iop/equalizer.c:247
-msgid "sharpen (strong)"
-msgstr "verscherpen (sterk)"
-
-#: ../src/iop/equalizer.c:257
-#: ../src/iop/sharpen.c:59
-msgid "sharpen"
-msgstr "verscherpen"
 
 #: ../src/iop/equalizer.c:263
 msgid "null"
 msgstr "nihil"
 
-#: ../src/iop/equalizer.c:273
-msgid "denoise"
-msgstr "ruis reductie"
-
-#: ../src/iop/equalizer.c:283
-msgid "denoise (strong)"
-msgstr "ruis reductie (sterk)"
-
-#: ../src/iop/exposure.c:281
+#: ../src/iop/exposure.c:265
 msgid "black"
 msgstr "zwartpunt"
 
-#: ../src/iop/exposure.c:288
+#: ../src/iop/exposure.c:272
 msgid "adjust the black level"
 msgstr "bepaal het zwartpunt"
 
-#: ../src/iop/exposure.c:291
+#: ../src/iop/exposure.c:275
 msgid "adjust the exposure correction [ev]"
 msgstr "bepaal de belichtingscorrectie (EV)"
 
-#: ../src/iop/exposure.c:296
+#: ../src/iop/exposure.c:280
 msgid "auto"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:299
+#: ../src/iop/exposure.c:283
 msgid "percentage of bright values clipped out"
 msgstr "percentage van de heldere, gecomprimeerde waarden voor "
 
@@ -2309,7 +2185,7 @@ msgstr "bruin ND4 (soft)"
 
 #: ../src/iop/graduatednd.c:95
 msgid "graduated neutral density"
-msgstr "gradueel dichtheidsfilter"
+msgstr "grijsverloopfilter"
 
 #. adding the labels
 #: ../src/iop/graduatednd.c:378
@@ -2375,43 +2251,43 @@ msgstr "de kracht van de toegepaste korrel"
 msgid "highlight reconstruction"
 msgstr "reconstrueer de hooglichten"
 
-#: ../src/iop/highlights.c:326
+#: ../src/iop/highlights.c:332
 msgid "method"
 msgstr "methode"
 
-#: ../src/iop/highlights.c:329
+#: ../src/iop/highlights.c:335
 msgid "clip highlights"
 msgstr "comprimeer de hooglichten"
 
-#: ../src/iop/highlights.c:330
+#: ../src/iop/highlights.c:336
 msgid "reconstruct in LCh"
 msgstr "reconstrueer in LCh"
 
-#: ../src/iop/highlights.c:331
+#: ../src/iop/highlights.c:337
 msgid "highlight reconstruction method"
 msgstr "reconstrueer de hooglichten"
 
-#: ../src/iop/highlights.c:341
+#: ../src/iop/highlights.c:347
 msgid "blend L"
 msgstr "meng L"
 
-#: ../src/iop/highlights.c:343
+#: ../src/iop/highlights.c:349
 msgid "blend C"
 msgstr "meng C"
 
-#: ../src/iop/highlights.c:345
+#: ../src/iop/highlights.c:351
 msgid "blend h"
 msgstr "meng h"
 
-#: ../src/iop/highlights.c:351
+#: ../src/iop/highlights.c:357
 msgid "blend lightness (0 is same as clipping)"
 msgstr "meng helderheid (0 is gelijk aan comprimeren)"
 
-#: ../src/iop/highlights.c:352
+#: ../src/iop/highlights.c:358
 msgid "blend colorness (0 is same as clipping)"
 msgstr "meng kleurloos (0 is gelijk aan comprimeren)"
 
-#: ../src/iop/highlights.c:353
+#: ../src/iop/highlights.c:359
 msgid "blend hue (0 is same as clipping)"
 msgstr "meng tint (0 is gelijk aan comprimeren)"
 
@@ -2522,7 +2398,7 @@ msgstr "automatisch schalen"
 
 #: ../src/iop/lens.c:1259
 #: ../src/iop/vignette.c:353
-#: ../src/iop/watermark.c:566
+#: ../src/iop/watermark.c:574
 msgid "scale"
 msgstr "schaal"
 
@@ -2614,7 +2490,7 @@ msgstr "lichtopvulling in EV"
 #: ../src/iop/relight.c:378
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr "de breedte van het gebied voor lichtopvulling uitgedrukt in zones "
+msgstr "de omvang van het gebied voor lichtopvulling uitgedrukt in zones "
 
 #: ../src/iop/splittoning.c:77
 msgid "split toning"
@@ -2675,36 +2551,36 @@ msgstr ""
 "de hooglichten/schaduwen\n"
 "maar behoud de middenkleuren"
 
-#: ../src/iop/temperature.c:76
+#: ../src/iop/temperature.c:77
 msgctxt "modulename"
 msgid "white balance"
 msgstr "witbalans"
 
-#: ../src/iop/temperature.c:342
+#: ../src/iop/temperature.c:354
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:343
+#: ../src/iop/temperature.c:355
 msgid "temperature out"
 msgstr "uitgaande temperatuur"
 
-#: ../src/iop/temperature.c:364
+#: ../src/iop/temperature.c:376
 msgid "temperature in"
 msgstr "ingaande temperatuur"
 
-#: ../src/iop/temperature.c:397
+#: ../src/iop/temperature.c:409
 msgid "camera white balance"
 msgstr "camera witbalans"
 
-#: ../src/iop/temperature.c:398
+#: ../src/iop/temperature.c:410
 msgid "spot white balance"
 msgstr "spot witbalans"
 
-#: ../src/iop/temperature.c:399
+#: ../src/iop/temperature.c:411
 msgid "passthrough"
 msgstr "doorvoer"
 
-#: ../src/iop/temperature.c:422
+#: ../src/iop/temperature.c:437
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -2724,11 +2600,11 @@ msgstr "hoog contrast"
 msgid "tonemapping"
 msgstr "toonmapping"
 
-#: ../src/iop/tonemap.cc:265
+#: ../src/iop/tonemap.cc:257
 msgid "contrast compression"
 msgstr "contrast compressie"
 
-#: ../src/iop/tonemap.cc:271
+#: ../src/iop/tonemap.cc:263
 msgid "spatial extent"
 msgstr "ruimtelijke omvang "
 
@@ -2819,36 +2695,36 @@ msgstr "keert het verzadigingseffect om"
 msgid "inverts effect of fall-off, default is dark fall-off..."
 msgstr "keert het affect van afname om, standaard is donker afnemen"
 
-#: ../src/iop/watermark.c:87
+#: ../src/iop/watermark.c:90
 msgid "watermark"
 msgstr "watermerk"
 
-#: ../src/iop/watermark.c:564
+#: ../src/iop/watermark.c:572
 msgid "marker"
 msgstr "markeerstift"
 
-#: ../src/iop/watermark.c:565
+#: ../src/iop/watermark.c:573
 msgid "opacity"
 msgstr "dekking"
 
-#: ../src/iop/watermark.c:567
+#: ../src/iop/watermark.c:575
 msgid "alignment"
 msgstr "uitlijning"
 
-#: ../src/iop/watermark.c:568
+#: ../src/iop/watermark.c:576
 msgid "x offset"
 msgstr "x verschuiving"
 
-#: ../src/iop/watermark.c:569
+#: ../src/iop/watermark.c:577
 msgid "y offset"
 msgstr "y verschuiving"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:613
+#: ../src/iop/watermark.c:621
 msgid "the opacity of the watermark"
 msgstr "de dekking van het watermerk"
 
-#: ../src/iop/watermark.c:614
+#: ../src/iop/watermark.c:622
 msgid "the scale of the watermark"
 msgstr "de schaal van het watermerk"
 
@@ -3080,65 +2956,75 @@ msgstr "sessie"
 msgid "create"
 msgstr "creëer"
 
-#: ../src/libs/collect.c:48
+#: ../src/libs/collect.c:50
 msgid "collect images"
 msgstr "verzamel afbeeldingen"
 
-#: ../src/libs/collect.c:93
-#: ../src/libs/collect.c:198
+#: ../src/libs/collect.c:96
+#: ../src/libs/collect.c:277
 msgid "yellow"
 msgstr "geel"
 
 #. history
-#: ../src/libs/collect.c:99
-#: ../src/libs/collect.c:179
+#: ../src/libs/collect.c:102
+#: ../src/libs/collect.c:258
 msgid "altered"
 msgstr "gewijzigd"
 
-#: ../src/libs/collect.c:184
+#: ../src/libs/collect.c:263
 msgid "not altered"
 msgstr "niet gewijzigd"
 
-#: ../src/libs/collect.c:304
+#: ../src/libs/collect.c:400
 msgid "camera"
 msgstr "camera"
 
-#: ../src/libs/collect.c:305
+#: ../src/libs/collect.c:401
 msgid "tag"
 msgstr "label"
 
-#: ../src/libs/collect.c:306
+#: ../src/libs/collect.c:402
 msgid "date"
 msgstr "datum"
 
-#: ../src/libs/collect.c:308
+#: ../src/libs/collect.c:404
 msgid "colorlabel"
 msgstr "kleur label"
 
-#: ../src/libs/collect.c:317
+#: ../src/libs/collect.c:406
+#: ../src/libs/metadata.c:240
+msgid "description"
+msgstr "omschrijving"
+
+#: ../src/libs/collect.c:408
+#: ../src/libs/metadata.c:266
+msgid "publisher"
+msgstr "uitgever"
+
+#: ../src/libs/collect.c:418
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "type uw zoekopdracht, gebruik `%' als vervanging"
 
-#: ../src/libs/collect.c:325
+#: ../src/libs/collect.c:426
 msgid "matches selected images"
 msgstr "overeenkomstige geselecteerde afbeeldingen"
 
-#: ../src/libs/collect.c:344
+#: ../src/libs/collect.c:445
 msgid "doubleclick to select"
 msgstr "dubbelklik om te selecteren"
 
 #: ../src/libs/copy_history.c:43
 msgid "history stack"
-msgstr "geschiedenis"
+msgstr "bewerkingsstappen"
 
 #: ../src/libs/copy_history.c:55
 msgid "open sidecar file"
-msgstr "open een sidecar bestand"
+msgstr "open xmp bestand"
 
 #: ../src/libs/copy_history.c:65
 msgid "xmp sidecar files"
-msgstr "xmp sidecar files"
+msgstr "xmp bestanden"
 
 #: ../src/libs/copy_history.c:84
 #, c-format
@@ -3154,7 +3040,7 @@ msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
 msgstr ""
-"kopieer de geschiedenis van\n"
+"kopieer de bewerkingsstappen van\n"
 "de als eerste geselecteerde afbeelding (ctrl-c)"
 
 #: ../src/libs/copy_history.c:198
@@ -3166,7 +3052,7 @@ msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"wis de geschiedenis stapel van \n"
+"verwijder de bewerkingsstappen van \n"
 "alle geselecteerde afbeeldingen"
 
 #: ../src/libs/copy_history.c:206
@@ -3190,19 +3076,19 @@ msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
 msgstr ""
-"plak de geschiedenis stapel\n"
-"aan al de geselecteerde afbeeldingen\n"
+"pas de bewerkingsstappen toe\n"
+"op de geselecteerde afbeeldingen\n"
 "(ctrl-v)"
 
 #: ../src/libs/copy_history.c:222
 msgid "load sidecar file"
-msgstr "laadt een sidecar bestand"
+msgstr "laad xmp bestand"
 
 #: ../src/libs/copy_history.c:223
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
-msgstr "open een xmp sidecar bestand en pas dit toe op de geselecteerde afbeeldingen"
+msgstr "open xmp bestand en voer het uit op de geselecteerde afbeeldingen"
 
 #: ../src/libs/export.c:66
 msgid "export selected"
@@ -3307,11 +3193,11 @@ msgstr "verwijder de afbeeldingen fysiek van de schijf"
 
 #: ../src/libs/image.c:95
 msgid "write sidecar files"
-msgstr "schrijf sidecar bestanden"
+msgstr "schrijf xmp bestanden"
 
 #: ../src/libs/image.c:96
 msgid "write history stack and tags to xmp sidecar files"
-msgstr "sla de bewerkingsgeschiedenis en labeling op in xmp sidecar bestanden"
+msgstr "schrijf bewerkingsstappen en labeling op in xmp bestanden"
 
 #: ../src/libs/image.c:100
 msgid "duplicate"
@@ -3352,92 +3238,76 @@ msgstr "bewerk `%s'"
 msgid "deleting preset for obsolete module"
 msgstr "verwijder voorkeur voor achterhaalde module"
 
-#: ../src/libs/metadata.c:69
+#: ../src/libs/metadata.c:70
 msgid "<leave unchanged>"
 msgstr "<ongewijzigd laten>"
 
-#: ../src/libs/metadata.c:279
-msgid "description"
-msgstr "omschrijving"
-
-#: ../src/libs/metadata.c:291
-msgid "creator"
-msgstr "maker"
-
-#: ../src/libs/metadata.c:303
-msgid "publisher"
-msgstr "uitgever"
-
-#: ../src/libs/metadata.c:315
-msgid "license"
-msgstr "licentie"
-
-#: ../src/libs/metadata.c:332
+#: ../src/libs/metadata.c:297
 msgid "clear"
 msgstr "geen"
 
-#: ../src/libs/metadata.c:333
+#: ../src/libs/metadata.c:298
 msgid "remove metadata from selected images"
 msgstr "verwijder de metadata  van de geselecteerde afbeeldingen"
 
-#: ../src/libs/metadata.c:339
-msgid "write metadata to selected images"
+#: ../src/libs/metadata.c:304
+msgid "write metadata for selected images"
 msgstr "voeg metadata toe aan de geselecteerde afbeeldingen"
 
-#. <title>\0<description>\0<license>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:368
+#. <title>\0<description>\0<rights>\0<creator>\0<publisher>
+#: ../src/libs/metadata.c:333
 msgid "CC-by"
 msgstr "CC-by"
 
-#: ../src/libs/metadata.c:368
+#: ../src/libs/metadata.c:333
 msgid "Creative Commons Attribution (CC-BY)"
 msgstr "naamsvermelding (CC-BY)"
 
-#: ../src/libs/metadata.c:369
+#: ../src/libs/metadata.c:334
 msgid "CC-by-sa"
 msgstr "CC-by-sa"
 
-#: ../src/libs/metadata.c:369
+#: ../src/libs/metadata.c:334
 msgid "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 msgstr "naamsvermelding - gelijk delen (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:370
+#: ../src/libs/metadata.c:335
 msgid "CC-by-nd"
 msgstr "CC-by-nd"
 
-#: ../src/libs/metadata.c:370
+#: ../src/libs/metadata.c:335
 msgid "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 msgstr "naamsvermelding - geen afgeleide werken (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:371
+#: ../src/libs/metadata.c:336
 msgid "CC-by-nc"
 msgstr "CC-by-nc"
 
-#: ../src/libs/metadata.c:371
+#: ../src/libs/metadata.c:336
 msgid "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 msgstr "naamsvermelding - niet commercieel (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:372
+#: ../src/libs/metadata.c:337
 msgid "CC-by-nc-sa"
 msgstr "CC-by-nc-sa"
 
-#: ../src/libs/metadata.c:372
+#: ../src/libs/metadata.c:337
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 msgstr "naamsvermelding - niet commercieel - gelijk delen"
 
-#: ../src/libs/metadata.c:373
+#: ../src/libs/metadata.c:338
 msgid "CC-by-nc-nd"
 msgstr "CC-by-nc-nd"
 
-#: ../src/libs/metadata.c:373
+#: ../src/libs/metadata.c:338
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 msgstr "naamsvermelding - niet commercieel - geen afgeleide werken"
 
-#: ../src/libs/metadata.c:374
+#: ../src/libs/metadata.c:339
 msgid "all rights reserved"
 msgstr "alle rechten voorbehouden"
 
-#: ../src/libs/metadata.c:374
+#: ../src/libs/metadata.c:339
 msgid "All rights reserved."
 msgstr "Alle rechten voorbehouden"
 
@@ -3607,12 +3477,12 @@ msgstr "verwijder geselecteerde label"
 msgid "capture"
 msgstr "opnemen"
 
-#: ../src/views/capture.c:237
+#: ../src/views/capture.c:238
 #, c-format
 msgid "failed to create session path %s."
 msgstr "aanmaak sessie pad mislukt %s"
 
-#: ../src/views/capture.c:251
+#: ../src/views/capture.c:252
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "nieuwe sessie gestart-'%s'"
@@ -3644,6 +3514,144 @@ msgstr "serie"
 msgid "lighttable"
 msgstr "lighttable"
 
+#: ../src/iop/overexposed.c:55
+msgid "overexposed"
+msgstr "overbelicht"
+
+#: ../src/iop/overexposed.c:236
+msgid "lower threshold"
+msgstr "onderste drempel"
+
+#: ../src/iop/overexposed.c:237
+msgid "upper threshold"
+msgstr "bovenste drempel"
+
+#: ../src/iop/overexposed.c:248
+msgid "threshold of what shall be considered underexposed"
+msgstr "drempel voor wat moet worden beschouwt als onderbelicht"
+
+#: ../src/iop/overexposed.c:249
+msgid "threshold of what shall be considered overexposed"
+msgstr "drempel voor wat moet worden beschouwt als overbelicht"
+
+#~ msgid " (strong)"
+#~ msgstr " (sterk)"
+#~ msgid "single images"
+#~ msgstr "afbeeldingen"
+#~ msgid "(needs a restart)"
+#~ msgstr "(opnieuw opstarten is vereist)"
+#~ msgid "0 -- append on top of stack, 1 -- replace it."
+#~ msgstr "0 -- verschijnt aan de top van de stapel, 1 -- vervangt het"
+#~ msgid "0: mean, 1: min, 2: max"
+#~ msgstr "0: nihil, 1: min, 2:max"
+#~ msgid "Capture view mode"
+#~ msgstr "opname weergavemodus"
+#~ msgid "Default client to use, this overrides detection of default client."
+#~ msgstr ""
+#~ "Te gebruiken standaard cliënt, dit overschrijft de detectie van de "
+#~ "standaard cliënt."
+#~ msgid "append or replace history stack if pasted"
+#~ msgstr ""
+#~ "toevoegen of vervangen van de bewerkingsgeschiedenis bij het plakken"
+#~ msgid "flag if backup of imported images should be performed"
+#~ msgstr ""
+#~ "markeer als reservekopieën van geïmporteerde afbeeldingen moeten worden "
+#~ "gemaakt"
+#~ msgid "flag if originals on camera should be deleted"
+#~ msgstr "markeer als originelen van de camera moeten worden verwijderd"
+#~ msgid ""
+#~ "flag if user should be interactivly warned about non present backup "
+#~ "destinations"
+#~ msgstr ""
+#~ "markeer als de gebruiker interactief moeten worden gewaarschuwd over niet "
+#~ "aanwezige reservekopie  bestemmingen"
+#~ msgid "height of the exported image"
+#~ msgstr "hoogte van de geëxporteerde file"
+#~ msgid "height of the exported image, or 0 if no scaling should be done."
+#~ msgstr ""
+#~ "hoogte van de geëxporteerde afbeelding, of 0 als herschalen niet nodig is"
+#~ msgid "how many images are in one row"
+#~ msgstr "hoeveel afbeeldingen per rij"
+#~ msgid ""
+#~ "how many smallest-size thumbnails to keep in main memory at maximum. this "
+#~ "also affects larger mipmap counts, these get fewer by size. only read at "
+#~ "startup."
+#~ msgstr ""
+#~ "hoeveel van de kleinst mogelijke miniaturen te behouden in het hoofd "
+#~ "geheugen tot aan het maximum. Dit geeft ook grotere mipmap tellingen, die "
+#~ "worden minder in omvang. Wordt alleen bij het opstarten gelezen.  "
+#~ msgid "icc profile to use for export"
+#~ msgstr "icc profiel te gebruiken bij exporteren"
+#~ msgid "icc rendering intent"
+#~ msgstr "icc rendeer methode"
+#~ msgid ""
+#~ "if non-negative, this overrides the per-image output color profile "
+#~ "rendering intent on export."
+#~ msgstr ""
+#~ "bij een akkoord, wordt voor elke afbeelding een uitgaand kleurpatroon "
+#~ "rendeer methode overschrevem met als doel exporteren."
+#~ msgid ""
+#~ "if this number is smaller than the darktable internal version number, the "
+#~ "values here will be synched with the new defaults."
+#~ msgstr ""
+#~ "als het nummer lager is dan het Darktable interne versie nummer, dan "
+#~ "zullen de waarden worden gesynchroniseerd naar de nieuw standaard waarden"
+#~ msgid "ignore jpeg images when importing film rolls."
+#~ msgstr "negeer jpeg afbeelding zodra een fotomap wordt geïmporteerd"
+#~ msgid "jobcode of import job"
+#~ msgstr "de werkcode van de importeer taak"
+#~ msgid ""
+#~ "keep this value low for fast thumbnail creation (allowed: 160-1300)\\n"
+#~ "(needs a restart and will invalidate current thumbnail caches)."
+#~ msgstr ""
+#~ "houd deze waarde laag voor een vlugge aanmaak van miniaturen (toegestaan: "
+#~ "160-1300)\n"
+#~ "(opnieuw opstarten is vereist en hierdoor vervalt de huidige cache van "
+#~ "miniaturen)"
+#~ msgid "name of capture job"
+#~ msgstr "name van opname opdracht"
+#~ msgid "path of storage for captured images"
+#~ msgstr "opslagplaats voor opgenomen afbeeldingen"
+#~ msgid "recursive directory traversal when importing filmrolls."
+#~ msgstr "controleer mappen recursief bij het importeren van mappen"
+#~ msgid "rename pattern for captured images"
+#~ msgstr "hernoem patroon voor opgenomen afbeeldingen"
+#~ msgid ""
+#~ "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
+#~ msgstr ""
+#~ "selecteer een layout voor de lighttable: 0 - zoomen of 1 - bestands "
+#~ "manager"
+#~ msgid "small thumbnails to keep in main memory cache"
+#~ msgstr "kleine miniaturen om in het hoofd cache geheugen te bewaren"
+#~ msgid "subpath pattern in storage for captured images"
+#~ msgstr "opgeslagen subpad patroon voor opgenomen afbeeldingen"
+#~ msgid "the name of backup directory to search for on mounted medias"
+#~ msgstr ""
+#~ "de naam van de reservekopieën map waarnaar gezocht moet worden op "
+#~ "aangekoppelde media"
+#~ msgid "this overrides the per-image settings, if not set to `image'."
+#~ msgstr ""
+#~ "dit overschrijft de persoonlijke afbeeldingsinstellingen, als niet is "
+#~ "ingesteld op `afbeelding'."
+#~ msgid "version of these dt-gconf entries"
+#~ msgstr "versie van deze DT-gconf ingangen"
+#~ msgid ""
+#~ "when having raw+jpeg images together in one directory it makes no sense "
+#~ "to import both. with this flag one can ignore all jpegs found."
+#~ msgstr ""
+#~ "Als de RAW en JPG afbeeldingen in eenzelfde map staan heeft het geen zin "
+#~ "beide bestanden te importeren. Met hulp van deze markering worden alle "
+#~ "gevonden JPG bestanden genegeerd."
+#~ msgid "which layout should lighttable mode show"
+#~ msgstr "kies de layout voor lighttable"
+#~ msgid "width of the exported image"
+#~ msgstr "breedte van de geëxporteerde afbeelding"
+#~ msgid "width of the exported image, or 0 if no scaling should be done."
+#~ msgstr ""
+#~ "breedte van de geëxporteerde afbeelding, of 0 indien geen herschaling "
+#~ "uitgevoerd moet worden"
+#~ msgid "license"
+#~ msgstr "licentie"
 #~ msgid "image `%s is currently unavailable"
 #~ msgstr "afbeelding `%s' is op dit moment niet beschikbaar"
 #~ msgid "import single image"

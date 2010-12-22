@@ -72,6 +72,7 @@ src/iop/vignette.c
 src/iop/watermark.c
 src/iop/wb_presets.c
 src/iop/zonesystem.c
+scr/iop/overexposed.c
 src/libs/camera.c
 src/libs/capture.c
 src/libs/collect.c
