@@ -609,8 +609,9 @@ FC(const int row, const int col, const unsigned int filters)
 static float
 weight (const float c1, const float c2)
 {
-  const float d = -fabsf(c1-c2)*(6.f/65535.0f) + 2.0f;
-  return fmaxf(0.0f, d*d*0.25f);
+  return dt_fast_expf(-(c1-c2)*(c1-c2)/(0.03f*65535.0f*65535.0f));
+  // const float d = -fabsf(c1-c2)*(6.f/65535.0f) + 2.0f;
+  // return fmaxf(0.0f, d*d*0.25f);
 }
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
