@@ -162,24 +162,90 @@ static void edit_clicked(GtkWidget *w,gpointer user_data)
 }
 #endif
 
-static void delete_clicked(GtkWidget *w,gpointer user_data)
-{
-  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
-
+static char* get_style_name(dt_lib_styles_t *list_style){
   GtkTreeIter iter;
   GtkTreeModel *model;
-  model = gtk_tree_view_get_model (d->list);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->list));
-  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
-  char *name=NULL;
+  model = gtk_tree_view_get_model (list_style->list);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list_style->list));
+
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return NULL;
+
+  char *name = NULL;
   gtk_tree_model_get (model, &iter, 
                       DT_STYLES_COL_NAME, &name,
                       -1);
+  return name;
+}
+
+static void delete_clicked(GtkWidget *w,gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+  char *name = get_style_name(d);
   if (name)
   {
     dt_styles_delete_by_name (name);
     _gui_styles_update_view(d);
   }
+}
+
+static void export_clicked (GtkWidget *w,gpointer user_data){
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+  char *name = get_style_name(d);
+  if(name){
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
+              GTK_WINDOW (win),
+              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+              GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+              (char *)NULL);
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(filechooser),g_get_home_dir());
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT ){
+         char *filedir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+         dt_styles_save_to_file(name,filedir);
+         g_free (filedir);
+   }
+   g_free(name);
+   gtk_widget_destroy (filechooser);
+  }
+}
+
+static void import_clicked (GtkWidget *w,gpointer user_data){
+  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select style"),
+              GTK_WINDOW (win),
+              GTK_FILE_CHOOSER_ACTION_OPEN,
+              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+              (char *)NULL);
+              
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(filechooser),g_get_home_dir());
+  
+  GtkFileFilter *filter;
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*.dtstyle");
+  gtk_file_filter_set_name(filter, _("darktable style files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*");
+  gtk_file_filter_set_name(filter, _("all files"));
+  
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+  
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT ){
+         char *filename;
+         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+         dt_styles_import_from_file(filename);
+         //
+         dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+         _gui_styles_update_view(d);
+         //
+         g_free (filename);
+   }
+   gtk_widget_destroy (filechooser);
 }
 
 static gboolean
@@ -270,7 +336,14 @@ gui_init (dt_lib_module_t *self)
   g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
-
+  // Export Button
+  GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
+  g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
+  gtk_box_pack_start(GTK_BOX (hbox),exportButton,TRUE,TRUE,0);
+  // Import Button
+  GtkWidget *importButton = gtk_button_new_with_label(_("import"));
+  g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
+  gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->list)));

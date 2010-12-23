@@ -46,6 +46,10 @@ int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_
 void dt_exif_init();
 void dt_exif_cleanup();
 
+/** encode / decode op params */
+void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len);
+void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len);
+
 #ifdef __cplusplus
 }
 #endif

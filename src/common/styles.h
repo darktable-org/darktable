@@ -63,5 +63,9 @@ GList *dt_styles_get_item_list (const char *name);
 /** get a description of a named style */
 gchar *dt_styles_get_description (const char *name);
 
+/** save style to file */
+void dt_styles_save_to_file(const char *style_name,const char *filedir);
 
+/** load style from file */
+void dt_styles_import_from_file(const char *style_path);
 #endif

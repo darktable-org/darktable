@@ -24,6 +24,14 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/debug.h"
+#include "common/exif.h"
+
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
+
+#include <string.h>
+#include <stdio.h>
+#include <glib.h>
 
 int32_t _styles_get_id_by_name (const char *name);
 
@@ -33,28 +41,33 @@ dt_styles_exists (const char *name)
   return (_styles_get_id_by_name(name))!=0?TRUE:FALSE;
 }
 
-void 
-dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *filter)
-{
-  int rc=0,id=0;
-  sqlite3_stmt *stmt;  
-  
-  /* check if name already exists */
+gboolean
+_dt_style_create_style_header(const char *name, const char *description){
+  int rc=0;
+  sqlite3_stmt *stmt;
   if (_styles_get_id_by_name(name)!=0)
   {
     dt_control_log(_("style with name '%s' already exists"),name);
-    return;
+    return FALSE;
   }
-  
-  /* verify that imgid has an history or bail out */
-  
   /* first create the style header */
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into styles (name,description) values (?1,?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name,strlen (name),SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description,strlen (description),SQLITE_STATIC);
   rc = sqlite3_step (stmt);
   rc = sqlite3_finalize (stmt);
+  return TRUE;
+}
+
+void 
+dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *filter)
+{
+  int rc=0,id=0;
+  sqlite3_stmt *stmt;  
   
+  /* first create the style header */
+  if (!_dt_style_create_style_header(name,description) ) return;
+
   if ((id=_styles_get_id_by_name(name)) != 0)
   {
     /* create the style_items from source image history stack */
@@ -222,6 +235,289 @@ dt_styles_get_list (const char *filter)
   }
   sqlite3_finalize (stmt);
   return result;
+}
+
+char *_dt_style_encode(sqlite3_stmt *stmt, int row){
+      const int32_t len = sqlite3_column_bytes(stmt, row);
+      char *vparams = (char *)malloc(2*len + 1);
+      dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, row), vparams, len);
+      return vparams;
+}
+      
+void 
+dt_styles_save_to_file(const char *style_name,const char *filedir){
+    int rc = 0;
+    char stylename[520];
+    sqlite3_stmt *stmt;
+    
+    snprintf(stylename,512,"%s/%s.dtstyle",filedir,style_name);
+    
+    // check if file exists
+    if( g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE ){
+      dt_control_log(_("style file for %s exists"),style_name);
+      return;
+    }
+    
+    if ( !dt_styles_exists (style_name) ) return;
+    
+    xmlTextWriterPtr writer = xmlNewTextWriterFilename(stylename, 0);
+    if (writer == NULL) {
+        fprintf(stderr,"[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
+        return;
+    }
+    rc = xmlTextWriterStartDocument(writer, NULL, "ISO-8859-1", NULL);
+    if (rc < 0) {
+        fprintf(stderr,"[dt_styles_save_to_file]: Error on encoding setting");
+        return;
+    }
+    rc = xmlTextWriterStartElement(writer, BAD_CAST "darktable_style");
+    rc = xmlTextWriterWriteAttribute(writer, BAD_CAST "version", BAD_CAST "1.0");
+    
+    rc = xmlTextWriterStartElement(writer, BAD_CAST "info");
+    rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
+    rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
+    rc = xmlTextWriterEndElement(writer);
+    
+    rc = xmlTextWriterStartElement(writer, BAD_CAST "style");
+    rc = sqlite3_prepare_v2(darktable.db, "select num,module,operation,op_params,enabled from style_items where styleid =?1",-1, &stmt,NULL);
+    rc = sqlite3_bind_int(stmt,1,_styles_get_id_by_name(style_name));
+    while (sqlite3_step (stmt) == SQLITE_ROW)
+    {
+      rc = xmlTextWriterStartElement(writer, BAD_CAST "plugin");
+      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt,0));
+      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt,1));
+      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt,2));
+      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", _dt_style_encode(stmt,3));
+      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
+      rc = xmlTextWriterEndElement(writer);
+    }
+    rc = xmlTextWriterEndDocument(writer);
+    xmlFreeTextWriter(writer);
+    dt_control_log(_("style %s was sucessfully saved"),style_name);
+}
+
+//
+typedef struct {
+	GString 	*name;
+	GString 	*description;
+} StyleInfoData;
+
+typedef struct {
+  int   num;
+  int   module;
+  GString   *operation;
+  GString   *op_params;
+  int   enabled;
+} StylePluginData;
+
+typedef struct {
+  StyleInfoData   *info;
+  GList           *plugins;
+  gboolean        in_plugin;
+} StyleData;
+
+static StyleData *
+__style_data_new ()
+{
+  StyleInfoData *info = g_new0(StyleInfoData,1);
+  info->name = g_string_new("");
+  info->description = g_string_new("");
+  
+  StyleData *data = g_new0(StyleData,1);
+  data->info = info;
+  data->in_plugin = FALSE;
+  data->plugins = NULL;
+  
+  return data;
+}
+
+static StylePluginData *
+__style_plugin_new ()
+{
+  StylePluginData *plugin = g_new0(StylePluginData,1);
+  plugin->operation = g_string_new("");
+  plugin->op_params = g_string_new("");
+  return plugin;
+}
+
+static void
+__style_data_free (StyleData *style, gboolean free_segments)
+{
+	g_string_free (style->info->name, free_segments);
+	g_string_free (style->info->description, free_segments);
+  g_list_free(style->plugins);
+	g_free(style);
+}
+
+static void
+__start_tag_handler (GMarkupParseContext *context,
+					 const gchar         *element_name,
+					 const gchar        **attribute_names,
+					 const gchar        **attribute_values,
+					 gpointer             user_data,
+					 GError             **error)
+{
+	StyleData *style = user_data;
+	const gchar *elt = g_markup_parse_context_get_element (context);
+	
+	// We need to append the contents of any subtags to the content field
+	// for this we need to know when we are inside the note-content tag
+	if (g_ascii_strcasecmp (elt, "plugin") == 0) {
+		style->in_plugin = TRUE;
+		style->plugins = g_list_prepend(style->plugins,__style_plugin_new());
+	}
+}
+
+static void
+__end_tag_handler (GMarkupParseContext *context,
+                   const gchar         *element_name,
+                   gpointer             user_data,
+                   GError             **error)
+{
+	StyleData *style = user_data;
+	const gchar *elt = g_markup_parse_context_get_element (context);
+	
+	// We need to append the contents of any subtags to the content field
+	// for this we need to know when we are inside the note-content tag
+	if (g_ascii_strcasecmp (elt, "plugin") == 0) {
+		style->in_plugin = FALSE;
+	}
+}
+
+static void
+__style_text_handler (GMarkupParseContext *context,
+			    const gchar *text,
+			    gsize text_len,
+			    gpointer user_data,
+			    GError **error){
+			    
+			    StyleData *style = user_data;
+			    const gchar *elt = g_markup_parse_context_get_element (context);
+			    
+			    if ( g_ascii_strcasecmp (elt, "name") == 0 ){
+			      g_string_append_len (style->info->name, text, text_len);
+			    }
+			    else if (g_ascii_strcasecmp (elt, "description") == 0 ){
+			      g_string_append_len (style->info->description, text, text_len);
+			    }
+			    else if ( style->in_plugin){
+			      StylePluginData *plug = g_list_first(style->plugins)->data;
+			      if ( g_ascii_strcasecmp (elt, "operation") == 0 ){
+			      g_string_append_len (plug->operation, text, text_len);
+			      }
+			      else if (g_ascii_strcasecmp (elt, "op_params") == 0 ){
+			        g_string_append_len (plug->op_params, text, text_len);
+			      }
+			      else if (g_ascii_strcasecmp (elt, "num") == 0 ){
+			        plug->num = atoi(text);
+			      }
+			      else if (g_ascii_strcasecmp (elt, "module") == 0 ){
+			        plug->module =  atoi(text);
+			      }
+			      else if (g_ascii_strcasecmp (elt, "enabled") == 0 ){
+			        plug->enabled = atoi(text);
+			      }
+			    }
+			    
+			}
+
+static GMarkupParser dt_style_parser =
+{
+	__start_tag_handler,	 // Start element handler
+	__end_tag_handler,  	 // End element handler
+	__style_text_handler,			 // Text element handler
+	NULL,					 // Passthrough handler
+	NULL					 // Error handler
+};
+
+void _dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
+{
+  int rc = 0;
+  int id = GPOINTER_TO_INT(styleId);
+  sqlite3_stmt *stmt;
+  sqlite3_prepare_v2 (darktable.db, "insert into style_items (styleid,num,module,operation,op_params,enabled) values(?1,?2,?3,?4,?5,?6)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_bind_int (stmt, 2, plugin->num);
+  rc = sqlite3_bind_int (stmt, 3, plugin->module);
+  rc = sqlite3_bind_text (stmt, 4, plugin->operation->str, plugin->operation->len, SQLITE_TRANSIENT);
+  //
+  const char *param_c = plugin->op_params->str;
+  const int param_c_len = strlen(param_c);
+  const int params_len = param_c_len/2;
+  unsigned char *params = (unsigned char *)malloc(params_len);
+  dt_exif_xmp_decode(param_c, params, param_c_len);
+  rc = sqlite3_bind_blob (stmt, 5, params, params_len, SQLITE_TRANSIENT);
+  //
+  rc = sqlite3_bind_int (stmt, 6, plugin->enabled);
+  rc = sqlite3_step (stmt);
+  rc = sqlite3_finalize (stmt);
+  g_free(params);
+}
+
+void _dt_style_save(StyleData *style){
+  int id = 0;
+  if ( style == NULL) return;
+  
+  /* first create the style header */
+  if (!_dt_style_create_style_header(style->info->name->str,style->info->description->str) ) return;
+  
+  if ((id=_styles_get_id_by_name(style->info->name->str)) != 0)
+  {
+      g_list_foreach(style->plugins,(GFunc)_dt_style_plugin_save,GINT_TO_POINTER(id));
+      dt_control_log(_("style %s was sucessfully imported"),style->info->name->str);
+  }
+}
+
+void 
+dt_styles_import_from_file(const char *style_path){
+
+  FILE    			      *style_file;
+  StyleData           *style;
+	GMarkupParseContext	*parser;
+	gchar				buf[1024];
+	int					num_read;
+	
+	style = __style_data_new();
+	parser = g_markup_parse_context_new (&dt_style_parser, 0, style, NULL);
+	
+	if ((style_file = fopen (style_path, "r"))) {
+	
+		while (!feof (style_file)) {
+			num_read = fread (buf, sizeof(gchar), 1024, style_file);
+
+			if (num_read == 0) {
+				break;
+			} else if (num_read < 0) {
+				// ERROR !
+				break;
+			}
+			
+			if (!g_markup_parse_context_parse(parser, buf, num_read, NULL)) {
+				g_markup_parse_context_free(parser);
+				__style_data_free(style,TRUE);
+				fclose (style_file);
+				return;
+			}
+		}
+	} else {
+		// Failed to open file, clean up.
+		g_markup_parse_context_free(parser);
+		__style_data_free(style,TRUE);
+		return;
+	}
+	
+	if (!g_markup_parse_context_end_parse (parser, NULL)) {
+		g_markup_parse_context_free(parser);
+		__style_data_free(style,TRUE);
+		fclose (style_file);
+		return;
+	}
+	g_markup_parse_context_free (parser);
+	// save data
+	_dt_style_save(style);
+	//
+	__style_data_free(style,TRUE);
+	fclose (style_file);
 }
 
 gchar *dt_styles_get_description (const char *name)
