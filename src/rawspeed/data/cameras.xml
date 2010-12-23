@@ -182,7 +182,7 @@
       <Color x="0" y="1">RED</Color>
     </CFA>
     <Crop x="148" y="54" width="0" height="0"/>
-    <Sensor black="2000" white="16000"/>
+    <Sensor black="2048" white="15831"/>
     <Aliases>
 		<Alias>Canon EOS REBEL T2i</Alias>
 	</Aliases>
