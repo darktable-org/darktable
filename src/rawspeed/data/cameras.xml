@@ -185,6 +185,7 @@
     <Sensor black="2048" white="15831"/>
     <Aliases>
 		<Alias>Canon EOS REBEL T2i</Alias>
+		<Alias>Canon EOS Kiss X4</Alias>
 	</Aliases>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D">
