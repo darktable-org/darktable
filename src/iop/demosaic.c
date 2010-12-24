@@ -91,7 +91,8 @@ FC(const int row, const int col, const unsigned int filters)
 static void
 pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold, const int f4)
 {
-  const float thrs = threshold;
+  const float thrs  = threshold;
+  const float thrsc = 2*threshold;
   // colors:
   for (int pass=0; pass < num_passes; pass++)
   {
@@ -116,7 +117,7 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
           {
             for (int j = i-2; j <= i+2; j+=2)
             {
-              if(fabsf(pixi[j] - pixi[0]) < thrs)
+              if(fabsf(pixi[j] - pixi[0]) < thrsc)
               {
                 med[k++] = pixi[j];
                 cnt ++;
