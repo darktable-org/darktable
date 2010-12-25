@@ -496,7 +496,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     // sample half-size raw
     if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
     {
-      float *tmp = (float *)malloc(sizeof(float)*roi_in->width*roi_in->height);
+      float *tmp = (float *)dt_alloc_align(16, sizeof(float)*roi_in->width*roi_in->height);
       pre_median_b(tmp, pixels, roi_in, roi_in, data->filters, 1, data->median_thrs, 0);
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters);
       free(tmp);
