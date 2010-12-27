@@ -413,7 +413,7 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
   // free mipmap cache lines
   for(int k=0;k<cache->num_lines;k++)
   {
-    dt_image_cache_flush(&(cache->line[k].image));
+    dt_image_cache_flush_no_sidecars(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
   }
   free(cache->line);
