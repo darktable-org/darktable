@@ -426,12 +426,12 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
     if(dev->image_force_reload) dt_image_release(img, DT_IMAGE_FULL, 'r');
 restart:
     dev->image_loading = 1;
-    dt_print(DT_DEBUG_CONTROL, "[run_job+] 99 %f libraw loading image %d\n", dt_get_wtime(), img->id);
+    dt_print(DT_DEBUG_CONTROL, "[run_job+] 99 %f imageio loading image %d\n", dt_get_wtime(), img->id);
     double start = dt_get_wtime();
     err = dt_image_load(img, DT_IMAGE_FULL); // load and lock 'r'
     double end = dt_get_wtime();
-    dt_print(DT_DEBUG_PERF, "[dev_raw_load] libraw took %.3f secs to load the image.\n", end - start);
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] 99 %f libraw loading image %d\n", dt_get_wtime(), img->id);
+    dt_print(DT_DEBUG_PERF, "[dev_raw_load] imageio took %.3f secs to load the image.\n", end - start);
+    dt_print(DT_DEBUG_CONTROL, "[run_job-] 99 %f imageio loading image %d\n", dt_get_wtime(), img->id);
     if(err)
     { // couldn't load image (cache slots full?)
       fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
