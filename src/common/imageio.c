@@ -571,9 +571,10 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   dt_image_buffer_t mip;
-  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
-  const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
-  if(altered)
+  // the mip4 loading seems to lead to race conditions, so it's disabled here:
+  // dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  // const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
+  if(1)//altered)
   {
     // the image has a history stack. we want mipf and process it!
     mip = DT_IMAGE_MIPF;
