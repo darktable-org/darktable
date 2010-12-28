@@ -45,6 +45,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
   // Xavier Besse, CMP Digital Target 3, direct sunlight, well lit
   { "Canon EOS 5D Mark II",         { 967590, 399139,  36026}, { -52094,  819046, -232071}, {144455, -143158, 1069305}, {864227, 899139, 741547}},
 
+  // Deacon MacMillan, Kodak Q60 (IT8), strobe, well lit
+  { "Canon EOS 5D",                 { 971420, 386429,   5753}, { 176849, 1141586, -137955}, { 81909, -284790, 1198090}, {753662, 783997, 645142}},
+
   // Alberto Ferrante, Wolf Faust IT8, direct sunlight, well lit
   { "Canon EOS 7D",                 { 977829, 294815, -44205}, { 154175, 1238007, -325684}, {103363, -297791, 1397461}, {707291, 741760, 626251}},
 
