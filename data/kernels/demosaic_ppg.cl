@@ -99,7 +99,7 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
   for(int k=0;k<9;k++) med[k] = read_imagef(in, sampleri, (int2)(x+offx[c1][k], y+offy[c1][k])).x;
   for(int k=0;k<9;k++) if(fabs(med[k] - pix) > thrs)
   {
-    med[k] = 1e7f+k;
+    med[k] += 64.0f;
     cnt --;
   }
 
@@ -111,8 +111,9 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  if(f4) ((float *)&color)[c] = med[(cnt-1)/2];
-  else   color.x              = med[(cnt-1)/2];
+  const float cc = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+  if(f4) ((float *)&color)[c] = cc;
+  else   color.x              = cc;
   write_imagef (out, (int2)(x, y), color);
 }
 

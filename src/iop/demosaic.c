@@ -122,11 +122,11 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
                 med[k++] = pixi[j];
                 cnt ++;
               }
-              else med[k++] = 1e7f+j;
+              else med[k++] = 64.0f + pixi[j];
             }
           }
           for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-          pixo[f4?c:0] = med[(cnt-1)/2];
+          pixo[f4?c:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
           pixo += f4?8:2;
           pixi += 2;
         }
@@ -160,11 +160,11 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
               med[k++] = pixi[roi_in->width*(i-2) + j];
               cnt++;
             }
-            else med[k++] = 1e7f+j;
+            else med[k++] = 64.0f+pixi[roi_in->width*(i-2)+j];
           }
         }
         for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[f4?1:0] = med[(cnt-1)/2];
+        pixo[f4?1:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
         pixo += f4?8:2;
         pixi += 2;
       }
@@ -212,9 +212,9 @@ green_equilibration(float *out, const float *const in, const int width, const in
       {
         const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
         const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
-        if((in[j*width+i]<maximum*0.95)&&(c1<maximum*thr)&&(c2<maximum*thr))
+        if((in[j*width+i]<maximum*0.95f)&&(c1<maximum*thr)&&(c2<maximum*thr))
         {
-          out[j*width+i] = out[j*width+i]*m1/m2;
+          out[j*width+i] = in[j*width+i]*m1/m2;
         }
       }
     }
