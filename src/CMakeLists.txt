@@ -255,20 +255,22 @@ add_library(libraw_static STATIC IMPORTED)
 set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/LibRaw/liblibraw_r.a)
 target_link_libraries(lib_darktable ${LIBS} libraw_static)
 
-# same for librawspeed:
-add_dependencies(lib_darktable rawspeed)
-add_library(rawspeed_static STATIC IMPORTED)
-set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rawspeed/librawspeed.a)
-target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
+# same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
+if(NOT DONT_USE_RAWSPEED)
+  add_definitions("-DHAVE_RAWSPEED")
+  add_dependencies(lib_darktable rawspeed)
+  add_library(rawspeed_static STATIC IMPORTED)
+  set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rawspeed/librawspeed.a)
+  target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
+  # compile rawspeed
+  add_subdirectory(rawspeed)
+endif(NOT DONT_USE_RAWSPEED)
 
 install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
 # Compile libraw modules
 add_subdirectory(LibRaw)
-
-# compile rawspeed
-add_subdirectory(rawspeed)
 
 # Compile views modules
 add_subdirectory(views)
