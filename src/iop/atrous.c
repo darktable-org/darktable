@@ -129,11 +129,16 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
       __m128 sum = _mm_setzero_ps(), wgt = _mm_setzero_ps();
       for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
       {
-        const __m128 *px2 = px + mult*(ii-2) + width*mult*(jj-2);
-        // continue is faster than clamp to edge:
-        if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width || j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height) continue;
-        // if(mult*(ii-2) + i < 0 || mult*(ii-2)+i >= width) px2 -= mult*(ii-2);
-        // if(j+mult*(jj-2) < 0 || j+mult*(jj-2) >= height)  px2 -= width*mult*(jj-2);
+        const int iii = ii-2;
+        const int jjj = jj-2;
+        int x = i + mult*iii, y = j + mult*jjj;
+        // if(x < 0 || x >= width || y < 0 || y >= height) continue;
+        // clamp to edge
+        if(x < 0)       x = 0;
+        if(x >= width)  x = width  - 1;
+        if(y < 0)       y = 0;
+        if(y >= height) y = height - 1;
+        const __m128 *px2 = ((__m128 *)in) + x + y*width;
         const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
         sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
         wgt = _mm_add_ps(wgt, w);
