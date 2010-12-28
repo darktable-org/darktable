@@ -76,10 +76,10 @@ green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const 
   else write_imagef (out, (int2)(x, y), o);
 }
 
-constant int goffx[18] = { 0, -1,  1, -2,  0,  2, -1,  1,  0,  // green
-                          -2,  0,  2, -2,  0,  2, -2,  0,  2}; // r, b
-constant int goffy[18] = {-2, -1, -1,  0,  0,  0,  1,  1,  2,  // green
-                          -2, -2, -2,  0,  0,  0,  2,  2,  2}; // r, b
+constant int goffx[18] = { -2,  0,  2, -2,  0,  2, -2,  0,  2,   // r, b
+                            0, -1,  1, -2,  0,  2, -1,  1,  0};  // green
+constant int goffy[18] = { -2, -2, -2,  0,  0,  0,  2,  2,  2,   // r, b
+                           -2, -1, -1,  0,  0,  0,  1,  1,  2};  // green
 
 __kernel void
 pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters, const float thrs, const int f4)
@@ -91,6 +91,7 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
   const int c = FC(y, x, filters);
   const int c1 = c & 1;
   const float pix = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float thrs2 = c1 ? thrs : 2*thrs;
   float med[9];
 
   // avoid branch divergence, use constant memory to bake mem accesses, use data-based fetches:
@@ -98,7 +99,7 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
   for(int k=0;k<9;k++) med[k] = read_imagef(in, sampleri, (int2)(x+offx[c1][k], y+offy[c1][k])).x;
   for(int k=0;k<9;k++) if(fabs(med[k] - pix) > thrs)
   {
-    med[k] = 1e7f+k;
+    med[k] += 64.0f;
     cnt --;
   }
 
@@ -110,8 +111,9 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  if(f4) ((float *)&color)[c] = med[(cnt-1)/2];
-  else   color.x              = med[(cnt-1)/2];
+  const float cc = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+  if(f4) ((float *)&color)[c] = cc;
+  else   color.x              = cc;
   write_imagef (out, (int2)(x, y), color);
 }
 

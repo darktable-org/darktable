@@ -35,7 +35,6 @@ extern "C"
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
-#include <exiv2/canonmn.hpp>
 #include <sqlite3.h>
 #include <iostream>
 #include <fstream>
@@ -701,14 +700,14 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         sqlite3_finalize(stmt);
       }
     }
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.color_labels"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.colorlabels"))) != xmpData.end() )
     {
       // TODO: store these in dc:subject or xmp:Label?
       // color labels
       const int cnt = pos->count();
+      dt_colorlabels_remove_labels(img->id);
       for(int i=0;i<cnt;i++)
       {
-        dt_colorlabels_remove_labels(img->id);
         dt_colorlabels_set_label(img->id, pos->toLong(i));
       }
     }
