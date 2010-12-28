@@ -142,17 +142,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   out = (float *)ovoid;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in, out, roi_out, roi_in, rad) schedule(static)
-#endif
-  for (int j=rad;j<roi_out->height-rad;j++)
-  {
-    for (int i=0;i<rad;i++)
-      out[ch*(roi_out->width*j + i)] = out[ch*(roi_out->width*j + i)];
-    for (int i=roi_out->width-rad;i<roi_out->width;i++)
-      out[ch*(roi_out->width*j + i)] = out[ch*(roi_out->width*j + i)];
-  }
-
-#ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
