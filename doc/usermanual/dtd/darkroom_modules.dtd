@@ -16,6 +16,7 @@
 <!ENTITY darkroom_module_inputcolorprofile SYSTEM "../darkroom/modules/inputcolorprofile.xml">
 <!ENTITY darkroom_module_colortransfer SYSTEM "../darkroom/modules/colortransfer.xml">
 <!ENTITY darkroom_module_equalizer SYSTEM "../darkroom/modules/equalizer.xml">
+<!ENTITY darkroom_module_equalizer2 SYSTEM "../darkroom/modules/atrous.xml">
 <!ENTITY darkroom_module_monochrome SYSTEM "../darkroom/modules/monochrome.xml">
 <!ENTITY darkroom_module_zonesystem SYSTEM "../darkroom/modules/zonesystem.xml">
 <!ENTITY darkroom_module_tonecurve SYSTEM "../darkroom/modules/tonecurve.xml">
