@@ -35,7 +35,6 @@ extern "C"
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
-#include <exiv2/canonmn.hpp>
 #include <sqlite3.h>
 #include <iostream>
 #include <fstream>
