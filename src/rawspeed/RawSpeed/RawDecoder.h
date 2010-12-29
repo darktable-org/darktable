@@ -98,8 +98,8 @@ protected:
 
   /* Check the camera and mode against the camera database. */
   /* A RawDecoderException will be thrown if the camera isn't supported */
-  /* Unknown cameras does NOT generate any errors */
-  void checkCameraSupported(CameraMetaData *meta, string make, string model, string mode);
+  /* Unknown cameras does NOT generate any errors, but returns false */
+  bool checkCameraSupported(CameraMetaData *meta, string make, string model, string mode);
 
   /* Helper function for decodeMetaData(), that find the camera in the CameraMetaData DB */
   /* and sets common settings such as crop, black- white level, and sets CFA information */

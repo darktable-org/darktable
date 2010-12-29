@@ -179,7 +179,7 @@ void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
   }
 }
 
-void RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string model, string mode) {
+bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string model, string mode) {
   TrimSpaces(make);
   TrimSpaces(model);
   Camera* cam = meta->getCamera(make, model, mode);
@@ -187,7 +187,8 @@ void RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
     if (mode.length() == 0)
       printf("Unable to find camera in database: %s %s %s\n", make.c_str(), model.c_str(), mode.c_str());
 
-    return;    // Assume true.
+    // Assume the camera can be decoded, but return false, so decoders can see that we are unsure.
+    return false;    
   }
 
   if (!cam->supported)
@@ -197,6 +198,7 @@ void RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
     ThrowRDE("Camera not supported in this version. Update RawSpeed for support.");
 
   hints = cam->hints;
+  return true;
 }
 
 void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode) {

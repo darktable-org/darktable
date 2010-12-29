@@ -170,7 +170,8 @@ void Rw2Decoder::checkSupport(CameraMetaData *meta) {
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-  this->checkCameraSupported(meta, make, model, getMode(model));
+  if (!this->checkCameraSupported(meta, make, model, getMode(model)))
+    this->checkCameraSupported(meta, make, model, "");
 }
 
 void Rw2Decoder::decodeMetaData(CameraMetaData *meta) {
@@ -183,8 +184,10 @@ void Rw2Decoder::decodeMetaData(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   string mode = getMode(model);
-
-  setMetaData(meta, make, model, mode);
+  if (this->checkCameraSupported(meta, make, model, getMode(model)))
+    setMetaData(meta, make, model, mode);
+  else
+    setMetaData(meta, make, model, "");
 }
 
 bool Rw2Decoder::almostEqualRelative(float A, float B, float maxRelativeError) {
