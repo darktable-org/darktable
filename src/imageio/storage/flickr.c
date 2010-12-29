@@ -166,18 +166,17 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     // Hold here to let the user interact
     // Show a dialog.
     gchar *text1, *text2;
-    text1 = g_strdup(_("Step 1: A new window or tab of your browser should have been loaded. You have to login into your Flickr account there and authorize Darktable to upload photos before continuing. Once you have done it, please click on Accept button."));
-    text2 = g_strdup(_("Step 2: Click OK button once you have finished Flickr login process"));
+    text1 = g_strdup(_("step 1: a new window or tab of your browser should have been loaded. you have to login into your flickr account there and authorize darktable to upload photos before continuing."));
+    text2 = g_strdup(_("step 2: click the ok button once you are done."));
 
     GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
     GtkWidget *flickr_auth_dialog = gtk_message_dialog_new (GTK_WINDOW (window),
                                                             GTK_DIALOG_DESTROY_WITH_PARENT,
                                                             GTK_MESSAGE_INFO,
                                                             GTK_BUTTONS_OK_CANCEL,
-                                                            "%s",
-                                                             text1);
+                                                            _("flickr authentication"));
     gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (flickr_auth_dialog),
-                                              "%s", text2);
+                                              "%s\n\n%s", text1, text2);
 
     result = gtk_dialog_run (GTK_DIALOG (flickr_auth_dialog));
 
@@ -188,7 +187,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 
     switch (result)
     {
-      case GTK_RESPONSE_ACCEPT:
+      case GTK_RESPONSE_OK:
         token = flickcurl_auth_getToken(ctx->fc, frob);
         g_free(frob);
         // TODO: Handle timeouts errors
@@ -220,7 +219,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
         break;
 
       default:
-        fprintf(stderr,"[flickr] User cancelled login process.");
+        dt_print(DT_DEBUG_PWSTORAGE,"[flickr] user cancelled the login process\n");
         return NULL;  
     }
 
