@@ -181,7 +181,7 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
       const __m128i maski = _mm_set1_epi32(0x80000000u);
       const __m128 *mask = (__m128*)&maski;
       const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*mask, *pdetail),
-                            _mm_mul_ps(_mm_set_ps(1.0f, pout[0], pout[0], 1.0f), threshold)));
+                            _mm_mul_ps(_mm_set_ps(1.0f, ((float *)pin)[0], ((float *)pin)[0], 1.0f), threshold)));
       const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
       _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, amount)));
       // _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, *pdetail)));
