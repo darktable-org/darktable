@@ -81,6 +81,30 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
+static void
+scroll_to_image(dt_view_t *self)
+{
+  dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
+  int imgid = darktable.view_manager->film_strip_scroll_to;
+  if(imgid <= 0) return;
+  char query[1024];
+  const gchar *qin = dt_collection_get_query (darktable.collection);
+  if(qin)
+  {
+    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+    sqlite3_bind_int(stmt, 1,  0);
+    sqlite3_bind_int(stmt, 2, -1);
+    sqlite3_bind_int(stmt, 3, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      strip->offset = sqlite3_column_int(stmt, 0) - 1;
+    }
+    sqlite3_finalize(stmt);
+  }
+}
+
 void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
@@ -91,6 +115,7 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   cairo_set_source_rgb (cr, .9, .9, .9);
   cairo_paint(cr);
 
+  scroll_to_image(self);
   int offset = strip->offset;
 
   const float wd = height;
@@ -230,8 +255,6 @@ void mouse_enter(dt_view_t *self)
     dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
     strip->stars_registered = 1;
   }
-  
- 
 }
 
 void mouse_leave(dt_view_t *self)
@@ -239,7 +262,6 @@ void mouse_leave(dt_view_t *self)
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   dt_gui_key_accel_unregister(star_key_accel_callback);
   strip->stars_registered = 0;
-  
 }
 
 void enter(dt_view_t *self)
@@ -258,29 +280,11 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_colorlabels_register_key_accels();
   // scroll to opened image.
-  int imgid = darktable.view_manager->film_strip_scroll_to;
-  char query[1024];
-  const gchar *qin = dt_collection_get_query (darktable.collection);
-  if(qin)
-  {
-    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
-    sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1,  0);
-    sqlite3_bind_int(stmt, 2, -1);
-    sqlite3_bind_int(stmt, 3, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      strip->offset = sqlite3_column_int(stmt, 0) - 1;
-    }
-    sqlite3_finalize(stmt);
-  }
-
+  scroll_to_image(self);
 }
 
 void leave(dt_view_t *self)
 {
-  
   dt_colorlabels_unregister_key_accels();
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   strip->stars_registered = 0;
@@ -289,7 +293,6 @@ void leave(dt_view_t *self)
   dt_gui_key_accel_unregister(copy_history_key_accel_callback);
   dt_gui_key_accel_unregister(past_history_key_accel_callback);
   dt_gui_key_accel_unregister(discard_history_key_accel_callback);
-  
 }
 
 // TODO: go to currently selected image in sister view (lt/tethered/darkroom)
@@ -349,10 +352,12 @@ int key_pressed(dt_view_t *self, uint16_t which)
     case KEYCODE_Left: case KEYCODE_a:
     case KEYCODE_Up: case KEYCODE_comma:
       strip->offset --;
+      darktable.view_manager->film_strip_scroll_to = -1;
       break;
     case KEYCODE_Right: case KEYCODE_e:
     case KEYCODE_Down: case KEYCODE_o:
       strip->offset ++;
+      darktable.view_manager->film_strip_scroll_to = -1;
       break;
     default:
       return 0;
@@ -365,6 +370,7 @@ void scrolled(dt_view_t *view, double x, double y, int up, int state)
   dt_film_strip_t *strip = (dt_film_strip_t *)view->data;
   if(up) strip->offset --;
   else   strip->offset ++;
+  darktable.view_manager->film_strip_scroll_to = -1;
   // expose will take care of bounds checking
   dt_control_queue_draw_all();
 }

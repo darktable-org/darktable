@@ -505,6 +505,10 @@ update_query()
   /* updates visual */
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
   gtk_widget_queue_draw (win);
+
+  /* update film strip, jump to currently opened image, if any: */
+  if(darktable.develop->image)
+    dt_view_film_strip_scroll_to(darktable.view_manager, darktable.develop->image->id);
 }
 
 static void
