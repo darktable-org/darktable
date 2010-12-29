@@ -189,10 +189,10 @@ static double _simplex_noise(double xin, double yin, double zin) {
 
 
 #define PRIME_LEVELS 4
-static uint64_t _low_primes[PRIME_LEVELS] ={ 12503,14029,15649, 11369 };
+//static uint64_t _low_primes[PRIME_LEVELS] ={ 12503,14029,15649, 11369 };
 //uint64_t _mid_primes[PRIME_LEVELS] ={ 784697,875783, 536461,639259};
 
-static double __value_noise(uint32_t level,uint32_t x,uint32_t y) 
+/*static double __value_noise(uint32_t level,uint32_t x,uint32_t y) 
 {
   //uint32_t lvl=level%PRIME_LEVELS;
   uint32_t n = x + y * 57;
@@ -240,7 +240,7 @@ static double _perlin_2d_noise(double x,double y,uint32_t octaves,double persist
     a=persistance*o;
   }
   return total;
-}
+}*/
 
 static double _simplex_2d_noise(double x,double y,uint32_t octaves,double persistance,double z) 
 {
