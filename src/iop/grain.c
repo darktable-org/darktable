@@ -97,12 +97,12 @@ static int p[] = {151,160,137,91,90,15,
 138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180};
 
 static int perm[512];
-void _simplex_noise_init() { for(int i=0; i<512; i++) perm[i] = p[i & 255]; }
-double dot(int g[], double x, double y, double z) { return g[0]*x + g[1]*y + g[2]*z; }
+static void _simplex_noise_init() { for(int i=0; i<512; i++) perm[i] = p[i & 255]; }
+static double dot(int g[], double x, double y, double z) { return g[0]*x + g[1]*y + g[2]*z; }
 
 #define FASTFLOOR(x) ( x>0 ? (int)(x) : (int)(x)-1 )
 
-double _simplex_noise(double xin, double yin, double zin) {
+static double _simplex_noise(double xin, double yin, double zin) {
  double n0, n1, n2, n3; // Noise contributions from the four corners
  // Skew the input space to determine which simplex cell we're in
  double F3 = 1.0/3.0;
@@ -189,10 +189,10 @@ double _simplex_noise(double xin, double yin, double zin) {
 
 
 #define PRIME_LEVELS 4
-uint64_t _low_primes[PRIME_LEVELS] ={ 12503,14029,15649, 11369 };
+static uint64_t _low_primes[PRIME_LEVELS] ={ 12503,14029,15649, 11369 };
 //uint64_t _mid_primes[PRIME_LEVELS] ={ 784697,875783, 536461,639259};
 
-double __value_noise(uint32_t level,uint32_t x,uint32_t y) 
+static double __value_noise(uint32_t level,uint32_t x,uint32_t y) 
 {
   //uint32_t lvl=level%PRIME_LEVELS;
   uint32_t n = x + y * 57;
@@ -200,7 +200,7 @@ double __value_noise(uint32_t level,uint32_t x,uint32_t y)
   return ( 1.0 - (( (n * (n * n * 15731 + 789221) +1376312589) & 0x7fffffff) / 1073741824.0)); 
 }
 
-double __value_smooth_noise(uint32_t level,double x,double y) 
+static double __value_smooth_noise(uint32_t level,double x,double y) 
 {
   double corners = ( __value_noise(level,x-1, y-1)+__value_noise(level,x+1, y-1)+__value_noise(level,x-1, y+1)+__value_noise(level,x+1, y+1) ) / 16;
   double sides   = ( __value_noise(level,x-1, y)  +__value_noise(level,x+1, y)  +__value_noise(level,x, y-1)  +__value_noise(level,x, y+1) ) /  8;
@@ -208,14 +208,14 @@ double __value_smooth_noise(uint32_t level,double x,double y)
   return corners + sides + center;
 }
 
-double __preline_cosine_interpolate(double a,double b,double x)
+static double __preline_cosine_interpolate(double a,double b,double x)
 {
   double ft = x * 3.1415927;
   double f = (1 - cos(ft)) * .5;
   return  a*(1-f) + b*f;
 }
 
-double __value_interpolate(uint32_t level,double x,double y) 
+static double __value_interpolate(uint32_t level,double x,double y) 
 {
   double fx = x - (uint32_t)x;
   double fy = y - (uint32_t)y;
@@ -230,7 +230,7 @@ double __value_interpolate(uint32_t level,double x,double y)
 
   return __preline_cosine_interpolate(i1 , i2 , fy);
 }
-double _perlin_2d_noise(double x,double y,uint32_t octaves,double persistance,double z) 
+static double _perlin_2d_noise(double x,double y,uint32_t octaves,double persistance,double z) 
 {
   double f=1,a=1,total=0;
   
@@ -242,7 +242,7 @@ double _perlin_2d_noise(double x,double y,uint32_t octaves,double persistance,do
   return total;
 }
 
-double _simplex_2d_noise(double x,double y,uint32_t octaves,double persistance,double z) 
+static double _simplex_2d_noise(double x,double y,uint32_t octaves,double persistance,double z) 
 {
   double f=1,a=1,total=0;
   

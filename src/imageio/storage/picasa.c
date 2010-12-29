@@ -97,14 +97,14 @@ typedef struct _picasa_album_t {
 } _picasa_album_t;
 
 /** Authenticates and retreives an initialized picasa api object */
-_picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password);
+static _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password);
 
-int _picasa_api_get_feed(_picasa_api_context_t *ctx);
-int _picasa_api_create_album(_picasa_api_context_t *ctx);
-int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags );
+static int _picasa_api_get_feed(_picasa_api_context_t *ctx);
+static int _picasa_api_create_album(_picasa_api_context_t *ctx);
+static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags );
 
 /** Grow and fill _buffer_t with recieved data... */
-size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream) {
+static size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream) {
   _buffer_t *buffer=(_buffer_t *)stream;
   char *newdata=g_malloc(buffer->size+nmemb+1);
   memset(newdata,0, buffer->size+nmemb+1);
@@ -116,7 +116,7 @@ size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void 
   return nmemb;
 }
 
-size_t _picasa_api_buffer_read_func( void *ptr, size_t size, size_t nmemb, void *stream) {
+static size_t _picasa_api_buffer_read_func( void *ptr, size_t size, size_t nmemb, void *stream) {
    _buffer_t *buffer=(_buffer_t *)stream;
   size_t dsize=0;
   if( (buffer->size - buffer->offset) > nmemb )
@@ -129,7 +129,7 @@ size_t _picasa_api_buffer_read_func( void *ptr, size_t size, size_t nmemb, void 
   return dsize;
 }
 
-void _picasa_api_free( _picasa_api_context_t *ctx ){
+static void _picasa_api_free( _picasa_api_context_t *ctx ){
   
   g_free( ctx->album_title );
   g_free( ctx->album_summary );
@@ -139,7 +139,7 @@ void _picasa_api_free( _picasa_api_context_t *ctx ){
 }
   
 
-_picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password)
+static _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char *password)
 {
   if(username[0] == '\0' || password[0] == '\0') return NULL;
   _picasa_api_context_t *ctx = (_picasa_api_context_t *)g_malloc(sizeof(_picasa_api_context_t));
@@ -194,7 +194,7 @@ _picasa_api_context_t *_picasa_api_authenticate(const char *username,const char 
 }
 
 
-int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags ) {
+static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *data, int size , char *caption, char *description,GList * tags ) {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
   char uri[4096]={0};
@@ -354,7 +354,7 @@ int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , char *dat
 }
 
 
-int _picasa_api_create_album(_picasa_api_context_t *ctx ) {
+static int _picasa_api_create_album(_picasa_api_context_t *ctx ) {
  _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
   
@@ -440,7 +440,7 @@ int _picasa_api_create_album(_picasa_api_context_t *ctx ) {
   return 0;
 }
 
-int _picasa_api_get_feed(_picasa_api_context_t *ctx) {
+static int _picasa_api_get_feed(_picasa_api_context_t *ctx) {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
 #ifdef _DEBUG
@@ -540,7 +540,7 @@ name ()
 }
 
 
-void entry_changed(GtkEntry *entry, gpointer data) {
+static void entry_changed(GtkEntry *entry, gpointer data) {
   dt_storage_picasa_gui_data_t *ui=(dt_storage_picasa_gui_data_t *)data;
 
   if( ui->picasa_api != NULL)
@@ -549,7 +549,7 @@ void entry_changed(GtkEntry *entry, gpointer data) {
 
 
 /** Set status connection text */
-void set_status(dt_storage_picasa_gui_data_t *ui, gchar *message,gchar *color) {
+static void set_status(dt_storage_picasa_gui_data_t *ui, gchar *message,gchar *color) {
   if( !color ) color="#ffffff";
   gchar mup[512]={0};
   sprintf( mup,"<span foreground=\"%s\" ><small>%s</small></span>",color,message);
@@ -557,7 +557,7 @@ void set_status(dt_storage_picasa_gui_data_t *ui, gchar *message,gchar *color) {
  }
 
 /** Refresh albums */
-void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
+static void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
   
   if( ui->picasa_api == NULL || ui->picasa_api->needsReauthentication == TRUE ) {
@@ -621,7 +621,7 @@ void refresh_albums(dt_storage_picasa_gui_data_t *ui) {
   
 }
 
-void album_changed(GtkComboBox *cb,gpointer data) {
+static void album_changed(GtkComboBox *cb,gpointer data) {
   dt_storage_picasa_gui_data_t * ui=(dt_storage_picasa_gui_data_t *)data;
   gchar *value=gtk_combo_box_get_active_text(ui->comboBox1);
   if( value!=NULL && strcmp( value, _("create new album") ) == 0 ) {
@@ -631,7 +631,7 @@ void album_changed(GtkComboBox *cb,gpointer data) {
     gtk_widget_hide(GTK_WIDGET(ui->hbox1));
 }
 
-gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointer data) {
+static gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointer data) {
   GValue value = { 0, };
   gtk_tree_model_get_value(model,iter,0,&value);
   gchar *v=NULL;
@@ -642,7 +642,7 @@ gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointer data)
 }
 
 // Refresh button pressed...
-void button1_clicked(GtkButton *button,gpointer data) {
+static void button1_clicked(GtkButton *button,gpointer data) {
   dt_storage_picasa_gui_data_t * ui=(dt_storage_picasa_gui_data_t *)data;
   refresh_albums(ui);
 }

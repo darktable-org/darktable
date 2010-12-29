@@ -92,19 +92,19 @@ typedef struct dt_iop_clipping_data_t
 }
 dt_iop_clipping_data_t;
 
-void mul_mat_vec_2(const float *m, const float *p, float *o)
+static void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
   o[0] = p[0]*m[0] + p[1]*m[1];
   o[1] = p[0]*m[2] + p[1]*m[3];
 }
 
 // helper to count corners in for loops:
-void get_corner(const float *aabb, const int i, float *p)
+static void get_corner(const float *aabb, const int i, float *p)
 {
   for(int k=0;k<2;k++) p[k] = aabb[2*((i>>k)&1) + k];
 }
 
-void adjust_aabb(const float *p, float *aabb)
+static void adjust_aabb(const float *p, float *aabb)
 {
   aabb[0] = fminf(aabb[0], p[0]);
   aabb[1] = fminf(aabb[1], p[1]);

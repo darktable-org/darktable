@@ -153,25 +153,25 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
+static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -dt_log2f(fmaxf(0.001, white)));
 }
 
-float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
+static float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   return exp2f(-p->exposure);
 }
 
-void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black)
+static void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dtgtk_slider_set_value(DTGTK_SLIDER(g->scale1), fmaxf(0.0, black));
 }
 
-float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
+static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   return p->black;

@@ -101,7 +101,7 @@ int groups()
 }
 
 
-gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
+static gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
   gboolean found=FALSE;
   gchar *sv=NULL;
   GtkTreeIter iter;
@@ -140,7 +140,7 @@ static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *
   return result;
 }
 
-gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_data_t *data)
+static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_data_t *data)
 {
   gsize length;
 
@@ -350,7 +350,7 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
 }
 
 
-void refresh_watermarks( dt_iop_module_t *self ) {
+static void refresh_watermarks( dt_iop_module_t *self ) {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 

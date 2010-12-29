@@ -91,7 +91,7 @@ groups ()
 
 
 
-void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
+static void rgb2hsl(float r,float g,float b,float *h,float *s,float *l) 
 {
   float pmax=fmax(r,fmax(g,b));
   float pmin=fmin(r,fmin(g,b));
@@ -112,7 +112,7 @@ void rgb2hsl(float r,float g,float b,float *h,float *s,float *l)
     else if(*h>1.0) *h-=1.0;
   }
 }
-void hue2rgb(float m1,float m2,float hue,float *channel)
+static void hue2rgb(float m1,float m2,float hue,float *channel)
 {
   if(hue<0.0) hue+=1.0;
   else if(hue>1.0) hue-=1.0;
@@ -122,7 +122,7 @@ void hue2rgb(float m1,float m2,float hue,float *channel)
   else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
   else *channel=m1;
 }
-void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
+static void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
 {
   float m1,m2;
   *r=*g=*b=l;
