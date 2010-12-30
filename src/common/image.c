@@ -440,6 +440,18 @@ void dt_image_remove(const int32_t imgid)
   rc = sqlite3_bind_int (stmt, 1, imgid);
   rc = sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from color_labels where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from meta_data where id = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, imgid);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
   dt_image_cache_clear(imgid);
 }
 

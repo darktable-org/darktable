@@ -55,7 +55,7 @@ void dt_film_cleanup(dt_film_t *film)
 	}
 	// if the film is empty => remove it again.
 	if(dt_film_is_empty(film->id))
-  {
+	{
 		dt_film_remove(film->id);
 	}
 	else
@@ -377,6 +377,18 @@ void dt_film_remove(const int id)
   rc = sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from color_labels where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from meta_data where id in (select id from images where film_id = ?1)", -1, &stmt, NULL);
+  rc = sqlite3_bind_int (stmt, 1, id);
+  rc = sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  rc = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
   rc = sqlite3_bind_int (stmt, 1, id);
   rc = sqlite3_step(stmt);
   sqlite3_finalize(stmt);
