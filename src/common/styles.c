@@ -149,9 +149,10 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     
     /* reimport image */
     dt_image_t *img = dt_image_cache_get (imgid, 'r');
-    img->force_reimport = 1;
-   
-    dt_image_cache_flush(img);
+    if(img != NULL){
+      img->force_reimport = 1;
+      dt_image_cache_flush(img);
+    }
   }
 }
 
