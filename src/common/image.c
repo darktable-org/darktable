@@ -394,7 +394,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
   sqlite3_prepare_v2(darktable.db, "insert into images "
       "(id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
       "focal_length, datetime_taken, flags, output_width, output_height, crop, "
-      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum) "
+      "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
       "select null, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
       "focal_length, datetime_taken, flags, width, height, crop, "
       "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
