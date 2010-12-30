@@ -721,6 +721,8 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
     if(id)
     {
       dt_film_open(id);
+      GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+      dt_gui_filmview_update(gtk_entry_get_text(entry));
       dt_ctl_switch_mode_to(DT_LIBRARY);
     }
     g_slist_free (list);
@@ -798,6 +800,8 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
 
     if(id)
     {
+      GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+      dt_gui_filmview_update(gtk_entry_get_text(entry));
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_image_t *img = dt_image_cache_get(id, 'r');
