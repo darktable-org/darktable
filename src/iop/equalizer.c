@@ -40,7 +40,7 @@ DT_MODULE(1)
 
 const char *name()
 {
-  return _("equalizer");
+  return _("equalizer (deprecated)");
 }
 
 

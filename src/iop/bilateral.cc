@@ -67,7 +67,7 @@ dt_iop_bilateral_data_t;
 
 const char *name()
 {
-  return _("denoise (slow)");
+  return _("denoise (deprecated)");
 }
 
 int

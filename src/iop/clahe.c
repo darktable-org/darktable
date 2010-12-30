@@ -64,7 +64,7 @@ dt_iop_rlce_data_t;
 
 const char *name()
 {
-  return _("local contrast (slow)");
+  return _("local contrast (deprecated)");
 }
 
 int 
