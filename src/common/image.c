@@ -708,13 +708,9 @@ void dt_image_init(dt_image_t *img)
   sqlite3_finalize(stmt);
   img->film_id = -1;
   img->flags = dt_conf_get_int("ui_last/import_initial_rating"); 
-  if(img->flags < 0) {
-	  img->flags = 0;
-	  dt_conf_set_int("ui_last/import_initial_rating",0); 
-  }
-  if(img->flags > 4) {
-	  img->flags = 4;
-	  dt_conf_set_int("ui_last/import_initial_rating",4); 
+  if(img->flags < 0 || img->flags > 4) {
+	  img->flags = 1;
+	  dt_conf_set_int("ui_last/import_initial_rating",1); 
   }
   img->id = -1;
   img->cacheline = -1;
