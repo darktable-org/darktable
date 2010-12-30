@@ -508,6 +508,19 @@
       </locale>
     </schema>
 
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/import_last_directory</key>
+      <applyto>/apps/darktable/ui_last/import_last_directory</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>last opened directory.</short>
+        <long></long>
+      </locale>
+    </schema>
+
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/ui_last/import_initial_rating</key>
       <applyto>/apps/darktable/ui_last/import_initial_rating</applyto>
