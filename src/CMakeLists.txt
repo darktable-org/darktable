@@ -114,7 +114,7 @@ if(USE_CAMERA_SUPPORT)
 endif(USE_CAMERA_SUPPORT)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GThread GModule PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2 FLICKCURL)
+foreach(lib ${OUR_LIBS} LensFun GThread GModule PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -130,6 +130,13 @@ if(Gettext_FOUND)
 else()
   message(STATUS "Internationalization: Disabled (libintl not found)")
 endif()
+
+find_package(FLICKCURL)
+if(FLICKCURL_FOUND)
+  include_directories(${FLICKCURL_INCLUDE_DIRS})
+  list(APPEND LIBS ${FLICKCURL_LIBRARIES})
+  add_definitions(${FLICKCURL_DEFINITIONS})
+endif(FLICKCURL_FOUND)
 
 #
 # Detect compile of optional pwstorage backends
