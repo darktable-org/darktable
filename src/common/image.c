@@ -402,7 +402,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
   sqlite3_bind_int(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  sqlite3_prepare_v2(darktable.db, "select a.id from images as a join images as b where a.film_id = b.film_id and a.filename = b.filename and b.id = ?1 order by rowid desc", -1, &stmt, NULL);
+  sqlite3_prepare_v2(darktable.db, "select a.id from images as a join images as b where a.film_id = b.film_id and a.filename = b.filename and b.id = ?1 order by a.id desc", -1, &stmt, NULL);
   sqlite3_bind_int(stmt, 1, imgid);
   int32_t newid = -1;
   if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
