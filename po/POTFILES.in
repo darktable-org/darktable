@@ -37,6 +37,7 @@ src/imageio/format/ppm.c
 src/imageio/format/tiff.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
+src/imageio/storage/flickr.c
 src/imageio/storage/picasa.c
 src/iop/atrous.c
 src/iop/basecurve.c
