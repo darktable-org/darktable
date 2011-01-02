@@ -23,6 +23,14 @@ fi
 
 cd build/
 
-MAKE_TASKS=$(grep -c "^processor" /proc/cpuinfo)
+MAKE_TASKS=1
+if [ -r /proc/cpuinfo ]; then
+	MAKE_TASKS=$(grep -c "^processor" /proc/cpuinfo)
+elif [ -x /sbin/sysctl ]; then
+	TMP_CORES=$(/sbin/sysctl hw.ncpu 2>/dev/null)
+	if [ "$?" = "0" ]; then
+		MAKE_TASKS=$(echo $TMP_CORES | sed "s/.*\s//")
+	fi
+fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. && make && sudo make install
