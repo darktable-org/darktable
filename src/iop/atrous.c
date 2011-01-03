@@ -17,6 +17,7 @@
 */
 #include "develop/imageop.h"
 #include "common/opencl.h"
+#include "common/debug.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include <memory.h>
@@ -495,7 +496,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void init_presets (dt_iop_module_t *self)
 {
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
   
   for(int k=0;k<BANDS;k++)
@@ -611,7 +612,7 @@ void init_presets (dt_iop_module_t *self)
   }
   p.y[atrous_L][0] = .5f;
   dt_gui_presets_add_generic(_("bloom"), self->op, &p, sizeof(p), 1);
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 void gui_update   (struct dt_iop_module_t *self)

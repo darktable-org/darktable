@@ -21,6 +21,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/colormatrices.c"
+#include "common/debug.h"
 
 
 /** inverts the given 3x3 matrix */
@@ -532,8 +533,8 @@ dt_colorspaces_create_output_profile(const int imgid)
     const dt_iop_colorout_params_t *params;
     // sqlite:
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select op_params from history where imgid=?1 and operation='colorout'", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params from history where imgid=?1 and operation='colorout'", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       params = sqlite3_column_blob(stmt, 0);

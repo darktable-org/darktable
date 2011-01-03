@@ -17,6 +17,7 @@
 */
 #include "common/darktable.h"
 #include "common/image_cache.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -25,14 +26,14 @@
 
 void dt_colorlabels_remove_labels_selection ()
 {
-  sqlite3_exec(darktable.db, "delete from color_labels where imgid in (select imgid from selected_images)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from color_labels where imgid in (select imgid from selected_images)", NULL, NULL, NULL);
 }
 
 void dt_colorlabels_remove_labels (const int imgid)
 {
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "delete from color_labels where imgid=?1", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from color_labels where imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -40,9 +41,9 @@ void dt_colorlabels_remove_labels (const int imgid)
 void dt_colorlabels_set_label (const int imgid, const int color)
 {
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, imgid);
-  sqlite3_bind_int (stmt, 2, color);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -50,9 +51,9 @@ void dt_colorlabels_set_label (const int imgid, const int color)
 void dt_colorlabels_remove_label (const int imgid, const int color) 
 {
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "delete from color_label where imgid=?1 and color=?2", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, imgid);
-  sqlite3_bind_int (stmt, 2, color);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from color_label where imgid=?1 and color=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -62,49 +63,49 @@ void dt_colorlabels_toggle_label_selection (const int color)
 {
   sqlite3_stmt *stmt;
   // store away all previously unlabeled images in selection:
-  sqlite3_exec(darktable.db, "create temp table color_labels_temp (imgid integer primary key)", NULL, NULL, NULL);
-  sqlite3_prepare_v2(darktable.db, "insert into color_labels_temp select a.imgid from selected_images as a join color_labels as b on a.imgid = b.imgid where b.color = ?1", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, color);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table color_labels_temp (imgid integer primary key)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into color_labels_temp select a.imgid from selected_images as a join color_labels as b on a.imgid = b.imgid where b.color = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, color);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   // delete all currently colored image labels in selection 
-  sqlite3_prepare_v2(darktable.db, "delete from color_labels where imgid in (select imgid from selected_images) and color=?1", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, color);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from color_labels where imgid in (select imgid from selected_images) and color=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, color);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   // label all previously unlabeled images:
-  sqlite3_prepare_v2(darktable.db, "insert into color_labels select imgid, ?1 from selected_images where imgid not in (select imgid from color_labels_temp)", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, color);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into color_labels select imgid, ?1 from selected_images where imgid not in (select imgid from color_labels_temp)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, color);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
   // clean up
-  sqlite3_exec(darktable.db, "delete from color_labels_temp", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "drop table color_labels_temp", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from color_labels_temp", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table color_labels_temp", NULL, NULL, NULL);
 }
 
 void dt_colorlabels_toggle_label (const int imgid, const int color)
 {
   if(imgid <= 0) return;
   sqlite3_stmt *stmt, *stmt2;
-  sqlite3_prepare_v2(darktable.db, "select * from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, imgid);
-  sqlite3_bind_int(stmt, 2, color);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from color_labels where imgid=?1 and color=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    sqlite3_prepare_v2(darktable.db, "delete from color_labels where imgid=?1 and color=?2", -1, &stmt2, NULL);
-    sqlite3_bind_int(stmt2, 1, imgid);
-    sqlite3_bind_int(stmt2, 2, color);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from color_labels where imgid=?1 and color=?2", -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, color);
     sqlite3_step(stmt2);
     sqlite3_finalize(stmt2);
   }
   else
   {
-    sqlite3_prepare_v2(darktable.db, "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt2, NULL);
-    sqlite3_bind_int(stmt2, 1, imgid);
-    sqlite3_bind_int(stmt2, 2, color);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into color_labels (imgid, color) values (?1, ?2)", -1, &stmt2, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, color);
     sqlite3_step(stmt2);
     sqlite3_finalize(stmt2);
   }
@@ -123,7 +124,7 @@ synch_dttags(const int selected)
   else if(dt_conf_get_bool("write_sidecar_files"))
   {
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const int imgid = sqlite3_column_int(stmt, 0);

@@ -17,6 +17,7 @@
 */
 #include "common/opencl.h"
 #include "common/dtpthread.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
@@ -40,7 +41,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
 
   // select matching default:
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params, enabled, operation from presets where operation = ?1 and "
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation from presets where operation = ?1 and "
       "autoapply=1 and "
       "?2 like model and ?3 like maker and ?4 like lens and "
       "?5 between iso_min and iso_max and "
@@ -48,16 +49,16 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       "?7 between aperture_min and aperture_max and "
       "?8 between focal_length_min and focal_length_max and "
       "(isldr = 0 or isldr=?9) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
-  sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 2, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 3, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 4, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
-  sqlite3_bind_double(stmt, 5, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)));
-  sqlite3_bind_double(stmt, 6, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)));
-  sqlite3_bind_double(stmt, 7, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)));
-  sqlite3_bind_double(stmt, 8, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)));
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
-  sqlite3_bind_double(stmt, 9, 2-dt_image_is_ldr(module->dev->image));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, 2-dt_image_is_ldr(module->dev->image));
 
 #if 0 // debug the query:
   printf("select op_params, enabled from presets where operation ='%s' and "
@@ -96,8 +97,8 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   { // global default
     sqlite3_finalize(stmt);
 
-    sqlite3_prepare_v2(darktable.db, "select op_params, enabled from presets where operation = ?1 and def=1", -1, &stmt, NULL);
-    sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled from presets where operation = ?1 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -117,8 +118,8 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   if(blob == (void *)1)
   {
     printf("[iop_load_defaults]: module param sizes have changed! removing default :(\n");
-    sqlite3_prepare_v2(darktable.db, "delete from presets where operation = ?1 and def=1", -1, &stmt, NULL);
-    sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from presets where operation = ?1 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
@@ -235,8 +236,8 @@ init_presets(dt_iop_module_t *module)
   if(module->init_presets)
   { // only if method exists and no writeprotected (static) preset has been inserted yet.
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
-    sqlite3_bind_text(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
     if(sqlite3_step(stmt) != SQLITE_ROW) module->init_presets(module);
     sqlite3_finalize(stmt);
   }
@@ -252,6 +253,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   dt_get_plugindir(plugindir, 1024);
   strcpy(plugindir + strlen(plugindir), "/plugins");
   GDir *dir = g_dir_open(plugindir, 0, NULL); 
+//   g_print("DIR: %s\n", plugindir);
   if(!dir) return NULL;
   while((d_name = g_dir_read_name(dir)))
   { // get lib*.so

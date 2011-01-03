@@ -24,6 +24,7 @@
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/debug.h"
 #include "views/view.h"
 #include "gui/gtk.h"
 #include "gui/contrast.h"
@@ -121,10 +122,10 @@ int dt_control_load_config(dt_control_t *c)
   int rc;
   sqlite3_stmt *stmt;
   // unsafe, fast write:
-  // sqlite3_exec(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
+  // DT_DEBUG_SQLITE3_EXEC(darktable.db, "PRAGMA synchronous=off", NULL, NULL, NULL);
   // free memory on disk if we call the line below:
-  // rc = sqlite3_exec(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
-  // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
+  // DT_DEBUG_SQLITE3_EXEC(darktable.db, "PRAGMA auto_vacuum=INCREMENTAL", NULL, NULL, NULL);
+  // DT_DEBUG_SQLITE3_EXEC(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   rc = sqlite3_prepare_v2(darktable.db, "select settings from settings", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -165,7 +166,7 @@ int dt_control_load_config(dt_control_t *c)
       sqlite3_exec(darktable.db, "delete from color_labels where imgid=0", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "insert into color_labels values (0, 0)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "insert into color_labels values (0, 1)", NULL, NULL, NULL);
-      sqlite3_prepare_v2(darktable.db, "select max(color) from color_labels where imgid=0", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select max(color) from color_labels where imgid=0", -1, &stmt, NULL);
       int col = 0;
       // still the primary key option set?
       if(sqlite3_step(stmt) == SQLITE_ROW) col = MAX(col, sqlite3_column_int(stmt, 0));
@@ -193,35 +194,23 @@ int dt_control_load_config(dt_control_t *c)
   { // db not yet there, create it
     rc = sqlite3_finalize(stmt);
 create_tables:
-    rc = sqlite3_exec(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
-    rc = sqlite3_exec(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, primary key(id1, id2))", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_exec(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, primary key(id1, id2))", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
     
-    sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
 
-    rc = sqlite3_exec(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
-    HANDLE_SQLITE_ERR(rc);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
 
-    rc = sqlite3_prepare_v2(darktable.db, "insert into settings (settings) values (?1)", -1, &stmt, NULL);
-    HANDLE_SQLITE_ERR(rc);
-    rc = sqlite3_bind_blob(stmt, 1, &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
-    HANDLE_SQLITE_ERR(rc);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into settings (settings) values (?1)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
   }
@@ -257,8 +246,8 @@ int dt_control_write_config(dt_control_t *c)
   int rc;
   sqlite3_stmt *stmt;
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  rc = sqlite3_prepare_v2(darktable.db, "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
-  rc = sqlite3_bind_blob(stmt, 1, &(darktable.control->global_settings), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_settings), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
   rc = sqlite3_step(stmt);
   rc = sqlite3_finalize(stmt);
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
@@ -477,8 +466,8 @@ void dt_control_shutdown(dt_control_t *s)
 void dt_control_cleanup(dt_control_t *s)
 {
   // vacuum TODO: optional?
-  // rc = sqlite3_exec(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
-  // rc = sqlite3_exec(darktable.db, "vacuum", NULL, NULL, NULL);
+  // DT_DEBUG_SQLITE3_EXEC(darktable.db, "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
+  // DT_DEBUG_SQLITE3_EXEC(darktable.db, "vacuum", NULL, NULL, NULL);
   dt_pthread_mutex_destroy(&s->queue_mutex);
   dt_pthread_mutex_destroy(&s->cond_mutex);
   dt_pthread_mutex_destroy(&s->log_mutex);
@@ -1371,11 +1360,11 @@ void dt_control_update_recent_films()
   
   /* query database for recent films */
   sqlite3_stmt *stmt;
-  int rc, num = 0;
+  int num = 0;
   const char *filename, *cnt;
   const int label_cnt = 256;
   char label[256];
-  rc = sqlite3_prepare_v2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     filename = (char *)sqlite3_column_text(stmt, 0);

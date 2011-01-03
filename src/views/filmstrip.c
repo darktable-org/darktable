@@ -27,6 +27,7 @@
 #include "common/colorlabels.h"
 #include "common/collection.h"
 #include "common/history.h"
+#include "common/debug.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -93,10 +94,10 @@ scroll_to_image(dt_view_t *self)
   {
     snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1,  0);
-    sqlite3_bind_int(stmt, 2, -1);
-    sqlite3_bind_int(stmt, 3, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       strip->offset = sqlite3_column_int(stmt, 0) - 1;
@@ -142,9 +143,9 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   if(offset > count-max_cols+1) strip->offset = offset = count-max_cols+1;
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
 
-  sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, offset);
-  sqlite3_bind_int (stmt, 2, max_cols);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
 
   for(int col = 0; col < max_cols; col++)
   {

@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/debug.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/label.h"
 #include "gui/gtk.h"
@@ -415,7 +416,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void init_presets (dt_iop_module_t *self)
 {
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("swap r and b"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,1,0},{0,0,0,0,1,0,0},{0,0,0,1,0,0,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
   dt_gui_presets_add_generic(_("swap g and b"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,0},{0,0,0,0,0,1,0},{0,0,0,0,1,0,0} } , sizeof(dt_iop_channelmixer_params_t), 1);
@@ -426,7 +427,7 @@ void init_presets (dt_iop_module_t *self)
   dt_gui_presets_add_generic(_("b/w artifacts boost"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,-0.275},{0,0,0,0,1,0,-0.275},{0,0,0,0,0,1,1.275} } , sizeof(dt_iop_channelmixer_params_t), 1);
   dt_gui_presets_add_generic(_("b/w smooth skin"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,1,0,0,1.0},{0,0,0,0,0,1,0.325},{0,0,0,0,0,0,-0.4} } , sizeof(dt_iop_channelmixer_params_t), 1);
   dt_gui_presets_add_generic(_("b/w blue artifacts reduce"), self->op, &(dt_iop_channelmixer_params_t){{0,0,0,0,0,0,0.4},{0,0,0,0,0,0,0.750},{0,0,0,0,0,0,-0.15} } , sizeof(dt_iop_channelmixer_params_t), 1);
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

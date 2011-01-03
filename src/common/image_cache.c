@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "common/imageio_jpeg.h"
 #include "common/image_compression.h"
+#include "common/debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -573,29 +574,29 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
   if(img->id <= 0) return;
   int rc;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18, raw_black = ?19, raw_maximum = ?20, orientation = ?21 where id = ?22", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, img->width);
-  rc = sqlite3_bind_int (stmt, 2, img->height);
-  rc = sqlite3_bind_text(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
-  rc = sqlite3_bind_text(stmt, 4, img->exif_model, strlen(img->exif_model), SQLITE_STATIC);
-  rc = sqlite3_bind_text(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_STATIC);
-  rc = sqlite3_bind_double(stmt, 6, img->exif_exposure);
-  rc = sqlite3_bind_double(stmt, 7, img->exif_aperture);
-  rc = sqlite3_bind_double(stmt, 8, img->exif_iso);
-  rc = sqlite3_bind_double(stmt, 9, img->exif_focal_length);
-  rc = sqlite3_bind_int (stmt, 10, img->film_id);
-  rc = sqlite3_bind_text(stmt, 11, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
-  rc = sqlite3_bind_int (stmt, 12, img->flags);
-  rc = sqlite3_bind_int (stmt, 13, img->output_width);
-  rc = sqlite3_bind_int (stmt, 14, img->output_height);
-  rc = sqlite3_bind_double(stmt, 15, img->exif_crop);
-  rc = sqlite3_bind_int (stmt, 16, *(int32_t *)&(img->raw_params));
-  rc = sqlite3_bind_double(stmt, 17, img->raw_denoise_threshold);
-  rc = sqlite3_bind_double(stmt, 18, img->raw_auto_bright_threshold);
-  rc = sqlite3_bind_double(stmt, 19, img->black);
-  rc = sqlite3_bind_double(stmt, 20, img->maximum);
-  rc = sqlite3_bind_int (stmt, 21, img->orientation);
-  rc = sqlite3_bind_int (stmt, 22, img->id);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18, raw_black = ?19, raw_maximum = ?20, orientation = ?21 where id = ?22", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_model, strlen(img->exif_model), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, img->exif_exposure);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, img->exif_aperture);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_iso);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, img->exif_focal_length);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 10, img->film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 11, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, img->flags);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->output_width);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, img->output_height);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 15, img->exif_crop);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(int32_t *)&(img->raw_params));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 17, img->raw_denoise_threshold);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->raw_auto_bright_threshold);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->black);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->maximum);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, img->orientation);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
   rc = sqlite3_finalize(stmt);

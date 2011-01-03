@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/history.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
@@ -101,9 +102,8 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   /* get imageid for source if history past */
-  int rc;
   sqlite3_stmt *stmt;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* copy history of first image in selection */

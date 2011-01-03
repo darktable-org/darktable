@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <string.h>
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "iop/equalizer.h"
 #include "gui/histogram.h"
 #include "develop/develop.h"
@@ -232,7 +233,7 @@ void cleanup(dt_iop_module_t *module)
 
 void init_presets (dt_iop_module_t *self)
 {
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   dt_iop_equalizer_params_t p;
   
   for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
@@ -281,7 +282,7 @@ void init_presets (dt_iop_module_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
   }
   dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 void gui_init(struct dt_iop_module_t *self)

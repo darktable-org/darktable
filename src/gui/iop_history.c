@@ -21,6 +21,7 @@
 #include "gui/gtk.h"
 #include "gui/styles.h"
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/iop_history.h"
@@ -35,19 +36,19 @@ history_compress_clicked (GtkWidget *widget, gpointer user_data)
   // make sure the right history is in there:
   dt_dev_write_history(darktable.develop);
   sqlite3_stmt *stmt;
-  sqlite3_exec(darktable.db, "create temp table temp_history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
-  // sqlite3_prepare_v2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and enabled = 1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
-  sqlite3_prepare_v2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table temp_history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
+  // DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and enabled = 1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  sqlite3_exec(darktable.db, "insert into history select imgid,rowid-1,module,operation,op_params,enabled from temp_history", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "delete from temp_history", NULL, NULL, NULL);
-  sqlite3_exec(darktable.db, "drop table temp_history", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "insert into history select imgid,rowid-1,module,operation,op_params,enabled from temp_history", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from temp_history", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table temp_history", NULL, NULL, NULL);
   dt_dev_reload_history_items(darktable.develop);
 }
 

@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/exif.h"
+#include "common/debug.h"
 
 DT_MODULE(1)
 
@@ -37,8 +38,8 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint
 	FILE *fout = NULL;
 	sqlite3_stmt *stmt;
 
-	sqlite3_prepare_v2(darktable.db, "select folder, filename from images, film_rolls where images.id = ?1 and film_id = film_rolls.id;", -1, &stmt, NULL);
-	sqlite3_bind_int(stmt, 1, imgid);
+	DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder, filename from images, film_rolls where images.id = ?1 and film_id = film_rolls.id;", -1, &stmt, NULL);
+	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
 	if(sqlite3_step(stmt) != SQLITE_ROW)
 		goto END;

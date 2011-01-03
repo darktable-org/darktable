@@ -19,6 +19,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
+#include "common/debug.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -401,13 +402,12 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
   sqlite3_stmt *stmt;
-  int rc;
-  rc = sqlite3_prepare_v2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) selected = 1;
   sqlite3_finalize(stmt);
-  rc = sqlite3_prepare_v2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
   sqlite3_finalize(stmt);
   if(selected == 1)
@@ -612,8 +612,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     const int y = zoom == 1 ? 0.12*fscale: 0.1*height;
     const int r = zoom == 1 ? 0.01*fscale : 0.03*width;
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       cairo_save(cr);
@@ -654,21 +654,21 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 void dt_view_toggle_selection(int iid)
 {
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, iid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     sqlite3_finalize(stmt);
-    sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
-    sqlite3_bind_int (stmt, 1, iid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
   else
   {
     sqlite3_finalize(stmt);
-    sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-    sqlite3_bind_int (stmt, 1, iid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
@@ -683,11 +683,11 @@ void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid)
 {
   sqlite3_stmt *stmt;
   // First off clear all selected images...
-  sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
  
   // Then insert a selection of image id
-  sqlite3_prepare_v2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, iid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   vm->film_strip_scroll_to=vm->film_strip_active_image=iid;
@@ -743,23 +743,23 @@ void dt_view_film_strip_prefetch()
   {
     int imgid = -1;
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select id from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       imgid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
     snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
-    sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1,  0);
-    sqlite3_bind_int(stmt, 2, -1);
-    sqlite3_bind_int(stmt, 3, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       offset = sqlite3_column_int(stmt, 0) - 1;
     sqlite3_finalize(stmt);
 
-    sqlite3_prepare_v2(darktable.db, qin, -1, &stmt, NULL);
-    sqlite3_bind_int(stmt, 1, offset+1);
-    sqlite3_bind_int(stmt, 2, 2);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, qin, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset+1);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 2);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       imgid = sqlite3_column_int(stmt, 0);

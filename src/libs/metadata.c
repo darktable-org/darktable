@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/metadata.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
@@ -104,11 +105,11 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 
 	// using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else takes ages.
 	if(imgsel < 0){ // selected images
-		rc = sqlite3_prepare_v2(darktable.db, "select key, value from meta_data where id in (select imgid from selected_images) group by key, value order by value", -1, &stmt, NULL);
+		DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select key, value from meta_data where id in (select imgid from selected_images) group by key, value order by value", -1, &stmt, NULL);
 	} else { // single image under mouse cursor
 		char query[1024];
 		snprintf(query, 1024, "select key, value from meta_data where id = %d group by key, value order by value", imgsel);
-		rc = sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+		DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
 	}
 	while(sqlite3_step(stmt) == SQLITE_ROW){
 		char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
@@ -341,7 +342,6 @@ void init_presets(dt_lib_module_t *self){
 
 // FIXME: Is this ever called?
 void init(dt_iop_module_t *module){
-// 	g_print("init\n");
 }
 
 void* get_params(dt_lib_module_t *self, int *size){

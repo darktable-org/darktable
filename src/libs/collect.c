@@ -18,6 +18,7 @@
 #include "common/darktable.h"
 #include "common/film.h"
 #include "common/collection.h"
+#include "common/debug.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -314,7 +315,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_t *d)
   }
   g_free(text);
   g_free(escaped_text);
-  sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);

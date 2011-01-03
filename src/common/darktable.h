@@ -79,14 +79,6 @@ static inline int dt_version()
 // NaN-safe clamping (NaN compares false, and will thus result in H)
 #define CLAMPS(A, L, H) ((A) > (L) ? ((A) < (H) ? (A) : (H)) : (L))
 
-
-#define HANDLE_SQLITE_ERR(rc) \
-  if(rc != SQLITE_OK) \
-  { \
-    fprintf(stderr, "sqlite3 error: %s\n", sqlite3_errmsg(darktable.db)); \
-    return 1; \
-  } \
-
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;

@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/debug.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -134,7 +135,7 @@ void init_presets (dt_iop_module_t *self)
 {
   // transform presets above to db entries.
   // sql begin
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   for(int k=0;k<basecurve_presets_cnt;k++)
   {
     // add the preset.
@@ -147,7 +148,7 @@ void init_presets (dt_iop_module_t *self)
     dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, basecurve_presets[k].autoapply);
   }
   // sql commit
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

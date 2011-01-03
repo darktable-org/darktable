@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/debug.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/resetlabel.h"
@@ -51,7 +52,7 @@ dt_iop_graduatednd_params_t;
 
 void init_presets (dt_iop_module_t *self)
 {
-  sqlite3_exec(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("Neutral Grey ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
   dt_gui_presets_add_generic(_("Neutral Grey ND4 (soft)"), self->op, &(dt_iop_graduatednd_params_t){2,0,0,50,0,0} , sizeof(dt_iop_graduatednd_params_t), 1);
@@ -67,7 +68,7 @@ void init_presets (dt_iop_module_t *self)
   dt_gui_presets_add_generic(_("Blue ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t){1,0,0,50,0.663415,0.5} , sizeof(dt_iop_graduatednd_params_t), 1);
   dt_gui_presets_add_generic(_("Brown ND4 (soft)"), self->op, &(dt_iop_graduatednd_params_t){2,0,0,50,0.082927,0.25} , sizeof(dt_iop_graduatednd_params_t), 1);
   
-  sqlite3_exec(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
 typedef struct dt_iop_graduatednd_gui_data_t

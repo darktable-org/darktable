@@ -26,6 +26,7 @@
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
+#include "common/debug.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -164,9 +165,9 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   int32_t imgids_num = 0;
   int32_t imgids[count];
 
-  sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, offset);
-  sqlite3_bind_int (stmt, 2, max_rows*iir);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_rows*iir);
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
@@ -193,8 +194,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           { // clear selected if no modifier
             sqlite3_stmt *stmt2;
-            sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
-            sqlite3_bind_int(stmt2, 1, id);
+            DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
+            DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, id);
             sqlite3_step(stmt2);
             sqlite3_finalize(stmt2);
           }
@@ -224,8 +225,8 @@ failure:
   // not actually needed...
   //sqlite3_clear_bindings(stmt);
   const int prefetchrows = .5*max_rows+1;
-  sqlite3_bind_int (stmt, 1, offset + max_rows*iir);
-  sqlite3_bind_int (stmt, 2, prefetchrows*iir);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + max_rows*iir);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, prefetchrows*iir);
 
   // prefetch jobs in inverse order: supersede previous jobs: most important last
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -348,12 +349,11 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
 
   // set scrollbar positions, clamp zoom positions
   sqlite3_stmt *stmt = NULL;
-  int rc;
   char newquery[1024];
   snprintf(newquery, 1024, "select count(id) %s", query + 17);
-  sqlite3_prepare_v2(darktable.db, newquery, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, 0);
-  sqlite3_bind_int (stmt, 2, -1);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, newquery, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
   int count = 1;
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
@@ -414,7 +414,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
 
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
-  sqlite3_prepare_v2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
   for(int row = 0; row < max_rows; row++)
@@ -425,8 +425,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
       offset += DT_LIBRARY_MAX_ZOOM;
       continue;
     }
-    rc = sqlite3_bind_int  (stmt, 1, offset);
-    rc = sqlite3_bind_int  (stmt, 2, max_cols);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
     for(int col = 0; col < max_cols; col++)
     {
       if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -446,8 +446,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           { // clear selected if no modifier
             sqlite3_stmt *stmt2;
-            sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
-            sqlite3_bind_int(stmt2, 1, id);
+            DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt2, NULL);
+            DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, id);
             sqlite3_step(stmt2);
             sqlite3_finalize(stmt2);
           }
@@ -476,8 +476,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     }
     cairo_translate(cr, -max_cols*wd, ht);
     offset += DT_LIBRARY_MAX_ZOOM;
-    rc = sqlite3_reset(stmt);
-    rc = sqlite3_clear_bindings(stmt);
+    sqlite3_reset(stmt);
+    sqlite3_clear_bindings(stmt);
   }
 failure:
   sqlite3_finalize(stmt);
@@ -584,7 +584,7 @@ star_key_accel_callback(void *data)
       if(mouse_over_id <= 0)
       {
         sqlite3_stmt *stmt;
-        sqlite3_prepare_v2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');

@@ -20,6 +20,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/film.h"
+#include "common/debug.h"
 #include <glade/glade.h>
 #include <sqlite3.h>
 
@@ -54,9 +55,8 @@ count_film_rolls(const char *filter)
   snprintf(filterstring, 512, "%%%s%%", filter);
   int count = 0;
   sqlite3_stmt *stmt;
-  int rc;
-  rc = sqlite3_prepare_v2(darktable.db, "select count(*) from film_rolls where folder like ?1 order by folder", -1, &stmt, NULL);
-  rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(*) from film_rolls where folder like ?1 order by folder", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count += sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
@@ -79,10 +79,10 @@ dt_gui_filmview_update(const char *filter)
 
   // sql query insert
   sqlite3_stmt *stmt;
-  int rc;
   // TODO: datetime_created?
-  rc = sqlite3_prepare_v2(darktable.db, "select id, folder from film_rolls where folder like ?1 order by folder", -1, &stmt, NULL);
-  rc = sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
+  //FIXME: this is called before tables are created ...
+  sqlite3_prepare_v2(darktable.db, "select id, folder from film_rolls where folder like ?1 order by folder", -1, &stmt, NULL);
+  sqlite3_bind_text(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *path = (const char *)sqlite3_column_text(stmt, 1);

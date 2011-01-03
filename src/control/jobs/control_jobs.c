@@ -26,6 +26,7 @@
 #include "common/exif.h"
 #include "common/imageio_module.h"
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
 
@@ -152,20 +153,20 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     int rc;
     sqlite3_stmt *stmt;
     // remove from db:
-    rc = sqlite3_prepare_v2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize (stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize (stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize (stmt);
-    rc = sqlite3_prepare_v2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
-    rc = sqlite3_bind_int (stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize (stmt);
     // remove from disk:

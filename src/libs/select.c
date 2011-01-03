@@ -17,6 +17,7 @@
 */
 #include "common/collection.h"
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
@@ -52,35 +53,35 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   switch((long int)user_data)
   {
     case 0: // all
-      sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, fullq, NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, fullq, NULL, NULL, NULL);
       break;
     case 1: // none
-      sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
       break;
     case 2: // invert
-      sqlite3_exec(darktable.db, "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "insert into tmp_selection select imgid from selected_images", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, fullq, NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "delete from selected_images where imgid in (select imgid from tmp_selection)", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "delete from tmp_selection", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "insert into tmp_selection select imgid from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, fullq, NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images where imgid in (select imgid from tmp_selection)", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from tmp_selection", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
       break;
     case 4: // untouched
       dt_collection_set_filter_flags (collection, (dt_collection_get_filter_flags(collection)|COLLECTION_FILTER_UNALTERED));
       dt_collection_update (collection);
       snprintf (fullq, 2048, "insert into selected_images %s", dt_collection_get_query (collection));
-      sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, fullq, NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, fullq, NULL, NULL, NULL);
       break;
     default: // case 3: same film roll
-      sqlite3_exec(darktable.db, "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "insert into tmp_selection select imgid from selected_images", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "insert into selected_images select id from images where film_id in (select film_id from images as a join tmp_selection as b on a.id = b.imgid)", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "delete from tmp_selection", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "insert into tmp_selection select imgid from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "insert into selected_images select id from images where film_id in (select film_id from images as a join tmp_selection as b on a.id = b.imgid)", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from tmp_selection", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
       break;
   }
   

@@ -26,6 +26,7 @@
 #include "control/control.h"
 
 #include "common/collection.h"
+#include "common/debug.h"
 
 #define SELECT_QUERY "select distinct * from %s"
 #define ORDER_BY_QUERY "order by %s"
@@ -252,9 +253,9 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection) {
   const gchar *query = dt_collection_get_query(collection);
   char countquery[2048]={0};
   snprintf(countquery, 2048, "select count(id) %s", query + 18);
-  sqlite3_prepare_v2(darktable.db, countquery, -1, &stmt, NULL);
-  sqlite3_bind_int (stmt, 1, 0);
-  sqlite3_bind_int (stmt, 2, -1);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, countquery, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
@@ -280,7 +281,6 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   
   
   sqlite3_stmt *stmt = NULL;
-  int rc = 0;
   char query[2048]={0};
   
   if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
@@ -288,7 +288,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   else
     g_snprintf(query,512, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
   
-  rc = sqlite3_prepare_v2 (darktable.db,query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db,query, -1, &stmt, NULL);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {

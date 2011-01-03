@@ -162,8 +162,8 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(VC)") == 0 && (got_value=TRUE) )
   {
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(darktable.db, "select id from images where filename=?1", &stmt, NULL);
-    sqlite3_bind_text(stmt, 1, params->filename);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where filename=?1", &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, params->filename);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       if(sqlite3_column_int(stmt) == )
