@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 grep '<key>' darktable.schemas | \
     sed -e 's/<key>//g' \
