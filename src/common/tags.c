@@ -118,6 +118,7 @@ gboolean dt_tag_exists(const char *name,guint *tagid)
   return FALSE;
 }
 
+//FIXME: shall we increment count in tagxtag if the image was already tagged?
 void dt_tag_attach(guint tagid,gint imgid)
 {
   int rc;

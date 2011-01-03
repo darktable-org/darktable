@@ -408,6 +408,29 @@ int32_t dt_image_duplicate(const int32_t imgid)
   int32_t newid = -1;
   if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+  if(newid != -1){
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into color_labels (imgid, color) select ?1, color from color_labels where imgid = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into meta_data (id, key, value) select ?1, key, value from meta_data where id = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (imgid, tagid) select ?1, tagid from tagged_images where imgid = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
+        "(id1 in (select tagid from tagged_images where imgid = ?1)) or "
+        "(id2 in (select tagid from tagged_images where imgid = ?1))", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
   return newid;
 }
 
