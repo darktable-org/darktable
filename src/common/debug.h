@@ -21,13 +21,22 @@
 
 #ifdef _DEBUG
 	#include <assert.h>
-	#define __DT_DEBUG_ASSERT__(x) assert(x == SQLITE_OK)
-#else
-// 	#define __DT_DEBUG_ASSERT__(x) x
-	#define __DT_DEBUG_ASSERT__(x) \
+	#define __DT_DEBUG_ASSERT__(xin) \
+  {\
+    const int x = xin; \
 		if(x != SQLITE_OK){ \
 			fprintf(stderr, "sqlite3 error: %s\n", sqlite3_errmsg(darktable.db)); \
 		} \
+    assert(x == SQLITE_OK);\
+  }
+#else
+	#define __DT_DEBUG_ASSERT__(xin) \
+  {\
+    const int x = xin; \
+		if(x != SQLITE_OK){ \
+			fprintf(stderr, "sqlite3 error: %s\n", sqlite3_errmsg(darktable.db)); \
+		} \
+  }
 
 #endif
 
