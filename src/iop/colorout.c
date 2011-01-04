@@ -337,6 +337,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
   gtk_combo_box_set_active(g->cbox1, (int)p->intent);
+  gtk_combo_box_set_active(g->cbox4, (int)p->displayintent);
   int iccfound = 0, displayfound = 0;
   GList *prof = g->profiles;
   while(prof)
