@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 
 tabs='gui core'
@@ -31,7 +31,7 @@ preferences_callback (GtkWidget *widget, gpointer user_data)
 EOF
 
 # arg num setval
-function reset_callback {
+reset_callback() {
   cat >> $resetfile << EOF
 static gboolean
 reset_widget_$1 (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
@@ -49,7 +49,7 @@ EOF
 
 # do this for each key
 # arg short long num
-function key_begin {
+key_begin() {
   cat >> $initfile << EOF
   label = gtk_label_new(_("$1"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -60,14 +60,14 @@ EOF
 }
 
 # arg short long num def
-function key_end {
+key_end() {
   cat >> $initfile << EOF
   snprintf(tooltip, 1024, _("double click to reset to \`%s'"), $4);
   gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
 EOF
   if [ -n "$2" ]; then
-    echo "  gtk_object_set(GTK_OBJECT(widget), \"tooltip-text\", _(\"$2\"), (char *)NULL);" >> $initfile
+    printf "  gtk_object_set(GTK_OBJECT(widget), \"tooltip-text\", _(\"%s\"), (char *)NULL);\n" "$2" >> $initfile
   fi
   cat >> $initfile << EOF
   gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
@@ -119,15 +119,15 @@ echo "    // tab: $tab" >> $callbackfile
 
 for line0 in $(cat dreggn | tr ' ' '&')
 do
-  line=$(echo $line0 | tr '&' ' ')
-  key=$(echo $line | cut -d# -f1)
-  type=$(echo $line | cut -d# -f2)
-  def=$(echo $line | cut -d# -f3)
+  line=$(printf "%s" "$line0" | tr '&' ' ')
+  key=$(printf "%s" "$line" | cut -d# -f1)
+  type=$(printf "%s" "$line" | cut -d# -f2)
+  def=$(printf "%s" "$line" | cut -d# -f3)
   qdef=\"$def\"
-  short=$(echo $line | cut -d# -f4)
-  long=$(echo $line | cut -d# -f5)
+  short=$(printf "%s" "$line" | cut -d# -f4)
+  long=$(printf "%s" "$line" | cut -d# -f5)
   key_begin "$short" "$long" $num
-  if [ $type == "string" ]; then
+  if [ "$type" = "string" ]; then
     def=$qdef
     val="gtk_entry_get_text(GTK_ENTRY(widget))"
     setval="gtk_entry_set_text(GTK_ENTRY(widget), $def);"
@@ -136,7 +136,7 @@ do
   gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("$key"));
   g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback), (gpointer)(long int)$num);
 EOF
-  elif [ $type == "int" ]; then
+  elif [ "$type" = "int" ]; then
     val="gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))"
     setval="gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), $def);"
     cat >> $initfile << EOF
@@ -145,8 +145,8 @@ EOF
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("$key"));
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback), (gpointer)(long int)$num);
 EOF
-  elif [ $type == "bool" ]; then
-    if [ $def == "true" ]; then def="TRUE"; else def="FALSE"; fi
+  elif [ "$type" = "bool" ]; then
+    if [ "$def" = "true" ]; then def="TRUE"; else def="FALSE"; fi
     qdef=\"$def\"
     val="gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))"
     setval="gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), $def);"
@@ -155,7 +155,7 @@ EOF
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("$key"));
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_callback), (gpointer)(long int)$num);
 EOF
-  elif [ $type == "float" ]; then
+  elif [ "$type" = "float" ]; then
     val="gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))"
     setval="gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), $def);"
     cat >> $initfile << EOF
@@ -174,7 +174,7 @@ EOF
       dt_conf_set_$type("$key", $val);
       break;
 EOF
-  num=$[ num+1 ]
+  num=$((num+1))
 done
 
 cat >> $initfile << EOF
