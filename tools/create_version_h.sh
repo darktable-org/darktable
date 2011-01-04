@@ -1,7 +1,9 @@
 #!/bin/sh
 # this is called from autogen.sh and from src/Makefile.am
 
-dir=$(dirname $(readlink -f $0))
+. common.sh
+
+dir=$(dirname $(ReadLink -f $0))
 
 if [ ! -f $dir/version.sh ]; then
     $dir/create_version_sh.sh

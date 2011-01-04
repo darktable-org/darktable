@@ -1,6 +1,8 @@
 #!/bin/sh
 
-dir=$(dirname $(readlink -f $0))
+. common.sh
+
+dir=$(dirname $(ReadLink -f $0))
 
 if [ -z $1 ]; then
     branch="HEAD"
