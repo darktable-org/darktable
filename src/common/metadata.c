@@ -285,3 +285,4 @@ void dt_metadata_clear(int id){
 		sqlite3_finalize(stmt);
 	}
 }
+
