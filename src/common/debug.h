@@ -25,7 +25,7 @@
   {\
     const int x = xin; \
 		if(x != SQLITE_OK){ \
-			fprintf(stderr, "sqlite3 error: %s\n", sqlite3_errmsg(darktable.db)); \
+			fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__, sqlite3_errmsg(darktable.db)); \
 		} \
     assert(x == SQLITE_OK);\
   }
@@ -34,7 +34,7 @@
   {\
     const int x = xin; \
 		if(x != SQLITE_OK){ \
-			fprintf(stderr, "sqlite3 error: %s\n", sqlite3_errmsg(darktable.db)); \
+			fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__, sqlite3_errmsg(darktable.db)); \
 		} \
   }
 
