@@ -101,7 +101,7 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
-static const __m128
+static __m128
 weight (const float *c1, const float *c2, const float sharpen)
 {
   const float wc = dt_fast_expf(-((c1[1] - c2[1])*(c1[1] - c2[1]) + (c1[2] - c2[2])*(c1[2] - c2[2])) * sharpen);
