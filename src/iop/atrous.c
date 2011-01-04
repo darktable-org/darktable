@@ -181,11 +181,9 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
     {
       const __m128i maski = _mm_set1_epi32(0x80000000u);
       const __m128 *mask = (__m128*)&maski;
-      const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*mask, *pdetail),
-                            _mm_mul_ps(_mm_set_ps(1.0f, ((float *)pin)[0], ((float *)pin)[0], 1.0f), threshold)));
+      const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*mask, *pdetail), threshold));
       const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
       _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, amount)));
-      // _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, *pdetail)));
       pdetail ++;
       pin ++;
       pout += 4;
@@ -225,8 +223,8 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
     boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], t);
     boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], t);
     for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
-    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 3.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
-    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 6.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
+    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 10.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 20.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
     sharp[i]    = 0.0025f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
     // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
   }
@@ -244,13 +242,17 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
   float *detail = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height*max_scale);
   float *tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height);
-  float *buf1 = (float *)i;
   float *buf2 = tmp;
+  float *buf1 = (float *)o;
+  memcpy(buf1, i, sizeof(float)*4*roi_in->width*roi_in->height);
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(roi_in, buf1)
+#endif
+  for(int k=0;k<roi_in->width*roi_in->height;k++) if(buf1[4*k] > 0.01f) for(int c=1;c<3;c++) buf1[4*k + c] *= buf1[4*k]/100.0f;
 
   for(int scale=0;scale<max_scale;scale++)
   {
     eaw_decompose (buf2, buf1, detail + 4*roi_out->width*roi_out->height*scale, scale, sharp[scale], roi_out->width, roi_out->height);
-    if(scale == 0) buf1 = (float *)o;
     float *buf3 = buf2;
     buf2 = buf1;
     buf1 = buf3;
@@ -264,6 +266,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     buf2 = buf1;
     buf1 = buf3;
   }
+  buf1 = (float *)i;
+  buf2 = (float *)o;
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(roi_in, buf1, buf2)
+#endif
+  for(int k=0;k<roi_in->width*roi_in->height;k++) if(buf2[4*k] > 0.01f) for(int c=1;c<3;c++) buf2[4*k + c] *= 100.0f/buf2[4*k];
 
   free(detail);
   free(tmp);
@@ -329,6 +337,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     // printf("tile extents: %zd %zd -- %zd %zd\n", origin[0], origin[1], region[0], region[1]);
 
+    // FIXME: first undo a* b* color
     err = CL_SUCCESS;
     if(need_tiles) err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, _dev_in, dev_in, origin, orig0, region, 0, NULL, NULL);
     if(err != CL_SUCCESS) fprintf(stderr, "trouble copying image: %d\n", err);
@@ -390,6 +399,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue synth kernel! %d\n", err);
       clFinish(darktable.opencl->dev[devid].cmd_queue);
     }
+    // FIXME: re-apply a* b* color
     if(need_tiles)
     {
       err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_in, orig0, origin, region, 0, NULL, NULL);
@@ -594,8 +604,9 @@ void init_presets (dt_iop_module_t *self)
     p.x[atrous_Lt][k] = k/(BANDS-1.0);
     p.x[atrous_ct][k] = k/(BANDS-1.0);
     p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
-    p.y[atrous_ct][k] = .6f*k/(float)BANDS;
+    p.y[atrous_ct][k] = fminf(.5f, .8f*k/(float)BANDS);
   }
+  p.y[atrous_s][BANDS-1] = 0.0f;
   dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
   for(int k=0;k<BANDS;k++)
   {

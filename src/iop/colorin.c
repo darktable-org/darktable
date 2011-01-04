@@ -138,7 +138,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       dt_XYZ_to_Lab(XYZ, Lab);
 
       // and to La*b*
-      if(Lab[0] > 0)
+      if(Lab[0] > 0.01f)
       {
         Lab[1] *= 100.0/Lab[0];
         Lab[2] *= 100.0/Lab[0];

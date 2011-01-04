@@ -68,8 +68,7 @@ eaw_synthesize (__write_only image2d_t out, __read_only image2d_t coarse, __read
   const float4 boost     = (float4)(b0, b1, b2, b3);
   float4 c = read_imagef(coarse, sampleri, (int2)(x, y));
   float4 d = read_imagef(detail, sampleri, (int2)(x, y));
-  float4 mul = (float4)(1.0f, c.x, c.x, 1.0f);
-  float4 amount = copysign(max((float4)(0.0f, 0.0f, 0.0f, 0.0f), fabs(d) - mul*threshold), d);
+  float4 amount = copysign(max((float4)(0.0f), fabs(d) - threshold), d);
   float4 sum = c + boost*amount;
   write_imagef (out, (int2)(x, y), sum);
 }
