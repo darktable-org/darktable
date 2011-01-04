@@ -63,8 +63,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // in Lab: correct compressed Luminance for saturation:
     const int t = CLAMP((int)(in[ch*k]/100.0*0xfffful), 0, 0xffff);
     out[ch*k+0] = d->table[t];
-    out[ch*k+1] = in[ch*k+1];
-    out[ch*k+2] = in[ch*k+2];
+    if(in[ch*k] > 0.01f)
+    {
+      out[ch*k+1] = in[ch*k+1] * out[ch*k]/in[ch*k];
+      out[ch*k+2] = in[ch*k+2] * out[ch*k]/in[ch*k];
+    }
+    else
+    {
+      out[ch*k+1] = in[ch*k+1];
+      out[ch*k+2] = in[ch*k+2];
+    }
   }
 }
 

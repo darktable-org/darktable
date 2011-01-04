@@ -232,7 +232,7 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
       for(int k=0;k<n;k++)
       {
         const float L = col[3*(roi->width*j+i)];
-        const float Lab[3] = {L, col[3*(roi->width*j + i)+1]*L/100.0, col[3*(roi->width*j + i)+2]*L/100.0};
+        const float Lab[3] = {L, col[3*(roi->width*j + i)+1], col[3*(roi->width*j + i)+2]};
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
 #ifdef _OPENMP
@@ -343,7 +343,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i=0;i<roi_out->width;i++)
       {
         const float L = in[j];
-        const float Lab[3] = {L, in[j+1]*L/100.0, in[j+2]*L/100.0};
+        const float Lab[3] = {L, in[j+1], in[j+2]};
         // a, b: subtract mean, scale nvar/var, add nmean
 #if 0   // single cluster, gives color banding
         const int ki = get_cluster(in + j, data->n, mean);
@@ -352,10 +352,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #else   // fuzzy weighting
         get_clusters(in+j, data->n, mean, weight);
         out[j+1] = out[j+2] = 0.0f;
-        if(out[j] > 0.0001f) for(int c=0;c<data->n;c++)
+        for(int c=0;c<data->n;c++)
         {
-          out[j+1] += weight[c] * 100.0/out[j] * ((Lab[1] - mean[c][0])*data->var[mapio[c]][0]/var[c][0] + data->mean[mapio[c]][0]);
-          out[j+2] += weight[c] * 100.0/out[j] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
+          out[j+1] += weight[c] * ((Lab[1] - mean[c][0])*data->var[mapio[c]][0]/var[c][0] + data->mean[mapio[c]][0]);
+          out[j+2] += weight[c] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
         }
 #endif
         j+=ch;

@@ -136,13 +136,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
       }
       dt_XYZ_to_Lab(XYZ, Lab);
-
-      // and to La*b*
-      if(Lab[0] > 0.01f)
-      {
-        Lab[1] *= 100.0/Lab[0];
-        Lab[2] *= 100.0/Lab[0];
-      }
       memcpy(buf_out, Lab, sizeof(float)*3);
     }
   }
@@ -183,16 +176,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for (int l=0;l<roi_out->width;l++) {
         int li=3*l, oi=ch*l;
         out[m+oi+0] = Lab[li+0];
-        if(Lab[li+0] > 0)
-        {
-         out[m+oi+1]  = 100.0*Lab[li+1]/Lab[li+0];
-         out[m+oi+2]  = 100.0*Lab[li+2]/Lab[li+0];
-        }
-        else
-        {
-          out[m+oi+1]  = Lab[li+1];
-          out[m+oi+2] = Lab[li+2];
-        }
+        out[m+oi+1] = Lab[li+1];
+        out[m+oi+2] = Lab[li+2];
       }
     }
   }

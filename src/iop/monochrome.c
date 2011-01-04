@@ -100,7 +100,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-    out[ch*k+0] = color_filter(in[ch*k+0], 0.01*in[ch*k+0]*in[ch*k+1], 0.01*in[ch*k+0]*in[ch*k+2], d->a, d->b, d->size);
+    out[ch*k+0] = color_filter(in[ch*k+0], in[ch*k+1], in[ch*k+2], d->a, d->b, d->size);
     out[ch*k+1] = out[ch*k+2] = 0.0f;
   }
 }

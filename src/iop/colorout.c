@@ -141,8 +141,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *const out = ((float *)o) + ch*k;
       float Lab[3], XYZ[3], rgb[3];
       Lab[0] = in[0];
-      Lab[1] = in[1] * in[0] * (1.0f/100.0f);
-      Lab[2] = in[2] * in[0] * (1.0f/100.0f);
+      Lab[1] = in[1];
+      Lab[2] = in[2];
       dt_Lab_to_XYZ(Lab, XYZ);
       for(int i=0;i<3;i++)
       {
@@ -163,16 +163,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for (int k=0;k<roi_out->height;k++)
     {
-	float Lab[rowsize];
-	float rgb[rowsize];
+      float Lab[rowsize];
+      float rgb[rowsize];
 
       const int m=(k*(roi_out->width*ch));
       for (int l=0;l<roi_out->width;l++)    
       {    
         int li=3*l,ii=ch*l;
         Lab[li+0] = in[m+ii+0];
-        Lab[li+1] = in[m+ii+1]*Lab[li+0]*(1.0/100.0);
-        Lab[li+2] = in[m+ii+2]*Lab[li+0]*(1.0/100.0);
+        Lab[li+1] = in[m+ii+1];
+        Lab[li+2] = in[m+ii+2];
       }
       
       // lcms is not thread safe, so use local copy
