@@ -152,7 +152,9 @@ endif(Gettext_FOUND)
 
 # Path to install gconf schemas into.
 if(NOT DT_GCONF_SCHEMA_DIR)
-  set(DT_GCONF_SCHEMA_DIR "/etc/gconf/schemas/")
+  # a home install would use: "xml:readwrite:${HOME}/.gconf"
+  # default gconftool-2 path (gconftool-2 --get-default-source), mostly "xml:merged:/etc/gconf/gconf.xml.defaults"
+  execute_process (COMMAND gconftool-2 --get-default-source OUTPUT_VARIABLE DT_GCONF_SCHEMA_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif(NOT DT_GCONF_SCHEMA_DIR)
 
 # setup some theme specific variables

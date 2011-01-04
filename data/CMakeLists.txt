@@ -37,7 +37,11 @@ install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
 #
 
 if(USE_GCONF_BACKEND)
-  install(FILES darktable.schemas DESTINATION ${DT_GCONF_SCHEMA_DIR})
+  if(NOT DONT_INSTALL_GCONF_SCHEMAS)
+    install (CODE "set(ENV{GCONF_CONFIG_SOURCE} ${DT_GCONF_SCHEMA_DIR})
+        execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET COMMAND gconftool-2 --makefile-install-rule darktable.schemas)")
+    install (CODE "message(\"-- Installing: gconf schemas to '${DT_GCONF_SCHEMA_DIR}'\")")
+  endif(NOT DONT_INSTALL_GCONF_SCHEMAS)
 else()
  # Setup some custom commands to generate a darktablerc template
  # out of the darktable.schemas file.
