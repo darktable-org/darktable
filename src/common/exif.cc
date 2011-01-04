@@ -554,8 +554,11 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // rights
         char *rights = strdup(pos->toString().c_str());
         char *adr = rights;
-        if(strncmp(rights, "lang=", 5) == 0)
-          rights = strchrnul(rights, ' ')+1;
+        if(strncmp(rights, "lang=", 5) == 0){
+          rights = strchr(rights, ' ');
+          if(rights != NULL)
+            rights++;
+        }
         dt_metadata_set(img->id, "Xmp.dc.rights", rights);
         free(adr);
       }
@@ -564,8 +567,11 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // description
         char *description = strdup(pos->toString().c_str());
         char *adr = description;
-        if(strncmp(description, "lang=", 5) == 0)
-          description = strchrnul(description, ' ')+1;
+        if(strncmp(description, "lang=", 5) == 0){
+          description = strchr(description, ' ');
+          if(description != NULL)
+            description++;
+        }
         dt_metadata_set(img->id, "Xmp.dc.description", description);
         free(adr);
       }
@@ -574,8 +580,11 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // title
         char *title = strdup(pos->toString().c_str());
         char *adr = title;
-        if(strncmp(title, "lang=", 5) == 0)
-          title = strchrnul(title, ' ')+1;
+        if(strncmp(title, "lang=", 5) == 0){
+          title = strchr(title, ' ');
+          if(title != NULL)
+            title++;
+        }
         dt_metadata_set(img->id, "Xmp.dc.title", title);
         free(adr);
       }
@@ -584,8 +593,11 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // creator
         char *creator = strdup(pos->toString().c_str());
         char *adr = creator;
-        if(strncmp(creator, "lang=", 5) == 0)
-          creator = strchrnul(creator, ' ')+1;
+        if(strncmp(creator, "lang=", 5) == 0){
+          creator = strchr(creator, ' ');
+          if(creator != NULL)
+            creator++;
+        }
         dt_metadata_set(img->id, "Xmp.dc.creator", creator);
         free(adr);
       }
@@ -594,8 +606,11 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // publisher
         char *publisher = strdup(pos->toString().c_str());
         char *adr = publisher;
-        if(strncmp(publisher, "lang=", 5) == 0)
-          publisher = strchrnul(publisher, ' ')+1;
+        if(strncmp(publisher, "lang=", 5) == 0){
+          publisher = strchr(publisher, ' ');
+          if(publisher != NULL)
+            publisher++;
+        }
         dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
         free(adr);
       }
