@@ -410,11 +410,12 @@ void* dt_opencl_copy_host_to_device(void *host, const int width, const int heigh
   if(bpp == 4*sizeof(float))
     fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
   else if(bpp == sizeof(float))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
+    fmt = (cl_image_format){CL_R, CL_FLOAT};
   else if(bpp == sizeof(uint16_t))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
+    fmt = (cl_image_format){CL_R, CL_UNSIGNED_INT16};
   else return NULL;
 
+  // TODO: if fmt = uint16_t, blow up to 4xuint16_t and copy manually!
   cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,
       CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
       &fmt,
@@ -433,9 +434,9 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
   if(bpp == 4*sizeof(float))
     fmt = (cl_image_format){CL_RGBA, CL_FLOAT};
   else if(bpp == sizeof(float))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_FLOAT};
+    fmt = (cl_image_format){CL_R, CL_FLOAT};
   else if(bpp == sizeof(uint16_t))
-    fmt = (cl_image_format){CL_LUMINANCE, CL_UNSIGNED_INT16};
+    fmt = (cl_image_format){CL_R, CL_UNSIGNED_INT16};
   else return NULL;
 
   cl_mem dev = clCreateImage2D (darktable.opencl->dev[devid].context,

@@ -19,8 +19,14 @@
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
+int
+FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
+}
+
 /* kernel for the sharpen plugin */
-__kernel void
+kernel void
 sharpen (read_only image2d_t in, write_only image2d_t out, global float *m, const int rad,
     const float sharpen, const float thrs)
 {
@@ -41,6 +47,24 @@ sharpen (read_only image2d_t in, write_only image2d_t out, global float *m, cons
   write_imagef (out, (int2)(x, y), (float4)(max(0.0f, pixel.x + amount), pixel.y, pixel.z, 1.0f));
 }
 
+kernel void
+whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, constant float *coeffs,
+    const unsigned int filters, const int rx, const int ry)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const uint4 pixel = read_imageui(in, sampleri, (int2)(x, y));
+  write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[FC(ry+y, rx+x, filters)], 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
+whitebalance_4f(read_only image2d_t in, write_only image2d_t out, constant float *coeffs)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[0], pixel.y * coeffs[1], pixel.z * coeffs[2], pixel.w));
+}
 
 // TODO: whitebalance needs uint16_t x 1 per pixel, which is incompatible as an opencl texture.
 

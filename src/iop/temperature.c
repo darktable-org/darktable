@@ -27,11 +27,19 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
 
 DT_MODULE(2)
+
+typedef struct dt_iop_temperature_global_data_t
+{
+  int kernel_whitebalance_1ui;
+  int kernel_whitebalance_4f;
+}
+dt_iop_temperature_global_data_t;
 
 /** this wraps gegl:temperature plus some additional whitebalance adjustments. */
 
@@ -202,6 +210,40 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
 }
 
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
+  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
+
+  const int devid = piece->pipe->devid;
+  const int filters = dt_image_flipped_filter(self->dev->image);
+  const int ui = ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && filters);
+  float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
+  if(ui) for(int k=0;k<3;k++) coeffs[k] /= 65535.0f;
+  cl_mem dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*3, devid, coeffs);
+  cl_int err;
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  const int kernel = ui ? gd->kernel_whitebalance_1ui : gd->kernel_whitebalance_4f;
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 2, sizeof(cl_mem), (void *)&dev_coeffs);
+  if(ui)
+  {
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 3, sizeof(uint32_t), (void *)&filters);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 4, sizeof(uint32_t), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 5, sizeof(uint32_t), (void *)&roi_out->y);
+  }
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, kernel, sizes);
+  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue white balance kernel! %d\n", err);
+  clFinish(darktable.opencl->dev[devid].cmd_queue);
+  clReleaseMemObject(dev_coeffs);
+  for(int k=0;k<3;k++)
+    piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+}
+#endif
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
@@ -288,6 +330,15 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
 }
 
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)malloc(sizeof(dt_iop_temperature_global_data_t));
+  module->data = gd;
+  gd->kernel_whitebalance_1ui = dt_opencl_create_kernel(darktable.opencl, program, "whitebalance_1ui");
+  gd->kernel_whitebalance_4f  = dt_opencl_create_kernel(darktable.opencl, program, "whitebalance_4f");
+}
+
 void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
@@ -303,6 +354,15 @@ void cleanup (dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_whitebalance_1ui);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_whitebalance_4f);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void
