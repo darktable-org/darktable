@@ -41,6 +41,8 @@ if(USE_GCONF_BACKEND)
     install (CODE "set(ENV{GCONF_CONFIG_SOURCE} ${DT_GCONF_SCHEMA_DIR})
         execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET COMMAND gconftool-2 --makefile-install-rule darktable.schemas)")
     install (CODE "message(\"-- Installing: gconf schemas to '${DT_GCONF_SCHEMA_DIR}'\")")
+  else()
+    install(FILES darktable.schemas DESTINATION /etc/gconf/schemas)
   endif(NOT DONT_INSTALL_GCONF_SCHEMAS)
 else()
  # Setup some custom commands to generate a darktablerc template
