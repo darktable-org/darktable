@@ -26,6 +26,7 @@
 #include "common/imageio.h"
 #include "common/debug.h"
 #include "gui/gtk.h"
+#include "gui/metadata.h"
 #include "gui/iop_modulegroups.h"
 
 #include <stdlib.h>
@@ -763,6 +764,12 @@ void leave(dt_view_t *self)
 
 void mouse_leave(dt_view_t *self)
 {
+  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  int32_t mouse_over_id = dev->image->id;
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+  dt_gui_metadata_update();
+
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
@@ -770,6 +777,16 @@ void mouse_leave(dt_view_t *self)
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
+  int32_t mouse_over_id = -1;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id == -1){
+    mouse_over_id = dev->image->id;
+    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+    dt_gui_metadata_update();
+  }
+
   dt_control_t *ctl = darktable.control;
   const int32_t width_i  = self->width;
   const int32_t height_i = self->height;
