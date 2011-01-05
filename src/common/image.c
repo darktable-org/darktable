@@ -709,7 +709,6 @@ void dt_image_init(dt_image_t *img)
 	  dt_conf_set_int("ui_last/import_initial_rating",1); 
   }
   img->id = -1;
-  img->cacheline = -1;
   img->force_reimport = 0;
   img->exif_inited = 0;
   memset(img->exif_maker,0, sizeof(img->exif_maker));
