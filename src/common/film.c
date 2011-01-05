@@ -338,14 +338,6 @@ int dt_film_is_empty(const int id)
 void dt_film_remove(const int id)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from mipmaps where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from mipmap_timestamps where imgid in (select id from images where film_id = ?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count - 1 where "
       "(id2 in (select tagid from tagged_images where imgid in (select id from images where film_id = ?1))) or "
       "(id1 in (select tagid from tagged_images where imgid in (select id from images where film_id = ?1)))", -1, &stmt, NULL);
@@ -390,3 +382,4 @@ void dt_film_remove(const int id)
   sqlite3_finalize(stmt);
   dt_control_update_recent_films();
 }
+
