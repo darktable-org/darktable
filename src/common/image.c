@@ -567,8 +567,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   int ret = 0, id = -1;
   // select from images; if found => return
   gchar *imgfname;
-  if(film_id > 1) imgfname = g_path_get_basename((const gchar*)filename);
-  else            imgfname = g_build_filename((const gchar*)filename, (char *)NULL);
+  imgfname = g_path_get_basename((const gchar*)filename);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
