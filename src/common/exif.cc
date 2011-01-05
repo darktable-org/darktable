@@ -810,8 +810,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
   const int xmp_version = 1;
   // refuse to write sidecar for non-existent image:
   char imgfname[1024];
-  snprintf(imgfname, 1024, "%s", filename);
-  *(imgfname + strlen(imgfname) - 4) = '\0';
+  dt_image_full_path(imgid, imgfname, 1024);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
 
   try
