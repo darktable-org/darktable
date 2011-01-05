@@ -134,44 +134,15 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 
 void dt_image_full_path(dt_image_t *img, char *pathname, int len)
 {
-  if(img->film_id == 1)
+  int rc;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    snprintf(pathname, len, "%s", img->filename);
+    snprintf(pathname, len, "%s/%s", (char *)sqlite3_column_text(stmt, 0), img->filename);
   }
-  else
-  {
-    int rc;
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      snprintf(pathname, len, "%s/%s", (char *)sqlite3_column_text(stmt, 0), img->filename);
-    }
-    rc = sqlite3_finalize(stmt);
-  }
-  pathname[len-1] = '\0';
-}
-
-void dt_image_export_path(dt_image_t *img, char *pathname, int len)
-{
-  if(img->film_id == 1)
-  {
-    snprintf(pathname, len, "%s", img->filename);
-  }
-  else
-  {
-    int rc;
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      snprintf(pathname, len, "%s/darktable_exported/%s", (char *)sqlite3_column_text(stmt, 0), img->filename);
-    }
-    rc = sqlite3_finalize(stmt);
-  }
-  dt_image_path_append_version(img, pathname, len);
+  rc = sqlite3_finalize(stmt);
   pathname[len-1] = '\0';
 }
 
