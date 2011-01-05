@@ -117,6 +117,28 @@ void dt_ctl_settings_init(dt_control_t *s)
   memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
 }
 
+static void dt_control_sanitize_database()
+{
+  sqlite3_stmt *stmt;
+  sqlite3_stmt *innerstmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id, filename from images where filename like '/%'", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set filename = ?1 where id = ?2", -1, &innerstmt, NULL);
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    const char* path = (const char*)sqlite3_column_text(stmt, 1);
+    gchar* filename = g_path_get_basename (path);
+    DT_DEBUG_SQLITE3_BIND_TEXT(innerstmt, 1, filename, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, id);
+    sqlite3_step(innerstmt);
+    sqlite3_reset(innerstmt);
+    sqlite3_clear_bindings(innerstmt);
+    g_free(filename);
+  }
+  sqlite3_finalize(stmt);
+  sqlite3_finalize(innerstmt);
+}
+
 int dt_control_load_config(dt_control_t *c)
 {
   int rc;
@@ -214,6 +236,9 @@ create_tables:
     rc = sqlite3_step(stmt);
     rc = sqlite3_finalize(stmt);
   }
+
+  dt_control_sanitize_database();
+
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
   int width  = dt_conf_get_int("ui_last/window_w");
   int height = dt_conf_get_int("ui_last/window_h");
