@@ -463,7 +463,12 @@ void dt_image_cache_clear(int32_t id)
   dt_pthread_mutex_lock(&(cache->mutex));
   int32_t res = dt_image_cache_bsearch(id);
   if(res >= 0 && !cache->line[res].lock.write && !cache->line[res].lock.users++)
+  {
+    // clean out mipmaps
     dt_image_cleanup(&(cache->line[res].image));
+    // also clean up metadata etc.
+    dt_image_init(&(cache->line[res].image));
+  }
   dt_pthread_mutex_unlock(&(cache->mutex));
 }
 

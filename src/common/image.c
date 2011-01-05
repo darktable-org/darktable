@@ -412,14 +412,6 @@ void dt_image_remove(const int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from mipmap_timestamps where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count - 1 where "
       "(id2 in (select tagid from tagged_images where imgid = ?1)) or "
       "(id1 in (select tagid from tagged_images where imgid = ?1))", -1, &stmt, NULL);
