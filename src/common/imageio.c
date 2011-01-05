@@ -811,7 +811,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   int length;
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
   char pathname[1024];
-  dt_image_full_path(img, pathname, 1024);
+  dt_image_full_path(img->id, pathname, 1024);
   length = dt_exif_read_blob(exif_profile, pathname, sRGB);
   format_params->width  = processed_width;
   format_params->height = processed_height;

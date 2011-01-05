@@ -150,7 +150,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   char filename[1024]={0};
   char dirname[1024]={0};
-  dt_image_full_path(img, dirname, 1024);
+  dt_image_full_path(img->id, dirname, 1024);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);

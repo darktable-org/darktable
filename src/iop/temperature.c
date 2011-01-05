@@ -246,7 +246,7 @@ void init (dt_iop_module_t *module)
   // get white balance coefficients, as shot
   char filename[1024];
   int ret;
-  dt_image_full_path(module->dev->image, filename, 1024);
+  dt_image_full_path(module->dev->image->id, filename, 1024);
   libraw_data_t *raw = libraw_init(0);
   ret = libraw_open_file(raw, filename);
   if(!ret)

@@ -95,7 +95,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   g_mkdir_with_parents(tmpdir,0700);
   
   char dirname[4096];
-  dt_image_full_path(img, dirname, 1024);
+  dt_image_full_path(img->id, dirname, 1024);
   const gchar * filename = g_basename( dirname );
   strcpy( g_strrstr( filename,".")+1, format->extension(fdata));
   

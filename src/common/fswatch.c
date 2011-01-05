@@ -171,7 +171,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
   {
     case DT_FSWATCH_IMAGE:
       mask=IN_ALL_EVENTS;
-      dt_image_full_path((dt_image_t *)data, filename, 1024);
+      dt_image_full_path(((dt_image_t *)data)->id, filename, 1024);
       break;
     case DT_FSWATCH_CURVE_DIRECTORY:
       break;

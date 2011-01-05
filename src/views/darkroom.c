@@ -304,7 +304,7 @@ int try_enter(dt_view_t *self)
   dev->image = dt_image_cache_get(selected, 'r');
   // get image and check if it has been deleted from disk first!
   char imgfilename[1024];
-  dt_image_full_path(dev->image, imgfilename, 1024);
+  dt_image_full_path(dev->image->id, imgfilename, 1024);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), dev->image->filename);

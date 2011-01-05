@@ -215,7 +215,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
   { // color matrix
     int ret;
-    dt_image_full_path(self->dev->image, filename, 1024);
+    dt_image_full_path(self->dev->image->id, filename, 1024);
     libraw_data_t *raw = libraw_init(0);
     ret = libraw_open_file(raw, filename);
     if(!ret)

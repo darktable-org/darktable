@@ -76,7 +76,7 @@ void dt_image_write_sidecar_file(dt_image_t *img)
   if(img->id > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     char filename[520];
-    dt_image_full_path(img, filename, 512);
+    dt_image_full_path(img->id, filename, 512);
     dt_image_path_append_version(img, filename, 512);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
@@ -132,18 +132,17 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
   pathname[len-1] = '\0';
 }
 
-void dt_image_full_path(dt_image_t *img, char *pathname, int len)
+void dt_image_full_path(const int imgid, char *pathname, int len)
 {
   int rc;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    snprintf(pathname, len, "%s/%s", (char *)sqlite3_column_text(stmt, 0), img->filename);
+    g_strlcpy(pathname, (char *)sqlite3_column_text(stmt, 0), len);
   }
   rc = sqlite3_finalize(stmt);
-  pathname[len-1] = '\0';
 }
 
 void dt_image_path_append_version(dt_image_t *img, char *pathname, const int len)
@@ -799,7 +798,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   if(!img) return 1;
   int ret = 0;
   char filename[1024];
-  dt_image_full_path(img, filename, 1024);
+  dt_image_full_path(img->id, filename, 1024);
   // reimport forced?
   if(mip != DT_IMAGE_FULL &&
     (img->force_reimport || img->width == 0 || img->height == 0))
