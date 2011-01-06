@@ -20,12 +20,15 @@
 
 #include <stdio.h>
 #include <glib.h>
+#include <glade/glade.h>
 
 #include "common/camera_control.h"
 #include "common/darktable.h"
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
+#include "gui/filmview.h"
+#include "gui/gtk.h"
 
 int32_t dt_captured_image_import_job_run(dt_job_t *job)
 {
@@ -306,6 +309,9 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
     dt_gui_background_jobs_destroy (t->bgj);
     dt_variables_params_destroy(t->vp);
 
+    // update all filmrolls list
+    GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+    dt_gui_filmview_update(gtk_entry_get_text(entry));
   }
   else
     dt_control_log(_("failed to create filmroll for camera import, import of images aborted."));
