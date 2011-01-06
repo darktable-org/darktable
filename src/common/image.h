@@ -144,7 +144,7 @@ const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
 void dt_image_film_roll(dt_image_t *img, char *pathname, int len);
 /** appends version numbering for duplicated images. */
-void dt_image_path_append_version(dt_image_t *img, char *pathname, const int len);
+void dt_image_path_append_version(int imgid, char *pathname, const int len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(dt_image_t *img, char *line, int len);
 /** opens an image with minimal storage from the data base and stores it in image cache. */ 
@@ -302,7 +302,7 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
 /** writes mip4 through to all smaller levels. */
 dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img);
 /** this writes an xmp file for this image. */
-void dt_image_write_sidecar_file(dt_image_t *img);
+void dt_image_write_sidecar_file(int imgid);
 
 // memory management interface
 typedef struct dt_mipmap_cache_t

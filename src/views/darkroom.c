@@ -352,7 +352,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   // commit image ops to db
   dt_dev_write_history(dev);
   // write .xmp file
-  dt_image_write_sidecar_file(dev->image);
+  dt_image_write_sidecar_file(dev->image->id);
 
   // commit updated mipmaps to db
   // TODO: bg process?
@@ -717,7 +717,7 @@ void leave(dt_view_t *self)
   // commit image ops to db
   dt_dev_write_history(dev);
   // write .xmp file
-  dt_image_write_sidecar_file(dev->image);
+  dt_image_write_sidecar_file(dev->image->id);
 
   // commit updated mipmaps to db
   dt_dev_process_to_mip(dev);

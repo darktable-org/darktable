@@ -614,6 +614,6 @@ void dt_image_cache_flush(dt_image_t *img)
   if(img->id <= 0) return;
   dt_image_cache_flush_no_sidecars(img);
   // also synch dttags file:
-  dt_image_write_sidecar_file(img);
+  dt_image_write_sidecar_file(img->id);
 }
 

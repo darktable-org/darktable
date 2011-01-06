@@ -70,17 +70,17 @@ dt_image_single_user()
   // return (darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users;
 }
 
-void dt_image_write_sidecar_file(dt_image_t *img)
+void dt_image_write_sidecar_file(int imgid)
 {
   // write .dt file
-  if(img->id > 0 && dt_conf_get_bool("write_sidecar_files"))
+  if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     char filename[520];
-    dt_image_full_path(img->id, filename, 512);
-    dt_image_path_append_version(img, filename, 512);
+    dt_image_full_path(imgid, filename, 512);
+    dt_image_path_append_version(imgid, filename, 512);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
-    dt_exif_xmp_write(img->id, filename);
+    dt_exif_xmp_write(imgid, filename);
   }
 }
 
@@ -145,29 +145,31 @@ void dt_image_full_path(const int imgid, char *pathname, int len)
   rc = sqlite3_finalize(stmt);
 }
 
-void dt_image_path_append_version(dt_image_t *img, char *pathname, const int len)
+void dt_image_path_append_version(int imgid, char *pathname, const int len)
 {
   // get duplicate suffix
   int version = 0;
   int rc;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where filename = ?1 and film_id = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, img->filename, strlen(img->filename), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->film_id);
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int id = sqlite3_column_int(stmt, 0);
-    if(id == img->id) break;
-    version ++;
-  }
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1) and id < ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    version = sqlite3_column_int(stmt, 0);
   rc = sqlite3_finalize(stmt);
   if(version != 0)
   { // add version information:
+    char *filename = NULL;
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select filename from images where id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      filename = (char*)sqlite3_column_text(stmt, 0);
+    rc = sqlite3_finalize(stmt);
+
     char *c = pathname + strlen(pathname);
     while(*c != '.' && c > pathname) c--;
     snprintf(c, pathname + len - c, "_%02d", version);
-    char *c2 = img->filename + strlen(img->filename);
-    while(*c2 != '.' && c2 > img->filename) c2--;
+    char *c2 = filename + strlen(filename);
+    while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c+3, pathname + len - c - 3, "%s", c2);
   }
 }
@@ -600,7 +602,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   (void) dt_exif_read(img, filename);
   char dtfilename[1024];
   strncpy(dtfilename, filename, 1024);
-  dt_image_path_append_version(img, dtfilename, 1024);
+  dt_image_path_append_version(img->id, dtfilename, 1024);
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
   (void)dt_exif_xmp_read(img, dtfilename, 0);

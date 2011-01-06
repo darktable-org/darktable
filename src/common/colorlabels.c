@@ -113,13 +113,11 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
 }
 
 static void
-synch_dttags(const int selected)
+synch_xmp(const int selected)
 {
   if(selected > 0)
   {
-    dt_image_t *img = dt_image_cache_get(selected, 'r');
-    dt_image_write_sidecar_file(img);
-    dt_image_cache_release(img, 'r');
+    dt_image_write_sidecar_file(selected);
   }
   else if(dt_conf_get_bool("write_sidecar_files"))
   {
@@ -128,9 +126,7 @@ synch_dttags(const int selected)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const int imgid = sqlite3_column_int(stmt, 0);
-      dt_image_t *img = dt_image_cache_get(imgid, 'r');
-      dt_image_write_sidecar_file(img);
-      dt_image_cache_release(img, 'r');
+      dt_image_write_sidecar_file(imgid);
     }
     sqlite3_finalize(stmt);
   }
@@ -166,7 +162,7 @@ void dt_colorlabels_key_accel_callback(void *user_data)
     }
   }
   // synch to dttags:
-  synch_dttags(selected);
+  synch_xmp(selected);
   dt_control_queue_draw_all();
 }
 
