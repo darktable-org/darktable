@@ -3132,7 +3132,7 @@ msgstr ""
 #.
 #: ../src/libs/export.c:432
 msgid "max size"
-msgstr "maximaal formaat"
+msgstr "formaat"
 
 #: ../src/libs/export.c:437
 msgid "x"
@@ -3140,7 +3140,7 @@ msgstr "x"
 
 #: ../src/libs/export.c:441
 msgid "intent"
-msgstr "voornemen"
+msgstr "intensie"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 #: ../src/libs/export.c:445
