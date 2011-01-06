@@ -17,6 +17,7 @@
 */
 #include "common/darktable.h"
 #include "common/tags.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
@@ -147,6 +148,7 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   
   dt_tag_attach(tagid,imgsel);
+  dt_image_synch_xmp(imgsel);
   
 }
 
@@ -169,7 +171,7 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   
   dt_tag_detach(tagid,imgsel);
-  
+  dt_image_synch_xmp(imgsel);
 }
 
 static void
@@ -277,9 +279,26 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
     gtk_widget_destroy(dialog);
   }
   if(res != GTK_RESPONSE_YES) return;
+
+  GList *tagged_images = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from tagged_images where tagid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+  while(sqlite3_step(stmt) == SQLITE_ROW){
+    tagged_images = g_list_append(tagged_images, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
+
   dt_tag_remove(tagid,TRUE);
-  
-  
+
+  GList *list_iter;
+  if((list_iter = g_list_first(tagged_images)) != NULL){
+    do{
+      dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
+    } while((list_iter=g_list_next(list_iter)) != NULL);
+  }
+  g_list_free(g_list_first(tagged_images));
+
   update(self, 0);
   update(self, 1);
 }

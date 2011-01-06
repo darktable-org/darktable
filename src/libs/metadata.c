@@ -143,6 +143,12 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 	fill_combo_box_entry(&(d->rights), rights_count, &rights, &(d->multi_rights));
 	fill_combo_box_entry(&(d->creator), creator_count, &creator, &(d->multi_creator));
 	fill_combo_box_entry(&(d->publisher), publisher_count, &publisher, &(d->multi_publisher));
+	
+	g_list_free(g_list_first(title));
+	g_list_free(g_list_first(description));
+	g_list_free(g_list_first(creator));
+	g_list_free(g_list_first(publisher));
+	g_list_free(g_list_first(rights));
 }
 
 static gboolean expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data){
@@ -154,6 +160,7 @@ static gboolean expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_d
 
 static void clear_button_clicked(GtkButton *button, gpointer user_data){
 	dt_metadata_clear(-1);
+	dt_image_synch_xmp(-1);
 	update(user_data, FALSE);
 }
 
@@ -188,6 +195,7 @@ static void write_metadata(dt_lib_module_t *self){
 	if(publisher != NULL)
 		g_free(publisher);
 
+	dt_image_synch_xmp(-1);
 	update(self, FALSE);
 }
 
@@ -396,6 +404,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size){
 	if(publisher != NULL && publisher[0] != '\0')
 		dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
 
+	dt_image_synch_xmp(-1);
 	update(self, FALSE);
 	return 0;
 }

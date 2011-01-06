@@ -72,7 +72,7 @@ dt_image_single_user()
 
 void dt_image_write_sidecar_file(int imgid)
 {
-  // write .dt file
+  // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     char filename[520];
@@ -81,6 +81,25 @@ void dt_image_write_sidecar_file(int imgid)
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, filename);
+  }
+}
+
+void dt_image_synch_xmp(const int selected)
+{
+  if(selected > 0)
+  {
+    dt_image_write_sidecar_file(selected);
+  }
+  else if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      dt_image_write_sidecar_file(imgid);
+    }
+    sqlite3_finalize(stmt);
   }
 }
 

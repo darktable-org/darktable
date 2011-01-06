@@ -112,26 +112,6 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
-static void
-synch_xmp(const int selected)
-{
-  if(selected > 0)
-  {
-    dt_image_write_sidecar_file(selected);
-  }
-  else if(dt_conf_get_bool("write_sidecar_files"))
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int imgid = sqlite3_column_int(stmt, 0);
-      dt_image_write_sidecar_file(imgid);
-    }
-    sqlite3_finalize(stmt);
-  }
-}
-
 void dt_colorlabels_key_accel_callback(void *user_data)
 {
   const long int mode = (long int)user_data;
@@ -162,7 +142,7 @@ void dt_colorlabels_key_accel_callback(void *user_data)
     }
   }
   // synch to dttags:
-  synch_xmp(selected);
+  dt_image_synch_xmp(selected);
   dt_control_queue_draw_all();
 }
 

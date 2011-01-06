@@ -303,6 +303,8 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
 dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img);
 /** this writes an xmp file for this image. */
 void dt_image_write_sidecar_file(int imgid);
+/** this writes xmp files for this image or all selected if selected == -1. Convenience wrapper around dt_image_write_sidecar_file(). */
+void dt_image_synch_xmp(const int selected);
 
 // memory management interface
 typedef struct dt_mipmap_cache_t
