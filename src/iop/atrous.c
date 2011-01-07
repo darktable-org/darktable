@@ -20,6 +20,8 @@
 #include "common/debug.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+#include "gui/gtk.h"
+#include "dtgtk/slider.h"
 #include <memory.h>
 #include <stdlib.h>
 #include <xmmintrin.h>
@@ -55,6 +57,7 @@ dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
 {
+  GtkWidget *mix;
   GtkDrawingArea *area;
   GtkHBox *hbox;
   GtkComboBox *presets;
@@ -614,8 +617,20 @@ void init_presets (dt_iop_module_t *self)
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
+static void
+reset_mix (dt_iop_module_t *self)
+{
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  c->drag_params = *(dt_iop_atrous_params_t *)self->params;
+  const int old = self->dt->gui->reset;
+  self->dt->gui->reset = 1;
+  dtgtk_slider_set_value(DTGTK_SLIDER(c->mix), 1.0f);
+  self->dt->gui->reset = old;
+}
+
 void gui_update   (struct dt_iop_module_t *self)
 {
+  reset_mix(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -692,6 +707,45 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
+  // draw labels:
+  cairo_set_source_rgb(cr, .1, .1, .1);
+  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size (cr, .06*height);
+  cairo_move_to (cr, .05*width, .365*height);
+  cairo_save (cr);
+  cairo_rotate (cr, -M_PI*.5f);
+  cairo_show_text(cr, _("coarse"));
+  cairo_restore (cr);
+  cairo_move_to (cr, .98*width, .365*height);
+  cairo_save (cr);
+  cairo_rotate (cr, -M_PI*.5f);
+  cairo_show_text(cr, _("fine"));
+  cairo_restore (cr);
+
+  switch(c->channel2)
+  {
+    case atrous_L:
+    case atrous_c:
+      cairo_move_to (cr, .4*width, .98*height);
+      cairo_show_text(cr, _("smooth"));
+      cairo_move_to (cr, .4*width, .08*height);
+      cairo_show_text(cr, _("contrasty"));
+      break;
+    case atrous_Lt:
+    case atrous_ct:
+      cairo_move_to (cr, .4*width, .98*height);
+      cairo_show_text(cr, _("noisy"));
+      cairo_move_to (cr, .4*width, .08*height);
+      cairo_show_text(cr, _("smooth"));
+      break;
+    default: //case atrous_s:
+      cairo_move_to (cr, .4*width, .98*height);
+      cairo_show_text(cr, _("dull"));
+      cairo_move_to (cr, .4*width, .08*height);
+      cairo_show_text(cr, _("bold"));
+      break;
+  }
+
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
   cairo_translate(cr, 0, height);
@@ -719,18 +773,19 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   { // draw curves, selected last.
     int ch = ((int)c->channel+i+1)%(atrous_s+1);
     int ch2 = -1;
+    const float bgmul = i < atrous_s ? 0.5f : 1.0f;
     switch(ch)
     {
       case atrous_L:
-        cairo_set_source_rgba(cr, .6, .6, .6, .3);
+        cairo_set_source_rgba(cr, .6, .6, .6, .3*bgmul);
         ch2 = atrous_Lt;
         break;
       case atrous_c:
-        cairo_set_source_rgba(cr, .4, .2, .0, .4);
+        cairo_set_source_rgba(cr, .4, .2, .0, .4*bgmul);
         ch2 = atrous_ct;
         break;
       default: //case atrous_s:
-        cairo_set_source_rgba(cr, .1, .2, .3, .4);
+        cairo_set_source_rgba(cr, .1, .2, .3, .4*bgmul);
         break;
     }
     p = *(dt_iop_atrous_params_t *)self->params;
@@ -895,7 +950,7 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-    c->drag_params = *(dt_iop_atrous_params_t *)self->params;
+    reset_mix(self);
     const int inset = INSET;
     int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
     c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
@@ -914,6 +969,7 @@ area_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     c->dragging = 0;
+    reset_mix(self);
     return TRUE;
   }
   return FALSE;
@@ -946,8 +1002,23 @@ button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
   }
 }
 
-
-
+static void
+mix_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  const float mix = dtgtk_slider_get_value(slider);
+  for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
+  {
+    p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
+    p->y[ch][k] = fminf(1.0f, fmaxf(0.0f, d->y[ch][k] + mix * (c->drag_params.y[ch][k] - d->y[ch][k])));
+  }
+  dt_dev_add_history_item(darktable.develop, self);
+  gtk_widget_queue_draw(self->widget);
+}
 
 void gui_init (struct dt_iop_module_t *self)
 {
@@ -991,10 +1062,6 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(c->channel_button[atrous_L]), "tooltip-text", _("change lightness at each frequency"), NULL);
   c->channel_button[atrous_c]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("chroma")));
   gtk_object_set(GTK_OBJECT(c->channel_button[atrous_c]), "tooltip-text", _("change color saturation at each frequency"), NULL);
-  // c->channel_button[atrous_Lt] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("Lt")));
-  // gtk_object_set(GTK_OBJECT(c->channel_button[atrous_Lt]), "tooltip-text", _("denoise lightness at each frequency"), NULL);
-  // c->channel_button[atrous_ct] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("ct")));
-  // gtk_object_set(GTK_OBJECT(c->channel_button[atrous_ct]), "tooltip-text", _("denoise color at each frequency"), NULL);
   c->channel_button[atrous_s]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("sharpness")));
   gtk_object_set(GTK_OBJECT(c->channel_button[atrous_s]), "tooltip-text", _("sharpness of edges at each frequency"), NULL);
 
@@ -1004,6 +1071,16 @@ void gui_init (struct dt_iop_module_t *self)
                       G_CALLBACK (button_toggled), self);
     gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[k]), FALSE, FALSE, 5);
   }
+  c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 2.0f, 0.1f, 1.0f, 3);
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
+  GtkWidget *label = gtk_label_new(_("mix"));
+  gtk_object_set(GTK_OBJECT(label),  "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);
 }
 
 void gui_cleanup  (struct dt_iop_module_t *self)
