@@ -129,8 +129,8 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
           // cnt == 1 and no small edge in greens.
           if(fabsf(pixi[-roi_in->width] - pixi[+roi_in->width]) + fabsf(pixi[-1] - pixi[+1])
            + fabsf(pixi[-roi_in->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[+roi_in->width])
-           + fabsf(pixi[+roi_in->width] - pixi[+1]) + fabsf(pixi[+1] - pixi[+roi_in->width])
-           > 0.01)
+           + fabsf(pixi[+roi_in->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[-roi_in->width])
+           > 0.06)
             pixo[f4?c:0] = med[(cnt-1)/2];
           else
             pixo[f4?c:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);

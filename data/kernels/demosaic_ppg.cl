@@ -118,7 +118,8 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  const float cc = (c1 || cnt > 1 || variation > 0.01) ? med[(cnt-1)/2]) : med[4] - 64.0f;
+  // const float cc = (cnt > 1 || variation > 0.06) ? med[(cnt-1)/2]) : med[4] - 64.0f;
+  const float cc = (c1 || cnt > 1 || variation > 0.06) ? med[(cnt-1)/2]) : med[4] - 64.0f;
   if(f4) ((float *)&color)[c] = cc;
   else   color.x              = cc;
   write_imagef (out, (int2)(x, y), color);
