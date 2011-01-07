@@ -91,6 +91,13 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
   const int c = FC(y, x, filters);
   const int c1 = c & 1;
   const float pix = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float n1 = read_imagef(in, sampleri, (int2)(x-1, y)).x;
+  const float n2 = read_imagef(in, sampleri, (int2)(x+1, y)).x;
+  const float n3 = read_imagef(in, sampleri, (int2)(x, y+1)).x;
+  const float n4 = read_imagef(in, sampleri, (int2)(x, y-1)).x;
+  const float variation = fabs(n1 - n2) + fabs(n4 - n3)
+                        + fabs(n1 - n3) + fabs(n2 - n4)
+                        + fabs(n1 - n4) + fabs(n2 - n3);
   const float thrs2 = c1 ? thrs : 2*thrs;
   float med[9];
 
@@ -111,7 +118,7 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
     med[ii] = tmp;
   }
   float4 color = (float4)(0.0f);
-  const float cc = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+  const float cc = (c1 || cnt > 1 || variation > 0.01) ? med[(cnt-1)/2]) : med[4] - 64.0f;
   if(f4) ((float *)&color)[c] = cc;
   else   color.x              = cc;
   write_imagef (out, (int2)(x, y), color);
