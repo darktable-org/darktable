@@ -104,7 +104,7 @@ static void _gui_styles_update_view( dt_lib_styles_t *d)
       gtk_list_store_append (GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                         DT_STYLES_COL_NAME, style->name,
-                        DT_STYLES_COL_TOOLTIP, style->description,
+                        DT_STYLES_COL_TOOLTIP, (strlen (style->description)?style->description:NULL),
                         -1);
       
       g_free(style->name);
