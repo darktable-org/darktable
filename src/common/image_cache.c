@@ -504,9 +504,8 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
       dt_pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }
-    // data/sidecar is flushed at each change for data safety.
-    // but that doesn't hold for tags yet, so we flush here, too:
-    dt_image_cache_flush(&(cache->line[k].image));
+    // data/sidecar is flushed at each change for data safety, so no need to write xmp here:
+    dt_image_cache_flush_no_sidecars(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
     dt_image_init(&(cache->line[k].image));
     cache->line[k].image.id = id;
