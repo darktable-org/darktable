@@ -128,7 +128,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const int ch = piece->colors;
   float h,s,l, hmix,smix,lmix,rmix,gmix,bmix,graymix;
- 
   for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
   {
       // Calculate the HSL mix
@@ -148,11 +147,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         for(int i=0;i<3;i++) out[i]=in[i];
      
       // Calculate graymix and RGB mix
-      graymix = CLIP( out[0] * data->red[CHANNEL_GRAY] )+( out[1] * data->green[CHANNEL_GRAY])+( out[2] * data->blue[CHANNEL_GRAY] );
+      graymix = CLIP(( out[0] * data->red[CHANNEL_GRAY] )+( out[1] * data->green[CHANNEL_GRAY])+( out[2] * data->blue[CHANNEL_GRAY] ));
       
-      rmix = CLIP( out[0] * data->red[CHANNEL_RED] )+( out[1] * data->green[CHANNEL_RED])+( out[2] * data->blue[CHANNEL_RED] );
-      gmix = CLIP( out[0] * data->red[CHANNEL_GREEN] )+( out[1] * data->green[CHANNEL_GREEN])+( out[2] * data->blue[CHANNEL_GREEN] );
-      bmix = CLIP( out[0] * data->red[CHANNEL_BLUE] )+( out[1] * data->green[CHANNEL_BLUE])+( out[2] * data->blue[CHANNEL_BLUE] );
+      rmix = CLIP(( out[0] * data->red[CHANNEL_RED] )+( out[1] * data->green[CHANNEL_RED])+( out[2] * data->blue[CHANNEL_RED] ));
+      gmix = CLIP(( out[0] * data->red[CHANNEL_GREEN] )+( out[1] * data->green[CHANNEL_GREEN])+( out[2] * data->blue[CHANNEL_GREEN] ));
+      bmix = CLIP(( out[0] * data->red[CHANNEL_BLUE] )+( out[1] * data->green[CHANNEL_BLUE])+( out[2] * data->blue[CHANNEL_BLUE] ));
     
       
       if( graymix != 0.0 )  // Graymix is used...
