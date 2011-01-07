@@ -126,7 +126,14 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
             }
           }
           for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-          pixo[f4?c:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+          // cnt == 1 and no small edge in greens.
+          if(fabsf(pixi[-roi_in->width] - pixi[+roi_in->width]) + fabsf(pixi[-1] - pixi[+1])
+           + fabsf(pixi[-roi_in->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[+roi_in->width])
+           + fabsf(pixi[+roi_in->width] - pixi[+1]) + fabsf(pixi[+1] - pixi[+roi_in->width])
+           > 0.01)
+            pixo[f4?c:0] = med[(cnt-1)/2];
+          else
+            pixo[f4?c:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
           pixo += f4?8:2;
           pixi += 2;
         }
@@ -164,7 +171,8 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
           }
         }
         for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[f4?1:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+        // pixo[f4?1:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+        pixo[f4?1:0] = med[(cnt-1)/2];
         pixo += f4?8:2;
         pixi += 2;
       }
