@@ -33,4 +33,8 @@ elif [ -x /sbin/sysctl ]; then
 	fi
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. && make && sudo make install
+if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
+	MAKE_TASKS=1
+fi
+
+cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. && make -j $MAKE_TASKS && sudo make install
