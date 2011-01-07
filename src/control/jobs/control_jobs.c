@@ -173,7 +173,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     sprintf(c, ".dttags");
     (void)g_unlink(filename);
 
-//     dt_image_cache_release(img, 'r');
+    dt_image_cache_release(img, 'r');
     dt_image_remove(imgid);
 
     t = g_list_delete_link(t, t);
