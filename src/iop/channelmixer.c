@@ -122,14 +122,20 @@ groups ()
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
- dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
-  gboolean gray_mix_mode = ( data->red[CHANNEL_GRAY] !=0.0 &&  data->green[CHANNEL_GRAY] !=0.0 &&  data->blue[CHANNEL_GRAY] !=0.0)?TRUE:FALSE;
+  const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  const gboolean gray_mix_mode = ( data->red[CHANNEL_GRAY] !=0.0 &&  data->green[CHANNEL_GRAY] !=0.0 &&  data->blue[CHANNEL_GRAY] !=0.0)?TRUE:FALSE;
   const int ch = piece->colors;
-  float h,s,l, hmix,smix,lmix,rmix,gmix,bmix,graymix;
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_in, roi_out, data) schedule(static)
+#endif
+  for(int j=0;j<roi_out->height;j++)
   {
+    const float *in = ((float *)ivoid) + ch*j*roi_out->width;
+    float *out = ((float *)ovoid) + ch*j*roi_out->width;
+    for(int i=0;i<roi_out->width;i++)
+    {
+      float h,s,l, hmix,smix,lmix,rmix,gmix,bmix,graymix;
       // Calculate the HSL mix
       hmix = CLIP( in[0] * data->red[CHANNEL_HUE] )+( in[1] * data->green[CHANNEL_HUE])+( in[2] * data->blue[CHANNEL_HUE] );
       smix = CLIP( in[0] * data->red[CHANNEL_SATURATION] )+( in[1] * data->green[CHANNEL_SATURATION])+( in[2] * data->blue[CHANNEL_SATURATION] );
@@ -181,6 +187,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     */
     out += ch; in += ch;
+    }
   }
 }
 
