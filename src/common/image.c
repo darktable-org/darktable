@@ -177,12 +177,7 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
   rc = sqlite3_finalize(stmt);
   if(version != 0)
   { // add version information:
-    char *filename = NULL;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select filename from images where id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      filename = (char*)sqlite3_column_text(stmt, 0);
-    rc = sqlite3_finalize(stmt);
+    char *filename = g_strdup(pathname);
 
     char *c = pathname + strlen(pathname);
     while(*c != '.' && c > pathname) c--;
