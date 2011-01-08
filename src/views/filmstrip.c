@@ -187,7 +187,7 @@ copy_history_key_accel_callback(void *data)
 }
 
 static void
-past_history_key_accel_callback(void *data)
+paste_history_key_accel_callback(void *data)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)data;
   if (strip->history_copy_imgid==-1) return;
@@ -275,7 +275,7 @@ void enter(dt_view_t *self)
   strip->stars_registered = 1;
   
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, copy_history_key_accel_callback, (void *)strip);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, past_history_key_accel_callback, (void *)strip);
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, paste_history_key_accel_callback, (void *)strip);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_d, discard_history_key_accel_callback, (void *)strip);
   
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
@@ -292,7 +292,7 @@ void leave(dt_view_t *self)
   strip->history_copy_imgid=-1;
   dt_gui_key_accel_unregister(star_key_accel_callback);
   dt_gui_key_accel_unregister(copy_history_key_accel_callback);
-  dt_gui_key_accel_unregister(past_history_key_accel_callback);
+  dt_gui_key_accel_unregister(paste_history_key_accel_callback);
   dt_gui_key_accel_unregister(discard_history_key_accel_callback);
 }
 
