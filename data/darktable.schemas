@@ -529,7 +529,7 @@
       <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>initial rating when importing filmrolls.</short>
+        <short>initial rating when importing filmrolls</short>
         <long></long>
       </locale>
     </schema>

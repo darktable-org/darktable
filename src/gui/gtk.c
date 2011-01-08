@@ -775,10 +775,6 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
-    // When the user selects a JPEG he wants to import it and doesn't care what this setting was before.
-    gboolean ignore_jpeg = dt_conf_get_bool("ui_last/import_ignore_jpegs");
-    if(ignore_jpeg)
-      dt_conf_set_bool("ui_last/import_ignore_jpegs", FALSE);
 
     char *filename;
     dt_film_t film;
@@ -791,7 +787,7 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
       filename = (char *)it->data;
       gchar *directory = g_path_get_dirname((const gchar *)filename);
       filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, filename);
+      id = dt_image_import(filmid, filename, TRUE);
       if(!id) dt_control_log(_("error loading file `%s'"), filename);
       g_free (filename);
       g_free (directory);
@@ -819,8 +815,6 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
         dt_ctl_switch_mode_to(DT_DEVELOP);
       }
     }
-    // restore setting of ignore_jpeg.
-    dt_conf_set_bool("ui_last/import_ignore_jpegs", ignore_jpeg);
   }
   gtk_widget_destroy (filechooser);
   win = glade_xml_get_widget (darktable.gui->main_window, "center");

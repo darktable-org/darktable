@@ -202,9 +202,9 @@ int dt_film_new(dt_film_t *film, const char *directory)
 	return film->id;
 }
 
-void dt_film_image_import(dt_film_t *film,const char *filename)
+void dt_film_image_import(dt_film_t *film,const char *filename, gboolean override_ignore_jpegs)
 { // import an image into filmroll
-	 if(dt_image_import(film->id, filename)) 
+	 if(dt_image_import(film->id, filename, override_ignore_jpegs)) 
 		 dt_control_queue_draw_all();
 }
 
@@ -308,7 +308,7 @@ void dt_film_import1(dt_film_t *film)
 		{ // import in this thread (recursive import is not thread-safe):
 			dt_film_import_blocking(filename, 1);
 		}
-		else if(dt_image_import(film->id, filename))
+		else if(dt_image_import(film->id, filename, FALSE))
 		{
 			dt_pthread_mutex_lock(&film->images_mutex);
 			darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;

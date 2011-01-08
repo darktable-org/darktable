@@ -117,6 +117,8 @@ void dt_ctl_settings_init(dt_control_t *s)
   memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
 }
 
+// There are systems where absolute paths don't start with '/' (like Windows). Since the bug which introduced absolute paths to
+// the db was fixed before a Windows build was available this shouldn't matter though.
 static void dt_control_sanitize_database()
 {
   sqlite3_stmt *stmt;

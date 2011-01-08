@@ -21,6 +21,7 @@
   #include "config.h"
 #endif
 
+#include <glib.h>
 #include <inttypes.h>
 #include "common/dtpthread.h"
 
@@ -151,7 +152,7 @@ void dt_image_print_exif(dt_image_t *img, char *line, int len);
 int dt_image_open(const int32_t id);
 int dt_image_open2(dt_image_t *img, const int32_t id);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
-int dt_image_import(const int32_t film_id, const char *filename);
+int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** image is in db, mipmaps aren't? call this: */
 int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t mip);
 /** removes the given image from the database. */

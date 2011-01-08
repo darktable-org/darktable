@@ -552,7 +552,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   return 0;
 }
 
-int dt_image_import(const int32_t film_id, const char *filename)
+int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 0;
   const char *cc = filename + strlen(filename);
@@ -561,7 +561,7 @@ int dt_image_import(const int32_t film_id, const char *filename)
   if(!strcmp(cc, ".dttags")) return 0;
   if(!strcmp(cc, ".xmp")) return 0;
   char *ext = g_ascii_strdown(cc+1, -1);
-  if((!strcmp(ext, "jpg") || !strcmp(ext, "jpeg")) && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
+  if(override_ignore_jpegs == FALSE && (!strcmp(ext, "jpg") || !strcmp(ext, "jpeg")) && dt_conf_get_bool("ui_last/import_ignore_jpegs"))
     return 0;
   int supported = 0;
   char **extensions = g_strsplit(dt_supported_extensions, ",", 100);

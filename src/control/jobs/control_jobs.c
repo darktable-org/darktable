@@ -147,24 +147,21 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
     char filename[512];
-    dt_image_full_path(img->id, filename, 512);
-    char *imagename = g_strdup(filename);
-    dt_image_path_append_version(imgid, filename, 512);
+    dt_image_full_path(imgid, filename, 512);
 
     int duplicates = 0;
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename = ?1 and film_id = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, img->filename, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->film_id);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       duplicates = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
     // remove from disk:
     if(duplicates == 1) // don't remove the actual data if there are (other) duplicates using it
-      (void)g_unlink(imagename);
+      (void)g_unlink(filename);
+    dt_image_path_append_version(imgid, filename, 512);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     (void)g_unlink(filename);
@@ -173,7 +170,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     sprintf(c, ".dttags");
     (void)g_unlink(filename);
 
-    dt_image_cache_release(img, 'r');
     dt_image_remove(imgid);
 
     t = g_list_delete_link(t, t);
