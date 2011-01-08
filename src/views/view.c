@@ -37,7 +37,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 {
   vm->film_strip_dragging = 0;
   vm->film_strip_on = 0;
-  vm->film_strip_size = 0.15f;
+  vm->film_strip_size = dt_conf_get_float("plugins/filmstrip/size");
   vm->film_strip_scroll_to = -1;
   vm->film_strip_active_image = -1;
   vm->num_views = 0;
@@ -708,6 +708,9 @@ void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int 
 void dt_view_film_strip_close(dt_view_manager_t *vm)
 {
   if(vm->film_strip.leave) vm->film_strip.leave(&vm->film_strip);
+
+  dt_conf_set_float("plugins/filmstrip/size", vm->film_strip_size);
+
   vm->film_strip_on = 0;
   const int tb = darktable.control->tabborder;
   const int wd = darktable.control->width  - 2*tb;
