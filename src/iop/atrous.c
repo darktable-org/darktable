@@ -598,6 +598,7 @@ void init_presets (dt_iop_module_t *self)
     p.y[atrous_ct][k] = fminf(.5f, .8f*k/(float)BANDS);
   }
   p.y[atrous_s][BANDS-1] = 0.0f;
+  p.y[atrous_s][BANDS-2] = 0.42f;
   dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
   for(int k=0;k<BANDS;k++)
   {
@@ -614,6 +615,20 @@ void init_presets (dt_iop_module_t *self)
   }
   p.y[atrous_L][0] = .5f;
   dt_gui_presets_add_generic(_("bloom"), self->op, &p, sizeof(p), 1);
+  for(int k=0;k<BANDS;k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = 0.6f;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .0f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = 0.0f;
+    p.y[atrous_ct][k] = 0.0f;
+  }
+  dt_gui_presets_add_generic(_("clarity"), self->op, &p, sizeof(p), 1);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
@@ -707,44 +722,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
-  // draw labels:
-  cairo_set_source_rgb(cr, .1, .1, .1);
-  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size (cr, .06*height);
-  cairo_move_to (cr, .05*width, .365*height);
-  cairo_save (cr);
-  cairo_rotate (cr, -M_PI*.5f);
-  cairo_show_text(cr, _("coarse"));
-  cairo_restore (cr);
-  cairo_move_to (cr, .98*width, .365*height);
-  cairo_save (cr);
-  cairo_rotate (cr, -M_PI*.5f);
-  cairo_show_text(cr, _("fine"));
-  cairo_restore (cr);
-
-  switch(c->channel2)
-  {
-    case atrous_L:
-    case atrous_c:
-      cairo_move_to (cr, .4*width, .98*height);
-      cairo_show_text(cr, _("smooth"));
-      cairo_move_to (cr, .4*width, .08*height);
-      cairo_show_text(cr, _("contrasty"));
-      break;
-    case atrous_Lt:
-    case atrous_ct:
-      cairo_move_to (cr, .4*width, .98*height);
-      cairo_show_text(cr, _("noisy"));
-      cairo_move_to (cr, .4*width, .08*height);
-      cairo_show_text(cr, _("smooth"));
-      break;
-    default: //case atrous_s:
-      cairo_move_to (cr, .4*width, .98*height);
-      cairo_show_text(cr, _("dull"));
-      cairo_move_to (cr, .4*width, .08*height);
-      cairo_show_text(cr, _("bold"));
-      break;
-  }
+  cairo_save(cr);
 
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
@@ -861,6 +839,47 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     if(c->x_move == k) cairo_fill(cr);
     else               cairo_stroke(cr);
   }
+
+  cairo_restore(cr);
+  // draw labels:
+  cairo_set_source_rgb(cr, .1, .1, .1);
+  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size (cr, .06*height);
+  cairo_move_to (cr, .02*width, .13*height);
+  cairo_save (cr);
+  cairo_rotate (cr, M_PI*.5f);
+  cairo_show_text(cr, _("coarse"));
+  cairo_restore (cr);
+  cairo_move_to (cr, .96*width, .13*height);
+  cairo_save (cr);
+  cairo_rotate (cr, M_PI*.5f);
+  cairo_show_text(cr, _("fine"));
+  cairo_restore (cr);
+
+  switch(c->channel2)
+  {
+    case atrous_L:
+    case atrous_c:
+      cairo_move_to (cr, .4*width, .98*height);
+      cairo_show_text(cr, _("smooth"));
+      cairo_move_to (cr, .4*width, .08*height);
+      cairo_show_text(cr, _("contrasty"));
+      break;
+    case atrous_Lt:
+    case atrous_ct:
+      cairo_move_to (cr, .4*width, .98*height);
+      cairo_show_text(cr, _("noisy"));
+      cairo_move_to (cr, .4*width, .08*height);
+      cairo_show_text(cr, _("smooth"));
+      break;
+    default: //case atrous_s:
+      cairo_move_to (cr, .4*width, .98*height);
+      cairo_show_text(cr, _("dull"));
+      cairo_move_to (cr, .4*width, .08*height);
+      cairo_show_text(cr, _("bold"));
+      break;
+  }
+
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
@@ -1059,11 +1078,11 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
   c->channel_button[atrous_L]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma")));
-  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_L]), "tooltip-text", _("change lightness at each frequency"), NULL);
+  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_L]), "tooltip-text", _("change lightness at each feature size"), NULL);
   c->channel_button[atrous_c]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("chroma")));
-  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_c]), "tooltip-text", _("change color saturation at each frequency"), NULL);
+  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_c]), "tooltip-text", _("change color saturation at each feature size"), NULL);
   c->channel_button[atrous_s]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("sharpness")));
-  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_s]), "tooltip-text", _("sharpness of edges at each frequency"), NULL);
+  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_s]), "tooltip-text", _("sharpness of edges at each feature size"), NULL);
 
   for(int k=atrous_s;k>=0;k--)
   {
@@ -1071,7 +1090,7 @@ void gui_init (struct dt_iop_module_t *self)
                       G_CALLBACK (button_toggled), self);
     gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[k]), FALSE, FALSE, 5);
   }
-  c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 2.0f, 0.1f, 1.0f, 3);
+  c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -2.0f, 2.0f, 0.1f, 1.0f, 3);
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
   GtkWidget *label = gtk_label_new(_("mix"));
