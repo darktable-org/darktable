@@ -145,7 +145,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float cam[rowsize];
     float Lab[rowsize];
     
-#ifdef _OPENMP
+    // FIXME: for some unapparent reason even this breaks lcms2 :(
+#if 0//def _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
 #endif
     for(int k=0;k<roi_out->height;k++)
@@ -259,7 +260,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
-      d->cmatrix[0] = -0.666f;
+      d->cmatrix[0] = -666.0f;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
   }
@@ -272,19 +273,19 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
-      d->cmatrix[0] = -0.666f;
+      d->cmatrix[0] = -666.0f;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
   }
   // user selected a non-supported output profile, check that:
-  if(!d->xform[0] && d->cmatrix[0] == -0.666f)
+  if(!d->xform[0] && d->cmatrix[0] == -666.0f)
   {
     dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
-      d->cmatrix[0] = -0.666f;
+      d->cmatrix[0] = -666.0f;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
     }
   }
