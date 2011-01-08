@@ -43,6 +43,8 @@
 #include <string.h>
 #include <glib.h>
 #include <string.h>
+#include <sys/param.h>
+#include <unistd.h>
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
@@ -242,11 +244,29 @@ int dt_init(int argc, char *argv[])
   int id = 0;
   if(image_to_load)
   {
-    gchar *directory = g_path_get_dirname((const gchar *)image_to_load);
+    char* filename;
+    if(g_path_is_absolute(image_to_load) == FALSE){
+      char* current_dir = g_get_current_dir();
+      char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
+      filename = (char*)malloc(sizeof(char)*MAXPATHLEN);
+      if(realpath(tmp_filename, filename) == NULL){
+        dt_control_log(_("found strange path `%s'"), tmp_filename);
+        g_free(current_dir);
+        g_free(tmp_filename);
+        g_free(filename);
+        return 0;
+      }
+      g_free(current_dir);
+      g_free(tmp_filename);
+    } else {
+      filename = g_strdup(image_to_load);
+    }
+
+    gchar *directory = g_path_get_dirname((const gchar *)filename);
     dt_film_t film;
     const int filmid = dt_film_new(&film, directory);
-    id = dt_image_import(filmid, image_to_load, TRUE);
-    if(!id) dt_control_log(_("error loading file `%s'"), image_to_load);
+    id = dt_image_import(filmid, filename, TRUE);
+    if(!id) dt_control_log(_("error loading file `%s'"), filename);
     g_free (directory);
     if(id)
     {
@@ -260,7 +280,7 @@ int dt_init(int argc, char *argv[])
       {
         id = 0;
         dt_image_cache_release(img, 'r');
-        dt_control_log(_("file `%s' has unknown format!"), image_to_load);
+        dt_control_log(_("file `%s' has unknown format!"), filename);
       }
       else
       {
@@ -270,6 +290,7 @@ int dt_init(int argc, char *argv[])
         dt_ctl_switch_mode_to(DT_DEVELOP);
       }
     }
+    g_free(filename);
   }
   if(!id)
   {
