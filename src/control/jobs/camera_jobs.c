@@ -38,7 +38,7 @@ int32_t dt_captured_image_import_job_run(dt_job_t *job)
   snprintf(message, 512, _("importing image %s"), t->filename);
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
   
-  int id = dt_image_import(t->film_id, t->filename);
+  int id = dt_image_import(t->film_id, t->filename, TRUE);
   if(id)
   {
     //dt_film_open(1);
@@ -204,7 +204,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_film_image_import(t->film,filename);
+  dt_film_image_import(t->film,filename, TRUE);
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
   t->fraction+=1.0/g_list_length(t->images);

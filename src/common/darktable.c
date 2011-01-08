@@ -245,7 +245,7 @@ int dt_init(int argc, char *argv[])
     gchar *directory = g_path_get_dirname((const gchar *)image_to_load);
     dt_film_t film;
     const int filmid = dt_film_new(&film, directory);
-    id = dt_image_import(filmid, image_to_load);
+    id = dt_image_import(filmid, image_to_load, TRUE);
     if(!id) dt_control_log(_("error loading file `%s'"), image_to_load);
     g_free (directory);
     if(id)

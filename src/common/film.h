@@ -60,6 +60,6 @@ int dt_film_is_empty(const int id);
 /** Createing a new filmroll */
 int dt_film_new(dt_film_t *film,const char *directory);
 /** Imports an image into filmroll */
-void dt_film_image_import(dt_film_t *film,const char *filename);
+void dt_film_image_import(dt_film_t *film,const char *filename, gboolean override_ignore_jpegs);
 
 #endif
