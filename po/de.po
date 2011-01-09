@@ -1537,7 +1537,7 @@ msgstr "kräftig"
 
 #: ../src/iop/atrous.c:887
 msgid "dull"
-msgstr "schwach"
+msgstr "matt"
 
 #: ../src/iop/atrous.c:1088 ../src/iop/equalizer.c:325
 msgid "luma"
@@ -1546,7 +1546,7 @@ msgstr "Luminanz"
 # uh, häßlich
 #: ../src/iop/atrous.c:1089
 msgid "change lightness at each feature size"
-msgstr "Helligkeit bei jeder Merkmalsgröße ändern"
+msgstr "Helligkeit bei jeder Strukturgröße ändern"
 
 #: ../src/iop/atrous.c:1090 ../src/iop/equalizer.c:326
 msgid "chroma"
@@ -1554,7 +1554,7 @@ msgstr "Chrominanz"
 
 #: ../src/iop/atrous.c:1091
 msgid "change color saturation at each feature size"
-msgstr "Farbsättigung bei jeder Merkmalsgröße ändern"
+msgstr "Farbsättigung bei jeder Strukturgröße ändern"
 
 #: ../src/iop/atrous.c:1092
 msgid "sharpness"
@@ -1562,7 +1562,7 @@ msgstr "Schärfe"
 
 #: ../src/iop/atrous.c:1093
 msgid "sharpness of edges at each feature size"
-msgstr "Kantenschärfe bei jeder Merkmalsgröße"
+msgstr "Kantenschärfe bei jeder Strukturgröße"
 
 #: ../src/iop/atrous.c:1104
 msgid "mix"
