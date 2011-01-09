@@ -33,19 +33,37 @@
 #include <stdio.h>
 #include <glib.h>
 
-int32_t _styles_get_id_by_name (const char *name);
+typedef struct {
+	GString 	*name;
+	GString 	*description;
+} StyleInfoData;
+
+typedef struct {
+  int   num;
+  int   module;
+  GString   *operation;
+  GString   *op_params;
+  int   enabled;
+} StylePluginData;
+
+typedef struct {
+  StyleInfoData   *info;
+  GList           *plugins;
+  gboolean        in_plugin;
+} StyleData;
+
+static int32_t dt_styles_get_id_by_name (const char *name);
 
 gboolean 
 dt_styles_exists (const char *name)
 {
-  return (_styles_get_id_by_name(name))!=0?TRUE:FALSE;
+  return (dt_styles_get_id_by_name(name))!=0?TRUE:FALSE;
 }
 
-gboolean
-_dt_style_create_style_header(const char *name, const char *description){
-  int rc=0;
+static gboolean
+dt_styles_create_style_header(const char *name, const char *description){
   sqlite3_stmt *stmt;
-  if (_styles_get_id_by_name(name)!=0)
+  if (dt_styles_get_id_by_name(name)!=0)
   {
     dt_control_log(_("style with name '%s' already exists"),name);
     return FALSE;
@@ -54,21 +72,21 @@ _dt_style_create_style_header(const char *name, const char *description){
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into styles (name,description) values (?1,?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name,strlen (name),SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description,strlen (description),SQLITE_STATIC);
-  rc = sqlite3_step (stmt);
-  rc = sqlite3_finalize (stmt);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
   return TRUE;
 }
 
 void 
 dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *filter)
 {
-  int rc=0,id=0;
+  int id=0;
   sqlite3_stmt *stmt;  
   
   /* first create the style header */
-  if (!_dt_style_create_style_header(name,description) ) return;
+  if (!dt_styles_create_style_header(name,description) ) return;
 
-  if ((id=_styles_get_id_by_name(name)) != 0)
+  if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     /* create the style_items from source image history stack */
     if (filter)
@@ -92,8 +110,8 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into style_items (styleid,num,module,operation,op_params,enabled) select ?1, num,module,operation,op_params,enabled from history where imgid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-    rc = sqlite3_step (stmt);
-    rc = sqlite3_finalize (stmt);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
     
     dt_control_log(_("style named '%s' successfully created"),name);
   }
@@ -116,10 +134,10 @@ dt_styles_apply_to_selection(const char *name,gboolean duplicate)
 void 
 dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 {
-  int rc=0,id=0;
+  int id=0;
   sqlite3_stmt *stmt;  
   
-  if ((id=_styles_get_id_by_name(name)) != 0)
+  if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     /* check if we should make a duplicate before applying style */
     if (duplicate)
@@ -139,18 +157,18 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
       /* replace history stack */
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-      rc = sqlite3_step (stmt);
+      sqlite3_step (stmt);
     }
 #endif
-    rc = sqlite3_finalize (stmt);
+    sqlite3_finalize (stmt);
     
     /* copy history items from styles onto image */
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid,num,module,operation,op_params,enabled) select ?1, num+?2,module,operation,op_params,enabled from style_items where styleid=?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
-    rc = sqlite3_step (stmt);
-    rc = sqlite3_finalize (stmt);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
     
     /* add tag */
     guint tagid=0;
@@ -174,7 +192,7 @@ void
 dt_styles_delete_by_name(const char *name)
 {
   int id=0;
-  if ((id=_styles_get_id_by_name(name)) != 0)
+  if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     /* delete the style */
     sqlite3_stmt *stmt;
@@ -198,7 +216,7 @@ dt_styles_get_item_list (const char *name)
   GList *result=NULL;
   sqlite3_stmt *stmt;
   int id=0;
-  if ((id=_styles_get_id_by_name(name)) != 0)
+  if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
@@ -211,6 +229,7 @@ dt_styles_get_item_list (const char *name)
       item->name = g_strdup (name);
       result = g_list_append (result,item);
     }
+    sqlite3_finalize(stmt);
   }
   return result;
 }
@@ -237,7 +256,8 @@ dt_styles_get_list (const char *filter)
   return result;
 }
 
-char *_dt_style_encode(sqlite3_stmt *stmt, int row){
+static char *
+dt_style_encode(sqlite3_stmt *stmt, int row){
       const int32_t len = sqlite3_column_bytes(stmt, row);
       char *vparams = (char *)malloc(2*len + 1);
       dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, row), vparams, len);
@@ -279,45 +299,26 @@ dt_styles_save_to_file(const char *style_name,const char *filedir){
     rc = xmlTextWriterEndElement(writer);
     
     rc = xmlTextWriterStartElement(writer, BAD_CAST "style");
-    rc = sqlite3_prepare_v2(darktable.db, "select num,module,operation,op_params,enabled from style_items where styleid =?1",-1, &stmt,NULL);
-    rc = sqlite3_bind_int(stmt,1,_styles_get_id_by_name(style_name));
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num,module,operation,op_params,enabled from style_items where styleid =?1",-1, &stmt,NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt,1,dt_styles_get_id_by_name(style_name));
     while (sqlite3_step (stmt) == SQLITE_ROW)
     {
       rc = xmlTextWriterStartElement(writer, BAD_CAST "plugin");
       rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt,0));
       rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt,1));
       rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt,2));
-      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", _dt_style_encode(stmt,3));
+      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt,3));
       rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
       rc = xmlTextWriterEndElement(writer);
     }
+    sqlite3_finalize(stmt);
     rc = xmlTextWriterEndDocument(writer);
     xmlFreeTextWriter(writer);
     dt_control_log(_("style %s was sucessfully saved"),style_name);
 }
 
-//
-typedef struct {
-	GString 	*name;
-	GString 	*description;
-} StyleInfoData;
-
-typedef struct {
-  int   num;
-  int   module;
-  GString   *operation;
-  GString   *op_params;
-  int   enabled;
-} StylePluginData;
-
-typedef struct {
-  StyleInfoData   *info;
-  GList           *plugins;
-  gboolean        in_plugin;
-} StyleData;
-
 static StyleData *
-__style_data_new ()
+dt_styles_style_data_new ()
 {
   StyleInfoData *info = g_new0(StyleInfoData,1);
   info->name = g_string_new("");
@@ -332,7 +333,7 @@ __style_data_new ()
 }
 
 static StylePluginData *
-__style_plugin_new ()
+dt_styles_style_plugin_new ()
 {
   StylePluginData *plugin = g_new0(StylePluginData,1);
   plugin->operation = g_string_new("");
@@ -341,16 +342,16 @@ __style_plugin_new ()
 }
 
 static void
-__style_data_free (StyleData *style, gboolean free_segments)
+dt_styles_style_data_free (StyleData *style, gboolean free_segments)
 {
 	g_string_free (style->info->name, free_segments);
 	g_string_free (style->info->description, free_segments);
-  g_list_free(style->plugins);
+	g_list_free(style->plugins);
 	g_free(style);
 }
 
 static void
-__start_tag_handler (GMarkupParseContext *context,
+dt_styles_start_tag_handler (GMarkupParseContext *context,
 					 const gchar         *element_name,
 					 const gchar        **attribute_names,
 					 const gchar        **attribute_values,
@@ -364,12 +365,12 @@ __start_tag_handler (GMarkupParseContext *context,
 	// for this we need to know when we are inside the note-content tag
 	if (g_ascii_strcasecmp (elt, "plugin") == 0) {
 		style->in_plugin = TRUE;
-		style->plugins = g_list_prepend(style->plugins,__style_plugin_new());
+		style->plugins = g_list_prepend(style->plugins,dt_styles_style_plugin_new());
 	}
 }
 
 static void
-__end_tag_handler (GMarkupParseContext *context,
+dt_styles_end_tag_handler (GMarkupParseContext *context,
                    const gchar         *element_name,
                    gpointer             user_data,
                    GError             **error)
@@ -385,7 +386,7 @@ __end_tag_handler (GMarkupParseContext *context,
 }
 
 static void
-__style_text_handler (GMarkupParseContext *context,
+dt_styles_style_text_handler (GMarkupParseContext *context,
 			    const gchar *text,
 			    gsize text_len,
 			    gpointer user_data,
@@ -423,47 +424,48 @@ __style_text_handler (GMarkupParseContext *context,
 
 static GMarkupParser dt_style_parser =
 {
-	__start_tag_handler,	 // Start element handler
-	__end_tag_handler,  	 // End element handler
-	__style_text_handler,			 // Text element handler
-	NULL,					 // Passthrough handler
-	NULL					 // Error handler
+	dt_styles_start_tag_handler,	// Start element handler
+	dt_styles_end_tag_handler,  	// End element handler
+	dt_styles_style_text_handler,	// Text element handler
+	NULL,					 		// Passthrough handler
+	NULL					 		// Error handler
 };
 
-void _dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
+static void
+dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 {
-  int rc = 0;
   int id = GPOINTER_TO_INT(styleId);
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2 (darktable.db, "insert into style_items (styleid,num,module,operation,op_params,enabled) values(?1,?2,?3,?4,?5,?6)", -1, &stmt, NULL);
-  rc = sqlite3_bind_int (stmt, 1, id);
-  rc = sqlite3_bind_int (stmt, 2, plugin->num);
-  rc = sqlite3_bind_int (stmt, 3, plugin->module);
-  rc = sqlite3_bind_text (stmt, 4, plugin->operation->str, plugin->operation->len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into style_items (styleid,num,module,operation,op_params,enabled) values(?1,?2,?3,?4,?5,?6)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, plugin->num);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, plugin->module);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, plugin->operation->str, plugin->operation->len, SQLITE_TRANSIENT);
   //
   const char *param_c = plugin->op_params->str;
   const int param_c_len = strlen(param_c);
   const int params_len = param_c_len/2;
   unsigned char *params = (unsigned char *)malloc(params_len);
   dt_exif_xmp_decode(param_c, params, param_c_len);
-  rc = sqlite3_bind_blob (stmt, 5, params, params_len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_len, SQLITE_TRANSIENT);
   //
-  rc = sqlite3_bind_int (stmt, 6, plugin->enabled);
-  rc = sqlite3_step (stmt);
-  rc = sqlite3_finalize (stmt);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, plugin->enabled);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
   g_free(params);
 }
 
-void _dt_style_save(StyleData *style){
+static void
+dt_style_save(StyleData *style){
   int id = 0;
   if ( style == NULL) return;
   
   /* first create the style header */
-  if (!_dt_style_create_style_header(style->info->name->str,style->info->description->str) ) return;
+  if (!dt_styles_create_style_header(style->info->name->str,style->info->description->str) ) return;
   
-  if ((id=_styles_get_id_by_name(style->info->name->str)) != 0)
+  if ((id=dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
-      g_list_foreach(style->plugins,(GFunc)_dt_style_plugin_save,GINT_TO_POINTER(id));
+      g_list_foreach(style->plugins,(GFunc)dt_style_plugin_save,GINT_TO_POINTER(id));
       dt_control_log(_("style %s was sucessfully imported"),style->info->name->str);
   }
 }
@@ -471,13 +473,13 @@ void _dt_style_save(StyleData *style){
 void 
 dt_styles_import_from_file(const char *style_path){
 
-  FILE    			      *style_file;
-  StyleData           *style;
+	FILE    			*style_file;
+	StyleData           *style;
 	GMarkupParseContext	*parser;
 	gchar				buf[1024];
 	int					num_read;
 	
-	style = __style_data_new();
+	style = dt_styles_style_data_new();
 	parser = g_markup_parse_context_new (&dt_style_parser, 0, style, NULL);
 	
 	if ((style_file = fopen (style_path, "r"))) {
@@ -494,7 +496,7 @@ dt_styles_import_from_file(const char *style_path){
 			
 			if (!g_markup_parse_context_parse(parser, buf, num_read, NULL)) {
 				g_markup_parse_context_free(parser);
-				__style_data_free(style,TRUE);
+				dt_styles_style_data_free(style,TRUE);
 				fclose (style_file);
 				return;
 			}
@@ -502,34 +504,35 @@ dt_styles_import_from_file(const char *style_path){
 	} else {
 		// Failed to open file, clean up.
 		g_markup_parse_context_free(parser);
-		__style_data_free(style,TRUE);
+		dt_styles_style_data_free(style,TRUE);
 		return;
 	}
 	
 	if (!g_markup_parse_context_end_parse (parser, NULL)) {
 		g_markup_parse_context_free(parser);
-		__style_data_free(style,TRUE);
+		dt_styles_style_data_free(style,TRUE);
 		fclose (style_file);
 		return;
 	}
 	g_markup_parse_context_free (parser);
 	// save data
-	_dt_style_save(style);
+	dt_style_save(style);
 	//
-	__style_data_free(style,TRUE);
+	dt_styles_style_data_free(style,TRUE);
 	fclose (style_file);
 }
 
-gchar *dt_styles_get_description (const char *name)
+gchar *
+dt_styles_get_description (const char *name)
 {
   sqlite3_stmt *stmt;
-  int id=0,rc=0;
+  int id=0;
   gchar *description = NULL;
-  if ((id=_styles_get_id_by_name(name)) != 0)
+  if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select description from styles where rowid=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-    rc = sqlite3_step(stmt);
+    sqlite3_step(stmt);
     description = (char *)sqlite3_column_text (stmt, 0);
     if (description)
       description = g_strdup (description);
@@ -538,8 +541,8 @@ gchar *dt_styles_get_description (const char *name)
   return description;
 }
 
-int32_t 
-_styles_get_id_by_name (const char *name)
+static int32_t
+dt_styles_get_id_by_name (const char *name)
 {
   int id=0;
   sqlite3_stmt *stmt;
