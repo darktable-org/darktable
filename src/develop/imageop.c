@@ -646,7 +646,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   // move p to point to an rggb block:
   int trggbx = 0, trggby = 0;
   if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
-  if(FC(trggby, trggbx,   filters) != 0) { trggbx ++; trggby ++; }
+  if(FC(trggby, trggbx,   filters) != 0) { trggbx = (trggbx + 1)&1; trggby ++; }
   const int rggbx = trggbx, rggby = trggby;
 
 
@@ -723,7 +723,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   // move p to point to an rggb block:
   int trggbx = 0, trggby = 0;
   if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
-  if(FC(trggby, trggbx,   filters) != 0) { trggbx ++; trggby ++; }
+  if(FC(trggby, trggbx,   filters) != 0) { trggbx = (trggbx + 1)&1; trggby ++; }
   const int rggbx = trggbx, rggby = trggby;
 
 
