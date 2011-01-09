@@ -37,6 +37,17 @@ DT_MODULE(1)
 #define MAX_LEVEL 7
 #define RES 64
 
+#define dt_atrous_show_upper_label(cr, text, ext) 	cairo_text_extents (cr, text, &ext);\
+													cairo_move_to (cr, .5*(width-ext.width), .08*height);\
+													cairo_show_text(cr, text);
+
+
+#define dt_atrous_show_lower_label(cr, text, ext) 	cairo_text_extents (cr, text, &ext);\
+													cairo_move_to (cr, .5*(width-ext.width), .98*height);\
+													cairo_show_text(cr, text);
+
+
+
 typedef enum atrous_channel_t
 {
   atrous_L    = 0,  // luminance boost
@@ -842,17 +853,20 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   cairo_restore(cr);
   // draw labels:
+  cairo_text_extents_t ext;
   cairo_set_source_rgb(cr, .1, .1, .1);
   cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
   cairo_set_font_size (cr, .06*height);
-  cairo_move_to (cr, .02*width, .13*height);
+  cairo_text_extents (cr, _("coarse"), &ext);
+  cairo_move_to (cr, .02*width+ext.height, .14*height+ext.width);
   cairo_save (cr);
-  cairo_rotate (cr, M_PI*.5f);
+  cairo_rotate (cr, -M_PI*.5f);
   cairo_show_text(cr, _("coarse"));
   cairo_restore (cr);
-  cairo_move_to (cr, .96*width, .13*height);
+  cairo_text_extents (cr, _("fine"), &ext);
+  cairo_move_to (cr, .98*width, .14*height+ext.width);
   cairo_save (cr);
-  cairo_rotate (cr, M_PI*.5f);
+  cairo_rotate (cr, -M_PI*.5f);
   cairo_show_text(cr, _("fine"));
   cairo_restore (cr);
 
@@ -860,23 +874,17 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   {
     case atrous_L:
     case atrous_c:
-      cairo_move_to (cr, .4*width, .98*height);
-      cairo_show_text(cr, _("smooth"));
-      cairo_move_to (cr, .4*width, .08*height);
-      cairo_show_text(cr, _("contrasty"));
+      dt_atrous_show_upper_label(cr, _("contrasty"), ext);
+      dt_atrous_show_lower_label(cr, _("smooth"), ext);
       break;
     case atrous_Lt:
     case atrous_ct:
-      cairo_move_to (cr, .4*width, .98*height);
-      cairo_show_text(cr, _("noisy"));
-      cairo_move_to (cr, .4*width, .08*height);
-      cairo_show_text(cr, _("smooth"));
+      dt_atrous_show_upper_label(cr, _("smooth"), ext);
+      dt_atrous_show_lower_label(cr, _("noisy"), ext);
       break;
     default: //case atrous_s:
-      cairo_move_to (cr, .4*width, .98*height);
-      cairo_show_text(cr, _("dull"));
-      cairo_move_to (cr, .4*width, .08*height);
-      cairo_show_text(cr, _("bold"));
+      dt_atrous_show_upper_label(cr, _("bold"), ext);
+      dt_atrous_show_lower_label(cr, _("dull"), ext);
       break;
   }
 
