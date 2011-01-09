@@ -60,7 +60,7 @@ typedef struct dt_iop_colorin_gui_data_t
 }
 dt_iop_colorin_gui_data_t;
 
-#define LUT_SAMPLES 0xffff
+#define LUT_SAMPLES 0x10000
 
 typedef struct dt_iop_colorin_data_t
 {

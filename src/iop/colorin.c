@@ -80,7 +80,6 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
-#if 1
 static float
 lerp_lut(const float *const lut, const float v)
 {
@@ -93,7 +92,6 @@ lerp_lut(const float *const lut, const float v)
   const float l2 = lut[t+1];
   return l1*(1.0f-f) + l2*f;
 }
-#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
