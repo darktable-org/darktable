@@ -233,7 +233,7 @@ error:
 static void
 init_presets(dt_iop_module_t *module)
 {
-  if(module->init_presets)
+  if(module->init_presets && module->dev->gui_attached)
   { // only if method exists and no writeprotected (static) preset has been inserted yet.
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
