@@ -132,10 +132,6 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
   rc = sqlite3_step (stmt);
   rc = sqlite3_finalize (stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from mipmaps where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
-  rc = sqlite3_step (stmt);
-  rc = sqlite3_finalize (stmt);
   
   /* reimport image updated image */
   dt_image_t *img = dt_image_cache_get (dest_imgid, 'r');
