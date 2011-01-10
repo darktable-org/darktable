@@ -264,7 +264,8 @@ restart:
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
-  double start = dt_get_wtime();
+  dt_times_t start;
+  dt_get_times(&start);
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
   if(dt_dev_pixelpipe_process(dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width*dev->preview_downsampling, dev->preview_pipe->processed_height*dev->preview_downsampling, dev->preview_downsampling))
   {
@@ -277,8 +278,7 @@ restart:
     }
     else goto restart;
   }
-  double end = dt_get_wtime();
-  dt_print(DT_DEBUG_PERF, "[dev_process_preview] pixel pipeline processing took %.3f secs\n", end - start);
+  dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
 
   dev->preview_dirty = 0;
   dt_control_queue_draw_all();
@@ -388,7 +388,8 @@ restart:
   assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
 #endif
  
-  double start = dt_get_wtime();
+  dt_times_t start;
+  dt_get_times(&start);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale))
   {
     if(dev->image_force_reload)
@@ -398,8 +399,7 @@ restart:
     }
     else goto restart;
   }
-  double end = dt_get_wtime();
-  dt_print(DT_DEBUG_PERF, "[dev_process_image] pixel pipeline processing took %.3f secs\n", end - start);
+  dt_show_times(&start, "[dev_process_image] pixel pipeline processing", NULL);
 
   // maybe we got zoomed/panned in the meantime?
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
@@ -428,10 +428,10 @@ void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img)
 restart:
     dev->image_loading = 1;
     dt_print(DT_DEBUG_CONTROL, "[run_job+] 99 %f imageio loading image %d\n", dt_get_wtime(), img->id);
-    double start = dt_get_wtime();
+    dt_times_t start;
+    dt_get_times(&start);
     err = dt_image_load(img, DT_IMAGE_FULL); // load and lock 'r'
-    double end = dt_get_wtime();
-    dt_print(DT_DEBUG_PERF, "[dev_raw_load] imageio took %.3f secs to load the image.\n", end - start);
+    dt_show_times(&start, "[dev_raw_load] imageio", "to load the image.");
     dt_print(DT_DEBUG_CONTROL, "[run_job-] 99 %f imageio loading image %d\n", dt_get_wtime(), img->id);
     if(err)
     { // couldn't load image (cache slots full?)

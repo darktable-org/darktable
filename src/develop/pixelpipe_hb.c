@@ -237,7 +237,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
                              const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
   dt_iop_roi_t roi_in = *roi_out;
-  double start, end;
 
   void *input = NULL;
   void *cl_mem_input = NULL;
@@ -290,7 +289,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     // 3a) import input array with given scale and roi
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    start = dt_get_wtime();
+    dt_times_t start;
+    dt_get_times(&start);
     if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 && pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
@@ -336,8 +336,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
       }
     }
-    end = dt_get_wtime();
-    dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs initing base buffer [%s]\n", end - start, pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+    dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
   else
@@ -439,7 +438,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     // actual pixel processing done by module
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    start = dt_get_wtime();
+    dt_times_t start;
+    dt_get_times(&start);
 #ifdef HAVE_OPENCL
     if(module->process_cl)
     {
@@ -467,8 +467,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 #endif
       module->process(module, piece, input, *output, &roi_in, roi_out);
     }
-    end = dt_get_wtime();
-    dt_print(DT_DEBUG_PERF, "[dev_pixelpipe] took %.3f secs processing `%s' [%s]\n", end - start, module->name(),
+    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
         pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(module == darktable.develop->gui_module)

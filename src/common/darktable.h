@@ -26,6 +26,7 @@
 #endif
 #include "common/dtpthread.h"
 #include <time.h>
+#include <sys/resource.h>
 #include <sys/time.h>
 #include <inttypes.h>
 #include <sqlite3.h>
@@ -131,6 +132,13 @@ typedef struct darktable_t
 }
 darktable_t;
 
+typedef struct
+{
+  double clock;
+  double user;
+}
+dt_times_t;
+
 extern darktable_t darktable;
 extern const char dt_supported_extensions[];
 
@@ -149,12 +157,25 @@ void dt_get_user_cache_dir(char *data, size_t bufsize);
 /** get the user local directory , ~/.local */
 void dt_get_user_local_dir(char *data, size_t bufsize);
 
-static inline double dt_get_wtime()
+static inline double dt_get_wtime(void)
 {
   struct timeval time;
   gettimeofday(&time, NULL);
   return time.tv_sec - 1290608000 + (1.0/1000000.0)*time.tv_usec;
 }
+
+static inline void dt_get_times(dt_times_t *t)
+{
+  struct rusage ru;
+  if (darktable.unmuted & DT_DEBUG_PERF)
+  {
+    getrusage(RUSAGE_SELF, &ru);
+    t->clock = dt_get_wtime();
+    t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0/1000000.0);
+  }
+}
+
+void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...);
 
 static inline int dt_get_num_threads()
 {

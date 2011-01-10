@@ -513,3 +513,25 @@ void dt_get_datadir(char *datadir, size_t bufsize)
 #endif
 }
 
+void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+{
+  dt_times_t end;
+  char buf[120];		/* Arbitrary size, should be lots big enough for everything used in DT */
+  int i;
+
+  /* Skip all the calculations an everything if -d perf isn't on */
+  if (darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_get_times(&end);
+    i = sprintf(buf, "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock, end.user - start->user);
+    if (suffix != NULL)
+    {
+      va_list ap;
+      va_start(ap, suffix);
+      buf[i++] = ' ';
+      vsnprintf(buf + i, sizeof buf - i, suffix, ap);
+      va_end(ap);
+    }
+    dt_print(DT_DEBUG_PERF, "%s\n", buf);
+  }
+}

@@ -726,22 +726,21 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 
 int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
 {
-  double start, end;
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, img);
   const int wd = dev.image->width;
   const int ht = dev.image->height;
 
-  start = dt_get_wtime();
+  dt_times_t start;
+  dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
   dt_dev_pixelpipe_init_export(&pipe, wd, ht);
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-  end = dt_get_wtime();
-  dt_print(DT_DEBUG_PERF, "[export] creating pixelpipe took %.3f secs\n", end - start);
+  dt_show_times(&start, "[export] creating pixelpipe", NULL);
 
   // find output color profile for this image:
   int sRGB = 1;
