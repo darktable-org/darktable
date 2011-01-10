@@ -3,7 +3,7 @@
 
 . common.sh
 
-dir=$(dirname $(ReadLink -f $0))
+dir=$(dirname $(ReadLink $0))
 
 if [ ! -f $dir/version.sh ]; then
     $dir/create_version_sh.sh

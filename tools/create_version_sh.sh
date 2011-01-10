@@ -2,7 +2,7 @@
 
 . common.sh
 
-dir=$(dirname $(ReadLink -f $0))
+dir=$(dirname $(ReadLink $0))
 
 if [ -z $1 ]; then
     branch="HEAD"
