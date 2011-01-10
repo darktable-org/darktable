@@ -351,7 +351,7 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
   return 1;
 }
 
-int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
+int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int imgid)
 {
   try
   {
@@ -360,6 +360,8 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
+//     Exiv2::XmpData &xmpData = image->xmpData();  // TODO: I'm not sure how to embed xmp data into the blob.
+
     /* Dont bail, lets return a blob with UserComment and Software
     if (exifData.empty())
     {
@@ -469,6 +471,57 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB)
       exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
+
+    // TODO: find a nice place for the missing metadata (tags, publisher, colorlabels?). Additionally find out how to embed XMP data.
+	//       And shall we add a description of the history stack to Exif.Image.ImageHistory?
+    if(imgid >= 0)
+    {
+      GList *res = dt_metadata_get(imgid, "Xmp.dc.creator", NULL);
+      if(res != NULL)
+      {
+        exifData["Exif.Image.Artist"] = (char*)res->data;
+//         xmpData["Xmp.dc.creator"] = (char*)res->data;
+        g_free(res->data);
+        g_list_free(res);
+      }
+
+      res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
+      if(res != NULL)
+      {
+        exifData["Exif.Image.ImageDescription"] = (char*)res->data;
+//         xmpData["Xmp.dc.title"] = (char*)res->data;
+        g_free(res->data);
+        g_list_free(res);
+      }
+
+      res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+      if(res != NULL)
+      {
+        exifData["Exif.Photo.UserComment"] = (char*)res->data;
+//         xmpData["Xmp.dc.description"] = (char*)res->data;
+        g_free(res->data);
+        g_list_free(res);
+      }
+
+      res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
+      if(res != NULL)
+      {
+        exifData["Exif.Image.Copyright"] = (char*)res->data;
+//         xmpData["Xmp.dc.rights"] = (char*)res->data;
+        g_free(res->data);
+        g_list_free(res);
+      }
+
+      res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
+      if(res != NULL)
+      {
+        int rating = GPOINTER_TO_INT(res->data)+1;
+        exifData["Exif.Image.Rating"] = rating;
+        exifData["Exif.Image.RatingPercent"] = int(rating/4.*100.);
+//         xmpData["Xmp.xmp.Rating"] = rating;
+        g_list_free(res);
+      }
+    }
 
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
