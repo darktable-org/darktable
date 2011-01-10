@@ -604,7 +604,7 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
 }
 
 void dt_image_cache_flush(dt_image_t *img)

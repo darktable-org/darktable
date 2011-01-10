@@ -160,7 +160,7 @@ int dt_control_load_config(dt_control_t *c)
     int len = sqlite3_column_bytes(stmt, 0);
     if(len == sizeof(dt_ctl_settings_t)) memcpy(&(darktable.control->global_settings), set, len);
 #endif
-    rc = sqlite3_finalize(stmt);
+    sqlite3_finalize(stmt);
 
 #if 1
     if(darktable.control->global_settings.version != DT_VERSION)
@@ -216,7 +216,7 @@ int dt_control_load_config(dt_control_t *c)
   }
   else
   { // db not yet there, create it
-    rc = sqlite3_finalize(stmt);
+    sqlite3_finalize(stmt);
 create_tables:
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
@@ -235,8 +235,8 @@ create_tables:
 
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into settings (settings) values (?1)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
 
   dt_control_sanitize_database();
@@ -270,13 +270,12 @@ int dt_control_write_config(dt_control_t *c)
   dt_conf_set_int ("ui_last/window_w",  widget->allocation.width);
   dt_conf_set_int ("ui_last/window_h",  widget->allocation.height);
 
-  int rc;
   sqlite3_stmt *stmt;
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_settings), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
-  rc = sqlite3_step(stmt);
-  rc = sqlite3_finalize(stmt);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return 0;
 }

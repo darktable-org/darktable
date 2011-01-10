@@ -74,7 +74,7 @@ static void *_fswatch_thread(void *data) {
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Starting thread of context %lx\n",(unsigned long int)data);
   while(1) {
     // Blocking read loop of event fd into event
-    if((res=read(fswatch->inotify_fd,event_hdr,event_hdr_size))!=event_hdr_size) {
+    if(read(fswatch->inotify_fd,event_hdr,event_hdr_size) != event_hdr_size) {
       if(errno == EINTR) continue;
       perror("[fswatch_thread] read inotify fd");
       break;

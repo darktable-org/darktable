@@ -94,7 +94,6 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 
 	d->imgsel = imgsel;
 
-	int rc;
 	sqlite3_stmt *stmt;
 
 	GList *title       = NULL;   uint32_t title_count       = 0;
@@ -136,7 +135,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out){
 				break;
 		}
 	}
-	rc = sqlite3_finalize(stmt);
+	sqlite3_finalize(stmt);
 
 	fill_combo_box_entry(&(d->title), title_count, &title, &(d->multi_title));
 	fill_combo_box_entry(&(d->description), description_count, &description, &(d->multi_description));
@@ -389,7 +388,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size){
 	char *description = buf;            buf += strlen(description) + 1;
 	char *rights     = buf;             buf += strlen(rights) + 1;
 	char *creator     = buf;            buf += strlen(creator) + 1;
-	char *publisher   = buf;            buf += strlen(publisher) + 1;
+	char *publisher   = buf;
 
 	if(size != strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5) return 1;
 

@@ -290,29 +290,29 @@ dt_styles_save_to_file(const char *style_name,const char *filedir){
         fprintf(stderr,"[dt_styles_save_to_file]: Error on encoding setting");
         return;
     }
-    rc = xmlTextWriterStartElement(writer, BAD_CAST "darktable_style");
-    rc = xmlTextWriterWriteAttribute(writer, BAD_CAST "version", BAD_CAST "1.0");
+    xmlTextWriterStartElement(writer, BAD_CAST "darktable_style");
+    xmlTextWriterWriteAttribute(writer, BAD_CAST "version", BAD_CAST "1.0");
     
-    rc = xmlTextWriterStartElement(writer, BAD_CAST "info");
-    rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
-    rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
-    rc = xmlTextWriterEndElement(writer);
+    xmlTextWriterStartElement(writer, BAD_CAST "info");
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
+    xmlTextWriterEndElement(writer);
     
-    rc = xmlTextWriterStartElement(writer, BAD_CAST "style");
+    xmlTextWriterStartElement(writer, BAD_CAST "style");
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num,module,operation,op_params,enabled from style_items where styleid =?1",-1, &stmt,NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt,1,dt_styles_get_id_by_name(style_name));
     while (sqlite3_step (stmt) == SQLITE_ROW)
     {
-      rc = xmlTextWriterStartElement(writer, BAD_CAST "plugin");
-      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt,0));
-      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt,1));
-      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt,2));
-      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt,3));
-      rc = xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
-      rc = xmlTextWriterEndElement(writer);
+      xmlTextWriterStartElement(writer, BAD_CAST "plugin");
+      xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt,0));
+      xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt,1));
+      xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt,2));
+      xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt,3));
+      xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
+      xmlTextWriterEndElement(writer);
     }
     sqlite3_finalize(stmt);
-    rc = xmlTextWriterEndDocument(writer);
+    xmlTextWriterEndDocument(writer);
     xmlFreeTextWriter(writer);
     dt_control_log(_("style %s was sucessfully saved"),style_name);
 }

@@ -160,11 +160,9 @@ int RGBE_WriteHeader(FILE *fp, int width, int height, rgbe_header_info *info)
 int RGBE_ReadHeader(FILE *fp, int *width, int *height, rgbe_header_info *info)
 {
   char buf[128];
-  int found_format;
   float tempf;
   int i;
 
-  found_format = 0;
   if (info) {
     info->valid = 0;
     info->programtype[0] = 0;

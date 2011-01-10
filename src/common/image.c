@@ -153,7 +153,6 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 
 void dt_image_full_path(const int imgid, char *pathname, int len)
 {
-  int rc;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -161,20 +160,19 @@ void dt_image_full_path(const int imgid, char *pathname, int len)
   {
     g_strlcpy(pathname, (char *)sqlite3_column_text(stmt, 0), len);
   }
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
 }
 
 void dt_image_path_append_version(int imgid, char *pathname, const int len)
 {
   // get duplicate suffix
   int version = 0;
-  int rc;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1) and id < ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     version = sqlite3_column_int(stmt, 0);
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   if(version != 0)
   { // add version information:
     char *filename = g_strdup(pathname);
@@ -583,12 +581,12 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   {
     id = sqlite3_column_int(stmt, 0);
     g_free(imgfname);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_finalize(stmt);
     ret = dt_image_open(id); // image already in db, open this.
     if(ret) return 0;
     else return id;
   }
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
 
   // insert dummy image entry in database
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into images (id, film_id, filename, caption, description, license, sha1sum) values (null, ?1, ?2, '', '', '', '')", -1, &stmt, NULL);
@@ -596,7 +594,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
@@ -819,14 +817,13 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   if(mip != DT_IMAGE_FULL &&
     (img->force_reimport || img->width == 0 || img->height == 0))
   {
-    ret = dt_image_reimport(img, filename, mip);
+    dt_image_reimport(img, filename, mip);
     if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
     else ret = 0;
   }
   // else we might be able to fetch it from the caches.
   else if(mip == DT_IMAGE_MIPF)
   {
-    ret = 0;
     if(dt_image_lock_if_available(img, DT_IMAGE_FULL, 'r'))
     { // get mipf from half-size raw
       ret = dt_imageio_open_preview(img, filename);
@@ -836,7 +833,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     }
     else
     { // downscale full buffer
-      ret = dt_image_raw_to_preview(img, img->pixels);
+      dt_image_raw_to_preview(img, img->pixels);
       dt_image_validate(img, DT_IMAGE_MIPF);
       dt_image_release(img, DT_IMAGE_FULL, 'r');
       if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
@@ -857,7 +854,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     if(darktable.develop->image == img && mode == DT_DEVELOP) ret = 1;
     else
     {
-      ret = dt_image_reimport(img, filename, mip);
+      dt_image_reimport(img, filename, mip);
       if(dt_image_lock_if_available(img, mip, 'r')) ret = 1;
       else ret = 0;
     }

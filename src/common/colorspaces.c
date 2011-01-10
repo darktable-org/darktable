@@ -552,7 +552,7 @@ dt_colorspaces_create_output_profile(const int imgid)
 
   if(!strcmp(profile, "sRGB"))
     output = dt_colorspaces_create_srgb_profile();
-  if(!strcmp(profile, "linear_rgb"))
+  else if(!strcmp(profile, "linear_rgb"))
     output = dt_colorspaces_create_linear_rgb_profile();
   else if(!strcmp(profile, "XYZ"))
     output = dt_colorspaces_create_xyz_profile();

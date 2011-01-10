@@ -908,11 +908,10 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
 {
   CameraEventType event;
   gpointer data;
-  int res;
   gboolean wait_timedout=FALSE;
   while( !wait_timedout )
   {
-    if( (res=gp_camera_wait_for_event( cam->gpcam, 100, &event, &data, c->gpcontext ) )== GP_OK ) {
+    if( gp_camera_wait_for_event( cam->gpcam, 100, &event, &data, c->gpcontext ) == GP_OK ) {
       if( event == GP_EVENT_UNKNOWN )
       {
           if( strstr( (char *)data, "4006" ) )
@@ -1034,9 +1033,8 @@ void _camera_configuration_commit(const dt_camctl_t *c,const dt_camera_t *camera
   dt_camera_t *cam=(dt_camera_t *)camera;
   
   dt_pthread_mutex_lock(&cam->config_lock);
-  int res=GP_OK;
   _enable_debug();
-  if( ( res = gp_camera_set_config( camera->gpcam, camera->configuration, c->gpcontext) ) != GP_OK )
+  if( gp_camera_set_config( camera->gpcam, camera->configuration, c->gpcontext) != GP_OK )
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to commit configuration changes to camera\n");
   
   cam->config_changed=FALSE;

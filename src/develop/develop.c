@@ -566,20 +566,19 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
 {
   if(!image) return 1;
   sqlite3_stmt *stmt;
-  int rc;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {
-    rc = sqlite3_finalize(stmt);
+    sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
-    rc = sqlite3_step (stmt);
+    sqlite3_step (stmt);
   }
   // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
-  rc = sqlite3_finalize (stmt);
+  sqlite3_finalize (stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
@@ -587,8 +586,8 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, h->enabled);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, image->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, num);
-  rc = sqlite3_step (stmt);
-  rc = sqlite3_finalize (stmt);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
   return 0;
 }
 
@@ -739,12 +738,11 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
 void dt_dev_write_history(dt_develop_t *dev)
 {
-  int rc;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image->id);
   sqlite3_step(stmt);
-  rc = sqlite3_finalize (stmt);
+  sqlite3_finalize (stmt);
   GList *history = dev->history;
   for(int i=0;i<dev->history_end && history; i++)
   {
@@ -759,7 +757,6 @@ void dt_dev_read_history(dt_develop_t *dev)
   if(dev->gui_attached) dt_control_clear_history_items(-1);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
-  int rc;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image->id);
   dev->history_end = 0;
@@ -824,7 +821,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
     dt_dev_invalidate_all(dev);
   }
-  rc = sqlite3_finalize (stmt);
+  sqlite3_finalize (stmt);
 }
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxww, float *boxhh)

@@ -452,9 +452,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       FILE *f = fopen("/tmp/dt_colortransfer_loaded", "wb");
       if(f)
       {
-        int written = 0;
         g->flowback.flag = APPLY;
-        written = fwrite(&g->flowback, self->params_size, 1, f);
+        fwrite(&g->flowback, self->params_size, 1, f);
         fclose(f);
       }
       dt_control_queue_draw(self->widget);
@@ -632,8 +631,7 @@ void gui_init(struct dt_iop_module_t *self)
   FILE *f = fopen("/tmp/dt_colortransfer_loaded", "rb");
   if(f)
   {
-    int read = 0;
-    read = fread(&g->flowback, self->params_size, 1, f);
+    fread(&g->flowback, self->params_size, 1, f);
     g->flowback_set = 1;
     fclose(f);
   }

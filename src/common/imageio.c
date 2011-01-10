@@ -159,7 +159,6 @@ all_good:
   }
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
-  ret = DT_IMAGEIO_OK;
   dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   ret = dt_image_update_mipmaps(img);
@@ -870,7 +869,6 @@ int dt_imageio_dt_write (const int imgid, const char *filename)
   sqlite3_stmt *stmt;
   FILE *f = NULL;
   // read history from db
-  size_t rd;
   dt_dev_operation_t op;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -881,17 +879,17 @@ int dt_imageio_dt_write (const int imgid, const char *filename)
       f = fopen(filename, "wb");
       if(!f) break;
       const uint32_t magic = 0xd731337;
-      rd = fwrite(&magic, sizeof(uint32_t), 1, f);
+      fwrite(&magic, sizeof(uint32_t), 1, f);
     }
     int32_t modversion = sqlite3_column_int(stmt, 2); 
     int32_t enabled = sqlite3_column_int(stmt, 5);
-    rd = fwrite(&enabled, sizeof(int32_t), 1, f);
+    fwrite(&enabled, sizeof(int32_t), 1, f);
     snprintf(op, 20, "%s", (const char *)sqlite3_column_text(stmt, 3));
-    rd = fwrite(op, 1, sizeof(op), f);
-    rd = fwrite(&modversion, sizeof(int32_t), 1, f);
+    fwrite(op, 1, sizeof(op), f);
+    fwrite(&modversion, sizeof(int32_t), 1, f);
     int32_t len = sqlite3_column_bytes(stmt, 4);
-    rd = fwrite(&len, sizeof(int32_t), 1, f);
-    rd = fwrite(sqlite3_column_blob(stmt, 4), len, 1, f);
+    fwrite(&len, sizeof(int32_t), 1, f);
+    fwrite(sqlite3_column_blob(stmt, 4), len, 1, f);
   }
   sqlite3_finalize (stmt);
   if(f) fclose(f);
@@ -982,7 +980,7 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
   FILE *f = fopen(filename, "wb");
   if(!f) return 1;
-  int stars = 1, rc = 1, raw_params = 0;
+  int stars = 1, raw_params = 0;
   float denoise = 0.0f, bright = 0.01f;
   // get stars from db
   sqlite3_stmt *stmt;
@@ -995,7 +993,7 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
     bright     = sqlite3_column_int(stmt, 2);
     raw_params = sqlite3_column_int(stmt, 3);
   }
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   fprintf(f, "stars: %d\n", stars & 0x7);
   fprintf(f, "rawimport: %f %f %d\n", denoise, bright, raw_params);
   // Store colorlabels in dttags
@@ -1004,7 +1002,7 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
     fprintf(f, " %d", sqlite3_column_int(stmt, 0));
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   fprintf(f, "\n");
   
   fprintf(f, "tags:\n");
@@ -1013,15 +1011,14 @@ int dt_imageio_dttags_write (const int imgid, const char *filename)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
     fprintf(f, "%s\n", (char *)sqlite3_column_text(stmt, 0));
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   fclose(f);
   return 0;
 }
 
 int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
 {
-  int stars = 1, rd = -1;
-  int rc;
+  int stars = 1;
   sqlite3_stmt *stmt;
   char line[512]={0};
   FILE *f = fopen(filename, "rb");
@@ -1031,12 +1028,12 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
   while( fgets( line, 512, f ) ) {
     if( strncmp( line, "stars:", 6) == 0) 
     {
-      if( (rd = sscanf( line, "stars: %d\n", &stars)) == 1 )
+      if( sscanf( line, "stars: %d\n", &stars) == 1 )
         img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
     else if( strncmp( line, "rawimport:",10) == 0) 
     {
-       rd = sscanf( line, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
+       sscanf( line, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
     } 
     else if( strncmp( line, "colorlabels:",12) == 0) 
     {
@@ -1063,14 +1060,14 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
           "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
           "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-      rc = sqlite3_step(stmt);
-      rc = sqlite3_finalize(stmt);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
       
        // remove from tagged_images
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-      rc = sqlite3_step(stmt);
-      rc = sqlite3_finalize(stmt);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
         
       // while read line, add tag to db.
       while(fscanf(f, "%[^\n]\n", line) != EOF)
@@ -1083,41 +1080,41 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
           DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, line, strlen(line), SQLITE_TRANSIENT);
           if(sqlite3_step(stmt) == SQLITE_ROW)
             tagid = sqlite3_column_int(stmt, 0);
-          rc = sqlite3_finalize(stmt);
+          sqlite3_finalize(stmt);
           if(tagid > 0)
           {
             if(k == 1)
             {
               DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt, NULL);
               DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-              rc = sqlite3_step(stmt);
-              rc = sqlite3_finalize(stmt);
+              sqlite3_step(stmt);
+              sqlite3_finalize(stmt);
               DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
               DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-              rc = sqlite3_step(stmt);
-              rc = sqlite3_finalize(stmt);
+              sqlite3_step(stmt);
+              sqlite3_finalize(stmt);
             }
             break;
           }
           // create this tag (increment id, leave icon empty), retry.
           DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
           DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, line, strlen(line), SQLITE_TRANSIENT);
-          rc = sqlite3_step(stmt);
-          rc = sqlite3_finalize(stmt);
+          sqlite3_step(stmt);
+          sqlite3_finalize(stmt);
         }
         // associate image and tag.
         DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
-        rc = sqlite3_step(stmt);
-        rc = sqlite3_finalize(stmt);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
         DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
             "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
             "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
-        rc = sqlite3_step(stmt);
-        rc = sqlite3_finalize(stmt);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
       }
       
     }

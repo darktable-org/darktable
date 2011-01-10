@@ -213,11 +213,10 @@ proceed: ; // Let's build up uri / command
   g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
   
   // So what should we do...
-  int res=0;
   if( strncmp( uri, "mailto:", 7) == 0 )
     gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
   else // Launch subprocess
-    res = system( uri );
+    system( uri );
 }
 
 int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format) {

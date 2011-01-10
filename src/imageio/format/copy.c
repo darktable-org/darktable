@@ -64,8 +64,7 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint
 	content = (char*)g_malloc(sizeof(char)*end);
 	if(content == NULL)
 		goto END;
-	int foo = 0;
-	if((foo = fread(content,sizeof(char),end,fin)) != end)
+	if(fread(content,sizeof(char),end,fin) != end)
 		goto END;
 	if(fwrite(content,sizeof(char),end,fout) != end)
 		goto END;

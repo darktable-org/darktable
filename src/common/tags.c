@@ -23,7 +23,7 @@
 
 gboolean dt_tag_new(const char *name,guint *tagid)
 {
-  int rc, rt;
+  int rt;
   guint id = 0;
   sqlite3_stmt *stmt;
   
@@ -36,10 +36,10 @@ gboolean dt_tag_new(const char *name,guint *tagid)
   { // tagid already exists.
     if( tagid != NULL)
       *tagid=sqlite3_column_int64(stmt, 0);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_finalize(stmt);
     return  TRUE; 
   }
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   
   
   
@@ -70,7 +70,7 @@ gboolean dt_tag_new(const char *name,guint *tagid)
 
 guint dt_tag_remove(const guint tagid, gboolean final)
 {
-  int rc,rt,count=-1;
+  int rt,count=-1;
   sqlite3_stmt *stmt;
  
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count() from tagged_images where tagid=?1", -1, &stmt, NULL);
@@ -78,29 +78,29 @@ guint dt_tag_remove(const guint tagid, gboolean final)
   rt = sqlite3_step(stmt);
   if( rt == SQLITE_ROW)
     count = sqlite3_column_int(stmt,0);
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   
   if( final == TRUE )
   { // let's actually remove the tag
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tags where id=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagxtag where id1=?1 or id2=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where tagid=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
   
   return count;
 }
 
 const gchar *dt_tag_get_name(const guint tagid) {
-  int rc, rt;
+  int rt;
   char *name=NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name from tags where id= ?1", -1, &stmt, NULL);
@@ -108,7 +108,7 @@ const gchar *dt_tag_get_name(const guint tagid) {
   rt = sqlite3_step(stmt);
   if( rt== SQLITE_ROW )
     name=g_strdup((const char *)sqlite3_column_text(stmt, 0));
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   
   return name;
 }
@@ -121,37 +121,36 @@ gboolean dt_tag_exists(const char *name,guint *tagid)
 //FIXME: shall we increment count in tagxtag if the image was already tagged?
 void dt_tag_attach(guint tagid,gint imgid)
 {
-  int rc;
   sqlite3_stmt *stmt;
   if(imgid > 0)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert or replace into tagged_images (imgid, tagid) values (?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
         "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
         "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
   else
   { // insert into tagged_images if not there already.
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert or replace into tagged_images select imgid, ?1 from selected_images", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
         "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
         "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
 }
 
@@ -167,7 +166,6 @@ void dt_tag_attach_list(GList *tags,gint imgid)
 
 void dt_tag_detach(guint tagid,gint imgid)
 {
-  int rc;
   sqlite3_stmt *stmt;
   if(imgid > 0)
   { // remove from specified image by id
@@ -176,15 +174,15 @@ void dt_tag_detach(guint tagid,gint imgid)
         "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
 
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where tagid = ?1 and imgid = ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
   else
   { // remove from all selected images
@@ -192,20 +190,19 @@ void dt_tag_detach(guint tagid,gint imgid)
         "(id1 = ?1 and id2 in (select tagid from selected_images join tagged_images)) or "
         "(id2 = ?1 and id1 in (select tagid from selected_images join tagged_images))", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
 
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where tagid = ?1 and imgid in (select imgid from selected_images)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    rc = sqlite3_step(stmt);
-    rc = sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
 }
 
 uint32_t dt_tag_get_attached(gint imgid,GList **result)
 {
-  int rc;
   sqlite3_stmt *stmt; 
   if(imgid > 0)
   {
@@ -230,7 +227,7 @@ uint32_t dt_tag_get_attached(gint imgid,GList **result)
     *result=g_list_append(*result,t);
     count++;
   }
-  rc = sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt);
   return count;
 }
 

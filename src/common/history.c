@@ -101,7 +101,6 @@ dt_history_load_and_apply_on_selection (gchar *filename)
 int 
 dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean merge)
 {
-  int rc;
   sqlite3_stmt *stmt;
   if(imgid==dest_imgid) return 1;
   
@@ -121,17 +120,17 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
     /* replace history stack */
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
-    rc = sqlite3_step (stmt);
+    sqlite3_step (stmt);
   }
-  rc = sqlite3_finalize (stmt);
+  sqlite3_finalize (stmt);
 
   /* add the history items to stack offest */
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num, module, operation, op_params, enabled) select ?1, num+?2, module, operation, op_params, enabled from history where imgid = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
-  rc = sqlite3_step (stmt);
-  rc = sqlite3_finalize (stmt);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
   
   /* reimport image updated image */
   dt_image_t *img = dt_image_cache_get (dest_imgid, 'r');
