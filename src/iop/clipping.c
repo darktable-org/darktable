@@ -826,6 +826,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect_ratios[0] = -1;
   g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+  if(g->aspect_ratios[1] < 1.0)
+    g->aspect_ratios[1] = 1.0 / g->aspect_ratios[1];
   g->aspect_ratios[2] = 1.6280;
   g->aspect_ratios[3] = 2.0/1.0;
   g->aspect_ratios[4] = 3.0/2.0;
