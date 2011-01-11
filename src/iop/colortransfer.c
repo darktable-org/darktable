@@ -452,8 +452,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       FILE *f = fopen("/tmp/dt_colortransfer_loaded", "wb");
       if(f)
       {
-        g->flowback.flag = APPLY;
-        fwrite(&g->flowback, self->params_size, 1, f);
+        if(fwrite(&g->flowback, self->params_size, 1, f) > 0) g->flowback.flag = APPLY;
         fclose(f);
       }
       dt_control_queue_draw(self->widget);
@@ -631,8 +630,7 @@ void gui_init(struct dt_iop_module_t *self)
   FILE *f = fopen("/tmp/dt_colortransfer_loaded", "rb");
   if(f)
   {
-    fread(&g->flowback, self->params_size, 1, f);
-    g->flowback_set = 1;
+    if(fread(&g->flowback, self->params_size, 1, f) > 0) g->flowback_set = 1;
     fclose(f);
   }
   else gtk_widget_set_sensitive(GTK_WIDGET(g->apply_button), FALSE);

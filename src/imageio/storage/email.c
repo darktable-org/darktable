@@ -216,7 +216,7 @@ proceed: ; // Let's build up uri / command
   if( strncmp( uri, "mailto:", 7) == 0 )
     gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
   else // Launch subprocess
-    system( uri );
+    if(system( uri ) < 0) fprintf(stderr, "[email] could not launch subprocess!\n");
 }
 
 int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format) {
