@@ -109,6 +109,11 @@ scroll_to_image(dt_view_t *self)
 void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
+
+// TODO: in darkroom the image belongs to the same drawing area as the filmstrip which makes pointer coordinates unusable.
+//   if(darktable.gui->center_tooltip == 1)
+//     darktable.gui->center_tooltip++;
+
   strip->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -169,6 +174,15 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   }
 failure:
   sqlite3_finalize(stmt);
+
+// TODO: in darkroom the image belongs to the same drawing area as the filmstrip which makes pointer coordinates unusable.
+//   if(darktable.gui->center_tooltip == 2) // not set in this round
+//   {
+//     darktable.gui->center_tooltip = 0;
+//     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+//     gtk_object_set(GTK_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+//   }
+
 
 #ifdef _DEBUG
   if(darktable.unmuted & DT_DEBUG_CACHE)

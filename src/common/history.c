@@ -169,6 +169,54 @@ dt_history_get_items(int32_t imgid)
   return result;
 }
 
+char *
+dt_history_get_items_as_string(int32_t imgid)
+{
+  GList *items = NULL;
+  char *result = NULL;
+  unsigned int count = 1;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  // collect all the entries in the history from the db
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char name[512]={0};
+    //FIXME: somehow get translatable strings for the modules.
+    g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 0),(sqlite3_column_int (stmt, 1)!=0)?_("on"):_("off"));
+    items = g_list_append(items, g_strdup(name));
+    count++;
+  }
+
+  // add the entries to an char* array
+  items = g_list_first(items);
+  char** strings = g_malloc(sizeof(char*) * count);
+  if(items != NULL){
+    int i = 0;
+    do{
+      strings[i++] = items->data;
+    } while((items=g_list_next(items)) != NULL);
+    strings[i] = NULL;
+  }
+
+  // join them into a single string
+  result = g_strjoinv("\n", strings);
+
+  // free the GList and the array
+  items = g_list_first(items);
+  if(items != NULL){
+    do{
+      g_free(items->data);
+    } while((items=g_list_next(items)) != NULL);
+  }
+  g_list_free(items);
+  if(strings != NULL)
+    g_free(strings);
+
+  return result;
+}
+
 int 
 dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
 {

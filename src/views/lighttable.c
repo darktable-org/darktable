@@ -102,6 +102,10 @@ static void
 expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(darktable.gui->center_tooltip == 1)
+    darktable.gui->center_tooltip++;
+
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
   lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
@@ -252,6 +256,13 @@ failure:
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
+
+  if(darktable.gui->center_tooltip == 2) // not set in this round
+  {
+    darktable.gui->center_tooltip = 0;
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    gtk_object_set(GTK_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+  }
 }
 
 static void

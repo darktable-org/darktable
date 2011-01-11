@@ -63,6 +63,8 @@ typedef struct dt_gui_gtk_t
 
   int32_t reset;
   float bgcolor[3];
+
+  int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 }
 dt_gui_gtk_t;
 
