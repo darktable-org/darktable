@@ -42,7 +42,6 @@ sharpen (read_only image2d_t in, write_only image2d_t out, constant float *m, co
 }
 
 
-#if 0
 // TODO: basic stuff:
 // TODO: whitebalance needs uint16_t x 1 per pixel, which is incompatible as an opencl texture.
 
@@ -60,14 +59,14 @@ exposure (read_only image2d_t in, write_only image2d_t out, const float black, c
 
 /* helpers for the highlights plugin: convert to lch. */
 
-constant float xyz_rgb[3][3] = {  /* XYZ from RGB */
-	{ 0.412453, 0.357580, 0.180423 },
-	{ 0.212671, 0.715160, 0.072169 },
-	{ 0.019334, 0.119193, 0.950227 }};
-constant float rgb_xyz[3][3] = {  /* RGB from XYZ */
-	{ 3.24048, -1.53715, -0.498536 },
-	{ -0.969255, 1.87599, 0.0415559 },
-	{ 0.0556466, -0.204041, 1.05731 }};
+constant float xyz_rgb[9] = {  /* XYZ from RGB */
+	  0.412453, 0.357580, 0.180423,
+	  0.212671, 0.715160, 0.072169,
+	  0.019334, 0.119193, 0.950227};
+constant float rgb_xyz[9] = {  /* RGB from XYZ */
+	  3.24048, -1.53715, -0.498536,
+	  -0.969255, 1.87599, 0.0415559,
+	  0.0556466, -0.204041, 1.05731};
 
 void
 rgb_to_lch (float *rgb, float *lch)
@@ -76,23 +75,23 @@ rgb_to_lch (float *rgb, float *lch)
 	xyz[0] = xyz[1] = xyz[2] = 0.0f;
 	for (int c=0; c<3; c++)
 		for (int cc=0; cc<3; cc++)
-			xyz[cc] += xyz_rgb[cc][c] * rgb[c];
+			xyz[cc] += xyz_rgb[3*cc+c] * rgb[c];
 	for (int c=0; c<3; c++)
-		xyz[c] = xyz[c] > 0.008856f ? native_powf(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
+		xyz[c] = xyz[c] > 0.008856f ? native_powr(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
 	lab[0] = 116.0f * xyz[1] - 16.0f;
 	lab[1] = 500.0f * (xyz[0] - xyz[1]);
 	lab[2] = 200.0f * (xyz[1] - xyz[2]);
 
 	lch[0] = lab[0];
-	lch[1] = native_sqrtf(lab[1]*lab[1]+lab[2]*lab[2]);
-	lch[2] = native_atan2f(lab[2], lab[1]);
+	lch[1] = native_sqrt(lab[1]*lab[1]+lab[2]*lab[2]);
+	lch[2] = atan2(lab[2], lab[1]);
 }
 
 void
 XYZ_to_Lab(float *xyz, float *lab)
 {
 	for (int c=0; c<3; c++)
-		xyz[c] = xyz[c] > 0.008856f ? native_powf(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
+		xyz[c] = xyz[c] > 0.008856f ? native_powr(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
 	lab[0] = 116.0f * xyz[1] - 16.0f;
 	lab[1] = 500.0f * (xyz[0] - xyz[1]);
 	lab[2] = 200.0f * (xyz[1] - xyz[2]);
@@ -102,24 +101,24 @@ XYZ_to_Lab(float *xyz, float *lab)
 void
 lch_to_rgb(float *lch, float *rgb)
 {
-	float xyz[3], fx, fy, fz, tmpf, lab[3];
+	float xyz[3], lab[3];
 	const float epsilon = 0.008856f, kappa = 903.3f;
 	lab[0] = lch[0];
-	lab[1] = lch[1] * cosf(lch[2]);
-	lab[2] = lch[1] * sinf(lch[2]);
+	lab[1] = lch[1] * native_cos(lch[2]);
+	lab[2] = lch[1] * native_sin(lch[2]);
 	xyz[1] = (lab[0]<=kappa*epsilon) ?
-		(lab[0]/kappa) : (powf((lab[0]+16.0f)/116.0f, 3.0f));
-	fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
-	fz = fy - lab[2]/200.0f;
-	fx = lab[1]/500.0f + fy;
-	xyz[2] = (native_powf(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powf(fz, 3.0f));
-	xyz[0] = (native_powf(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powf(fx, 3.0f));
+		(lab[0]/kappa) : (native_powr((lab[0]+16.0f)/116.0f, 3.0f));
+	const float fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
+	const float fz = fy - lab[2]/200.0f;
+	const float fx = lab[1]/500.0f + fy;
+	xyz[2] = (native_powr(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powr(fz, 3.0f));
+	xyz[0] = (native_powr(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powr(fx, 3.0f));
 
 	for (int c=0; c<3; c++)
 	{
-		tmpf = 0.0f;
+		float tmpf = 0.0f;
 		for (int cc=0; cc<3; cc++)
-			tmpf += rgb_xyz[c][cc] * xyz[cc];
+			tmpf += rgb_xyz[3*c+cc] * xyz[cc];
 		rgb[c] = fmax(tmpf, 0.0f);
 	}
 }
@@ -129,12 +128,12 @@ Lab_to_XYZ(float *lab, float *xyz)
 {
 	const float epsilon = 0.008856f, kappa = 903.3f;
 	xyz[1] = (lab[0]<=kappa*epsilon) ?
-		(lab[0]/kappa) : (powf((lab[0]+16.0f)/116.0f, 3.0f));
-	fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
-	fz = fy - lab[2]/200.0f;
-	fx = lab[1]/500.0f + fy;
-	xyz[2] = (native_powf(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powf(fz, 3.0f));
-	xyz[0] = (native_powf(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powf(fx, 3.0f));
+		(lab[0]/kappa) : (native_powr((lab[0]+16.0f)/116.0f, 3.0f));
+	const float fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
+	const float fz = fy - lab[2]/200.0f;
+	const float fx = lab[1]/500.0f + fy;
+	xyz[2] = (native_powr(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powr(fz, 3.0f));
+	xyz[0] = (native_powr(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powr(fx, 3.0f));
 }
 
 /* kernel for the highlights plugin. */
@@ -146,20 +145,24 @@ highlights (read_only image2d_t in, write_only image2d_t out, const int mode, co
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 inc, lchi, lchc, lch;
   switch(mode)
   {
     case 1: // DT_IOP_HIGHLIGHTS_LCH
-      float4 inc, lchi, lchc;
-      inc.xyz = fmin(clip, pixel.xyz);
-      rgb_to_lch(pixel, lchi);
-      rgb_to_lch(inc, lchc);
+      inc.x = fmin(clip, pixel.x);
+      inc.y = fmin(clip, pixel.y);
+      inc.z = fmin(clip, pixel.z);
+      rgb_to_lch((float *)&pixel, (float *)&lchi);
+      rgb_to_lch((float *)&inc, (float *)&lchc);
       lch.x = lchc.x + blendL * (lchi.x - lchc.x);
       lch.y = lchc.y + blendC * (lchi.y - lchc.y);
       lch.z = lchc.z + blendh * (lchi.z - lchc.z);
-      lch_to_rgb(lch, pixel);
+      lch_to_rgb((float *)&lch, (float *)&pixel);
       break;
     default: // 0, DT_IOP_HIGHLIGHTS_CLIP
-      pixel = fmin(clip, pixel);
+      pixel.x = fmin(clip, pixel.x);
+      pixel.y = fmin(clip, pixel.y);
+      pixel.z = fmin(clip, pixel.z);
       break;
   }
   write_imagef (out, (int2)(x, y), pixel);
@@ -187,9 +190,9 @@ basecurve (read_only image2d_t in, write_only image2d_t out, constant float *tab
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   // TODO: lerp_lut?
-  pixel.x = table[clamp((int)(pixel.x*0x10000ul), 0, 0xffff)];
-  pixel.x = table[clamp((int)(pixel.y*0x10000ul), 0, 0xffff)];
-  pixel.x = table[clamp((int)(pixel.z*0x10000ul), 0, 0xffff)];
+  pixel.x = table[(int)clamp(pixel.x*65536.0f, 0.0f, 65535.0f)];
+  pixel.x = table[(int)clamp(pixel.y*65536.0f, 0.0f, 65535.0f)];
+  pixel.x = table[(int)clamp(pixel.z*65536.0f, 0.0f, 65535.0f)];
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -216,7 +219,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *matri
   const float amount = 0.11f;
   if (zz > bound_z)
   {
-    const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0f, YY/bound_Y);
+    const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
     cam[1] += t*amount;
     cam[2] -= t*amount;
   }
@@ -224,9 +227,9 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *matri
   for(int j=0;j<3;j++)
   {
     XYZ[j] = 0.0f;
-    for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
+    for(int i=0;i<3;i++) XYZ[j] += matrix[3*j+i] * cam[i];
   }
-  XYZ_to_Lab(XYZ, pixel);
+  XYZ_to_Lab(XYZ, (float *)&pixel);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -239,7 +242,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, constant float *tab
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   // TODO: lerp_lut?
-  const float L = table[clamp((int)(pixel.x*0x10000ul), 0, 0xffff)];
+  const float L = table[(int)clamp(pixel.x*65536.0f, 0.0f, 65535.0f)];
   if(pixel.x > 0.01f)
   {
     pixel.y *= L/pixel.x;
@@ -251,7 +254,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, constant float *tab
 
 /* kernel for the colorcorrection plugin. */
 __kernel void
-tonecurve (read_only image2d_t in, write_only image2d_t out, float saturation, float a_scale, float a_base, float b_scale, float b_base)
+colorcorrection (read_only image2d_t in, write_only image2d_t out, float saturation, float a_scale, float a_base, float b_scale, float b_base)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -305,7 +308,7 @@ colorout (read_only image2d_t in, write_only image2d_t out, constant float *matr
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float XYZ[3], rgb[3];
-  Lab_to_XYZ(pixel, XYZ);
+  Lab_to_XYZ((float *)&pixel, XYZ);
   for(int i=0;i<3;i++)
   {
     rgb[i] = 0.0f;
@@ -316,6 +319,4 @@ colorout (read_only image2d_t in, write_only image2d_t out, constant float *matr
   pixel.z = lerp_lut(lutb, rgb[2]);
   write_imagef (out, (int2)(x, y), pixel);
 }
-
-#endif
 
