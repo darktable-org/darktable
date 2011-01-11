@@ -468,7 +468,9 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
 
     /* Write appropriate color space tag if using sRGB output */
     if (sRGB)
-      exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
+      exifData["Exif.Photo.ColorSpace"] = uint16_t(1);      /* sRGB */
+    else
+      exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
 
