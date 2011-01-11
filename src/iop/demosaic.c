@@ -788,7 +788,7 @@ void gui_update   (struct dt_iop_module_t *self)
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   dtgtk_slider_set_value(g->scale1, p->median_thrs);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  gtk_toggle_button_set_active(g->greeneq, p->green_eq);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->green_eq);
 }
 
 static void

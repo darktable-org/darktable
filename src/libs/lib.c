@@ -216,7 +216,7 @@ pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   {
     const void *blob = sqlite3_column_blob(stmt, 0);
     int length  = sqlite3_column_bytes(stmt, 0);
-    if(blob);
+    if(blob)
     {
       GList *it = darktable.lib->plugins;
       while(it)
