@@ -42,13 +42,9 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename);
 // try both, first libraw.
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename);
 
-// writes out all image information to a .dt-file
-int dt_imageio_dt_write(const int imgid, const char *filename);
 // reads the history stack etc from disk and synchs with the db.
 int dt_imageio_dt_read (const int imgid, const char *filename);
 
-// writes out human-readable .dttags file containing stars and tags.
-int dt_imageio_dttags_write (const int imgid, const char *filename);
 // reads .dttags file to database. requires a locked img as argument.
 int dt_imageio_dttags_read (dt_image_t *img, const char *filename);
 
