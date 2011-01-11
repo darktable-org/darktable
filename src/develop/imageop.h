@@ -141,6 +141,7 @@ typedef struct dt_iop_module_t
   void (*cleanup_pipe)    (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*modify_roi_in)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
   void (*modify_roi_out)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
+  int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
 
   /** this is the temp homebrew callback to operations, as long as gegl is so slow.
     * x,y, and scale are just given for orientation in the framebuffer. i and o are

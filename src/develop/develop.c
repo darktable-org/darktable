@@ -794,19 +794,27 @@ void dt_dev_read_history(dt_develop_t *dev)
     int modversion = sqlite3_column_int(stmt, 2);
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
 
+    hist->params = malloc(hist->module->params_size);
     if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
        strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
-      fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
-      const char *fname = dev->image->filename + strlen(dev->image->filename);
-      while(fname > dev->image->filename && *fname != '/') fname --;
-      if(fname > dev->image->filename) fname++;
-      dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
-      free(hist);
-      continue;
+      if(!hist->module->legacy_params ||
+          hist->module->legacy_params(hist->module, sqlite3_column_blob(stmt, 4), labs(modversion), hist->params, labs(hist->module->version())))
+      {
+        free(hist->params);
+        fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
+        const char *fname = dev->image->filename + strlen(dev->image->filename);
+        while(fname > dev->image->filename && *fname != '/') fname --;
+        if(fname > dev->image->filename) fname++;
+        dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
+        free(hist);
+        continue;
+      }
     }
-    hist->params = malloc(hist->module->params_size);
-    memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
+    else
+    {
+      memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
+    }
     // memcpy(hist->module->params, hist->params, hist->module->params_size);
     // hist->module->enabled = hist->enabled;
     // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));

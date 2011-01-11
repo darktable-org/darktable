@@ -30,12 +30,15 @@
 // we assume people have -msee support.
 #include <xmmintrin.h>
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 typedef struct dt_iop_demosaic_params_t
 {
-  uint32_t flags;
+  uint32_t green_eq;
   float median_thrs;
+  uint32_t color_smoothing;
+  uint32_t yet_unused_flags_to_choose_demosaicing_method;
+  uint32_t yet_unused_data_specific_to_demosaicing_method;
 }
 dt_iop_demosaic_params_t;
 
@@ -43,6 +46,7 @@ typedef struct dt_iop_demosaic_gui_data_t
 {
   GtkDarktableSlider *scale1;
   GtkToggleButton *greeneq;
+  GtkWidget *color_smoothing;
 }
 dt_iop_demosaic_gui_data_t;
 
@@ -63,7 +67,10 @@ typedef struct dt_iop_demosaic_data_t
 {
   // demosaic pattern
   uint32_t filters;
-  uint32_t flags;
+  uint32_t green_eq;
+  uint32_t color_smoothing;
+  uint32_t yet_unused_flags_to_choose_demosaicing_method;
+  uint32_t yet_unused_data_specific_to_demosaicing_method;
   float median_thrs;
 }
 dt_iop_demosaic_data_t;
@@ -80,6 +87,23 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 2 && new_version == 3)
+  {
+    dt_iop_demosaic_params_t *o = (dt_iop_demosaic_params_t *)old_params;
+    dt_iop_demosaic_params_t *n = (dt_iop_demosaic_params_t *)new_params;
+    n->green_eq = o->green_eq;
+    n->median_thrs = o->median_thrs;
+    n->color_smoothing = 0;
+    n->yet_unused_flags_to_choose_demosaicing_method = 0;
+    n->yet_unused_data_specific_to_demosaicing_method = 0;
+    return 0;
+  }
+  return 1;
+}
+
 static int
 FC(const int row, const int col, const unsigned int filters)
 {
@@ -92,7 +116,11 @@ static void
 pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold, const int f4)
 {
   const float thrs  = threshold;
-  const float thrsc = 2*threshold;
+  if(f4) for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+    out[4*(j*roi_out->width + i) + FC(j, i, filters)] = in[j*roi_out->width + i];
+  else memcpy(out, in, roi_out->width*roi_out->height*sizeof(float));
+#if 0
+  // const float thrsc = 2*threshold;
   // colors:
   for (int pass=0; pass < num_passes; pass++)
   {
@@ -140,6 +168,7 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
       }
     }
   }
+#endif
 
   // now green:
   const int lim[5] = {0, 1, 2, 1, 0};
@@ -171,20 +200,47 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
           }
         }
         for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        // pixo[f4?1:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
-        pixo[f4?1:0] = med[(cnt-1)/2];
+        pixo[f4?1:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+        // pixo[f4?1:0] = med[(cnt-1)/2];
         pixo += f4?8:2;
         pixi += 2;
       }
     }
   }
 }
-#undef SWAP
 static void
 pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold)
 {
   pre_median_b(out, in, roi_out, roi_in, filters, num_passes, threshold, 1);
 }
+
+static void
+color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_passes)
+{
+  float med[9];
+  const uint8_t opt[] = /* optimal 9-element median search */
+  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
+    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
+
+  for (int pass=0; pass < num_passes; pass++)
+  {
+    for (int c=0; c < 3; c+=2)
+    {
+      for (int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+        out[4*(j*roi_out->width + i) + 3] = out[4*(j*roi_out->width + i) + c];
+      for (int j=1;j<roi_out->height-1;j++) for(int i=1;i<roi_out->width-1;i++)
+      {
+        int k = 0;
+        for (int jj=-1;jj<=1;jj++) for(int ii=-1;ii<=1;ii++) med[k++] = out[4*((j+jj)*roi_out->width + i + ii) + 3] - out[4*((j+jj)*roi_out->width + i + ii) + 1];
+        for (int ii=0; ii < sizeof opt; ii+=2)
+          if     (med[opt[ii]] > med[opt[ii+1]])
+            SWAP (med[opt[ii]] , med[opt[ii+1]]);
+        out[4*(j*roi_out->width + i) + c] = CLAMPS(med[4] + out[4*(j*roi_out->width + i) + 1], 0.0f, 1.0f);
+      }
+    }
+  }
+}
+#undef SWAP
 
 static void
 green_equilibration(float *out, const float *const in, const int width, const int height, const uint32_t filters)
@@ -466,7 +522,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   {
     // output 1:1
     // green eq:
-    if(data->flags)
+    if(data->green_eq)
     {
       float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
       green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
@@ -485,7 +541,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     roo.scale = 1.0f;
      
     float *tmp = (float *)dt_alloc_align(16, roo.width*roo.height*4*sizeof(float));
-    if(data->flags)
+    if(data->green_eq)
     {
       float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
       green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
@@ -512,6 +568,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters);
   }
+  if(data->color_smoothing) color_smoothing(o, roi_out, data->color_smoothing);
 }
 
 #ifdef HAVE_OPENCL
@@ -530,7 +587,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     // 1:1 demosaic
     cl_mem dev_green_eq = NULL;
-    if(data->flags)
+    if(data->green_eq)
     {
       // green equilibration
       dev_green_eq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
@@ -575,7 +632,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
     cl_mem dev_green_eq = NULL;
-    if(data->flags)
+    if(data->green_eq)
     {
       // green equilibration
       dev_green_eq = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, sizeof(float));
@@ -709,7 +766,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
   d->filters = dt_image_flipped_filter(self->dev->image);
   if(!d->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
-  d->flags = p->flags;
+  d->green_eq = p->green_eq;
+  d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
 }
 
@@ -729,7 +787,8 @@ void gui_update   (struct dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   dtgtk_slider_set_value(g->scale1, p->median_thrs);
-  gtk_toggle_button_set_active(g->greeneq, p->flags);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
+  gtk_toggle_button_set_active(g->greeneq, p->green_eq);
 }
 
 static void
@@ -744,12 +803,22 @@ median_thrs_callback (GtkDarktableSlider *slider, gpointer user_data)
 }
 
 static void
+color_smoothing_callback (GtkSpinButton *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
+  p->color_smoothing = gtk_spin_button_get_value(GTK_SPIN_BUTTON(button));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
 greeneq_callback (GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->flags = gtk_toggle_button_get_active(button);
+  p->green_eq = gtk_toggle_button_get_active(button);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -772,7 +841,15 @@ void gui_init     (struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
   gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
-  widget = dtgtk_reset_label_new(_("match greens"), self, &p->flags, sizeof(uint32_t));
+  widget = dtgtk_reset_label_new(_("color smoothing"), self, &p->color_smoothing, sizeof(uint32_t));
+  gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
+  g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
+  gtk_object_set(GTK_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
+  gtk_box_pack_start(vbox2, g->color_smoothing, TRUE, TRUE, 0);
+
+  widget = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
   gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
   g->greeneq = GTK_TOGGLE_BUTTON(gtk_check_button_new());
   gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
@@ -780,7 +857,8 @@ void gui_init     (struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (median_thrs_callback), self);
-
+  g_signal_connect (G_OBJECT (g->color_smoothing), "value-changed",
+                    G_CALLBACK (color_smoothing_callback), self);
   g_signal_connect (G_OBJECT (g->greeneq), "toggled",
                     G_CALLBACK (greeneq_callback), self);
 }
