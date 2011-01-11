@@ -404,7 +404,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     }
     if(need_tiles)
     {
-      err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_in, orig0, origin, region, 0, NULL, NULL);
+      err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_out, orig0, origin, region, 0, NULL, NULL);
+      if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
+    }
+    else
+    {
+      err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, orig0, orig0, region, 0, NULL, NULL);
       if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
     }
     // clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
