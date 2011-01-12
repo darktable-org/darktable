@@ -168,9 +168,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
-      out[ch*k+0] = d->table[CLAMP((int)(in[ch*k+0]*0x10000ul), 0, 0xffff)];
-      out[ch*k+1] = d->table[CLAMP((int)(in[ch*k+1]*0x10000ul), 0, 0xffff)];
-      out[ch*k+2] = d->table[CLAMP((int)(in[ch*k+2]*0x10000ul), 0, 0xffff)];
+      float *inp = in + ch*k;
+      float *outp = out + ch*k;
+      outp[0] = d->table[CLAMP((int)(inp[0]*0x10000ul), 0, 0xffff)];
+      outp[1] = d->table[CLAMP((int)(inp[1]*0x10000ul), 0, 0xffff)];
+      outp[2] = d->table[CLAMP((int)(inp[2]*0x10000ul), 0, 0xffff)];
     }
   }
 }

@@ -84,23 +84,25 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 // 	#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower, mask, stride) schedule(static)
 #endif
 	for(int k=0;k<roi_out->width*roi_out->height;k++){
+		float *inp = in + ch*k;
+		float *outp = out + ch*k;
 // 		int x=k%roi_out->width;
 // 		int y=k/roi_out->width;
-		if(in[ch*k+0] >= upper && in[ch*k+1] >= upper && in[ch*k+2] >= upper){
+		if(inp[0] >= upper && inp[1] >= upper && inp[2] >= upper){
 // 			mask[y*stride+x] = 255;
-			out[ch*k+0] = 1;
-			out[ch*k+1] = 0;
-			out[ch*k+2] = 0;
-		} else if(in[ch*k+0] <= lower && in[ch*k+1] <= lower && in[ch*k+2] <= lower){
+			outp[0] = 1;
+			outp[1] = 0;
+			outp[2] = 0;
+		} else if(inp[0] <= lower && inp[1] <= lower && inp[2] <= lower){
 // 			mask[(y*stride+x)+(stride*roi_out->height)] = 255;
-			out[ch*k+0] = 0;
-			out[ch*k+1] = 0;
-			out[ch*k+2] = 1;
+			outp[0] = 0;
+			outp[1] = 0;
+			outp[2] = 1;
 		} else {
 			// TODO: memcpy()?
-			out[ch*k+0] = in[ch*k+0];
-			out[ch*k+1] = in[ch*k+1];
-			out[ch*k+2] = in[ch*k+2];
+			outp[0] = inp[0];
+			outp[1] = inp[1];
+			outp[2] = inp[2];
 		}
 	}
 }

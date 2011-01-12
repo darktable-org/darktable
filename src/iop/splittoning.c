@@ -92,13 +92,11 @@ groups ()
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_splittoning_data_t *data = (dt_iop_splittoning_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
+  float *in;
+  float *out;
   const int ch = piece->colors;
   
   // Apply velvia saturation
-  in  = (float *)ivoid;
-  out = (float *)ovoid;
 
   // Get lowest/highest l in image
   float lhigh=0.0;
@@ -106,44 +104,48 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   
   // TODO: openmp reduction
   // FIXME: this will depend on current view!
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  in  = (float *)ivoid;
+  for(int k=0;k<roi_out->width*roi_out->height;k++,in+=ch)
   {
     float h,s,l;
-    rgb2hsl(in[ch*k+0],in[ch*k+1],in[ch*k+2],&h,&s,&l);
+    rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
     lhigh=fmax(lhigh,l);
     llow=fmin(llow,l);
   }
   
-  in  = (float *)ivoid;
-  out = (float *)ovoid;
   const float compress=(data->compress/110.0)/2.0;  // Dont allow 100% compression..
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,roi_out,data) schedule(static)
+  #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out,data) private(in,out) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0;k<roi_out->height;k++)
   {
-    double ra,la;
-    float mixrgb[3];
-    float h,s,l;
-    rgb2hsl(in[ch*k+0],in[ch*k+1],in[ch*k+2],&h,&s,&l);
-    if(l < data->balance-compress || l > data->balance+compress)
-    {      
-      h=l<data->balance?data->shadow_hue:data->highlight_hue;
-      s=l<data->balance?data->shadow_saturation:data->highlight_saturation;
-      ra=l<data->balance?CLIP((fabs(-data->balance+compress+l)*2.0)):CLIP((fabs(-data->balance-compress+l)*2.0));
-      la=(1.0-ra);
-     
-      hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
-      
-      out[ch*k+0]=CLIP(in[ch*k+0]*la + mixrgb[0]*ra);
-      out[ch*k+1]=CLIP(in[ch*k+1]*la + mixrgb[1]*ra);
-      out[ch*k+2]=CLIP(in[ch*k+2]*la + mixrgb[2]*ra);
-    } 
-    else 
+    in = ((float *)ivoid) + ch*k*roi_out->width;
+    out = ((float *)ovoid) + ch*k*roi_out->width;
+    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
     {
-      out[ch*k+0]=in[ch*k+0];
-      out[ch*k+1]=in[ch*k+1];
-      out[ch*k+2]=in[ch*k+2];
+      double ra,la;
+      float mixrgb[3];
+      float h,s,l;
+      rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+      if(l < data->balance-compress || l > data->balance+compress)
+      {
+	h=l<data->balance?data->shadow_hue:data->highlight_hue;
+	s=l<data->balance?data->shadow_saturation:data->highlight_saturation;
+	ra=l<data->balance?CLIP((fabs(-data->balance+compress+l)*2.0)):CLIP((fabs(-data->balance-compress+l)*2.0));
+	la=(1.0-ra);
+     
+	hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
+      
+	out[0]=CLIP(in[0]*la + mixrgb[0]*ra);
+	out[1]=CLIP(in[1]*la + mixrgb[1]*ra);
+	out[2]=CLIP(in[2]*la + mixrgb[2]*ra);
+      }
+      else
+      {
+	out[0]=in[0];
+	out[1]=in[1];
+	out[2]=in[2];
+      }
     }
   }
 }

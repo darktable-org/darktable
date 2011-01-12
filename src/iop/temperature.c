@@ -153,30 +153,37 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const int filters = dt_image_flipped_filter(self->dev->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  float *const out = (float *const)o;
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters)
   {
-    const uint16_t *const in  = (const uint16_t *const)i;
     const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
-    for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-      out[j*roi_out->width+i] = in[j*roi_out->width+i]*coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
+    for(int j=0;j<roi_out->height;j++)
+    {
+      const uint16_t *in = ((uint16_t*)ivoid) + j*roi_out->width;
+      float *out = ((float*)ovoid) + j*roi_out->width;
+      for(int i=0;i<roi_out->width;i++,out++,in++)
+	*out = *in * coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
+    }
   }
   else
   {
-    float *in  = (float *)i;
     const int ch = piece->colors;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
-      for(int c=0;c<3;c++) out[ch*k+c] = in[ch*k+c]*d->coeffs[c];
+    for(int k=0;k<roi_out->height;k++)
+    {
+      const float *in = ((float*)ivoid) + ch*k*roi_out->width;
+      float *out = ((float*)ovoid) + ch*k*roi_out->width;
+      for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
+	for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
+    }
   }
   for(int k=0;k<3;k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];

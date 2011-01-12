@@ -128,14 +128,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for (int j=rad;j<roi_out->height-rad;j++)
   {
-    in  = ((float *)ivoid) + ch*(j*roi_in->width  + rad);
     out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
     for(int i=rad;i<roi_out->width-rad;i++)
     {
       //out[0] = 0.0f;
-      for (int l=-rad;l<=rad;l++) for (int k=-rad;k<=rad;k++) 
-        out[0] += m[l*wd+k]*out[ch*(l*roi_in->width+k)];
-      out += ch; in += ch;
+      for (int l=-rad;l<=rad;l++)
+      {
+	float *outp = out + ch*l*roi_in->width;
+	float *mp = m + l*wd;
+	for (int k=-rad;k<=rad;k++,outp+=ch,mp++)
+	  out[0] += mp[0]*outp[0];
+      }
+      out += ch;
     }
   }
   in  = (float *)ivoid;
@@ -146,10 +150,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0;k<roi_out->width*roi_out->height;k++)
   {
-      float lightness = out[ch*k];
-      out[ch*k] = 100-(((100-in[ch*k])*(100-lightness))/100); // Screen blend
-      out[ch*k+1] = in[ch*k+1];
-      out[ch*k+2] = in[ch*k+2];
+      float *inp = in + ch*k;
+      float *outp = out + ch*k;
+      float lightness = outp[0];
+      outp[0] = 100-(((100-inp[0])*(100-lightness))/100); // Screen blend
+      outp[1] = inp[1];
+      outp[2] = inp[2];
   }
   
 }

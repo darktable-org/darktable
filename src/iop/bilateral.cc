@@ -127,14 +127,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         sumw = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
+	{
+	  float *inp = in + ch*(l*roi_in->width+k);
           sumw += w[l*wd+k] = m[l*wd+k]*expf(-
-              ((in[0]-in[ch*(l*roi_in->width+k)+0])*(in[0]-in[ch*(l*roi_in->width+k)+0])*isig2col[0] +
-               (in[1]-in[ch*(l*roi_in->width+k)+1])*(in[1]-in[ch*(l*roi_in->width+k)+1])*isig2col[1] +
-               (in[2]-in[ch*(l*roi_in->width+k)+2])*(in[2]-in[ch*(l*roi_in->width+k)+2])*isig2col[2]));
+              ((in[0]-inp[0])*(in[0]-inp[0])*isig2col[0] +
+               (in[1]-inp[1])*(in[1]-inp[1])*isig2col[1] +
+               (in[2]-inp[2])*(in[2]-inp[2])*isig2col[2]));
+	}
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++) w[l*wd+k] /= sumw;
         for(int c=0;c<3;c++) out[c] = 0.0f;
         for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-          for(int c=0;c<3;c++) out[c] += in[ch*(l*roi_in->width+k)+c]*w[l*wd+k];
+	{
+	  float *inp = in + ch*(l*roi_in->width+k);
+	  float weight = w[l*wd+k];
+          for(int c=0;c<3;c++) out[c] += inp[c]*weight;
+	}
         out += ch; in += ch;
       }
     }
@@ -147,10 +154,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
     for(int j=rad;j<roi_out->height-rad;j++)
     {
+      in = ((float *)ivoid) + ch*roi_out->width*j;
+      out = ((float *)ovoid) + ch*roi_out->width*j;
       for(int i=0;i<rad;i++)
-        for(int c=0;c<3;c++) out[ch*(roi_out->width*j + i) + c] = in[ch*(roi_in->width*j + i) + c];
+        for(int c=0;c<3;c++) out[ch*i + c] = in[ch*i + c];
       for(int i=roi_out->width-rad;i<roi_out->width;i++)
-        for(int c=0;c<3;c++) out[ch*(roi_out->width*j + i) + c] = in[ch*(roi_in->width*j + i) + c];
+        for(int c=0;c<3;c++) out[ch*i + c] = in[ch*i + c];
     }
   }
   else

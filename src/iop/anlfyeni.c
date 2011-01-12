@@ -111,6 +111,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_anlfyeni_params_t *d = (dt_iop_anlfyeni_params_t *)piece->data;
   // how many colors in our buffer?
   const int ch = piece->colors;
+  const int ch_width_1 = ch * (roi_out->width-1);
   //int j,k,i;
   // TODO: check if I can find better default values for a, b, c
   const float a = d->scale*1.;
@@ -125,37 +126,38 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
    //should check that omp really only parallises the outer loop.
   #pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,d, piece) private(mu_f, mu_b, highpass)
 #endif
-    for(int j=0;j<roi_out->height;j++)
+  for(int j=0;j<roi_out->height;j++)
+  {
+    int i;
+    const float *in  = ((float *)ivoid) + ch*roi_in->width *j;
+    float *out = ((float *)ovoid) + ch*roi_out->width*j;
+    const float *inp0 = in;
+    const float *inp1 = in + ch_width_1;
+    mu_f[0] = yeni(inp0[0], inp0[0], d->alpha/roi_in->scale*piece->iscale);
+    mu_b[0] = yeni(inp1[0], inp1[0], d->alpha/roi_in->scale*piece->iscale);
+    out[1] = in[1];
+    out[2] = in[2];
+    inp0 += ch;
+    inp1 -= ch;
+    float *outp = out + ch;
+    for(i=1;i<roi_out->width/2;i++,outp+=ch,inp0+=ch,inp1-=ch)
     {
-      int i,k;
-      float *in  = ((float *)ivoid) + ch*roi_in->width *j;
-      float *out = ((float *)ovoid) + ch*roi_out->width*j;
-      mu_f[0] = yeni(in[0], in[0], d->alpha/roi_in->scale*piece->iscale);
-      mu_b[0] = yeni(in[ch*(roi_out->width-1)+0], 
-             in[ch*(roi_out->width -1) + 0], d->alpha/roi_in->scale*piece->iscale);
-      out[1] = in[1];
-      out[2] = in[2];
-    for(i=1;i<roi_out->width/2;i++)
-    {
-      mu_f[i] = yeni(in[ch*i+0], mu_f[i-1], d->alpha/roi_in->scale*piece->iscale);
-      mu_b[i] = yeni(in[ch*(roi_out->width-(1+i))+0], 
-              mu_b[i-1], d->alpha/roi_in->scale*piece->iscale);
-      out[ch*i+1] = in[ch*i+1];
-      out[ch*i+2] = in[ch*i+2];
+      mu_f[i] = yeni(inp0[0], mu_f[i-1], d->alpha/roi_in->scale*piece->iscale);
+      mu_b[i] = yeni(inp1[0], mu_b[i-1], d->alpha/roi_in->scale*piece->iscale);
+      outp[1] = inp0[1];
+      outp[2] = inp0[2];
     }
-    for(k=i;k<roi_out->width;k++)
+    float *outp1 = out + ch*(roi_out->width-(1+i));
+    for(;i<roi_out->width;i++,outp+=ch,outp1-=ch,inp0+=ch,inp1-=ch)
     {
-      out[ch*k+1] = in[ch*k+1];
-      out[ch*k+2] = in[ch*k+2];
-      mu_f[k] = yeni(in[ch*k+0], mu_f[k-1], d->alpha/roi_in->scale*piece->iscale);
-      mu_b[k] = yeni(in[ch*(roi_out->width-(1+k))+0], 
-              mu_b[k-1], d->alpha/roi_in->scale*piece->iscale);
-      highpass = in[ch*k+0] - (mu_f[k]+mu_b[roi_out->width-(1+k)])/2;
-      out[ch*k+0] = in[ch*k+0]+gain(highpass, a, b, c, d->strength)*highpass;
-      highpass = in[ch*(roi_out->width-(1+k))+0] - 
-                 (mu_f[roi_out->width-(1+k)]+ mu_b[k])/2;
-      out[ch*(roi_out->width-(1+k))+0] = in[ch*(roi_out->width-(1+k))+0] +
-                gain(highpass, a, b, c, d->strength)*highpass;
+      outp[1] = inp0[1];
+      outp[2] = inp0[2];
+      mu_f[i] = yeni(inp0[0], mu_f[i-1], d->alpha/roi_in->scale*piece->iscale);
+      mu_b[i] = yeni(inp1[0], mu_b[i-1], d->alpha/roi_in->scale*piece->iscale);
+      highpass = inp0[0] - (mu_f[i]+mu_b[roi_out->width-(1+i)])/2;
+      outp[0] = inp0[0]+gain(highpass, a, b, c, d->strength)*highpass;
+      highpass = inp1[0] - (mu_f[roi_out->width-(1+i)]+ mu_b[i])/2;
+      outp1[0] = inp1[0] + gain(highpass, a, b, c, d->strength)*highpass;
     }
   }
 }

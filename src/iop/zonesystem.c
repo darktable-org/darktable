@@ -168,20 +168,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     /* setup gaussian kernel */
     const int radius = 8;
     const int rad = MIN(radius, ceilf(radius * roi_in->scale / piece->iscale));
-    float mat[2*(radius+1)*2*(radius+1)];
     const int wd = 2*rad+1;
-    float *m = mat + rad*wd + rad;
+    float mat[wd*wd];
+    float *m;
     const float sigma2 = (2.5*2.5)*(radius*roi_in->scale/piece->iscale)*(radius*roi_in->scale/piece->iscale);
     float weight = 0.0f;
     
-    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-      weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma2));
-    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-      m[l*wd + k] /= weight;
+    m = mat;
+    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++,m++)
+      weight += *m = expf(- (l*l + k*k)/(2.f*sigma2));
+    m = mat;
+    for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++,m++)
+      *m /= weight;
 
     /* gauss blur the L channel */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) private(in, out, m) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
     for(int j=rad;j<roi_out->height-rad;j++)
     {
@@ -190,8 +192,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i=rad;i<roi_out->width-rad;i++)
       {
         for(int c=0;c<3;c++) out[c] = 0.0f;
-        for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-          out[0] += m[l*wd+k]*in[ch*(l*roi_in->width+k)];
+	float sum = 0.0;
+	m = mat;
+        for(int l=-rad;l<=rad;l++)
+	{
+	  float *inrow = in + ch*(l*roi_in->width-rad);
+	  for(int k=-rad;k<=rad;k++,inrow+=ch,m++)
+	    sum += *m * inrow[0];
+	}
+	out[0] = sum;
         out += ch; in += ch;
       }
     }
@@ -200,7 +209,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     in  = (float *)ivoid;
     out = (float *)ovoid;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out,buffer,g,zonemap) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out,out,buffer,g,zonemap) schedule(static)
 #endif
     for (int k=0;k<roi_out->width*roi_out->height;k++)
     {
@@ -219,21 +228,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for (int k=0;k<roi_out->width*roi_out->height;k++)
   {
     /* remap lightness into zonemap and apply lightness */
-    const float lightness=in[ch*k]/100.0;
+    const float *inp = in + ch*k;
+    const float lightness=inp[0]/100.0;
     const float rzw = (1.0/(size-1));                       // real zone width 
     const int rz = CLAMPS((lightness/rzw), 0, size-2);      // real zone for lightness
     const float zw = (zonemap[rz+1]-zonemap[rz]);           // mapped zone width
     const float zs = zw/rzw ;                               // mapped zone scale
     const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
+    float *outp = out + ch*k;
     
-    float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );      
-    out[ch*k+0] = 100.0*l;
-    out[ch*k+1] = in[ch*k+1];
-    out[ch*k+2] = in[ch*k+2];
-    if(in[ch*k] > 0.01f)
+    float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );
+    outp[0] = 100.0*l;
+    outp[1] = inp[1];
+    outp[2] = inp[2];
+    if (inp[0] > 0.01f)
     {
-      out[ch*k+1] *= out[ch*k]/in[ch*k];
-      out[ch*k+2] *= out[ch*k]/in[ch*k];
+      outp[1] *= outp[0] / inp[0];
+      outp[2] *= outp[0] / inp[0];
     }
   }
   

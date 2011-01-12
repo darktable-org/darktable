@@ -71,10 +71,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   { // std float image:
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
-      for(int i=0;i<3;i++) out[ch*k+i] = fmaxf(0.0f, (in[ch*k+i]-black)*scale);
+    for(int k=0;k<roi_out->height;k++)
+    {
+      const float *in = ((float *)i) + ch*k*roi_out->width;
+      float *out = ((float *)o) + ch*k*roi_out->width;
+      for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
+	for(int i=0;i<3;i++)
+	  out[i] = fmaxf(0.0f, (in[i]-black)*scale);
+    }
   }
   for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] *= scale;
 }

@@ -50,14 +50,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   const int ch = piece->colors;
-  float *in = (float *)i;
-  uint8_t *out = (uint8_t *)o;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0;k<roi_out->height;k++)
   {
-    for(int c=0;c<3;c++) out[4*k + 2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[ch*k+c]), 0, 0xffff)];
+    const float *in = ((float *)i) + ch*k*roi_out->width;
+    uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
+    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
+    {
+      for(int c=0;c<3;c++)
+	out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
+    }
   }
 }
 

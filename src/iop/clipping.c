@@ -258,24 +258,23 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above), 
 // do your best to fill the ouput region!
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
-  float *in  = (float *)i;
-  float *out = (float *)o;
 
   const int ch = piece->colors;
+  const int ch_width = ch*roi_in->width;
 
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->keystone > 1 && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) firstprivate(out, in) shared(d,o,i,roi_in,roi_out)
+  #pragma omp parallel for schedule(static) default(none) shared(d,ovoid,ivoid,roi_in,roi_out)
 #endif
     for(int j=0;j<roi_out->height;j++)
     {
-      out = ((float *)o)+ch*roi_out->width*j;
-      in  = ((float *)i)+ch*roi_out->width*j;
+      const float *in  = ((float *)ivoid)+ch*roi_out->width*j;
+      float *out = ((float *)ovoid)+ch*roi_out->width*j;
       for(int i=0;i<roi_out->width;i++)
       {
         for(int c=0;c<3;c++) out[c] = in[c];
@@ -286,16 +285,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) firstprivate(out) shared(d,o,in,roi_in,roi_out)
+  #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
     for(int j=0;j<roi_out->height;j++)
     {
-      // out = ((float *)o)+3*roi_out->width*j;
-      for(int i=0;i<roi_out->width;i++)
+      float *out = ((float *)ovoid)+ch*j*roi_out->width;
+      for(int i=0;i<roi_out->width;i++,out+=ch)
       {
-        out = ((float *)o)+ch*roi_out->width*j + ch*i;
         float pi[2], po[2];
 
         pi[0] = roi_out->x + roi_out->scale*d->cix + i + .5;
@@ -313,13 +311,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         const int ii = (int)po[0], jj = (int)po[1];
         if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
         {
+	  const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
           const float fi = po[0] - ii, fj = po[1] - jj;
-          for(int c=0;c<3;c++) out[c] = // in[3*(roi_in->width*jj + ii) + c];
-                ((1.0f-fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj)   + (ii)  ) + c] +
-                 (1.0f-fj)*(     fi)*in[ch*(roi_in->width*(jj)   + (ii+1)) + c] +
-                 (     fj)*(     fi)*in[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
-                 (     fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
-        }
+          for(int c=0;c<3;c++,in++)
+	    out[c] =
+	      ((1.0f-fj)*(1.0f-fi)*in[0] +
+	       (1.0f-fj)*(     fi)*in[ch] +
+	       (     fj)*(     fi)*in[ch_width+ch] +
+	       (     fj)*(1.0f-fi)*in[ch_width]);
+	}
         else for(int c=0;c<3;c++) out[c] = 0.0f;
       }
     }

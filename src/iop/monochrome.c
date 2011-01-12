@@ -92,16 +92,19 @@ color_filter(const float L, const float ai, const float bi, const float a, const
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  float *in  = (float *)i;
-  float *out = (float *)o;
   const int ch = piece->colors;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0;k<roi_out->height;k++)
   {
-    out[ch*k+0] = color_filter(in[ch*k+0], in[ch*k+1], in[ch*k+2], d->a, d->b, d->size);
-    out[ch*k+1] = out[ch*k+2] = 0.0f;
+    const float *in = ((float *)i) + ch*k*roi_out->width;
+    float *out = ((float *)o) + ch*k*roi_out->width;
+    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
+    {
+      out[0] = color_filter(in[0], in[1], in[2], d->a, d->b, d->size);
+      out[1] = out[2] = 0.0f;
+    }
   }
 }
 

@@ -51,27 +51,30 @@ groups ()
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  float *in = (float *)i;
-  float *out = (float *)o;
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0;k<roi_out->height;k++)
   {
-    // in Lab: correct compressed Luminance for saturation:
-    const int t = CLAMP((int)(in[ch*k]/100.0*0xfffful), 0, 0xffff);
-    out[ch*k+0] = d->table[t];
-    if(in[ch*k] > 0.01f)
+    float *in = ((float *)i) + k*ch*roi_out->width;
+    float *out = ((float *)o) + k*ch*roi_out->width;
+    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
     {
-      out[ch*k+1] = in[ch*k+1] * out[ch*k]/in[ch*k];
-      out[ch*k+2] = in[ch*k+2] * out[ch*k]/in[ch*k];
-    }
-    else
-    {
-      out[ch*k+1] = in[ch*k+1];
-      out[ch*k+2] = in[ch*k+2];
+      // in Lab: correct compressed Luminance for saturation:
+      const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
+      out[0] = d->table[t];
+      if(in[0] > 0.01f)
+      {
+	out[1] = in[1] * out[0]/in[0];
+	out[2] = in[2] * out[0]/in[0];
+      }
+      else
+      {
+	out[1] = in[1];
+	out[2] = in[2];
+      }
     }
   }
 }

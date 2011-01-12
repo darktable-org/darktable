@@ -52,12 +52,13 @@ groups ()
 }
 
 void
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  float *in  = (float *)i;
-  float *out = (float *)o;
+  float *in  = (float *)ivoid;
+  float *out = (float *)ovoid;
   const int ch = piece->colors;
+  const int ch_width = ch*roi_in->width;
 
   const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
@@ -94,7 +95,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, o, modifier) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -102,26 +103,25 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         lf_modifier_apply_subpixel_geometry_distortion (
               modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
-        float *buf = ((float *)o) + y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++)
+        float *buf = ((float *)ovoid) + y*roi_out->width*ch;
+        for (int x = 0; x < roi_out->width; x++,buf+=ch)
         {
-          for(int c=0;c<3;c++) 
+          for(int c=0;c<3;c++,pi+=2)
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
             if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
             {
               const float fi = pi0 - ii, fj = pi1 - jj;
+	      const float* inp = in + ch*(roi_in->width*jj+ii) + c;
               buf[c] = // in[ch*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj)   + (ii)  ) + c] +
-               (1.0f-fj)*(     fi)*in[ch*(roi_in->width*(jj)   + (ii+1)) + c] +
-               (     fj)*(     fi)*in[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
-               (     fj)*(1.0f-fi)*in[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
+              ((1.0f-fj)*(1.0f-fi)*inp[0] +
+               (1.0f-fj)*(     fi)*inp[ch] +
+               (     fj)*(     fi)*inp[ch+ch_width] +
+               (     fj)*(1.0f-fi)*inp[ch_width]);
             }
             else buf[c] = 0.0f;
-            pi+=2;
           }
-          buf += ch;
         }
       }
     }
@@ -191,7 +191,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, roi_out, d, o, modifier) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -199,24 +199,24 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         lf_modifier_apply_subpixel_geometry_distortion (
               modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
-        float *out = ((float *)o) + y*roi_out->width*ch;
+        float *out = ((float *)ovoid) + y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++)
         {
-          for(int c=0;c<3;c++) 
+          for(int c=0;c<3;c++,pi+=2)
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
             if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
             {
               const float fi = pi0 - ii, fj = pi1 - jj;
+	      const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
               out[c] = // in[ch*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*d->tmpbuf[ch*(roi_in->width*(jj)   + (ii)  ) + c] +
-               (1.0f-fj)*(     fi)*d->tmpbuf[ch*(roi_in->width*(jj)   + (ii+1)) + c] +
-               (     fj)*(     fi)*d->tmpbuf[ch*(roi_in->width*(jj+1) + (ii+1)) + c] +
-               (     fj)*(1.0f-fi)*d->tmpbuf[ch*(roi_in->width*(jj+1) + (ii)  ) + c]);
+              ((1.0f-fj)*(1.0f-fi)*inp[0] +
+               (1.0f-fj)*(     fi)*inp[ch] +
+               (     fj)*(     fi)*inp[ch_width+ch] +
+               (     fj)*(1.0f-fi)*inp[ch_width]);
             }
             else out[c] = 0.0f;
-            pi+=2;
           }
           out += ch;
         }

@@ -101,9 +101,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0;k<roi_out->width*roi_out->height;k++)
     {
+      float *inp = in + ch*k;
+      float *outp = out + ch*k;
       // calculate vibrance, and apply boost velvia saturation at least saturated pixles
-      double pmax=fmax(in[ch*k],fmax(in[ch*k+1],in[ch*k+2]));			// max value in RGB set
-      double pmin=fmin(in[ch*k],fmin(in[ch*k+1],in[ch*k+2]));			// min value in RGB set
+      double pmax=fmax(inp[0],fmax(inp[1],inp[2]));			// max value in RGB set
+      double pmin=fmin(inp[0],fmin(inp[1],inp[2]));			// min value in RGB set
       double plum = (pmax+pmin)/2.0;					        // pixel luminocity
       double psat =(plum<=0.5) ? (pmax-pmin)/(1e-5 + pmax+pmin): (pmax-pmin)/(1e-5 + MAX(0.0, 2.0-pmax-pmin));
 
@@ -113,9 +115,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // Apply velvia saturation values
       double sba=1.0+saturation;
       double sda=(sba/2.0)-0.5;
-      out[ch*k+0]=CLAMPS((in[ch*k+0]*(sba))-(in[ch*k+1]*(sda))-(in[ch*k+2]*(sda)), 0, 1);
-      out[ch*k+1]=CLAMPS((in[ch*k+1]*(sba))-(in[ch*k+0]*(sda))-(in[ch*k+2]*(sda)), 0, 1);
-      out[ch*k+2]=CLAMPS((in[ch*k+2]*(sba))-(in[ch*k+0]*(sda))-(in[ch*k+1]*(sda)), 0, 1);  
+      outp[0]=CLAMPS((inp[0]*(sba))-(inp[1]*(sda))-(inp[2]*(sda)), 0, 1);
+      outp[1]=CLAMPS((inp[1]*(sba))-(inp[0]*(sda))-(inp[2]*(sda)), 0, 1);
+      outp[2]=CLAMPS((inp[2]*(sba))-(inp[0]*(sda))-(inp[1]*(sda)), 0, 1);
     }
   }
 }
