@@ -222,7 +222,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->select_by), p->channel);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(g->select_by), 2-p->channel);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -742,7 +742,7 @@ select_by_changed(GtkComboBox *widget, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
-  p->channel = (dt_iop_colorzones_channel_t)gtk_combo_box_get_active(widget);
+  p->channel = 2 - (dt_iop_colorzones_channel_t)gtk_combo_box_get_active(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -812,10 +812,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   // select by which dimension
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
+  GtkWidget *label = gtk_label_new(_("mode"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
   c->select_by = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("select by lightness (L)"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("select by colorness (C)"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("select by hue (h)"));
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("hue"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("saturation"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("lightness"));
   gtk_box_pack_start(GTK_BOX(hbox), c->select_by, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
   g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
