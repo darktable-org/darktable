@@ -61,7 +61,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkRadioButton *channel_button[3];
-  GtkRadioButton *select_button[3];
+  GtkWidget *select_by;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
   dt_iop_colorzones_params_t drag_params;
@@ -222,7 +222,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->select_button[p->channel]), TRUE);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(g->select_by), p->channel);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -722,6 +722,7 @@ static void
 colorzones_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   if(gtk_toggle_button_get_active(togglebutton))
   {
@@ -735,32 +736,24 @@ colorzones_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 }
 
 static void
+select_by_changed(GtkComboBox *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+  memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
+  p->channel = (dt_iop_colorzones_channel_t)gtk_combo_box_get_active(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_widget_queue_draw(self->widget);
+}
+
+static void
 request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
-}
-
-static void
-colorzones_select_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
-  if(gtk_toggle_button_get_active(togglebutton))
-  {
-    for(int k=0;k<3;k++) if(c->select_button[k] == GTK_RADIO_BUTTON(togglebutton))
-    {
-      memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
-      p->channel = (dt_iop_colorzones_channel_t)k;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      gtk_widget_queue_draw(self->widget);
-      return;
-    }
-  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -818,33 +811,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 5);
 
   // select by which dimension
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  GtkLabel *label = GTK_LABEL(gtk_label_new(_("select color by")));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), FALSE, FALSE, 5);
+  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
+  c->select_by = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("select by lightness (L)"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("select by colorness (C)"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("select by hue (h)"));
+  gtk_box_pack_start(GTK_BOX(hbox), c->select_by, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
-  c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 5);
+  g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
 
-  c->select_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma (L)")));
-  c->select_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->select_button[0], _("colorness (C)")));
-  c->select_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->select_button[0], _("hue (h)")));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->select_button[p->channel]), TRUE);
-
-  g_signal_connect (G_OBJECT (c->select_button[0]), "toggled",
-                    G_CALLBACK (colorzones_select_toggled), self);
-  g_signal_connect (G_OBJECT (c->select_button[1]), "toggled",
-                    G_CALLBACK (colorzones_select_toggled), self);
-  g_signal_connect (G_OBJECT (c->select_button[2]), "toggled",
-                    G_CALLBACK (colorzones_select_toggled), self);
-
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->select_button[2]), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->select_button[1]), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->select_button[0]), FALSE, FALSE, 5);
-
-  GtkWidget *tb = gtk_toggle_button_new_with_label(_("pick gui color from image"));
+  GtkWidget *tb = gtk_toggle_button_new_with_label(_("O"));
+  gtk_object_set(GTK_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), tb, FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
 
   c->hsRGB = dt_colorspaces_create_srgb_profile();
   c->hLab  = dt_colorspaces_create_lab_profile();
