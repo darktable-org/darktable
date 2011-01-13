@@ -204,10 +204,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Make")))
         != exifData.end() ) {
       dt_strlcpy_to_utf8(img->exif_maker, 32, pos, exifData);
+      for(char *c=img->exif_maker+31;c > img->exif_maker;c--) if(*c != ' ' && *c != '\0') { *(c+1) = '\0'; break; }
     }
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Model")))
         != exifData.end() ) {
       dt_strlcpy_to_utf8(img->exif_model, 32, pos, exifData);
+      for(char *c=img->exif_model+31;c > img->exif_model;c--) if(*c != ' ' && *c != '\0') { *(c+1) = '\0'; break; }
     }
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
         != exifData.end() ) {
