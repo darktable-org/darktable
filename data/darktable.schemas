@@ -1177,7 +1177,7 @@
       <applyto>/apps/darktable/plugins/darkroom/tonecurve/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>TRUE</default>
+      <default>FALSE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1190,7 +1190,7 @@
       <applyto>/apps/darktable/plugins/darkroom/basecurve/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>TRUE</default>
+      <default>FALSE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1294,7 +1294,7 @@
       <applyto>/apps/darktable/plugins/darkroom/exposure/expanded</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
