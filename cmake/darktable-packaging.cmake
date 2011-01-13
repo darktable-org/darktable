@@ -12,7 +12,8 @@ set(CPACK_SOURCE_IGNORE_FILES
 set(CPACK_PACKAGE_EXECUTABLES darktable)
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_GENERATOR "TGZ")
-
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+		
 if("${CMAKE_BUILD_TYPE}" MATCHES "Release")
 	set(CPACK_STRIP_FILES TRUE)
 endif("${CMAKE_BUILD_TYPE}" MATCHES "Release")
@@ -56,8 +57,6 @@ if(UNIX)
 	
 	# For Debian-based distros we want to create DEB packages.
 	if("${LSB_DISTRIB}" MATCHES "Ubuntu|Debian")
-		SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
-		
 		make_directory(${CMAKE_BINARY_DIR}/packaging/debian)
 		set(GTK_UPDATE_ICON_CACHE "gtk-update-icon-cache -f -t ${THEME_DIRECTORY}")
 		configure_file( ${CMAKE_SOURCE_DIR}/cmake/debian/postinst.in ${CMAKE_BINARY_DIR}/packaging/debian/postinst )
