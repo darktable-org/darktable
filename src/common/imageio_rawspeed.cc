@@ -54,6 +54,9 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
 
+  // work around rawspeed bug
+  if(!strcmp(img->exif_model, "PENTAX K-5")) return DT_IMAGEIO_FILE_CORRUPTED;
+
   char filen[1024];
   snprintf(filen, 1024, "%s", filename);
   FileReader f(filen);
@@ -147,6 +150,9 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
+
+  // work around rawspeed bug
+  if(!strcmp(img->exif_model, "PENTAX K-5")) return DT_IMAGEIO_FILE_CORRUPTED;
 
   char filen[1024];
   snprintf(filen, 1024, "%s", filename);
