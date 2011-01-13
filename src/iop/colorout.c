@@ -236,10 +236,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     else
     { // else: load file name
-      char datadir[1024];
       char filename[1024];
-      dt_get_datadir(datadir, 1024);
-      snprintf(filename, 1024, "%s/color/out/%s", datadir, p->iccprofile);
+      dt_colorspaces_find_profile(filename, 1024, p->iccprofile, "out");
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
@@ -270,10 +268,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
     else
     { // else: load file name
-      char datadir[1024];
       char filename[1024];
-      dt_get_datadir(datadir, 1024);
-      snprintf(filename, 1024, "%s/color/out/%s", datadir, p->displayprofile);
+      dt_colorspaces_find_profile(filename, 1024, p->displayprofile, "out");
       d->output = cmsOpenProfileFromFile(filename, "r");
     }
     if(!d->output) d->output = dt_colorspaces_create_srgb_profile();
@@ -426,10 +422,13 @@ void gui_init(struct dt_iop_module_t *self)
   pos = prof->pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
-  // read datadir/color/out/*.icc
-  char datadir[1024], dirname[1024], filename[1024];
+  // read {conf,data}dir/color/out/*.icc
+  char datadir[1024], confdir[1024], dirname[1024], filename[1024];
+  dt_get_user_config_dir(confdir, 1024);
   dt_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/color/out", datadir);
+  snprintf(dirname, 1024, "%s/color/out", confdir);
+  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
+    snprintf(dirname, 1024, "%s/color/out", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -525,9 +524,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   char tooltip[1024];
   gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
-  snprintf(tooltip, 1024, _("icc profiles in %s/color/out"), datadir);
+  snprintf(tooltip, 1024, _("icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
   gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
-  snprintf(tooltip, 1024, _("display icc profiles in %s/color/out"), datadir);
+  snprintf(tooltip, 1024, _("display icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
   gtk_object_set(GTK_OBJECT(g->cbox3), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "changed",

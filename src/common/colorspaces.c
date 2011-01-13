@@ -521,6 +521,21 @@ dt_colorspaces_create_linear_infrared_profile(void)
   return hsRGB;
 }
 
+int
+dt_colorspaces_find_profile(char *filename, const int filename_len, const char *profile, const char *inout)
+{
+  char datadir[1024];
+  dt_get_user_config_dir(datadir, 1024);
+  snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+  {
+    dt_get_datadir(datadir, 1024);
+    snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
+    if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
+  }
+  return 0;
+}
+
 cmsHPROFILE
 dt_colorspaces_create_output_profile(const int imgid)
 {
@@ -562,10 +577,8 @@ dt_colorspaces_create_output_profile(const int imgid)
     output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
   else
   { // else: load file name
-    char datadir[1024];
     char filename[1024];
-    dt_get_datadir(datadir, 1024);
-    snprintf(filename, 1024, "%s/color/out/%s", datadir, profile);
+    dt_colorspaces_find_profile(filename, 1024, profile, "out");
     output = cmsOpenProfileFromFile(filename, "r");
   }
   if(!output) output = dt_colorspaces_create_srgb_profile();

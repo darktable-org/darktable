@@ -477,11 +477,14 @@ gui_init (dt_lib_module_t *self)
   d->profiles = g_list_append(d->profiles, prof);
 
   // read datadir/color/out/*.icc
-  char datadir[1024], dirname[1024], filename[1024];
+  char datadir[1024], confdir[1024], dirname[1024], filename[1024];
+  dt_get_user_config_dir(confdir, 1024);
   dt_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/color/out", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
+  snprintf(dirname, 1024, "%s/color/out", confdir);
+  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
+    snprintf(dirname, 1024, "%s/color/out", datadir);
   GDir *dir = g_dir_open(dirname, 0, NULL);
   if(dir)
   {
@@ -537,7 +540,7 @@ gui_init (dt_lib_module_t *self)
 
   gtk_combo_box_set_active(d->profile, 0);
   char tooltip[1024];
-  snprintf(tooltip, 1024, _("output icc profiles in %s/color/out"), datadir);
+  snprintf(tooltip, 1024, _("output icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
   gtk_object_set(GTK_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
   g_signal_connect (G_OBJECT (d->intent), "changed",
                     G_CALLBACK (intent_changed),

@@ -251,7 +251,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
   else if(!d->input)
   {
-    snprintf(filename, 1024, "%s/color/in/%s", datadir, p->iccprofile);
+    dt_colorspaces_find_profile(filename, 1024, p->iccprofile, "in");
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
   if(d->input)
@@ -434,10 +434,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
-  // read datadir/color/in/*.icc
-  char datadir[1024], dirname[1024], filename[1024];
+  // read {userconfig,datadir}/color/in/*.icc, in this order.
+  char datadir[1024], confdir[1024], dirname[1024], filename[1024];
+  dt_get_user_config_dir(confdir, 1024);
   dt_get_datadir(datadir, 1024);
-  snprintf(dirname, 1024, "%s/color/in", datadir);
+  snprintf(dirname, 1024, "%s/color/in", confdir);
+  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
+    snprintf(dirname, 1024, "%s/color/in", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -469,17 +472,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  // g->label1 = GTK_LABEL(gtk_label_new(_("intent")));
   g->label2 = GTK_LABEL(gtk_label_new(_("profile")));
-  // gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  // gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  // g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  // gtk_combo_box_append_text(g->cbox1, _("perceptual"));
-  // gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));
-  // gtk_combo_box_append_text(g->cbox1,C_("rendering intent", "saturation"));
-  // gtk_combo_box_append_text(g->cbox1, _("absolute colorimetric"));
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *l = g->profiles;
   while(l)
@@ -503,19 +498,13 @@ void gui_init(struct dt_iop_module_t *self)
       gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);
   }
-  // gtk_combo_box_set_active(g->cbox1, 0);
   gtk_combo_box_set_active(g->cbox2, 0);
-  // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox2), TRUE, TRUE, 0);
 
   char tooltip[1024];
-  // gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
-  snprintf(tooltip, 1024, _("icc profiles in %s/color/in"), datadir);
+  snprintf(tooltip, 1024, _("icc profiles in %s/color/in or %s/color/in"), confdir, datadir);
   gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
-  // g_signal_connect (G_OBJECT (g->cbox1), "changed",
-                    // G_CALLBACK (intent_changed),
-                    // (gpointer)self);
   g_signal_connect (G_OBJECT (g->cbox2), "changed",
                     G_CALLBACK (profile_changed),
                     (gpointer)self);

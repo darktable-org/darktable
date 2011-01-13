@@ -69,6 +69,10 @@ int dt_colorspaces_get_matrix_from_output_profile (cmsHPROFILE prof, float *matr
 void dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *const maker, const char *const model);
 void dt_colorspaces_get_makermodel_split(char *makermodel, const int size, char **modelo, const char *const maker, const char *const model);
 
+/** searches for the given profile name in the user config dir ~/.config/darktable/color/<inout> and /usr/share/darktable/.. */
+int dt_colorspaces_find_profile(char *filename, const int filename_len, const char *profile, const char *inout);
+
+
 /** common functions to change between colorspaces, used in iop modules */
 void rgb2hsl(float r,float g,float b,float *h,float *s,float *l);
 void hue2rgb(float m1,float m2,float hue,float *channel);
