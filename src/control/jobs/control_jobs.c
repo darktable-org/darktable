@@ -144,6 +144,9 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
   {
     imgid = (long int)t->data;
@@ -151,12 +154,11 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     dt_image_full_path(imgid, filename, 512);
 
     int duplicates = 0;
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       duplicates = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
+    sqlite3_reset(stmt);
+    sqlite3_clear_bindings(stmt);
 
     // remove from disk:
     if(duplicates == 1) // don't remove the actual data if there are (other) duplicates using it
@@ -176,6 +178,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     fraction=1.0/total;
     dt_gui_background_jobs_set_progress(j, fraction);
   }
+  sqlite3_finalize(stmt);
   dt_gui_background_jobs_destroy (j);
   return 0;
 }

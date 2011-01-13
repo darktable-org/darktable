@@ -729,53 +729,70 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
       // tags in array
       const int cnt = pos->count();
+
+      sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagxtag, *stmt_upd_tagxtag, *stmt_ins_tagged, *stmt_upd_tagxtag2;
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from tags where name = ?1", -1, &stmt_sel_id, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt_ins_tags, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt_ins_tagxtag, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
+            "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+            "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
       for(int i=0;i<cnt;i++)
       {
         int tagid = -1;
         // check if tag is available, get its id:
         for(int k=0;k<2;k++)
         {
-          DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from tags where name = ?1", -1, &stmt, NULL);
           const char *tag = pos->toString(i).c_str();
-          DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, tag, strlen(tag), SQLITE_TRANSIENT);
-          if(sqlite3_step(stmt) == SQLITE_ROW)
-            tagid = sqlite3_column_int(stmt, 0);
-          sqlite3_finalize(stmt);
+          DT_DEBUG_SQLITE3_BIND_TEXT(stmt_sel_id, 1, tag, strlen(tag), SQLITE_TRANSIENT);
+          if(sqlite3_step(stmt_sel_id) == SQLITE_ROW)
+            tagid = sqlite3_column_int(stmt_sel_id, 0);
+          sqlite3_reset(stmt_sel_id);
+          sqlite3_clear_bindings(stmt_sel_id);
+
           if(tagid > 0)
           {
             if(k == 1)
             {
-              DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt, NULL);
-              DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-              sqlite3_step(stmt);
-              sqlite3_finalize(stmt);
-              DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt, NULL);
-              DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-              sqlite3_step(stmt);
-              sqlite3_finalize(stmt);
+              DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_tagxtag, 1, tagid);
+              sqlite3_step(stmt_ins_tagxtag);
+              sqlite3_reset(stmt_ins_tagxtag);
+              sqlite3_clear_bindings(stmt_ins_tagxtag);
+
+              DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag, 1, tagid);
+              sqlite3_step(stmt_upd_tagxtag);
+              sqlite3_reset(stmt_upd_tagxtag);
+              sqlite3_clear_bindings(stmt_upd_tagxtag);
             }
             break;
           }
           // create this tag (increment id, leave icon empty), retry.
-          DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt, NULL);
-          DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, tag, strlen(tag), SQLITE_TRANSIENT);
-          sqlite3_step(stmt);
-          sqlite3_finalize(stmt);
+          DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, strlen(tag), SQLITE_TRANSIENT);
+          sqlite3_step(stmt_ins_tags);
+          sqlite3_reset(stmt_ins_tags);
+          sqlite3_clear_bindings(stmt_ins_tags);
         }
         // associate image and tag.
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
-            "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
-            "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_tagged, 1, tagid);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_tagged, 2, img->id);
+        sqlite3_step(stmt_ins_tagged);
+        sqlite3_reset(stmt_ins_tagged);
+        sqlite3_clear_bindings(stmt_ins_tagged);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag2, 1, tagid);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag2, 2, img->id);
+        sqlite3_step(stmt_upd_tagxtag2);
+        sqlite3_reset(stmt_upd_tagxtag2);
+        sqlite3_clear_bindings(stmt_upd_tagxtag2);
       }
+      sqlite3_finalize(stmt_sel_id);
+      sqlite3_finalize(stmt_ins_tags);
+      sqlite3_finalize(stmt_ins_tagxtag);
+      sqlite3_finalize(stmt_upd_tagxtag);
+      sqlite3_finalize(stmt_ins_tagged);
+      sqlite3_finalize(stmt_upd_tagxtag2);
+
     }
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.colorlabels"))) != xmpData.end() )
     {
@@ -808,6 +825,10 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         sqlite3_step(stmt);
         sqlite3_finalize (stmt);
+        sqlite3_stmt *stmt_sel_num, *stmt_ins_hist, *stmt_upd_hist;
+        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt_sel_num, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt_ins_hist, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
         for(int i=0;i<cnt;i++)
         {
           const int modversion = ver->toLong(i);
@@ -819,29 +840,34 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           unsigned char *params = (unsigned char *)malloc(params_len);
           dt_exif_xmp_decode(param_c, params, param_c_len);
           // TODO: why this update set?
-          DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, i);
-          if(sqlite3_step(stmt) != SQLITE_ROW)
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 1, img->id);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 2, i);
+          if(sqlite3_step(stmt_sel_num) != SQLITE_ROW)
           {
-            sqlite3_finalize(stmt);
-            DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
-            DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-            DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, i);
-            sqlite3_step (stmt);
+            DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_hist, 1, img->id);
+            DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_hist, 2, i);
+            sqlite3_step (stmt_ins_hist);
+            sqlite3_reset(stmt_ins_hist);
+            sqlite3_clear_bindings(stmt_ins_hist);
           }
-          sqlite3_finalize (stmt);
-          DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
-          DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, operation, strlen(operation), SQLITE_TRANSIENT);
-          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, params, params_len, SQLITE_TRANSIENT);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, modversion);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, enabled);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, img->id);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, i);
-          sqlite3_step (stmt);
-          sqlite3_finalize (stmt);
+          DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 1, operation, strlen(operation), SQLITE_TRANSIENT);
+          DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 2, params, params_len, SQLITE_TRANSIENT);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 3, modversion);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 4, enabled);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 5, img->id);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 6, i);
+          sqlite3_step (stmt_upd_hist);
           free(params);
+
+          sqlite3_reset(stmt_sel_num);
+          sqlite3_clear_bindings(stmt_sel_num);
+          sqlite3_reset(stmt_upd_hist);
+          sqlite3_clear_bindings(stmt_upd_hist);
+
         }
+        sqlite3_finalize(stmt_sel_num);
+        sqlite3_finalize(stmt_ins_hist);
+        sqlite3_finalize(stmt_upd_hist);
       }
     }
   }
