@@ -78,7 +78,7 @@ int dt_init(int argc, char *argv[])
 	return usage(argv[0]);
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2010 johannes hanika\n"PACKAGE_BUGREPORT"\n");
+        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2011 johannes hanika\n"PACKAGE_BUGREPORT"\n");
         return 1;
       }
       if(argv[k][1] == 'd' && argc > k+1)
