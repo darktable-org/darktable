@@ -23,6 +23,7 @@
 #include "common/imageio.h"
 #include "common/exif.h"
 #include "common/debug.h"
+#include "common/tags.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
@@ -567,8 +568,10 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   for(char **i=extensions;*i!=NULL;i++)
     if(!strcmp(ext, *i)) { supported = 1; break; }
   g_strfreev(extensions);
-  g_free(ext);
-  if(!supported) return 0;
+  if(!supported){
+    g_free(ext);
+    return 0;
+  }
   int rc;
   int ret = 0, id = -1;
   // select from images; if found => return
@@ -584,6 +587,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
     g_free(imgfname);
     sqlite3_finalize(stmt);
     ret = dt_image_open(id); // image already in db, open this.
+    g_free(ext);
     if(ret) return 0;
     else return id;
   }
@@ -620,6 +624,14 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
   (void)dt_exif_xmp_read(img, dtfilename, 0);
+
+  // add a tag with the file extension
+  guint tagid = 0;
+  char tagname[512];
+  snprintf(tagname, 512, "darktable|format|%s", ext);
+  g_free(ext);
+  dt_tag_new(tagname, &tagid);
+  dt_tag_attach(tagid,id);
 
   dt_image_cache_flush_no_sidecars(img);
 
