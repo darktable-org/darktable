@@ -531,6 +531,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 			int32_t mouse_over_id;
 			DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 			dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+			image->dirty = 1;
 			if(lib->image_over == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
 			else
 			{

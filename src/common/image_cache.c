@@ -33,7 +33,7 @@
 #include <glib/gstdio.h>
 #include <assert.h>
 
-#define DT_IMAGE_CACHE_FILE_VERSION 2
+#define DT_IMAGE_CACHE_FILE_VERSION 3
 #define DT_IMAGE_CACHE_FILE_NAME "mipmaps"
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
@@ -288,6 +288,7 @@ int dt_image_cache_read(dt_image_cache_t *cache)
       }
       free(buf);
     }
+    image->dirty = 0; // This is reset when flushing the cache on exit, but writing happens before flushing ...
   }
   int32_t endmarker = 0xD71337, readmarker = 0;
   rd = fread(&readmarker, sizeof(uint32_t), 1, f);
@@ -576,7 +577,8 @@ void dt_image_cache_print(dt_image_cache_t *cache)
 
 void dt_image_cache_flush_no_sidecars(dt_image_t *img)
 {
-  if(img->id <= 0) return;
+  if(img->id <= 0 || img->dirty == 0) return;
+  img->dirty = 0;
   int rc;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, film_id = ?10, datetime_taken = ?11, flags = ?12, output_width = ?13, output_height = ?14, crop = ?15, raw_parameters = ?16, raw_denoise_threshold = ?17, raw_auto_bright_threshold = ?18, raw_black = ?19, raw_maximum = ?20, orientation = ?21 where id = ?22", -1, &stmt, NULL);

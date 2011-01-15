@@ -37,6 +37,7 @@ void dt_history_delete_on_image(int32_t imgid)
   dt_image_init (&tmp);
   dt_image_t *img = dt_image_cache_get(imgid, 'r');
   img->force_reimport = 1;
+  img->dirty = 1;
   img->raw_params = tmp.raw_params;
   img->raw_denoise_threshold = tmp.raw_denoise_threshold;
   img->raw_auto_bright_threshold = tmp.raw_auto_bright_threshold;
@@ -85,6 +86,7 @@ dt_history_load_and_apply_on_selection (gchar *filename)
         break;
       }
       img->force_reimport = 1;
+      img->dirty = 1;
       dt_image_cache_flush(img);
       
       /* if current image in develop reload history */
@@ -135,6 +137,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   /* reimport image updated image */
   dt_image_t *img = dt_image_cache_get (dest_imgid, 'r');
   img->force_reimport = 1;
+  img->dirty = 1;
   img->raw_params = oimg->raw_params;
   img->raw_denoise_threshold = oimg->raw_denoise_threshold;
   img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;

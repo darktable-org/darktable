@@ -840,6 +840,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
     ret = dt_imageio_open_ldr(img, filename);
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
+  img->dirty = 1;
   return ret;
 }
 
@@ -856,6 +857,7 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr_preview(img, filename);
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
+  img->dirty = 1;
   return ret;
 }
 

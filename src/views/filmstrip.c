@@ -242,6 +242,7 @@ star_key_accel_callback(void *data)
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       if(mouse_over_id <= 0) return;
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+      image->dirty = 1;
       if(num == 666) image->flags &= ~0xf;
       else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else
@@ -342,6 +343,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4:
     { 
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+      image->dirty = 1;
       if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else
       {

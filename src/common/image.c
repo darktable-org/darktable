@@ -367,6 +367,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   if(cw == 2) orientation = -1; // reset
   img->raw_params.user_flip = orientation;
   img->force_reimport = 1;
+  img->dirty = 1;
   dt_image_invalidate(img, DT_IMAGE_MIPF);
   dt_image_invalidate(img, DT_IMAGE_FULL);
   dt_image_cache_flush(img);
@@ -607,6 +608,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   strncpy(img->filename, imgfname, 256);
   img->id = id;
   img->film_id = film_id;
+  img->dirty = 1;
 
   dt_fswatch_add(darktable.fswatch, DT_FSWATCH_IMAGE, img);
   
@@ -723,6 +725,7 @@ void dt_image_init(dt_image_t *img)
   }
   img->id = -1;
   img->force_reimport = 0;
+  img->dirty = 0;
   img->exif_inited = 0;
   memset(img->exif_maker,0, sizeof(img->exif_maker));
   memset(img->exif_model,0, sizeof(img->exif_model));

@@ -603,6 +603,7 @@ star_key_accel_callback(void *data)
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');
+          image->dirty = 1;
           if(num == 666) image->flags &= ~0xf;
           else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
           else
@@ -618,6 +619,7 @@ star_key_accel_callback(void *data)
       else
       {
         dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+        image->dirty = 1;
         if(num == 666) image->flags &= ~0xf;
         else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
         else
@@ -805,6 +807,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       if(!image) return 0;
+      image->dirty = 1;
       if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else
       {

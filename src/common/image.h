@@ -122,6 +122,7 @@ typedef struct dt_image_t
   char lock_last[DT_IMAGE_NONE][100];
   int32_t import_lock;
   int32_t force_reimport;
+  int32_t dirty;
 
   // raw image parameters
   float black, maximum;

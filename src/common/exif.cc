@@ -244,6 +244,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 
     img->exif_inited = 1;
+    img->dirty = 1;
     return 0;
   }
   catch (Exiv2::AnyError& e)
@@ -709,6 +710,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       // set in cache and write through.
       *((int32_t *)&img->raw_params) = raw_params;
       img->flags = (img->flags & ~0x7) | (0x7 & stars);
+      img->dirty = 1;
       dt_image_cache_flush_no_sidecars(img);
     }
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
