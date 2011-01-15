@@ -65,6 +65,10 @@ int dt_init(int argc, char *argv[])
   textdomain (GETTEXT_PACKAGE);
 
   darktable.progname = argv[0];
+
+  // database
+  gchar *dbfilenameFromCommand = NULL;
+
 #ifdef _OPENMP
   omp_set_num_threads(omp_get_num_procs());
 #endif
@@ -83,7 +87,11 @@ int dt_init(int argc, char *argv[])
         printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2011 johannes hanika\n"PACKAGE_BUGREPORT"\n");
         return 1;
       }
-      else if(argv[k][1] == 'd' && argc > k+1)
+      else if(!strcmp(argv[k], "--library"))
+      {
+        dbfilenameFromCommand = argv[++k];
+      }
+      if(argv[k][1] == 'd' && argc > k+1)
       {
         if(!strcmp(argv[k+1], "all"))       darktable.unmuted = 0xffffffff;   // enable all debug information
         else if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
@@ -116,7 +124,7 @@ int dt_init(int argc, char *argv[])
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 
   // Initialize the filesystem watcher  
-  darktable.fswatch=dt_fswatch_new();	
+  darktable.fswatch=dt_fswatch_new();  
   
 #ifdef HAVE_GPHOTO2
   // Initialize the camera control 
@@ -136,7 +144,7 @@ int dt_init(int argc, char *argv[])
   darktable.collection = dt_collection_new(NULL);  
 
   // Initialize the password storage engine
-  darktable.pwstorage=dt_pwstorage_new();	
+  darktable.pwstorage=dt_pwstorage_new();  
 
   // check and migrate database into new XDG structure
   char dbfilename[2048]={0};
@@ -182,10 +190,19 @@ int dt_init(int argc, char *argv[])
     g_free(conf_cache);
   }
   
-  gchar *dbname = dt_conf_get_string ("database");
-  if(!dbname)               snprintf(dbfilename, 1024, "%s/library.db", datadir);
-  else if(dbname[0] != '/') snprintf(dbfilename, 1024, "%s/%s", datadir, dbname);
-  else                      snprintf(dbfilename, 1024, "%s", dbname);
+  gchar * dbname = NULL;
+  if ( dbfilenameFromCommand == NULL )
+  {
+    dbname = dt_conf_get_string ("database");
+    if(!dbname)               snprintf(dbfilename, 1024, "%s/library.db", datadir);
+    else if(dbname[0] != '/') snprintf(dbfilename, 1024, "%s/%s", datadir, dbname);
+    else                      snprintf(dbfilename, 1024, "%s", dbname);
+  }
+  else
+  {
+    snprintf(dbfilename, 1024, "%s", dbfilenameFromCommand);
+    dbname = g_file_get_basename (g_file_new_for_path(dbfilenameFromCommand));
+  }
 
   int load_cached = 1;
   // if db file does not exist, also don't load the cache.
@@ -203,10 +220,11 @@ int dt_init(int argc, char *argv[])
     fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
 #endif
     sqlite3_close(darktable.db);
-    g_free(dbname);
+    if (dbname != NULL) g_free(dbname);
     return 1;
   }
-  g_free(dbname);
+  if (dbname != NULL) g_free(dbname);
+  
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
@@ -249,11 +267,13 @@ int dt_init(int argc, char *argv[])
     char* filename;
     if(g_str_has_prefix(image_to_load, "file://"))
       image_to_load += strlen("file://");
-    if(g_path_is_absolute(image_to_load) == FALSE){
+    if(g_path_is_absolute(image_to_load) == FALSE)
+    {
       char* current_dir = g_get_current_dir();
       char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
       filename = (char*)malloc(sizeof(char)*MAXPATHLEN);
-      if(realpath(tmp_filename, filename) == NULL){
+      if(realpath(tmp_filename, filename) == NULL)
+      {
         dt_control_log(_("found strange path `%s'"), tmp_filename);
         g_free(current_dir);
         g_free(tmp_filename);
@@ -262,11 +282,14 @@ int dt_init(int argc, char *argv[])
       }
       g_free(current_dir);
       g_free(tmp_filename);
-    } else {
+    }
+    else
+    {
       filename = g_strdup(image_to_load);
     }
 
-    if(g_file_test(filename, G_FILE_TEST_IS_DIR)){                             // import a directory into a film roll
+    if(g_file_test(filename, G_FILE_TEST_IS_DIR))
+    {                             // import a directory into a film roll
       unsigned int last_char = strlen(filename)-1;
       if(filename[last_char] == '/')
         filename[last_char] = '\0';
@@ -282,7 +305,9 @@ int dt_init(int argc, char *argv[])
       {
         dt_control_log(_("error loading directory `%s'"), filename);
       }
-    } else {                                                                   // import a single image
+    }
+    else
+    {                                                                   // import a single image
       gchar *directory = g_path_get_dirname((const gchar *)filename);
       dt_film_t film;
       const int filmid = dt_film_new(&film, directory);
