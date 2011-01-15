@@ -245,6 +245,8 @@ int dt_init(int argc, char *argv[])
   if(image_to_load)
   {
     char* filename;
+    if(g_str_has_prefix(image_to_load, "file://"))
+      image_to_load += strlen("file://");
     if(g_path_is_absolute(image_to_load) == FALSE){
       char* current_dir = g_get_current_dir();
       char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
