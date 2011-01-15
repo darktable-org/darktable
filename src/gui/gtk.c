@@ -28,7 +28,6 @@
 #include <pthread.h>
 
 #include "common/darktable.h"
-#include "common/version.h"
 #ifdef HAVE_GPHOTO2
 #   include "common/camera_control.h"
 #   include "gui/devices.h"
@@ -401,7 +400,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
 {
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
-  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), DT_VERSION_DECORATION);
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, et al. 2009-2010");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
@@ -1160,7 +1159,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_show_all(widget);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
-  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "DT_VERSION_DECORATION"</b></big></span>");
+  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "PACKAGE_VERSION"</b></big></span>");
   
   widget = glade_xml_get_widget (darktable.gui->main_window, "center");
 

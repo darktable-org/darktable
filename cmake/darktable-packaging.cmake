@@ -4,7 +4,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The digital darkroom")
 set(CPACK_PACKAGE_CONTACT "http://darktable.sourceforge.net/")
 set(CPACK_SOURCE_IGNORE_FILES
    "/.gitignore"
-   "${CMAKE_BINARY_DIR}"
+   "${CMAKE_BINARY_DIR}/"
    "/.git/"
    "/.deps/"
    "/.build/"
@@ -125,3 +125,9 @@ if(WIN32)
 endif(WIN32)
 
 include(CPack)
+
+ADD_CUSTOM_TARGET(pkgsrc
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/version.cmake ${CMAKE_SOURCE_DIR}/cmake/version.cmake
+	COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target package_source
+	COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/cmake/version.cmake
+)
