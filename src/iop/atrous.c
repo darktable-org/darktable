@@ -652,7 +652,7 @@ void init_presets (dt_iop_module_t *self)
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = 0.6f;
-    p.y[atrous_c][k] = .5f;
+    p.y[atrous_c][k] = .55f;
     p.y[atrous_s][k] = .0f;
     p.x[atrous_Lt][k] = k/(BANDS-1.0);
     p.x[atrous_ct][k] = k/(BANDS-1.0);
