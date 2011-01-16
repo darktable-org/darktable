@@ -622,7 +622,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       if (enable)
       {
         module->enabled = TRUE;
-        darktable.gui->reset = 1; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled); darktable.gui->reset = 0;
+        if(module->off)
+        {
+          darktable.gui->reset = 1;
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+          darktable.gui->reset = 0;
+        }
       }
       hist->enabled = module->enabled;
       hist->module = module;
@@ -647,7 +652,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       if(strcmp(module->op, "rawimport") && !hist->enabled && !module->enabled)
       { // only if not rawimport. this always stays off.
         module->enabled = 1;
-        darktable.gui->reset = 1; gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled); darktable.gui->reset = 0;
+        if(module->off)
+        {
+          darktable.gui->reset = 1;
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+          darktable.gui->reset = 0;
+        }
       }
       hist->enabled = module->enabled;
       dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
