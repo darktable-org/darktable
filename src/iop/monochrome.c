@@ -46,10 +46,6 @@ dt_iop_monochrome_params_t;
 typedef struct dt_iop_monochrome_gui_data_t
 {
   GtkDrawingArea *area;
-  GtkHBox *hbox;
-  GtkVBox *vbox1, *vbox2;
-  GtkLabel *label;
-  GtkDarktableSlider *scale;
   int dragging;
   cmsHPROFILE hsRGB;
   cmsHPROFILE hLab;
@@ -85,7 +81,7 @@ int flags()
 static float
 color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
 {
-  return L * expf(-((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size));
+  return L * dt_fast_expf(-((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size));
 }
 
 
@@ -141,10 +137,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale, p->size);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -168,16 +160,6 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
-}
-
-static void size_callback (GtkDarktableSlider *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-  p->size = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(self->widget);
 }
 
 static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
@@ -296,11 +278,9 @@ static gboolean dt_iop_monochrome_leave_notify(GtkWidget *widget, GdkEventCrossi
 static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   if(event->direction == GDK_SCROLL_UP   && p->size >   .5) p->size -= 0.1;
-  if(event->direction == GDK_SCROLL_DOWN && p->size <  1.0) p->size += 0.1;
-  dtgtk_slider_set_value(g->scale, p->size);
+  if(event->direction == GDK_SCROLL_DOWN && p->size <  3.0) p->size += 0.1;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -309,7 +289,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_monochrome_gui_data_t));
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
   g->dragging = 0;
 
@@ -319,7 +298,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
   gtk_drawing_area_size(g->area, 258, 258);
-  gtk_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag and scroll\nto adjust the virtual\ncolor filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag and scroll mouse wheel to adjust the virtual color filter"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (g->area), "expose-event",
@@ -335,21 +314,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_monochrome_scrolled), self);
   
-  g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label = GTK_LABEL(gtk_label_new(_("filter size")));
-  gtk_misc_set_alignment(GTK_MISC(g->label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label), TRUE, TRUE, 0);
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,.5, 1.0, 0.01,p->size,2));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-
-
-  g_signal_connect (G_OBJECT (g->scale), "value-changed",
-                    G_CALLBACK (size_callback), self);
   g->hsRGB = dt_colorspaces_create_srgb_profile();
   g->hLab  = dt_colorspaces_create_lab_profile();
   g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, 
