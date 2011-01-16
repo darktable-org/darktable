@@ -1016,12 +1016,12 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS-1D Mark II N", Tungsten, 0,	{ 1.408514, 1, 2.147645, 0 } },
 
   // Firmware Version 1.0.6 (Temporary)
-  { "Canon", "EOS-1D Mark IV", "Daylight", 0,		{ 2.040039, 1, 1.558594, 0 } },
-  { "Canon", "EOS-1D Mark IV", "Shade", 0,		{ 2.342773, 1, 1.333008, 0 } },
-  { "Canon", "EOS-1D Mark IV", "Cloudy", 0,		{ 2.188477, 1, 1.440430, 0 } },
-  { "Canon", "EOS-1D Mark IV", "Tungsten", 0,		{ 1.458333, 1, 2.305254, 0 } },
-  { "Canon", "EOS-1D Mark IV", "Fluorescent", 0,	{ 1.767892, 1, 2.205029, 0 } },
-  { "Canon", "EOS-1D Mark IV", "Flash", 0,		{ 2.230469, 1, 1.423828, 0 } },
+  { "Canon", "EOS-1D Mark IV", Daylight, 0,	{ 2.040039, 1, 1.558594, 0 } },
+  { "Canon", "EOS-1D Mark IV", Shade, 0,	{ 2.342773, 1, 1.333008, 0 } },
+  { "Canon", "EOS-1D Mark IV", Cloudy, 0,	{ 2.188477, 1, 1.440430, 0 } },
+  { "Canon", "EOS-1D Mark IV", Tungsten, 0,	{ 1.458333, 1, 2.305254, 0 } },
+  { "Canon", "EOS-1D Mark IV", Fluorescent, 0,	{ 1.767892, 1, 2.205029, 0 } },
+  { "Canon", "EOS-1D Mark IV", Flash, 0,	{ 2.230469, 1, 1.423828, 0 } },
 
   { "FUJIFILM", "FinePix E900", Daylight, 0,	{ 1.571875, 1, 1.128125, 0 } },
   { "FUJIFILM", "FinePix E900", Shade, 0,	{ 1.668750, 1, 1.006250, 0 } },
