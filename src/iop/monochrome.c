@@ -201,7 +201,7 @@ static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *even
   }
   cairo_set_source_rgb(cr, .7, .7, .7);
   const float x = p->a * width/128.0 + width * .5f, y = p->b * width/128.0 + width * .5f;
-  cairo_arc(cr, x, y, width*fmaxf(0.1, .5f*p->size), 0, 2.0*M_PI);
+  cairo_arc(cr, x, y, width*.22f*p->size, 0, 2.0*M_PI);
   cairo_stroke(cr);
 
   if(g->dragging) dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -281,6 +281,7 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
   if(event->direction == GDK_SCROLL_UP   && p->size >   .5) p->size -= 0.1;
   if(event->direction == GDK_SCROLL_DOWN && p->size <  3.0) p->size += 0.1;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
