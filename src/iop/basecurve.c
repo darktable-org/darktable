@@ -156,24 +156,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  if(self->dev->image->flags & DT_IMAGE_THUMBNAIL)
-  {
-    memcpy(o, i, sizeof(float)*ch*roi_out->width*roi_out->height);
-  }
-  else
-  {
-    dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
+  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
 #endif
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
-    {
-      float *inp = in + ch*k;
-      float *outp = out + ch*k;
-      outp[0] = d->table[CLAMP((int)(inp[0]*0x10000ul), 0, 0xffff)];
-      outp[1] = d->table[CLAMP((int)(inp[1]*0x10000ul), 0, 0xffff)];
-      outp[2] = d->table[CLAMP((int)(inp[2]*0x10000ul), 0, 0xffff)];
-    }
+  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  {
+    float *inp = in + ch*k;
+    float *outp = out + ch*k;
+    outp[0] = d->table[CLAMP((int)(inp[0]*0x10000ul), 0, 0xffff)];
+    outp[1] = d->table[CLAMP((int)(inp[1]*0x10000ul), 0, 0xffff)];
+    outp[2] = d->table[CLAMP((int)(inp[2]*0x10000ul), 0, 0xffff)];
   }
 }
 
