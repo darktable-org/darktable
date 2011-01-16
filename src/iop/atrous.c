@@ -645,7 +645,6 @@ void init_presets (dt_iop_module_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
   for(int k=0;k<BANDS;k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
