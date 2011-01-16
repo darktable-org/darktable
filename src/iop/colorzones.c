@@ -823,7 +823,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
   g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
 
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker2, CPF_STYLE_FLAT);
   gtk_object_set(GTK_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
