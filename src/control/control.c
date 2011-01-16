@@ -974,6 +974,10 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   dt_control_save_gui_settings(oldmode);
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
+  darktable.gui->center_tooltip = 0;
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+
   char buf[512];
   snprintf(buf, 512, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
 
@@ -981,7 +985,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   if(error) return;
 
   dt_control_restore_gui_settings(mode);
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
   if(oldmode != DT_MODE_NONE) gtk_object_set(GTK_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
   snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"), dt_view_manager_name(darktable.view_manager));
   gtk_label_set_label(GTK_LABEL(widget), buf);

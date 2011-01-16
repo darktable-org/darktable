@@ -104,7 +104,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(darktable.gui->center_tooltip == 1)
-    darktable.gui->center_tooltip++;
+    darktable.gui->center_tooltip = 2;
 
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
   lib->image_over = DT_VIEW_DESERT;
