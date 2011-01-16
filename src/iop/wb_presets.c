@@ -3375,7 +3375,7 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-P2", Cloudy, 2,		{ 1.992188, 1, 1.140625, 0 } },
   { "OLYMPUS", "E-P2", Cloudy, 3,		{ 1.984375, 1, 1.101563, 0 } },
   { "OLYMPUS", "E-P2", Cloudy, 4,		{ 1.976563, 1, 1.054688, 0 } },
-  { "OLYMPUS", "E-P2", Cloudy, 5,		{ 1.96875,  1, 1.007813, 0 } },
+  { "OLYMPUS", "E-P2", Cloudy, 5,		{ 1.968750, 1, 1.007813, 0 } },
   { "OLYMPUS", "E-P2", Cloudy, 6,		{ 1.960938, 1, 0.960938, 0 } },
   { "OLYMPUS", "E-P2", Cloudy, 7,		{ 1.953125, 1, 0.914063, 0 } },
   { "OLYMPUS", "E-P2", Incandescent, -7,	{ 1.039063, 1, 3.445313, 0 } },
@@ -3450,7 +3450,7 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-P2", Flash, 2,		{ 2.000000, 1, 1.132813, 0 } },
   { "OLYMPUS", "E-P2", Flash, 3,		{ 1.992188, 1, 1.093750, 0 } },
   { "OLYMPUS", "E-P2", Flash, 4,		{ 1.984375, 1, 1.046875, 0 } },
-  { "OLYMPUS", "E-P2", Flash, 5,		{ 1.976563, 1, 1.000000  0 } },
+  { "OLYMPUS", "E-P2", Flash, 5,		{ 1.976563, 1, 1.000000, 0 } },
   { "OLYMPUS", "E-P2", Flash, 6,		{ 1.968750, 1, 0.953125, 0 } },
   { "OLYMPUS", "E-P2", Flash, 7,		{ 1.960938, 1, 0.906250, 0 } },
 
