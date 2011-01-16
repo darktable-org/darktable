@@ -54,7 +54,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl}] [IMG_1234.{RAW,..}]\n", argv0);
+  printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl}] [IMG_1234.{RAW,..}|ImageFolder/]\n", argv0);
   return 1;
 }
 
@@ -75,13 +75,15 @@ int dt_init(int argc, char *argv[])
     if(argv[k][0] == '-')
     {
       if(!strcmp(argv[k], "--help"))
-	return usage(argv[0]);
+      {
+        return usage(argv[0]);
+      }
       else if(!strcmp(argv[k], "--version"))
       {
         printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2011 johannes hanika\n"PACKAGE_BUGREPORT"\n");
         return 1;
       }
-      if(argv[k][1] == 'd' && argc > k+1)
+      else if(argv[k][1] == 'd' && argc > k+1)
       {
         if(!strcmp(argv[k+1], "all"))       darktable.unmuted = 0xffffffff;   // enable all debug information
         else if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
@@ -92,7 +94,7 @@ int dt_init(int argc, char *argv[])
         else if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
         else if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
         else if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
-	else return usage(argv[0]);
+        else return usage(argv[0]);
         k ++;
       }
     }
@@ -264,32 +266,53 @@ int dt_init(int argc, char *argv[])
       filename = g_strdup(image_to_load);
     }
 
-    gchar *directory = g_path_get_dirname((const gchar *)filename);
-    dt_film_t film;
-    const int filmid = dt_film_new(&film, directory);
-    id = dt_image_import(filmid, filename, TRUE);
-    if(!id) dt_control_log(_("error loading file `%s'"), filename);
-    g_free (directory);
-    if(id)
-    {
-      GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-      dt_gui_filmview_update(gtk_entry_get_text(entry));
-      dt_film_open(filmid);
-      // make sure buffers are loaded (load full for testing)
-      dt_image_t *img = dt_image_cache_get(id, 'r');
-      dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-      if(!buf)
+    if(g_file_test(filename, G_FILE_TEST_IS_DIR)){                             // import a directory into a film roll
+      unsigned int last_char = strlen(filename)-1;
+      if(filename[last_char] == '/')
+        filename[last_char] = '\0';
+      id = dt_film_import(filename);
+      if(id)
       {
-        id = 0;
-        dt_image_cache_release(img, 'r');
-        dt_control_log(_("file `%s' has unknown format!"), filename);
+        dt_film_open(id);
+        GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+        dt_gui_filmview_update(gtk_entry_get_text(entry));
+        dt_ctl_switch_mode_to(DT_LIBRARY);
       }
       else
       {
-        dt_image_release(img, DT_IMAGE_FULL, 'r');
-        dt_image_cache_release(img, 'r');
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-        dt_ctl_switch_mode_to(DT_DEVELOP);
+        dt_control_log(_("error loading directory `%s'"), filename);
+      }
+    } else {                                                                   // import a single image
+      gchar *directory = g_path_get_dirname((const gchar *)filename);
+      dt_film_t film;
+      const int filmid = dt_film_new(&film, directory);
+      id = dt_image_import(filmid, filename, TRUE);
+      g_free (directory);
+      if(id)
+      {
+        GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+        dt_gui_filmview_update(gtk_entry_get_text(entry));
+        dt_film_open(filmid);
+        // make sure buffers are loaded (load full for testing)
+        dt_image_t *img = dt_image_cache_get(id, 'r');
+        dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+        if(!buf)
+        {
+          id = 0;
+          dt_image_cache_release(img, 'r');
+          dt_control_log(_("file `%s' has unknown format!"), filename);
+        }
+        else
+        {
+          dt_image_release(img, DT_IMAGE_FULL, 'r');
+          dt_image_cache_release(img, 'r');
+          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+          dt_ctl_switch_mode_to(DT_DEVELOP);
+        }
+      }
+      else
+      {
+        dt_control_log(_("error loading file `%s'"), filename);
       }
     }
     g_free(filename);
