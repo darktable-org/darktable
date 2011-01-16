@@ -3583,6 +3583,12 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-G1", Incandescent, 0,	{ 1.319392, 1, 2.148289, 0 } },
   { "Panasonic", "DMC-G1", Flash, 0,		{ 1.528517, 1, 1.277567, 0 } },
 
+  { "Panasonic", "DMC-G2", Daylight, 0,		{ 1.931559, 1, 1.414449, 0 } },
+  { "Panasonic", "DMC-G2", Cloudy, 0,		{ 2.292776, 1, 1.231939, 0 } },
+  { "Panasonic", "DMC-G2", Shade, 0,		{ 2.243346, 1, 1.231939, 0 } },
+  { "Panasonic", "DMC-G2", Incandescent, 0,	{ 2.190114, 1, 1.250951, 0 } },
+  { "Panasonic", "DMC-G2", Flash, 0,		{ 2.296578, 1, 1.190114, 0 } },
+
   { "Panasonic", "DMC-GF1", Daylight, 0,	{ 2.007605, 1, 1.418251, 0 } },
   { "Panasonic", "DMC-GF1", Cloudy, 0,		{ 2.174905, 1, 1.296578, 0 } },
   { "Panasonic", "DMC-GF1", Shade, 0,		{ 2.395437, 1, 1.193916, 0 } },
