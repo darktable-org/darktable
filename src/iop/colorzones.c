@@ -60,7 +60,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
-  GtkRadioButton *channel_button[3];
+  GtkNotebook *channel_tabs;
   GtkWidget *select_by;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
@@ -719,20 +719,13 @@ colorzones_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data
 }
 
 static void
-colorzones_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+colorzones_tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data) 
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  if(gtk_toggle_button_get_active(togglebutton))
-  {
-    for(int k=0;k<3;k++) if(c->channel_button[k] == GTK_RADIO_BUTTON(togglebutton))
-    {
-      c->channel = (dt_iop_colorzones_channel_t)k;
-      gtk_widget_queue_draw(self->widget);
-      return;
-    }
-  }
+  c->channel = (dt_iop_colorzones_channel_t)page_num;
+  gtk_widget_queue_draw(self->widget);
 }
 
 static void
@@ -791,11 +784,31 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
-  
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+
+  // tabs
+  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+
+  c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("luma (L)")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("colorness (C)")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("hue (h)")));
+
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
+
+  gtk_object_set(GTK_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
+
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page",
+                   G_CALLBACK (colorzones_tab_switch), self);
+
   // the nice graph
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -811,26 +824,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (colorzones_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (colorzones_scrolled), self);
-  // init gtk stuff
-  c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 5);
 
-  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma (L)")));
-  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("colorness (C)")));
-  c->channel_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("hue (h)")));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->channel_button[c->channel]), TRUE);
-
-  g_signal_connect (G_OBJECT (c->channel_button[0]), "toggled",
-                    G_CALLBACK (colorzones_button_toggled), self);
-  g_signal_connect (G_OBJECT (c->channel_button[1]), "toggled",
-                    G_CALLBACK (colorzones_button_toggled), self);
-  g_signal_connect (G_OBJECT (c->channel_button[2]), "toggled",
-                    G_CALLBACK (colorzones_button_toggled), self);
-
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[2]), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[1]), FALSE, FALSE, 5);
-  gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 5);
-
+  
   c->hsRGB = dt_colorspaces_create_srgb_profile();
   c->hLab  = dt_colorspaces_create_lab_profile();
   c->xform = cmsCreateTransform(c->hLab, TYPE_Lab_DBL, c->hsRGB, TYPE_RGB_DBL, 

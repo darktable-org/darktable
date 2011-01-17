@@ -74,7 +74,12 @@ style "clearlooks-notebook" = "clearlooks-wide"
 {
   # interestingly, notebook swaps the meaning of these two:
   bg[NORMAL]        = "#494949"
-  bg[ACTIVE]        = "#212121" 
+  bg[ACTIVE]        = "#212121"
+
+  engine "clearlooks"
+  {
+    style = GLOSSY
+  }
 }
 
 style "clearlooks-tasklist" = "clearlooks-default"
