@@ -390,9 +390,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     // if module requested color statistics, get mean in box from preview pipe
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    if(!(dev->image->flags & DT_IMAGE_THUMBNAIL) && // converted jpg is useless.
-        dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
-        (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
+    if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+       (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
         module->request_color_pick) // and they need to want to pick ;)
     {
       for(int k=0;k<3;k++) module->picked_color_min[k] =  666.0f;
