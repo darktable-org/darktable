@@ -31,6 +31,7 @@ extern "C"
 #include "common/imageio_rawspeed.h"
 #include "common/exif.h"
 #include "common/darktable.h"
+#include "common/colorspaces.h"
 }
 
 // define this function, it is only declared in rawspeed:
@@ -55,7 +56,9 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
     (void) dt_exif_read(img, filename);
 
   // work around rawspeed bug
-  if(!strncmp(img->exif_model, "PENTAX K-5", 10)) return DT_IMAGEIO_FILE_CORRUPTED;
+  char makermodel[1024];
+  dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
+  if(!strncmp(makermodel, "PENTAX K-5", 10)) return DT_IMAGEIO_FILE_CORRUPTED;
 
   char filen[1024];
   snprintf(filen, 1024, "%s", filename);
@@ -152,7 +155,9 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
     (void) dt_exif_read(img, filename);
 
   // work around rawspeed bug
-  if(!strncmp(img->exif_model, "PENTAX K-5", 10)) return DT_IMAGEIO_FILE_CORRUPTED;
+  char makermodel[1024];
+  dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
+  if(!strncmp(makermodel, "PENTAX K-5", 10)) return DT_IMAGEIO_FILE_CORRUPTED;
 
   char filen[1024];
   snprintf(filen, 1024, "%s", filename);
