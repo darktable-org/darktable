@@ -203,15 +203,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   char datadir[1024];
   char filename[1024];
   dt_get_datadir(datadir, 1024);
-  int preview_thumb = self->dev->image->flags & DT_IMAGE_THUMBNAIL;
-  if(!strcmp(p->iccprofile, "darktable") && !preview_thumb)
+  if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
-  if(!strcmp(p->iccprofile, "cmatrix") && !preview_thumb)
+  if(!strcmp(p->iccprofile, "cmatrix"))
   { // color matrix
     int ret;
     dt_image_full_path(self->dev->image->id, filename, 1024);
@@ -245,7 +244,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->input = dt_colorspaces_create_adobergb_profile();
   }
-  else if(!strcmp(p->iccprofile, "linear_rgb") || preview_thumb)
+  else if(!strcmp(p->iccprofile, "linear_rgb"))
   {
     d->input = dt_colorspaces_create_linear_rgb_profile();
   }
