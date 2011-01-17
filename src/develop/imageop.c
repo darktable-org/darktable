@@ -154,28 +154,8 @@ int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t 
   return 4*sizeof(float);
 }
 
-int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *libname, const char *op)
+int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
 {
-  dt_pthread_mutex_init(&module->params_mutex, NULL);
-  module->dt = &darktable;
-  module->dev = dev;
-  module->widget = NULL;
-  module->off = NULL;
-  module->priority = 0;
-  module->hide_enable_button = 0;
-  module->request_color_pick = 0;
-  for(int k=0;k<3;k++)
-  {
-    module->picked_color[k] = 
-    module->picked_color_min[k] = 
-    module->picked_color_max[k] = 
-    module->picked_color_Lab[k] = 
-    module->picked_color_min_Lab[k] = 
-    module->picked_color_max_Lab[k] = 0.0f;
-  }
-  module->color_picker_box[0] = module->color_picker_box[1] = .25f;
-  module->color_picker_box[2] = module->color_picker_box[3] = .75f;
-  module->enabled = module->default_enabled = 1; // all modules enabled by default.
   strncpy(module->op, op, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
@@ -217,13 +197,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_develop_t *dev, const char *l
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
-  module->init(module);
-  if(module->priority == 0)
-  {
-    fprintf(stderr, "[iop_load_module] %s needs to set priority!\n", op);
-    goto error;      // this needs to be set
-  }
-  module->enabled = module->default_enabled; // apply (possibly new) default.
   return 0;
 error:
   fprintf(stderr, "[iop_load_module] failed to open operation `%s': %s\n", op, g_module_error());
@@ -231,72 +204,169 @@ error:
   return 1;
 }
 
-static void
-init_presets(dt_iop_module_t *module)
+static int
+dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  if(module->init_presets && module->dev->gui_attached)
-  { // only if method exists and no writeprotected (static) preset has been inserted yet.
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-    if(sqlite3_step(stmt) != SQLITE_ROW) module->init_presets(module);
-    sqlite3_finalize(stmt);
+  dt_pthread_mutex_init(&module->params_mutex, NULL);
+  module->dt = &darktable;
+  module->dev = dev;
+  module->widget = NULL;
+  module->off = NULL;
+  module->priority = 0;
+  module->hide_enable_button = 0;
+  module->request_color_pick = 0;
+  for(int k=0;k<3;k++)
+  {
+    module->picked_color[k] = 
+    module->picked_color_min[k] = 
+    module->picked_color_max[k] = 
+    module->picked_color_Lab[k] = 
+    module->picked_color_min_Lab[k] = 
+    module->picked_color_max_Lab[k] = 0.0f;
   }
+  module->color_picker_box[0] = module->color_picker_box[1] = .25f;
+  module->color_picker_box[2] = module->color_picker_box[3] = .75f;
+  module->enabled = module->default_enabled = 1; // all modules enabled by default.
+  strncpy(module->op, so->op, 20);
+
+  // only reference cached results of dlopen:
+  module->module = so->module;
+  
+  module->version     = so->version;
+  module->name        = so->name;
+  module->groups      = so->groups;
+  module->flags       = so->flags;
+  module->output_bpp  = so->output_bpp;
+  module->gui_update  = so->gui_update;
+  module->gui_init    = so->gui_init;
+  module->gui_cleanup = so->gui_cleanup;
+
+  module->gui_post_expose = so->gui_post_expose;
+  module->mouse_leave     = so->mouse_leave;
+  module->mouse_moved     = so->mouse_moved;
+  module->button_released = so->button_released;
+  module->button_pressed  = so->button_pressed;
+  module->key_pressed     = so->key_pressed;
+  module->configure       = so->configure;
+  module->scrolled        = so->scrolled;
+
+  module->init            = so->init;
+  module->cleanup         = so->cleanup;
+  module->commit_params   = so->commit_params;
+  module->reload_defaults = so->reload_defaults;
+  module->init_pipe       = so->init_pipe;
+  module->cleanup_pipe    = so->cleanup_pipe;
+  module->process         = so->process;
+  module->process_cl      = so->process_cl;
+  module->modify_roi_in   = so->modify_roi_in;
+  module->modify_roi_out  = so->modify_roi_out;
+  module->legacy_params   = so->legacy_params;
+
+  // now init the instance:
+  module->init(module);
+  if(module->priority == 0)
+  {
+    fprintf(stderr, "[iop_load_module] `%s' needs to set priority!\n", so->op);
+    return 1;      // this needs to be set
+  }
+  module->enabled = module->default_enabled; // apply (possibly new) default.
+  return 0;
 }
 
-GList *dt_iop_load_modules(dt_develop_t *dev)
+static void
+init_presets(dt_iop_module_so_t *module)
+{
+  if(module->init_presets) module->init_presets(module);
+  // sqlite3_stmt *stmt;
+  // DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
+  // DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  // if(sqlite3_step(stmt) != SQLITE_ROW) 
+  // sqlite3_finalize(stmt);
+}
+
+void dt_iop_load_modules_so()
 {
   GList *res = NULL;
-  dt_iop_module_t *module;
-  dev->iop_instance = 0;
+  dt_iop_module_so_t *module;
+  darktable.iop = NULL;
   char plugindir[1024], op[20];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
   strcpy(plugindir + strlen(plugindir), "/plugins");
   GDir *dir = g_dir_open(plugindir, 0, NULL); 
-//   g_print("DIR: %s\n", plugindir);
-  if(!dir) return NULL;
+  if(!dir) return;
   while((d_name = g_dir_read_name(dir)))
   { // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
     strncpy(op, d_name+3, strlen(d_name)-6);
     op[strlen(d_name)-6] = '\0';
-    module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+    module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
-    if(dt_iop_load_module(module, dev, libname, op))
+    if(dt_iop_load_module_so(module, libname, op))
     {
       free(module);
       continue;
     }
     g_free(libname);
+    res = g_list_append(res, module);
+    init_presets(module);
+  }
+  g_dir_close(dir);
+  darktable.iop = res;
+}
+
+GList *dt_iop_load_modules(dt_develop_t *dev)
+{
+  GList *res = NULL;
+  dt_iop_module_t *module;
+  dt_iop_module_so_t *module_so;
+  dev->iop_instance = 0;
+  GList *iop = darktable.iop;
+  while(iop)
+  {
+    module_so = (dt_iop_module_so_t *)iop->data;
+    module    = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+    if(dt_iop_load_module_by_so(module, module_so, dev))
+    {
+      free(module);
+      continue;
+    }
     res = g_list_insert_sorted(res, module, sort_plugins);
     module->factory_params = malloc(module->params_size);
     memcpy(module->factory_params, module->default_params, module->params_size);
     module->factory_enabled = module->default_enabled;
-    init_presets(module);
     dt_iop_load_default_params(module);
+    iop = g_list_next(iop);
   }
-  g_dir_close(dir);
 
   GList *it = res;
   while(it)
   {
     module = (dt_iop_module_t *)it->data;
     module->instance = dev->iop_instance++;
-    // printf("module %d - %s %d\n", module->priority, module->op, module->instance);
     it = g_list_next(it);
   }
   return res;
 }
 
-void dt_iop_unload_module(dt_iop_module_t *module)
+void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   free(module->factory_params);
   module->cleanup(module);
   free(module->default_params);
   dt_pthread_mutex_destroy(&module->params_mutex);
-  if(module->module) g_module_close(module->module);
+}
+
+void dt_iop_unload_modules_so()
+{
+  while(darktable.iop)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
+    if(module->module) g_module_close(module->module);
+    free(darktable.iop->data);
+    darktable.iop = g_list_delete_link(darktable.iop, darktable.iop);
+  }
 }
 
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

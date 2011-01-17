@@ -511,7 +511,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
   free(piece->data);
 }
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;

@@ -30,6 +30,7 @@
 #include <inttypes.h>
 #include <sqlite3.h>
 #include <glib/gi18n.h>
+#include <glib.h>
 #include <math.h>
 #ifdef _OPENMP
   #include <omp.h>
@@ -106,6 +107,7 @@ typedef struct darktable_t
 {
   int32_t thumbnail_size;
   int32_t unmuted;
+  GList                          *iop;
   struct dt_conf_t               *conf;
   struct dt_develop_t            *develop;
   struct dt_lib_t                *lib;

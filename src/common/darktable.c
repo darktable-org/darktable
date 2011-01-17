@@ -32,6 +32,7 @@
 #include "common/imageio_module.h"
 #include "common/points.h"
 #include "common/opencl.h"
+#include "develop/imageop.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
@@ -252,6 +253,9 @@ int dt_init(int argc, char *argv[])
   darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
   if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
 
+  // load the darkroom mode plugins once:
+  dt_iop_load_modules_so();
+
   darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
   dt_lib_init(darktable.lib);
 
@@ -382,6 +386,9 @@ void dt_cleanup()
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
+
+  // cloanup the darkroom mode plugins once:
+  dt_iop_unload_modules_so();
 
   sqlite3_close(darktable.db);
   dt_pthread_mutex_destroy(&(darktable.db_insert));

@@ -158,7 +158,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   }
   while(dev->iop)
   {
-    dt_iop_unload_module((dt_iop_module_t *)dev->iop->data);
+    dt_iop_cleanup_module((dt_iop_module_t *)dev->iop->data);
     free(dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }

@@ -49,11 +49,60 @@ typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
+/** part of the module which only contains the cached dlopen stuff. */
+struct dt_iop_module_so_t;
 struct dt_iop_module_t;
+typedef struct dt_iop_module_so_t
+{
+  /** opened module. */
+  GModule *module;
+  /** string identifying this operation. */
+  dt_dev_operation_t op;
+
+  /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
+  void (*init_presets)    (struct dt_iop_module_so_t *self);
+
+  /** callbacks, loaded once, referenced by the instances. */
+  int (*version)          ();
+  const char* (*name)     ();
+  int (*groups)           ();
+  int (*flags)            ();
+  int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  
+  void (*gui_update)      (struct dt_iop_module_t *self);
+  void (*gui_init)        (struct dt_iop_module_t *self);
+  void (*gui_cleanup)     (struct dt_iop_module_t *self);
+  void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+
+  int  (*mouse_leave)     (struct dt_iop_module_t *self);
+  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
+  int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
+  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+  int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
+  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
+  void (*configure)       (struct dt_iop_module_t *self, int width, int height);
+  
+  void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
+  void (*cleanup)         (struct dt_iop_module_t *self);
+  void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*reload_defaults) (struct dt_iop_module_t *self);
+  void (*cleanup_pipe)    (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*modify_roi_in)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
+  void (*modify_roi_out)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
+  int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
+
+  void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+}
+dt_iop_module_so_t;
+
 typedef struct dt_iop_module_t
 {
   /** opened module. */
   GModule *module;
+  /** string identifying this operation. */
+  dt_dev_operation_t op;
   /** used to identify this module in the history stack. */
   int32_t instance;
   /** order in which plugins are stacked. */
@@ -83,8 +132,6 @@ typedef struct dt_iop_module_t
   dt_iop_gui_data_t *gui_data;
   /** other stuff that may be needed by the module, not only in gui mode. */
   dt_iop_global_data_t *data;
-  /** string identifying this operation. */
-  dt_dev_operation_t op;
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
@@ -128,8 +175,6 @@ typedef struct dt_iop_module_t
   
   void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup)         (struct dt_iop_module_t *self);
-  /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
-  void (*init_presets)    (struct dt_iop_module_t *self);
   /** this inits the piece of the pipe, allocing piece->data as necessary. */
   void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
@@ -154,9 +199,13 @@ typedef struct dt_iop_module_t
 dt_iop_module_t;
 
 /** loads and inits the modules in the plugins/ directory. */
+void dt_iop_load_modules_so();
+/** cleans up the dlopen refs. */
+void dt_iop_unload_modules_so();
+/** returns a list of instances referencing stuff loaded in load_modules_so. */
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
-void dt_iop_unload_module(dt_iop_module_t *module);
+void dt_iop_cleanup_module(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** commits params and updates piece hash. */

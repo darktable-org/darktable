@@ -131,7 +131,7 @@ groups ()
 }
 	
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   // transform presets above to db entries.
   // sql begin
