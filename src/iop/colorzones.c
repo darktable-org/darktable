@@ -773,6 +773,27 @@ void gui_init(struct dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0/DT_IOP_COLORZONES_BANDS;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  
+  // select by which dimension
+  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
+  GtkWidget *label = gtk_label_new(_("mode"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
+  c->select_by = gtk_combo_box_new_text();
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("hue"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("saturation"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("lightness"));
+  gtk_box_pack_start(GTK_BOX(hbox), c->select_by, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
+
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker2, CPF_STYLE_FLAT);
+  gtk_object_set(GTK_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
+  gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
+  
+  // the nice graph
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
@@ -809,24 +830,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[2]), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[1]), FALSE, FALSE, 5);
   gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[0]), FALSE, FALSE, 5);
-
-  // select by which dimension
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
-  GtkWidget *label = gtk_label_new(_("mode"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
-  c->select_by = gtk_combo_box_new_text();
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("hue"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("saturation"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(c->select_by), _("lightness"));
-  gtk_box_pack_start(GTK_BOX(hbox), c->select_by, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
-  g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
-
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  gtk_object_set(GTK_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
-  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
-  gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
 
   c->hsRGB = dt_colorspaces_create_srgb_profile();
   c->hLab  = dt_colorspaces_create_lab_profile();

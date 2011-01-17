@@ -392,6 +392,38 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_stroke (cr);
 }
 
+void dtgtk_cairo_paint_colorpicker2(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+
+  /* draw pipette */
+
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+
+  // drop
+  cairo_set_line_width(cr, 0.15);
+  cairo_move_to(cr,0.08,1.-0.01);
+  cairo_line_to(cr,0.08,1.-0.09);
+  cairo_stroke(cr);
+
+  cairo_set_line_width(cr, 0.2);
+  // cross line
+  cairo_move_to(cr,0.48,1.-0.831);
+  cairo_line_to(cr,0.739,1.-0.482);
+  // shaft
+  cairo_move_to(cr,0.124,1.-0.297);
+  cairo_line_to(cr,0.823,1.-0.814);
+  cairo_stroke(cr);
+
+  // end
+  cairo_set_line_width(cr, 0.35);
+  cairo_move_to(cr,0.823,1.-0.814);
+  cairo_line_to(cr,0.648,1.-0.685);
+  cairo_stroke(cr);
+}
+
 void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   gint s = (w<h?w:h);
