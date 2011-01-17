@@ -11,7 +11,7 @@ Options:
 
     --help        
     --version
-    -d {cache,control,dev,fswatch,perf}
+    -d {cache,control,dev,fswatch,perf,all}
     --library override.db
 
 =head1 DESCRIPTION
@@ -56,6 +56,10 @@ last been locked.
 
 Use this for performance tweaking your darkroom modules. It will rdtsc-measure the
 runtimes of all plugins and print them to stdout.
+
+=item B<-d all>
+
+Enable all debugging output.
 
 =item B<--library override.db>
 
