@@ -175,8 +175,26 @@ dt_history_get_items(int32_t imgid)
 char *
 dt_history_get_items_as_string(int32_t imgid)
 {
+  // Prepare mapping op -> localized name
+  static GHashTable *module_names = NULL;
+  if(module_names == NULL)
+  {
+    module_names = g_hash_table_new(g_str_hash, g_str_equal);
+    GList *iop = g_list_first(darktable.iop);
+    if(iop != NULL)
+    {
+      do
+      {
+        dt_iop_module_so_t * module = (dt_iop_module_so_t *)iop->data;
+        g_hash_table_insert(module_names, module->op, _(module->name()));
+      }
+      while((iop=g_list_next(iop)) != NULL);
+    }
+  }
+
   GList *items = NULL;
   char *result = NULL;
+  const char *onoff[2] = {_("off"), _("on")};
   unsigned int count = 1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
@@ -186,8 +204,7 @@ dt_history_get_items_as_string(int32_t imgid)
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     char name[512]={0};
-    //FIXME: somehow get translatable strings for the modules.
-    g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 0),(sqlite3_column_int (stmt, 1)!=0)?_("on"):_("off"));
+	g_snprintf(name,512,"%s (%s)", (char*)g_hash_table_lookup(module_names, sqlite3_column_text(stmt, 0)), (sqlite3_column_int(stmt, 1)==0)?onoff[0]:onoff[1]);
     items = g_list_append(items, g_strdup(name));
     count++;
   }
