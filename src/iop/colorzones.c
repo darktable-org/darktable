@@ -145,8 +145,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         break;
     }
     const float Lm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[0], select)) - .5f;
-    const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
     const float hm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[2], select)) - .5f;
+    blend *= blend; // saturation isn't as prone to artifacts:
+    const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
     const float L = in[0] * powf(2.0f, 4.0f*Lm);
     out[0] = L;
     out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
@@ -396,8 +397,11 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  // clear bg
-  cairo_set_source_rgb (cr, .2, .2, .2);
+  // clear bg, match color of the notebook tabs:
+  GtkStyle *style = gtk_widget_get_style(GTK_WIDGET(c->channel_tabs));
+  cairo_set_source_rgb (cr, style->bg[GTK_STATE_NORMAL].red/65535.0f,
+                            style->bg[GTK_STATE_NORMAL].green/65535.0f,
+                            style->bg[GTK_STATE_NORMAL].blue/65535.0f);
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
@@ -787,7 +791,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
 
   // tabs
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));//DT_GUI_IOP_MODULE_CONTROL_SPACING));
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
