@@ -21,3 +21,5 @@ add_custom_target(manpages ALL DEPENDS darktable.1)
 
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.1 DESTINATION ./share/man/man1)
+
+add_subdirectory(usermanual)
