@@ -769,7 +769,7 @@ void gui_init(struct dt_iop_module_t *self)
   
   // select by which dimension
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
-  GtkWidget *label = gtk_label_new(_("mode"));
+  GtkWidget *label = gtk_label_new(_("select by"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
   c->select_by = gtk_combo_box_new_text();
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
@@ -791,9 +791,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("luma (L)")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("colorness (C)")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("hue (h)")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("lightness")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("saturation")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("hue")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
