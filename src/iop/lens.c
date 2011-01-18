@@ -394,7 +394,7 @@ void init(dt_iop_module_t *module)
     char *c = path + strlen(path);
     for(;c>path && *c != '/';c--);
     sprintf(c, "/lensfun");
-    dt_iop_lensfun_db->HomeDataDir = path;
+    dt_iop_lensfun_db->HomeDataDir = g_strdup(path);
     if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
     {
       fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
